@@ -50,7 +50,7 @@ public:
 };
 
 static
-void check_proj_data_are_equal(const ProjData& x, const ProjData& y)
+void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y)
 {
     const size_t n = x.size_all();
     const size_t ny = y.size_all();
@@ -62,9 +62,32 @@ void check_proj_data_are_equal(const ProjData& x, const ProjData& y)
     x.copy_to(arr1.begin());
     y.copy_to(arr2.begin());
 
+    // Check for mismatch
     for (unsigned i=0; i<n; ++i)
         if (std::abs(arr1[i]-arr2[i]) > 1e-4f)
             error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+
+    // Check for non-zero
+    if (std::abs(*std::max_element(arr1.begin(),arr1.end())) < 1e-4f)
+        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+}
+
+static void fill(ProjData &pd, const float start_val)
+{
+    float val = start_val;
+    const int n_min = pd.get_min_segment_num();
+    const int n_max = pd.get_max_segment_num();
+    for (int s=n_min; s<=n_max; ++s) {
+        SegmentBySinogram<float> seg = pd.get_empty_segment_by_sinogram(s);
+        SegmentBySinogram<float>::full_iterator seg_iter;
+        for (seg_iter = seg.begin_all();
+             seg_iter != seg.end_all();
+             ++seg_iter, ++val)
+        {
+            *seg_iter = val;
+        }
+        pd.set_segment(seg);
+    }
 }
 
 void
@@ -73,24 +96,31 @@ run_tests()
 {
     // Create scanner and proj data info
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-    shared_ptr<ProjDataInfo> proj_data_info_sptr
-            (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr =
+            ProjDataInfo::construct_proj_data_info
+            (scanner_sptr,
+             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true);
 
-    // Create and fill
+    // Create pd1 and pd2
     shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
     ProjDataInMemory pd1(exam_info_sptr, proj_data_info_sptr);
-    const float value = 1.2F;
-    pd1.fill(value);
-
-    // Copy
     ProjDataInMemory pd2(pd1);
 
-    // Check axpby with general and ProjDataInMemory methods
-    pd1.axpby(2.f,pd1,3.f,pd1);
-    pd2.ProjData::axpby(2.f,pd2,3.f,pd2);
+    // Create x1 and x2
+    ProjDataInMemory x1(pd1);
+    fill(x1,100.f);
+    ProjDataInMemory x2(x1);
 
-    check_proj_data_are_equal(pd1,pd2);
+    // Create y1 and y2
+    ProjDataInMemory y1(pd1);
+    fill(y1,1000.f);
+    ProjDataInMemory y2(y1);
+
+    // Check axpby with general and ProjDataInMemory methods
+    pd1.axpby(2.f,x1,3.f,y1);
+    pd2.ProjData::axpby(2.f,x2,3.f,y2);
+
+    check_proj_data_are_equal_and_non_zero(pd1,pd2);
 }
 
 END_NAMESPACE_STIR

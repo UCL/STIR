@@ -427,38 +427,29 @@ ProjData::
 axpby(const float a, const ProjData& x,
       const float b, const ProjData& y)
 {
-    int n = get_max_segment_num();
-    int nx = x.get_max_segment_num();
-    int ny = y.get_max_segment_num();
-    for (int s = 0; s <= n && s <= nx && s <= ny; ++s)
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+            *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
+        error("ProjData::axpby: ProjDataInfo don't match");
+
+    const int n_min = get_min_segment_num();
+    const int n_max = get_max_segment_num();
+
+    for (int s=n_min; s<=n_max; ++s)
     {
         SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
-        SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
-        SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
         SegmentBySinogram<float>::full_iterator seg_iter;
-        SegmentBySinogram<float>::full_iterator sx_iter;
-        SegmentBySinogram<float>::full_iterator sy_iter;
+        SegmentBySinogram<float>::const_full_iterator sx_iter;
+        SegmentBySinogram<float>::const_full_iterator sy_iter;
         for (seg_iter = seg.begin_all(),
             sx_iter = sx.begin_all(), sy_iter = sy.begin_all();
             seg_iter != seg.end_all() &&
             sx_iter != sx.end_all() && sy_iter != sy.end_all();
         /*empty*/) {
-            *seg_iter++ = float(a*double(*sx_iter++) + b*double(*sy_iter++));
+            *seg_iter++ = a*(*sx_iter++) + b*(*sy_iter++);
         }
         set_segment(seg);
-        if (s != 0) {
-            seg = get_empty_segment_by_sinogram(-s);
-            sx = x.get_segment_by_sinogram(-s);
-            sy = y.get_segment_by_sinogram(-s);
-            for (seg_iter = seg.begin_all(),
-                sx_iter = sx.begin_all(), sy_iter = sy.begin_all();
-                seg_iter != seg.end_all() &&
-                sx_iter != sx.end_all() && sy_iter != sy.end_all();
-            /*empty*/) {
-                *seg_iter++ = float(a*double(*sx_iter++) + b*double(*sy_iter++));
-            }
-            set_segment(seg);
-        }
     }
 }
 
