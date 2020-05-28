@@ -81,6 +81,8 @@ namespace stir {
 
 #cmakedefine HAVE_SYSTEM_GETOPT
 
+#define STIR_V4_PROJDATA_MATHS
+
 #cmakedefine STIR_DEFAULT_PROJECTOR_AS_V2
 #ifndef STIR_DEFAULT_PROJECTOR_AS_V2
 #define USE_PMRT
