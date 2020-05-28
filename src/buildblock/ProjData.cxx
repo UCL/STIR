@@ -422,4 +422,44 @@ write_to_file(const string& output_filename) const
 
 }
 
+void
+ProjData::
+axpby(const float a, const ProjData& x,
+      const float b, const ProjData& y)
+{
+    int n = get_max_segment_num();
+    int nx = x.get_max_segment_num();
+    int ny = y.get_max_segment_num();
+    for (int s = 0; s <= n && s <= nx && s <= ny; ++s)
+    {
+        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+        SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+        SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+        SegmentBySinogram<float>::full_iterator seg_iter;
+        SegmentBySinogram<float>::full_iterator sx_iter;
+        SegmentBySinogram<float>::full_iterator sy_iter;
+        for (seg_iter = seg.begin_all(),
+            sx_iter = sx.begin_all(), sy_iter = sy.begin_all();
+            seg_iter != seg.end_all() &&
+            sx_iter != sx.end_all() && sy_iter != sy.end_all();
+        /*empty*/) {
+            *seg_iter++ = float(a*double(*sx_iter++) + b*double(*sy_iter++));
+        }
+        set_segment(seg);
+        if (s != 0) {
+            seg = get_empty_segment_by_sinogram(-s);
+            sx = x.get_segment_by_sinogram(-s);
+            sy = y.get_segment_by_sinogram(-s);
+            for (seg_iter = seg.begin_all(),
+                sx_iter = sx.begin_all(), sy_iter = sy.begin_all();
+                seg_iter != seg.end_all() &&
+                sx_iter != sx.end_all() && sy_iter != sy.end_all();
+            /*empty*/) {
+                *seg_iter++ = float(a*double(*sx_iter++) + b*double(*sy_iter++));
+            }
+            set_segment(seg);
+        }
+    }
+}
+
 END_NAMESPACE_STIR
