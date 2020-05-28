@@ -5,7 +5,7 @@ set(dir examples)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-	demo1 demo2 demo3 demo4
+	demo1 demo2 demo3 demo4_obj_fun
 )
 
 

@@ -4,13 +4,16 @@
   \file
   \ingroup examples
   \brief An example of a method to compute the objective function value
-  of an image. All parameters are parsed from a parameter file.
+  of an image and then perform basic iterative gradient ascent.
+  All parameters are parsed from a parameter file.
 
   It illustrates
 	- basic class derivation principles
 	- how to use ParsingObject to have automatic capabilities of parsing
 	  parameters files (and interactive questions to the user)
 	- how to initialise and setup a objective function object
+    - how to compute the objective function (log-likelihood) gradient
+    - how a basic iterative optimisation works (or may not, if parameters are altered)
 
   Note that the same functionality could be provided without deriving
   a new class from ParsingObject. One could have a KeyParser object
@@ -50,6 +53,8 @@ protected:
 private:
   std::string input_filename;
   std::string image_filename;
+  int num_iterations;
+  float step_size;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
@@ -58,6 +63,8 @@ MyStuff::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+  num_iterations = 10;
+  step_size = 0.001;
 }
 
 void 
@@ -67,6 +74,8 @@ MyStuff::initialise_keymap()
   parser.add_key("input file", &input_filename);
   parser.add_key("image filename", &image_filename);
   parser.add_parsing_key("objective function type", &objective_function_sptr);
+  parser.add_key("number of iterations", &num_iterations);
+  parser.add_key("step size", &step_size);
   parser.add_stop_key("End");
 }
 
@@ -85,16 +94,13 @@ void
 MyStuff::run()
 {
 
-  std::cout << "input_filename: " << input_filename << "\n";
-  std::cout << "image_filename: " << image_filename << "\n";
-
-  /////// load data from file
-  shared_ptr<DiscretisedDensity<3,float> > 
+  /////// load initial density from file
+  shared_ptr<DiscretisedDensity<3,float> >
     density_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
 
   //////// gradient it copied Density filled with 0's
-  shared_ptr<DiscretisedDensity<3, float>> gradient_sptr = density_sptr;
-  gradient_sptr->fill(0);
+  shared_ptr<DiscretisedDensity<3,float> >
+          gradient_sptr(density_sptr->get_empty_copy());
 
   /////// setup objective function object
   objective_function_sptr->set_up(density_sptr);
@@ -102,25 +108,27 @@ MyStuff::run()
   /////// Compute objective function value of input image
   const double my_objective_function_value1 = objective_function_sptr->compute_objective_function(*density_sptr);
 
-  /////// Compute the log-likelihood gradient
-  objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);
+  /////// Iteratively compute and add objective function gradients to density_sptr
+  /////// Update formula: x_{k+1} = x_k + step_size * gradient
+  for (int k = 0; k < num_iterations; k++) {
+    std::cout << "Iteration number: " << k << "\n";
+    objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);
+    *density_sptr += (*gradient_sptr) * step_size;
 
-  ////// Add the gradient to the image.
-  *density_sptr += *gradient_sptr;
-
+    /////// save density and estimates
+    std::string density_filename = "density_" + std::to_string(k);
+    std::string gradient_filename = "gradient_" + std::to_string(k);
+    output_file_format_sptr->write_to_file(density_filename, *density_sptr);
+    output_file_format_sptr->write_to_file(gradient_filename, *gradient_sptr);
+  }
   /////// Compute objective function value of image + gradient
   const double my_objective_function_value2 = objective_function_sptr->compute_objective_function(*density_sptr);
 
-  /////////////// Return the objective function values and improvement
-  std::cout << "The Objective Function Value of "<< image_filename << " = " << my_objective_function_value1 << "\n";
-  std::cout << "The Objective Function Value of "<< image_filename << " + objective function gradient = "
+  /////// Return the objective function values and improvement
+  std::cout << "The initial Objective Function Value = " << my_objective_function_value1 << "\n";
+  std::cout << "The Objective Function Value of after " << num_iterations << " iteration(s) ="
             << my_objective_function_value2 << "\n";
-  std::cout << "An improvement of " << my_objective_function_value2 - my_objective_function_value1 << "\n";
-
-  /////////////// output
-  output_file_format_sptr->write_to_file("gradient", *gradient_sptr);
-
-  // Current comments this demo. Adding gradient to the current estiamte does not work
+  std::cout << "A change of " << my_objective_function_value2 - my_objective_function_value1 << "\n";
 }
 
 }// end of namespace stir

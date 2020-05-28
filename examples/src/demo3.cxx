@@ -89,7 +89,7 @@ MyStuff::run()
   back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-  output_file_format_sptr->write_to_file("output", *density_sptr);
+  output_file_format_sptr->write_to_file("demo3_density", *density_sptr);
 
   display(*density_sptr, density_sptr->find_max(), "Output");
 }

@@ -1,5 +1,5 @@
 MyStuff parameters :=
-	image filename := image.hv
+	image filename := demo3_output.hv
   	objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
   	PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
     projector pair type := Matrix
@@ -12,4 +12,7 @@ MyStuff parameters :=
     ;additive projection data to handle randoms etc
     ;additive sinogram := 0
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+  ;Number of iterations of gradient ascent (DEFAULT = 10) and step size (DEFAULT = 0.001)
+  number of iterations := 10
+  step size := 0.001
 End :=

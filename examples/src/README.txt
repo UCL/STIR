@@ -40,8 +40,11 @@ demo3.cxx
 demo4.cxx
 	A modified demo3.cxx that computes the objective function 
 	value of the image generated from demo3.cxx.
-	It illustrates
-	- Basic concepts of creating an objective function object
+	  It illustrates
+		- how to initialise and setup an objective function object
+		- how to compute the objective function (log-likelihood) value of an image
+	    - how to compute the objective function (log-likelihood) gradient
+	    - how a basic iterative optimisation works (or may not, if parameters are altered)
  
 CMakeLists.txt
 	A CMake file to say which files to build.
@@ -66,7 +69,8 @@ demoPM.par
 
 demo_obj_fun.par
 	An example parameter file for demo4.cxx, used to 
-	compute the objective function value of an image.
+	compute the objective function value of an image and perform 
+	some iterative gradient ascent updates.
 
 generate_image.par
 	An example parameter file for generate_image that allows it
@@ -129,7 +133,9 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
 	$EXE_LOC/demo3 
 
 # demo4
-	$EXE_LOC/demo4 demo4_obj_fun.par
+	$EXE_LOC/demo4 demo_obj_fun.par
+	# Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par".
+	# However, it is quite easy to cause unstable behaviour in the estimates.
 	
 
 What now ?
