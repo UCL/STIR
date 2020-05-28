@@ -24,7 +24,7 @@
   \author Kris Thielemans and Robert Twyman      
 */
 /*
-    Copyright (C) 2004- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2020 University College London
 
     This software is distributed under the terms 
     of the GNU General  Public Licence (GPL)

@@ -1,6 +1,5 @@
 MyStuff parameters :=
 input file := sino.hs
-output filename := my_output
 template image file := image.hv
 back projector type :=  matrix
   Back Projector Using Matrix Parameters :=

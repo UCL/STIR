@@ -100,7 +100,7 @@ cd your-build-dir
 ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
 
 # make the examples
-make demo1 demo2 demo3 demo4
+make demo1 demo2 demo3 demo4_obj_fun
 # optionally install everything, including the demos
 make install
 
@@ -132,8 +132,8 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
 	# the next one will ask the questions interactively
 	$EXE_LOC/demo3 
 
-# demo4
-	$EXE_LOC/demo4 demo_obj_fun.par
+# demo4_obj_fun
+	$EXE_LOC/demo4_obj_fun demo4_obj_fun.par
 	# Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par".
 	# However, it is quite easy to cause unstable behaviour in the estimates.
 	
