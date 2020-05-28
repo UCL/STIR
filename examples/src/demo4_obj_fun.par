@@ -1,5 +1,5 @@
 MyStuff parameters :=
-	image filename := demo3_output.hv
+	image filename := demo3_density.hv
   	objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
   	PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
     projector pair type := Matrix
