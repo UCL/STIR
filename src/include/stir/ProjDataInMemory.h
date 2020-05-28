@@ -86,7 +86,9 @@ public:
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
     
-  /// axpby where all ProjData are ProjDataInMemory
+  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  /// This implementation requires that x and y are ProjDataInMemory
+  /// (else falls back on general method)
   virtual void axpby(const float a, const ProjData& x,
                      const float b, const ProjData& y);
 
@@ -97,16 +99,13 @@ private:
   // deallocated automatically.
   boost::shared_array<float> buffer;
   
-  size_t get_size_of_buffer() const;
+  size_t get_size_of_buffer_in_bytes() const;
 
   //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
   float * create_buffer(const bool initialise_with_0 = false) const;
 
   //! Create a new stream
   shared_ptr<std::iostream> create_stream() const;
-
-  /// Number of elements
-  std::size_t _num_elements;
 };
 
 END_NAMESPACE_STIR
