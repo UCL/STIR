@@ -116,8 +116,8 @@ MyStuff::run()
     *density_sptr += (*gradient_sptr) * step_size;
 
     /////// save density and estimates
-    std::string density_filename = "density_" + std::to_string(k);
-    std::string gradient_filename = "gradient_" + std::to_string(k);
+    std::string density_filename = "demo4_density_" + std::to_string(k);
+    std::string gradient_filename = "demo4_gradient_" + std::to_string(k);
     output_file_format_sptr->write_to_file(density_filename, *density_sptr);
     output_file_format_sptr->write_to_file(gradient_filename, *gradient_sptr);
   }
