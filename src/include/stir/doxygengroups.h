@@ -268,7 +268,13 @@ Everything related to priors, which are used for MAP-type (also knows as
 Classes and functions that are used to make a common interface for the serial
 and parallel implementation of the reconstruction algorithms.
 */
-
+/*!
+\defgroup NiftyPET Wrapped NiftyPET functionality in STIR
+\ingroup recon_buildblock
+Classes and functions that are used to provide an interface to NiftyPET
+functionality. This includes projectors, unlisting and norms and randoms
+estimation. Currently only available for the mMR scanner, and requires CUDA.
+*/
 
 /*!
 \defgroup reconstructors Reconstruction classes

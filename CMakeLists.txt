@@ -30,6 +30,12 @@ PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
+cmake_minimum_required(VERSION 2.8.3)
+if (POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW) # Compiler Id for Apple Clang is AppleClang, see STIR issue #531
+endif()
+  
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
@@ -45,13 +51,15 @@ if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
    (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
     ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  # Ignore undefined template var warning
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
 endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   4)
 set(VERSION_MINOR   0)
-set(VERSION_PATCH   0-alpha)
-set(VERSION   040000) # only used in STIRConfig.h.in
+set(VERSION_PATCH   2)
+set(VERSION   040002) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -88,6 +96,7 @@ option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
+option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -134,6 +143,22 @@ endif()
 
 # Enable version 3 projectors
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
+# NiftyPET projector
+if(NOT DISABLE_NiftyPET_PROJECTOR)
+  find_package(CUDAToolkit QUIET)
+  if (CUDAToolkit_FOUND)
+    find_package(NiftyPET)
+    if (NiftyPET_FOUND)
+      set(STIR_WITH_NiftyPET_PROJECTOR ON)
+    endif()
+  endif()
+endif()
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  message(STATUS "NiftyPET projector support enabled.")
+else()
+  message(STATUS "NiftyPET projector support disabled.")
+endif()
 
 #### enable support for ctest
 ENABLE_TESTING()

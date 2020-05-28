@@ -33,6 +33,7 @@
 */
 
 
+#include "stir/listmode/LmToProjDataAbstract.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/listmode/ListModeData.h"
 #include "stir/ParsingObject.h"
@@ -164,7 +165,7 @@ class ListTime;
 
 */
 
-class LmToProjData : public ParsingObject
+class LmToProjData : public LmToProjDataAbstract
 {
 public:
 
