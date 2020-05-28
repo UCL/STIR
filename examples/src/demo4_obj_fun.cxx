@@ -41,9 +41,8 @@ namespace stir {
 class MyStuff: public ParsingObject
 {
 public:
+  MyStuff();
   void set_defaults();
-  void initialise_keymap();
-  bool post_processing();
   void run();
   typedef DiscretisedDensity<3,float> target_type;
 
@@ -56,7 +55,14 @@ private:
   int num_iterations;
   float step_size;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
+  void initialise_keymap();
+  bool post_processing();
 };
+
+MyStuff::MyStuff()
+{
+  set_defaults();
+}
 
 void
 MyStuff::set_defaults()
@@ -93,7 +99,6 @@ post_processing()
 void
 MyStuff::run()
 {
-
   /////// load initial density from file
   shared_ptr<DiscretisedDensity<3,float> >
     density_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));

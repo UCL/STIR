@@ -37,7 +37,7 @@ demo3.cxx
 	a new class from ParsingObject. One could have a KeyParser object
 	in main() and fill it in directly.
 
-demo4.cxx
+demo_obj_fun.cxx
 	A modified demo3.cxx that computes the objective function 
 	value of the image generated from demo3.cxx.
 	  It illustrates
@@ -68,7 +68,7 @@ demoPM.par
 	model)
 
 demo_obj_fun.par
-	An example parameter file for demo4.cxx, used to 
+	An example parameter file for demo_obj_fun.cxx, used to
 	compute the objective function value of an image and perform 
 	some iterative gradient ascent updates.
 
@@ -124,7 +124,7 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
       
 # demo2
 	$EXE_LOC/demo2
-	# demo2 contains a call stir::display, so you'll see the display immediately ( at least when on Unix)
+	# demo2 contains a call `stir::display`, so you'll see the display immediately ( at least when on Unix)
 
 # demo3
 	$EXE_LOC/demo3 demo.par
