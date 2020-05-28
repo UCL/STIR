@@ -115,6 +115,7 @@ MyStuff::run()
 
   /////// Iteratively compute and add objective function gradients to density_sptr
   /////// Update formula: x_{k+1} = x_k + step_size * gradient
+  /////// Note the lack of positivity constraint on the images.
   for (int k = 0; k < num_iterations; k++) {
     std::cout << "Iteration number: " << k << "\n";
     objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);

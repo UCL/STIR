@@ -136,6 +136,7 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
 	$EXE_LOC/demo4_obj_fun demo4_obj_fun.par
 	# Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par".
 	# However, it is quite easy to cause unstable behaviour in the estimates.
+	# Additionally, there is a lack of positivity constraint on the density images (typical for PET reconstruction).
 	
 
 What now ?
