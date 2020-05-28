@@ -14,6 +14,15 @@
     <p>This release contains mainly code written by
       <ul>
         <li>Kris Thielemans (UCL) for general overview, fixes, help and maintenance</li>
+        <li>Palak Wadhwa (Leeds) addition of support for GE Signa PET/MR, with help from many others, including
+          coding by Ottavia Bertolli (UCL), Nikos Efthimiou (Hull), Elise Emond (UCL) and Kris Thielemans (UCL),
+          and supervision by Ch. Tsoumpas (Leeds). This work received help from GE Healthcare with particular thanks to
+          Gaspar Delso, Kristen Wangerin and Floris Jansen. See the publication for more details<br />
+          Palak Wadwha et al.<br />
+          <cite>PET Image Reconstruction Using Physical and Mathematical Modelling For Time of Flight PET-MR Scanners in the STIR Library</cite><br />
+          Methods 2020,
+          DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
+        </li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior and computation of the log-likelihood modification</li>  
       </ul>
@@ -24,6 +33,9 @@
 
 <h3>New functionality</h3>
 <ul>
+  <li>Reading of GE HDF5 data (GE fileformat RDF 10) for the GE Signa PET/MR, including listmode, sinograms and calibration files.
+    This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
+    will be non-TOF.
   <li>
     Addition of the Relative Difference Prior [J. Nuyts, et al., 2002].
   </li>
@@ -96,6 +108,16 @@ None
 <ul>
 <li></li>
 </ul>
+
+<h3>Build system</h3>
+<ul>
+  <li>To enable the functionality for GE HDF5 files, you will need to first install HDF5 libraries. For most operating systems
+    this can be done via your package manager which we highly recommend. You could also
+    download from the <a href="https://www.hdfgroup.org/downloads/hdf5/">HDF5 group download page</a>.
+  </li>
+</ul>
+
+
 
 <H2>What's new for developers (aside from what should be obvious
 from the above):</H2>

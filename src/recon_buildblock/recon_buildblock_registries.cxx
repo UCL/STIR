@@ -71,6 +71,10 @@
 #endif
 #include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 
+#ifdef HAVE_HDF5
+#include "stir/recon_buildblock/BinNormalisationFromGEHDF5.h"
+#endif
+
 #include "stir/recon_buildblock/FourierRebinning.h"
 
 #ifdef STIR_WITH_NiftyPET_PROJECTOR
@@ -140,6 +144,10 @@ END_NAMESPACE_ECAT
 START_NAMESPACE_ECAT
 static BinNormalisationFromECAT8::RegisterIt dummy103;
 END_NAMESPACE_ECAT
+
+#ifdef HAVE_HDF5
+static GE::RDF_HDF5::BinNormalisationFromGEHDF5::RegisterIt dummy104;
+#endif
 
 static FourierRebinning::RegisterIt dummyFORE;
 
