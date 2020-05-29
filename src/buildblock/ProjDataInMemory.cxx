@@ -74,7 +74,7 @@ create_buffer(const bool initialise_with_0) const
   float *b = new float[this->get_size_of_buffer_in_bytes()/sizeof(float)];
   if (initialise_with_0)
       memset(b, 0, this->get_size_of_buffer_in_bytes());
-  return reinterpret_cast<float*>(b);
+  return b;
 }
 
 shared_ptr<std::iostream>
