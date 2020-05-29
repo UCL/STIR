@@ -37,7 +37,7 @@ demo3.cxx
 	a new class from ParsingObject. One could have a KeyParser object
 	in main() and fill it in directly.
 
-demo_obj_fun.cxx
+demo4_obj_fun.cxx
 	A modified demo3.cxx that computes the objective function 
 	value of the image generated from demo3.cxx.
 	  It illustrates
@@ -68,7 +68,7 @@ demoPM.par
 	model)
 
 demo_obj_fun.par
-	An example parameter file for demo_obj_fun.cxx, used to
+	An example parameter file for demo4_obj_fun.cxx, used to
 	compute the objective function value of an image and perform 
 	some iterative gradient ascent updates.
 
@@ -148,3 +148,4 @@ Good luck
 Kris Thielemans
 12 November 2004
 (with minor updates until 2017)
+Robert Twyman, 2020 (addition of demo4_obj_fun)
