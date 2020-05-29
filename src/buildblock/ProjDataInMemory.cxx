@@ -71,7 +71,7 @@ float *
 ProjDataInMemory::
 create_buffer(const bool initialise_with_0) const
 {
-  char *b = new char[this->get_size_of_buffer_in_bytes()];
+  float *b = new float[this->get_size_of_buffer_in_bytes()/sizeof(float)];
   if (initialise_with_0)
       memset(b, 0, this->get_size_of_buffer_in_bytes());
   return reinterpret_cast<float*>(b);
@@ -174,4 +174,3 @@ axpby(const float a, const ProjData& x,
 }
 
 END_NAMESPACE_STIR
-
