@@ -96,10 +96,12 @@ run_tests()
 {
     // Create scanner and proj data info
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-    shared_ptr<ProjDataInfo> proj_data_info_sptr =
+    shared_ptr<ProjDataInfo>
+      proj_data_info_sptr(
             ProjDataInfo::construct_proj_data_info
             (scanner_sptr,
-             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true);
+             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
+      );
 
     // Create pd1 and pd2
     shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
