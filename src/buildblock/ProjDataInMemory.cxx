@@ -31,6 +31,7 @@
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
 #include "stir/Bin.h"
+#include "stir/is_null_ptr.h"
 #include <fstream>
 #include <cstring>
 
@@ -66,13 +67,13 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   this->sino_stream = this->create_stream();
 }
 
-char *
+float *
 ProjDataInMemory::
 create_buffer(const bool initialise_with_0) const
 {
-  char *b = new char[this->get_size_of_buffer()];
+  float *b = new float[this->get_size_of_buffer_in_bytes()/sizeof(float)];
   if (initialise_with_0)
-      memset(b, 0, this->get_size_of_buffer());
+      memset(b, 0, this->get_size_of_buffer_in_bytes());
   return b;
 }
 
@@ -83,14 +84,14 @@ const
 {
   shared_ptr<std::iostream> output_stream_sptr;
 #ifdef STIR_USE_OLD_STRSTREAM
-  output_stream_sptr.reset(new strstream(buffer.get(), this->get_size_of_buffer(), ios::in | ios::out | ios::binary));
+  output_stream_sptr.reset(new strstream(buffer.get(), this->get_size_of_buffer_in_bytes(), ios::in | ios::out | ios::binary));
 #else
   // Use boost::bufferstream top reallocate.
   // For std::stringstream, the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   output_stream_sptr.reset
-          (new boost::interprocess::bufferstream(this->buffer.get(), this->get_size_of_buffer(), ios::in | ios::out | ios::binary));
+          (new boost::interprocess::bufferstream(reinterpret_cast<char*>(this->buffer.get()), this->get_size_of_buffer_in_bytes(), ios::in | ios::out | ios::binary));
 #endif
 
   if (!*output_stream_sptr)
@@ -125,7 +126,7 @@ ProjDataInMemory (const ProjDataInMemory& proj_data)
 
 size_t
 ProjDataInMemory::
-get_size_of_buffer() const
+get_size_of_buffer_in_bytes() const
 {
   return size_all() * sizeof(float);
 }
@@ -138,5 +139,38 @@ ProjDataInMemory::get_bin_value(Bin& bin)
    return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
 
 }
-END_NAMESPACE_STIR
 
+void
+ProjDataInMemory::
+axpby(const float a, const ProjData& x,
+      const float b, const ProjData& y)
+{
+    // To use this method, we require that all three proj data be ProjDataInMemory
+    // So cast them. If any null pointers, fall back to default functionality
+    const ProjDataInMemory *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
+    const ProjDataInMemory *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
+    // At least one is not ProjDataInMemory, fall back to default
+    if (is_null_ptr(x_pdm) || is_null_ptr(y_pdm)) {
+        ProjData::axpby(a,x,b,y);
+        return;
+    }
+
+    // Else, all are ProjDataInMemory
+
+    // First check that info match
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+            *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
+        error("ProjDataInMemory::axpby: ProjDataInfo don't match");
+
+    // Get number of elements
+    const std::size_t numel = size_all();
+
+    float *buffer = this->buffer.get();
+    const float *x_buffer = x_pdm->buffer.get();
+    const float *y_buffer = y_pdm->buffer.get();
+
+    for (unsigned i=0; i<numel; ++i)
+        buffer[i] = a*x_buffer[i] + b*y_buffer[i];
+}
+
+END_NAMESPACE_STIR

@@ -86,16 +86,23 @@ public:
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
     
+  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  /// This implementation requires that x and y are ProjDataInMemory
+  /// (else falls back on general method)
+  virtual void axpby(const float a, const ProjData& x,
+                     const float b, const ProjData& y);
+
+    
 private:
   // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_array
   // note however that the buffer is not shared. we just use it such that its memory gets 
   // deallocated automatically.
-  boost::shared_array<char> buffer;
+  boost::shared_array<float> buffer;
   
-  size_t get_size_of_buffer() const;
+  size_t get_size_of_buffer_in_bytes() const;
 
   //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
-  char * create_buffer(const bool initialise_with_0 = false) const;
+  float * create_buffer(const bool initialise_with_0 = false) const;
 
   //! Create a new stream
   shared_ptr<std::iostream> create_stream() const;
