@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2013, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -274,6 +275,28 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v)
     this->num[i] /= v;
   this->check_state();
   return *this;
+}
+
+template <class T, class NUMBER>
+inline void
+NumericVectorWithOffset<T, NUMBER>::
+axpby(const NUMBER a, const NumericVectorWithOffset& x,
+      const NUMBER b, const NumericVectorWithOffset& y)
+{  
+  this->check_state();
+  if ((this->get_min_index() != x.get_min_index())
+      || (this->get_min_index() != y.get_min_index())
+      || (this->get_max_index() != x.get_max_index())
+      || (this->get_max_index() != y.get_max_index()))
+       error("NumericVectorWithOffset::axpby: index ranges don't match");
+
+  typename NumericVectorWithOffset::iterator this_iter = this->begin();
+  typename NumericVectorWithOffset::const_iterator x_iter = x.begin();
+  typename NumericVectorWithOffset::const_iterator y_iter = y.begin();
+  while (this_iter != this->end())
+    {
+      *this_iter++ = (*x_iter++) * a + (*y_iter++) * b;
+    }
 }
 
 END_NAMESPACE_STIR
