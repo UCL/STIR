@@ -278,10 +278,11 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v)
 }
 
 template <class T, class NUMBER>
+template <class NUMBER2>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
-axpby(const NUMBER a, const NumericVectorWithOffset& x,
-      const NUMBER b, const NumericVectorWithOffset& y)
+axpby(const NUMBER2 a, const NumericVectorWithOffset& x,
+      const NUMBER2 b, const NumericVectorWithOffset& y)
 {  
   this->check_state();
   if ((this->get_min_index() != x.get_min_index())

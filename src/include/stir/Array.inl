@@ -330,10 +330,11 @@ Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) co
 }				    
 
 template <int num_dimensions, typename elemT>
+template <typename elemT2>
 void
 Array<num_dimensions,elemT>::
-axpby(const elemT a, const Array& x,
-      const elemT b, const Array& y)
+axpby(const elemT2 a, const Array& x,
+      const elemT2 b, const Array& y)
 {  
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())

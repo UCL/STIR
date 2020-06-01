@@ -241,8 +241,9 @@ public:
   //@}
 
   //! a*x+b*y, where a and b are scalar, and x and y are arrays
-  inline virtual void axpby(const elemT a, const Array& x,
-                            const elemT b, const Array& y);
+  template <typename elemT2>
+    inline void axpby(const elemT2 a, const Array& x,
+                      const elemT2 b, const Array& y);
 };
 
 

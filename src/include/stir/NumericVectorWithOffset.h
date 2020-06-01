@@ -127,8 +127,9 @@ public:
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
   //! a*x+b*y, where a and b are scalar, and x and y are vectors
-  inline virtual void axpby(const elemT a, const NumericVectorWithOffset& x,
-                            const elemT b, const NumericVectorWithOffset& y);
+  template <typename elemT2>
+    inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
+                      const elemT2 b, const NumericVectorWithOffset& y);
 
 };
 
