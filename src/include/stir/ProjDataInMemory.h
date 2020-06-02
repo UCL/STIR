@@ -63,6 +63,9 @@ class ProjDataInMemory : public ProjDataFromStream
 {
 public: 
     
+  //! typedef for the data type
+  typedef Array<1,float> DataType;
+    
   //! constructor with only info, but no data
   /*! 
     \param proj_data_info_ptr object specifying all sizes etc.
@@ -92,9 +95,27 @@ public:
   virtual void axpby(const float a, const ProjData& x,
                      const float b, const ProjData& y);
 
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline DataType::full_iterator begin_all()
+  { return buffer.begin_all(); }
+  //! start value for iterating through all elements in the (const) array, see full_iterator
+  inline DataType::const_full_iterator begin_all() const
+  { return buffer.begin_all(); }
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline DataType::const_full_iterator begin_all_const() const
+  { return buffer.begin_all_const(); }
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline DataType::full_iterator end_all()
+  { return buffer.end_all(); }
+  //! end value for iterating through all elements in the (const) array, see full_iterator
+  inline DataType::const_full_iterator end_all() const
+  { return buffer.end_all(); }
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline DataType::const_full_iterator end_all_const() const
+  { return buffer.end_all_const(); }
     
 private:
-  Array<1,float> buffer;
+  DataType buffer;
   
   size_t get_size_of_buffer_in_bytes() const;
 

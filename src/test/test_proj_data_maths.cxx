@@ -119,10 +119,23 @@ run_tests()
     ProjDataInMemory y2(y1);
 
     // Check axpby with general and ProjDataInMemory methods
-    pd1.axpby(2.f,x1,3.f,y1);
-    pd2.ProjData::axpby(2.f,x2,3.f,y2);
+    const float a = 2.f;
+    const float b = 3.f;
+    pd1.axpby(a,x1,b,y1);
+    pd2.ProjData::axpby(a,x2,b,y2);
 
     check_proj_data_are_equal_and_non_zero(pd1,pd2);
+
+    // Check using iterators
+    ProjDataInMemory pd3(pd1);
+    pd3.fill(0.f);
+    auto pd_iter = pd3.begin_all();
+    auto x_iter = x1.begin_all_const();
+    auto y_iter = y1.begin_all_const();
+    while (pd_iter != pd3.end_all())
+        *pd_iter++ = a*(*x_iter++) + b*(*y_iter++);
+
+    check_proj_data_are_equal_and_non_zero(pd1,pd3);
 }
 
 END_NAMESPACE_STIR
