@@ -129,10 +129,10 @@ run_tests()
     // Check using iterators
     ProjDataInMemory pd3(pd1);
     pd3.fill(0.f);
-    Array<1,float>::full_iterator pd_iter = pd3.begin_all();
-    Array<1,float>::const_full_iterator x_iter = x1.begin_all_const();
-    Array<1,float>::const_full_iterator y_iter = y1.begin_all_const();
-    while (pd_iter != pd3.end_all())
+    ProjDataInMemory::full_iterator pd_iter = pd3.begin();
+    ProjDataInMemory::const_full_iterator x_iter = x1.begin();
+    ProjDataInMemory::const_full_iterator y_iter = y1.begin();
+    while (pd_iter != pd3.end())
         *pd_iter++ = a*(*x_iter++) + b*(*y_iter++);
 
     check_proj_data_are_equal_and_non_zero(pd1,pd3);

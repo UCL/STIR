@@ -63,9 +63,6 @@ class ProjDataInMemory : public ProjDataFromStream
 {
 public: 
     
-  //! typedef for the data type
-  typedef Array<1,float> DataType;
-    
   //! constructor with only info, but no data
   /*! 
     \param proj_data_info_ptr object specifying all sizes etc.
@@ -95,27 +92,25 @@ public:
   virtual void axpby(const float a, const ProjData& x,
                      const float b, const ProjData& y);
 
+  //! typedefs to simplify iterator
+  typedef Array<1,float>::full_iterator full_iterator;
+  typedef Array<1,float>::const_full_iterator const_full_iterator;
+
   //! start value for iterating through all elements in the array, see full_iterator
-  inline DataType::full_iterator begin_all()
-  { return buffer.begin_all(); }
+  inline full_iterator begin()
+  { return buffer.begin(); }
   //! start value for iterating through all elements in the (const) array, see full_iterator
-  inline DataType::const_full_iterator begin_all() const
-  { return buffer.begin_all(); }
-  //! start value for iterating through all elements in the array, see full_iterator
-  inline DataType::const_full_iterator begin_all_const() const
-  { return buffer.begin_all_const(); }
+  inline const_full_iterator begin() const
+  { return buffer.begin(); }
   //! end value for iterating through all elements in the array, see full_iterator
-  inline DataType::full_iterator end_all()
-  { return buffer.end_all(); }
+  inline full_iterator end()
+  { return buffer.end(); }
   //! end value for iterating through all elements in the (const) array, see full_iterator
-  inline DataType::const_full_iterator end_all() const
-  { return buffer.end_all(); }
-  //! end value for iterating through all elements in the array, see full_iterator
-  inline DataType::const_full_iterator end_all_const() const
-  { return buffer.end_all_const(); }
-    
+  inline const_full_iterator end() const
+  { return buffer.end(); }
+
 private:
-  DataType buffer;
+  Array<1,float> buffer;
   
   size_t get_size_of_buffer_in_bytes() const;
 
