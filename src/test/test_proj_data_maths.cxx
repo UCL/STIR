@@ -129,9 +129,9 @@ run_tests()
     // Check using iterators
     ProjDataInMemory pd3(pd1);
     pd3.fill(0.f);
-    ProjDataInMemory::full_iterator pd_iter = pd3.begin();
-    ProjDataInMemory::const_full_iterator x_iter = x1.begin();
-    ProjDataInMemory::const_full_iterator y_iter = y1.begin();
+    ProjDataInMemory::iterator pd_iter = pd3.begin();
+    ProjDataInMemory::const_iterator x_iter = x1.begin();
+    ProjDataInMemory::const_iterator y_iter = y1.begin();
     while (pd_iter != pd3.end())
         *pd_iter++ = a*(*x_iter++) + b*(*y_iter++);
 
