@@ -92,7 +92,41 @@ public:
   virtual void axpby(const float a, const ProjData& x,
                      const float b, const ProjData& y);
 
-    
+  /** @name iterator typedefs
+   *  iterator typedefs
+   */
+  ///@{
+  typedef Array<1,float>::iterator iterator;
+  typedef Array<1,float>::const_iterator const_iterator;
+  typedef Array<1,float>::full_iterator full_iterator;
+  typedef Array<1,float>::const_full_iterator const_full_iterator;
+  ///@}
+
+  //! start value for iterating through all elements in the array, see iterator
+  inline iterator begin()
+  { return buffer.begin(); }
+  //! start value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator begin() const
+  { return buffer.begin(); }
+  //! end value for iterating through all elements in the array, see iterator
+  inline iterator end()
+  { return buffer.end(); }
+  //! end value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator end() const
+  { return buffer.end(); }
+  //! start value for iterating through all elements in the array, see iterator
+  inline iterator begin_all()
+  { return buffer.begin_all(); }
+  //! start value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator begin_all() const
+  { return buffer.begin_all(); }
+  //! end value for iterating through all elements in the array, see iterator
+  inline iterator end_all()
+  { return buffer.end_all(); }
+  //! end value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator end_all() const
+  { return buffer.end_all(); }
+
 private:
   Array<1,float> buffer;
   
