@@ -64,6 +64,14 @@ if (@ITK_FOUND@)
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
+if (@HDF5_FOUND@)
+  message(STATUS "HDF5 support in STIR enabled.")
+  find_package(HDF5 @HDF5_VERSION@ COMPONENTS CXX REQUIRED)
+  include_directories(${HDF5_INCLUDE_DIRS})
+
+  set(STIR_BUILT_WITH_HDF5 TRUE)
+endif()
+
 if (@LLN_FOUND@)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support in STIR enabled.")
