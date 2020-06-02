@@ -239,6 +239,11 @@ public:
   inline const elemT&
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
+
+  //! a*x+b*y, where a and b are scalar, and x and y are arrays
+  template <typename elemT2>
+    inline void axpby(const elemT2 a, const Array& x,
+                      const elemT2 b, const Array& y);
 };
 
 
@@ -425,8 +430,6 @@ public:
   inline const elemT&
     at(const BasicCoordinate<1,int> &c) const;
   //@}
-
-  
 };
 
 

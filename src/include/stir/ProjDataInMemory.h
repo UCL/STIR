@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2019, UCL
+    Copyright (C) 2019-2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #define __stir_ProjDataInMemory_H__
 
 #include "stir/ProjDataFromStream.h" 
-#include "boost/shared_array.hpp"
+#include "stir/Array.h"
 #include <string>
 
 /* Implementation note (KT)
@@ -94,18 +94,15 @@ public:
 
     
 private:
-  // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_array
-  // note however that the buffer is not shared. we just use it such that its memory gets 
-  // deallocated automatically.
-  boost::shared_array<float> buffer;
+  Array<1,float> buffer;
   
   size_t get_size_of_buffer_in_bytes() const;
 
   //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
-  float * create_buffer(const bool initialise_with_0 = false) const;
+  void create_buffer(const bool initialise_with_0 = false);
 
   //! Create a new stream
-  shared_ptr<std::iostream> create_stream() const;
+  void create_stream();
 };
 
 END_NAMESPACE_STIR

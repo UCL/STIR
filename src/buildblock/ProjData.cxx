@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
-    Copyright (C) 2015, University College London
+    Copyright (C) 2015, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -439,16 +439,7 @@ axpby(const float a, const ProjData& x,
         SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
         const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
         const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
-        SegmentBySinogram<float>::full_iterator seg_iter;
-        SegmentBySinogram<float>::const_full_iterator sx_iter;
-        SegmentBySinogram<float>::const_full_iterator sy_iter;
-        for (seg_iter = seg.begin_all(),
-            sx_iter = sx.begin_all(), sy_iter = sy.begin_all();
-            seg_iter != seg.end_all() &&
-            sx_iter != sx.end_all() && sy_iter != sy.end_all();
-        /*empty*/) {
-            *seg_iter++ = a*(*sx_iter++) + b*(*sy_iter++);
-        }
+        seg.axpby(a, sx, b, sy);
         set_segment(seg);
     }
 }
