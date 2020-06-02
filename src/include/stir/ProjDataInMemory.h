@@ -108,6 +108,18 @@ public:
   //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end() const
   { return buffer.end(); }
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline full_iterator begin_all()
+  { return buffer.begin_all(); }
+  //! start value for iterating through all elements in the (const) array, see full_iterator
+  inline const_full_iterator begin_all() const
+  { return buffer.begin_all(); }
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline full_iterator end_all()
+  { return buffer.end_all(); }
+  //! end value for iterating through all elements in the (const) array, see full_iterator
+  inline const_full_iterator end_all() const
+  { return buffer.end_all(); }
 
 private:
   Array<1,float> buffer;
