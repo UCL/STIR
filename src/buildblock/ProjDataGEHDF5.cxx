@@ -49,20 +49,20 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                                    const std::string& input_filename) :
     ProjData()
 {
     m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
     exam_info_sptr = m_input_hdf5_sptr->get_exam_info_sptr();
-    proj_data_info_ptr = input_proj_data_info_sptr;
+    proj_data_info_sptr = input_proj_data_info_sptr->create_shared_clone();
 
     initialise_segment_sequence();
     initialise_ax_pos_offset();
     initialise_viewgram_buffer();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                                    shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
 {
@@ -73,8 +73,8 @@ ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_spt
     initialise_viewgram_buffer();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
-                                   shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ExamInfo> input_exam_info_sptr,
+                                   shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                                    shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
 {

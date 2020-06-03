@@ -55,15 +55,15 @@ public:
 
     static ProjDataGEHDF5* ask_parameters(const bool on_disk = true);
 
-    explicit ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+    explicit ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                               const std::string& input_filename);
 
-    explicit ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+    explicit ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
 
     explicit ProjDataGEHDF5
-      (shared_ptr<ExamInfo> input_exam_info_sptr,
-                              shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+      (shared_ptr<const ExamInfo> input_exam_info_sptr,
+                              shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<GEHDF5Wrapper> input_hdf5);
 
 private:

@@ -86,13 +86,13 @@ int main(int argc, char **argv)
 
   ProjDataInterfile
     proj_data(template_projdata_ptr->get_exam_info_sptr(),
-              template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+              template_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone(),
           output_file_name);
 
   const int num_rings =
-    template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
+    template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring =
-    template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
+    template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_detectors_per_ring();
 #if 0
   const int num_tangential_crystals_per_block = 8;
   const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
   {
     const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (proj_data.get_proj_data_info_ptr());
+      (proj_data.get_proj_data_info_sptr().get());
     if (proj_data_info_ptr == 0)
       {
     error("Can only process not arc-corrected data\n");
