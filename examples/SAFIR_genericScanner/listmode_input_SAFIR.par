@@ -1,0 +1,5 @@
+CListModeDataSAFIR Parameters:=
+        listmode data filename:= coincidencesLM.clm.safir
+        crystal map filename:= DualRingPrototype_crystal_map.txt
+        template projection data filename:= muppet.hs
+END CListModeDataSAFIR Parameters:=

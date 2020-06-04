@@ -30,13 +30,22 @@
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
   \author PARAPET project
+  \author Parisa Khateri
+
 */
 #ifndef __stir_buildblock_SCANNER_H__
 #define __stir_buildblock_SCANNER_H__
 
 #include "stir/DetectionPosition.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <string>
 #include <list>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include <boost/unordered_map.hpp>
 
 START_NAMESPACE_STIR
 
@@ -139,7 +148,14 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f);
+          float reference_energy_v = -1.0f,
+          const std::string& scanner_orientation_v = "",
+          const std::string& scanner_geometry_v = "",
+          float axial_crystal_spacing_v = -1.0f,
+          float transaxial_crystal_spacing_v = -1.0f,
+          float axial_block_spacing_v = -1.0f,
+          float transaxial_block_spacing_v = -1.0f,
+          const std::string& crystal_map_file_name = "");
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -158,7 +174,14 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f);
+          float reference_energy_v = -1.0f,
+          const std::string& scanner_orientation_v = "",
+          const std::string& scanner_geometry_v = "",
+          float axial_crystal_spacing_v = -1.0f,
+          float transaxial_crystal_spacing_v = -1.0f,
+          float axial_block_spacing_v = -1.0f,
+          float transaxial_block_spacing_v = -1.0f,
+          const std::string& crystal_map_file_name = "");
 
 
 
@@ -277,6 +300,26 @@ class Scanner
   int get_num_virtual_transaxial_crystals_per_block() const;
   //@}
 
+  //! \name functions to get block geometry info
+  //@{
+  //! get scanner orientation
+  inline std::string get_scanner_orientation() const;
+  //! get scanner geometry
+  inline std::string get_scanner_geometry() const;
+  //! get crystal spacing in axial direction
+  inline float get_axial_crystal_spacing() const;
+  //! get crystal spacing in transaxial direction
+  inline float get_transaxial_crystal_spacing() const;
+  //! get block spacing in axial direction
+  inline float get_axial_block_spacing() const;
+  //! get block spacing in transaxial direction
+  inline float get_transaxial_block_spacing() const;
+  //@} (end of get block geometry info)
+  
+  //! \name functions to get generic geometry info
+  //! get crystal map file name
+  inline std::string get_crystal_map_file_name() const;
+  
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)
@@ -332,6 +375,21 @@ class Scanner
   //! set number of transaxial crystals per singles unit
   inline void set_num_transaxial_crystals_per_singles_unit(const int & new_num);
   // TODO accomodate more complex geometries of singles units.
+  //@{
+  //! name functions to set block geometry info
+  //! set scanner orientation
+  inline void set_scanner_orientation(const std::string& new_scanner_orientation);
+  //! set scanner geometry
+  inline void set_scanner_geometry(const std::string& new_scanner_geometry);
+  //! set crystal spacing in axial direction
+  inline void set_axial_crystal_spacing(const float & new_spacing);
+  //! set crystal spacing in transaxial direction
+  inline void set_transaxial_crystal_spacing(const float & new_spacing);
+  //! set block spacing in axial direction
+  inline void set_axial_block_spacing(const float & new_spacing);
+  //! set block spacing in transaxial direction
+  inline void set_transaxial_block_spacing(const float & new_spacing);
+  //@} (end of block geometry info)
 
   //@} (end of block/bucket info)
   //! set the energy resolution of the system
@@ -342,7 +400,6 @@ class Scanner
   inline void set_reference_energy(const float new_num);
 
   inline bool has_energy_information() const;
-  //@} (end of set info)
   //@} (end of set info)
   
   // Calculate a singles bin index from axial and transaxial singles bin coordinates.
@@ -359,6 +416,12 @@ class Scanner
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
+  // Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
+  // used in CListRecordSAFIR.inl for accessing the coordinates
+  inline stir::DetectionPosition<> get_detpos_given_id(const stir::DetectionPosition<> det_pos) const;
+  // Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
+  // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
+  inline stir::CartesianCoordinate3D<float> get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const;
 
 private:
   Type type;
@@ -398,6 +461,39 @@ private:
   //! A negative value indicates, unknown.
   float reference_energy;
 
+  //!
+  //! \brief scanner info needed for block geometry
+  //! \author Parisa Khateri
+  //! A negative value indicates unknown.
+  std::string scanner_orientation;       /*! scanner orientation */
+  std::string scanner_geometry;          /*! scanner geometry */
+  float axial_crystal_spacing;           /*! crystal pitch in axial direction in mm*/
+  float transaxial_crystal_spacing;      /*! crystal pitch in transaxial direction in mm*/
+  float axial_block_spacing;             /*! block pitch in axial direction in mm*/
+  float transaxial_block_spacing;        /*! block pitch in transaxial direction in mm*/
+  
+  //!
+  //!\brief map and hash function for saving the coords in generic geometry
+  //!\author Michael Roethlisberger
+  struct ihash
+    : std::unary_function<stir::DetectionPosition<> , std::size_t>
+  {
+    std::size_t operator()(stir::DetectionPosition<>  const& detpos) const
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, detpos.axial_coord());
+        boost::hash_combine(seed, detpos.radial_coord());
+        boost::hash_combine(seed, detpos.tangential_coord());
+        return seed;
+    }
+  };
+  boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> input_index_to_stir_index;
+  boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> stir_index_to_coord;
+  std::string crystal_map_file_name;
+
+  // function to create the maps
+  void read_detectormap_from_file( const std::string& filename );
+
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -414,7 +510,14 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f);
+                  float reference_energy = -1.0f,
+                  const std::string& scanner_orientation_v = "",
+                  const std::string& scanner_geometry_v = "",
+                  float axial_crystal_spacing_v = -1.0f,
+                  float transaxial_crystal_spacing_v = -1.0f,
+                  float axial_block_spacing_v = -1.0f,
+                  float transaxial_block_spacing_v = -1.0f,
+                  const std::string& crystal_map_file_name = "");
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -432,7 +535,14 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f);
+                  float reference_energy = -1.0f,
+                  const std::string& scanner_orientation_v = "",
+                  const std::string& scanner_geometry_v = "",
+                  float axial_crystal_spacing_v = -1.0f,
+                  float transaxial_crystal_spacing_v = -1.0f,
+                  float axial_block_spacing_v = -1.0f,
+                  float transaxial_block_spacing_v = -1.0f,
+                  const std::string& crystal_map_file_name = "");
 
 
 };

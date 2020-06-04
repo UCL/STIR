@@ -9,6 +9,7 @@
   \brief defines various classes for specifying a line in 3 dimensions
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
+  \author Parisa Khateri
 
 
 */
@@ -308,6 +309,11 @@ class LORAs2Points : public LOR<coordT>
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
 				    const double radius) const;
+ 
+ //! Calculate intersections with block. Used in: ProjDataInfoBlocksOnCylindrical::get_LOR
+  Succeeded
+  change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
+          const double radius) const;
 
  private:
   CartesianCoordinate3D<coordT> _p1;
