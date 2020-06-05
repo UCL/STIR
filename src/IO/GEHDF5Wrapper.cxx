@@ -69,6 +69,7 @@ GEHDF5Wrapper::GEHDF5Wrapper()
 
 GEHDF5Wrapper::GEHDF5Wrapper(const std::string& filename)
 {
+    //AB TODO Find out of file is RDF9 or RDF10
     if(!file.isHdf5(filename))
         error("GEHDF5Wrapper: The input file is not HDF5! Abort.");
 
@@ -168,6 +169,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
     int default_num_arccorrected_bins = max_num_non_arccorrected_bins;
     float inner_ring_radius = physical_scanner_radius;
+    //AB TODO check if following is valid
     float average_depth_of_interaction = 0.5f*inner_ring_diameter-physical_scanner_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
