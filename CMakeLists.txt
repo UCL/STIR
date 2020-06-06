@@ -98,7 +98,7 @@ option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK QUIET)
+   find_package(ITK 4.9 QUIET)
    if (ITK_FOUND)
       include(${ITK_USE_FILE})
    endif()
