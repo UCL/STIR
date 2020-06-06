@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013, 2020 University College London
 
     This file is part of STIR.
 
@@ -729,6 +729,15 @@ ArrayTests::run_tests()
       // KT 20/12/2001 made check_if_zero compare relative to 1 by dividing
       check_if_zero( (test4.sum() + 2*tmp2.sum() - tmp.sum())/test4.sum(), 
                      "test operator+(float)");
+    }
+
+    // test apxby
+    {
+      Array<4,float> tmp(test4.get_index_range());
+      Array<4,float> tmp2(test4+2);
+      tmp.axpby(2.F, test4, 3.3F, tmp2);
+      const Array<4,float> by_hand = test4*2.F + (test4+2)*3.3F;
+      check_if_equal(tmp, by_hand, "test apxby (Array4D)");
     }
   }
 
