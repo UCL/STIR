@@ -102,6 +102,13 @@ class FBP2DReconstruction :
             Reconstruction < DiscretisedDensity < 3,float> >,
             AnalyticReconstruction
          > base_type;
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+ public:
+#else
+ private: 
+#endif  
     typedef DiscretisedDensity < 3,float> TargetT;
 public:
     //! Name which will be used when parsing a ProjectorByBinPair object
