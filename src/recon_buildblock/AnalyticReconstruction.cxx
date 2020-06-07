@@ -162,8 +162,10 @@ Succeeded
 AnalyticReconstruction::
 reconstruct(shared_ptr<TargetT> const& target_image_sptr)
 {
-  this->set_up(target_image_sptr);
-  const Succeeded success = this->actual_reconstruct(target_image_sptr);
+  Succeeded success = this->set_up(target_image_sptr);
+  if (success == Succeeded::no)
+    error("AnalyticReconstruction::set_up() failed");
+  success = this->actual_reconstruct(target_image_sptr);
   if (success == Succeeded::yes)
   {
     if(!is_null_ptr(this->post_filter_sptr))
