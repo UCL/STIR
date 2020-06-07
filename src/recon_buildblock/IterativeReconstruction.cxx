@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018 - 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -374,6 +374,9 @@ template <typename TargetT>
 TargetT *
 IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 {
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling get_initial_data_ptr");
+
   if(this->initial_data_filename=="0")
   {
     return this->objective_function_sptr->construct_target_ptr();
@@ -623,6 +626,8 @@ IterativeReconstruction<TargetT>::
 set_input_data(const shared_ptr<ExamData> &arg)
 {
   this->_already_set_up = false;
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling set_input_data");
   this->objective_function_sptr->set_input_data(arg);
 }
 
@@ -631,6 +636,8 @@ const ExamData&
 IterativeReconstruction<TargetT>::
 get_input_data() const
 {
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling get_input_data");
   return this->objective_function_sptr->get_input_data();
 }
 

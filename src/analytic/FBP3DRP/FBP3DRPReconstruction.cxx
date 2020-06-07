@@ -9,7 +9,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -365,44 +365,43 @@ FBP3DRPReconstruction::FBP3DRPReconstruction()
   set_defaults();
 }
 
+Succeeded
+FBP3DRPReconstruction::
+set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr)
+{
+  if (base_type::set_up(target_image_sptr) == Succeeded::no)
+    return Succeeded::no;
+
+  if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
+    error("FBP3DRP currently needs cylindrical projection data. Sorry");
+
+  if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
+    error("stretch factors for Colsher filter have to be at least 1");
+
+  if (PadS<1 || PadZ<1)
+    warning("Transaxial extension for FFT:=0 (or axial) should \n"
+            "ONLY be used when the non-zero data\n"
+            "occupy only half of the FOV. Otherwise aliasing will occur!");
+
+  if (is_null_ptr(back_projector_sptr))
+    error("Back projector not set.");
+
+  if (is_null_ptr(forward_projector_sptr))
+    error("Forward projector not set.");
+  return Succeeded::yes;
+}
+
 Succeeded 
 FBP3DRPReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
 {
+  this->check(*target_image_ptr);
   VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<VoxelsOnCartesianGrid<float> &>(*target_image_ptr);
   // set default values such that it will work also in the case of already_2D_recon
   alpha_fit = 1.0F;
   beta_fit = 0.0F;
 
-  // TODO move to post_processing()
-  {
-    if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
-      error("FBP3DRP currently needs cylindrical projection data. Sorry\n");
-
-    if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
-      {
-	warning("stretch factors for Colsher filter have to be at least 1");
-	return Succeeded::no;
-      }
-    
-    if (PadS<1 || PadZ<1)
-      warning("Transaxial extension for FFT:=0 (or axial) should \n"
-	      "ONLY be used when the non-zero data\n"
-	      "occupy only half of the FOV. Otherwise aliasing will occur!");
-      
-    if (is_null_ptr(back_projector_sptr))
-      {
-	warning("Back projector not set.\n");
-	return Succeeded::no;
-      }
-    if (is_null_ptr(forward_projector_sptr))
-      {
-	warning("Forward projector not set.\n");
-	return Succeeded::no;
-      }
-
-  }
   start_timers();
   {
     //char file[max_filename_length];
@@ -603,6 +602,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
 				num_segments_to_combine);
     full_log << "Parameters of the 2D FBP reconstruction" << endl;
     full_log << recon2d.parameter_info()<< endl;
+    recon2d.set_up(image_estimate_density_ptr);
     recon2d.reconstruct(image_estimate_density_ptr);
   }
 

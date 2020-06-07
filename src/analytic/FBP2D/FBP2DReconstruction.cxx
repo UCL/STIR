@@ -123,6 +123,9 @@ Succeeded
 FBP2DReconstruction::
 set_up(shared_ptr <FBP2DReconstruction::TargetT > const& target_data_sptr)
 {
+  if (base_type::set_up(target_data_sptr) == Succeeded::no)
+    return Succeeded::no;
+
   if (fc_ramp<=0 || fc_ramp>.5000000001)
     error(boost::format("Cut-off frequency has to be between 0 and .5 but is %g") % fc_ramp);
 

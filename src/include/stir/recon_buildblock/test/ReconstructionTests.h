@@ -27,6 +27,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/ArrayFunction.h"
+#include "stir/SeparableGaussianImageFilter.h"
 
 START_NAMESPACE_STIR
 
@@ -96,6 +97,7 @@ construct_input_data()
                                       /*num_views=*/128,
                                       /*num_tang_poss=*/128));
       shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+      exam_info_sptr->imaging_modality = ImagingModality::PT;
       _proj_data_sptr.reset(new ProjDataInMemory (exam_info_sptr, proj_data_info_sptr));
     }
   else
@@ -121,6 +123,12 @@ construct_input_data()
                                    /*radius_x*/90.F,
                                    CartesianCoordinate3D<float>(0.F,0.F,0.F));
       cylinder.construct_volume(*vox_sptr, CartesianCoordinate3D<int>(2,2,2));
+
+      // filter it a bit to avoid too high frequency stuff creating trouble in the comparison
+      SeparableGaussianImageFilter<float> filter;
+      filter.set_fwhms(make_coordinate(5.F,5.F,5.F));
+      filter.set_up(*vox_sptr);
+      filter.apply(*vox_sptr);
       this->_input_density_sptr = vox_sptr;
     }
   else
@@ -148,12 +156,18 @@ reconstruct()
 {
   this->_recon_sptr->set_input_data(this->_proj_data_sptr);
   this->_recon_sptr->set_disable_output(true);
+  // set a prefix anyway, as some reconstruction algorithms write some files even with disabled output
+  this->_recon_sptr->set_output_filename_prefix("test_recon_" + this->_recon_sptr->method_info());
   if (this->_recon_sptr->set_up(this->_input_density_sptr)==Succeeded::no)
     error("recon::set_up() failed");
   
   shared_ptr<TargetT> output_sptr(this->_input_density_sptr->get_empty_copy());
   if (this->_recon_sptr->reconstruct(output_sptr)==Succeeded::no)
     error("recon::reconstruct() failed");
+
+  std::cerr << "\n================================\nReconstruction "
+            << this->_recon_sptr->method_info()
+            << " finished!\n\n";
   return output_sptr;
 }
 
@@ -176,9 +190,10 @@ compare(const shared_ptr<const TargetT> output_sptr)
       !check_if_less(diff_max/max_input, .3F, "relative diff max") ||
       !check_if_less(mean_abs_error/max_input, .01F, "relative mean abs diff"))
     {
-      write_to_file("test_recon_output.hv", *output_sptr);
-      write_to_file("test_recon_original.hv", *this->_input_density_sptr);
-      write_to_file("test_recon_diff.hv", *diff_sptr);
+      const std::string prefix = "test_recon_" + this->_recon_sptr->method_info();
+      write_to_file(prefix + "_output.hv", *output_sptr);
+      write_to_file(prefix + "_original.hv", *this->_input_density_sptr);
+      write_to_file(prefix + "_diff.hv", *diff_sptr);
     }
 }
 
