@@ -59,7 +59,7 @@ void
 TestFBP2D::
 run_tests()
 {
-  std::cerr << "Tests for FB2D\n";
+  std::cerr << "Tests for FBP2D\n";
 
   try {
     this->construct_input_data();
@@ -89,7 +89,6 @@ run_tests()
       }
     catch (...)
       {
-        everything_ok = true;
       }
   }
 }

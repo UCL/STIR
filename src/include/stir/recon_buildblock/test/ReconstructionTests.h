@@ -25,6 +25,8 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/IO/write_to_file.h"
+#include "stir/ArrayFunction.h"
 
 START_NAMESPACE_STIR
 
@@ -164,9 +166,20 @@ compare(const shared_ptr<const TargetT> output_sptr)
   *diff_sptr -= *this->_input_density_sptr;
   const float diff_min = diff_sptr->find_min();
   const float diff_max = diff_sptr->find_max();
-  const float mean_input = this->_input_density_sptr->sum() / this->_input_density_sptr->size_all();
-  check_if_less(diff_min/mean_input, -0.01F, "relative diff min");
-  check_if_less(-.01F, diff_max/mean_input, "relative diff max");
+  const float max_input = this->_input_density_sptr->find_max();
+  in_place_abs(*diff_sptr);
+  const float mean_abs_error=diff_sptr->sum() / this->_input_density_sptr->size_all();
+  std::cerr << "Reconstruction diff relative range: "
+            << "[" << diff_min/max_input << ", " << diff_max/max_input << "]\n"
+            << "mean abs diff normalised was " << mean_abs_error/max_input << "\n";
+  if (!check_if_less(-0.3F, diff_min/max_input, "relative diff min") ||
+      !check_if_less(diff_max/max_input, .3F, "relative diff max") ||
+      !check_if_less(mean_abs_error/max_input, .01F, "relative mean abs diff"))
+    {
+      write_to_file("test_recon_output.hv", *output_sptr);
+      write_to_file("test_recon_original.hv", *this->_input_density_sptr);
+      write_to_file("test_recon_diff.hv", *diff_sptr);
+    }
 }
 
 END_NAMESPACE_STIR
