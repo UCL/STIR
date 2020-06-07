@@ -107,6 +107,10 @@ CListModeDataROOT(const std::string& hroot_filename)
         {
             error(error_str.c_str());
         }
+        if (default_num_arccorrected_bins == -1)
+        {
+            default_num_arccorrected_bins = max_num_non_arccorrected_bins;
+        }
 
         this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                              std::string ("ROOT_defined_scanner"),
@@ -306,7 +310,6 @@ check_scanner_definition(std::string& ret)
     if ( num_rings == -1 ||
          num_detectors_per_ring == -1 ||
          max_num_non_arccorrected_bins == -1 ||
-         default_num_arccorrected_bins == -1 ||
          inner_ring_diameter == -1.f ||
          average_depth_of_interaction == -1.f ||
          ring_spacing == -.1f ||
@@ -322,9 +325,6 @@ check_scanner_definition(std::string& ret)
 
        if (max_num_non_arccorrected_bins == -1)
            stream << "Maximum number of non-arc-corrected bins := \n";
-
-       if (default_num_arccorrected_bins == -1)
-           stream << "Default number of arc-corrected bins := \n";
 
        if (inner_ring_diameter == -1)
            stream << "Inner ring diameter (cm) := \n";
