@@ -33,35 +33,32 @@ get_num_dets_per_ring() const
                             this->submodule_repeater_y * this->crystal_repeater_y);
 }
 
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_transaxial_blocks_per_bucket_v() const
+{
+    return this->submodule_repeater_y;
+}
 
 int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_axial_blocks_per_bucket_v() const
 {
-    return this->module_repeater_z;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_transaxial_blocks_per_bucket_v() const
-{
-    return this->module_repeater_y;
+    return this->submodule_repeater_z;
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_axial_crystals_per_block_v() const
 {
-    return static_cast<int>(this->crystal_repeater_z *
-                            this->module_repeater_z);
+    return this->crystal_repeater_z;
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_transaxial_crystals_per_block_v() const
 {
-    return static_cast<int>(this->crystal_repeater_y *
-                            this->module_repeater_y);
+    return this->crystal_repeater_y;
 }
 
 int
