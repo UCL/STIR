@@ -230,7 +230,7 @@ Succeeded GEHDF5Wrapper::initialise_exam_info()
     timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
     std::vector<std::pair<double, double> >tf(num_time_slices);
 
-    for (int i = 0; i < num_time_slices; ++i)
+    for (unsigned int i = 0; i < num_time_slices; ++i)
     {
         tf[i].first = i;
         tf[i].second = i + 1;
