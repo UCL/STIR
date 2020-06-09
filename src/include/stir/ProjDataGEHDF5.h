@@ -30,8 +30,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __ProjDataGEDF5_H__
-#define __ProjDataGEDF5_H__
+#ifndef __ProjDataGEHDF5_H__
+#define __ProjDataGEHDF5_H__
 
 #include "stir/ProjData.h"
 #include "stir/IO/GEHDF5Wrapper.h"
