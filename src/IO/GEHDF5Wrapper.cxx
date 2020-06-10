@@ -252,7 +252,8 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
         {
             m_address = "/ListData/listData";
             //! \todo Get these numbers from the HDF5 file
-            // AB: todo my file does not have anything in this address
+            // AB: todo my file does not have anything in this addres. 
+            // AB only *.BLF file has this address, but not the below variables.
             {
             m_size_of_record_signature = 6;
             m_max_size_of_record = 16;
@@ -286,7 +287,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
     {
         if(is_signa) //AB todo "is_RDF9"
         {
-            m_address = "/Singles/CrystalSingles/sample1"; //AB: todo. '/slms/inm/research/moco/PhantomData_Orsay/R00037/raw/rdf.0' had ./sample1 but ./sample was written here. ?? typo?
+            m_address = "/Singles/CrystalSingles/sample1"; //AB: todo. the 2 datasets I have access to  had ./sample1 but ./sample was written here. ?? typo?
             // Get the DataSpace (metadata) corresponding to the DataSet that we want to read
             m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
             m_dataspace = m_dataset_sptr->getSpace();
@@ -295,9 +296,9 @@ Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
             hsize_t dims[rank];
             // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
             // Read size of dimensions
-            m_dataspace.getSimpleExtentDims( dims, NULL); // AB: Do we want the max_dims?
+            m_dataspace.getSimpleExtentDims( dims, NULL); 
 
-            // AB todo: I think it returs dataspace_Ndims==2, test.
+            // AB todo: I think it returs dataspace_Ndims==2, test. Is Z necesary?
             // AB todo: MATLAB reader returns [448 45] yet here it was written NX=45 NY=448. row/colun major issue, or actual difference? test
 
             m_NX_SUB = dims[1];    // hyperslab dimensions
@@ -325,7 +326,7 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
         if(is_signa) // AB todo "is_RDF9"
         {
             m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view";
-            // AB: todo norm3d, geo3d, rdf.0 do not have this info. 
+            // AB: todo norm3d, geo3d, rdf.0 do not have this info. Only rdf.0 has "Segment2/3D_TOF_Sinogram", but no "view" in sight. 
             if(view_num > 0)
             {
                 std::ostringstream datasetname;
@@ -333,7 +334,6 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
                 m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
                 m_dataspace = m_dataset_sptr->getSpace();
 
-//                m_memspace_ptr = new H5::DataSpace()
             }
             //! \todo Get these numbers from the HDF5 file
             {
@@ -372,18 +372,11 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
                 datasetname << m_address << slice_num;
                 m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
                 m_dataspace = m_dataset_sptr->getSpace();
-                // PW here I output the dataspace dimensions and order to be correctly translated in the main code.
-                // AB todo get rid of PW comment?
+
                 // Read dimensions
                 const int rank = m_dataspace.getSimpleExtentNdims();
                 hsize_t dims[2];
                 m_dataspace.getSimpleExtentDims( dims, NULL);
-                // AB todo : remove all this? seems clutter. 
-            //      int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
-                        std::cout << "rank " << rank << ", dimensions " <<
-                            (unsigned long)(dims[0]) << " x " <<
-                            (unsigned long)(dims[1]) << std::endl;
-    //                m_memspace_ptr = new H5::DataSpace()
 
                 // AB todo: MATLAB reader returns [357 1981] yet here it was written NX=1981 NY=357. row/colun major issue, or actual difference? test
                 // AB todo: z?
@@ -418,13 +411,8 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
             hsize_t dims[rank];
             // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
             // Read size of dimensions
-            m_dataspace.getSimpleExtentDims( dims, NULL); // AB: Do we want the max_dims?
+            m_dataspace.getSimpleExtentDims( dims, NULL);
 
-            // AB: todo, is this debugging residue? should we just remove?
-            // int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
-                 std::cout << "rank " << rank << ", dimensions " <<
-                     (unsigned long)(dims[0]) << " x " <<
-                     (unsigned long)(dims[1]) << std::endl;
 
             // AB todo: MATLAB reader returns [896 45] yet here it was written NX=45 NY=448. row/colun major issue, or actual difference? test
             // AB todo: IMPORTANT. Notice the numbers, they are different. the values that were here are different that what I see in norm3d
