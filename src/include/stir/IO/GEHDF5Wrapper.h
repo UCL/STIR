@@ -64,7 +64,7 @@ public:
 
     Succeeded initialise_singles_data(const std::string& path = "");
 
-    Succeeded initialise_proj_data_data(const std::string& path = "",
+    Succeeded initialise_proj_data(const std::string& path = "",
                                         const unsigned int view_num = 0);
     //PW Here I added the geo_factors_data_initialisation. This should initialise the factors for
     // specific path and slice_num.
