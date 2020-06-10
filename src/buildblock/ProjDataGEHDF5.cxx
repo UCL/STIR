@@ -100,7 +100,7 @@ Array<1,unsigned char> buffer(total_size);
 
  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
 {
-    m_input_hdf5_sptr->initialise_proj_data_data("", view_num + 1);
+    m_input_hdf5_sptr->initialise_proj_data("", view_num + 1);
 
     std::array<unsigned long long int, 3> stride = {1, 1, 1};
     const std::array<unsigned long long int, 3> count  = {max_num_axial_poss, num_tof_poss,static_cast<unsigned long long int>(get_num_tangential_poss())};

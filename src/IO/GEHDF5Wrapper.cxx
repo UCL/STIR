@@ -315,7 +315,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
     return Succeeded::yes;
 }
 
-Succeeded GEHDF5Wrapper::initialise_proj_data_data(const std::string& path,
+Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
                                                  const unsigned int view_num)
 {
     if(path.size() == 0)
