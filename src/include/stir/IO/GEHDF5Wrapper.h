@@ -159,7 +159,8 @@ private:
 
     std::string m_address;
 
-    bool is_signa = false;
+    bool is_signa = false; //AB todo remove
+    unsigned int  rdf_ver = 0;
 
     hsize_t m_size_of_record_signature = 0;
 
