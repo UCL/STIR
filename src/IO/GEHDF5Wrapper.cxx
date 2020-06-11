@@ -54,11 +54,20 @@ bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 
     H5::DataSet dataset2= file.openDataSet("/HeaderData/ExamData/manufacturer");
     dataset2.read(read_str_manufacturer,vlst);
-//PW TODO Remove check on SIGNA PET/MR.
-    if(read_str_scanner == "SIGNA PET/MR" &&
-            read_str_manufacturer == "GE MEDICAL SYSTEMS")
+    
+    if(read_str_manufacturer == "GE MEDICAL SYSTEMS")
+    {
+        if(read_str_scanner != "SIGNA PET/MR")
+        {
+            warnign("GEHDF5 reader has only been tested with the SIGNA PET/MR, unsure if it will work with " << read_str_scanner)
+        }
+        else
+        {
+            is_signa = true;
+        }
+            
         return true;
-
+    }
     return false;
 }
 
@@ -69,7 +78,7 @@ GEHDF5Wrapper::GEHDF5Wrapper()
 
 GEHDF5Wrapper::GEHDF5Wrapper(const std::string& filename)
 {
-    //AB TODO Find out of file is RDF9 or RDF10
+    
     if(!file.isHdf5(filename))
         error("GEHDF5Wrapper: The input file is not HDF5! Abort.");
 
@@ -85,15 +94,20 @@ GEHDF5Wrapper::open(const std::string& filename)
 
     file.openFile(filename, H5F_ACC_RDONLY);
 
+    //AB  Find out of file is RDF9 or RDF10
+    H5::DataSet str_file_version = file.openDataSet("/HeaderData/RDFConfiguration/fileVersion/majorVersion");
+    str_file_version.read(&rdf_ver, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
+
+    // AB: todo check if this initialization should be here or later. Maybe RDF10 will have different fields. 
     initialise_exam_info();
 
     if(GEHDF5Wrapper::check_GE_signature(filename))
     {
+        // AB todo: This error is confusing. check_GE_signature() returns true if it has definetly found GE Signa, not otherwise. The warning should definetly know this is a signa.
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
                 "The scanner will be initialised from STIR as opposed to the HDF5 header.");
-        is_signa = true;
-
+        // AB todo: create a different Scanner?
         this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
         return Succeeded::yes;
     }
@@ -248,7 +262,7 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
 {
     if(path.size() == 0)
     {
-        if(is_signa) // AB todo "is_RDF9"
+        if(rdf_ver==9) 
         {
             m_address = "/ListData/listData";
             //! \todo Get these numbers from the HDF5 file
@@ -283,11 +297,12 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
 
 Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
 {
+    // AB: todo make sure this is the .BLF file
     if(path.size() == 0)
     {
-        if(is_signa) //AB todo "is_RDF9"
+        if(rdf_ver==9)
         {
-            m_address = "/Singles/CrystalSingles/sample1"; //AB: todo. the 2 datasets I have access to  had ./sample1 but ./sample was written here. ?? typo?
+            m_address = "/Singles/CrystalSingles/sample"; 
             // Get the DataSpace (metadata) corresponding to the DataSet that we want to read
             m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
             m_dataspace = m_dataset_sptr->getSpace();
@@ -323,7 +338,7 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
 {
     if(path.size() == 0)
     {
-        if(is_signa) // AB todo "is_RDF9"
+        if(rdf_ver==9) 
         {
             m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view";
             // AB: todo norm3d, geo3d, rdf.0 do not have this info. Only rdf.0 has "Segment2/3D_TOF_Sinogram", but no "view" in sight. 
@@ -362,7 +377,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
 {
     if(path.size() == 0)
     {
-        if(is_signa) // AB todo "is_RDF9"
+        if(rdf_ver==9)
         {
             m_address = "/SegmentData/Segment4/3D_Norm_Correction/slice";
             if(slice_num > 0)
@@ -375,7 +390,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
 
                 // Read dimensions
                 const int rank = m_dataspace.getSimpleExtentNdims();
-                hsize_t dims[2];
+                hsize_t dims[rank];
                 m_dataspace.getSimpleExtentDims( dims, NULL);
 
                 // AB todo: MATLAB reader returns [357 1981] yet here it was written NX=1981 NY=357. row/colun major issue, or actual difference? test
@@ -399,7 +414,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 {
     if(path.size() == 0)
     {
-        if(is_signa)  // AB todo "is_RDF9"
+        if(rdf_ver==9) 
         {
             
             m_address = "3DCrystalEfficiency/crystalEfficiency";
