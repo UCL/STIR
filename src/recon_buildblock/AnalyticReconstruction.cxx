@@ -147,6 +147,7 @@ Succeeded
 AnalyticReconstruction::
 reconstruct() 
 {
+  this->start_timers();
   this->target_data_sptr.reset(this->construct_target_image_ptr());
   if (this->set_up(this->target_data_sptr) == Succeeded::no)
     {
@@ -176,6 +177,7 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
   if (success == Succeeded::no)
     error("AnalyticReconstruction::set_up() failed");
 #endif
+  this->start_timers();
   Succeeded success = this->actual_reconstruct(target_image_sptr);
   if (success == Succeeded::yes)
   {
@@ -187,6 +189,7 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
 	info(boost::format("  min and max after post-filtering %1% %2%") % target_image_sptr->find_min() % target_image_sptr->find_max());
       }
   }
+  this->stop_timers();
   return success;
 }
 
