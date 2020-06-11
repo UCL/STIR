@@ -28,6 +28,7 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/ArrayFunction.h"
 #include "stir/SeparableGaussianImageFilter.h"
+#include "stir/Verbosity.h"
 
 START_NAMESPACE_STIR
 
@@ -57,7 +58,10 @@ public:
   /*! has to set \c _recon_sptr */
   virtual inline void construct_reconstructor() = 0;
   //! perform reconstruction
-  virtual inline shared_ptr<TargetT> reconstruct();
+  /*! Uses \c target_sptr as initialisation, and updates it
+      \see Reconstruction::reconstruct(shared_ptr<TargetT>&)
+  */
+  virtual inline void reconstruct(shared_ptr<TargetT> target_sptr);
   //! compares output and input
   /*! voxel-wise comparison */
   virtual inline void compare(const shared_ptr<const TargetT> output_sptr);
@@ -85,6 +89,7 @@ void
 ReconstructionTests<TargetT>::
 construct_input_data()
 { 
+  Verbosity::set(1);
   if (this->_proj_data_filename.empty())
     {
       // construct a small scanner and sinogram
@@ -93,12 +98,14 @@ construct_input_data()
       shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                       /*span=*/3, 
-                                      /*max_delta=*/2,
+                                      /*max_delta=*/4,
                                       /*num_views=*/128,
                                       /*num_tang_poss=*/128));
       shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
       exam_info_sptr->imaging_modality = ImagingModality::PT;
       _proj_data_sptr.reset(new ProjDataInMemory (exam_info_sptr, proj_data_info_sptr));
+      std::cerr << "Will run tests with projection data with the following settings:\n"
+                << proj_data_info_sptr->parameter_info();
     }
   else
     {
@@ -110,8 +117,8 @@ construct_input_data()
   if (this->_input_density_filename.empty())
     {
       CartesianCoordinate3D<float> origin (0,0,0);    
-      const float zoom=1.F;
-      
+      const float zoom=.7F;
+
       shared_ptr<VoxelsOnCartesianGrid<float> >
         vox_sptr(new VoxelsOnCartesianGrid<float>(this->_proj_data_sptr->get_exam_info_sptr(),
                                                   *this->_proj_data_sptr->get_proj_data_info_sptr(),
@@ -126,7 +133,7 @@ construct_input_data()
 
       // filter it a bit to avoid too high frequency stuff creating trouble in the comparison
       SeparableGaussianImageFilter<float> filter;
-      filter.set_fwhms(make_coordinate(5.F,5.F,5.F));
+      filter.set_fwhms(make_coordinate(10.F,10.F,10.F));
       filter.set_up(*vox_sptr);
       filter.apply(*vox_sptr);
       this->_input_density_sptr = vox_sptr;
@@ -150,25 +157,23 @@ construct_input_data()
 }
 
 template <class TargetT>
-shared_ptr<TargetT>
+void
 ReconstructionTests<TargetT>::
-reconstruct()
+reconstruct(shared_ptr<TargetT> target_sptr)
 {
   this->_recon_sptr->set_input_data(this->_proj_data_sptr);
   this->_recon_sptr->set_disable_output(true);
   // set a prefix anyway, as some reconstruction algorithms write some files even with disabled output
   this->_recon_sptr->set_output_filename_prefix("test_recon_" + this->_recon_sptr->method_info());
-  if (this->_recon_sptr->set_up(this->_input_density_sptr)==Succeeded::no)
+  if (this->_recon_sptr->set_up(target_sptr)==Succeeded::no)
     error("recon::set_up() failed");
   
-  shared_ptr<TargetT> output_sptr(this->_input_density_sptr->get_empty_copy());
-  if (this->_recon_sptr->reconstruct(output_sptr)==Succeeded::no)
+  if (this->_recon_sptr->reconstruct(target_sptr)==Succeeded::no)
     error("recon::reconstruct() failed");
 
   std::cerr << "\n================================\nReconstruction "
             << this->_recon_sptr->method_info()
             << " finished!\n\n";
-  return output_sptr;
 }
 
 template <class TargetT>
@@ -176,6 +181,10 @@ void
 ReconstructionTests<TargetT>::
 compare(const shared_ptr<const TargetT> output_sptr)
 {
+  if (!check(this->_input_density_sptr->has_same_characteristics(*output_sptr),
+             "output image has wrong characteristics"))
+    return;
+
   shared_ptr<TargetT> diff_sptr(output_sptr->clone());
   *diff_sptr -= *this->_input_density_sptr;
   const float diff_min = diff_sptr->find_min();

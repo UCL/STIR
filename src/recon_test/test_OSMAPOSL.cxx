@@ -14,57 +14,66 @@
 /*!
   \file
   \ingroup recon_test
-  \ingroup FBP2D
-  \brief Test program for FBP2D
+  \ingroup OSMAPOSL
+  \brief Test program for OSMAPOSL
   \author Kris Thielemans
 */
 
-#include "stir/recon_buildblock/test/ReconstructionTests.h"
-#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/recon_buildblock/test/PoissonLLReconstructionTests.h"
+#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 
 START_NAMESPACE_STIR
 
 typedef DiscretisedDensity<3,float> target_type;
 /*!
   \ingroup recon_test
-  \ingroup FBP2D
-  \brief Test class for FBP2D
+  \ingroup OSMAPOSL
+  \brief Test class for OSMAPOSL
 */
-class TestFBP2D : public ReconstructionTests<target_type>
+class TestOSMAPOSL : public PoissonLLReconstructionTests<target_type>
 {
 private:
-  typedef ReconstructionTests<target_type> base_type;
+  typedef PoissonLLReconstructionTests<target_type> base_type;
 public:
   //! Constructor that can take some input data to run the test with
-  TestFBP2D(const std::string &proj_data_filename = "",
-            const std::string & density_filename = "")
+  TestOSMAPOSL(const std::string &proj_data_filename = "",
+               const std::string & density_filename = "")
     : base_type(proj_data_filename, density_filename)
   {}
-  virtual ~TestFBP2D() {}
+  virtual ~TestOSMAPOSL() {}
 
   
   virtual void construct_reconstructor();
+  OSMAPOSLReconstruction<target_type>&
+  recon()
+  { return dynamic_cast<OSMAPOSLReconstruction<target_type>& >(*this->_recon_sptr); }
+
   void run_tests();
 };
 
 
 void
-TestFBP2D::
+TestOSMAPOSL::
 construct_reconstructor()
 {
-  this->_recon_sptr.reset(new FBP2DReconstruction);
+  this->_recon_sptr.reset(new OSMAPOSLReconstruction<target_type>);
+  this->construct_log_likelihood();
+  this->recon().set_objective_function_sptr(this->_objective_function_sptr);
+  this->recon().set_num_subsets(4); // TODO should really check if this is appropriate for this->_proj_data_sptr->get_num_views()
+  this->recon().set_num_subiterations(20);
 }
 
 void
-TestFBP2D::
+TestOSMAPOSL::
 run_tests()
 {
-  std::cerr << "Tests for FBP2D\n";
+  std::cerr << "Tests for OSMAPOSL\n";
 
   try {
     this->construct_input_data();
     this->construct_reconstructor();
     shared_ptr<target_type> output_sptr(this->_input_density_sptr->get_empty_copy());
+    output_sptr->fill(1.F);
     this->reconstruct(output_sptr);
     this->compare(output_sptr);
   }
@@ -78,20 +87,20 @@ run_tests()
       everything_ok = false;
     }
 
-  // see if it checks input parameters
-  {
-    FBP2DReconstruction fbp(this->_proj_data_sptr, /*alpha*/ -1.F);
-    try
-      {
-        std::cerr << "\nYou should now see an error about a wrong setting for alpha" << std::endl;
-        fbp.set_up(this->_input_density_sptr);
-        // we shouldn't get here
-        everything_ok = false;
-      }
-    catch (...)
-      {
-      }
-  }
+  if (everything_ok)
+    {
+      // see if it checks input parameters
+      try
+        {
+          std::cerr << "\nYou should now see an error about a wrong setting for MAP model" << std::endl;
+          this->recon().set_MAP_model("a_wrong_value");
+          // we shouldn't get here
+          everything_ok = false;
+        }
+      catch (...)
+        {
+        }
+    }
 }
 
 END_NAMESPACE_STIR
@@ -111,7 +120,7 @@ int main(int argc, char **argv)
 
     //set_default_num_threads();
 
-    TestFBP2D test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
+    TestOSMAPOSL test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
 
     if (test.is_everything_ok())
         test.run_tests();
