@@ -377,24 +377,25 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
   if (is_null_ptr(this->objective_function_sptr))
     error("objective function needs to be set before calling get_initial_data_ptr");
 
+  TargetT * result = 0;
+
   if(this->initial_data_filename=="0")
   {
-    return this->objective_function_sptr->construct_target_ptr();
+    result = this->objective_function_sptr->construct_target_ptr();
   }
   else if(this->initial_data_filename=="1")
   {
-    TargetT * target_data_ptr =
-      this->objective_function_sptr->construct_target_ptr();    
-    std::fill(target_data_ptr->begin_all(), target_data_ptr->end_all(), 1.F);
-    return target_data_ptr;
+    result = this->objective_function_sptr->construct_target_ptr();
+    std::fill(result->begin_all(), result->end_all(), 1.F);
   }
   else
     {
-      TargetT * target_ptr =
-        TargetT::read_from_file(this->initial_data_filename);
-      target_ptr->set_exam_info(*this->get_input_data().get_exam_info_sptr());
-      return target_ptr;
+      result = TargetT::read_from_file(this->initial_data_filename);
+      result->set_exam_info(*this->get_input_data().get_exam_info_sptr());
     }
+  if (this->_already_set_up)
+    if (!this->target_data_sptr->has_same_characteristics(*result))
+      error("IterativeReconstruction::get_initial_data_ptr() results in different characteristics than what was used for set_up()");
 }
 
 // KT 10122001 new
