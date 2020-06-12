@@ -17,7 +17,7 @@
 */
 /*!
   \file
-  \ingroup listmode
+  \ingroup IO
   \brief Implementation of class stir::InputStreamFromROOTFileForCylindricalPET
 
   \author Nikos Efthimiou
