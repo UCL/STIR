@@ -443,7 +443,7 @@ bool
 {
   if (a>=b)
     {
-      std::cerr << "Error : " << a << " is larger than " << b << " ." << str<< std::endl;
+      std::cerr << "Error : " << a << " is larger than " << b << ", " << str<< std::endl;
       everything_ok = false;
       return false;
     }

@@ -210,7 +210,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
 
-      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
 
       RelatedViewgrams<float> viewgrams =
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);

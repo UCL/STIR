@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</title>
+    <title>Summary of changes in STIR release 4.1</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</h1>
+    <h1>Summary of changes in STIR release 4.1</h1>
 <h2>Overall summary</h2>
 
     <p>
@@ -48,7 +48,11 @@
 
 <h3>Changed functionality</h3>
 <ul>
-<li>  Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Reconstruction algorithms perform now more checks during <code>set_up()</code> etc.
+    However, this means that <strong>you have to call <code>set_up()</code> also for analytic
+    reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
@@ -106,7 +110,9 @@ None
 
 <h3>Other changes to tests</h3>
 <ul>
-<li></li>
+  <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
+    This is on top of the <tt>recon_test_pack</tt>.
+  </li>
 </ul>
 
 <h3>Build system</h3>

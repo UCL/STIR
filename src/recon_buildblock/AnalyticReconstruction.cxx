@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2006,  Hammersmith Imanet Ltd 
-    Copyright (C) 2016, 2018 - 2019 University College London
+    Copyright (C) 2016, 2018 - 2020 University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -147,12 +147,21 @@ Succeeded
 AnalyticReconstruction::
 reconstruct() 
 {
-  shared_ptr<DiscretisedDensity<3,float> > target_image_ptr(construct_target_image_ptr());
-  const Succeeded success = this->reconstruct(target_image_ptr);
+  this->start_timers();
+  this->target_data_sptr.reset(this->construct_target_image_ptr());
+  if (this->set_up(this->target_data_sptr) == Succeeded::no)
+    {
+      this->stop_timers();
+      return Succeeded::no;
+    }
+
+  this->stop_timers();
+
+  const Succeeded success = this->reconstruct(this->target_data_sptr);
   if (success == Succeeded::yes && !_disable_output)
   {
     this->output_file_format_ptr->
-      write_to_file(this->output_filename_prefix, *target_image_ptr);
+      write_to_file(this->output_filename_prefix, *this->target_data_sptr);
   }
   return success;
 }
@@ -162,10 +171,14 @@ Succeeded
 AnalyticReconstruction::
 reconstruct(shared_ptr<TargetT> const& target_image_sptr)
 {
+  this->check(*target_data_sptr);
+#if 0
   Succeeded success = this->set_up(target_image_sptr);
   if (success == Succeeded::no)
     error("AnalyticReconstruction::set_up() failed");
-  success = this->actual_reconstruct(target_image_sptr);
+#endif
+  this->start_timers();
+  Succeeded success = this->actual_reconstruct(target_image_sptr);
   if (success == Succeeded::yes)
   {
     if(!is_null_ptr(this->post_filter_sptr))
@@ -176,6 +189,7 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
 	info(boost::format("  min and max after post-filtering %1% %2%") % target_image_sptr->find_min() % target_image_sptr->find_max());
       }
   }
+  this->stop_timers();
   return success;
 }
 
@@ -183,13 +197,16 @@ void
 AnalyticReconstruction::
 set_input_data(const shared_ptr<ExamData> &arg)
 {
-	this->proj_data_ptr = dynamic_pointer_cast < ProjData >(arg);
+  _already_set_up = false;
+  this->proj_data_ptr = dynamic_pointer_cast < ProjData >(arg);
 }
 
 const ProjData&
 AnalyticReconstruction::
 get_input_data() const
 {
+  if (is_null_ptr(this->proj_data_ptr))
+    error("calling get_input_data but it hasn't been set yet");
   return *this->proj_data_ptr;
 }
 
@@ -202,7 +219,10 @@ get_output_image_size_xy() const
 void
 AnalyticReconstruction::
 set_output_image_size_xy(int v)
-{ target_parameter_parser.set_output_image_size_xy(v); }
+{
+  _already_set_up = false;
+  target_parameter_parser.set_output_image_size_xy(v);
+}
 
 int
 AnalyticReconstruction::
@@ -212,7 +232,10 @@ get_output_image_size_z() const
 void
 AnalyticReconstruction::
 set_output_image_size_z(int v)
-{ target_parameter_parser.set_output_image_size_z(v); }
+{
+  _already_set_up = false;
+  target_parameter_parser.set_output_image_size_z(v);
+}
 
 float
 AnalyticReconstruction::
@@ -222,7 +245,10 @@ get_zoom_xy() const
 void
 AnalyticReconstruction::
 set_zoom_xy(float v)
-{ target_parameter_parser.set_zoom_xy(v); }
+{
+  _already_set_up = false;
+  target_parameter_parser.set_zoom_xy(v);
+}
 
 float
 AnalyticReconstruction::
@@ -232,7 +258,10 @@ get_zoom_z() const
 void
 AnalyticReconstruction::
 set_zoom_z(float v)
-{ target_parameter_parser.set_zoom_z(v); }
+{
+  _already_set_up = false;
+  target_parameter_parser.set_zoom_z(v);
+}
 
 const CartesianCoordinate3D<float>&
 AnalyticReconstruction::
@@ -242,7 +271,10 @@ get_offset() const
 void
 AnalyticReconstruction::
 set_offset(const CartesianCoordinate3D<float>& v)
-{ target_parameter_parser.set_offset(v); }
+{
+  _already_set_up = false;
+  target_parameter_parser.set_offset(v);
+}
 
 END_NAMESPACE_STIR
 

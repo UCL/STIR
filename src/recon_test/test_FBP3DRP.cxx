@@ -14,33 +14,33 @@
 /*!
   \file
   \ingroup recon_test
-  \ingroup FBP2D
-  \brief Test program for FBP2D
+  \ingroup FBP3DRP
+  \brief Test program for FBP3DRP
   \author Kris Thielemans
 */
 
 #include "stir/recon_buildblock/test/ReconstructionTests.h"
-#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 START_NAMESPACE_STIR
 
 typedef DiscretisedDensity<3,float> target_type;
 /*!
   \ingroup recon_test
-  \ingroup FBP2D
-  \brief Test class for FBP2D
+  \ingroup FBP3DRP
+  \brief Test class for FBP3DRP
 */
-class TestFBP2D : public ReconstructionTests<target_type>
+class TestFBP3DRP : public ReconstructionTests<target_type>
 {
 private:
   typedef ReconstructionTests<target_type> base_type;
 public:
   //! Constructor that can take some input data to run the test with
-  TestFBP2D(const std::string &proj_data_filename = "",
+  TestFBP3DRP(const std::string &proj_data_filename = "",
             const std::string & density_filename = "")
     : base_type(proj_data_filename, density_filename)
   {}
-  virtual ~TestFBP2D() {}
+  virtual ~TestFBP3DRP() {}
 
   
   virtual void construct_reconstructor();
@@ -49,17 +49,17 @@ public:
 
 
 void
-TestFBP2D::
+TestFBP3DRP::
 construct_reconstructor()
 {
-  this->_recon_sptr.reset(new FBP2DReconstruction);
+  this->_recon_sptr.reset(new FBP3DRPReconstruction);
 }
 
 void
-TestFBP2D::
+TestFBP3DRP::
 run_tests()
 {
-  std::cerr << "Tests for FBP2D\n";
+  std::cerr << "Tests for FBP3DRP\n";
 
   try {
     this->construct_input_data();
@@ -77,21 +77,6 @@ run_tests()
     {
       everything_ok = false;
     }
-
-  // see if it checks input parameters
-  {
-    FBP2DReconstruction fbp(this->_proj_data_sptr, /*alpha*/ -1.F);
-    try
-      {
-        std::cerr << "\nYou should now see an error about a wrong setting for alpha" << std::endl;
-        fbp.set_up(this->_input_density_sptr);
-        // we shouldn't get here
-        everything_ok = false;
-      }
-    catch (...)
-      {
-      }
-  }
 }
 
 END_NAMESPACE_STIR
@@ -102,19 +87,19 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    if (argc < 1 || argc > 3) {
-        std::cerr << "\n\tUsage: " << argv[0] << " [template_proj_data [image]]\n"
-                  << "template_proj_data (optional) will serve as a template, but is otherwise not used.\n"
-                  << "Image (optional) has to be compatible with projection data and currently at zoom=1\n";
-        return EXIT_FAILURE;
-    }
+  if (argc < 1 || argc > 3) {
+    std::cerr << "\n\tUsage: " << argv[0] << " [template_proj_data [image]]\n"
+              << "template_proj_data (optional) will serve as a template, but is otherwise not used.\n"
+              << "Image (optional) has to be compatible with projection data and currently at zoom=1\n";
+    return EXIT_FAILURE;
+  }
 
-    //set_default_num_threads();
+  //set_default_num_threads();
 
-    TestFBP2D test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
+  TestFBP3DRP test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
 
-    if (test.is_everything_ok())
-        test.run_tests();
+  if (test.is_everything_ok())
+    test.run_tests();
 
-    return test.main_return_value();
+  return test.main_return_value();
 }
