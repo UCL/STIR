@@ -681,11 +681,12 @@ We tend to name this header \texttt{something.hroot} but this is not mandatory.
 We currently support only ROOT output using the CylindricalPET and ECAT systems
 from GATE.
 
-\textbf{Warning:} There is a check of consistent scanner geometry information between \textit{STIR} 
-and OpenGATE as discrepancies can lead to crashes if the actual number of blocks/crystals etc is 
-larger than what is specified in the scanner info.
+\textbf{Warning:} There is a check of consistent scanner geometry information between \textit{STIR}
+and OpenGATE as discrepancies can lead to crashes if the actual number of blocks/crystals etc is
+larger than what is specified in the scanner info. However, this check requires the \texttt{.hroot}
+file to accurately correspond to your GATE macro.
 
-An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion 
+An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
 
 \begin{table}[h]
@@ -694,13 +695,13 @@ scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
             \hline
             \textbf{GATE} & \textbf{STIR}  \\ 
             \hline
-            Crystal & Crystal  \\  
+            Crystal & Crystal  \\
             Submodule & Block  \\
             Module & Bucket  \\
             Rsector & Buckets around the ring  \\
             \hline
         \end{tabular}
-    \caption{A guide on the terminology equivalents between STIR and OpenGATE for CylindricalPET 
+    \caption{A guide on the terminology equivalents between STIR and OpenGATE for CylindricalPET
     scanner geometries.}
     \label{tab:STIR-OpenGATE_terminology}
 \end{table}
@@ -735,8 +736,8 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
-Default number of arc-corrected bins     := 344
-View offset (degrees)                    := 0
+Default number of arc-corrected bins     := 344 ; default is same as previous value
+View offset (degrees)                    := 0 ; default
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
@@ -760,8 +761,8 @@ GATE_Cylindrical_PET Parameters :=
 
   Singles readout depth := 1
   exclude scattered events := 0
-  exclude random events := 0 
-  offset (num of detectors) := 0 
+  exclude random events := 0
+  offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
   upper energy window (keV):= 10000 ; Default 10000
@@ -770,6 +771,8 @@ End GATE_Cylindrical_PET Parameters :=
 
 end ROOT header := 
 \end{verbatim}
+
+See \texttt{examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
 
 There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,

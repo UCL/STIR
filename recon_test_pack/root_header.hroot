@@ -1,6 +1,6 @@
 ROOT header := 
 
-; More information regaring .hroot files may be found in the UsersGuide
+; More information regarding .hroot files may be found in the UsersGuide
 originating system := User_defined_scanner
 Number of rings                          := 4
 Number of detectors per ring             := 504

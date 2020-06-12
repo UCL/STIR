@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2017 University College London
+    Copyright (C) 2016, 2017, 2020 University College London
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -24,6 +24,7 @@
   \author Nikos Efthimiou
   \author Harry Tsoumpas
   \author Kris Thielemans
+  \author Robbie Twyman
 */
 
 #include "stir/listmode/CListModeDataROOT.h"
