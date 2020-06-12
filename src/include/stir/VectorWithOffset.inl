@@ -70,8 +70,6 @@ VectorWithOffset<T>::check_state() const
   assert(begin_allocated_memory <= num+start);
   assert(end_allocated_memory>=begin_allocated_memory);
   assert(static_cast<unsigned>(end_allocated_memory-begin_allocated_memory) >= length);
-  // check if data is being accessed via a pointer (see get_data_ptr())
-  assert(pointer_access == false);
 }
 
 template <class T>
@@ -79,6 +77,8 @@ void
 VectorWithOffset<T>::
 _destruct_and_deallocate() 
 {
+  // check if data is being accessed via a pointer (see get_data_ptr())
+  assert(pointer_access == false);
   // TODO when reserve() no longer initialises new elements,
   // we'll have to be careful to delete only initialised elements
   // and just de-allocate the rest
@@ -306,6 +306,8 @@ VectorWithOffset(const int min_index, const int max_index,
 template <class T>
 VectorWithOffset<T>::~VectorWithOffset()
 { 
+  // check if data is being accessed via a pointer (see get_data_ptr())
+  assert(pointer_access == false);
   _destruct_and_deallocate();
 }		
 
@@ -379,6 +381,9 @@ reserve(const int new_capacity_min_index, const int new_capacity_max_index)
     static_cast<unsigned>(actual_capacity_max_index - actual_capacity_min_index) + 1;
   if (new_capacity <= this->capacity())
     return;
+
+  // check if data is being accessed via a pointer (see get_data_ptr())
+  assert(pointer_access == false);
   // TODO use allocator here instead of new
   T *newmem = new T[new_capacity];
   const unsigned extra_at_the_left =

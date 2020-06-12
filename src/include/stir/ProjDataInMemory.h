@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2019, UCL
+    Copyright (C) 2019-2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #define __stir_ProjDataInMemory_H__
 
 #include "stir/ProjDataFromStream.h" 
-#include "boost/shared_array.hpp"
+#include "stir/Array.h"
 #include <string>
 
 /* Implementation note (KT)
@@ -86,19 +86,57 @@ public:
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
     
+  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  /// This implementation requires that x and y are ProjDataInMemory
+  /// (else falls back on general method)
+  virtual void axpby(const float a, const ProjData& x,
+                     const float b, const ProjData& y);
+
+  /** @name iterator typedefs
+   *  iterator typedefs
+   */
+  ///@{
+  typedef Array<1,float>::iterator iterator;
+  typedef Array<1,float>::const_iterator const_iterator;
+  typedef Array<1,float>::full_iterator full_iterator;
+  typedef Array<1,float>::const_full_iterator const_full_iterator;
+  ///@}
+
+  //! start value for iterating through all elements in the array, see iterator
+  inline iterator begin()
+  { return buffer.begin(); }
+  //! start value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator begin() const
+  { return buffer.begin(); }
+  //! end value for iterating through all elements in the array, see iterator
+  inline iterator end()
+  { return buffer.end(); }
+  //! end value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator end() const
+  { return buffer.end(); }
+  //! start value for iterating through all elements in the array, see iterator
+  inline iterator begin_all()
+  { return buffer.begin_all(); }
+  //! start value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator begin_all() const
+  { return buffer.begin_all(); }
+  //! end value for iterating through all elements in the array, see iterator
+  inline iterator end_all()
+  { return buffer.end_all(); }
+  //! end value for iterating through all elements in the (const) array, see iterator
+  inline const_iterator end_all() const
+  { return buffer.end_all(); }
+
 private:
-  // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_array
-  // note however that the buffer is not shared. we just use it such that its memory gets 
-  // deallocated automatically.
-  boost::shared_array<char> buffer;
+  Array<1,float> buffer;
   
-  size_t get_size_of_buffer() const;
+  size_t get_size_of_buffer_in_bytes() const;
 
   //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
-  char * create_buffer(const bool initialise_with_0 = false) const;
+  void create_buffer(const bool initialise_with_0 = false);
 
   //! Create a new stream
-  shared_ptr<std::iostream> create_stream() const;
+  void create_stream();
 };
 
 END_NAMESPACE_STIR

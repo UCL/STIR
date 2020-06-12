@@ -4,7 +4,7 @@
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, 2019, UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-
+    Copyright (C 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,6 +30,8 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Ottavia Bertolli
+  \author Palak Wadhwa
   \author PARAPET project
   \author Parisa Khateri
 
@@ -123,8 +125,8 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, Siemens_mCT, RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, Discovery690,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
   
