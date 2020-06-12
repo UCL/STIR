@@ -3,7 +3,8 @@
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, 2019, UCL
- 
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

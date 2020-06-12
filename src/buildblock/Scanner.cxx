@@ -4,6 +4,8 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2013-2016,2019, University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

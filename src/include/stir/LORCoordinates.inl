@@ -12,6 +12,7 @@
 */
 /*
     Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

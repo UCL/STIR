@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2018- 2019, University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by

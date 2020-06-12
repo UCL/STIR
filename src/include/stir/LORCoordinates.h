@@ -16,6 +16,7 @@
 /*
     Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2013, Kris Thielemans
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
