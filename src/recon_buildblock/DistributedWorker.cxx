@@ -212,8 +212,6 @@ namespace stir
     distributed::receive_and_initialize_projectors(this->proj_pair_sptr, 0);
                 
     proj_pair_sptr->set_up(this->proj_data_info_sptr, this->target_sptr);
-    proj_pair_sptr->get_forward_projector_sptr()->set_input(this->target_sptr);
-    proj_pair_sptr->get_back_projector_sptr()->set_output(this->output_target_sptr);
                 
     //some values to configure tests
     int configurations[4];
@@ -290,6 +288,10 @@ namespace stir
 	    // already set to zero
 	    //output_image_ptr->fill(0.F);
 	  }
+
+        proj_pair_sptr->get_forward_projector_sptr()->set_input(*this->target_sptr);
+        if (!is_null_ptr(output_image_ptr))
+          proj_pair_sptr->get_back_projector_sptr()->start_accumulating_in_new_target();
                    
         //loop to receive viewgrams until received END_ITERATION_TAG
         while (true)
@@ -376,7 +378,7 @@ namespace stir
                 distributed::first_iteration=false;
 		if (!is_null_ptr(output_image_ptr))
                   {
-                    proj_pair_sptr->get_back_projector_sptr()->get_output(output_image_ptr);
+                    proj_pair_sptr->get_back_projector_sptr()->get_output(*output_image_ptr);
                   distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
                   }
 		// and log_likelihood
@@ -407,7 +409,7 @@ namespace stir
             RPC_process_related_viewgrams(
                                           this->proj_pair_sptr->get_forward_projector_sptr(),
                                           this->proj_pair_sptr->get_back_projector_sptr(),
-                                          output_image_ptr.get(), input_image_ptr.get(), viewgrams, 
+                                          viewgrams,
                                           count, count2,
                                           log_likelihood_ptr,
                                           additive_binwise_correction_viewgrams,
