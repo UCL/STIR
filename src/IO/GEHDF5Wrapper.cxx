@@ -8,6 +8,8 @@
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
+  \author Ander Biguri
+
 
 */
 /*
@@ -67,6 +69,72 @@ bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
     return false;
 }
 
+// // Checks if input file is listfile. 
+// AB: todo do we want this func? helps test from filename
+/*
+bool
+GEHDF5Wrapper::is_list_file(const std::string& filename)
+{
+
+    H5::H5File file;
+
+    if(!file.isHdf5(filename))
+        error("File is not HDF5. Aborting");
+
+    file.openFile( filename, H5F_ACC_RDONLY );
+    // All RDF files shoudl have this DataSet
+    H5::DataSet dataset = file.openDataSet("/HeaderData/RDFConfiguration/isListFile");
+    unsigned int is_list;
+    dataset.read(&is_list, H5::PredType::STD_U32LE);
+    return is_list;
+
+}
+*/
+
+// Checks if input file is listfile
+// AB todo: only valid for RDF9 (until they tell us otherwise)
+bool
+GEHDF5Wrapper::is_list_file()
+{
+    // have we already checked this?
+    if(is_list)
+        return true;
+
+    if(file.getId() == -1)
+        error("File is not open. Aborting");
+
+    // All RDF files shoudl have this DataSet
+    H5::DataSet dataset = file.openDataSet("/HeaderData/RDFConfiguration/isListFile");
+    unsigned int is_list_file;
+    dataset.read(&is_list_file, H5::PredType::STD_U32LE);
+    return is_list_file;
+
+}
+
+// Checks if file is a sino file. 
+// AB todo: only valid for RDF9 (until they tell us otherwise)
+bool
+GEHDF5Wrapper::is_sino_file()
+{
+    if(is_sino)
+        return true;
+    if(file.getId() == -1)
+        error("File is not open. Aborting");
+
+    // If this Group exists, its a sino file. 
+    // huh, no C++ way to do this without try catch. https://stackoverflow.com/questions/35668056/test-group-existence-in-hdf5-c
+    return H5Lexists( file.getId(), "/SegmentData/Segment2", H5P_DEFAULT ) > 0;
+}
+bool
+GEHDF5Wrapper::is_geo_file()
+{
+    //AB todo
+}
+bool
+GEHDF5Wrapper::is_norm_file()
+{
+    //AB todo
+}
 GEHDF5Wrapper::GEHDF5Wrapper()
 {
     // Not much.
@@ -81,6 +149,55 @@ GEHDF5Wrapper::GEHDF5Wrapper(const std::string& filename)
         error("GEHDF5Wrapper: Error opening HDF5 file. Abort.");
 }
 
+// Function that error checks the input file and sets flags for the correct formats. GEHDF5Wrapper.file must be already open.
+// AB todo: this file is only valid for RDF 9. 
+Succeeded 
+GEHDF5Wrapper::check_file()
+{
+    if(file.getId()==-1)
+        error("File is not open. Aborting");
+    //AB: We are openign a new file. The same class should not be used twice, but lets make sure that if it happens, we rested the file identifiers.
+    is_list=false; is_norm=false;is_geo=false;is_sino=false;
+    is_signa=false;
+    
+    //AB  Find out of file is RDF9 or RDF10
+    H5::DataSet str_file_version = file.openDataSet("/HeaderData/RDFConfiguration/fileVersion/majorVersion");
+    str_file_version.read(&rdf_ver, H5::PredType::STD_U32LE);
+    
+    if(is_list_file())
+    {
+        is_list = true;
+        // AB Now lets check all things that are required
+        if (rdf_ver == 9) //AB todo: is this valid for 10?
+        {
+            // Check 1: Is the file compressed?
+            unsigned int is_compressed;
+            H5::DataSet str_file_version = file.openDataSet("/HeaderData/ListHeader/isListCompressed");
+            str_file_version.read(&is_compressed, H5::PredType::STD_U32LE);
+            if (is_compressed)
+                error("The RDF9 file is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
+        }
+
+        return Succeeded::yes;
+    }
+    id(is_sino_file())
+    {
+        is_sino = true;
+         if (rdf_ver == 9) //AB todo: is this valid for 10?
+        {
+            // Check 1: Is the file compressed?
+            unsigned int is_compressed;
+            H5::DataSet str_file_version = file.openDataSet("/HeaderData/Sorter/Segment2/compDataSegSize");
+            str_file_version.read(&is_compressed, H5::PredType::STD_U32LE);
+            if (is_compressed)
+                error("The RDF9 file is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
+        }
+        return Succeeded::yes;
+    }
+    // should not get here.
+    return Succeeded::no;
+}
+
 Succeeded
 GEHDF5Wrapper::open(const std::string& filename)
 {
@@ -89,19 +206,9 @@ GEHDF5Wrapper::open(const std::string& filename)
 
     file.openFile(filename, H5F_ACC_RDONLY);
 
-    //AB  Find out of file is RDF9 or RDF10
-    H5::DataSet str_file_version = file.openDataSet("/HeaderData/RDFConfiguration/fileVersion/majorVersion");
-    str_file_version.read(&rdf_ver, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
+    //AB: check if the input file is valid, not only as a HDF5, also a valid PET file. 
+    check_file();
 
-    // AB check if the file is compressed, error if that is the case. 
-    if (rdf_ver==9)
-    {
-        unsigned int is_compresed;
-        H5::DataSet str_file_version = file.openDataSet("/HeaderData/ListHeader/isListCompressed");
-        str_file_version.read(&is_compresed, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
-        if (is_compresed)
-            error("The RDF9 file is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
-    }
     // AB: todo check if this initialization should be here or later. Maybe RDF10 will have different fields. 
     initialise_exam_info();
 
@@ -111,7 +218,7 @@ GEHDF5Wrapper::open(const std::string& filename)
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
                 "The scanner will be initialised from STIR as opposed to the HDF5 header.");
-        is_signa=true; //check_GE_signature() only checks if its GE, not if its Signa anymore, but we need to add that check, however can not put this variable inside because its not as tatic method
+        is_signa=true; //check_GE_signature() only checks if its GE, not if its Signa anymore, but we need to add that check, however can not put this variable inside because its not a static method. This shoudl stay here until a new scanner can be set
         // AB todo: create a different Scanner?
         this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
         return Succeeded::yes;
@@ -264,14 +371,14 @@ Succeeded GEHDF5Wrapper::initialise_exam_info()
 
 Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
 {
+    if(!is_list_file())
+        error("The file provided is not listmode. Aborting");
     if(path.size() == 0)
     {
         if(rdf_ver==9) 
         {
             m_address = "/ListData/listData";
-            //! \todo Get these numbers from the HDF5 file
-            // AB: todo my file does not have anything in this addres. 
-            // AB only *.BLF file has this address, but not the below variables.
+            // These values are not in the file are come from info shared by GE. 
             {
             m_size_of_record_signature = 6;
             m_max_size_of_record = 16;
@@ -301,14 +408,17 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
 
 Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
 {
-    // AB: todo make sure this is the .BLF file
+    
+    if(!is_list_file())
+        error("The file provided is not listmode. Aborting");
+
     if(path.size() == 0)
     {
         if(rdf_ver==9)
         {
             m_address = "/Singles/CrystalSingles/sample"; 
             // Get the DataSpace (metadata) corresponding to the DataSet that we want to read
-            m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
+            m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + "1")));
             m_dataspace = m_dataset_sptr->getSpace();
             // Create an array to host the size of the dimensions
             const int rank = m_dataspace.getSimpleExtentNdims();
@@ -317,15 +427,13 @@ Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
             // Read size of dimensions
             m_dataspace.getSimpleExtentDims( dims, NULL); 
 
-            // AB todo: I think it returs dataspace_Ndims==2, test. Is Z necesary?
-            // AB todo: MATLAB reader returns [448 45] yet here it was written NX=45 NY=448. row/colun major issue, or actual difference? test
-
-            m_NX_SUB = dims[1];    // hyperslab dimensions
-            m_NY_SUB = dims[0];
-            m_NZ_SUB = (rank==2)? 1 : dims[2]; 
+            // AB todo: MATLAB reader returns [448 45], but dims will be [45 448] and we want it in that order
+            m_NX_SUB = dims[0];    // hyperslab dimensions
+            m_NY_SUB = dims[1];
+            m_NZ_SUB = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
             
-            m_NX = dims[1];       // output buffer dimensions
-            m_NY = dims[0];
+            m_NX = dims[0];       // output buffer dimensions
+            m_NY = dims[1];
             m_NZ = (rank==2)? 1 : dims[2]; 
         }
         else
@@ -340,28 +448,37 @@ Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
 Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
                                                  const unsigned int view_num)
 {
+    if(!is_sino_file())
+        error("The file provided is not projection/sinogram data. Aborting");
     if(path.size() == 0)
     {
         if(rdf_ver==9) 
         {
             m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view";
-            // AB: todo norm3d, geo3d, rdf.0 do not have this info. Only rdf.0 has "Segment2/3D_TOF_Sinogram", but no "view" in sight. 
+
+            m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + "1"))); // the first will do
+            m_dataspace = m_dataset_sptr->getSpace();
+            // Create an array to host the size of the dimensions
+            const int rank = m_dataspace.getSimpleExtentNdims();
+            hsize_t dims[rank];
+            // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
+            // Read size of dimensions
+            m_dataspace.getSimpleExtentDims( dims, NULL);
+
+            std::cout << dims[0] << ", " << dims[1] << ", " << dims[2] <<std::endl;
+            // AB: todo fill these in. 
+            // AB: they are different ?
+            m_NX_SUB = 1981;    // hyperslab dimensions
+            m_NY_SUB = 27;
+            m_NZ_SUB = 357;
+            m_NX = 45;        // output buffer dimensions
+            m_NY = 448;
+            m_NZ = 357;
+
             if(view_num > 0)
             {
-                std::ostringstream datasetname;
-                datasetname << m_address << view_num;
-                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address+std::to_string(view_num))));
                 m_dataspace = m_dataset_sptr->getSpace();
-
-            }
-            //! \todo Get these numbers from the HDF5 file
-            {
-                m_NX_SUB = 1981;    // hyperslab dimensions
-                m_NY_SUB = 27;
-                m_NZ_SUB = 357;
-                m_NX = 45;        // output buffer dimensions
-                m_NY = 448;
-                m_NZ = 357;
             }
         }
         else
@@ -387,9 +504,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
             if(slice_num > 0)
             {
                 // Open Dataset and get Dataspace(metadata)
-                std::ostringstream datasetname;
-                datasetname << m_address << slice_num;
-                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(slice_num))));
                 m_dataspace = m_dataset_sptr->getSpace();
 
                 // Read dimensions
@@ -397,13 +512,16 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
                 hsize_t dims[rank];
                 m_dataspace.getSimpleExtentDims( dims, NULL);
 
-                // AB todo: MATLAB reader returns [357 1981] yet here it was written NX=1981 NY=357. row/colun major issue, or actual difference? test
-                // AB todo: z?
-                m_NX_SUB = dims[1];    // hyperslab dimensions
-                m_NY_SUB = dims[0];
-                m_NX = dims[1];        // output buffer dimensions
-                m_NY = dims[0];
+                // AB: MATLAB reader returns [357 1981] yet here it was written NX=1981 NY=357. MATLAB is not to trust. 
+                m_NX_SUB = dims[0];    // hyperslab dimensions
+                m_NY_SUB = dims[1];
+                m_NZ_SUB = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
+
+                m_NX = dims[0];        // output buffer dimensions
+                m_NY = dims[1];
+                m_NZ = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
             }
+            // AB todo: else? what if its being called with no input? we do nothing?
         }
         else
             return Succeeded::no;
@@ -433,14 +551,14 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
             m_dataspace.getSimpleExtentDims( dims, NULL);
 
 
-            // AB todo: MATLAB reader returns [896 45] yet here it was written NX=45 NY=448. row/colun major issue, or actual difference? test
+            // AB: MATLAB reader returns [896 45] yet here it was written NX=45 NY=448. MATLAB is not to trust. 
             // AB todo: IMPORTANT. Notice the numbers, they are different. the values that were here are different that what I see in norm3d
-            m_NX_SUB = dims[1];    // hyperslab dimensions
-            m_NY_SUB = dims[0];
+            m_NX_SUB = dims[0];    // hyperslab dimensions
+            m_NY_SUB = dims[1];
             m_NZ_SUB = (rank==2)? 1 : dims[2]; 
             
-            m_NX = dims[1];       // output buffer dimensions
-            m_NY = dims[0];
+            m_NX = dims[0];       // output buffer dimensions
+            m_NY = dims[1];
             m_NZ = (rank==2)? 1 : dims[2]; 
         }
         else
