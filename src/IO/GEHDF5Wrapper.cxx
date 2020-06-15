@@ -98,7 +98,7 @@ GEHDF5Wrapper::open(const std::string& filename)
     if (rdf_ver==9)
     {
         unsigned int is_compresed;
-        H5::DataSet str_file_version = file.openDataSet("/HeaderData/RDFConfiguration/fileVersion/majorVersion");
+        H5::DataSet str_file_version = file.openDataSet("/HeaderData/ListHeader/isListCompressed");
         str_file_version.read(&is_compresed, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
         if (is_compresed)
             error("The RDF9 file is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
