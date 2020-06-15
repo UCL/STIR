@@ -59,13 +59,9 @@ bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
     {
         if(read_str_scanner != "SIGNA PET/MR")
         {
-            warnign("GEHDF5 reader has only been tested with the SIGNA PET/MR, unsure if it will work with " << read_str_scanner)
+            warning("GEHDF5 reader has only been tested with the SIGNA PET/MR, unsure if it will work with this scanner");
         }
-        else
-        {
-            is_signa = true;
-        }
-            
+
         return true;
     }
     return false;
@@ -97,6 +93,15 @@ GEHDF5Wrapper::open(const std::string& filename)
     H5::DataSet str_file_version = file.openDataSet("/HeaderData/RDFConfiguration/fileVersion/majorVersion");
     str_file_version.read(&rdf_ver, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
 
+    // AB check if the file is compressed, error if that is the case. 
+    if (rdf_ver==9)
+    {
+        unsigned int is_compresed;
+        H5::DataSet str_file_version = file.openDataSet("/HeaderData/ListHeader/isListCompressed");
+        str_file_version.read(&is_compresed, H5::PredType::STD_U32LE); //AB: I have no idea if this is the right type.
+        if (is_compresed)
+            error("The RDF9 file is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
+    }
     // AB: todo check if this initialization should be here or later. Maybe RDF10 will have different fields. 
     initialise_exam_info();
 
@@ -106,6 +111,7 @@ GEHDF5Wrapper::open(const std::string& filename)
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
                 "The scanner will be initialised from STIR as opposed to the HDF5 header.");
+        is_signa=true; //check_GE_signature() only checks if its GE, not if its Signa anymore, but we need to add that check, however can not put this variable inside because its not as tatic method
         // AB todo: create a different Scanner?
         this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
         return Succeeded::yes;
