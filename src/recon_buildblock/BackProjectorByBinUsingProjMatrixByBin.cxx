@@ -58,7 +58,7 @@ BackProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   this->proj_matrix_ptr.reset();
-  //BackProjectorByBin::set_defaults();
+  BackProjectorByBin::set_defaults();
 }
 
 void
@@ -68,7 +68,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Matrix Parameters");
   parser.add_stop_key("End Back Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
-  //BackProjectorByBin::initialise_keymap();
+  BackProjectorByBin::initialise_keymap();
 }
 
 
@@ -104,8 +104,8 @@ BackProjectorByBinUsingProjMatrixByBin(
 
 void
 BackProjectorByBinUsingProjMatrixByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr)
 
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);

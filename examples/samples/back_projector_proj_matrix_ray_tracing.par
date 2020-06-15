@@ -1,0 +1,12 @@
+  Back Projector parameters:=
+  ; Example parameter file for specifying the back projector for back_project
+  ; This example uses the ray-tracing matrix (which is the default) but would allow you 
+  ; to set extra variables
+  
+    type := Matrix
+      Back projector Using Matrix Parameters :=
+        Matrix type := Ray Tracing
+         Ray tracing matrix parameters :=
+         End Ray tracing matrix parameters :=
+        End Back Projector Using Matrix Parameters :=
+  End:=

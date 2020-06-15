@@ -10,14 +10,18 @@
   \endverbatim
 
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2017, University College London
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
+
     See STIR/LICENSE.txt for details
 */
-#include "stir/listmode/CListModeData.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListModeData.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
@@ -39,8 +43,8 @@ int main(int argc, char * argv[])
 	 << "start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds\n";
     exit(EXIT_FAILURE);
   }
-  shared_ptr<CListModeData> lm_data_ptr
-    (read_from_file<CListModeData>(argv[2]));
+  shared_ptr<ListModeData> lm_data_ptr
+    (read_from_file<ListModeData>(argv[2]));
   const std::string hc_filename = argv[1];
   std::ofstream headcurve(hc_filename.c_str());
   if (!headcurve)
@@ -51,8 +55,8 @@ int main(int argc, char * argv[])
 
   const double interval = argc>3 ? atof(argv[3]) : 1;
 
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
   double current_time = 0;
   bool first_timing_event_read=false;

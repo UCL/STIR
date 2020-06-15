@@ -45,17 +45,21 @@ class DynamicProjData :
 {
 public:
   static
-  DynamicProjData*
+  unique_ptr<DynamicProjData>
     read_from_file(const std::string& filename);
 
   DynamicProjData() {}
 
-  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+  DynamicProjData(const MultipleProjData& m):
+    MultipleProjData(m)
+  {}
+
+  DynamicProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
     : MultipleProjData(exam_info_sptr)
   {
   }
 
-  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  DynamicProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                     const int num_gates)
         : MultipleProjData(exam_info_sptr,
                     num_gates)

@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2003-2011, Hammersmith Imanet Ltd
+  Copyright (C) 2018-2019, University College London
   This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,23 @@
   \par Example .par file
   \code
   generate_image Parameters :=
+
+  ;;;;; a number of keywords as in Interfile
+  ; (possible values are given by using a | notation)
+
+  ; optional: values: PET|nucmed *defaults to PET for backwards compatibility)
+  imaging modality:=PET
+  ; optional patient position keywords (defaulting to "unknown")
+  ; orientation: allowed values: head_in|feet_in|other|unknown
+  patient orientation := head_in
+  ; rotation: allowed values: prone|supine|other|unknown
+  patient rotation :=  supine
+  ; optional keywords to set image timing
+  image duration (sec) := 20 ; defaults to -1 (i.e. unknown)
+  image relative start time (sec) := 0 ; defaults to zero
+
+  ;;;;; specific keywords
+
   output filename:= somefile
   ; optional keyword to specify the output file format
   ; example below uses Interfile with 16-bit unsigned integers
@@ -35,7 +53,6 @@
     ; range of the output type
     scale_to_write_data:= 1
   End Interfile Output File Format Parameters:=
-
 
   X output image size (in pixels):= 13
   Y output image size (in pixels):= 13
@@ -79,9 +96,13 @@
   \warning Does not currently support interactive parsing, so a par file 
   must be given on the command line.
 
+  \todo Code duplicates things from stir::InterfileHeader. This is bad as it might
+  miss new features being added there.
   \author Kris Thielemans
 */
 #include "stir/Shape/Shape3D.h"
+#include "stir/PatientPosition.h"
+#include "stir/ImagingModality.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -107,6 +128,14 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
+  void set_imaging_modality();
+  shared_ptr<ExamInfo> exam_info_sptr;
+  std::string imaging_modality_as_string;
+  ASCIIlist_type patient_orientation_values;
+  ASCIIlist_type patient_rotation_values;
+  int patient_orientation_index;
+  int patient_rotation_index;
+
   std::vector<shared_ptr<Shape3D> > shape_ptrs;
   shared_ptr<Shape3D> current_shape_ptr;
   std::vector<float> values;
@@ -125,6 +154,9 @@ private:
   float output_voxel_size_z;
 
   CartesianCoordinate3D<int> num_samples;
+
+  double image_duration;
+  double rel_start_time;
 };
 
 
@@ -143,6 +175,11 @@ void
 GenerateImage::
 set_defaults()
 {
+  exam_info_sptr.reset(new ExamInfo);
+  // need to default to PET for backwards compatibility
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
+  patient_orientation_index = 3; //unknown
+  patient_rotation_index = 5; //unknown
   output_image_size_x=128;
   output_image_size_y=128;
   output_image_size_z=1;
@@ -152,9 +189,17 @@ set_defaults()
   num_samples = CartesianCoordinate3D<int>(5,5,5);
   shape_ptrs.resize(0);
   values.resize(0);
+  image_duration = -1.0;
+  rel_start_time = 0;
   output_filename.resize(0);
   output_file_format_sptr = 
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+}
+
+void GenerateImage::set_imaging_modality()
+{
+  set_variable();
+  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
 }
 
 void 
@@ -162,6 +207,28 @@ GenerateImage::
 initialise_keymap()
 {
   add_start_key("generate_image Parameters");
+  // copy of InterfileHeader (TODO)
+  add_key("imaging modality",
+    KeyArgument::ASCII, (KeywordProcessor)&GenerateImage::set_imaging_modality,
+    &imaging_modality_as_string);
+  add_key("patient orientation",
+	  &patient_orientation_index,
+	  &patient_orientation_values);
+  add_key("patient rotation",
+	  &patient_rotation_index,
+	  &patient_rotation_values);
+  patient_orientation_values.push_back("head_in");
+  patient_orientation_values.push_back("feet_in");
+  patient_orientation_values.push_back("other");
+  patient_orientation_values.push_back("unknown"); //default
+
+  patient_rotation_values.push_back("supine");
+  patient_rotation_values.push_back("prone");
+  patient_rotation_values.push_back("right");
+  patient_rotation_values.push_back("left");
+  patient_rotation_values.push_back("other");
+  patient_rotation_values.push_back("unknown"); //default
+
   add_key("output filename",&output_filename);
   add_parsing_key("output file format type",&output_file_format_sptr);
   add_key("X output image size (in pixels)",&output_image_size_x);
@@ -174,7 +241,10 @@ initialise_keymap()
   add_key("Z number of samples to take per voxel", &num_samples.z());
   add_key("Y number of samples to take per voxel", &num_samples.y());
   add_key("X number of samples to take per voxel", &num_samples.x());
-  
+
+  add_key("image duration (sec)", &image_duration);
+  add_key("image relative start time (sec)", &rel_start_time);
+
   add_parsing_key("shape type", &current_shape_ptr);
   add_key("value", &current_value);
   add_key("next shape", KeyArgument::NONE,
@@ -189,6 +259,12 @@ GenerateImage::
 post_processing()
 {
   assert(values.size() == shape_ptrs.size());
+
+  if (patient_orientation_index<0 || patient_rotation_index<0)
+    return true;
+  // warning: relies on index taking same values as enums in PatientPosition
+  exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
+  exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
 
   if (!is_null_ptr( current_shape_ptr))
     {
@@ -297,8 +373,21 @@ compute()
     dynamic_cast<VoxelsOnCartesianGrid<float>& >(*density_ptr);
 
 #else
+
+  if (image_duration>0.0)
+    {
+      std::vector<double> start_times(1, rel_start_time);
+      std::vector<double> durations(1, image_duration);
+      TimeFrameDefinitions frame_defs(start_times, durations);
+      exam_info_sptr->set_time_frame_definitions(frame_defs);
+    }
+  else
+    {
+      warning("image duration not set, so time frame definitions will not be initialised");
+    }
   VoxelsOnCartesianGrid<float> 
-    current_image(IndexRange3D(0,output_image_size_z-1,
+    current_image(exam_info_sptr,
+                  IndexRange3D(0,output_image_size_z-1,
 			       -(output_image_size_y/2),
 			       -(output_image_size_y/2)+output_image_size_y-1,
 			       -(output_image_size_x/2),

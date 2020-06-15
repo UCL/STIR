@@ -26,7 +26,7 @@
   \author Kris Thielemans
 */
 #include "stir/ProjData.h"
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
 #include "stir/is_null_ptr.h"
@@ -39,9 +39,9 @@ class MultipleProjData : public ExamData
 {
 public:
 
-  MultipleProjData():ExamData() {};
+  MultipleProjData():ExamData() {}
 
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
     :ExamData(exam_info_sptr)
   {
   }
@@ -53,8 +53,12 @@ public:
   //! \author Nikos Efthimiou
   //! \details Convinience constructor which sets the number of gates.
   //! \warning The _proj_datas have been resized, but are still empty.
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                    const int num_gates);
+
+  static
+  unique_ptr<MultipleProjData>
+  read_from_file(const std::string &parameter_file);
 
   //N.E.14/07/16 Inherited from ExamData
   // //! Get a pointer to the exam information
@@ -132,9 +136,9 @@ public:
       return this->_proj_datas[index-1]; 
     }
 
-  const ProjDataInfo *
-    get_proj_data_info_ptr() const;
-  // return get_proj_data_sptr(1))->get_proj_data_info_ptr()
+  const shared_ptr<const ProjDataInfo>
+    get_proj_data_info_sptr() const;
+  // return get_proj_data_sptr(1))->get_proj_data_info_sptr()
 
   /*! \deprecated */
   unsigned int get_num_gates() const

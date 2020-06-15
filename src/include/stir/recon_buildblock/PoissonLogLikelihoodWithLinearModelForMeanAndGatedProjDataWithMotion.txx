@@ -1,6 +1,7 @@
 /*
  Copyright (C) 2006- 2009, Hammersmith Imanet Ltd
  Copyright (C) 2011 - 2013, King's College London
+ Copyright (C) 2018, University College London
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -100,13 +101,7 @@ set_defaults()
   this->_projector_pair_ptr.reset(
                                   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-  // image stuff
-  this->_output_image_size_xy=-1;
-  this->_output_image_size_z=-1;
-  this->_zoom=1.F;
-  this->_Xoffset=0.F;
-  this->_Yoffset=0.F;
-  this->_Zoffset=0.F;   // KT 20/06/2001 new
+  this->target_parameter_parser.set_defaults();
 }
 
 template<typename TargetT>
@@ -123,14 +118,7 @@ initialise_keymap()
   this->parser.add_key("maximum absolute segment number to process", &this->_max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->_zero_seg0_end_planes);
 
-  // image stuff
-  this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
-
-  // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-  // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
@@ -158,13 +146,7 @@ post_processing()
   this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
   
   // image stuff
-  if (this->_zoom <= 0)
-    { warning("zoom should be positive"); return true; }
-  
-  if (this->_output_image_size_xy!=-1 && this->_output_image_size_xy<1) // KT 10122001 appended_xy
-    { warning("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->_output_image_size_z!=-1 && this->_output_image_size_z<1) // KT 10122001 new
-    { warning("output image size z must be positive (or -1 as default)"); return true; }
+  this->target_parameter_parser.check_values();
 
   if (this->_additive_gated_proj_data_filename != "0")
     {
@@ -201,15 +183,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 construct_target_ptr() const
 {  
   return 
-    new VoxelsOnCartesianGrid<float> (*this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
-                                      static_cast<float>(this->_zoom), 
-                                      CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset), 
-                                                                   static_cast<float>(this->_Yoffset), 
-                                                                   static_cast<float>(this->_Xoffset)), 
-                                      CartesianCoordinate3D<int>(this->_output_image_size_z, 
-                                                                 this->_output_image_size_xy, 
-                                                                 this->_output_image_size_xy)
-                                      ); 
+    this->target_parameter_parser.create(this->get_input_data());
 }
 /***************************************************************
   subset balancing
@@ -339,6 +313,14 @@ set_input_data(const shared_ptr<ExamData> & arg)
 }
 
 template<typename TargetT>
+const GatedProjData&
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+get_input_data() const
+{
+  return *this->_gated_proj_data_sptr;
+}
+
+template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
@@ -361,7 +343,7 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   /*!todo define in the PoissonLogLikelihoodWithLinearModelForMean class to return Succeeded::yes 
     if (base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)
@@ -379,7 +361,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
 			 +this->_max_segment_num_to_process);

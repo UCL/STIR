@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -67,17 +68,27 @@ class MinimalInterfileHeader : public KeyParser
     void set_imaging_modality();
   
   public:
-    //! Get a pointer to the exam information
-    const ExamInfo*
-      get_exam_info_ptr() const;
-
     //! Get a shared pointer to the exam information
-    shared_ptr<ExamInfo>
+    shared_ptr<const ExamInfo>
       get_exam_info_sptr() const;
+    //! Get the exam information
+    const ExamInfo&
+      get_exam_info() const;
 
     std::string version_of_keys;
 
     std::string siemens_mi_version;
+  protected:
+    //! will be called when the version keyword is found
+    /*! This callback function provides an opportunity to change the keymap depending on the version
+        (which can be obtained from \c version_of_keys).
+
+        Just calls \c set_variable().
+
+        It is expected that if this is function is re-implemented in a derived class, it calls the
+        base-class version.
+    */
+    virtual void set_version_specific_keys();
   };
 
 /*!
@@ -122,8 +133,16 @@ private:
 
   
  protected:
+  //! Overload with specifics for STIR3.0 for backwards compatibility
+  virtual void set_version_specific_keys();
   virtual void read_matrix_info();
+  virtual void read_num_energy_windows();
   void read_frames_info();
+  //! \brief Get the number of datasets
+  /*! To be overloaded by derived classes if multiple "dimensions" are supported.
+      Default is just to use num_time_frames.
+  */
+  virtual int get_num_datasets() const { return num_time_frames; }
 
 public :
 
@@ -146,27 +165,31 @@ public :
   ByteOrder file_byte_order;
 	
   int			num_dimensions;
+  int			num_energy_windows;
   std::vector<std::string>	matrix_labels;
   std::vector<std::vector<int> > matrix_size; 
-  std::vector<double>	pixel_sizes;
+  std::vector<float>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
 
   // Acquisition parameters
   //!
-  //! \brief lower_en_window_thres
+  //! \brief lower_en_window_thresholds
   //! \details Low energy window limit
-  float lower_en_window_thres;
+  std::vector<float> lower_en_window_thresholds;
 
   //!
-  //! \brief upper_en_window_thres
+  //! \brief upper_en_window_thresholds
   //! \details High energy window limit
-  float upper_en_window_thres;
+  std::vector<float> upper_en_window_thresholds;
   // end acquisition parameters
   
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
+
+  float bed_position_horizontal;
+  float bed_position_vertical;
 };
 
 
@@ -182,11 +205,21 @@ class InterfileImageHeader : public InterfileHeader
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  int num_image_data_types;
+  std::vector<std::string> index_nesting_level;
+  std::vector<std::string> image_data_type_description;
 
 protected:
   virtual void read_matrix_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
+  /// Read image data types
+  void read_image_data_types();
+  //!
+  //! \brief Get the number of datasets
+  //! \details no. time frames * no. data types (kinetic params) * no. gates
+  //! Currently, this is only implemented for either multiple time frames OR multiple data types (gates not considered).
+  virtual int get_num_datasets() const { return num_time_frames*num_image_data_types; }
 
 };
 
@@ -219,7 +252,7 @@ public:
   int num_views;
   int num_bins;
   ProjDataFromStream::StorageOrder storage_order;
-  ProjDataInfo* data_info_ptr;
+  shared_ptr<ProjDataInfo> data_info_sptr;
 
 private:
   void resize_segments_and_set();

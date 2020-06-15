@@ -212,6 +212,8 @@ namespace stir
     distributed::receive_and_initialize_projectors(this->proj_pair_sptr, 0);
                 
     proj_pair_sptr->set_up(this->proj_data_info_sptr, this->target_sptr);
+    proj_pair_sptr->get_forward_projector_sptr()->set_input(this->target_sptr);
+    proj_pair_sptr->get_back_projector_sptr()->set_output(this->output_target_sptr);
                 
     //some values to configure tests
     int configurations[4];
@@ -373,7 +375,10 @@ namespace stir
                 //make reduction over computed output_images
                 distributed::first_iteration=false;
 		if (!is_null_ptr(output_image_ptr))
-		  distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
+                  {
+                    proj_pair_sptr->get_back_projector_sptr()->get_output(output_image_ptr);
+                  distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
+                  }
 		// and log_likelihood
 		if (!is_null_ptr(log_likelihood_ptr))
 		  {

@@ -61,8 +61,8 @@ FRAME_BASED_DT_CORR:
 #include "stir/utilities.h"
 
 #include "stir/listmode/LmToProjData.h"
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
@@ -117,9 +117,9 @@ typedef SegmentByView<elem_type> segment_type;
 
 static void 
 allocate_segments(VectorWithOffset<segment_type *>& segments,
-                       const int start_segment_index, 
+                       const int start_segment_index,
 	               const int end_segment_index,
-                       const ProjDataInfo* proj_data_info_ptr);
+                       const shared_ptr<const ProjDataInfo> proj_data_info_sptr);
 
 // In the next 2 functions, the 'output' parameter needs to be passed 
 // because save_and_delete_segments needs it when we're not using SegmentByView
@@ -138,7 +138,7 @@ shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
 		    const ExamInfo& exam_info,
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
 /**************************************************************
  The 3 parsing functions
@@ -175,7 +175,7 @@ initialise_keymap()
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
-  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
+  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the ListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...
   {
@@ -206,7 +206,7 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
+  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
@@ -216,7 +216,13 @@ post_processing()
   shared_ptr<ProjData> template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
-  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
+  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
+
+  // propagate relevant metadata
+  template_proj_data_info_ptr->set_bed_position_horizontal
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
+  template_proj_data_info_ptr->set_bed_position_vertical
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
 
   // initialise segment_num related variables
 
@@ -382,7 +388,7 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {  
   if (do_pre_normalisation)
    {
@@ -469,7 +475,7 @@ do_post_normalisation(Bin& bin) const
 	    }
 	  else
 	    {
-	      bin.set_bin_value(1/bin_efficiency);
+          bin.set_bin_value(bin.get_bin_value()/bin_efficiency);
 	    }	  
 	}
     }
@@ -495,7 +501,7 @@ get_compression_count(const Bin& bin) const
 ***************************************************************/
 void
 LmToProjData::
-process_new_time_event(const CListTime&)
+process_new_time_event(const ListTime&)
 {}
 
 
@@ -528,10 +534,10 @@ process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
-  VectorWithOffset<CListModeData::SavedPosition> 
+  VectorWithOffset<ListModeData::SavedPosition>
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
 	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
@@ -545,7 +551,7 @@ process_data()
       start_new_time_frame(current_frame_num);
 
       // construct ExamInfo appropriate for a single projdata with this time frame
-      ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_ptr());
+      ExamInfo this_frame_exam_info(lm_data_ptr->get_exam_info());
       {
         TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
         this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
@@ -553,14 +559,14 @@ process_data()
 
       // *********** open output file
       shared_ptr<iostream> output;
-      shared_ptr<ProjData> proj_data_ptr;
+      shared_ptr<ProjData> proj_data_sptr;
 
       {
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
       
-        proj_data_ptr = 
+        proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
       }
 
@@ -575,16 +581,16 @@ process_data()
 	 segments between start_segment_index and 
 	 start_segment_index+num_segments_in_memory.
        */
-       for (int start_segment_index = proj_data_ptr->get_min_segment_num(); 
-	    start_segment_index <= proj_data_ptr->get_max_segment_num(); 
+       for (int start_segment_index = proj_data_sptr->get_min_segment_num();
+	    start_segment_index <= proj_data_sptr->get_max_segment_num();
 	    start_segment_index += num_segments_in_memory) 
 	 {
 	 
 	   const int end_segment_index = 
-	     min( proj_data_ptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
+	     min( proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
     
 	   if (!interactive)
-	     allocate_segments(segments, start_segment_index, end_segment_index, proj_data_ptr->get_proj_data_info_ptr());
+	     allocate_segments(segments, start_segment_index, end_segment_index, proj_data_sptr->get_proj_data_info_sptr());
 
 	   // the next variable is used to see if there are more events to store for the current segments
 	   // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
@@ -594,7 +600,7 @@ process_data()
 	   long more_events = 
          do_time_frame? 1 : num_events_to_store;
 
-	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
+	   if (start_segment_index != proj_data_sptr->get_min_segment_num())
 	     {
 	       // we're going once more through the data (for the next batch of segments)
 	       cerr << "\nProcessing next batch of segments\n";
@@ -651,14 +657,14 @@ process_data()
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
-			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
-			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
-			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
-			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
+			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
+			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
+			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
+			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
-			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
-			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
+			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
+			 assert(bin.view_num()<=proj_data_sptr->get_max_view_num());
             
 			 // see if we increment or decrement the value in the sinogram
 			 const int event_increment =
@@ -711,7 +717,7 @@ process_data()
 	   if (!interactive)
 	   save_and_delete_segments(output, segments, 
 				    start_segment_index, end_segment_index, 
-				    *proj_data_ptr);  
+				    *proj_data_sptr);
 	 } // end of for loop for segment range
        cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
 	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
@@ -740,14 +746,14 @@ void
 allocate_segments( VectorWithOffset<segment_type *>& segments,
 		  const int start_segment_index, 
 		  const int end_segment_index,
-		  const ProjDataInfo* proj_data_info_ptr)
+		  const shared_ptr<const ProjDataInfo> proj_data_info_sptr)
 {
   
   for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
   {
 #ifdef USE_SegmentByView
     segments[seg] = new SegmentByView<elem_type>(
-    	proj_data_info_ptr->get_empty_segment_by_view (seg)); 
+    	proj_data_info_sptr->get_empty_segment_by_view (seg));
 #else
     segments[seg] = 
       new Array<3,elem_type>(IndexRange3D(0, proj_data_info_ptr->get_num_views()-1, 
@@ -787,7 +793,7 @@ shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
 		    const ExamInfo& exam_info,
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info));
 

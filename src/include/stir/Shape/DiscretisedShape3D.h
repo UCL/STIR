@@ -73,12 +73,8 @@ public:
       returns somewhat useful info. This has a consequence that the object cannot
       be constructed from its own parameter_info(). This is in contrast with most
       other shapes.
-
-      \warning any modifications to the object that this shared_ptr points to
-      (and hence any modifications to this shape) will have
-      confusing consequences.
   */
-  DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr);
+  DiscretisedShape3D(const shared_ptr<const DiscretisedDensity<3,float> >& density_sptr);
 
   //! Compare shapes
   /*! \todo currently not implemented (will call error() */
@@ -87,21 +83,7 @@ public:
   { error("DiscretisedShape3D::operator== not implemented. Sorry"); return false;}
 
   //! set origin of the shape
-  /*! \warning this will shift the origin of the object pointed to by \a density_ptr.
-     This is dangerous if you used the constructor taking a shared_ptr argument.*/
   virtual void set_origin(const CartesianCoordinate3D<float>&);
-
-#ifdef DOXYGEN_SKIP
-  // following lines here are only read by doxygen. 
-  // They include a comment to warn the user. 
-  // In actual fact, the function does not need to be reimplemented as it uses set_origin()
-  //! translate the object by shifting its origin
-  /*! \warning this will shift the origin of the object pointed to by \a density_ptr as it uses set_origin().
-      \warning This function is in fact not reimplemented from the
-      base_type.
-  */
-  void translate(const CartesianCoordinate3D<float>& direction);
-#endif
 
   //! Scale shape
   /*! \todo Not implemented (will call error()) */
@@ -152,10 +134,10 @@ public:
  const DiscretisedDensity<3,float>& get_discretised_density() const;
   
 private:
-  shared_ptr<DiscretisedDensity<3,float> > density_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > density_sptr;
   
   inline const VoxelsOnCartesianGrid<float>& image() const;
-  inline VoxelsOnCartesianGrid<float>& image();
+  // inline VoxelsOnCartesianGrid<float>& image();
 
   //! \name Parsing functions
   //@{

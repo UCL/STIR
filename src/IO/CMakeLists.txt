@@ -24,7 +24,6 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  ExamData
   OutputFileFormat 
   OutputFileFormat_default 
   InterfileOutputFileFormat
@@ -32,8 +31,11 @@ set(${dir_LIB_SOURCES}
   InterfileHeaderSiemens
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
-  InterfileParametricDensityOutputFileFormat
+  InterfileParametricDiscretisedDensityOutputFileFormat
+  MultiDynamicDiscretisedDensityOutputFileFormat
+
   GIPL_ImageFormat
+  stir_ecat_common 
 ) 
 
 # we can use IO from the itk library
@@ -48,7 +50,6 @@ if (LLN_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
     ECAT7OutputFileFormat stir_ecat7 
     ECAT6OutputFileFormat 
-    stir_ecat_common 
     ECAT7ParametricDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityInputFileFormat
@@ -61,6 +62,12 @@ if (CERN_ROOT_FOUND)
     InputStreamFromROOTFile
     InputStreamFromROOTFileForCylindricalPET
     InputStreamFromROOTFileForECATPET
+ )
+endif()
+
+if (HDF5_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    GEHDF5Wrapper
  )
 endif()
 
@@ -78,6 +85,10 @@ endif()
 
 if (CERN_ROOT_FOUND)
   target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
+endif()
+
+if (HDF5_FOUND)
+  target_link_libraries(IO ${HDF5_CXX_LIBRARIES})
 endif()
 
 if (AVW_FOUND)

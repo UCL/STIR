@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 5.0</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 5.0</h1>
+
+<p>This version is 95% backwards compatible with STIR 4.0 for the user (see below).
+Developers might need to make code changes as 
+detailed below.
+</p>
+<h2>Overall summary</h2>
+<p>
+<ul>
+  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</ul>
+</ul>  
+</p>
+
+
+<p>Of course, there is also the usual code-cleanup and 
+improvements to the documentation.
+</p>
+
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), and Robert Twyman (UCL).
+</p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li> 5.0.0 released ?/?/2020</li>
+      <!--
+      <li> 4.0.1 released 28/04/2020
+        <ul>
+          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
+          </ul>
+          -->
+    </ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+<h3>Changes breaking backwards compatibility from a user-perspective</h3>
+<ul>
+  <li> </li>
+  <ul>
+
+
+<h3>Bug fixes</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li>
+      Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+  </li>
+</li>
+</ul>
+
+
+<h3>Changed functionality</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+
+<h3>Build system</h3>
+<ul>
+<li>
+At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. Change C++ version
+by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
+documentation</a> for supported values.
+</li>
+</ul>
+
+
+<h3>Known problems</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+<h3>Minor bug fixes</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>Added documentation on new features</li> 
+<li>Also check the wiki in addition to the provided PDFs.
+</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>updated version number and added some clarification to the README.txt</li>
+ </ul>
+
+<h3>Other changes to tests</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<ul>
+<li>see above</li>
+</ul>
+
+<h3>Backward incompatibities</h3>
+<ul>
+    <li>Classes that used<code>InterfilePDFSHeader</code> now contains a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer, removing a memory leak.</li>
+    <li>Changes improving safety of use of <code>shared_ptr</code>:<br />
+      In the previous version of STIR, the use of <code>shared_ptr</code> allowed unsafe access to
+      the objects (although this never happened in distributed STIR code). We now prevent this with changes to the class interface (although there is still work to do):
+      <ul>
+        <li>Where possible, classes that internally contained a <code>shared_ptr&lt;ProjDataInfo&gt;</code> now contain a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>, and similar for <code>DiscretisedDensity</code></li>
+        <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>, similar for <code>ExamInfo</code>.</li>
+	<li>Corresponding constructors and some functions, including <code>set_up</code>, that accept <code>shared_ptr</code> now take a <code>shared_ptr</code> to a <code>const</code> object.</li>
+      </ul>
+      </li>
+  </ul>
+<li>
+</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+
+<h3>Other code changes</h3>
+<ul>
+<li>
+</li>
+</ul>
+
+</body>
+
+</html>

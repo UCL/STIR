@@ -149,17 +149,17 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
 
     if (num_segments_to_combine==-1)
     {
-      const ProjDataInfoCylindrical * proj_data_info_cyl_ptr =
-	dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_ptr->get_proj_data_info_ptr());
+      const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr =
+	dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
 
-      if (proj_data_info_cyl_ptr==0)
+      if (is_null_ptr(proj_data_info_cyl_sptr))
         num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
       else
 	{
-	  if (proj_data_info_cyl_ptr->get_min_ring_difference(0) != 
-	      proj_data_info_cyl_ptr->get_max_ring_difference(0)
+	  if (proj_data_info_cyl_sptr->get_min_ring_difference(0) !=
+	      proj_data_info_cyl_sptr->get_max_ring_difference(0)
 	      ||
-	      proj_data_info_cyl_ptr->get_num_segments()==1)
+	      proj_data_info_cyl_sptr->get_num_segments()==1)
 	    num_segments_to_combine = 1;
 	  else
 	    num_segments_to_combine = 3;
@@ -222,7 +222,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     {  
       const ProjDataInfoCylindrical& proj_data_info_cyl =
 	dynamic_cast<const ProjDataInfoCylindrical&>
-	(*proj_data_ptr->get_proj_data_info_ptr());
+	(*proj_data_ptr->get_proj_data_info_sptr());
 
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << std::endl; 
@@ -244,7 +244,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
   // check if segment 0 has direct sinograms
   {
-    const float tan_theta = proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0));
+    const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
 	warning("FBP2D: segment 0 has non-zero tan(theta) %g", tan_theta);
@@ -255,25 +255,25 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   float tangential_sampling;
   // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
   // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
-  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;
 
   // arc-correction if necessary
   ArcCorrection arc_correction;
   bool do_arc_correction = false;
-  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
-      (proj_data_ptr->get_proj_data_info_ptr()) != 0)
+  if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+      (proj_data_ptr->get_proj_data_info_sptr())))
     {
       // it's already arc-corrected
       arc_corrected_proj_data_info_sptr =
-	proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
       tangential_sampling =
 	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
-	(*proj_data_ptr->get_proj_data_info_ptr()).get_tangential_sampling();  
+	(*proj_data_ptr->get_proj_data_info_sptr()).get_tangential_sampling();  
     }
   else
     {
       // TODO arc-correct to voxel_size
-      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) ==
 	  Succeeded::no)
 	return Succeeded::no;
       do_arc_correction = true;
@@ -303,23 +303,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                     fft_size, 
                     float(alpha_ramp), float(fc_ramp));   
 
+  back_projector_sptr->start_accumulating_in_new_target();
 
-  density_ptr->fill(0);
-  
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
   set_num_threads();
-#ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
-#pragma omp parallel shared(symmetries_sptr, local_output_image_sptrs)
-#endif
   {
 #ifdef STIR_OPENMP
-#pragma omp single
-    {
-      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
-    }
 #pragma omp for schedule(runtime)  
 #endif
     for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
@@ -365,31 +356,17 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
         if(display_level>1) 
           display( viewgrams,viewgrams.find_max(),"Ramp filter");
 
-#ifdef STIR_OPENMP 
-        const int thread_num=omp_get_thread_num();
-        if(is_null_ptr(local_output_image_sptrs[thread_num]))
-          local_output_image_sptrs[thread_num].reset(density_ptr->get_empty_copy());
-
-        back_projector_sptr->back_project(*(local_output_image_sptrs[thread_num]), viewgrams);	  
-#else
         //  and backproject
-        back_projector_sptr->back_project(*density_ptr, viewgrams);
-#endif
+        back_projector_sptr->back_project(viewgrams);
       } 
   } // end of OPENMP pragma
-#ifdef STIR_OPENMP
-  // "reduce" data constructed by threads
-  {
-    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-        *density_ptr += *(local_output_image_sptrs[i]);
-  }
-#endif
+
+  back_projector_sptr->get_output(*density_ptr);
  
   // Normalise the image
   const ProjDataInfoCylindrical& proj_data_info_cyl =
     dynamic_cast<const ProjDataInfoCylindrical&>
-    (*proj_data_ptr->get_proj_data_info_ptr());
+    (*proj_data_ptr->get_proj_data_info_sptr());
 
   float magic_number = 1.F;
   if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) != 0)

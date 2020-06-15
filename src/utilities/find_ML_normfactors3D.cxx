@@ -61,16 +61,16 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const std::string out_filename_prefix = argv[1];
   const int num_rings = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_rings();
   const int num_detectors_per_ring = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_detectors_per_ring();
   const int num_transaxial_blocks =
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_transaxial_blocks();
   const int num_axial_blocks =
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_axial_blocks();
 
   CPUTimer timer;
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 #if 0
     {
       shared_ptr<ProjData> out_proj_data_ptr =
-        new ProjDataInterfile(model_data->get_proj_data_info_ptr()->clone,
+        new ProjDataInterfile(model_data->get_proj_data_info_sptr()->clone,
 			      output_file_name);      
       
       set_fan_data(*out_proj_data_ptr, model_fan_data);

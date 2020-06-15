@@ -163,7 +163,7 @@ FilterRootPrior<DataT>::set_defaults()
 
 template <typename DataT>
 Succeeded
-FilterRootPrior<DataT>::set_up (shared_ptr<DataT> const& target_sptr)
+FilterRootPrior<DataT>::set_up (shared_ptr<const DataT> const& target_sptr)
 {
   base_type::set_up(target_sptr);
 

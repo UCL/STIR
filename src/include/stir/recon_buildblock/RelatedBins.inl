@@ -61,10 +61,10 @@ RelatedBins::get_basic_bin() const
 
 #if 0
 const ProjDataInfo *
-RelatedBins:: get_proj_data_info_ptr() const
+RelatedBins:: get_proj_data_info_sptr() const
 {
  
-  return related_bins[0].get_proj_data_info_ptr();
+  return related_bins[0].get_proj_data_info_sptr();
 }
 #endif
 

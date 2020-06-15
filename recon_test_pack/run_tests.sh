@@ -293,6 +293,23 @@ echo ------------- tests on stir_math and correct_projdata ---------
      ThereWereErrors=1;
    fi
 
+  echo
+  echo ------------- Running KOSMAPOSL consistency test ------------- 
+  echo "(a Kernel with no neighbourhood should be equivalent to OSMAPOSL)"
+  echo Running ${INSTALL_DIR}KOSMAPOSL
+  ${MPIRUN} ${INSTALL_DIR}KOSMAPOSL KOSMAPOSL_test_consistency.par 1> KOSMAPOSL_test.log 2> KOSMAPOSL_test_stderr.log
+
+  echo '---- Comparing output of KOSMAPOSL subiter 5 (should be identical up to tolerance)'
+  echo Running ${INSTALL_DIR}compare_image
+  if ${INSTALL_DIR}compare_image my_test_image_k0_5.hv test_image_5.hv;
+  then
+  echo ---- This test seems to be ok !;
+  else
+  echo There were problems here!;
+  ThereWereErrors=1;
+  fi
+
+
 echo
 echo '--------------- End of tests -------------'
 echo
@@ -304,5 +321,6 @@ echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
 
+exit ${ThereWereErrors}
 
 

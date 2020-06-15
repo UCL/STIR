@@ -88,6 +88,17 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_sptr = 
     ProjData::read_from_file(argv[3]);
 
+  if (image_density_sptr->get_exam_info().imaging_modality.is_unknown() &&
+      template_proj_data_sptr->get_exam_info().imaging_modality.is_known())
+    {
+      ExamInfo exam_info(image_density_sptr->get_exam_info());
+      exam_info.imaging_modality = template_proj_data_sptr->get_exam_info().imaging_modality;
+      image_density_sptr->set_exam_info(exam_info);
+    }
+  else if (image_density_sptr->get_exam_info().imaging_modality !=
+      template_proj_data_sptr->get_exam_info().imaging_modality)
+    error("forward_project: Imaging modality should be the same for the image and the projection data");
+
   shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
   if (argc>=5)
     {
@@ -103,11 +114,11 @@ main (int argc, char * argv[])
       forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
     }
 
-  forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+  forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                              image_density_sptr );
 
-  ProjDataInterfile output_projdata(template_proj_data_sptr->get_exam_info_sptr(),
-                                    template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+  ProjDataInterfile output_projdata(image_density_sptr->get_exam_info_sptr(),
+                                    template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                                     output_filename);
   
   forw_projector_sptr->forward_project(output_projdata, *image_density_sptr);

@@ -79,9 +79,9 @@ START_NAMESPACE_STIR
    in DistributedWorker */
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
-                                     const shared_ptr<ExamInfo>& exam_info_sptr,
-                                     const ProjDataInfo * const proj_data_info_ptr,
-                                     const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
+                                     const shared_ptr<const ExamInfo>& exam_info_sptr,
+                                     const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
+                                     const shared_ptr<const DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled)
 {
@@ -105,7 +105,7 @@ void setup_distributable_computation(
   distributed::send_image_estimate(target_sptr.get(), -1);
         
   //sending Data_info
-  distributed::send_exam_and_proj_data_info(*exam_info_sptr, *proj_data_info_ptr, -1);
+  distributed::send_exam_and_proj_data_info(*exam_info_sptr, *proj_data_info_sptr, -1);
 
   //send projector pair
   distributed::send_projectors(proj_pair_sptr, -1);
@@ -246,7 +246,7 @@ void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(y->get_symmetries_ptr()->clone());
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
-    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->create_shared_clone(), 
+    distributed::test_related_viewgrams_master(y->get_proj_data_info_sptr()->create_shared_clone(), 
                                                symmetries_sptr, y.get(), next_receiver);
 #endif
 
@@ -348,17 +348,17 @@ void distributable_computation(
   if (distributed::test && distributed::first_iteration) 
     {
       distributed::test_image_estimate_master(input_image_ptr, 1);
-      distributed::test_parameter_info_master(proj_dat_ptr->get_proj_data_info_ptr()->parameter_info(), 1, "proj_data_info");
+      distributed::test_parameter_info_master(proj_dat_ptr->get_proj_data_info_sptr()->parameter_info(), 1, "proj_data_info");
       distributed::test_bool_value_master(true, 1);
       distributed::test_int_value_master(444, 1);
       distributed::test_int_values_master(1);
                 
-      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone(), 44, 0);
+      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_sptr()->create_shared_clone(), 44, 0);
       for ( int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos  <= viewgram.get_max_tangential_pos_num() ;++tang_pos)  
         for ( int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num() ;++ax_pos)
           viewgram[ax_pos][tang_pos]= rand();
                         
-      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone());
+      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_sptr()->create_shared_clone());
     }
 #endif
         
@@ -394,7 +394,7 @@ void distributable_computation(
     info("End-planes of segment 0 will be zeroed");
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
+    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_sptr(), *symmetries_ptr,
                                          min_segment_num, max_segment_num,
                                          subset_num, num_subsets);
         
@@ -407,19 +407,22 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
+  forward_projector_ptr->set_input(*input_image_ptr);
+  if (output_image_ptr != NULL)
+    back_projector_ptr->start_accumulating_in_new_target();
+
 #ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
   std::vector<double> local_log_likelihoods;
   std::vector<int> local_counts, local_count2s;
-#pragma omp parallel shared(local_output_image_sptrs, local_log_likelihoods, local_counts, local_count2s)
+#pragma omp parallel shared(local_log_likelihoods, local_counts, local_count2s)
 #endif
+
   // start of threaded section if openmp
   { 
 #ifdef STIR_OPENMP
 #pragma omp single
     {
-      std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
-      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+      info(boost::format("Starting loop with %1% threads") % omp_get_num_threads());
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
@@ -473,18 +476,13 @@ void distributable_computation(
                % view_segment_num.segment_num() % view_segment_num.view_num());
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
-               % view_segment_num.segment_num() % view_segment_num.view_num());
+               % view_segment_num.segment_num() % view_segment_num.view_num(), 2);
 #endif
+
 #ifdef STIR_OPENMP
-          if (output_image_ptr != NULL)
-            {
-              if(is_null_ptr(local_output_image_sptrs[thread_num]))
-                local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
-            }
-            
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
-                                        local_output_image_sptrs[thread_num].get(), input_image_ptr, y.get(), 
+                                        y.get(),
                                         local_counts[thread_num], local_count2s[thread_num], 
                                         is_null_ptr(log_likelihood_ptr)? NULL : &local_log_likelihoods[thread_num], 
                                         additive_binwise_correction_viewgrams.get(),
@@ -493,7 +491,7 @@ void distributable_computation(
 #else
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
-                                        output_image_ptr, input_image_ptr, y.get(), count, count2, log_likelihood_ptr, 
+                                        y.get(), count, count2, log_likelihood_ptr,
                                         additive_binwise_correction_viewgrams.get(),
                                         mult_viewgrams_sptr.get());
 #endif // OPENMP                                    
@@ -504,22 +502,17 @@ void distributable_computation(
 #ifdef STIR_OPENMP
   // "reduce" data constructed by threads
   {
-    if (output_image_ptr != NULL)
-      {
-        for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *output_image_ptr += *(local_output_image_sptrs[i]);
-      }
     if (log_likelihood_ptr != NULL)
       {
         for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *log_likelihood_ptr += local_log_likelihoods[i];
+          *log_likelihood_ptr += local_log_likelihoods[i]; // accumulate all (as they were initialised to zero)
       }
     count += std::accumulate(local_counts.begin(), local_counts.end(), 0);
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
   }
 #endif
+  if (output_image_ptr != NULL)
+    back_projector_ptr->get_output(*output_image_ptr);
 #ifdef STIR_MPI
   //end of iteration processing
 

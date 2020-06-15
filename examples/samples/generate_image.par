@@ -1,6 +1,22 @@
 generate_image Parameters :=
 ; a sample file on how to use generate_image
 
+;;;;; a number of keywords as in Interfile
+; (possible values are given by using a | notation)
+
+; optional: values: PET|nucmed *defaults to PET for backwards compatibility)
+imaging modality:=PET
+; optional patient position keywords (defaulting to "unknown")
+; orientation: allowed values: head_in|feet_in|other|unknown
+patient orientation := head_in
+; rotation: allowed values: prone|supine|other|unknown
+patient rotation :=  supine
+; optional keywords to set image timing
+image duration (sec) := 20 ; defaults to -1 (i.e. unknown)
+image relative start time (sec) := 0 ; defaults to zero
+
+;;;;; specific keywords
+
 output filename:=image
 ; optional keywords to specify the output file format
 ; example below uses Interfile with 16-bit unsigned integers

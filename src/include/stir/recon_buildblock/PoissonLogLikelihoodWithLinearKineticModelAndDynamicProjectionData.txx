@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013 University College London
+  Copyright (C) 2013m 2018, University College London
 
   This file is part of STIR.
 
@@ -95,13 +95,7 @@ set_defaults()
     reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
   this->_normalisation_sptr.reset(new TrivialBinNormalisation);
 
-  // image stuff
-  this->_output_image_size_xy=-1;
-  this->_output_image_size_z=-1;
-  this->_zoom=1.F;
-  this->_Xoffset=0.F;
-  this->_Yoffset=0.F;
-  this->_Zoffset=0.F;   // KT 20/06/2001 new
+  this->target_parameter_parser.set_defaults();
 
   // Modelling Stuff
   this->_patlak_plot_sptr.reset();
@@ -121,14 +115,7 @@ initialise_keymap()
   this->parser.add_key("maximum absolute segment number to process", &this->_max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->_zero_seg0_end_planes);
 
-  // image stuff
-  this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
-
-  // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-  // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
@@ -159,23 +146,15 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
     { warning("Error reading input file %s", _input_filename.c_str()); return true; }
-  // image stuff
-  if (this->_zoom <= 0)
-    { warning("zoom should be positive"); return true; }
-  
-  if (this->_output_image_size_xy!=-1 && this->_output_image_size_xy<1) // KT 10122001 appended_xy
-    { warning("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->_output_image_size_z!=-1 && this->_output_image_size_z<1) // KT 10122001 new
-    { warning("output image size z must be positive (or -1 as default)"); return true; }
-
+  this->target_parameter_parser.check_values();
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_dyn_proj_data_filename);
-      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
@@ -196,15 +175,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 construct_target_ptr() const
 {  
   return
-    new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
-                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
-                                                                                static_cast<float>(this->_zoom),
-                                                                                CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
-                                                                                                             static_cast<float>(this->_Yoffset),
-                                                                                                             static_cast<float>(this->_Xoffset)),
-                                                                                CartesianCoordinate3D<int>(this->_output_image_size_z,
-                                                                                                           this->_output_image_size_xy,
-                                                                                                           this->_output_image_size_xy)));
+    this->target_parameter_parser.create(this->get_input_data());
 }
 /***************************************************************
   subset balancing
@@ -320,7 +291,7 @@ set_num_subsets(const int num_subsets)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (this->_max_segment_num_to_process==-1)
     this->_max_segment_num_to_process =
@@ -333,8 +304,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(
-					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+  const shared_ptr<ProjDataInfo> proj_data_info_sptr(
+					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
                          +this->_max_segment_num_to_process);
@@ -410,6 +381,14 @@ set_input_data(const shared_ptr<ExamData> & arg)
 }
 
 template<typename TargetT>
+const DynamicProjData&
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+get_input_data() const
+{
+  return *this->_dyn_proj_data_sptr;
+}
+
+template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
@@ -438,8 +417,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                                       const TargetT &current_estimate, 
                                                       const int subset_num)
 {
-  assert(subset_num>=0);
-  assert(subset_num<this->num_subsets);
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("compute_sub_gradient_without_penalty subset_num out-of-range error");
 
   DynamicDiscretisedDensity dyn_gradient=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;

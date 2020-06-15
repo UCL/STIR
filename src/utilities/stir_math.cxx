@@ -541,7 +541,7 @@ main(int argc, char **argv)
 	{
 	  all_proj_data[0] = ProjData::read_from_file(argv[0]);
 	  shared_ptr<ProjDataInfo> 
-	    output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_ptr()->clone());
+	    output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_sptr()->clone());
 	  if (max_segment_num_to_process>=0)
 	    {
 	      output_proj_data_info_sptr->
@@ -555,7 +555,7 @@ main(int argc, char **argv)
       if (num_files>1)
 	{
 	  // reset time-frames as we don't really know what's happening with all this
-	  ExamInfo new_exam_info(*out_proj_data_ptr->get_exam_info_ptr());
+	  ExamInfo new_exam_info(out_proj_data_ptr->get_exam_info());
 	  new_exam_info.set_time_frame_definitions(TimeFrameDefinitions());
 	  out_proj_data_ptr->set_exam_info(new_exam_info);
 	}
