@@ -58,6 +58,16 @@ public:
 
     explicit GEHDF5Wrapper(const std::string& filename);
 
+    Succeeded check_file(); // AB todo, maybe private makes more sense?
+
+    // bool is_list_file(const std::string& filename);
+
+    bool is_list_file();
+    bool is_sino_file();
+    bool is_geo_file();
+    bool is_norm_file();
+
+
     Succeeded open(const std::string& filename);
 
     Succeeded initialise_listmode_data(const std::string& path = "");
@@ -157,9 +167,14 @@ private:
 
     //    int dataset_norm_Ndims = 0;
 
+    bool is_list = false;
+    bool is_sino = false;
+    bool is_geo  = false;
+    bool is_norm = false;
+
     std::string m_address;
 
-    bool is_signa = false; //AB todo remove
+    bool is_signa = false; //AB todo remove (or add more)
     unsigned int  rdf_ver = 0;
 
     hsize_t m_size_of_record_signature = 0;
