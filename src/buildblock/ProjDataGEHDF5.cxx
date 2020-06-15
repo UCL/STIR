@@ -49,40 +49,36 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                                   const std::string& input_filename) :
-    ProjData()
+ProjDataGEHDF5::ProjDataGEHDF5(const std::string& input_filename) :
+  ProjData()
 {
-    m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
-    exam_info_sptr = m_input_hdf5_sptr->get_exam_info_sptr();
-    proj_data_info_sptr = input_proj_data_info_sptr->create_shared_clone();
-
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
+    this->initialise_from_wrapper();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
-    ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr) :
+  ProjData(),
+  m_input_hdf5_sptr(input_hdf5_sptr)
 {
-    m_input_hdf5_sptr = input_hdf5;
-
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->initialise_from_wrapper();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<const ExamInfo> input_exam_info_sptr,
-                                   shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
-    ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
+void ProjDataGEHDF5::initialise_from_wrapper()
 {
-    m_input_hdf5_sptr = input_hdf5;
+    this->exam_info_sptr = this->m_input_hdf5_sptr->get_exam_info_sptr();
+    shared_ptr<Scanner> scanner_sptr = m_input_hdf5_sptr->get_scanner_sptr();
+    this->proj_data_info_sptr =
+      ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                            /*span*/ 2,
+                                            /* max_delta*/ scanner_sptr->get_num_rings()-1,
+                                            /* num_views */ scanner_sptr->get_num_detectors_per_ring()/2,
+                                            /* num_tangential_poss */ scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                            /* arc_corrected */ false
+                                             );
 
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->initialise_segment_sequence();
+    this->initialise_ax_pos_offset();
+    this->initialise_viewgram_buffer();
 }
 
 void ProjDataGEHDF5::initialise_viewgram_buffer()

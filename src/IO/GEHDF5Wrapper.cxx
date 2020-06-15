@@ -181,7 +181,7 @@ GEHDF5Wrapper::check_file()
 
         return Succeeded::yes;
     }
-    id(is_sino_file())
+    if(is_sino_file())
     {
         is_sino = true;
          if (rdf_ver == 9) //AB todo: is this valid for 10?

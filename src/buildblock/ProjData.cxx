@@ -52,6 +52,10 @@
 #ifdef HAVE_IE
 #include "stir_experimental/IO/GE/ProjDataIE.h"
 #endif
+#ifdef HAVE_HDF5
+#include "stir/ProjDataGEHDF5.h"
+#include "stir/IO/GEHDF5Wrapper.h"
+#endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/is_null_ptr.h"
@@ -203,6 +207,17 @@ read_from_file(const string& filename,
   }
 #endif // RDF
       
+#ifdef HAVE_HDF5
+  if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))
+    {
+#ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
+#endif
+      shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
+      if (!is_null_ptr(ptr))
+	return ptr;
+  }
+#endif // GE HDF5
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
 	"Unsupported file format? Aborting.",

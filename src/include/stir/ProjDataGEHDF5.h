@@ -53,20 +53,14 @@ class ProjDataGEHDF5 : public ProjData
 {
 public:
 
-    static ProjDataGEHDF5* ask_parameters(const bool on_disk = true);
+    explicit ProjDataGEHDF5(const std::string& input_filename);
 
-    explicit ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                              const std::string& input_filename);
-
-    explicit ProjDataGEHDF5(shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                              shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
-
-    explicit ProjDataGEHDF5
-      (shared_ptr<const ExamInfo> input_exam_info_sptr,
-                              shared_ptr<const ProjDataInfo> input_proj_data_info_sptr,
-                              shared_ptr<GEHDF5Wrapper> input_hdf5);
+    explicit ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
 
 private:
+    //! called to get data from m_input_hdf5_sptr
+    void initialise_from_wrapper();
+
     unsigned int find_segment_offset(const int segment_num) const;
     //! Set Viewgram<float>
     Succeeded set_viewgram(const Viewgram<float>& v);
