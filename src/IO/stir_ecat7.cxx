@@ -1380,7 +1380,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
     
   std::vector<int> segment_sequence_in_stream =
-    find_segment_sequence_in_stream(*pdi_ptr);
+    find_segment_sequence(*pdi_ptr);
   
   Matval matval;
   mat_numdoc(matrix->matnum, &matval);
