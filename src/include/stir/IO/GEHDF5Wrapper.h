@@ -40,6 +40,8 @@
 START_NAMESPACE_STIR
 
 namespace GE {
+enum class GE_scanner {not_GE, unknown, Signa};        // Just GE scanner names if needed
+
 namespace RDF_HDF5 {
 
 /*!
@@ -54,19 +56,25 @@ public:
 
     static bool check_GE_signature(const std::string& filename);
 
+    static GE_scanner check_current_signature(H5::H5File& file);
+
     explicit GEHDF5Wrapper();
 
     explicit GEHDF5Wrapper(const std::string& filename);
 
     Succeeded check_file(); // AB todo, maybe private makes more sense?
 
+    
+
     // bool is_list_file(const std::string& filename);
 
     bool is_list_file();
-    bool is_sino_file();
-    bool is_geo_file();
-    bool is_norm_file();
 
+    bool is_sino_file();
+
+    bool is_geo_file();
+
+    bool is_norm_file();
 
     Succeeded open(const std::string& filename);
 

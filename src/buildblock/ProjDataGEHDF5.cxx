@@ -107,8 +107,8 @@ Array<1,unsigned char> buffer(total_size);
 //    {seg_ax_offset[find_segment_index_in_sequence(segment_num)], 0, 0};
     std::array<unsigned long long int, 3> block = {1, 1, 1};
 
-m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, buffer);
-std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
+    m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, buffer);
+    std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
 }
 
 }
