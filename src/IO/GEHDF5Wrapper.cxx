@@ -301,7 +301,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     //! \todo P.W: Find the crystal gaps and other info missing.
     H5::DataSet str_detector_axial_size = file.openDataSet("/HeaderData/SystemGeometry/detectorAxialSize");
     H5::DataSet str_intrinsic_tilt = file.openDataSet("/HeaderData/SystemGeometry/transaxial_crystal_0_offset");
-    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension1Size");
+    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size"); // Bug in RDF9 makes this dimension2Size isntead of the expected dimension1Size
     H5::DataSet str_axial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/axialCrystalsPerBlock");
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
     H5::DataSet str_physical_scanner_radius = file.openDataSet("/HeaderData/SystemGeometry/sourceRadius");
@@ -496,12 +496,11 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
             // Read size of dimensions
             m_dataspace.getSimpleExtentDims( dims, NULL);
 
-            std::cout << dims[0] << ", " << dims[1] << ", " << dims[2] <<std::endl;
-            // AB: todo fill these in. 
-            // AB: they are different ?
-            m_NX_SUB = 1981;    // hyperslab dimensions
-            m_NY_SUB = 27;
-            m_NZ_SUB = 357;
+            // AB for signa, these where [1981,27,357] and [45,448,357]
+            m_NX_SUB = dims[0] ;    // hyperslab dimensions
+            m_NY_SUB = dims[1];
+            m_NZ_SUB = dims[2];
+            // AB todo: ??? why are these different?
             m_NX = 45;        // output buffer dimensions
             m_NY = 448;
             m_NZ = 357;
@@ -617,32 +616,54 @@ Succeeded GEHDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char
 }
 
 // Developed for ProjData
-Succeeded GEHDF5Wrapper::get_from_dataset(const std::array<unsigned long long int, 3>& offset,
-                                        const std::array<unsigned long long int, 3>& count,
-                                        const std::array<unsigned long long int, 3>& stride,
-                                        const std::array<unsigned long long int, 3>& block,
-                                        Array<1, unsigned char> &output)
+Succeeded GEHDF5Wrapper::get_from_dataset(Array<1, unsigned char> &output,
+                                          const std::array<unsigned long long int, 3>& offset,
+                                          const std::array<unsigned long long int, 3>& stride)
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(3, count.data());
+    // AB: this is only used for proj data, so for now lets ensure the file is sino. If its reused, we can change this. 
+    if(!is_sino_file())
+        error("File is not sinogram. Aborting");
+
+    if(offset[0] != 0 || offset[1] != 0 || offset[2] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1 || stride[2] != 1)
+        error("Only {1,1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[3] {m_NX_SUB, m_NY_SUB, m_NZ_SUB} ;
+    output.resize(m_NX_SUB*m_NY_SUB*m_NZ_SUB);
+
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(3, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check read data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 //PW Developed for Geometric Correction Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
-                                        const std::array<unsigned long long int, 2>& count,
-                                        const std::array<unsigned long long int, 2>& stride,
-                                        const std::array<unsigned long long int, 2>& block,
-                                        Array<1, unsigned int> &output)
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride)
+                                        
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, count.data());
+    // AB: this is only used for geo data, so for now lets ensure the file is sino. If its reused, we can change this. 
+    if(!is_geo_file())
+        error("File is Geometry. Aborting");
+
+    if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1)
+        error("Only {1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    output.resize(m_NX_SUB*m_NY_SUB);
+
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
@@ -651,14 +672,25 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long
 }
 
 //PW Developed for Efficiency Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
-                                        const std::array<unsigned long long int, 2>& count,
-                                        const std::array<unsigned long long int, 2>& stride,
-                                        const std::array<unsigned long long int, 2>& block,
-                                        Array<1, float> &output)
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride)
+                                        
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, count.data());
+    if(!is_norm_file())
+        error("The file provided is not norm data. Aborting");
+        
+    if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1)
+        error("Only {1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    output.resize(m_NX_SUB*m_NY_SUB);
+
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
@@ -669,12 +701,11 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<1, unsigned int>& output)
 {
-    std::ostringstream datasetname;
-    datasetname << "/Singles/CrystalSingles/sample" << current_id;
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet("/Singles/CrystalSingles/sample" + std::to_string(current_id))));
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output.release_data_ptr();
 
@@ -685,12 +716,11 @@ Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<2, unsigned int>& output)
 {
-    std::ostringstream datasetname;
-    datasetname << "/Singles/CrystalSingles/sample" << current_id;
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet("/Singles/CrystalSingles/sample" + std::to_string(current_id))));
     m_dataset_sptr->read( output[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output[current_id].release_data_ptr();
 

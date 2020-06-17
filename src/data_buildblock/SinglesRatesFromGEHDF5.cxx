@@ -114,7 +114,7 @@ int
 SinglesRatesFromGEHDF5::
 get_end_time_slice_index(double t) const {
 
-  int slice_index = 0;
+  unsigned int slice_index = 0;
 
   // Start with an initial estimate.
   if ( _singles_time_interval != 0 ) {
@@ -159,7 +159,7 @@ int
 SinglesRatesFromGEHDF5::
 get_start_time_slice_index(double t) const {
 
-  int slice_index = 0;
+  unsigned int slice_index = 0;
 
   // Start with an initial estimate.
   if ( _singles_time_interval != 0 ) {
@@ -203,10 +203,10 @@ get_start_time_slice_index(double t) const {
 // Get rates using time slice and singles bin indices.
 int 
 SinglesRatesFromGEHDF5::
-get_singles_rate(int singles_bin_index, int time_slice) const {
+get_singles_rate(unsigned int singles_bin_index,unsigned int time_slice) const {
   
   // Check ranges.
-  int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
+  unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
        time_slice < 0 || time_slice >= m_num_time_slices ) {
@@ -222,9 +222,9 @@ get_singles_rate(int singles_bin_index, int time_slice) const {
 // Set a singles rate by bin index and time slice.
 void 
 SinglesRatesFromGEHDF5::
-set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
+set_singles_rate(unsigned int singles_bin_index, unsigned int time_slice, unsigned int new_rate) {
   
-  int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
+  unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
        time_slice >= 0 && time_slice < m_num_time_slices ) {
@@ -340,7 +340,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     
     while ( slice < m_num_time_slices)
     {
-        m_input_sptr->get_dataspace(slice+1, (*m_singles_sptr)[slice] );
+        m_input_sptr->get_singles(slice+1, (*m_singles_sptr)[slice] );
         ++slice;
     }
 
