@@ -316,7 +316,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     int default_num_arccorrected_bins = 331;
     float inner_ring_radius = 311.8;
     //AB TODO check if following is valid
-    float average_depth_of_interaction = 0.5f*(effective_ring_diameter-inner_ring_diameter); // Assuming this to be constant. Although this will change depending on scanner.
+    float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
     //! \todo : bin_size
