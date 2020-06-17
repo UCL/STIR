@@ -332,12 +332,12 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
 
-    m_num_time_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
+    m_num_time_slices = m_input_sptr->get_num_singles_samples();
     // Allocate the main array.
     m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
 
     m_input_sptr->initialise_singles_data();
-    
+    std::cout << "Num time slices: " << m_num_time_slices << std::endl;
     while ( slice < m_num_time_slices)
     {
         m_input_sptr->get_singles(slice+1, (*m_singles_sptr)[slice] );

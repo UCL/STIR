@@ -83,24 +83,29 @@ void ProjDataGEHDF5::initialise_from_wrapper()
 
 void ProjDataGEHDF5::initialise_viewgram_buffer()
 {
-//! \todo NE: Get the number of tof positions from the proj_data_info_ptr
-const unsigned int num_tof_poss = 27;
-const unsigned int max_num_axial_poss = 1981;
-const unsigned int get_num_viewgrams = 224;
+  //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
+  const unsigned int num_tof_poss = 27;
+  const unsigned int max_num_axial_poss = 1981;
+  const unsigned int get_num_viewgrams = 224;
 
-this->tof_data.resize(IndexRange4D(get_num_viewgrams, get_num_tangential_poss(), num_tof_poss, max_num_axial_poss));
+  //this->tof_data.resize(IndexRange4D(get_num_viewgrams, max_num_axial_poss, num_tof_poss, get_num_tangential_poss()));
+  if (!this->tof_data.empty())
+    error("there is already data loaded. Aborting");
+  tof_data.reserve(get_max_view_num()+1-get_min_view_num());
+  Array<3,unsigned char> buffer;
+  std::cout << "the following may segfault" << std::endl;
 
-Array<1,unsigned char> buffer;
+  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
+  {
+      m_input_hdf5_sptr->initialise_proj_data("", view_num + 1);
 
- for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
-{
-    m_input_hdf5_sptr->initialise_proj_data("", view_num + 1);
+      std::array<unsigned long long int, 3> offset = {0, 0, 0};
+      std::array<unsigned long long int, 3> block  = {1, 1, 1};
+      m_input_hdf5_sptr->get_from_dataset(buffer, offset, block);
+      this->tof_data.push_back(buffer);
 
-    std::array<unsigned long long int, 3> offset = {0, 0, 0};
-    std::array<unsigned long long int, 3> block  = {1, 1, 1};
-    m_input_hdf5_sptr->get_from_dataset(buffer, offset, block);
-    std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
-}
+      //std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
+  }
 
 }
 

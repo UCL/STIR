@@ -32,6 +32,7 @@
 */
 
 #include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/IndexRange3D.h" // AB: todo, this should be in .h?
 #include <sstream>
 
 START_NAMESPACE_STIR
@@ -48,6 +49,12 @@ bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
     return (check_current_signature(file)!=GE_scanner::not_GE);
     
 }
+
+unsigned int GEHDF5Wrapper::get_num_singles_samples()
+{
+    return m_num_singles_samples;
+}
+
 
 // AB Cheks if its a GE Scanner file, and returns which one it is (for now only Signa supported, 1)
 // treat the output as a bool if you onyl want to know if its a GE file. 
@@ -388,6 +395,10 @@ Succeeded GEHDF5Wrapper::initialise_exam_info()
     unsigned int num_time_slices = 0;
     H5::DataSet timeframe_dataspace = file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
     timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
+
+    if(is_list_file())
+        m_num_singles_samples=num_time_slices;
+
     std::vector<std::pair<double, double> >tf(num_time_slices);
 
     for (unsigned int i = 0; i < num_time_slices; ++i)
@@ -606,17 +617,18 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 // Developed for listmode access
 Succeeded GEHDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* output)
 {
+    if(!is_list_file())
+        error("The file provided is not list data. Aborting");
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
     m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(m_size_of_record_signature);
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 // Developed for ProjData
-Succeeded GEHDF5Wrapper::get_from_dataset(Array<1, unsigned char> &output,
+Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
                                           const std::array<unsigned long long int, 3>& offset,
                                           const std::array<unsigned long long int, 3>& stride)
 {
@@ -631,7 +643,10 @@ Succeeded GEHDF5Wrapper::get_from_dataset(Array<1, unsigned char> &output,
 
     // We know the size of the DataSpace
     hsize_t str_dimsf[3] {m_NX_SUB, m_NY_SUB, m_NZ_SUB} ;
-    output.resize(m_NX_SUB*m_NY_SUB*m_NZ_SUB);
+    std::cout << "Its me that fails, right?" <<  m_NX_SUB<<m_NY_SUB<<m_NZ_SUB<<std::endl;
+    output.resize(IndexRange3D(m_NX_SUB,m_NY_SUB,m_NZ_SUB));
+    output.resize(IndexRange3D(m_NX_SUB,m_NY_SUB,m_NZ_SUB));
+    std::cout << " right" <<std::endl;
 
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
     m_memspace_ptr= new H5::DataSpace(3, str_dimsf);
@@ -667,7 +682,6 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
@@ -679,7 +693,7 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
 {
     if(!is_norm_file())
         error("The file provided is not norm data. Aborting");
-        
+
     if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
         error("Only {0,0} offset supported. Aborting");
     if(stride[0] != 1 || stride[1] != 1)
@@ -694,7 +708,6 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
@@ -704,12 +717,13 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
 Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<1, unsigned int>& output)
 {
-
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet("/Singles/CrystalSingles/sample" + std::to_string(current_id))));
+    if(!is_list_file())
+            error("The file provided is not listmode. Aborting");
+    // AB: todo check if output allocated data size is correct.
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(current_id))));
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
@@ -719,12 +733,13 @@ Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
 Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<2, unsigned int>& output)
 {
-
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet("/Singles/CrystalSingles/sample" + std::to_string(current_id))));
+    if(!is_list_file())
+            error("The file provided is not listmode. Aborting");
+    // AB: todo check if output allocated data size is correct.
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(current_id))));
     m_dataset_sptr->read( output[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output[current_id].release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 

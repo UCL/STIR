@@ -100,7 +100,7 @@ public:
     Succeeded get_singles(const unsigned int current_id,
                             Array<2, unsigned int>& output);
 
-    Succeeded get_from_dataset(Array<1, unsigned char> &output, 
+    Succeeded get_from_dataset(Array<3, unsigned char> &output, 
                                const std::array<unsigned long long, 3> &offset={0,0,0},
                                const std::array<unsigned long long, 3> &stride={1,1,1});
 
@@ -119,6 +119,7 @@ public:
 
     inline hsize_t get_dataset_size() const;
 
+    unsigned int get_num_singles_samples();
  //   inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
     //! Get shared pointer to exam info
@@ -157,6 +158,7 @@ private:
 
     uint64_t m_list_size = 0;
 
+    unsigned int m_num_singles_samples;
     //    shared_ptr<H5::DataSet> dataset_norm_sptr;
 
     //    shared_ptr<H5::DataSet> dataset_projdata_sptr;

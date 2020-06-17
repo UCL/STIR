@@ -85,7 +85,7 @@ private:
     shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
 
     std::vector< int > segment_sequence;
-    Array<4, unsigned char> tof_data;
+    std::vector<Array<3,unsigned char> > tof_data;
 };
 
 } // namespace
