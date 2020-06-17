@@ -343,7 +343,7 @@ set_frame_definitions(const TimeFrameDefinitions& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   shared_ptr<ProjDataInfo> 
     proj_data_info_sptr(this->_gated_proj_data_sptr->get_proj_data_info_sptr()->clone());
