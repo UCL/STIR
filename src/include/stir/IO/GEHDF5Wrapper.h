@@ -94,37 +94,32 @@ public:
     Succeeded get_from_dataspace(std::streampos &current_offset,
                                  char* output);
 
-    Succeeded get_dataspace(const unsigned int current_id,
+    Succeeded get_singles(const unsigned int current_id,
                             Array<1, unsigned int> &output);
 
-    Succeeded get_dataspace(const unsigned int current_id,
+    Succeeded get_singles(const unsigned int current_id,
                             Array<2, unsigned int>& output);
 
-    Succeeded get_from_dataset(const std::array<unsigned long long, 3> &offset,
-                                 const std::array<unsigned long long, 3> &count,
-                                 const std::array<unsigned long long, 3> &stride,
-                                 const std::array<unsigned long long, 3> &block,
-                                 Array<1, unsigned char> &output);
+    Succeeded get_from_dataset(Array<3, unsigned char> &output, 
+                               const std::array<unsigned long long, 3> &offset={0,0,0},
+                               const std::array<unsigned long long, 3> &stride={1,1,1});
 
     //PW Here I added the get_from_2d_dataset which must read the hyperslab and memory space for 2D array
     // with specific offset, count, stride and block. This dataset is read from this memory space and then
     // into a 1D output array.
-    Succeeded get_from_2d_dataset(const std::array<unsigned long long, 2> &offset,
-                                 const std::array<unsigned long long, 2> &count,
-                                 const std::array<unsigned long long, 2> &stride,
-                                 const std::array<unsigned long long, 2> &block,
-                                 Array<1, unsigned int> &output);
+    Succeeded get_from_2d_dataset(Array<1, unsigned int> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride);
 
-    Succeeded get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
-                                            const std::array<unsigned long long int, 2>& count,
-                                            const std::array<unsigned long long int, 2>& stride,
-                                            const std::array<unsigned long long int, 2>& block,
-                                            Array<1, float> &output);
+    Succeeded get_from_2d_dataset(Array<1,float> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride);
 
     inline H5::DataSet* get_dataset_ptr() const;
 
     inline hsize_t get_dataset_size() const;
 
+    unsigned int get_num_singles_samples();
  //   inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
     //! Get shared pointer to exam info
@@ -163,6 +158,7 @@ private:
 
     uint64_t m_list_size = 0;
 
+    unsigned int m_num_singles_samples;
     //    shared_ptr<H5::DataSet> dataset_norm_sptr;
 
     //    shared_ptr<H5::DataSet> dataset_projdata_sptr;

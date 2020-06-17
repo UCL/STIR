@@ -83,33 +83,27 @@ void ProjDataGEHDF5::initialise_from_wrapper()
 
 void ProjDataGEHDF5::initialise_viewgram_buffer()
 {
-//! \todo NE: Get the number of tof positions from the proj_data_info_ptr
-const unsigned int num_tof_poss = 27;
-const unsigned int max_num_axial_poss = 1981;
-const unsigned int get_num_viewgrams = 224;
-unsigned int total_size = get_num_tangential_poss() * num_tof_poss * max_num_axial_poss;
+  //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
+  const unsigned int num_tof_poss = 27;
+  const unsigned int max_num_axial_poss = 1981;
+  const unsigned int get_num_viewgrams = 224;
 
-//stir::Array<1, unsigned char> tmp(0, total_size-1);
-this->tof_data.resize(IndexRange4D(get_num_viewgrams, get_num_tangential_poss(), num_tof_poss, max_num_axial_poss));
+  //this->tof_data.resize(IndexRange4D(get_num_viewgrams, max_num_axial_poss, num_tof_poss, get_num_tangential_poss()));
+  if (!this->tof_data.empty())
+    error("there is already data loaded. Aborting");
 
-Array<1,unsigned char> buffer(total_size);
+  tof_data.reserve(get_max_view_num()+1-get_min_view_num());
+  Array<3,unsigned char> buffer;
 
- for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
-{
-    m_input_hdf5_sptr->initialise_proj_data("", view_num + 1);
+  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
+  {
+      m_input_hdf5_sptr->initialise_proj_data("", view_num + 1);
 
-    std::array<unsigned long long int, 3> stride = {1, 1, 1};
-    const std::array<unsigned long long int, 3> count  = {max_num_axial_poss, num_tof_poss,static_cast<unsigned long long int>(get_num_tangential_poss())};
-//    {static_cast<unsigned long long int>(get_num_axial_poss(segment_num)), num_tof_poss,
-//     static_cast<unsigned long long int>(get_num_tangential_poss())};
-
-    std::array<unsigned long long int, 3> offset = {0,0,0};
-//    {seg_ax_offset[find_segment_index_in_sequence(segment_num)], 0, 0};
-    std::array<unsigned long long int, 3> block = {1, 1, 1};
-
-    m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, buffer);
-    std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
-}
+      std::array<unsigned long long int, 3> offset = {0, 0, 0};
+      std::array<unsigned long long int, 3> block  = {1, 1, 1};
+      m_input_hdf5_sptr->get_from_dataset(buffer, offset, block);
+      this->tof_data.push_back(buffer);
+  }
 
 }
 

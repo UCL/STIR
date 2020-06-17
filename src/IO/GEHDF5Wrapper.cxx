@@ -32,6 +32,7 @@
 */
 
 #include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/IndexRange3D.h" // AB: todo, this should be in .h?
 #include <sstream>
 
 START_NAMESPACE_STIR
@@ -48,6 +49,12 @@ bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
     return (check_current_signature(file)!=GE_scanner::not_GE);
     
 }
+
+unsigned int GEHDF5Wrapper::get_num_singles_samples()
+{
+    return m_num_singles_samples;
+}
+
 
 // AB Cheks if its a GE Scanner file, and returns which one it is (for now only Signa supported, 1)
 // treat the output as a bool if you onyl want to know if its a GE file. 
@@ -300,7 +307,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     //! \todo P.W: Find the crystal gaps and other info missing.
     H5::DataSet str_detector_axial_size = file.openDataSet("/HeaderData/SystemGeometry/detectorAxialSize");
     H5::DataSet str_intrinsic_tilt = file.openDataSet("/HeaderData/SystemGeometry/transaxial_crystal_0_offset");
-    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension1Size");
+    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size"); // Bug in RDF9 makes this dimension2Size isntead of the expected dimension1Size
     H5::DataSet str_axial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/axialCrystalsPerBlock");
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
     H5::DataSet str_physical_scanner_radius = file.openDataSet("/HeaderData/SystemGeometry/sourceRadius");
@@ -386,6 +393,10 @@ Succeeded GEHDF5Wrapper::initialise_exam_info()
     unsigned int num_time_slices = 0;
     H5::DataSet timeframe_dataspace = file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
     timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
+
+    if(is_list_file())
+        m_num_singles_samples=num_time_slices;
+
     std::vector<std::pair<double, double> >tf(num_time_slices);
 
     for (unsigned int i = 0; i < num_time_slices; ++i)
@@ -494,12 +505,11 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const std::string& path,
             // Read size of dimensions
             m_dataspace.getSimpleExtentDims( dims, NULL);
 
-            std::cout << dims[0] << ", " << dims[1] << ", " << dims[2] <<std::endl;
-            // AB: todo fill these in. 
-            // AB: they are different ?
-            m_NX_SUB = 1981;    // hyperslab dimensions
-            m_NY_SUB = 27;
-            m_NZ_SUB = 357;
+            // AB for signa, these where [1981,27,357] and [45,448,357]
+            m_NX_SUB = dims[0] ;    // hyperslab dimensions
+            m_NY_SUB = dims[1];
+            m_NZ_SUB = dims[2];
+            // AB todo: ??? why are these different?
             m_NX = 45;        // output buffer dimensions
             m_NY = 448;
             m_NZ = 357;
@@ -605,94 +615,144 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 // Developed for listmode access
 Succeeded GEHDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* output)
 {
+    if(!is_list_file())
+        error("The file provided is not list data. Aborting");
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
     m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(m_size_of_record_signature);
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 // Developed for ProjData
-Succeeded GEHDF5Wrapper::get_from_dataset(const std::array<unsigned long long int, 3>& offset,
-                                        const std::array<unsigned long long int, 3>& count,
-                                        const std::array<unsigned long long int, 3>& stride,
-                                        const std::array<unsigned long long int, 3>& block,
-                                        Array<1, unsigned char> &output)
+Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
+                                          const std::array<unsigned long long int, 3>& offset,
+                                          const std::array<unsigned long long int, 3>& stride)
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(3, count.data());
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
-    output.release_data_ptr();
+    // AB: this is only used for proj data, so for now lets ensure the file is sino. If its reused, we can change this. 
+    if(!is_sino_file())
+        error("File is not sinogram. Aborting");
 
-    //  // TODO error checking
+    if(offset[0] != 0 || offset[1] != 0 || offset[2] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1 || stride[2] != 1)
+        error("Only {1,1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[3] {m_NX_SUB, m_NY_SUB, m_NZ_SUB} ;
+
+
+    // get a partial buffer here,
+    std::vector<unsigned char> aux_buffer(m_NX_SUB*m_NY_SUB*m_NZ_SUB);
+    
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(3, str_dimsf);
+    m_dataset_sptr->read(static_cast<void*>(aux_buffer.data()), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+
+    // the data is not in the correct size if its RDF9, so we will need to transpose the output of the data read. 
+    if(rdf_ver==9)
+    {
+        output.resize(IndexRange3D(m_NZ_SUB,m_NY_SUB,m_NX_SUB));
+        // now transpose the input.
+        // AB: todo 
+        // todo 1: test
+        // todo 2: change order of loops, this cache misses lots (swap i,k loops)
+        for(unsigned int i=0;i<m_NX_SUB;++i)
+            for(unsigned int j=0;j<m_NY_SUB;++j)
+                for(unsigned int k=0;k<m_NZ_SUB;++k)
+                    output[k][j][i]=aux_buffer[k*m_NZ_SUB*m_NY_SUB+j*m_NX_SUB+i];
+        output.release_data_ptr();
+    }
+    
+
     return Succeeded::yes;
 }
 
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check read data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 //PW Developed for Geometric Correction Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
-                                        const std::array<unsigned long long int, 2>& count,
-                                        const std::array<unsigned long long int, 2>& stride,
-                                        const std::array<unsigned long long int, 2>& block,
-                                        Array<1, unsigned int> &output)
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride)
+                                        
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, count.data());
+    // AB: this is only used for geo data, so for now lets ensure the file is sino. If its reused, we can change this. 
+    if(!is_geo_file())
+        error("File is Geometry. Aborting");
+
+    if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1)
+        error("Only {1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    output.resize(m_NX_SUB*m_NY_SUB);
+
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 //PW Developed for Efficiency Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
-                                        const std::array<unsigned long long int, 2>& count,
-                                        const std::array<unsigned long long int, 2>& stride,
-                                        const std::array<unsigned long long int, 2>& block,
-                                        Array<1, float> &output)
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
+                                             const std::array<unsigned long long int, 2>& offset,
+                                             const std::array<unsigned long long int, 2>& stride)
+                                        
 {
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, count.data());
+    if(!is_norm_file())
+        error("The file provided is not norm data. Aborting");
+
+    if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Only {0,0} offset supported. Aborting");
+    if(stride[0] != 1 || stride[1] != 1)
+        error("Only {1,1} stride supported. Aborting");
+
+    // We know the size of the DataSpace
+    hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    output.resize(m_NX_SUB*m_NY_SUB);
+
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<1, unsigned int>& output)
 {
-    std::ostringstream datasetname;
-    datasetname << "/Singles/CrystalSingles/sample" << current_id;
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+    if(!is_list_file())
+            error("The file provided is not listmode. Aborting");
+    // AB: todo check if output allocated data size is correct.
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(current_id))));
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output.release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_singles(const unsigned int current_id,
                                      Array<2, unsigned int>& output)
 {
-    std::ostringstream datasetname;
-    datasetname << "/Singles/CrystalSingles/sample" << current_id;
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+    if(!is_list_file())
+            error("The file provided is not listmode. Aborting");
+    // AB: todo check if output allocated data size is correct.
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(current_id))));
     m_dataset_sptr->read( output[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output[current_id].release_data_ptr();
 
-    //  // TODO error checking
     return Succeeded::yes;
 }
 
