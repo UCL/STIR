@@ -1,13 +1,13 @@
 # add registries
 list(APPEND STIR_REGISTRIES 
 #  ${STIR_LOCAL}/listmode_buildblock/UCL_listmode_registries 
-  ${CMAKE_CURRENT_SOURCE_DIR}/buildblock/local_buildblock_registries
-  ${CMAKE_CURRENT_SOURCE_DIR}/recon_buildblock/local_recon_buildblock_registries)
+  ${CMAKE_CURRENT_SOURCE_DIR}/buildblock/local_buildblock_registries.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/recon_buildblock/local_recon_buildblock_registries.cxx)
 
 # add to list of libraries to include in linking
 #list(APPEND STIR_LIBRARIES UCL_listmode_buildblock) 
-list(APPEND STIR_LIBRARIES local_buildblock local_motion_buildblock)
-list(APPEND STIR_LIBRARIES local_recon_buildblock) 
+list(PREPEND STIR_LIBRARIES local_buildblock local_motion_buildblock)
+list(PREPEND STIR_LIBRARIES local_recon_buildblock) 
 #list(APPEND STIR_LIBRARIES local_listmode_buildblock)
 
 # check CMakeLists in next directories
@@ -24,3 +24,6 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/motion_utilities motion_utilities)
 #add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/utilities utilities_HI)
 
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/motion_test motion_test)
+
+SET(STIR_REGISTRIES ${STIR_REGISTRIES} PARENT_SCOPE)
+SET(STIR_LIBRARIES ${STIR_LIBRARIES} PARENT_SCOPE)
