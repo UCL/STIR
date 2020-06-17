@@ -643,15 +643,30 @@ Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
 
     // We know the size of the DataSpace
     hsize_t str_dimsf[3] {m_NX_SUB, m_NY_SUB, m_NZ_SUB} ;
-    std::cout << "Its me that fails, right?" <<  m_NX_SUB<<m_NY_SUB<<m_NZ_SUB<<std::endl;
-    output.resize(IndexRange3D(m_NX_SUB,m_NY_SUB,m_NZ_SUB));
-    output.resize(IndexRange3D(m_NX_SUB,m_NY_SUB,m_NZ_SUB));
-    std::cout << " right" <<std::endl;
 
+
+    // get a partial buffer here,
+    std::vector<unsigned char> aux_buffer(m_NX_SUB*m_NY_SUB*m_NZ_SUB);
+    
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
     m_memspace_ptr= new H5::DataSpace(3, str_dimsf);
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
-    output.release_data_ptr();
+    m_dataset_sptr->read(static_cast<void*>(aux_buffer.data()), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+
+    // the data is not in the correct size if its RDF9, so we will need to transpose the output of the data read. 
+    if(rdf_ver==9)
+    {
+        output.resize(IndexRange3D(m_NZ_SUB,m_NY_SUB,m_NX_SUB));
+        // now transpose the input.
+        // AB: todo 
+        // todo 1: test
+        // todo 2: change order of loops, this cache misses lots (swap i,k loops)
+        for(unsigned int i=0;i<m_NX_SUB;++i)
+            for(unsigned int j=0;j<m_NY_SUB;++j)
+                for(unsigned int k=0;k<m_NZ_SUB;++k)
+                    output[k][j][i]=aux_buffer[k*m_NZ_SUB*m_NY_SUB+j*m_NX_SUB+i];
+        output.release_data_ptr();
+    }
+    
 
     return Succeeded::yes;
 }
