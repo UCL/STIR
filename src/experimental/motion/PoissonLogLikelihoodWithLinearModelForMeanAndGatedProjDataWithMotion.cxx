@@ -306,10 +306,10 @@ set_zero_seg0_end_planes(const bool arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
-set_additive_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
 
-  this->_gated_additive_proj_data_sptr = arg;
+  this->_gated_additive_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
@@ -335,6 +335,46 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>
 set_frame_definitions(const TimeFrameDefinitions& arg)
 {
   this->frame_defs = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
+set_normalisations(const VectorWithOffset<shared_ptr<BinNormalisation> >& arg)
+{
+  this->_normalisation_sptrs = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
+set_forward_transformations(const VectorWithOffset<shared_ptr<DataProcessor<TargetT> > >& arg)
+{
+  this->_forward_transformations = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
+set_input_data(const shared_ptr<ExamData> & arg)
+{
+    this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>&)
+{
+    error("Shouldn't be used, but implementation is required to make this class non-abstract.");
+}
+
+template<typename TargetT>
+const GatedProjData&
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>::
+get_input_data() const
+{
+  return *this->_gated_proj_data_sptr;
 }
 
 /***************************************************************

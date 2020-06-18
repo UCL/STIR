@@ -85,10 +85,14 @@ public:
   void set_proj_data_sptr(const shared_ptr<GatedProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  void set_additive_proj_data_sptr(const shared_ptr<GatedProjData>&);
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
+  void set_normalisations(const VectorWithOffset<shared_ptr<BinNormalisation> >&);
+  void set_forward_transformations(const VectorWithOffset<shared_ptr<DataProcessor<TargetT> > >&);
+  void set_input_data(const shared_ptr<ExamData> &);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   //@}
 
   virtual
@@ -100,6 +104,9 @@ public:
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 							  const TargetT& target, 
 							  const int subset_num);
+
+    /// Get input data
+    virtual const GatedProjData& get_input_data() const;
 protected:
 
   virtual
