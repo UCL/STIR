@@ -4,6 +4,8 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir_experimental/SeparableGaussianImageFilter.h"
+#include "stir_experimental/motion/NonRigidObjectTransformationUsingBSplines.h"
+#include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
 #ifdef SANIDA
 #include "stir_experimental/DAVImageFilter3D.h"
 #include "stir_experimental/ModifiedInverseAverigingImageFilter.h"
@@ -23,6 +25,8 @@
 
 START_NAMESPACE_STIR
 static SeparableGaussianImageFilter<float>::RegisterIt dummy4;
+static Transform3DObjectImageProcessor<float>::RegisterIt dummy667;
+static NonRigidObjectTransformationUsingBSplines<3,float>::RegisterIt dummy668;
 #ifdef SANIDA
 static ModifiedInverseAverigingImageFilter<float>::RegisterIt dummy2;
 static DAVImageFilter3D<float>::RegisterIt dummy1;
