@@ -40,7 +40,6 @@
 START_NAMESPACE_STIR
 
 namespace GE {
-enum class GE_scanner {not_GE, unknown, Signa};        // Just GE scanner names if needed
 
 namespace RDF_HDF5 {
 
@@ -56,13 +55,13 @@ public:
 
     static bool check_GE_signature(const std::string& filename);
 
-    static GE_scanner check_current_signature(H5::H5File& file);
+    static bool check_current_signature(H5::H5File& file);
 
     explicit GEHDF5Wrapper();
 
     explicit GEHDF5Wrapper(const std::string& filename);
 
-    Succeeded check_file(); // AB todo, maybe private makes more sense?
+    
 
     
 
@@ -78,27 +77,22 @@ public:
 
     Succeeded open(const std::string& filename);
 
-    Succeeded initialise_listmode_data(const std::string& path = "");
+    Succeeded initialise_listmode_data();
 
-    Succeeded initialise_singles_data(const std::string& path = "");
+    Succeeded initialise_singles_data();
 
-    Succeeded initialise_proj_data(const std::string& path = "",
-                                        const unsigned int view_num = 0);
+    Succeeded initialise_proj_data(const unsigned int view_num);
     //PW Here I added the geo_factors_data_initialisation. This should initialise the factors for
     // specific path and slice_num.
-    Succeeded initialise_geo_factors_data(const std::string& path = "",
-                                          const unsigned int slice_num=0);
+    Succeeded initialise_geo_factors_data(const unsigned int slice_num);
 
-    Succeeded initialise_efficiency_factors(const std::string& path);
+    Succeeded initialise_efficiency_factors();
 
-    Succeeded get_from_dataspace(std::streampos &current_offset,
-                                 char* output);
+    Succeeded get_list_data(char* output,
+                            std::streampos& current_offset);
 
-    Succeeded get_singles(const unsigned int current_id,
-                            Array<1, unsigned int> &output);
-
-    Succeeded get_singles(const unsigned int current_id,
-                            Array<2, unsigned int>& output);
+    Succeeded get_singles(Array<1, unsigned int> &output,
+                          const unsigned int current_id);
 
     Succeeded get_from_dataset(Array<3, unsigned char> &output, 
                                const std::array<unsigned long long, 3> &offset={0,0,0},
@@ -108,12 +102,12 @@ public:
     // with specific offset, count, stride and block. This dataset is read from this memory space and then
     // into a 1D output array.
     Succeeded get_from_2d_dataset(Array<1, unsigned int> &output,
-                                             const std::array<unsigned long long int, 2>& offset,
-                                             const std::array<unsigned long long int, 2>& stride);
+                                             const std::array<unsigned long long int, 2>& offset={0,0},
+                                             const std::array<unsigned long long int, 2>& stride={1,1});
 
     Succeeded get_from_2d_dataset(Array<1,float> &output,
-                                             const std::array<unsigned long long int, 2>& offset,
-                                             const std::array<unsigned long long int, 2>& stride);
+                                             const std::array<unsigned long long int, 2>& offset={0,0},
+                                             const std::array<unsigned long long int, 2>& stride={1,1});
 
     inline H5::DataSet* get_dataset_ptr() const;
 
@@ -148,6 +142,8 @@ protected:
 
 private:
 
+    Succeeded check_file(); 
+
     H5::H5File file;
 
     shared_ptr<H5::DataSet> m_dataset_sptr;
@@ -159,17 +155,6 @@ private:
     uint64_t m_list_size = 0;
 
     unsigned int m_num_singles_samples;
-    //    shared_ptr<H5::DataSet> dataset_norm_sptr;
-
-    //    shared_ptr<H5::DataSet> dataset_projdata_sptr;
-
-    //    shared_ptr<H5::DataSet> dataset_singles_sptr;
-
-    //    int dataset_singles_Ndims = 0;
-
-    //    int dataset_projdata_Ndims = 0;
-
-    //    int dataset_norm_Ndims = 0;
 
     bool is_list = false;
     bool is_sino = false;
@@ -178,7 +163,6 @@ private:
 
     std::string m_address;
 
-    bool is_signa = false; //AB todo remove (or add more)
     unsigned int  rdf_ver = 0;
 
     hsize_t m_size_of_record_signature = 0;
@@ -188,6 +172,7 @@ private:
     int m_NX_SUB = 0;    // hyperslab dimensions
     int m_NY_SUB = 0;
     int m_NZ_SUB = 0;
+    // AB: todo these are never used. 
     int m_NX = 0;        // output buffer dimensions
     int m_NY = 0;
     int m_NZ = 0;

@@ -203,7 +203,7 @@ get_start_time_slice_index(double t) const {
 // Get rates using time slice and singles bin indices.
 int 
 SinglesRatesFromGEHDF5::
-get_singles_rate(unsigned int singles_bin_index,unsigned int time_slice) const {
+get_singles_rate(int singles_bin_index,int time_slice) const {
   
   // Check ranges.
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
@@ -222,7 +222,7 @@ get_singles_rate(unsigned int singles_bin_index,unsigned int time_slice) const {
 // Set a singles rate by bin index and time slice.
 void 
 SinglesRatesFromGEHDF5::
-set_singles_rate(unsigned int singles_bin_index, unsigned int time_slice, unsigned int new_rate) {
+set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
@@ -331,16 +331,15 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     // Get total number of bins for this type of scanner.
     const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
-
-    m_num_time_slices = m_input_sptr->get_num_singles_samples();
-    // Allocate the main array.
-    m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
-
     m_input_sptr->initialise_singles_data();
-    std::cout << "Num time slices: " << m_num_time_slices << std::endl;
+
+    // Allocate the main array.
+    m_num_time_slices = m_input_sptr->get_num_singles_samples();
+    m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
+    
     while ( slice < m_num_time_slices)
     {
-        m_input_sptr->get_singles(slice+1, (*m_singles_sptr)[slice] );
+        m_input_sptr->get_singles((*m_singles_sptr)[slice],slice+1);
         ++slice;
     }
 
