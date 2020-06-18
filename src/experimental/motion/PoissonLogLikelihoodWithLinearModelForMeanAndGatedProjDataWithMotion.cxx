@@ -120,7 +120,7 @@ initialise_keymap()
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew Parameters");
-  this->parser.add_key("input filename",&this->_input_filename);
+  this->parser.add_key("input file",&this->_input_filename);
 
   this->parser.add_key("maximum absolute segment number to process", &this->max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->zero_seg0_end_planes);
@@ -219,7 +219,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
   { warning("You need to specify an input file"); return true; }
  
-  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
+  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
 
  // image stuff
   if (this->zoom <= 0)
@@ -233,8 +233,8 @@ post_processing()
 
   if (this->_additive_projection_data_filename != "0")
   {
-    this->_gated_additive_proj_data_sptr
-      .reset(GatedProjData::read_from_file(this->_additive_projection_data_filename));
+    this->_gated_additive_proj_data_sptr =
+              GatedProjData::read_from_file(this->_additive_projection_data_filename);
   };
 
   // read time frame def 

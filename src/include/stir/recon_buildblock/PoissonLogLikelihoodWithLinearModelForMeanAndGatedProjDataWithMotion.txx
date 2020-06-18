@@ -143,7 +143,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
     { warning("You need to specify an input filename"); return true; }
   
-  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
+  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
   
   // image stuff
   this->target_parameter_parser.check_values();
@@ -151,14 +151,14 @@ post_processing()
   if (this->_additive_gated_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_gated_proj_data_filename);
-      this->_additive_gated_proj_data_sptr.reset(
-                                                 GatedProjData::read_from_file(this->_additive_gated_proj_data_filename));
+      this->_additive_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_additive_gated_proj_data_filename);
     }
   if (this->_normalisation_gated_proj_data_filename != "1")
     {
       info(boost::format("Reading normalisation projdata data %1%") % this->_normalisation_gated_proj_data_filename);
-      this->_normalisation_gated_proj_data_sptr.reset(
-                                                      GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename));
+      this->_normalisation_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename);
     }
 
   this->_time_gate_definitions.read_gdef_file(this->_gate_definitions_filename);
