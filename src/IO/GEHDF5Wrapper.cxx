@@ -427,7 +427,7 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
     hsize_t dims_out[dataset_list_Ndims];
     m_dataspace.getSimpleExtentDims( dims_out, NULL);
     m_list_size=dims_out[0];
-    const long long unsigned int tmp_size_of_record_signature = m_size_of_record_signature;
+    const hsize_t tmp_size_of_record_signature = m_size_of_record_signature;
     m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
                             &tmp_size_of_record_signature);
 
@@ -457,10 +457,11 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
         m_NX_SUB = dims[0];    // hyperslab dimensions
         m_NY_SUB = dims[1];
         m_NZ_SUB = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
-        
+#if 0
         m_NX = dims[0];       // output buffer dimensions
         m_NY = dims[1];
-        m_NZ = (rank==2)? 1 : dims[2]; 
+        m_NZ = (rank==2)? 1 : dims[2];
+#endif
     }
     else
         return Succeeded::no;
@@ -493,11 +494,12 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
         m_NX_SUB = dims[0] ;    // hyperslab dimensions
         m_NY_SUB = dims[1];
         m_NZ_SUB = dims[2];
+#if 0
         // AB todo: ??? why are these different?
         m_NX = 45;        // output buffer dimensions
         m_NY = 448;
         m_NZ = 357;
-
+#endif
         {
             m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address+std::to_string(view_num))));
             m_dataspace = m_dataset_sptr->getSpace();
@@ -536,10 +538,11 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const unsigned int slice_nu
             m_NX_SUB = dims[0];    // hyperslab dimensions
             m_NY_SUB = dims[1];
             m_NZ_SUB = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
-
+#if 0
             m_NX = dims[0];        // output buffer dimensions
             m_NY = dims[1];
             m_NZ = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
+#endif
         }
     }
     else
@@ -571,10 +574,11 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
         m_NX_SUB = dims[0];    // hyperslab dimensions
         m_NY_SUB = dims[1]/scanner_sptr->get_num_detectors_per_ring();
         m_NZ_SUB = (rank==2)? 1 : dims[2]; 
-        
+#if 0
         m_NX = dims[0];       // output buffer dimensions
         m_NY = dims[1]/scanner_sptr->get_num_detectors_per_ring();
-        m_NZ = (rank==2)? 1 : dims[2]; 
+        m_NZ = (rank==2)? 1 : dims[2];
+#endif
     }
     else
         return Succeeded::no;
@@ -598,8 +602,8 @@ Succeeded GEHDF5Wrapper::get_list_data( char* output,std::streampos& current_off
 
 // Developed for ProjData
 Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
-                                          const std::array<unsigned long long int, 3>& offset,
-                                          const std::array<unsigned long long int, 3>& stride)
+                                          const std::array<hsize_t, 3>& offset,
+                                          const std::array<hsize_t, 3>& stride)
 {
     // AB: this is only used for proj data, so for now lets ensure the file is sino. If its reused, we can change this. 
     if(!is_sino_file())
@@ -650,8 +654,8 @@ Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
 
 //PW Developed for Geometric Correction Factors
 Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
-                                             const std::array<unsigned long long int, 2>& offset,
-                                             const std::array<unsigned long long int, 2>& stride)
+                                             const std::array<hsize_t, 2>& offset,
+                                             const std::array<hsize_t, 2>& stride)
                                         
 {
     // AB: this is only used for geo data, so for now lets ensure the file is sino. If its reused, we can change this. 
@@ -677,8 +681,8 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
 
 //PW Developed for Efficiency Factors
 Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
-                                             const std::array<unsigned long long int, 2>& offset,
-                                             const std::array<unsigned long long int, 2>& stride)
+                                             const std::array<hsize_t, 2>& offset,
+                                             const std::array<hsize_t, 2>& stride)
                                         
 {
     if(!is_norm_file())
