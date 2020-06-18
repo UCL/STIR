@@ -309,13 +309,12 @@ read_norm_data(const string& filename)
     const int num_rings = scanner_ptr->get_num_rings();
     const int num_detectors_per_ring = scanner_ptr->get_num_detectors_per_ring();
 
-    m_input_hdf5_sptr->initialise_efficiency_factors("");
+    m_input_hdf5_sptr->initialise_efficiency_factors();
 
     unsigned int total_size = num_rings*num_detectors_per_ring;
-    stir::Array<1, float> buffer(0, total_size-1);
-    std::array<unsigned long long int, 2> stride = {1, 1};
-    std::array<unsigned long long int, 2> offset = {0, 0};
-    m_input_hdf5_sptr->get_from_2d_dataset(buffer ,offset, stride);
+    stir::Array<1, float> buffer(0, total_size-1);;
+    m_input_hdf5_sptr->get_from_2d_dataset(buffer);
+
     std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
     }
 

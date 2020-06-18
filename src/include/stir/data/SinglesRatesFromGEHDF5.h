@@ -125,7 +125,7 @@ public:
  //
  // The singles rate returned is the rate for a whole singles unit.
  //
- int get_singles_rate(unsigned int singles_bin_index,unsigned int time_slice) const;
+ int get_singles_rate(int singles_bin_index, int time_slice) const;
 
  float get_singles_rate(const DetectionPosition<>& det_pos,
                  const double start_time,
@@ -135,7 +135,7 @@ public:
  //
  // The singles rate returned is the rate for a whole singles unit.
  //
- void set_singles_rate(unsigned int singles_bin_index,unsigned int time_slice,unsigned int new_rate);
+ void set_singles_rate(int singles_bin_index, int time_slice, int new_rate);
 
 
  //! Rebin the .BLF slices into a different set of consecutive slices.
