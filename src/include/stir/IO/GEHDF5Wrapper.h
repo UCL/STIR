@@ -111,19 +111,19 @@ public:
                           const unsigned int current_id);
 
     Succeeded get_from_dataset(Array<3, unsigned char> &output, 
-                               const std::array<unsigned long long, 3> &offset={0,0,0},
-                               const std::array<unsigned long long, 3> &stride={1,1,1});
+                               const std::array<hsize_t, 3> &offset={0,0,0},
+                               const std::array<hsize_t, 3> &stride={1,1,1});
 
     //PW Here I added the get_from_2d_dataset which must read the hyperslab and memory space for 2D array
     // with specific offset, count, stride and block. This dataset is read from this memory space and then
     // into a 1D output array.
     Succeeded get_from_2d_dataset(Array<1, unsigned int> &output,
-                                             const std::array<unsigned long long int, 2>& offset={0,0},
-                                             const std::array<unsigned long long int, 2>& stride={1,1});
+                                  const std::array<hsize_t, 2>& offset={0,0},
+                                  const std::array<hsize_t, 2>& stride={1,1});
 
     Succeeded get_from_2d_dataset(Array<1,float> &output,
-                                             const std::array<unsigned long long int, 2>& offset={0,0},
-                                             const std::array<unsigned long long int, 2>& stride={1,1});
+                                  const std::array<hsize_t, 2>& offset={0,0},
+                                  const std::array<hsize_t, 2>& stride={1,1});
 
     inline H5::DataSet* get_dataset_ptr() const;
 
@@ -168,7 +168,7 @@ private:
 
     H5::DataSpace* m_memspace_ptr;
 
-    uint64_t m_list_size = 0;
+    std::uint64_t m_list_size = 0;
 
     unsigned int m_num_singles_samples;
 
@@ -185,14 +185,15 @@ private:
 
     hsize_t m_max_size_of_record = 0;
 
-    int m_NX_SUB = 0;    // hyperslab dimensions
-    int m_NY_SUB = 0;
-    int m_NZ_SUB = 0;
+    hsize_t m_NX_SUB = 0;    // hyperslab dimensions
+    hsize_t m_NY_SUB = 0;
+    hsize_t m_NZ_SUB = 0;
+#if 0
     // AB: todo these are never used. 
-    int m_NX = 0;        // output buffer dimensions
-    int m_NY = 0;
-    int m_NZ = 0;
-
+    hsize_t m_NX = 0;        // output buffer dimensions
+    hsize_t m_NY = 0;
+    hsize_t m_NZ = 0;
+#endif
 };
 
 } // namespace
