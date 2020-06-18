@@ -313,33 +313,23 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     //PW Bin Size, max num of arc corrected bins, default num of arc corrected bins and inner ring radius not found in Listfile header.
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
-    int default_num_arccorrected_bins = 331;
     float inner_ring_radius = 311.8;
     //AB TODO check if following is valid
     float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
-    //! \todo : bin_size
-    float bin_size = 2.01565;
-    int num_axial_crystals_per_singles_unit = 1;
-    int num_transaxial_crystals_per_singles_unit = 1;
-
-    shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name("GE PET/MR Signa"));
+    shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(read_str_scanner));
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
     scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
-    scanner_sptr->set_default_num_arccorrected_bins(default_num_arccorrected_bins);
     scanner_sptr->set_inner_ring_radius(inner_ring_radius);
     scanner_sptr->set_average_depth_of_interaction(average_depth_of_interaction);
     scanner_sptr->set_ring_spacing(ring_spacing);
-    scanner_sptr->set_default_bin_size(bin_size);
     scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
     scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
     scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
     scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
     scanner_sptr->set_num_transaxial_crystals_per_block(num_transaxial_crystals_per_block);
-    scanner_sptr->set_num_axial_crystals_per_singles_unit(num_axial_crystals_per_singles_unit);
-    scanner_sptr->set_num_transaxial_crystals_per_singles_unit(num_transaxial_crystals_per_singles_unit);
     scanner_sptr->set_num_detector_layers(num_detector_layers);
     scanner_sptr->set_energy_resolution(energy_resolution);
     scanner_sptr->set_reference_energy(reference_energy);
