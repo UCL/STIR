@@ -157,7 +157,7 @@ if (BUILD_SWIG_MATLAB)
      set (Matlab_CXXLINKER_FLAGS "/EXPORT:mexFunction")
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
-        SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
+        SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${Matlab_CXXLINKER_FLAGS}"
         FOLDER "Matlab")
   target_link_libraries(${SWIG_MODULE_stirMATLAB_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
