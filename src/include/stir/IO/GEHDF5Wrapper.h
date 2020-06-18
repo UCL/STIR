@@ -1,6 +1,6 @@
 /*  Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2019, University College London
+    Copyright (C) 2018-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
+  \author Ander Biguri
+  \author Kris Thielemans
 */
 
 #include "stir/shared_ptr.h"
@@ -53,27 +55,29 @@ class GEHDF5Wrapper
 {
 public:
 
+    //! check signature to see if this is a GE RDF9 or higher file
+    /*! calls current_GE_signature(H5::H5file&) */
     static bool check_GE_signature(const std::string& filename);
 
-    static bool check_current_signature(H5::H5File& file);
+    //! check signature to see if this is a GE RDF9 or higher HDF5 file
+    /*! does minimal checks to see if expected datasets are present in the HDF5 object */
+    static bool check_GE_signature(H5::H5File& file);
 
-    explicit GEHDF5Wrapper();
+    GEHDF5Wrapper();
 
     explicit GEHDF5Wrapper(const std::string& filename);
 
-    
-
-    
 
     // bool is_list_file(const std::string& filename);
 
-    bool is_list_file();
+    //! Checks if input file is a listmode file
+    bool is_list_file() const;
 
-    bool is_sino_file();
+    bool is_sino_file() const;
 
-    bool is_geo_file();
+    bool is_geo_file() const;
 
-    bool is_norm_file();
+    bool is_norm_file() const;
 
     Succeeded open(const std::string& filename);
 
@@ -81,16 +85,28 @@ public:
 
     Succeeded initialise_singles_data();
 
+    //! Initialises data for reading projections. Sets up reading addresses and inspect sizes.
+    /*! \param view_num uses 1-based indexing
+
+       this function has to be called for each projection/view_num
+    */
     Succeeded initialise_proj_data(const unsigned int view_num);
-    //PW Here I added the geo_factors_data_initialisation. This should initialise the factors for
-    // specific path and slice_num.
+    //! Initialises data for reading geometric normalisation factors. Sets up reading addresses and inspect sizes.
+    /*! \param slice_num uses 1-based indexing
+     */
     Succeeded initialise_geo_factors_data(const unsigned int slice_num);
 
     Succeeded initialise_efficiency_factors();
 
+    //! reads a listmode event
+    /* \param output: has to be pre-allocated and of the correct size (\c size_of_record_signature)
+       \param current_offset will be incremented
+    */
     Succeeded get_list_data(char* output,
                             std::streampos& current_offset);
 
+    //! read singles at time slice \c current_id
+    /*! \param current)id is 1-based index */
     Succeeded get_singles(Array<1, unsigned int> &output,
                           const unsigned int current_id);
 
