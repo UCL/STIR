@@ -31,8 +31,10 @@
 #include "stir/Succeeded.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
 #include <fstream>
 #include <sstream>
+#include <boost/format.hpp>
 
 using std::string;
 
