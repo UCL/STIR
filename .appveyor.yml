@@ -24,7 +24,7 @@ build_script:
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON
+  - cmake.exe .. -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
 
