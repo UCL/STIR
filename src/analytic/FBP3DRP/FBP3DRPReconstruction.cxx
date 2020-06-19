@@ -372,7 +372,7 @@ set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr)
   if (base_type::set_up(target_image_sptr) == Succeeded::no)
     return Succeeded::no;
 
-  if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
+  if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_sptr().get()) == 0)
     error("FBP3DRP currently needs cylindrical projection data. Sorry");
 
   if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
