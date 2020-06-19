@@ -5,10 +5,11 @@ list(APPEND STIR_REGISTRIES
   ${CMAKE_CURRENT_SOURCE_DIR}/recon_buildblock/local_recon_buildblock_registries.cxx)
 
 # add to list of libraries to include in linking
-#list(APPEND STIR_LIBRARIES UCL_listmode_buildblock) 
-list(PREPEND STIR_LIBRARIES local_buildblock local_motion_buildblock)
-list(PREPEND STIR_LIBRARIES local_recon_buildblock) 
-#list(APPEND STIR_LIBRARIES local_listmode_buildblock)
+list(INSERT STIR_LIBRARIES 0
+            local_buildblock local_motion_buildblock local_recon_buildblock
+#            local_listmode_buildblock
+)
+#message(STATUS "STIR_LIBRARIES=${STIR_LIBRARIES}")
 
 # check CMakeLists in next directories
 #add_subdirectory( ${STIR_LOCAL}/listmode_buildblock listmode_buildblock)
