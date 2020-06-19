@@ -136,7 +136,7 @@ read_from_file(const string& filename) // The written image is read in respect t
   if (strncmp(signature, "Multi", 5) == 0) {
 
 #ifndef NDEBUG
-        info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+        info(boost::format("GatedProjData::read_from_file trying to read %s as a Multi file.") % filename);
 #endif
 
       unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename));
