@@ -422,7 +422,7 @@ void distributable_computation(
 #ifdef STIR_OPENMP
 #pragma omp single
     {
-      info(boost::format("Starting loop with %1% threads") % omp_get_num_threads());
+      info(boost::format("Starting loop with %1% threads") % omp_get_num_threads(), 2);
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
@@ -473,7 +473,7 @@ void distributable_computation(
           const int thread_num=omp_get_thread_num();
           info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
                % thread_num % omp_get_num_threads()
-               % view_segment_num.segment_num() % view_segment_num.view_num());
+               % view_segment_num.segment_num() % view_segment_num.view_num(), 2);
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
                % view_segment_num.segment_num() % view_segment_num.view_num(), 2);

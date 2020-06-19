@@ -131,6 +131,9 @@ public:
 //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
   virtual std::string method_info() const;
 
+  Succeeded
+    set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr);
+
 protected:
 /*!
   \brief Implementation of the reconstruction

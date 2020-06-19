@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</title>
+    <title>Summary of changes in STIR release 4.1</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</h1>
+    <h1>Summary of changes in STIR release 4.1</h1>
 <h2>Overall summary</h2>
 
     <p>
@@ -24,7 +24,7 @@
           DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
         </li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
-        <li>Robert Twyman (UCL) for Relative Difference Prior and computation of the log-likelihood modification</li>  
+        <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
       </ul>
     </p>
 
@@ -48,7 +48,11 @@
 
 <h3>Changed functionality</h3>
 <ul>
-<li>  Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Reconstruction algorithms perform now more checks during <code>set_up()</code> etc.
+    However, this means that <strong>you have to call <code>set_up()</code> also for analytic
+    reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
@@ -93,6 +97,8 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>Minor bug fixes</h3>
 <ul>
 <li>
+  Changes to GATE/root cylindrical PET geometry interpretation,
+  see <a href="https://github.com/UCL/STIR/pull/569">PR 569</a>.</li>
 </li>
 </ul>
 
@@ -106,7 +112,9 @@ None
 
 <h3>Other changes to tests</h3>
 <ul>
-<li></li>
+  <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
+    This is on top of the <tt>recon_test_pack</tt>.
+  </li>
 </ul>
 
 <h3>Build system</h3>

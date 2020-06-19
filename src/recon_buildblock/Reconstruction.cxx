@@ -153,6 +153,7 @@ void
 Reconstruction<TargetT>::
 set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > & arg)
 {
+  _already_set_up = false;
   this->post_filter_sptr  = arg;
 }
  
