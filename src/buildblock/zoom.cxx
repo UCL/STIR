@@ -113,10 +113,10 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_viewgrams.get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_viewgrams.get_proj_data_info_ptr()->clone());
   ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
   if ( new_proj_data_info_arccorr_ptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
@@ -159,10 +159,10 @@ zoom_viewgram (Viewgram<float>& in_view,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_view.get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_view.get_proj_data_info_ptr()->clone());
   ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
   if ( new_proj_data_info_arccorr_ptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
