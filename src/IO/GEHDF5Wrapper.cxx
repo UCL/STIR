@@ -333,11 +333,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     scanner_sptr->set_reference_energy(reference_energy);
 
     return Succeeded::yes;
-    }
-    else
-    {
-        return Succeeded::no;
-    }
 
 }
 
