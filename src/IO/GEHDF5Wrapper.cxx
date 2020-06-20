@@ -259,8 +259,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet dataset = file.openDataSet("/HeaderData/ExamData/scannerDesc");
     dataset.read(read_str_scanner,vlst);
 
-    if(read_str_scanner == "SIGNA PET/MR")
-    {
     int num_transaxial_blocks_per_bucket = 0;
     int num_axial_blocks_per_bucket = 0;
     int axial_blocks_per_unit = 0;
@@ -717,4 +715,3 @@ Succeeded GEHDF5Wrapper::get_singles(Array<1, unsigned int>& output, const unsig
 } // namespace
 }
 END_NAMESPACE_STIR
-
