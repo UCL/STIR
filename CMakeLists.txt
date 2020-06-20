@@ -44,12 +44,12 @@ if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
-   (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
-    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  # Ignore undefined template var warning
+if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+  # Ignore undefined template var warning (see https://github.com/UCL/STIR/issues/126)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+  if (APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  endif()
 endif()
 
 ####### Set Version number etc
