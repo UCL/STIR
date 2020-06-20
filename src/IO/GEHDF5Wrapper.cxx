@@ -33,6 +33,7 @@
 
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/IndexRange3D.h"
+#include "stir/is_null_ptr.h"
 #include <sstream>
 
 START_NAMESPACE_STIR
@@ -259,8 +260,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet dataset = file.openDataSet("/HeaderData/ExamData/scannerDesc");
     dataset.read(read_str_scanner,vlst);
 
-    if(read_str_scanner == "SIGNA PET/MR")
-    {
     int num_transaxial_blocks_per_bucket = 0;
     int num_axial_blocks_per_bucket = 0;
     int axial_blocks_per_unit = 0;
@@ -316,7 +315,11 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     float ring_spacing = detector_axial_size/num_rings;
 
     shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(read_str_scanner));
-    scanner_sptr->list_names(read_str_scanner);
+    if (is_null_ptr(scanner_sptr))
+       error("Scanner read from RDF file is " + read_str_scanner + ", but this is not supported yet");
+    if (scanner_sptr->get_type() != Scanner::PETMR_Signa)
+      warning("Scanner read from RDF file is " + read_str_scanner + ", but this code is only tested for the Signa PET/MR");
+       
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
     scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
@@ -331,11 +334,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     scanner_sptr->set_reference_energy(reference_energy);
 
     return Succeeded::yes;
-    }
-    else
-    {
-        return Succeeded::no;
-    }
 
 }
 
@@ -717,4 +715,3 @@ Succeeded GEHDF5Wrapper::get_singles(Array<1, unsigned int>& output, const unsig
 } // namespace
 }
 END_NAMESPACE_STIR
-
