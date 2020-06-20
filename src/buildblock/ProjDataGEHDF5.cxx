@@ -67,7 +67,7 @@ void ProjDataGEHDF5::initialise_from_wrapper()
 {
     this->exam_info_sptr = this->m_input_hdf5_sptr->get_exam_info_sptr();
     shared_ptr<Scanner> scanner_sptr = m_input_hdf5_sptr->get_scanner_sptr();
-    this->proj_data_info_sptr =
+    this->proj_data_info_ptr =
       ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                             /*span*/ 2,
                                             /* max_delta*/ scanner_sptr->get_num_rings()-1,
@@ -121,9 +121,9 @@ void ProjDataGEHDF5::initialise_ax_pos_offset()
 
   unsigned int previous_value = 0;
 
-  for (unsigned int i_seg = 1; i_seg < get_num_segments(); ++i_seg)
+  for (int i_seg = 1; i_seg < get_num_segments(); ++i_seg)
   {
-      int segment_num = segment_sequence[i_seg-1];
+      const int segment_num = segment_sequence[i_seg-1];
 
       seg_ax_offset[i_seg] = static_cast<unsigned int>(get_num_axial_poss(segment_num)) +
                                                        previous_value;
@@ -139,12 +139,24 @@ get_viewgram(const int view_num, const int segment_num,
     if (make_num_tangential_poss_odd)
         error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
     Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
-    ret_viewgram.fill(0.0);
-    //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
-    const unsigned int num_tof_poss = 27;
-   // const unsigned int max_num_axial_poss = 1981;
-    //! \todo Hard-wired numbers to be changed.
-    // PW Attempt to flip the tangential and view numbers. The TOF bins are added below to return non TOF viewgram.
+    // not necessary
+    // ret_viewgram.fill(0.0);
+
+    // find num TOF bins
+    BasicCoordinate<3, int> min_index, max_index;
+    tof_data[0].get_regular_range(min_index,max_index);
+    const int num_tof_poss = max_index[2] - min_index[2] + 1;
+    if (num_tof_poss <= 0)
+      error("ProjDataGEHDF5: internal error on TOF data dimension");
+    if (proj_data_info_ptr->get_scanner_ptr()->get_type() == Scanner::PETMR_Signa)
+      if (num_tof_poss != 27)
+      error("ProjDataGEHDF5: internal error on TOF data dimension for GE Signa");
+      
+    // PW flip the tangential and view numbers. The TOF bins are added below to return non TOF viewgram.
+    if (get_min_view_num() != 0)
+      error("ProjDataGEHDF5: internal error on views");
+    if (get_max_tangential_pos_num()+get_min_tangential_pos_num() != 0)
+      error("ProjDataGEHDF5: internal error on tangential positions");
    for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0;
         tang_pos <= ret_viewgram.get_max_tangential_pos_num();
         ++tang_pos, ++i_tang)
@@ -153,8 +165,7 @@ get_viewgram(const int view_num, const int segment_num,
          i_axial++, axial_pos++)
         for (int tof_poss = 0; tof_poss <= num_tof_poss-1; tof_poss++)
           {
-            // TODO 223 -> get_num_views()-1
-                ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[223-view_num][i_tang][tof_poss][axial_pos]);
+            ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[get_max_view_num()-view_num][i_tang][tof_poss][axial_pos]);
             }
 
 #if 0
