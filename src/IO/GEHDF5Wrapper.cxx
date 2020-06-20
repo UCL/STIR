@@ -270,15 +270,12 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     int max_num_non_arccorrected_bins = 0;
     int num_transaxial_crystals_per_block = 0;
     int num_axial_crystals_per_block = 0 ;
-    float inner_ring_diameter = 0.0;
     float detector_axial_size = 0.0;
     float intrinsic_tilt = 0.0;
-    float physical_scanner_radius = 0.0;
     int num_detector_layers = 1;
     float energy_resolution = -1.0f;
     float reference_energy = -1.0f;
 
-    H5::DataSet str_inner_ring_diameter = file.openDataSet("/HeaderData/SystemGeometry/effectiveRingDiameter");
     H5::DataSet str_axial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerModule");
     H5::DataSet str_radial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/radialBlocksPerModule");
     H5::DataSet str_axial_blocks_per_unit = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerUnit");
@@ -293,7 +290,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size"); // Bug in RDF9 makes this dimension2Size isntead of the expected dimension1Size
     H5::DataSet str_axial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/axialCrystalsPerBlock");
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
-    H5::DataSet str_physical_scanner_radius = file.openDataSet("/HeaderData/SystemGeometry/sourceRadius");
     //! \todo Convert to numbers.
 
     str_radial_blocks_per_module.read(&num_transaxial_blocks_per_bucket, H5::PredType::NATIVE_UINT32);
@@ -304,51 +300,40 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     str_radial_units_per_module.read(&radial_units_per_module, H5::PredType::NATIVE_UINT32);
     str_axial_modules_per_system.read(&axial_modules_per_system, H5::PredType::NATIVE_UINT32);
     str_radial_modules_per_system.read(&radial_modules_per_system, H5::PredType::NATIVE_UINT32);
-    str_inner_ring_diameter.read(&inner_ring_diameter, H5::PredType::NATIVE_FLOAT);
     str_detector_axial_size.read(&detector_axial_size, H5::PredType::NATIVE_FLOAT);
     str_intrinsic_tilt.read(&intrinsic_tilt, H5::PredType::NATIVE_FLOAT);
     str_max_number_of_non_arc_corrected_bins.read(&max_num_non_arccorrected_bins, H5::PredType::NATIVE_UINT32);
     str_radial_crystals_per_block.read(&num_transaxial_crystals_per_block, H5::PredType::NATIVE_UINT32);
     str_axial_crystals_per_block.read(&num_axial_crystals_per_block, H5::PredType::NATIVE_UINT32);
-    str_physical_scanner_radius.read(&physical_scanner_radius, H5::PredType::NATIVE_FLOAT);
 
+    //PW Bin Size, max num of arc corrected bins, default num of arc corrected bins and inner ring radius not found in Listfile header.
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
-    int default_num_arccorrected_bins = max_num_non_arccorrected_bins;
-    float inner_ring_radius = physical_scanner_radius;
     //AB TODO check if following is valid
-    float average_depth_of_interaction = 0.5f*inner_ring_diameter-physical_scanner_radius; // Assuming this to be constant. Although this will change depending on scanner.
+  //  float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
-    //! \todo : bin_size
-    float bin_size = static_cast<float>(max_num_non_arccorrected_bins)/inner_ring_radius;
-    int num_axial_crystals_per_singles_unit = 1;
-    int num_transaxial_crystals_per_singles_unit = 1;
-
-    //PW Not sure what to put for scanner here.
-    //PW TODO Change the User_defined_scanner to respective scanner name.
-    //PW TODO Still to set the default bin size, maximum number of non-arc-corrected bins and default number of arc-corrected bins.
-    this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
-                                         read_str_scanner, num_detectors_per_ring,
-                                         num_rings,
-                                         max_num_non_arccorrected_bins,
-                                         default_num_arccorrected_bins,
-                                         inner_ring_diameter/2,
-                                         average_depth_of_interaction,
-                                         ring_spacing,
-                                         bin_size,
-                                         intrinsic_tilt*_PI/180,
-                                         num_axial_blocks_per_bucket,
-                                         num_transaxial_blocks_per_bucket,
-                                         num_axial_crystals_per_block,
-                                         num_transaxial_crystals_per_block,
-                                         num_axial_crystals_per_singles_unit,
-                                         num_transaxial_crystals_per_singles_unit,
-                                         num_detector_layers,
-                                         energy_resolution,
-                                         reference_energy));
+    shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(read_str_scanner));
+    if (is_null_ptr(scanner_sptr))
+       error("Scanner read from RDF file is " + read_str_scanner + ", but this is not supported yet");
+    if (scanner_sptr->get_type() != Scanner::PETMR_Signa)
+      warning("Scanner read from RDF file is " + read_str_scanner + ", but this code is only tested for the Signa PET/MR");
+       
+    scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
+    scanner_sptr->set_num_rings(num_rings);
+    scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
+    scanner_sptr->set_ring_spacing(ring_spacing);
+    scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
+    scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
+    scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
+    scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
+    scanner_sptr->set_num_transaxial_crystals_per_block(num_transaxial_crystals_per_block);
+    scanner_sptr->set_num_detector_layers(num_detector_layers);
+    scanner_sptr->set_energy_resolution(energy_resolution);
+    scanner_sptr->set_reference_energy(reference_energy);
 
     return Succeeded::yes;
+
 }
 
 unsigned int GEHDF5Wrapper::get_num_singles_samples()
@@ -729,4 +714,3 @@ Succeeded GEHDF5Wrapper::get_singles(Array<1, unsigned int>& output, const unsig
 } // namespace
 }
 END_NAMESPACE_STIR
-
