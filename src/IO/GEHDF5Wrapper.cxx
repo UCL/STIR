@@ -319,7 +319,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     if (scanner_sptr->get_type() != Scanner::PETMR_Signa)
       warning("Scanner read from RDF file is " + read_str_scanner + ", but this code is only tested for the Signa PET/MR");
        
-    scanner_sptr->list_names(read_str_scanner);
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
     scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
