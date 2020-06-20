@@ -259,6 +259,8 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet dataset = file.openDataSet("/HeaderData/ExamData/scannerDesc");
     dataset.read(read_str_scanner,vlst);
 
+    if(read_str_scanner == "SIGNA PET/MR")
+    {
     int num_transaxial_blocks_per_bucket = 0;
     int num_axial_blocks_per_bucket = 0;
     int axial_blocks_per_unit = 0;
@@ -270,15 +272,12 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     int max_num_non_arccorrected_bins = 0;
     int num_transaxial_crystals_per_block = 0;
     int num_axial_crystals_per_block = 0 ;
-    float inner_ring_diameter = 0.0;
-    float effective_ring_diameter = 0.0;
     float detector_axial_size = 0.0;
     float intrinsic_tilt = 0.0;
     int num_detector_layers = 1;
     float energy_resolution = -1.0f;
     float reference_energy = -1.0f;
 
-    H5::DataSet str_effective_ring_diameter = file.openDataSet("/HeaderData/SystemGeometry/effectiveRingDiameter");
     H5::DataSet str_axial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerModule");
     H5::DataSet str_radial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/radialBlocksPerModule");
     H5::DataSet str_axial_blocks_per_unit = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerUnit");
@@ -303,7 +302,6 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     str_radial_units_per_module.read(&radial_units_per_module, H5::PredType::NATIVE_UINT32);
     str_axial_modules_per_system.read(&axial_modules_per_system, H5::PredType::NATIVE_UINT32);
     str_radial_modules_per_system.read(&radial_modules_per_system, H5::PredType::NATIVE_UINT32);
-    str_effective_ring_diameter.read(&effective_ring_diameter, H5::PredType::NATIVE_FLOAT);
     str_detector_axial_size.read(&detector_axial_size, H5::PredType::NATIVE_FLOAT);
     str_intrinsic_tilt.read(&intrinsic_tilt, H5::PredType::NATIVE_FLOAT);
     str_max_number_of_non_arc_corrected_bins.read(&max_num_non_arccorrected_bins, H5::PredType::NATIVE_UINT32);
@@ -313,17 +311,15 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     //PW Bin Size, max num of arc corrected bins, default num of arc corrected bins and inner ring radius not found in Listfile header.
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
-    float inner_ring_radius = 311.8;
     //AB TODO check if following is valid
-    float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
+  //  float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
     shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(read_str_scanner));
+    scanner_sptr->list_names(read_str_scanner);
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
     scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
-    scanner_sptr->set_inner_ring_radius(inner_ring_radius);
-    scanner_sptr->set_average_depth_of_interaction(average_depth_of_interaction);
     scanner_sptr->set_ring_spacing(ring_spacing);
     scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
     scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
@@ -335,6 +331,12 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     scanner_sptr->set_reference_energy(reference_energy);
 
     return Succeeded::yes;
+    }
+    else
+    {
+        return Succeeded::no;
+    }
+
 }
 
 unsigned int GEHDF5Wrapper::get_num_singles_samples()
