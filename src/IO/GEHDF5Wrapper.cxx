@@ -33,6 +33,7 @@
 
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/IndexRange3D.h"
+#include "stir/is_null_ptr.h"
 #include <sstream>
 
 START_NAMESPACE_STIR
