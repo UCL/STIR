@@ -17,16 +17,22 @@ configuration:
 matrix:
   exclude:
     - os: Visual Studio 2015
-      platform: x86
+      #platform: x86
     - os: Visual Studio 2013
-      platform: x86
+      #platform: x86
 
 build:
   verbosity: detailed
 
 environment:
-  BOOST_ROOT: C:\Libraries\boost_1_63_0
   CMAKE_INSTALL_PREFIX: C:\projects\stir\install\
+  matrix:
+    - os: Visual Studio 2019
+      BOOST_ROOT: C:\Libraries\boost_1_73_0
+    - os: Visual Studio 2015
+      BOOST_ROOT: C:\Libraries\boost_1_63_0
+    - os: Visual Studio 2013
+      BOOST_ROOT: C:\Libraries\boost_1_63_0
 
 build_script:
   - mkdir build
