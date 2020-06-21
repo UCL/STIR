@@ -342,9 +342,9 @@ Scanner::Scanner(Type scanner_type)
     break;
 
 
-case PETMR_Signa: 
+case PETMR_Signa:
 
-    set_params(PETMR_Signa, string_list("GE PET/MR Signa", "GE PET/MR Signa"), 
+  set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
 	       45, 
 	       357, 
 	       331, // TODO
