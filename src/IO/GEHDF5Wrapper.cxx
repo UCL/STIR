@@ -469,9 +469,11 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
 
     if(rdf_ver==9) 
     {
-        m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view";
+        m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view" + std::to_string(view_num);
 
-        m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + "1"))); // the first will do
+        info("GEHDF5Wrapper: reading from " + m_address, 2);
+
+        m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
         m_dataspace = m_dataset_sptr->getSpace();
         // Create an array to host the size of the dimensions
         const int rank = m_dataspace.getSimpleExtentNdims();
@@ -490,10 +492,6 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
         m_NY = 448;
         m_NZ = 357;
 #endif
-        {
-            m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address+std::to_string(view_num))));
-            m_dataspace = m_dataset_sptr->getSpace();
-        }
     }
     else
         return Succeeded::no;
