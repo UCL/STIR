@@ -39,9 +39,9 @@ matrix:
  #  python: 3
  #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
    # Disable as ROOT is currently failing via brew
-  - os: osx
-    python: 3
-    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+ - os: osx
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
    osx_image: xcode11.3
    python: 3
