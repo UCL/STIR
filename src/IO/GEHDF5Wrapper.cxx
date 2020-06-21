@@ -325,7 +325,8 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
        
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
-    scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
+    if (!is_list_file())
+      scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
     scanner_sptr->set_ring_spacing(ring_spacing);
     scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
     scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
