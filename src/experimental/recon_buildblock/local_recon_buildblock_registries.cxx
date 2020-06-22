@@ -56,7 +56,7 @@ static ParametricQuadraticPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dum
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
 static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
-static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<DiscretisedDensity<3,float> >::RegisterIt dummy666;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<DiscretisedDensity<3,float> >::RegisterIt dummy666;
 //static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
 
 #if 0

@@ -32,6 +32,6 @@ static Transform3DObjectImageProcessor<float>::RegisterIt dummy1000;
 static NonRigidObjectTransformationUsingBSplines<3,float>::RegisterIt dummy2000;
 //static RigidObject3DTransformation::RegisterIt dummy2000;
 
-static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<DiscretisedDensity<3,float> >::RegisterIt dummy4000;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<DiscretisedDensity<3,float> >::RegisterIt dummy4000;
 END_NAMESPACE_STIR
 

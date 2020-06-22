@@ -19,14 +19,14 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew
+  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint
 
   \author Kris Thielemans
 
 */
 
-#ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew_H__
-#define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew_H__
+#ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint_H__
+#define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint_H__
 
 
 #include "stir/RegisteredParsingObject.h"
@@ -46,9 +46,9 @@ class GatedProjData;
   \brief
 */
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew 
+class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint 
 : public  RegisteredParsingObject
-            <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>,
+            <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>,
              GeneralisedObjectiveFunction<TargetT>,
              SumOfGeneralisedObjectiveFunctions<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
                                                 TargetT, 
@@ -58,7 +58,7 @@ class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew
  private:
   typedef
   RegisteredParsingObject
-    <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew<TargetT>,
+    <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>,
     GeneralisedObjectiveFunction<TargetT>,
     SumOfGeneralisedObjectiveFunctions<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
                                        TargetT, 
@@ -72,7 +72,7 @@ public:
   static const char * const registered_name; 
 
   //! Default constructor calls set_defaults()
-  PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionNew();
+  PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint();
   
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
