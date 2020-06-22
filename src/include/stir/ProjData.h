@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015, University College London
+    Copyright (C) 2013, 2015-2017, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -280,7 +280,7 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
-  //! Get the number of sinograms
+  //! Get the total number of sinograms
   inline int get_num_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
@@ -292,7 +292,6 @@ public:
                      const float b, const ProjData& y);
 
 protected:
-//   shared_ptr<ExamInfo> exam_info_sptr;
 
    shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
