@@ -245,7 +245,7 @@ set_defaults()
   base_type::set_defaults();
   this->_do_transpose=false;
   this->_do_jacobian=false;
-  this->_cache_transformed_coords=false;
+  this->_cache_transformed_coords=true;
 #if XXX
   this->transformation = RigidObject3DTransformation(Quaternion<float>(1,0,0,0), 
 					       CartesianCoordinate3D<float>(0,0,0));
