@@ -38,14 +38,10 @@ class GatedProjData :
 {
 public:
   static
-  unique_ptr<GatedProjData>
+  GatedProjData*
     read_from_file(const std::string& filename);
 
   GatedProjData() {};
-
-  GatedProjData(const MultipleProjData& m):
-    MultipleProjData(m)
-  {}
 
   unsigned int get_num_gates() const
   {

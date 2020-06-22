@@ -31,16 +31,14 @@
 #include "stir/Succeeded.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
-#include "stir/info.h"
 #include <fstream>
 #include <sstream>
-#include <boost/format.hpp>
 
 using std::string;
 
 START_NAMESPACE_STIR
 
-unique_ptr<GatedProjData>
+GatedProjData*
 GatedProjData::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
@@ -48,13 +46,13 @@ read_from_file(const string& filename) // The written image is read in respect t
   if (!input)
     {
       warning("GatedProjData::read_from_file cannot read file '%s'. Will now attempt to append .gdef", filename.c_str());
-      return unique_ptr<GatedProjData>(read_from_gdef(filename));
+      return read_from_gdef(filename);
     }
 
   const FileSignature file_signature(input);
   const char * signature = file_signature.get_signature();
 
-  unique_ptr<GatedProjData> gated_proj_data_sptr;
+  GatedProjData * gated_proj_data_ptr = 0;
 
 #ifdef HAVE_LLN_MATRIX
   if (strncmp(signature, "MATRIX", 6) == 0)
@@ -71,27 +69,27 @@ read_from_file(const string& filename) // The written image is read in respect t
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
 	{
 	  warning("GatedProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
-	  return unique_ptr<GatedProjData>();
+	  return 0;
 	}
-      gated_proj_data_sptr.reset(new GatedProjData);
+      gated_proj_data_ptr = new GatedProjData;
 
       const unsigned int num_gates =
 	static_cast<unsigned int>(mhead.num_gates); // TODO +1?
-      gated_proj_data_sptr->_proj_datas.resize(num_gates); 
+      gated_proj_data_ptr->_proj_datas.resize(num_gates); 
 
       for (unsigned int gate_num=1; gate_num <= num_gates; ++ gate_num)
 	{
-	  gated_proj_data_sptr->_proj_datas[gate_num-1].reset(
+	  gated_proj_data_ptr->_proj_datas[gate_num-1].reset(
 	    ECAT7_to_PDFS(filename,
 			  1,
 			  gate_num, 
 			  /*  data_num, bed_num, */ 0,0));
 	}
-      if (is_null_ptr(gated_proj_data_sptr->_proj_datas[0]))
+      if (is_null_ptr(gated_proj_data_ptr->_proj_datas[0]))
 	      error("GatedProjData: No gate available\n");
       // Get the exam info (from the first ProjData)
       if (num_gates>0)
-        gated_proj_data_sptr->set_exam_info(gated_proj_data_sptr->_proj_datas[0]->get_exam_info());
+        gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
     }
     else
     {
@@ -116,39 +114,30 @@ read_from_file(const string& filename) // The written image is read in respect t
        if (parser.parse(filename.c_str()) == false)
 	 {
 	   warning("GatedProjData:::read_from_file: Error parsing %s", filename.c_str());
-	   return unique_ptr<GatedProjData>();
+	   return 0;
 	 }
     
-       gated_proj_data_sptr.reset(new GatedProjData);
+       gated_proj_data_ptr = new GatedProjData;
        const unsigned int num_gates =
 	 static_cast<unsigned int>(filenames.size());
-       gated_proj_data_sptr->_proj_datas.resize(num_gates);
+       gated_proj_data_ptr->_proj_datas.resize(num_gates); 
 
        for (unsigned int gate_num=1; gate_num <= num_gates; ++ gate_num)
 	 {
 	   std::cerr<<" Reading " << filenames[gate_num-1]<<'\n';
-	   gated_proj_data_sptr->_proj_datas[gate_num-1] =
+	   gated_proj_data_ptr->_proj_datas[gate_num-1] =
 	     ProjData::read_from_file(filenames[gate_num-1]);
 	 }
        // Get the exam info (from the first ProjData)
        if (num_gates>0)
-         gated_proj_data_sptr->set_exam_info(gated_proj_data_sptr->_proj_datas[0]->get_exam_info());
-      return gated_proj_data_sptr;
+         gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
+      return gated_proj_data_ptr;
      }    
-  if (strncmp(signature, "Multi", 5) == 0) {
-
-#ifndef NDEBUG
-        info(boost::format("GatedProjData::read_from_file trying to read %s as a Multi file.") % filename);
-#endif
-
-      unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename));
-      gated_proj_data_sptr.reset(new GatedProjData(*multi_proj_data));
-  }
   
-  if (is_null_ptr(gated_proj_data_sptr))
+  if (is_null_ptr(gated_proj_data_ptr))   
     error("GatedProjData::read_from_file unrecognised file format for file '%s'",
 	  filename.c_str());
-  return gated_proj_data_sptr;
+  return gated_proj_data_ptr;
 }
 
 GatedProjData* 

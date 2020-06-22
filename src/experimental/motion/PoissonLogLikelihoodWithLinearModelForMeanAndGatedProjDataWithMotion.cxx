@@ -219,7 +219,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
   { warning("You need to specify an input file"); return true; }
  
-  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
+  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
 
  // image stuff
   if (this->zoom <= 0)
@@ -233,8 +233,8 @@ post_processing()
 
   if (this->_additive_projection_data_filename != "0")
   {
-    this->_gated_additive_proj_data_sptr =
-              GatedProjData::read_from_file(this->_additive_projection_data_filename);
+    this->_gated_additive_proj_data_sptr
+      .reset(GatedProjData::read_from_file(this->_additive_projection_data_filename));
   };
 
   // read time frame def 
