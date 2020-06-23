@@ -3,7 +3,7 @@ set(dir local_motion_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
+        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint.cxx
         RigidObject3DTransformation.cxx
         RigidObject3DMotion.cxx
         Transform3DObjectImageProcessor.cxx
