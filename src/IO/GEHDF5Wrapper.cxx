@@ -261,6 +261,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet dataset = file.openDataSet("/HeaderData/ExamData/scannerDesc");
     dataset.read(read_str_scanner,vlst);
 
+    float effective_ring_diameter;
     int num_transaxial_blocks_per_bucket = 0;
     int num_axial_blocks_per_bucket = 0;
     int axial_blocks_per_unit = 0;
@@ -275,9 +276,8 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     float detector_axial_size = 0.0;
     float intrinsic_tilt = 0.0;
     int num_detector_layers = 1;
-    float energy_resolution = -1.0f;
-    float reference_energy = -1.0f;
 
+    H5::DataSet str_effective_ring_diameter = file.openDataSet("/HeaderData/SystemGeometry/effectiveRingDiameter");
     H5::DataSet str_axial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerModule");
     H5::DataSet str_radial_blocks_per_module = file.openDataSet("/HeaderData/SystemGeometry/radialBlocksPerModule");
     H5::DataSet str_axial_blocks_per_unit = file.openDataSet("/HeaderData/SystemGeometry/axialBlocksPerUnit");
@@ -292,7 +292,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size"); // Bug in RDF9 makes this dimension2Size isntead of the expected dimension1Size
     H5::DataSet str_axial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/axialCrystalsPerBlock");
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
-    //! \todo Convert to numbers.
+    // Convert to numbers.
 
     str_radial_blocks_per_module.read(&num_transaxial_blocks_per_bucket, H5::PredType::NATIVE_UINT32);
     str_axial_blocks_per_module.read(&num_axial_blocks_per_bucket, H5::PredType::NATIVE_UINT32);
@@ -304,17 +304,17 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     str_radial_modules_per_system.read(&radial_modules_per_system, H5::PredType::NATIVE_UINT32);
     str_detector_axial_size.read(&detector_axial_size, H5::PredType::NATIVE_FLOAT);
     str_intrinsic_tilt.read(&intrinsic_tilt, H5::PredType::NATIVE_FLOAT);
+    str_effective_ring_diameter.read(&effective_ring_diameter, H5::PredType::NATIVE_FLOAT);
     str_max_number_of_non_arc_corrected_bins.read(&max_num_non_arccorrected_bins, H5::PredType::NATIVE_UINT32);
     str_radial_crystals_per_block.read(&num_transaxial_crystals_per_block, H5::PredType::NATIVE_UINT32);
     str_axial_crystals_per_block.read(&num_axial_crystals_per_block, H5::PredType::NATIVE_UINT32);
 
-    //PW Bin Size, max num of arc corrected bins, default num of arc corrected bins and inner ring radius not found in Listfile header.
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
-    //AB TODO check if following is valid
-  //  float average_depth_of_interaction = 0.5f*effective_ring_diameter-inner_ring_radius; // Assuming this to be constant. Although this will change depending on scanner.
     float ring_spacing = detector_axial_size/num_rings;
 
+    //PW Bin Size, default num of arc corrected bins and inner ring radius not found in RDF header.
+    // They will be set from the default STIR values
     scanner_sptr.reset(Scanner::get_scanner_from_name(read_str_scanner));
     if (is_null_ptr(scanner_sptr))
        error("Scanner read from RDF file is " + read_str_scanner + ", but this is not supported yet");
@@ -334,8 +334,31 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
     scanner_sptr->set_num_transaxial_crystals_per_block(num_transaxial_crystals_per_block);
     scanner_sptr->set_num_detector_layers(num_detector_layers);
-    scanner_sptr->set_energy_resolution(energy_resolution);
-    scanner_sptr->set_reference_energy(reference_energy);
+    scanner_sptr->set_reference_energy(511.F);
+
+    if (fabs(scanner_sptr->get_effective_ring_radius() - effective_ring_diameter/2) > .1F)
+      {
+        const float def_DOI = .0F;
+        warning("GEHDF5Wrapper: default STIR effective ring radius is "
+                + std::to_string(scanner_sptr->get_effective_ring_radius())
+                + ", while RDF says " + std::to_string(effective_ring_diameter/2)
+                + "\nWill adjust scanner info to fit with the RDF file using default average DOI of "
+                + std::to_string(def_DOI) + "mm");
+        scanner_sptr->set_inner_ring_radius((effective_ring_diameter/2) - def_DOI);
+        scanner_sptr->set_average_depth_of_interaction(def_DOI);
+      }
+    if (scanner_sptr->get_default_bin_size() <= 0.F)
+      {
+        warning("GEHDF5Wrapper: default bin-size is not set. This will create trouble for FBP etc");
+      }
+    if (scanner_sptr->get_default_num_arccorrected_bins() <= 0)
+      {
+        warning("GEHDF5Wrapper: default num_arccorrected bins is not set. This will create trouble for FBP etc");
+      }
+    if (scanner_sptr->get_energy_resolution() <= 0)
+      {
+        warning("GEHDF5Wrapper: energy resolution is not set. This will create trouble for scatter estimation");
+      }
 
     return Succeeded::yes;
 
