@@ -356,7 +356,9 @@ case PETMR_Signa:
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
-	       9, 4, 1, 1, 1);
+             9, 4, 1, 1, 1,
+             0.105F, // energy resolution from Levin et al. TMI 2016
+             511.F);
 break;
 
   case Discovery690:
