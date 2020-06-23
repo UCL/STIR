@@ -5,6 +5,7 @@
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-05 - 2012, Kris Thielemans
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
+    Copyright (C) 2019 - 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -54,6 +55,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 
+#include <boost/format.hpp>
 #include <memory>
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -199,12 +201,8 @@ post_processing()
   if (!this->objective_function_sptr->prior_is_zero())
   {
     // TODO MAP_model really should be an ASCIIlist, without automatic checking on values
-    if (MAP_model != "additive" && MAP_model != "multiplicative")
-    {
-      error("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'",
-        MAP_model.c_str());
-      return true;
-    }
+    // let set_MAP_model do the checking
+    this->set_MAP_model(this->MAP_model);
   }
   return false;
 }
@@ -256,6 +254,9 @@ OSMAPOSLReconstruction<TargetT>::
 set_MAP_model(const std::string& arg)
 {
   this->MAP_model  = arg;
+  if (MAP_model != "additive" && MAP_model != "multiplicative")
+    error(boost::format("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'") %
+          MAP_model);
 }
 
 //*********** other functions ***********

@@ -47,12 +47,16 @@ if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
-   (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
-    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  # Ignore undefined template var warning
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+if (CMAKE_CXX_COMPILER_ID)
+   if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+      # Ignore undefined template var warning (see https://github.com/UCL/STIR/issues/126)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+      if (APPLE)
+          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+      endif()
+   endif()
+else()
+   message(WARNING "CMAKE_CXX_COMPILER_ID is not set. We are therefore not able to set some options.")
 endif()
 
 ####### Set Version number etc
@@ -101,7 +105,7 @@ option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK QUIET)
+   find_package(ITK 4.9 QUIET)
    if (ITK_FOUND)
       include(${ITK_USE_FILE})
    endif()

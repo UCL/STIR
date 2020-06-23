@@ -62,6 +62,9 @@ ProjectorByBinPairUsingNiftyPET::set_defaults()
 bool
 ProjectorByBinPairUsingNiftyPET::post_processing()
 {
+    this->set_verbosity(this->_verbosity);
+    this->set_use_truncation(this->_use_truncation);
+
   if (base_type::post_processing())
     return true;
   return false;

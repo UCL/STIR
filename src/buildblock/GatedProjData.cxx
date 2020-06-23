@@ -31,8 +31,10 @@
 #include "stir/Succeeded.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
 #include <fstream>
 #include <sstream>
+#include <boost/format.hpp>
 
 using std::string;
 
@@ -69,27 +71,27 @@ read_from_file(const string& filename) // The written image is read in respect t
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
 	{
 	  warning("GatedProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
-	  return 0;
+	  return unique_ptr<GatedProjData>();
 	}
-      gated_proj_data_ptr = new GatedProjData;
+      gated_proj_data_sptr.reset(new GatedProjData);
 
       const unsigned int num_gates =
 	static_cast<unsigned int>(mhead.num_gates); // TODO +1?
-      gated_proj_data_ptr->_proj_datas.resize(num_gates); 
+      gated_proj_data_sptr->_proj_datas.resize(num_gates); 
 
       for (unsigned int gate_num=1; gate_num <= num_gates; ++ gate_num)
 	{
-	  gated_proj_data_ptr->_proj_datas[gate_num-1].reset(
+	  gated_proj_data_sptr->_proj_datas[gate_num-1].reset(
 	    ECAT7_to_PDFS(filename,
 			  1,
 			  gate_num, 
 			  /*  data_num, bed_num, */ 0,0));
 	}
-      if (is_null_ptr(gated_proj_data_ptr->_proj_datas[0]))
+      if (is_null_ptr(gated_proj_data_sptr->_proj_datas[0]))
 	      error("GatedProjData: No gate available\n");
       // Get the exam info (from the first ProjData)
       if (num_gates>0)
-        gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
+        gated_proj_data_sptr->set_exam_info(gated_proj_data_sptr->_proj_datas[0]->get_exam_info());
     }
     else
     {
@@ -114,7 +116,7 @@ read_from_file(const string& filename) // The written image is read in respect t
        if (parser.parse(filename.c_str()) == false)
 	 {
 	   warning("GatedProjData:::read_from_file: Error parsing %s", filename.c_str());
-	   return 0;
+	   return unique_ptr<GatedProjData>();
 	 }
     
        gated_proj_data_sptr.reset(new GatedProjData);
@@ -136,7 +138,7 @@ read_from_file(const string& filename) // The written image is read in respect t
   if (strncmp(signature, "Multi", 5) == 0) {
 
 #ifndef NDEBUG
-        info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+        info(boost::format("GatedProjData::read_from_file trying to read %s as a Multi file.") % filename);
 #endif
 
       unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename));

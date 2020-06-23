@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2020 University College London
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
@@ -260,6 +260,9 @@ public:
   }
   //@}
 
+  //! check if a<b
+  template <class T1, class T2>
+    inline bool check_if_less(T1 a, T2 b, const std::string& str = "");
 
 protected:
   //! tolerance for comparisons with real values
@@ -433,4 +436,19 @@ RunTests::check_if_zero(const double a, const std::string& str )
     return true;
 }
 
+
+template <class T1, class T2>
+bool
+  RunTests::check_if_less(T1 a, T2 b, const std::string& str)
+{
+  if (a>=b)
+    {
+      std::cerr << "Error : " << a << " is larger than " << b << ", " << str<< std::endl;
+      everything_ok = false;
+      return false;
+    }
+  else
+    return true;
+}
+      
 END_NAMESPACE_STIR
