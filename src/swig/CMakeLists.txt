@@ -26,8 +26,6 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\")
 
   SET_SOURCE_FILES_PROPERTIES(stir.i PROPERTIES CPLUSPLUS ON)
-  # some include files in STIR have "#ifdef SWIG" statements, so we defined the variable here
-  add_definitions(-D SWIG)
 
   if(BUILD_DOCUMENTATION)
     # We use doxy2swig to convert the doxygen-generated xml to a swig file
@@ -69,15 +67,19 @@ if(BUILD_SWIG_PYTHON)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
   FIND_PACKAGE(Numpy REQUIRED)
   INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
+  # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
-  SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin ${SWIG_DOXY_OPTIONS})
+  SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin ${SWIG_DOXY_OPTIONS} -DSWIGXXX)
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
   else()
     SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stir_REAL_NAME} PROPERTIES
+            COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
+  )
   SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
   if (SWIG_DOXY_TARGET)
@@ -120,13 +122,16 @@ if (BUILD_SWIG_OCTAVE)
   SET(OCTAVE_SUFFIX ".oct")
   SET(OCTAVE_PREFIX "")
 
-  SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS})
+  # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
+  SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS} -DSWIGXXX)
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
   else()
     SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
-  SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}"
+            COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
+  )
   SWIG_LINK_LIBRARIES(stiroct ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES})
   if (SWIG_DOXY_TARGET)
     add_dependencies(${SWIG_MODULE_stiroct_REAL_NAME} ${SWIG_DOXY_TARGET})
@@ -159,6 +164,7 @@ if (BUILD_SWIG_MATLAB)
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${Matlab_CXXLINKER_FLAGS}"
+        COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
         FOLDER "Matlab")
   target_link_libraries(${SWIG_MODULE_stirMATLAB_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
 	
