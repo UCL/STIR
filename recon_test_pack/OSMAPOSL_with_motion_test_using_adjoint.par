@@ -1,0 +1,53 @@
+OSMAPOSLParameters :=
+; example file for running OSEM with gated projection data and motion. This uses classes
+; inside of the experimental folder. Motion resampling here uses the adjoint, which is
+; more correct when doing MCIR.
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint Parameters:=
+
+input file := my_multi_sinos.txt
+
+; if disabled, defaults to maximum segment number in the file
+; maximum absolute segment number to process := 4
+; see User's Guide to see when you need this
+zero end planes of segment 0:= 1
+
+transformation type for gate 1 := transformation
+Transformation Parameters :=
+cache_transformed_coords := 1
+Transformation Type := BSplines transformation
+	BSplines Transformation Parameters :=
+		deformation field from file x-component := my_uniform_cylinder_motion_3d.hv
+		deformation field from file y-component := my_uniform_cylinder_motion_3d.hv
+		deformation field from file z-component := my_uniform_cylinder_motion_3d.hv
+	End BSplines Transformation Parameters :=
+End Transformation Parameters :=
+
+; if next is set to 1, sensitivity will be recomputed
+; and also written to file (if "sensitivity filename" or "subset sensitivity filenames" is set)
+; if it is zero, the sensitivity will be read from file
+recompute sensitivity := 1
+use subset sensitivities: = 1 ; recommended
+; optional filename to store/read the sensitivity image 
+; (if "use subset sensitivity" is off)
+;sensitivity filename:=
+; optional filename to store/read the subsensitivities
+; use %d where you want the subset-number (a la printf)
+subset sensitivity filenames:= sens_%d.hv
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint Parameters:=
+
+; Number of subsets should be a divisor of num_views/4
+;number of subsets:= 21
+; Use for starting the numbering from something else than 1
+;start at subiteration number:=1
+; Use if you want to start from another subset than 0 (but why?)
+;start at subset:= 0
+number of subiterations:= 1
+;save estimates at subiteration intervals:= 12
+
+initial estimate:= my_uniform_cylinder.hv
+output filename prefix := my_osmaposl_with_motion_using_adjoint
+
+END :=
