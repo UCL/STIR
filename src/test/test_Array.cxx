@@ -38,6 +38,7 @@
 #endif
 
 #include "stir/Array.h"
+#include "stir/make_array.h"
 #include "stir/Coordinate2D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Coordinate4D.h"
@@ -70,6 +71,16 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
+namespace detail {
+
+  static Array<2,float> test_make_array()
+  {
+    return
+      make_array(make_1d_array(1.F,0.F,0.F),
+                 make_1d_array(0.F,1.F,1.F),
+                 make_1d_array(0.F,-2.F,2.F));
+  }
+}
 
 /*!
   \brief Tests Array functionality
@@ -772,6 +783,27 @@ ArrayTests::run_tests()
     run_IO_tests(t1);
   }
 #endif
+  {
+    cerr << "Testing make_array" <<  endl;
+
+    const Array<2,float> arr1 =
+    	make_array(make_1d_array(1.F,0.F,0.F),
+		   make_1d_array(0.F,1.F,1.F),
+		   make_1d_array(0.F,-2.F,2.F));
+
+    const Array<2,float> arr2(
+    	make_array(make_1d_array(1.F,0.F,0.F),
+		   make_1d_array(0.F,1.F,1.F),
+		   make_1d_array(0.F,-2.F,2.F)));
+
+    const Array<2,float> arr3 = detail::test_make_array();
+    const Array<2,float> arr4(detail::test_make_array());
+
+    check_if_equal(arr1[2][1], -2.F, "make_array element comparison");
+    check_if_equal(arr1, arr2, "make_array inline assignment vs constructor");
+    check_if_equal(arr1, arr3, "make_array inline vs function with assignment");
+    check_if_equal(arr1, arr4, "make_array inline constructor from function");
+  }    
 }
 
 END_NAMESPACE_STIR
