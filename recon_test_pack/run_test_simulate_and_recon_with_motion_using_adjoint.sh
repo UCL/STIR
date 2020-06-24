@@ -122,7 +122,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 
 echo "===  make displacement field images"
 motion_image_3d=my_uniform_cylinder_motion_3d.hv
-stir_math --times-scalar 0 $motion_image_3d $input_image
+stir_math --times-scalar 0 --including-first $motion_image_3d $input_image
 
 
 par_file=OSMAPOSL_with_motion_test_using_adjoint.par
