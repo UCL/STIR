@@ -438,14 +438,14 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
     m_dataspace = m_dataset_sptr->getSpace();
     int dataset_list_Ndims = m_dataspace.getSimpleExtentNdims();
 
-    hsize_t dims_out[dataset_list_Ndims];
+    hsize_t* dims_out = new hsize_t[dataset_list_Ndims];
     m_dataspace.getSimpleExtentDims( dims_out, NULL);
     m_list_size=dims_out[0];
     const hsize_t tmp_size_of_record_signature = m_size_of_record_signature;
     m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
                             &tmp_size_of_record_signature);
 
-
+    delete[] dims_out;
     return Succeeded::yes;
 }
 
@@ -463,7 +463,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
         m_dataspace = m_dataset_sptr->getSpace();
         // Create an array to host the size of the dimensions
         const int rank = m_dataspace.getSimpleExtentNdims();
-        hsize_t dims[rank];
+        hsize_t* dims = new hsize_t[rank];
         // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
         // Read size of dimensions
         m_dataspace.getSimpleExtentDims( dims, NULL); 
@@ -476,6 +476,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
         m_NY = dims[1];
         m_NZ = (rank==2)? 1 : dims[2];
 #endif
+        delete[] dims;
     }
     else
         return Succeeded::no;
@@ -501,7 +502,7 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
         m_dataspace = m_dataset_sptr->getSpace();
         // Create an array to host the size of the dimensions
         const int rank = m_dataspace.getSimpleExtentNdims();
-        hsize_t dims[rank];
+        hsize_t* dims= new hsize_t[rank];
         // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
         // Read size of dimensions
         m_dataspace.getSimpleExtentDims( dims, NULL);
@@ -516,6 +517,7 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
         m_NY = 448;
         m_NZ = 357;
 #endif
+        delete[] dims;
     }
     else
         return Succeeded::no;
@@ -544,7 +546,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const unsigned int slice_nu
 
             // Read dimensions
             const int rank = m_dataspace.getSimpleExtentNdims();
-            hsize_t dims[rank];
+            hsize_t* dims = new hsize_t[rank];
             m_dataspace.getSimpleExtentDims( dims, NULL);
 
             m_NX_SUB = dims[0];    // hyperslab dimensions
@@ -555,6 +557,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const unsigned int slice_nu
             m_NY = dims[1];
             m_NZ = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
 #endif
+            delete[] dims;
         }
     }
     else
@@ -577,7 +580,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
         m_dataspace = m_dataset_sptr->getSpace();
         // Create an array to host the size of the dimensions
         const int rank = m_dataspace.getSimpleExtentNdims();
-        hsize_t dims[rank];
+        hsize_t* dims= new hsize_t[rank];
         // hsize_t max_dims[dataspace_Ndims]; // AB: Do we want the max_dims?
         // Read size of dimensions
         m_dataspace.getSimpleExtentDims( dims, NULL);
@@ -591,6 +594,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
         m_NY = dims[1]/scanner_sptr->get_num_detectors_per_ring();
         m_NZ = (rank==2)? 1 : dims[2];
 #endif
+        delete[] dims;
     }
     else
         return Succeeded::no;
