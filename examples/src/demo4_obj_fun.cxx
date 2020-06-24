@@ -8,15 +8,15 @@
   All parameters are parsed from a parameter file.
 
   It illustrates
-	- basic class derivation principles
-	- how to use ParsingObject to have automatic capabilities of parsing
-	  parameters files (and interactive questions to the user)
-	- how to initialise and setup a objective function object
+    - basic class derivation principles
+    - how to use stir::ParsingObject to have automatic capabilities of parsing
+      parameters files (and interactive questions to the user)
+    - how to initialise and setup a objective function object
     - how to compute the objective function (log-likelihood) gradient
     - how a basic iterative optimisation works (or may not, if parameters are altered)
 
   Note that the same functionality could be provided without deriving
-  a new class from ParsingObject. One could have a KeyParser object
+  a new class from stir::ParsingObject. One could have a stir::KeyParser object
   in main() and fill it in directly.
 
   See README.txt in the directory where this file is located.

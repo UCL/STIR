@@ -47,7 +47,7 @@
   type:= <type info as usual>
   <other keywords for the chosen type>
   END:=
-  \code
+  \endcode
 */
 
 #include "stir/ProjDataInfo.h"
