@@ -1,8 +1,20 @@
 //
 //
 /*
-    Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
-    Internal GE use only.
+Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+Copyright (C) 2020, University College London
+
+This file is part of STIR.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 namespace stir { // for doxygen
@@ -92,6 +104,7 @@ int main(int argc, char **argv)
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
   int interpolation_order = 1;
   bool do_origin_shift = true;
+  bool do_transpose = false;
 
   while (argc>0 && argv[0][0]=='-')
   {
@@ -123,6 +136,11 @@ int main(int argc, char **argv)
       do_origin_shift = false;
       argc-=1; argv+=1;
     }
+    else if (strcmp(argv[0], "--do_transpose")==0)
+    {
+      do_transpose =true;
+      argc-=1; argv+=1;
+    }
     else
     { cerr << "Unknown option '" << argv[0] <<"'\n"; exit(EXIT_FAILURE); }
   }
@@ -131,7 +149,7 @@ int main(int argc, char **argv)
     {
       cerr << "Usage:\n"
 	   << program_name
-	   << "\n  [--no_origin_shift] [--output-format parameter-filename ] [--interpolation_order 0|1]\\\n"
+	   << "\n  [--no_origin_shift] [--do_transpose] [--output-format parameter-filename ] [--interpolation_order 0|1]\\\n"
 	   << "output_filename input_filename \"{{q0, qz, qy, qx},{ tz, ty, tx}}\"\n"
 	   << "interpolation_order defaults to 1\n";
       exit(EXIT_FAILURE);
@@ -176,21 +194,38 @@ int main(int argc, char **argv)
     {
     case 0:
       std::cout << "Using nearest neighbour interpolation\n";
-      success =     
-	transform_3d_object_pull_interpolation(*out_density_sptr,
-					       *in_density_sptr,
-					       rigid_object_transformation.inverse(),
-					       PullNearestNeighbourInterpolator<float>(),
-					       /*do_jacobian=*/false ); // jacobian is 1 anyway
+      if (do_transpose)
+	success =
+          transform_3d_object_push_interpolation(*out_density_sptr,
+                                                 *in_density_sptr,
+                                                 rigid_object_transformation.inverse(),
+                                                 PushNearestNeighbourInterpolator<float>(),
+                                                 /*do_jacobian=*/false ); // jacobian is 1 anyway
+      else
+        success =
+          transform_3d_object_pull_interpolation(*out_density_sptr,
+                                                 *in_density_sptr,
+                                                 rigid_object_transformation.inverse(),
+                                                 PullNearestNeighbourInterpolator<float>(),
+                                                 /*do_jacobian=*/false ); // jacobian is 1 anyway
       break;
     case 1:
       std::cout << "Using linear interpolation\n";
-      success =     
-	transform_3d_object_pull_interpolation(*out_density_sptr,
-					       *in_density_sptr,
-					       rigid_object_transformation.inverse(),
-					       PullLinearInterpolator<float>(),
-					       /*do_jacobian=*/false ); // jacobian is 1 anyway
+      if (do_transpose)
+	success =
+          transform_3d_object_push_interpolation(*out_density_sptr,
+                                                 *in_density_sptr,
+                                                 rigid_object_transformation.inverse(),
+                                                 PushTransposeLinearInterpolator<float>(),
+                                                 //PushNearestNeighbourInterpolator<float>(),
+                                                 /*do_jacobian=*/false ); // jacobian is 1 anyway
+      else
+        success =
+          transform_3d_object_pull_interpolation(*out_density_sptr,
+                                                 *in_density_sptr,
+                                                 rigid_object_transformation.inverse(),
+                                                 PullLinearInterpolator<float>(),
+                                                 /*do_jacobian=*/false ); // jacobian is 1 anyway
       break;
     default:
       warning("Currently only interpolation_order 0 or 1");
