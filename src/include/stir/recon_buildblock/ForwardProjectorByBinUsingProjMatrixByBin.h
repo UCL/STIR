@@ -79,8 +79,20 @@ public:
   
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  /// Create shared clone
+  std::unique_ptr<ForwardProjectorByBinUsingProjMatrixByBin> create_shared_clone() const
+  {
+      return std::unique_ptr<ForwardProjectorByBinUsingProjMatrixByBin>(this->create_shared_clone_impl());
+  }
   
 private:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual ForwardProjectorByBinUsingProjMatrixByBin* create_shared_clone_impl() const
+  {
+      return new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_ptr);
+  }
+
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
   
 

@@ -102,7 +102,16 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
+  /// Create shared clone
+  std::unique_ptr<BackProjectorByBinNiftyPET> create_shared_clone() const;
+
 protected:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual BackProjectorByBinNiftyPET* create_shared_clone_impl() const
+  {
+      error("To do");
+  }
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,
                           const int min_axial_pos_num, const int max_axial_pos_num,

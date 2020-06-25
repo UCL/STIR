@@ -104,7 +104,19 @@ virtual void set_up(
     /// projection and after back projection
     void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
+    /// Create shared clone
+    std::unique_ptr<ForwardProjectorByBinNiftyPET> create_shared_clone() const
+    {
+        return std::unique_ptr<ForwardProjectorByBinNiftyPET>(this->create_shared_clone_impl());
+    }
+
 protected:
+
+    /// Helper method for create_shared_clone. Don't use.
+    virtual ForwardProjectorByBinNiftyPET* create_shared_clone_impl() const
+    {
+        error("To do");
+    }
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,

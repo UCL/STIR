@@ -42,8 +42,6 @@
 
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
-#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
@@ -103,11 +101,9 @@ static ProjMatrixByBinSPECTUB::RegisterIt dumy14;
 
 static ForwardProjectorByBinUsingProjMatrixByBin::RegisterIt dummy31;
 static ForwardProjectorByBinUsingRayTracing::RegisterIt dummy32;
-static PostsmoothingBackProjectorByBin::RegisterIt dummy33;
 
 static BackProjectorByBinUsingProjMatrixByBin::RegisterIt dummy51;
 static BackProjectorByBinUsingInterpolation::RegisterIt dummy52;
-static PresmoothingForwardProjectorByBin::RegisterIt dummy53;
 
 static ProjectorByBinPairUsingProjMatrixByBin::RegisterIt dummy71;
 static ProjectorByBinPairUsingSeparateProjectors::RegisterIt dummy72;

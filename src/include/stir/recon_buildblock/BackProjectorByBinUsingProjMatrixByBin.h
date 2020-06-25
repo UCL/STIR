@@ -87,8 +87,19 @@ public:
   shared_ptr<ProjMatrixByBin> &
     get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
   
+  /// Create shared clone
+  std::unique_ptr<BackProjectorByBinUsingProjMatrixByBin> create_shared_clone() const
+  {
+      return std::unique_ptr<BackProjectorByBinUsingProjMatrixByBin>(this->create_shared_clone_impl());
+  }
   
 protected:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual BackProjectorByBinUsingProjMatrixByBin* create_shared_clone_impl() const
+  {
+      return new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_ptr);
+  }
 
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 

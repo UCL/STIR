@@ -144,7 +144,16 @@ void back_project(const RelatedViewgrams<float>&,
   /// Set data processor to use after back projection
   void set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr);
 
+  /// Create shared clone
+  std::unique_ptr<BackProjectorByBin> create_shared_clone() const
+  {
+      return std::unique_ptr<BackProjectorByBin>(this->create_shared_clone_impl());
+  }
+
 protected:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual BackProjectorByBin* create_shared_clone_impl() const = 0;
 
   /*! \brief This actually does the back projection.
    There are two versions of this code to enable backwards compatibility.
