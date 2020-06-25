@@ -70,6 +70,15 @@ public:
   //inline
     ForwardProjectorByBinNiftyPET();
 
+    /// Copy constructor
+    ForwardProjectorByBinNiftyPET(const ForwardProjectorByBinNiftyPET& to_copy)
+        : RegisteredParsingObject<ForwardProjectorByBinNiftyPET, ForwardProjectorByBin>(to_copy),
+          _symmetries_sptr(nullptr), _projected_data_sptr(nullptr), _helper(to_copy._helper),
+          _cuda_device(to_copy._cuda_device), _cuda_verbosity(to_copy._cuda_verbosity),
+          _use_truncation(to_copy._use_truncation)
+    {
+    }
+
     /// Constructor
     virtual ~ForwardProjectorByBinNiftyPET();
 
@@ -115,8 +124,9 @@ protected:
     /// Helper method for create_shared_clone. Don't use.
     virtual ForwardProjectorByBinNiftyPET* create_shared_clone_impl() const
     {
-        error("To do");
+        return new ForwardProjectorByBinNiftyPET(*this);
     }
+
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,

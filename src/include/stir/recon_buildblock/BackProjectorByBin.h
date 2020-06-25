@@ -60,6 +60,9 @@ public:
   //! Default constructor calls reset_timers()
   BackProjectorByBin();
 
+  /// Copy constructor
+  BackProjectorByBin(const BackProjectorByBin& to_copy);
+
   virtual ~BackProjectorByBin();
 
   //! Stores all necessary geometric info

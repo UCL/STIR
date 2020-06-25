@@ -35,6 +35,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         bcktest
         recontest
         test_data_processor_projectors
+        test_projector_clone
 )
 
 include(stir_test_exe_targets)

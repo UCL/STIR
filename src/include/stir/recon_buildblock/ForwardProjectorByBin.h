@@ -63,6 +63,9 @@ public:
   //inline
     ForwardProjectorByBin();
 
+    /// Copy constructor
+    ForwardProjectorByBin(const ForwardProjectorByBin& to_copy);
+
   //! Stores all necessary geometric info
  /*! 
   If necessary, set_up() can be called more than once.

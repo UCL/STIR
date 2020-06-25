@@ -67,6 +67,11 @@ public:
   BackProjectorByBinUsingProjMatrixByBin (  
     const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr);
 
+  /// Copy constructor. Shallow copy of proj matrix
+  BackProjectorByBinUsingProjMatrixByBin(const BackProjectorByBinUsingProjMatrixByBin& to_copy)
+      : RegisteredParsingObject<BackProjectorByBinUsingProjMatrixByBin, BackProjectorByBin>(to_copy),
+        proj_matrix_ptr(to_copy.proj_matrix_ptr) { }
+
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
@@ -87,7 +92,7 @@ public:
   shared_ptr<ProjMatrixByBin> &
     get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
   
-  /// Create shared clone
+  /// Create shared clone. Warning, only shallow copy of ProjMatrixByBin.
   std::unique_ptr<BackProjectorByBinUsingProjMatrixByBin> create_shared_clone() const
   {
       return std::unique_ptr<BackProjectorByBinUsingProjMatrixByBin>(this->create_shared_clone_impl());
@@ -98,7 +103,7 @@ protected:
   /// Helper method for create_shared_clone. Don't use.
   virtual BackProjectorByBinUsingProjMatrixByBin* create_shared_clone_impl() const
   {
-      return new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_ptr);
+      return new BackProjectorByBinUsingProjMatrixByBin(*this);
   }
 
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;

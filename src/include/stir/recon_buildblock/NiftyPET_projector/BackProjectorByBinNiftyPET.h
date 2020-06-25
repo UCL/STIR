@@ -67,6 +67,14 @@ public:
   //! Default constructor calls reset_timers()
   BackProjectorByBinNiftyPET();
 
+  /// Copy constructor
+  BackProjectorByBinNiftyPET(const BackProjectorByBinNiftyPET& to_copy)
+      : RegisteredParsingObject<BackProjectorByBinNiftyPET, BackProjectorByBin>(to_copy),
+        _symmetries_sptr(nullptr), _helper(to_copy._helper), _cuda_device(to_copy._cuda_device),
+        _cuda_verbosity(to_copy._cuda_verbosity), _use_truncation(to_copy._use_truncation)
+  {
+  }
+
   virtual ~BackProjectorByBinNiftyPET();
 
   /// Keymap
@@ -103,14 +111,17 @@ public:
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
   /// Create shared clone
-  std::unique_ptr<BackProjectorByBinNiftyPET> create_shared_clone() const;
+  std::unique_ptr<BackProjectorByBinNiftyPET> create_shared_clone() const
+  {
+      return std::unique_ptr<BackProjectorByBinNiftyPET>(this->create_shared_clone_impl());
+  }
 
 protected:
 
   /// Helper method for create_shared_clone. Don't use.
   virtual BackProjectorByBinNiftyPET* create_shared_clone_impl() const
   {
-      error("To do");
+      return new BackProjectorByBinNiftyPET(*this);
   }
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,

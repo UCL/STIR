@@ -55,6 +55,12 @@ BackProjectorByBin::BackProjectorByBin()
     set_defaults();
 }
 
+BackProjectorByBin::BackProjectorByBin(const BackProjectorByBin& to_copy)
+    : _already_set_up(false), _density_sptr(nullptr), _post_data_processor_sptr(nullptr)
+{
+    this->_proj_data_info_sptr.reset(to_copy._proj_data_info_sptr->clone());
+}
+
 BackProjectorByBin::~BackProjectorByBin()
 {
 }

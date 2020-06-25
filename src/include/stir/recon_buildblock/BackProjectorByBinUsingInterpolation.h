@@ -192,6 +192,7 @@ protected:
   virtual BackProjectorByBinUsingInterpolation* create_shared_clone_impl() const
   {
       error("To do");
+      return new BackProjectorByBinUsingInterpolation;
   }
 
 private:

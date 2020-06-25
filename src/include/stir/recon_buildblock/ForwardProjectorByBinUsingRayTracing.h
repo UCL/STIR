@@ -113,6 +113,7 @@ public:
   virtual ForwardProjectorByBinUsingRayTracing* create_shared_clone_impl() const
   {
       error("to do");
+      return new ForwardProjectorByBinUsingRayTracing;
   }
 
   //! variable that determines if a cylindrical FOV or the whole image will be handled

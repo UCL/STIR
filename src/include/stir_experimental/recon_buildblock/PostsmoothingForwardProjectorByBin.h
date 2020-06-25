@@ -76,6 +76,7 @@ private:
   virtual PostsmoothingForwardProjectorByBin* create_shared_clone_impl() const
   {
       error("to do");
+      return new PostsmoothingForwardProjectorByBin;
   }
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;

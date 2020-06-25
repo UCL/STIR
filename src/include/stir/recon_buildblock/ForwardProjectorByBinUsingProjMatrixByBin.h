@@ -68,6 +68,11 @@ public:
     const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr
     );
 
+  /// Copy constructor. Shallow copy of proj matrix
+  ForwardProjectorByBinUsingProjMatrixByBin(const ForwardProjectorByBinUsingProjMatrixByBin& to_copy)
+      : RegisteredParsingObject<ForwardProjectorByBinUsingProjMatrixByBin, ForwardProjectorByBin>(to_copy),
+        proj_matrix_ptr(to_copy.proj_matrix_ptr) { }
+
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
@@ -79,7 +84,7 @@ public:
   
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  /// Create shared clone
+  /// Create shared clone. Warning, only shallow copy of ProjMatrixByBin.
   std::unique_ptr<ForwardProjectorByBinUsingProjMatrixByBin> create_shared_clone() const
   {
       return std::unique_ptr<ForwardProjectorByBinUsingProjMatrixByBin>(this->create_shared_clone_impl());
@@ -90,7 +95,7 @@ private:
   /// Helper method for create_shared_clone. Don't use.
   virtual ForwardProjectorByBinUsingProjMatrixByBin* create_shared_clone_impl() const
   {
-      return new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_ptr);
+      return new ForwardProjectorByBinUsingProjMatrixByBin(*this);
   }
 
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
