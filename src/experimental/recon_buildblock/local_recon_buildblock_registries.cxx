@@ -26,6 +26,7 @@
 //#include "stir_experimental/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
 //#include "stir_experimental/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
 #include "stir_experimental/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
+#include "stir_experimental/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint.h"
 #if 0
 #include "stir_experimental/recon_buildblock/BinNormalisationUsingProfile.h"
 #include "stir_experimental/recon_buildblock/BinNormalisationSinogramRescaling.h"
@@ -55,6 +56,7 @@ static ParametricQuadraticPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dum
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
 static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<DiscretisedDensity<3,float> >::RegisterIt dummy666;
 //static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
 
 #if 0

@@ -20,7 +20,7 @@
 
 #include "stir/DiscretisedDensity.h"
 // TODO remove next. artefact of current shared_ptr
-#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+//#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 // #include "stir_experimental/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 START_NAMESPACE_STIR
@@ -32,6 +32,6 @@ static Transform3DObjectImageProcessor<float>::RegisterIt dummy1000;
 static NonRigidObjectTransformationUsingBSplines<3,float>::RegisterIt dummy2000;
 //static RigidObject3DTransformation::RegisterIt dummy2000;
 
-// static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt dummy4000;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<DiscretisedDensity<3,float> >::RegisterIt dummy4000;
 END_NAMESPACE_STIR
 

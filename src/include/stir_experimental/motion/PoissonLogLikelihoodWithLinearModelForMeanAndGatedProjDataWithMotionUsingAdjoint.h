@@ -19,14 +19,14 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint
 
   \author Kris Thielemans
 
 */
 
-#ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion_H__
-#define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion_H__
+#ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint_H__
+#define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint_H__
 
 
 #include "stir/RegisteredParsingObject.h"
@@ -46,9 +46,9 @@ class GatedProjData;
   \brief
 */
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion 
+class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint 
 : public  RegisteredParsingObject
-            <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
+            <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>,
              GeneralisedObjectiveFunction<TargetT>,
              SumOfGeneralisedObjectiveFunctions<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
                                                 TargetT, 
@@ -58,7 +58,7 @@ class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
  private:
   typedef
   RegisteredParsingObject
-    <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
+    <PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>,
     GeneralisedObjectiveFunction<TargetT>,
     SumOfGeneralisedObjectiveFunctions<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
                                        TargetT, 
@@ -72,7 +72,7 @@ public:
   static const char * const registered_name; 
 
   //! Default constructor calls set_defaults()
-  PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion();
+  PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint();
   
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -85,10 +85,14 @@ public:
   void set_proj_data_sptr(const shared_ptr<GatedProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  void set_additive_proj_data_sptr(const shared_ptr<GatedProjData>&);
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
+  void set_normalisations(const VectorWithOffset<shared_ptr<BinNormalisation> >&);
+  void set_forward_transformations(const VectorWithOffset<shared_ptr<DataProcessor<TargetT> > >&);
+  void set_input_data(const shared_ptr<ExamData> &);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   //@}
 
   virtual
@@ -100,11 +104,14 @@ public:
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 							  const TargetT& target, 
 							  const int subset_num);
+
+    /// Get input data
+    virtual const GatedProjData& get_input_data() const;
 protected:
 
   virtual
   Succeeded
-    set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr);
+    set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr);
 
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;

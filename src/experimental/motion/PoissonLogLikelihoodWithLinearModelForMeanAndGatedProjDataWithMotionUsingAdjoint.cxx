@@ -7,7 +7,7 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint
 
   \author Kris Thielemans
 
@@ -15,7 +15,7 @@
 
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
-#include "stir_experimental/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
+#include "stir_experimental/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -52,13 +52,13 @@ START_NAMESPACE_STIR
 
 template<typename TargetT>
 const char * const 
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 registered_name = 
-"PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion";
+"PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint";
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_defaults()
 {
   base_type::set_defaults();
@@ -114,13 +114,13 @@ set_defaults()
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 initialise_keymap()
 {
   base_type::initialise_keymap();
-  this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters");
-  this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters");
-  this->parser.add_key("input filename",&this->_input_filename);
+  this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint Parameters");
+  this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint Parameters");
+  this->parser.add_key("input file",&this->_input_filename);
 
   this->parser.add_key("maximum absolute segment number to process", &this->max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->zero_seg0_end_planes);
@@ -210,7 +210,7 @@ initialise_keymap()
 
 template<typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 post_processing()
 {
   if (base_type::post_processing() == true)
@@ -251,15 +251,15 @@ post_processing()
 }
 
 template <typename TargetT>
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion()
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint()
 {
   this->set_defaults();
 }
 
 template <typename TargetT>
 TargetT *
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 construct_target_ptr() const
 {
   return
@@ -280,7 +280,7 @@ construct_target_ptr() const
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
 {
   this->_gated_proj_data_sptr = arg;
@@ -288,7 +288,7 @@ set_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_max_segment_num_to_process(const int arg)
 {
   this->max_segment_num_to_process = arg;
@@ -297,7 +297,7 @@ set_max_segment_num_to_process(const int arg)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_zero_seg0_end_planes(const bool arg)
 {
   this->zero_seg0_end_planes = arg;
@@ -305,16 +305,16 @@ set_zero_seg0_end_planes(const bool arg)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_additive_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
 
-  this->_gated_additive_proj_data_sptr = arg;
+  this->_gated_additive_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg) 
 {
   this->projector_pair_ptr = arg;
@@ -323,7 +323,7 @@ set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_frame_num(const int arg)
 {
   this->frame_num = arg;
@@ -331,10 +331,50 @@ set_frame_num(const int arg)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 set_frame_definitions(const TimeFrameDefinitions& arg)
 {
   this->frame_defs = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_normalisations(const VectorWithOffset<shared_ptr<BinNormalisation> >& arg)
+{
+  this->_normalisation_sptrs = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_forward_transformations(const VectorWithOffset<shared_ptr<DataProcessor<TargetT> > >& arg)
+{
+  this->_forward_transformations = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_input_data(const shared_ptr<ExamData> & arg)
+{
+    this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>&)
+{
+    error("Shouldn't be used, but implementation is required to make this class non-abstract.");
+}
+
+template<typename TargetT>
+const GatedProjData&
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+get_input_data() const
+{
+  return *this->_gated_proj_data_sptr;
 }
 
 /***************************************************************
@@ -342,8 +382,8 @@ set_frame_definitions(const TimeFrameDefinitions& arg)
 ***************************************************************/
 template<typename TargetT>
 Succeeded 
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   shared_ptr<ProjDataInfo> 
     proj_data_info_sptr(this->_gated_proj_data_sptr->get_proj_data_info_sptr()->clone());
@@ -499,7 +539,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
                                                       const TargetT &current_estimate, 
                                                       const int subset_num)
@@ -544,7 +584,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
 template<typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
   typename base_type::_functions_const_iterator_type iter = this->_functions.begin();
@@ -565,7 +605,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #  pragma warning(disable:4661)
 #  endif
 
-template class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >;
+template class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotionUsingAdjoint<DiscretisedDensity<3,float> >;
 
 END_NAMESPACE_STIR
 
