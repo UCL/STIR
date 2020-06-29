@@ -3,7 +3,7 @@
 /*!
 
   \file
-  \ingroup test
+  \ingroup recontest
 
   \brief Test program for projector clones.
 
