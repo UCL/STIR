@@ -64,8 +64,20 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  /// Create shared clone
+  std::unique_ptr<PostsmoothingForwardProjectorByBin> create_shared_clone() const
+  {
+      return std::unique_ptr<PostsmoothingForwardProjectorByBin>(this->create_shared_clone_impl());
+  }
 
 private:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual PostsmoothingForwardProjectorByBin* create_shared_clone_impl() const
+  {
+      error("to do");
+      return new PostsmoothingForwardProjectorByBin;
+  }
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   VectorWithOffset<float> tang_kernel;

@@ -102,7 +102,20 @@ public:
 
   virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  /// Create shared clone
+  std::unique_ptr<ForwardProjectorByBinUsingRayTracing> create_shared_clone() const
+  {
+      return std::unique_ptr<ForwardProjectorByBinUsingRayTracing>(this->create_shared_clone_impl());
+  }
+
  protected:
+  /// Helper method for create_shared_clone. Don't use.
+  virtual ForwardProjectorByBinUsingRayTracing* create_shared_clone_impl() const
+  {
+      error("to do");
+      return new ForwardProjectorByBinUsingRayTracing;
+  }
+
   //! variable that determines if a cylindrical FOV or the whole image will be handled
   bool restrict_to_cylindrical_FOV;
 

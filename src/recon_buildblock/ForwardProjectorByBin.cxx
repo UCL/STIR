@@ -56,6 +56,12 @@ ForwardProjectorByBin::ForwardProjectorByBin()
   set_defaults();
 }
 
+ForwardProjectorByBin::ForwardProjectorByBin(const ForwardProjectorByBin &to_copy)
+    : _already_set_up(false), _density_sptr(nullptr), _pre_data_processor_sptr(nullptr)
+{
+    this->_proj_data_info_sptr.reset(to_copy._proj_data_info_sptr->clone());
+}
+
 ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }

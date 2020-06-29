@@ -24,8 +24,6 @@
 
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
-#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
-#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 
 #include "stir/DiscretisedDensity.h"
 // for set_projectors_and_symmetries
@@ -414,12 +412,9 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
                   warning("transformation type has to be Transform3DObjectImageProcessor");
                   return Succeeded::no;
                 }
-              shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate
-		(
-		 new PresmoothingForwardProjectorByBin(this->projector_pair_ptr->
-						       get_forward_projector_sptr(),
-						       this->_forward_transformations[gate_num])
-		 );
+              shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate =
+                      this->projector_pair_ptr->get_forward_projector_sptr()->create_shared_clone();
+              forward_projector_sptr_this_gate->set_pre_data_processor(this->_forward_transformations[gate_num]);
 
               shared_ptr<DataProcessor<TargetT> > transpose_transformer_sptr
 		(
@@ -431,11 +426,11 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
                 dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr);
               transpose_transformer.
                 set_do_transpose(!forward_transformer_ptr->get_do_transpose());
-              shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate
-		(new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
-						     get_back_projector_sptr(),
-						     transpose_transformer_sptr)
-		 );
+
+              shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate =
+                      this->projector_pair_ptr->get_back_projector_sptr()->create_shared_clone();
+              back_projector_sptr_this_gate->set_post_data_processor(transpose_transformer_sptr);
+
               projector_pair_sptr_this_gate.
 		reset(new ProjectorByBinPairUsingSeparateProjectors
 		      (forward_projector_sptr_this_gate,

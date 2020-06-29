@@ -63,6 +63,9 @@ public:
   //inline
     ForwardProjectorByBin();
 
+    /// Copy constructor
+    ForwardProjectorByBin(const ForwardProjectorByBin& to_copy);
+
   //! Stores all necessary geometric info
  /*! 
   If necessary, set_up() can be called more than once.
@@ -133,7 +136,17 @@ virtual void set_up(
     /// Set data processor to use before forward projection. MUST BE CALLED BEFORE SET_INPUT.
     void set_pre_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr);
 
+    /// Create shared clone
+    std::unique_ptr<ForwardProjectorByBin> create_shared_clone() const
+    {
+        return std::unique_ptr<ForwardProjectorByBin>(this->create_shared_clone_impl());
+    }
+
 protected:
+
+    /// Helper method for create_shared_clone. Don't use.
+    virtual ForwardProjectorByBin* create_shared_clone_impl() const = 0;
+
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,

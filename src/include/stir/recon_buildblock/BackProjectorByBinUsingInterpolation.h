@@ -180,6 +180,21 @@ public:
   */
   void use_piecewise_linear_interpolation(const bool use_piecewise_linear_interpolation);
 
+  /// Create shared clone
+  std::unique_ptr<BackProjectorByBinUsingInterpolation> create_shared_clone() const
+  {
+      return std::unique_ptr<BackProjectorByBinUsingInterpolation>(this->create_shared_clone_impl());
+  }
+
+protected:
+
+  /// Helper method for create_shared_clone. Don't use.
+  virtual BackProjectorByBinUsingInterpolation* create_shared_clone_impl() const
+  {
+      error("To do");
+      return new BackProjectorByBinUsingInterpolation;
+  }
+
 private:
  
   // KT 20/06/2001 changed type to enable use of more methods
