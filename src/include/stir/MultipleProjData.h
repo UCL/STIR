@@ -148,12 +148,13 @@ public:
 
   //!
   //! \brief copy_to
+  //! \return \a array_iter advanced over the number of bins (as \c std::copy)
   //! \param full_iterator of some array
   //! \details Copy all data to an array.
   //! \author Nikos Efthimiou
   //! \warning Full::iterator should be supplied.
   template < typename iterT>
-  void copy_to(iterT array_iter)
+  iterT copy_to(iterT array_iter)
   {
       for ( std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
             it != _proj_datas.end(); ++it)
@@ -161,9 +162,9 @@ public:
           if ( is_null_ptr( *(it)))
               error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          const std::size_t num_bins = (*it)->copy_to(array_iter);
-          std::advance(array_iter, num_bins);
+          array_iter = (*it)->copy_to(array_iter);
       }
+      return array_iter;
   }
 
   //!
@@ -175,15 +176,13 @@ public:
   template <typename iterT>
   void fill_from(iterT array_iter)
   {
-      long int cur_pos = 0;
       for (std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
            it != _proj_datas.end(); ++it)
       {
           if ( is_null_ptr( *(it)))
               error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          cur_pos = (*it)->fill_from(array_iter);
-          std::advance(array_iter, cur_pos);
+          array_iter = (*it)->fill_from(array_iter);
       }
   }
 
