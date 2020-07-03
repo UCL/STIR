@@ -109,6 +109,28 @@ create_stream()
   this->sino_stream = output_stream_sptr;
 }
 
+
+void
+ProjDataInMemory::fill(const float value)
+{
+  std::fill(begin_all(), end_all(), value);
+}
+
+void
+ProjDataInMemory::fill(const ProjData& proj_data)
+{
+  auto pdm_ptr = dynamic_cast<ProjDataInMemory const *>(&proj_data);
+  if (!is_null_ptr(pdm_ptr) &&
+      (*this->get_proj_data_info_sptr()) == (*proj_data.get_proj_data_info_sptr()))
+    {
+      std::copy(pdm_ptr->begin_all(), pdm_ptr->end_all(), begin_all());
+    }
+  else
+    {
+      return ProjData::fill(proj_data);
+    }
+}
+
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
@@ -136,7 +158,8 @@ ProjDataInMemory (const ProjDataInMemory& proj_data)
   this->create_stream();
 
   // copy data
-  this->fill(proj_data);
+  std::copy(proj_data.begin_all(), proj_data.end_all(), begin_all());
+  //this->fill(proj_data);
 }
 
 size_t

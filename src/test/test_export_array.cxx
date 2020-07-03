@@ -258,7 +258,7 @@ void ExportArrayTests :: test_static_data()
     //- Allocate 1D array and get iterator
 
     info("Allocating array ...");
-    Array<1,float> test_array(0, total_size);
+    Array<1,float> test_array(total_size);
     Array<1,float>::full_iterator test_array_iter = test_array.begin_all();
 
     //-

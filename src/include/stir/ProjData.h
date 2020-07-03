@@ -186,14 +186,14 @@ public:
 
   //! set all bins to the same value
   /*! will call error() if setting failed */
-  void fill(const float value);
+  virtual void fill(const float value);
 
   //! set all bins from another ProjData object
   /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
     The current check requires at least the same segment numbers (but the source can have more),
     all other geometric parameters have to be the same.
  */
-  void fill(const ProjData&);
+  virtual void fill(const ProjData&);
 
   //! Return a vector with segment numbers in a standard order
   /*! This returns a vector filled as \f$ [0, 1, -1, 2, -2, ...] \f$.
