@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2018 University College London
+    Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -58,6 +58,7 @@
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
+ #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
 
 #include "stir/CartesianCoordinate2D.h"
@@ -651,61 +652,9 @@ namespace std {
   {
       Array<3,float> array = create_array_for_proj_data(proj_data);
       Array<3,float>::full_iterator array_iter = array.begin_all();
-      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
-      //        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-      //        std::advance(array_iter, segment.size_all());
-      //        if (s!=0)
-      //          {
-      //            segment=proj_data.get_segment_by_sinogram(-s);
-      //            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-      //            std::advance(array_iter, segment.size_all());
-      //          }
-      //      }
-      proj_data.copy_to(array_iter);
+      copy_to(proj_data, array_iter);
       return array;
   }
-
-  // inverse of the above function
-  void fill_proj_data_from_3D(ProjData& proj_data, const Array<3,float>& array)
-  {
-      //    int num_sinos=proj_data.get_num_axial_poss(0);
-      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      //      }
-      //    if (array.size() != static_cast<std::size_t>(num_sinos)||
-      //        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
-      //        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
-      //      {
-      //        throw std::runtime_error("Incorrect size for filling this projection data");
-      //      }
-      Array<3,float>::const_full_iterator array_iter = array.begin_all();
-      //
-      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
-      //        // cannot use std::copy sadly as needs end-iterator for range
-      //        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-      //             seg_iter != segment.end_all();
-      //             /*empty*/)
-      //          *seg_iter++ = *array_iter++;
-      //        proj_data.set_segment(segment);
-      //
-      //        if (s!=0)
-      //          {
-      //            segment=proj_data.get_empty_segment_by_sinogram(-s);
-      //            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-      //                 seg_iter != segment.end_all();
-      //                 /*empty*/)
-      //              *seg_iter++ = *array_iter++;
-      //            proj_data.set_segment(segment);
-      //          }
-      //      }
-      proj_data.fill_from(array_iter);
-  }
-  
   
  } // end of namespace
 
@@ -1404,7 +1353,7 @@ namespace stir {
 %include "stir/ProjData.h"
 
 namespace stir {
-%extend ProjData 
+%extend ProjData
   {
 #ifdef SWIGPYTHON
     %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
@@ -1420,9 +1369,10 @@ namespace stir {
     {
       if (PyIter_Check(arg))
       {
+        // TODO avoid need for copy to Array
         Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        swigstir::fill_proj_data_from_3D(*$self, array);        
+        fill_from(*$self, array.begin_all(), array.end_all());
       }
       else
       {
@@ -1449,7 +1399,41 @@ namespace stir {
     }
 #endif
   }
- }
+
+  // horrible repetition of above. should be solved with a macro or otherwise
+  // we need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
+%extend ProjDataInMemory
+  {
+#ifdef SWIGPYTHON
+    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    void fill(PyObject* const arg)
+    {
+      if (PyIter_Check(arg))
+      {
+        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+	swigstir::fill_Array_from_Python_iterator(&array, arg);
+        fill_from(*$self, array.begin_all(), array.end_all());
+      }
+      else
+      {
+	char str[1000];
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+		arg->ob_type->tp_name);
+	throw std::invalid_argument(str);
+      } 
+    }
+
+#elif defined(SWIGMATLAB)
+    void fill(const mxArray *pm)
+    { 
+      Array<3,float> array;
+      swigstir::fill_Array_from_matlab(array, pm, true);
+      swigstir::fill_proj_data_from_3D(*$self, array);
+    }
+#endif
+  }
+
+}
 
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
