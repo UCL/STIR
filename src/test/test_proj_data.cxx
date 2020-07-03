@@ -226,13 +226,6 @@ run_tests()
 		                    /*span*/1, 10,/*views*/ 2096, /*tang_pos*/132, /*arc_corrected*/ true)
      );
 
-  {
-    CPUTimer timer;
-    timer.start();
-    std::vector<int> seq=ProjData::standard_segment_sequence(*proj_data_info_sptr);
-    timer.stop();
-    std::cerr<<" Time for seg seq: " << timer.value() << "\n";
-  }
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   exam_info_sptr->imaging_modality = ImagingModality::PT;
 
