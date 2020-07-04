@@ -66,7 +66,10 @@ endif()
 
 if (@HDF5_FOUND@)
   message(STATUS "HDF5 support in STIR enabled.")
-  find_package(HDF5 @HDF5_VERSION@ COMPONENTS CXX REQUIRED)
+  # should really look for CXX only, as that's all we need. However, this can create conflicts
+  # with current CMake, see https://gitlab.kitware.com/cmake/cmake/-/issues/20909
+  # find_package(HDF5 @HDF5_VERSION@ COMPONENTS CXX REQUIRED)
+  find_package(HDF5 @HDF5_VERSION@ REQUIRED)
   include_directories(${HDF5_INCLUDE_DIRS})
 
   set(STIR_BUILT_WITH_HDF5 TRUE)
