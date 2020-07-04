@@ -60,10 +60,10 @@ else()
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   4)
+set(VERSION_MAJOR   5)
 set(VERSION_MINOR   0)
-set(VERSION_PATCH   2)
-set(VERSION   040002) # only used in STIRConfig.h.in
+set(VERSION_PATCH   0-prealpha)
+set(VERSION   050000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
