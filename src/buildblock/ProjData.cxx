@@ -300,7 +300,7 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
   {
     if (set_viewgram(*r_viewgrams_iter)== Succeeded::no)
       return Succeeded::no;
-      ++r_viewgrams_iter;
+    ++r_viewgrams_iter;
   }
   return Succeeded::yes;
 }
@@ -442,6 +442,30 @@ axpby(const float a, const ProjData& x,
         seg.axpby(a, sx, b, sy);
         set_segment(seg);
     }
+}
+
+std::vector<int>
+ProjData::
+standard_segment_sequence(const ProjDataInfo& pdi)
+{
+  std::vector<int> segment_sequence(pdi.get_num_segments());
+  if (pdi.get_num_segments()==0)
+    return segment_sequence;
+
+  const int max_segment_num = pdi.get_max_segment_num();
+  const int min_segment_num = pdi.get_min_segment_num();
+  segment_sequence[0] = 0;
+  unsigned idx = 1;
+  int segment_num = 1;
+  while (idx < segment_sequence.size())
+  {
+    if (segment_num<=max_segment_num)
+      segment_sequence[idx++] = segment_num;
+    if (-segment_num>=min_segment_num)
+      segment_sequence[idx++] = -segment_num;
+    ++segment_num;
+  }
+  return segment_sequence;
 }
 
 END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016, 2020 University College London
 
     This file is part of STIR.
 
@@ -31,6 +31,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/Array.h"
 #include "stir/info.h"
+#include "stir/copy_fill.h"
 
 #include <boost/format.hpp>
 
@@ -133,7 +134,7 @@ void ExportArrayTests::test_dynamic_data()
 
     // Copy data to array.
     info("Copying test dynamic projdata to array ...");
-    test_dynamic_projData_sptr->copy_to< Array<2,float>::full_iterator >( test_array_iter);
+    copy_to(*test_dynamic_projData_sptr, test_array_iter);
 
     // Convert it to ProjData
     info("Copying data from array to check dynamic projdata ...");
@@ -153,7 +154,7 @@ void ExportArrayTests::test_dynamic_data()
         check_dynamic_projData_sptr->set_proj_data_sptr(test_proj_data_gate_ptr, (i_gate+1));
     }
 
-    check_dynamic_projData_sptr->fill_from<Array<2,float>::full_iterator>(test_array_iter);
+    fill_from(*check_dynamic_projData_sptr, test_array.begin_all_const(), test_array.end_all_const());
 
     info ("Checking if data are the same...");
     for(int i_gate = 1; i_gate <= num_of_gates; i_gate++)
@@ -257,16 +258,16 @@ void ExportArrayTests :: test_static_data()
     //- Allocate 1D array and get iterator
 
     info("Allocating array ...");
-    Array<1,float> test_array(0, total_size);
+    Array<1,float> test_array(total_size);
     Array<1,float>::full_iterator test_array_iter = test_array.begin_all();
 
     //-
     info("Copying from ProjData to array ...");
-    test_proj_data_sptr->copy_to< Array<1,float>::full_iterator >( test_array_iter);
+    copy_to(*test_proj_data_sptr, test_array_iter);
 
     // Convert it back to ProjData
     info("Copying from array to a new ProjData ...");
-    check_proj_data_sptr->fill_from<Array<1,float>::full_iterator>(test_array_iter);
+    fill_from(*check_proj_data_sptr, test_array.begin_all_const(), test_array.end_all_const());
 
     info ("Checking if new and old ProjData are the same...");
     for (int segment_num = test_proj_data_sptr->get_min_segment_num();
