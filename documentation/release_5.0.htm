@@ -62,7 +62,7 @@ improvements to the documentation.
 
 <h3>Changed functionality</h3>
 <ul>
-<li>
+<li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
 </li>
 </ul>
 
@@ -103,8 +103,9 @@ documentation</a> for supported values.
 
 <h3>Other changes to tests</h3>
 <ul>
-<li>
-</li>
+  <li>expanded <tt>test_proj_data_in_memory</tt> to also test <code>ProjDataInterfile</code> so renamed
+    the test to <tt>test_proj_data</tt>.
+  </li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
@@ -134,7 +135,9 @@ from the above):</H2>
 
 <h3>New functionality</h3>
 <ul>
-<li>
+  <li>New templated functions <code>stir::copy_to</code> and <code>stir::fill_from</code> in <tt>stir/copy_fill.h</tt> which
+    can be used to fill most STIR objects from an iterator range (or copy to).
+    The functions normally use <code>stir_object.begin_all()</code> but resort to <code>stir_object::fill_from</code> or <code>copy_to</code> for a few cases where no iterators exist. We use some specialisations to try and find the fastest version.
 </li>
 </ul>
 
