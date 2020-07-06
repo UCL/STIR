@@ -30,7 +30,7 @@ InputStreamFromROOTFileForCylindricalPET():
 {
     set_defaults();
 }
-
+#if 0 // not used, so commented out (would need adapting since moving crystal_repeated_*)
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET(std::string _filename,
                                          std::string _chain_name,
@@ -48,6 +48,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     rsector_repeater(rsector_repeater)
 {
     set_defaults();
+    error("This constructor is incorrect"); //TODO set_defaults() will override the above
 
     filename = _filename;
     chain_name = _chain_name;
@@ -61,6 +62,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     if (half_block < 0 )
         half_block = 0;
 }
+#endif
 
 Succeeded
 InputStreamFromROOTFileForCylindricalPET::
@@ -139,9 +141,6 @@ void
 InputStreamFromROOTFileForCylindricalPET::set_defaults()
 {
     base_type::set_defaults();
-    crystal_repeater_x = -1;
-    crystal_repeater_y = -1;
-    crystal_repeater_z = -1;
     submodule_repeater_x = -1;
     submodule_repeater_y = -1;
     submodule_repeater_z = -1;
@@ -165,10 +164,6 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
     this->parser.add_key("number of submodules X", &this->submodule_repeater_x);
     this->parser.add_key("number of submodules Y", &this->submodule_repeater_y);
     this->parser.add_key("number of submodules Z", &this->submodule_repeater_z);
-
-    this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
-    this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
-    this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
 }
 
 bool InputStreamFromROOTFileForCylindricalPET::

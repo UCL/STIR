@@ -5,10 +5,11 @@
 
   \author Nikos Efthimiou
   \author Harry Tsoumpas
+  \author Kris Thielemans
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -77,13 +78,14 @@ public:
     //! Default constructor
     InputStreamFromROOTFile();
 
+#if 0 // disabled as not used
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
                             bool exclude_scattered, bool exclude_randoms,
                             float low_energy_window, float up_energy_window,
                             int offset_dets);
-
+#endif
 
     virtual ~InputStreamFromROOTFile() {}
     //!  \details Returns the next record in the ROOT file.
@@ -122,9 +124,9 @@ public:
     //! Get the number of transaxial modules
     virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
     //! Get the axial number of crystals per module
-    virtual int get_num_axial_crystals_per_block_v() const = 0;
+    inline int get_num_axial_crystals_per_block_v() const;
     //! Get the transaxial number of crystals per module
-    virtual int get_num_transaxial_crystals_per_block_v() const = 0;
+    inline int get_num_transaxial_crystals_per_block_v() const;
 
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
@@ -153,7 +155,11 @@ public:
     //! Set the read_optional_root_fields flag
     inline void set_optional_ROOT_fields(bool);
 
-protected:
+    void set_crystal_repeater_x(int);
+    void set_crystal_repeater_y(int);
+    void set_crystal_repeater_z(int);
+
+ protected:
 
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -177,6 +183,13 @@ protected:
     //! flag does not mean that something meaningfull will happen. Please edit get_next_record()
     //! function accordingly.
     bool read_optional_root_fields;
+
+    //! \name repeaters
+    //@{
+    int crystal_repeater_x;
+    int crystal_repeater_y;
+    int crystal_repeater_z;
+    //}
 
     //! \name ROOT Variables, e.g. to hold data from each entry.
     //@{

@@ -154,4 +154,19 @@ InputStreamFromROOTFile::set_optional_ROOT_fields(bool val)
     read_optional_root_fields = val;
 }
 
+
+int
+InputStreamFromROOTFile::
+get_num_axial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_z;
+}
+
+int
+InputStreamFromROOTFile::
+get_num_transaxial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_y;
+}
+
 END_NAMESPACE_STIR
