@@ -225,9 +225,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
     return Succeeded::no;
   }
 
-  span = 
-    proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
-    proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
   // TODO insert check all other segments are the same
 
   mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
@@ -474,9 +471,9 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         
         
         int geo_plane_num = 
-	  detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
-					     ring1_plus_ring2, uncompressed_bin,
-					     detection_position_pair);
+              detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
+                        ring1_plus_ring2, uncompressed_bin,
+                        detection_position_pair);
         if ( geo_plane_num < 0 ) {
           // Ring numbers out of range.
           continue;
@@ -492,64 +489,49 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         assert(check_bin == bin);
 #endif
         
-         const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+        const DetectionPosition<>& pos1 = detection_position_pair.pos1();
         const DetectionPosition<>& pos2 = detection_position_pair.pos2();
 
-	float lor_efficiency_this_pair = 1.F;
-	if (this->use_detector_efficiencies())
-	  {
-        lor_efficiency_this_pair =1/
-          (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
-          efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
-	  }
-	if (this->use_dead_time())
-	  {
-	    lor_efficiency_this_pair *=
-	      get_dead_time_efficiency(pos1, start_time, end_time) * 
-	      get_dead_time_efficiency(pos2, start_time, end_time);
-	  }
-	if (this->use_geometric_factors())
-	  {
-	    lor_efficiency_this_pair *=
+        float lor_efficiency_this_pair = 1.F;
+        if (this->use_detector_efficiencies())
+        {
+              lor_efficiency_this_pair =1/
+                (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
+                efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
+        }
+        if (this->use_dead_time())
+        {
+            lor_efficiency_this_pair *=
+              get_dead_time_efficiency(pos1, start_time, end_time) * 
+              get_dead_time_efficiency(pos2, start_time, end_time);
+        }
+        if (this->use_geometric_factors())
+        {
+            lor_efficiency_this_pair *=
 #ifdef SAME_AS_PETER
               1.F;
 #else	    // this is 3dbkproj (at the moment)
-	    geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
+              geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 #endif
-	  }
-	lor_efficiency += lor_efficiency_this_pair;
-      }
+        }
+        lor_efficiency += lor_efficiency_this_pair;
+      }//endfor
 
-      if (this->use_crystal_interference_factors())
-	{
-	  view_efficiency += lor_efficiency * 
-	    crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
-	}
-      else
-	{
+
 	  view_efficiency += lor_efficiency;
-	}
-    }
+
     
     if (this->use_geometric_factors())
-      {
-	/* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-	// for oblique plaanes use the single radial profile from segment 0 
-	
-#ifdef SAME_AS_PETER	
-	const int geo_plane_num = 0;
-	
-	total_efficiency += view_efficiency * 
-	  geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
-	  geo_Z_corr;
-#else
-	total_efficiency += view_efficiency * geo_Z_corr;
-#endif
-      }
+    {
+      /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
+      // for oblique plaanes use the single radial profile from segment 0 
+
+      total_efficiency += view_efficiency * geo_Z_corr;
+    }
     else
-      {
-	total_efficiency += view_efficiency;
-      }
+    {
+	    total_efficiency += view_efficiency;
+    }
   }
   return total_efficiency;
 }
