@@ -131,6 +131,18 @@ public:
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+    //! \name number of "fake" crystals per block, inserted by the scanner
+    /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
+      The other members of the class return the size of the "virtual" block. With these
+      functions you can find its true size.
+    */
+    //@{!
+    inline int get_num_virtual_axial_crystals_per_block() const;
+    inline int get_num_virtual_transaxial_crystals_per_block() const;
+    void set_num_virtual_axial_crystals_per_block(int);
+    void set_num_virtual_transaxial_crystals_per_block(int);
+    //@}
+
     //! Lower energy threshold
     inline float get_low_energy_thres() const;
     //! Upper energy threshold
@@ -207,6 +219,11 @@ public:
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
+    //! \name number of "fake" crystals per block, inserted by the scanner
+    //@{!
+    int num_virtual_axial_crystals_per_block;
+    int num_virtual_transaxial_crystals_per_block;
+    //@}
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
     //! Skip random events (eventID1 != eventID2)

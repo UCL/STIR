@@ -74,6 +74,8 @@ InputStreamFromROOTFile::set_defaults()
     crystal_repeater_x = -1;
     crystal_repeater_y = -1;
     crystal_repeater_z = -1;
+    num_virtual_axial_crystals_per_block = 0;
+    num_virtual_transaxial_crystals_per_block = 0;
 }
 
 void
@@ -174,6 +176,18 @@ void
 InputStreamFromROOTFile::set_crystal_repeater_z(int val)
 {
     crystal_repeater_z = val;
+}
+
+void
+InputStreamFromROOTFile::set_num_virtual_axial_crystals_per_block(int val)
+{
+  num_virtual_axial_crystals_per_block = val;
+}
+
+void
+InputStreamFromROOTFile::set_num_virtual_transaxial_crystals_per_block(int val)
+{
+  num_virtual_transaxial_crystals_per_block = val;
 }
 
 END_NAMESPACE_STIR

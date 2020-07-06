@@ -97,10 +97,10 @@ get_next_record(CListRecordROOT& record)
     int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
             + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
-    int crystal1 = (blockID1%block_repeater_y) * crystal_repeater_y
+    int crystal1 = (blockID1%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = (blockID2%block_repeater_y) * crystal_repeater_y
+    int crystal2 = (blockID2%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID2%crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
