@@ -507,12 +507,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         }
         if (this->use_geometric_factors())
         {
-            lor_efficiency_this_pair *=
-#ifdef SAME_AS_PETER
-              1.F;
-#else	    // this is 3dbkproj (at the moment)
-              geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
-#endif
+            lor_efficiency_this_pair *=get_geometric_factors(geo_plane_num,uncompressed_bin);
         }
         lor_efficiency += lor_efficiency_this_pair;
       }//endfor
@@ -549,6 +544,12 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
 
   return 1;  
 }
+
+float get_geometric_factors (int geo_plane_num, Bin uncompressed_bin) const
+{
+  return this->geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
+}
+
 
 } // namespace
 }

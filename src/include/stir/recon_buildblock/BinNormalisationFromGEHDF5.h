@@ -129,6 +129,7 @@ private:
   float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
 				  const double start_time, const double end_time) const;
 
+  float get_geometric_factors (int geo_plane_num, Bin uncompressed_bin) const;
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();
