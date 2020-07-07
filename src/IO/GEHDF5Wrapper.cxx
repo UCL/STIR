@@ -482,6 +482,18 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
         m_NX_SUB = dims[0];    // hyperslab dimensions
         m_NY_SUB = dims[1];
         m_NZ_SUB = (rank==2)? 1 : dims[2]; // Signa has rank==2, but this stay shere just in case...
+
+
+        unsigned int num_time_slices = 0;
+        H5::DataSet timeframe_dataspace = file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
+        timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
+        if(num_time_slices==0)
+        {
+            error("Zero number of valid samples singles samples in data. Aborting");
+        }
+
+        m_num_singles_samples=num_time_slices;
+
 #if 0
         m_NX = dims[0];       // output buffer dimensions
         m_NY = dims[1];
