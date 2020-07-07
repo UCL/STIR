@@ -225,8 +225,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
     return Succeeded::no;
   }
 
-  // TODO insert check all other segments are the same
-
   mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
 
   return Succeeded::yes;
@@ -543,7 +541,7 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
 }
 
 float 
-BinNormalisationFromGEHDF5::get_geometric_factors (int geo_plane_num, Bin uncompressed_bin) const
+BinNormalisationFromGEHDF5::get_geometric_factors (int geo_plane_num, const Bin& uncompressed_bin) const
 {
   return this->geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 }

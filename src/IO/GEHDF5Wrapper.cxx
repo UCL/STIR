@@ -428,6 +428,11 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
         unsigned int num_time_slices = 0;
         H5::DataSet timeframe_dataspace = file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
         timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
+        if(num_time_slices==0)
+        {
+            error("Zero number of valid samples singles samples in data. Aborting");
+        }
+
         m_num_singles_samples=num_time_slices;
 
     }
