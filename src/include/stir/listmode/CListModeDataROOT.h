@@ -93,6 +93,9 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
+; optional keywords to create "virtual" crystals to accomodate for gaps between blocks
+Number of virtual axial crystals per block := 0
+Number of virtual transaxial crystals per block:= 0
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
