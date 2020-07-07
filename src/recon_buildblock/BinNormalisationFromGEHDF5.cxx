@@ -435,82 +435,79 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
   DetectionPositionPair<> detection_position_pair;
   Bin uncompressed_bin(0,0,0,bin.tangential_pos_num());
 
+  
+
+  float view_efficiency = 0.;
+
+
+  for(uncompressed_bin.view_num() = start_view;
+      uncompressed_bin.view_num() < end_view;
+      ++uncompressed_bin.view_num() ) 
   {
 
-    float view_efficiency = 0.;
-
-
-    for(uncompressed_bin.view_num() = start_view;
-        uncompressed_bin.view_num() < end_view;
-        ++uncompressed_bin.view_num() ) {
-
-      detail::set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
+    detail::set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
 					      uncompressed_bin, detection_position_pair);
-
+ 
+    float lor_efficiency= 0.;   
       
-        
-      float lor_efficiency= 0.;   
+    /*
+      loop over ring differences that contribute to bin.segment_num() at the current
+      bin.axial_pos_num().
+      The ring_difference increments with 2 as the other ring differences do
+      not give a ring pair with this axial_position. This is because
+      ring1_plus_ring2%2 == ring_diff%2
+      (which easily follows by plugging in ring1+ring2 and ring1-ring2).
+      The starting ring_diff is determined such that the above condition
+      is satisfied. You can check it by noting that the
+      start_ring_diff%2
+      == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
+      == (2*min_ring_diff+ring1_plus_ring2)%2
+      == ring1_plus_ring2%2
+    */
+    for(uncompressed_bin.segment_num() = min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2; 
+        uncompressed_bin.segment_num() <= max_ring_diff; 
+        uncompressed_bin.segment_num()+=2 ) 
+    {
+
+      int geo_plane_num = 
+            detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
+                      ring1_plus_ring2, uncompressed_bin,
+                      detection_position_pair);
+      if ( geo_plane_num < 0 ) 
+      {
+        // Ring numbers out of range.
+        continue;
+      }
+
+      #ifndef NDEBUG
+      Bin check_bin;
+      check_bin.set_bin_value(bin.get_bin_value());
+      assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin,detection_position_pair) == Succeeded::yes);
+      assert(check_bin == bin);
+      #endif
       
-      /*
-        loop over ring differences that contribute to bin.segment_num() at the current
-        bin.axial_pos_num().
-        The ring_difference increments with 2 as the other ring differences do
-        not give a ring pair with this axial_position. This is because
-        ring1_plus_ring2%2 == ring_diff%2
-        (which easily follows by plugging in ring1+ring2 and ring1-ring2).
-        The starting ring_diff is determined such that the above condition
-        is satisfied. You can check it by noting that the
-        start_ring_diff%2
-        == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
-        == (2*min_ring_diff+ring1_plus_ring2)%2
-        == ring1_plus_ring2%2
-      */
-      for(uncompressed_bin.segment_num() = min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2; 
-          uncompressed_bin.segment_num() <= max_ring_diff; 
-          uncompressed_bin.segment_num()+=2 ) {
-        
-        
-        int geo_plane_num = 
-              detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
-                        ring1_plus_ring2, uncompressed_bin,
-                        detection_position_pair);
-        if ( geo_plane_num < 0 ) {
-          // Ring numbers out of range.
-          continue;
-        }
+      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+      const DetectionPosition<>& pos2 = detection_position_pair.pos2();
 
-
-#ifndef NDEBUG
-        Bin check_bin;
-        check_bin.set_bin_value(bin.get_bin_value());
-        assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, 
-                                                                detection_position_pair) ==
-               Succeeded::yes);
-        assert(check_bin == bin);
-#endif
-        
-        const DetectionPosition<>& pos1 = detection_position_pair.pos1();
-        const DetectionPosition<>& pos2 = detection_position_pair.pos2();
-
-        float lor_efficiency_this_pair = 1.F;
-        if (this->use_detector_efficiencies())
-        {
-              lor_efficiency_this_pair =1/
-                (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
-                efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
-        }
-        if (this->use_dead_time())
-        {
-            lor_efficiency_this_pair *=
-              get_dead_time_efficiency(pos1, start_time, end_time) * 
-              get_dead_time_efficiency(pos2, start_time, end_time);
-        }
-        if (this->use_geometric_factors())
-        {
-            lor_efficiency_this_pair *=get_geometric_factors(geo_plane_num,uncompressed_bin);
-        }
-        lor_efficiency += lor_efficiency_this_pair;
-      }//endfor
+      float lor_efficiency_this_pair = 1.F;
+      if (this->use_detector_efficiencies())
+      {
+            lor_efficiency_this_pair =1/
+              (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
+               efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
+      }
+      if (this->use_dead_time())
+      {
+          lor_efficiency_this_pair *=
+            get_dead_time_efficiency(pos1, start_time, end_time) * 
+            get_dead_time_efficiency(pos2, start_time, end_time);
+      }
+      if (this->use_geometric_factors())
+      {
+          lor_efficiency_this_pair *=get_geometric_factors(geo_plane_num,uncompressed_bin);
+      }
+      lor_efficiency += lor_efficiency_this_pair;
+    }//endfor
 
 
 	  view_efficiency += lor_efficiency;
@@ -545,7 +542,8 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
   return 1;  
 }
 
-float get_geometric_factors (int geo_plane_num, Bin uncompressed_bin) const
+float 
+BinNormalisationFromGEHDF5::get_geometric_factors (int geo_plane_num, Bin uncompressed_bin) const
 {
   return this->geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 }
