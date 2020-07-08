@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013-201, 20208 University College London
+  Copyright (C) 2013-2018, 2020 University College London
   Copyright (C) 2017-2019 University of Leeds
 
   This file contains is based on information supplied by Siemens but
@@ -229,76 +229,43 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
   return Succeeded::yes;
 }
 
+// Load all data that is needed for corrections
 void
 BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
 {
+  // Build the HDF5 wrapper. This opens the file and makes sure its the correct type. 
   m_input_hdf5_sptr.reset(new GEHDF5Wrapper(filename));
   this->scanner_ptr = m_input_hdf5_sptr->get_scanner_sptr();
 
-  num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
-  // Calculate the number of axial blocks per singles unit and
-  // total number of blocks per singles unit.
-  int axial_crystals_per_singles_unit =
-    scanner_ptr->get_num_axial_crystals_per_singles_unit();
-
-  int transaxial_crystals_per_singles_unit =
-    scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
-
-  int axial_crystals_per_block =
-    scanner_ptr->get_num_axial_crystals_per_block();
-
-  int transaxial_crystals_per_block =
-    scanner_ptr->get_num_transaxial_crystals_per_block();
-
-  // Axial blocks.
-  num_axial_blocks_per_singles_unit =
-    axial_crystals_per_singles_unit / axial_crystals_per_block;
-
-  int transaxial_blocks_per_singles_unit =
-    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
-
-  // Total blocks.
-  num_blocks_per_singles_unit =
-    num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
-
-
-#if 0
-  if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
-    error("BinNormalisationFromGEHDF5: "
-          "number of rings determined from subheader is %d, while the scanner object says it is %d\n",
-           nrm_subheader_ptr->num_crystal_rings, scanner_ptr->get_num_rings());
-  if (scanner_ptr->get_num_detectors_per_ring() != nrm_subheader_ptr->crystals_per_ring)
-    error("BinNormalisationFromGEHDF5: "
-          "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
-           nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
-#endif
+  // Generate a Projection data Info from the uncompressed scan, 
   proj_data_info_cyl_uncompressed_ptr.reset(
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-                  /*span=*/1, scanner_ptr->get_num_rings()-1,
-                  /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
-                  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
-                  /*arc_corrected =*/false)
-                             ));
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+                    /*span=*/1, 
+                    /*max_delta*/scanner_ptr->get_num_rings()-1,
+                    /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
+                    /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
+                    /*arc_corrected =*/false) ) );
 
-    efficiency_factors =
-    Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
-           0, scanner_ptr->get_num_detectors_per_ring()-1));
+  //
+  // Read data from file
+  //
 
+  // Allocate efficiency factor data from an "uncompressed scanner" (i.e. span = 1, all bins are physical bins in the scanner).
+  efficiency_factors =
+      Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
+                                  0, scanner_ptr->get_num_detectors_per_ring()-1));
+  // Initialize the data reading. This internally checks the file and loads required variables fo further reading. 
+  m_input_hdf5_sptr->initialise_efficiency_factors();
 
-  {
-    const int num_rings = scanner_ptr->get_num_rings();
-    const int num_detectors_per_ring = scanner_ptr->get_num_detectors_per_ring();
+  // Do the reading using a buffer.
+  unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
+  stir::Array<1, float> buffer(0, total_size-1);
+  m_input_hdf5_sptr->get_from_2d_dataset(buffer);
+  // Copy the buffer data to the proparly shaped efficiency_factors variable. 
+  std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
 
-    m_input_hdf5_sptr->initialise_efficiency_factors();
-
-    unsigned int total_size = num_rings*num_detectors_per_ring;
-    stir::Array<1, float> buffer(0, total_size-1);;
-    m_input_hdf5_sptr->get_from_2d_dataset(buffer);
-
-    std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
-    }
 
   // now read the geo factors
   {
