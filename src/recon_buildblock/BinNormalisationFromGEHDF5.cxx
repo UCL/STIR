@@ -354,23 +354,16 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 
 
   /* 
-     ring1_plus_ring2 is the same for any ring pair that contributes to 
-     this particular bin.segment_num(), bin.axial_pos_num().
-     We determine it first here. See ProjDataInfoCylindrical for the
-     relevant formulas
+     ring1_plus_ring2 is the same for any ring pair that contributes to this particular bin.segment_num(), bin.axial_pos_num().
+     We determine it first here. See ProjDataInfoCylindrical for the relevant formulas
   */
   const int ring1_plus_ring2 = detail::calc_ring1_plus_ring2(bin, proj_data_info_cyl_ptr); 
                                                       
-
-
   DetectionPositionPair<> detection_position_pair;
   Bin uncompressed_bin(0,0,0,bin.tangential_pos_num());
 
   
-
   float view_efficiency = 0.;
-
-
   for(uncompressed_bin.view_num() = start_view;
       uncompressed_bin.view_num() < end_view;
       ++uncompressed_bin.view_num() ) 
@@ -399,10 +392,10 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         uncompressed_bin.segment_num()+=2 ) 
     {
 
-      int geo_plane_num = 
-            detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
-                      ring1_plus_ring2, uncompressed_bin,
-                      detection_position_pair);
+      // Make sure we are within the range. Just some error checking. 
+      int geo_plane_num = detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
+                                                             ring1_plus_ring2, uncompressed_bin,
+                                                             detection_position_pair);
       if ( geo_plane_num < 0 ) 
       {
         // Ring numbers out of range.
@@ -416,23 +409,15 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       assert(check_bin == bin);
       #endif
       
-      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
-      const DetectionPosition<>& pos2 = detection_position_pair.pos2();
-
+      // Here is where the normalization is applied. Apply each of them if required. 
       float lor_efficiency_this_pair = 1.F;
       if (this->use_detector_efficiencies())
       {
-
-        // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
-        lor_efficiency_this_pair =
-              (efficiency_factors[pos1.axial_coord()][scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()] *
-               efficiency_factors[pos2.axial_coord()][scanner_ptr->get_num_detectors_per_ring()-pos2.tangential_coord()]);
+        lor_efficiency_this_pair *= get_efficiency_factors(detection_position_pair)
       }
       if (this->use_dead_time())
       {
-          lor_efficiency_this_pair *=
-            get_dead_time_efficiency(pos1, start_time, end_time) * 
-            get_dead_time_efficiency(pos2, start_time, end_time);
+        lor_efficiency_this_pair *=get_dead_time_efficiency(detection_position_pair, start_time, end_time);
       }
       if (this->use_geometric_factors())
       {
@@ -450,7 +435,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 
 
 float 
-BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>& det_pos,
+BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPositionPair<>& detection_position_pair,
 						    const double start_time,
 						    const double end_time) const
 {
@@ -475,6 +460,15 @@ BinNormalisationFromGEHDF5::get_geometric_factors (const DetectionPositionPair<>
   return this->geo_norm_factors_sptr->get_bin_value(bin);
 }
 
+float 
+BinNormalisationFromGEHDF5::get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const
+{
+  const DetectionPositionPair<>& pos1=detection_position_pair.pos1();
+  const DetectionPositionPair<>& pos2=detection_position_pair.pos2();
+  // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
+  return (this->efficiency_factors[pos1.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()] *
+          this->efficiency_factors[pos2.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos2.tangential_coord()]);;  
+}
 
 } // namespace
 }
