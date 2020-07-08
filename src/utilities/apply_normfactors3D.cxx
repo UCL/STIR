@@ -58,8 +58,8 @@ int main(int argc, char **argv)
   bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
   bool do_eff   = argc>=8?atoi(argv[7])!=0: true;  
 
-  if (do_geo)
-    error("Cannot do geometric factors in 3D yet");
+ // if (do_geo)
+   // error("Cannot do geometric factors in 3D yet");
   const int eff_iter_num = atoi(argv[6]);
   const int iter_num = atoi(argv[5]);
   const bool apply_or_undo = atoi(argv[4])!=0;
@@ -84,6 +84,14 @@ int main(int argc, char **argv)
   const int num_axial_blocks =
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
     get_num_axial_blocks();
+  const int num_transaxial_crystals_per_block =
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    get_num_transaxial_crystals_per_block();
+  const int num_axial_crystals_per_block =
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    get_num_axial_crystals_per_block();
+    
+  GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring);
 
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks,
                               num_axial_blocks-1, num_transaxial_blocks-1);
@@ -106,7 +114,26 @@ int main(int argc, char **argv)
 	      }
 	  delete[] in_filename;
 	}
-      	// block norm
+
+    // geo norm
+        if (do_geo)
+        {
+            {
+                char *in_filename = new char[in_filename_prefix.size() + 30];
+                sprintf(in_filename, "%s_%s_%d.out",
+                        in_filename_prefix.c_str(), "geo",  iter_num);
+                std::ifstream in(in_filename);
+                in >> norm_geo_data;
+                if (!in)
+                {
+                    warning("Error reading %s, using all 1s instead\n", in_filename);
+                    do_geo = false;
+                }
+                delete[] in_filename;
+            }
+        }
+        
+        // block norm
       if (do_block)
 	{
 	  {
@@ -126,17 +153,22 @@ int main(int argc, char **argv)
 
       {
         FanProjData fan_data;
-	make_fan_data(fan_data, *measured_data);
+    make_fan_data(fan_data, *measured_data);
+//	make_fan_data_remove_gaps(fan_data, *measured_data);
+          
 	if (do_eff)
           apply_efficiencies(fan_data, efficiencies, apply_or_undo);
-       	//if (do_geo)
-	//  apply_geo_norm(fan_data, norm_geo_data, apply_or_undo);
+    if (do_geo)
+          apply_geo_norm(fan_data, norm_geo_data, apply_or_undo);
 	if (do_block)
-	  apply_block_norm(fan_data, norm_block_data, apply_or_undo);
+	      apply_block_norm(fan_data, norm_block_data, apply_or_undo);
 
 	if (do_display)
 	  display(fan_data, "input*norm");
 	set_fan_data(*out_proj_data_ptr, fan_data);
+//    set_fan_data_add_gaps(*out_proj_data_ptr, fan_data);
+
+          
       }
     }
 
