@@ -391,24 +391,8 @@ use_crystal_interference_factors() const
 #if 1
 float 
 BinNormalisationFromGEHDF5::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
-
-
-  // TODO disable when not HR+ or HR++
-  /*
-  Additional correction for HR+ and HR++
-  ======================================
-  Modification of the normalisation based on segment number
-  Due to the difference in efficiency for the trues and scatter as the axial
-  angle increases
-  Scatter has a higher efficiency than trues when the axial angle is 0 (direct
-  planes)
-  As the axial angle increase the difference in efficiencies between trues and
-  scatter become closer
-    */
-  const float geo_Z_corr = 1;
-
-  
+get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+{  
   float	total_efficiency = 0 ;
   
   /* Correct dead time */
@@ -507,21 +491,8 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       lor_efficiency += lor_efficiency_this_pair;
     }//endfor
 
-
-	  view_efficiency += lor_efficiency;
-
-    
-    if (this->use_geometric_factors())
-    {
-      /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-      // for oblique plaanes use the single radial profile from segment 0 
-
-      total_efficiency += view_efficiency * geo_Z_corr;
-    }
-    else
-    {
-	    total_efficiency += view_efficiency;
-    }
+    view_efficiency += lor_efficiency;
+    total_efficiency += view_efficiency;
   }
   return total_efficiency;
 }
