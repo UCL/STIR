@@ -273,9 +273,11 @@ read_norm_data(const string& filename)
   unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
   stir::Array<1, float> buffer(0, total_size-1);
   m_input_hdf5_sptr->get_from_2d_dataset(buffer);
-  // Copy the buffer data to the proparly shaped efficiency_factors variable. 
+  // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
+  // Lambda function, this just applies 1/buffer. 
+  std::transform(buffer.begin(), buffer.end(),buffer.begin(), [](const float f) { return 1/f;} );
+  // Copy the buffer data to the properly shaped efficiency_factors variable. 
   std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
-
 
   // now read the geo factors
   {
@@ -380,14 +382,13 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
     float lor_efficiency= 0.;   
       
     /*
-      loop over ring differences that contribute to bin.segment_num() at the current
-      bin.axial_pos_num().
-      The ring_difference increments with 2 as the other ring differences do
-      not give a ring pair with this axial_position. This is because
-      ring1_plus_ring2%2 == ring_diff%2
+      Loop over ring differences that contribute to bin.segment_num() at the current bin.axial_pos_num().
+      The ring_difference increments with 2 as the other ring differences do not give a ring pair with this axial_position. 
+      This is because: ring1_plus_ring2%2 == ring_diff%2 
       (which easily follows by plugging in ring1+ring2 and ring1-ring2).
-      The starting ring_diff is determined such that the above condition
-      is satisfied. You can check it by noting that the
+
+      The starting ring_diff is determined such that the above condition is satisfied. 
+      You can check it by noting that the
       start_ring_diff%2
       == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
       == (2*min_ring_diff+ring1_plus_ring2)%2
@@ -424,7 +425,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 
         // TODO remove hardcoded 447
         // TOD GE seems to store 1/efficiency, so we probably should do this division in read_norm_data
-        lor_efficiency_this_pair =1/
+        lor_efficiency_this_pair =
               (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
                efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
       }
