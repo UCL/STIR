@@ -226,6 +226,7 @@ GEHDF5Wrapper::check_file()
     if(is_norm_file())
     {
         is_norm=true;
+        is_geo =true; // in RFD9, if its norm, it is also geo (it contains it)
         return Succeeded::yes;
     }
     if(is_geo_file())

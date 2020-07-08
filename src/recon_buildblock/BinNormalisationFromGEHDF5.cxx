@@ -234,8 +234,18 @@ void
 BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
 {
-  // Build the HDF5 wrapper. This opens the file and makes sure its the correct type. 
+  // If we actually do not want any correction, forget loading the data
+  if(!this->use_detector_efficiencies() && !this->use_geometric_factors())
+    return;
+
+  // Build the HDF5 wrapper. This opens the file and makes sure its the correct type, plus loads all information about the scanner. 
   m_input_hdf5_sptr.reset(new GEHDF5Wrapper(filename));
+
+  // We need the norm file to correct for geometry and efficiecies (the geometric correcction is contained inside the norm file too!)
+  // But if we are not correcting for efficiencies, then we dont require the file to be a norm file, it can be geo. 
+  if(this->use_detector_efficiencies() && !m_input_hdf5_sptr->is_norm_file())
+    error("Norm file required, another one given (possibly geo file). Aborting");
+
   this->scanner_ptr = m_input_hdf5_sptr->get_scanner_sptr();
 
   // Generate a Projection data Info from the uncompressed scan, 
