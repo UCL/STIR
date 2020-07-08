@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
+  Copyright (C) 2013-2014, 2020 University College London
   Copyright (C) 2017-2019 University of Leeds
 
   Largely a copy of the ECAT7 version. 
@@ -47,6 +47,9 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
+
+class ProjDataInMemory;
+
 namespace GE {
 namespace RDF_HDF5 {
 
@@ -106,9 +109,8 @@ private:
   Array<1,float> axial_t2_array;
   Array<1,float> trans_t1_array;
   shared_ptr<SinglesRates> singles_rates_ptr;
-  Array<2,float> geometric_factors;
   Array<2,float> efficiency_factors;
-  Array<2,float> crystal_interference_factors;
+  shared_ptr<ProjDataInMemory>  geo_norm_factors_sptr;
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
@@ -123,13 +125,12 @@ private:
   bool _use_detector_efficiencies;
   bool _use_dead_time;
   bool _use_geometric_factors;
-  bool _use_crystal_interference_factors;
 
   void read_norm_data(const string& filename);
   float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
 				  const double start_time, const double end_time) const;
 
-  float get_geometric_factors (int geo_plane_num, const Bin& uncompressed_bin) const;
+  float get_geometric_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();

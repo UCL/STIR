@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013-2018 University College London
+  Copyright (C) 2013-201, 20208 University College London
   Copyright (C) 2017-2019 University of Leeds
 
   This file contains is based on information supplied by Siemens but
@@ -43,6 +43,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
+#include "stir/ProjDataInMemory.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
 #include "stir/IO/InterfileHeader.h"
@@ -165,8 +166,7 @@ BinNormalisationFromGEHDF5::set_defaults()
   //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
-  this->_use_geometric_factors =false;
-  this->_use_crystal_interference_factors = false;  
+  this->_use_geometric_factors = true;
 }
 
 void 
@@ -179,8 +179,7 @@ initialise_keymap()
   //this->parser.add_key("use_gaps", &this->_use_gaps);
   this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
   //this->parser.add_key("use_dead_time", &this->_use_dead_time);
-  //this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
-  //this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
+  this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
   this->parser.add_stop_key("End Bin Normalisation From GE HDF5");
 }
 
@@ -283,18 +282,6 @@ read_norm_data(const string& filename)
                   /*arc_corrected =*/false)
                              ));
 
-//  /*
-//    Extract geometrical & crystal interference, and crystal efficiencies from the
-//    normalisation data.
-//  */
-
- //  const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
-  // const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
-
-//    geometric_factors =
-//    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
-//                                 min_tang_pos_num, max_tang_pos_num));
-
     efficiency_factors =
     Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
            0, scanner_ptr->get_num_detectors_per_ring()-1));
@@ -313,35 +300,16 @@ read_norm_data(const string& filename)
     std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
     }
 
+  // now read the geo factors
+  {
+    // somehow fill geo_norm_factors_sptr
+  }
 
 #if 1
    // to test pipe the obtained values into file
-    ofstream out_geom;
-    ofstream out_inter;
     ofstream out_eff;
-    out_geom.open("geom_out.txt",ios::out);
-    out_inter.open("inter_out.txt",ios::out);
     out_eff.open("eff_out.txt",ios::out);
-
-    for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
-    {
-      for ( int j =geometric_factors[i].get_min_index(); j <=geometric_factors[i].get_max_index(); j++)
-      {
-     out_geom << geometric_factors[i][j] << "   " ;
-      }
-      out_geom << std::endl;
-    }
-
-
-   for ( int i = crystal_interference_factors.get_min_index(); i<=crystal_interference_factors.get_max_index();i++)
-   {
-      for ( int j =crystal_interference_factors[i].get_min_index(); j <=crystal_interference_factors[i].get_max_index(); j++)
-      {
-     out_inter << crystal_interference_factors[i][j] << "   " ;
-      }
-      out_inter << std::endl;
-   }
-
+    //geo_norm_factors_sptr->write_to_file("geo_norm.hs");
    for ( int i = efficiency_factors.get_min_index(); i<=efficiency_factors.get_max_index();i++)
    {
       for ( int j =efficiency_factors[i].get_min_index(); j <=efficiency_factors[i].get_max_index(); j++)
@@ -354,9 +322,8 @@ read_norm_data(const string& filename)
 #endif
 
 #if 0
-  display(geometric_factors, "geo");
+   //display(geometric_factors, "geo");
   display(efficiency_factors, "eff");
-  display(crystal_interference_factors, "crystal_interference_factors");
 #endif
 }
 
@@ -381,25 +348,28 @@ use_geometric_factors() const
   return this->_use_geometric_factors;
 }
 
-bool 
-BinNormalisationFromGEHDF5::
-use_crystal_interference_factors() const
-{
-  return this->_use_crystal_interference_factors;
-}
-
 #if 1
 float 
 BinNormalisationFromGEHDF5::
 get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
 {  
   float	total_efficiency = 0 ;
+
+  /* TODO
+     this loop does some complicated stuff with rings etc
+     It should be possible to replace this with 
+
+     std::vector<DetectionPositionPair<> > det_pos_pairs;
+     proj_data_info_cyl_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+     for (unsigned int i=0; i<det_pos_pairs.size(); ++i)
+     {
+       ...
+     }
+  */
   
   /* Correct dead time */
   const int start_view = bin.view_num() * mash ;
-  //SM removed bin.view_num() + mash ;
   const int end_view = start_view + mash ;
-    //start_view +mash;
   const int min_ring_diff = proj_data_info_cyl_ptr->get_min_ring_difference(bin.segment_num());
   const int max_ring_diff = proj_data_info_cyl_ptr->get_max_ring_difference(bin.segment_num());
 
@@ -474,7 +444,10 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       float lor_efficiency_this_pair = 1.F;
       if (this->use_detector_efficiencies())
       {
-            lor_efficiency_this_pair =1/
+
+        // TODO remove hardcoded 447
+        // TOD GE seems to store 1/efficiency, so we probably should do this division in read_norm_data
+        lor_efficiency_this_pair =1/
               (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
                efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
       }
@@ -486,7 +459,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       }
       if (this->use_geometric_factors())
       {
-          lor_efficiency_this_pair *=get_geometric_factors(geo_plane_num,uncompressed_bin);
+        lor_efficiency_this_pair *=get_geometric_factors(detection_position_pair);
       }
       lor_efficiency += lor_efficiency_this_pair;
     }//endfor
@@ -512,9 +485,17 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
 }
 
 float 
-BinNormalisationFromGEHDF5::get_geometric_factors (int geo_plane_num, const Bin& uncompressed_bin) const
+BinNormalisationFromGEHDF5::get_geometric_factors (const DetectionPositionPair<>& detection_position_pair) const
 {
-  return this->geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
+
+  if (is_null_ptr(geo_norm_factors_sptr))
+    return 1.F;
+
+  Bin bin;
+  if (this->proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(bin,detection_position_pair) == Succeeded::no)
+    error("BinNormalisationFromGEHDF5 internal error");
+
+  return this->geo_norm_factors_sptr->get_bin_value(bin);
 }
 
 
