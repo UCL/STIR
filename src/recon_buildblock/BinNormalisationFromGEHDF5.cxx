@@ -423,11 +423,10 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       if (this->use_detector_efficiencies())
       {
 
-        // TODO remove hardcoded 447
-        // TOD GE seems to store 1/efficiency, so we probably should do this division in read_norm_data
+        // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
         lor_efficiency_this_pair =
-              (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
-               efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
+              (efficiency_factors[pos1.axial_coord()][scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()] *
+               efficiency_factors[pos2.axial_coord()][scanner_ptr->get_num_detectors_per_ring()-pos2.tangential_coord()]);
       }
       if (this->use_dead_time())
       {
