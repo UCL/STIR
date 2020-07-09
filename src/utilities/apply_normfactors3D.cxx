@@ -74,22 +74,22 @@ int main(int argc, char **argv)
 			   output_file_name));
 
   const int num_rings = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_rings();
   const int num_detectors_per_ring = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_detectors_per_ring();
   const int num_transaxial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_transaxial_blocks();
   const int num_axial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_axial_blocks();
   const int num_transaxial_crystals_per_block =
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_transaxial_crystals_per_block();
   const int num_axial_crystals_per_block =
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
     get_num_axial_crystals_per_block();
     
   GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring);
