@@ -102,26 +102,26 @@ public:
     /* \param output: has to be pre-allocated and of the correct size (\c size_of_record_signature)
        \param current_offset will be incremented
     */
-    Succeeded get_list_data(char* output,
+    Succeeded read_list_data(char* output,
                             std::streampos& current_offset);
 
     //! read singles at time slice \c current_id
     /*! \param current)id is 1-based index */
-    Succeeded get_singles(Array<1, unsigned int> &output,
+    Succeeded read_singles(Array<1, unsigned int> &output,
                           const unsigned int current_id);
 
-    Succeeded get_from_dataset(Array<3, unsigned char> &output, 
+    Succeeded read_sinogram(Array<3, unsigned char> &output, 
                                const std::array<hsize_t, 3> &offset={0,0,0},
                                const std::array<hsize_t, 3> &stride={1,1,1});
 
     //PW Here I added the get_from_2d_dataset which must read the hyperslab and memory space for 2D array
     // with specific offset, count, stride and block. This dataset is read from this memory space and then
     // into a 1D output array.
-    Succeeded get_from_2d_dataset(Array<1, unsigned int> &output,
+    Succeeded read_geometric_factors(Array<1, unsigned int> &output,
                                   const std::array<hsize_t, 2>& offset={0,0},
                                   const std::array<hsize_t, 2>& stride={1,1});
 
-    Succeeded get_from_2d_dataset(Array<1,float> &output,
+    Succeeded read_efficiency_factors(Array<1,float> &output,
                                   const std::array<hsize_t, 2>& offset={0,0},
                                   const std::array<hsize_t, 2>& stride={1,1});
 

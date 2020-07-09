@@ -95,7 +95,7 @@ void ProjDataGEHDF5::initialise_viewgram_buffer()
       // view numbering for initialise_proj_data starts from 1
       m_input_hdf5_sptr->initialise_proj_data(view_num - get_min_view_num() + 1);
 
-      m_input_hdf5_sptr->get_from_dataset(buffer);
+      m_input_hdf5_sptr->read_sinogram(buffer);
       this->tof_data.push_back(buffer);
   }
 

@@ -632,7 +632,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
 }
 
 // Developed for listmode access
-Succeeded GEHDF5Wrapper::get_list_data( char* output,std::streampos& current_offset)
+Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_offset)
 {
     if(!is_list_file())
         error("The file provided is not list data. Aborting");
@@ -645,7 +645,7 @@ Succeeded GEHDF5Wrapper::get_list_data( char* output,std::streampos& current_off
 }
 
 // Developed for ProjData
-Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
+Succeeded GEHDF5Wrapper::read_sinogram(Array<3, unsigned char> &output,
                                           const std::array<hsize_t, 3>& offset,
                                           const std::array<hsize_t, 3>& stride)
 {
@@ -697,7 +697,7 @@ Succeeded GEHDF5Wrapper::get_from_dataset(Array<3, unsigned char> &output,
 
 
 //PW Developed for Geometric Correction Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
+Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
                                              const std::array<hsize_t, 2>& offset,
                                              const std::array<hsize_t, 2>& stride)
                                         
@@ -724,7 +724,7 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, unsigned int> &output,
 }
 
 //PW Developed for Efficiency Factors
-Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
+Succeeded GEHDF5Wrapper::read_efficiency_factors(Array<1, float> &output,
                                              const std::array<hsize_t, 2>& offset,
                                              const std::array<hsize_t, 2>& stride)
                                         
@@ -750,7 +750,7 @@ Succeeded GEHDF5Wrapper::get_from_2d_dataset(Array<1, float> &output,
 }
 
 // Developed for Singles
-Succeeded GEHDF5Wrapper::get_singles(Array<1, unsigned int>& output, const unsigned int current_id)
+Succeeded GEHDF5Wrapper::read_singles(Array<1, unsigned int>& output, const unsigned int current_id)
 {
     BOOST_STATIC_ASSERT(sizeof(unsigned int)==4); // Compilation time assert. 
     if(!is_list_file())

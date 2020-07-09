@@ -272,7 +272,7 @@ read_norm_data(const string& filename)
   // Do the reading using a buffer.
   unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
   stir::Array<1, float> buffer(0, total_size-1);
-  m_input_hdf5_sptr->get_from_2d_dataset(buffer);
+  m_input_hdf5_sptr->read_efficiency_factors(buffer);
   // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
   // Lambda function, this just applies 1/buffer. 
   std::transform(buffer.begin(), buffer.end(),buffer.begin(), [](const float f) { return 1/f;} );
@@ -413,7 +413,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       float lor_efficiency_this_pair = 1.F;
       if (this->use_detector_efficiencies())
       {
-        lor_efficiency_this_pair *= get_efficiency_factors(detection_position_pair)
+        lor_efficiency_this_pair *= get_efficiency_factors(detection_position_pair);
       }
       if (this->use_dead_time())
       {
@@ -463,8 +463,8 @@ BinNormalisationFromGEHDF5::get_geometric_factors (const DetectionPositionPair<>
 float 
 BinNormalisationFromGEHDF5::get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const
 {
-  const DetectionPositionPair<>& pos1=detection_position_pair.pos1();
-  const DetectionPositionPair<>& pos2=detection_position_pair.pos2();
+  const DetectionPosition<>& pos1=detection_position_pair.pos1();
+  const DetectionPosition<>& pos2=detection_position_pair.pos2();
   // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
   return (this->efficiency_factors[pos1.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()] *
           this->efficiency_factors[pos2.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos2.tangential_coord()]);;  

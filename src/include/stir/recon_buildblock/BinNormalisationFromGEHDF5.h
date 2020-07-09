@@ -131,7 +131,7 @@ private:
 				  const double start_time, const double end_time) const;
 
   float get_geometric_factors  (const DetectionPositionPair<>& detection_position_pair) const;
-  float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const
+  float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();

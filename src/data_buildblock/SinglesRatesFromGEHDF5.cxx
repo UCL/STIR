@@ -339,7 +339,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     
     while ( slice < m_num_time_slices)
     {
-        m_input_sptr->get_singles((*m_singles_sptr)[slice],slice+1);
+        m_input_sptr->read_singles((*m_singles_sptr)[slice],slice+1);
         ++slice;
     }
 

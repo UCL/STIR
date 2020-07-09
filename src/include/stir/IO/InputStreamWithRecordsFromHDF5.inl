@@ -96,7 +96,7 @@ get_next_record(RecordT& record)
   if (current_offset > m_list_size)
       return Succeeded::no;
 char* data_ptr = data_sptr.get();
-  input_sptr->get_list_data(data_ptr, current_offset);
+  input_sptr->read_list_data(data_ptr, current_offset);
 
     // NE: Is this really meaningful?
 
