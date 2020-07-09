@@ -144,19 +144,6 @@ bool InterfileHeaderSiemens::post_processing()
 void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
-#if 0
-  // already done below
-    {
-      add_key("PET data type", 
-              &PET_data_type_index, 
-              &PET_data_type_values);
-      ignore_key("process status");
-      ignore_key("IMAGE DATA DESCRIPTION");
-      // TODO rename keyword 
-      add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
-
-    }
-#endif
 }
 
 
@@ -193,8 +180,6 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   remove_key("IMAGE DATA DESCRIPTION");
   ignore_key("IMAGE DATA DESCRIPTION");
   remove_key("data offset in bytes");
-  add_key("data offset in bytes",
-	  KeyArgument::ULONG, &data_offset_each_dataset);
 
   ignore_key("%comment");
   ignore_key("%sms-mi header name space");
@@ -267,7 +252,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   // handle segments
   {
-    if (num_segments != segment_table.size())
+    if (static_cast<std::size_t>(num_segments) != segment_table.size())
       {
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
@@ -289,20 +274,27 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   : InterfileRawDataHeaderSiemens()
 {
+  remove_key("scan data type description");
   add_key("number of scan data types",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types, &num_scan_data_types);
   // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
-  add_key("scan data type description", &scan_data_types);
-
-  // scan data type size depends on the previous field
+  add_vectorised_key("scan data type description", &scan_data_types);
+  // size depends on the previous "number" field
   // data offset in bytes[1] : = 24504
   //  data offset in bytes[2] : = 73129037
+  add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
   add_key("%total number of sinograms", &total_num_sinograms);
   add_key("%compression", &compression_as_string);
   add_key("applied corrections", &applied_corrections);
+
+  ignore_key("%sinogram type"); // value: "step and shoot"
+  ignore_key("scale factor (degree/pixel)");
+  ignore_key("%tof mashing factor");
+  // add_key(%tof mashing factor", &tof_mashing_factor);
+  ignore_key("total number of data sets");
 
   add_key("%number of buckets",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
