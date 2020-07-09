@@ -227,8 +227,10 @@ bool InterfileRawDataHeaderSiemens::post_processing()
   if (InterfileHeaderSiemens::post_processing() == true)
     return true;
 
-  if (standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]) != "emission")
-  { warning("Interfile error: expecting emission data\n");  return true; }
+  const std::string PET_data_type =
+    standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
+  if (PET_data_type != "emission" && PET_data_type != "transmission")
+    { error("Interfile error: expecting emission or transmission for 'PET data type'"); }
 
   // handle scanner
 
@@ -238,7 +240,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
       error("scanner not recognised from originating system");
     }
   // consistency check with values of the scanner
-  if (num_rings != scanner_sptr->get_num_rings())
+  if ((num_rings >= 0) && (num_rings != scanner_sptr->get_num_rings()))
     {
       error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
             num_rings, scanner_sptr->get_num_rings());
@@ -336,25 +338,23 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
     {
     error("Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin")
+  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
     {
     // use error message with index [1] as that is what the user sees.
-    warning("Interfile error: expecting 'matrix axis label[1] := bin'\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
     }
   num_bins = matrix_size[0][0];
 
-  if (matrix_labels[1] == "projection" && matrix_labels[2] == "plane")
+  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+      (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+      )
     {
     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     num_views = matrix_size[1][0];
     }
   else
     {
-    warning("Interfile error: matrix labels not in expected (or supported) format\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: matrix labels not in expected (or supported) format");
     }
 
   return false;
@@ -380,7 +380,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
       ++iter)
       {
         const string correction = standardise_keyword(*iter);
-        if (correction == "arc correction" || correction == "arc corrected")
+        if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected")
           {
             is_arccorrected = true;
             break;
