@@ -20,6 +20,7 @@
   \brief Apply normalisation factors to projection data
 
   \author Kris Thielemans
+  \author Tahereh Nikjenad
 
 */
 

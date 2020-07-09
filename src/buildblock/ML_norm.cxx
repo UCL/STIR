@@ -22,6 +22,7 @@
   \brief utilities for finding normalisation factors using an ML approach
 
   \author Kris Thielemans
+  \author Tahereh Nikjenad
 
 */
 
@@ -1159,14 +1160,8 @@ void set_fan_data_add_gaps(ProjData& proj_data,
     //assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
     
     
-    // ****  Added by me **** //
+    // ****  Added by Tahereh Nikjenad **** //
     
-    const int num_transaxial_blocks =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_transaxial_blocks();      // number of transaxial blocks with and without gaps are the same
-    const int num_axial_blocks =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_axial_blocks();           // number of axial blocks with and without gaps are the same
     const int num_transaxial_crystals_per_block =
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_transaxial_crystals_per_block();
@@ -1636,8 +1631,6 @@ void iterate_geo_norm(GeoData3D& norm_geo_data,
     make_geo_data(norm_geo_data, model);
     //norm_geo_data = measured_geo_data / norm_geo_data;
     
-    const int num_axial_detectors = model.get_num_rings();
-    const int num_transaxial_detectors = model.get_num_detectors_per_ring();
     const int num_axial_crystals_per_block = measured_geo_data.get_num_axial_crystals_per_block();
     const int num_transaxial_crystals_per_block = measured_geo_data.get_half_num_transaxial_crystals_per_block()*2;
     

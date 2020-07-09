@@ -23,6 +23,7 @@
  \brief Preliminary things for ML normalisation factor estimation
  
  \author Kris Thielemans
+ \author Tahereh Nikjenad
  
  */
 #ifndef __stir_ML_norm_H__
