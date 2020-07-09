@@ -119,6 +119,7 @@ public:
     // into a 1D output array.
     Succeeded read_geometric_factors(Array<1, unsigned int> &output,
                                   const std::array<hsize_t, 2>& offset={0,0},
+                                  const std::array<hsize_t, 2>& count ={0,0},
                                   const std::array<hsize_t, 2>& stride={1,1});
 
     Succeeded read_efficiency_factors(Array<1,float> &output,

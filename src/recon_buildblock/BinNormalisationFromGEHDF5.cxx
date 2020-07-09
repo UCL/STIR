@@ -44,11 +44,13 @@
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
+#include "stir/modulo.h"
 #include <algorithm>
 #include <fstream>
 #include <cctype>
@@ -259,30 +261,93 @@ read_norm_data(const string& filename)
                     /*arc_corrected =*/false) ) );
 
   //
-  // Read data from file
+  // Read efficiency data from file
   //
-
-  // Allocate efficiency factor data from an "uncompressed scanner" (i.e. span = 1, all bins are physical bins in the scanner).
-  efficiency_factors =
-      Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
-                                  0, scanner_ptr->get_num_detectors_per_ring()-1));
-  // Initialize the data reading. This internally checks the file and loads required variables fo further reading. 
-  m_input_hdf5_sptr->initialise_efficiency_factors();
-
-  // Do the reading using a buffer.
-  unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
-  stir::Array<1, float> buffer(0, total_size-1);
-  m_input_hdf5_sptr->read_efficiency_factors(buffer);
-  // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
-  // Lambda function, this just applies 1/buffer. 
-  std::transform(buffer.begin(), buffer.end(),buffer.begin(), [](const float f) { return 1/f;} );
-  // Copy the buffer data to the properly shaped efficiency_factors variable. 
-  std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
-
-  // now read the geo factors
+  if(this->use_detector_efficiencies())
   {
-    // somehow fill geo_norm_factors_sptr
+    // Allocate efficiency factor data from an "uncompressed scanner" (i.e. span = 1, all bins are physical bins in the scanner).
+    efficiency_factors =
+        Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
+                                    0, scanner_ptr->get_num_detectors_per_ring()-1));
+    // Initialize the data reading. This internally checks the file and loads required variables fo further reading. 
+    m_input_hdf5_sptr->initialise_efficiency_factors();
+
+    // Do the reading using a buffer.
+    unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
+    stir::Array<1, float> buffer(0, total_size-1);
+    m_input_hdf5_sptr->read_efficiency_factors(buffer);
+    // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
+    // Lambda function, this just applies 1/buffer and stores it in efficiency_factors 
+    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin(), [](const float f) { return 1/f;} );
   }
+  //
+  // Read geo data from file
+  //
+  if(this->use_geometric_factors())
+  {
+    // Construct a proper ProjDataInfo to initialize geometry factors array and use it to know the boudns of the iteratios to load it.
+    shared_ptr<ProjDataInfo> projInfo = ProjDataInfo::construct_proj_data_info(scanner_ptr,
+                                            /*span*/ 2,  
+                                            /* max_delta*/ scanner_ptr->get_num_rings()-1,
+                                            /* num_views */ scanner_ptr->get_num_detectors_per_ring()/2,
+                                            /* num_tangential_poss */ scanner_ptr->get_max_num_non_arccorrected_bins(),
+                                            /* arc_corrected */ false
+                                             );
+    geo_norm_factors_sptr.reset(new ProjDataInMemory(m_input_hdf5_sptr->get_exam_info_sptr(),
+                                                 projInfo,
+                                                 true)); // Initialize with zeroes (always true internally...)
+
+    // TODO: remove all these loops and "duplication", and load the entire geometric factors file. Then modify the function get_geometric_factors() 
+    // so that when accessed, re-indexes the bin number to the correct geometric factor.
+    // Doing this would save lots of RAM, as there are lots of symetries that are exploited in the geo file, but we are here undoing all that and duplicating data.
+    
+    // Auxiliary single viewgram as a buffer
+    Viewgram<float> viewgram = geo_norm_factors_sptr->get_empty_viewgram(0,0);
+    // Geometric factors are related to geometry (ovbiously). This means that as the scanner has several geometric symetries itself, there is no need to
+    // store all of them in a big file. This is what GE does in RDF9 files.
+    // The following loops undo that. They go selecting different data pieces in the initialise_geo_factors() and reading different parts of 
+    // it in read_geo_factors(), all to create a complete sinogram with all the geo factors loaded. 
+    for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
+    {
+      for(int i_view = scanner_ptr->get_max_num_views(); i_view <= scanner_ptr->get_max_num_views(); ++i_view)
+      {
+  
+          // TODO: is it 16 in all scanners? ir just GE Signa?
+          m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,16)+1);
+
+          // Define which chunk of the data we are reading from. 
+          // AB TODO: all this segment stuff does not exist in ProjInfo. We need some other place to have it. 
+          std::array<unsigned long long int, 2> offset = {projInfo->seg_ax_offset[projInfo->find_segment_index_in_sequence(i_seg)], 0};
+          std::array<unsigned long long int, 2> count  = {static_cast<unsigned long long int>(projInfo->get_num_axial_poss(i_seg)),
+                                                          static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
+          // Initialize buffer to store temp variables
+          stir::Array<1, unsigned int> buffer(0, count[0]*count[1]-1);
+          // read geo chunk
+          m_input_hdf5_sptr->read_geometric_factors(buffer, offset, count);
+          // copy data back
+          // AB TODO: can I just give the viewgram as a buffer? Would avoid this copy
+          std::copy(buffer.begin(),buffer.end(),viewgram.begin_all());
+
+          //AB TODO:
+          //        1- This viegram is possibly worngly added. Not sure at which index is added
+          //        2- Views needs to be flipped from the GE data to STIR data. Palak's code just adds a loop here, but maybe we can just index it properly?
+          //        3- tangential axis needs to be flipped. Palak flips it here, but I think it would make more sense to flip it inside the reader function
+          geo_norm_factors_sptr->set_viewgram(viewgram);
+
+      }// end view for
+    }// end segment for
+  }
+
+
+
+
+
+
+
+
+
+// TODO: Debugging code, remove later
+
 
 #if 1
    // to test pipe the obtained values into file

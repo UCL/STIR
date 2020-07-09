@@ -699,6 +699,7 @@ Succeeded GEHDF5Wrapper::read_sinogram(Array<3, unsigned char> &output,
 //PW Developed for Geometric Correction Factors
 Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
                                              const std::array<hsize_t, 2>& offset,
+                                             const std::array<hsize_t, 2>& count,
                                              const std::array<hsize_t, 2>& stride)
                                         
 {
@@ -706,8 +707,8 @@ Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
     if(!is_geo_file())
         error("File is Geometry. Aborting");
 
-    if(offset[0] != 0 || offset[1] != 0) //AB there are other C++ ways of doing this, but this is the most readable really.
-        error("Only {0,0} offset supported. Aborting");
+    if(count[0] == 0 || count[1] == 0) //AB there are other C++ ways of doing this, but this is the most readable really.
+        error("Requested zero data to read. Aborting");
     if(stride[0] != 1 || stride[1] != 1)
         error("Only {1,1} stride supported. Aborting");
 
