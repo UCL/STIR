@@ -22,7 +22,7 @@
  \brief Find normalisation factors using an ML approach
  
  \author Kris Thielemans
- \author Tahereh Nikjenad
+ \author Tahereh Niknejad
  */
 #include "stir/ML_norm.h"
 
