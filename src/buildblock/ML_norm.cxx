@@ -22,7 +22,7 @@
   \brief utilities for finding normalisation factors using an ML approach
 
   \author Kris Thielemans
-  \author Tahereh Nikjenad
+  \author Tahereh Niknejad
 
 */
 
