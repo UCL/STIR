@@ -33,6 +33,7 @@
 #include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/ProjData.h"
+#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -91,11 +92,23 @@ START_NAMESPACE_STIR
 */
 template <class TargetT>
 class OSSPSReconstruction: 
-public IterativeReconstruction<TargetT>
+        public
+            RegisteredParsingObject<
+                OSSPSReconstruction <TargetT > ,
+                    Reconstruction < TargetT >,
+                    IterativeReconstruction < TargetT >
+                 >
+//public IterativeReconstruction<TargetT>
 {
  private:
-  typedef IterativeReconstruction<TargetT > base_type;
+  typedef RegisteredParsingObject<
+    OSSPSReconstruction <TargetT > ,
+        Reconstruction < TargetT >,
+        IterativeReconstruction < TargetT >
+     > base_type;
 public:
+    //! Name which will be used when parsing a ProjectorByBinPair object
+    static const char * const registered_name;
 
   //! Default constructor (calls set_defaults())
   OSSPSReconstruction();
@@ -129,6 +142,13 @@ public:
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
+
+
+  //! operations prior to the iterations
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+
+  //! the principal operations for updating the image iterates at each iteration
+  virtual void update_estimate(TargetT &current_image_estimate);
  
 
  protected: // could be private, but this way the doxygen comments are always listed
@@ -169,12 +189,6 @@ private:
       not set, precompute_denominator_without_penalty_of_conditioner() will compute it.
   */
   shared_ptr<ProjData> fwd_ones_sptr;
-
-  //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
- 
-  //! the principal operations for updating the image iterates at each iteration
-  virtual void update_estimate(TargetT &current_image_estimate);
 
   GeneralisedPrior<TargetT> * get_prior_ptr()
     { return this->get_objective_function().get_prior_ptr(); }

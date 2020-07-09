@@ -108,8 +108,8 @@ ProjMatrixByBinUsingInterpolation::post_processing()
 void
 ProjMatrixByBinUsingInterpolation::
 set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
@@ -129,7 +129,7 @@ set_up(
     (densel_range.get_max_index() + densel_range.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
 
-  symmetries_ptr.reset(
+  symmetries_sptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,

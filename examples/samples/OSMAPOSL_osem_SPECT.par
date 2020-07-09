@@ -11,10 +11,8 @@ OSMAPOSLParameters :=
     input file := input.hs
 
     projector pair type := Matrix
-
       Projector Pair Using Matrix Parameters :=
         Matrix type := SPECT UB
-
         Projection Matrix By Bin SPECT UB Parameters:=
             ; width of PSF
             maximum number of sigmas:= 2.0

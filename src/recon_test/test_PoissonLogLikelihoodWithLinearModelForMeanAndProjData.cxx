@@ -213,7 +213,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       CartesianCoordinate3D<float> origin (0,0,0);    
       const float zoom=1.F;
       
-      density_sptr.reset(new VoxelsOnCartesianGrid<float>(*proj_data_sptr->get_proj_data_info_ptr(),zoom,origin));
+      density_sptr.reset(new VoxelsOnCartesianGrid<float>(*proj_data_sptr->get_proj_data_info_sptr(),zoom,origin));
       // fill with random numbers between 0 and 1
       typedef boost::mt19937 base_generator_type;
       // initialize by reproducible seed
@@ -225,7 +225,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
     }
   else
     {
-      std::auto_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
+      shared_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
       density_sptr = aptr;
     }
 
@@ -249,7 +249,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   {
     shared_ptr<ProjData> 
       mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
-						proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+						proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
          ++seg_num)
@@ -272,7 +272,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   // additive term
   shared_ptr<ProjData> add_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
 								
-proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();

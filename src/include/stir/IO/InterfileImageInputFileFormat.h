@@ -1,7 +1,7 @@
 //
 //
-#ifndef __stir_IO_InterfileInputFileFormat_h__
-#define __stir_IO_InterfileInputFileFormat_h__
+#ifndef __stir_IO_InterfileImageInputFileFormat_h__
+#define __stir_IO_InterfileImageInputFileFormat_h__
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
@@ -21,7 +21,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InterfileInputFileFormat
+  \brief Declaration of class stir::InterfileImageInputFileFormat
 
   \author Kris Thielemans
 
@@ -58,20 +58,20 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
-    std::auto_ptr<data_type> ret(read_interfile_image(input));
+    unique_ptr<data_type> ret(read_interfile_image(input));
     if (is_null_ptr(ret))
       {
 	error("failed to read an Interfile image from stream");
       }
     return ret;
   }
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {
-    std::auto_ptr<data_type> ret(read_interfile_image(filename));
+    unique_ptr<data_type> ret(read_interfile_image(filename));
     if (is_null_ptr(ret))
       {
 	error("failed to read an Interfile image from file \"%s\"", filename.c_str());

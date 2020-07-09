@@ -24,9 +24,6 @@
   \author Kris Thielemans
 
 */
-
-#ifdef HAVE_LLN_MATRIX
-
 #include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/NumericType.h"
@@ -188,4 +185,3 @@ END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
-#endif // #ifdef HAVE_LLN_MATRIX

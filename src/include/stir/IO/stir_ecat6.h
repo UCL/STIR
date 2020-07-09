@@ -44,6 +44,7 @@ class Succeeded;
 class NumericType;
 class ByteOrder;
 class Scanner;
+class ExamInfo;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class Sinogram;
@@ -177,7 +178,8 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data,
 */
 void make_ECAT6_Main_header(ECAT6_Main_header&, 
 			    const Scanner&,
-                            const std::string& orig_name                     
+                            const std::string& orig_name,
+                            ExamInfo const& exam_info
                             );
 
 //! Fill in most of the main header given a Scanner object and orig_name and an image

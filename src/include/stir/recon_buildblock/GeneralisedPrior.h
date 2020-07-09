@@ -48,8 +48,7 @@ class Succeeded;
 */
 template <typename DataT>
 class GeneralisedPrior: 
-   public RegisteredObject<GeneralisedPrior<DataT> >,
-   public ParsingObject
+   public RegisteredObject<GeneralisedPrior<DataT> >
 			 
 {
 public:
@@ -82,7 +81,7 @@ public:
 
   //! Has to be called before using this object
   virtual Succeeded 
-    set_up(shared_ptr<DataT> const& target_sptr);
+    set_up(shared_ptr<const DataT> const& target_sptr);
 
 protected:
   float penalisation_factor;
@@ -93,6 +92,10 @@ protected:
   /*! Has to be called by initialise_keymap in the leaf-class */
   virtual void initialise_keymap();
 
+  //! Check that the prior is ready to be used
+  virtual void check(DataT const& current_estimate) const;
+
+  bool _already_set_up;
 };
 
 END_NAMESPACE_STIR

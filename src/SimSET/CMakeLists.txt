@@ -31,6 +31,8 @@ set(${dir_EXE_SOURCES}
 include(stir_exe_targets)
 
 # stand-alone
-add_executable(write_phg_image_info write_phg_image_info.c)
-SET_PROPERTY(TARGET write_phg_image_info PROPERTY FOLDER "Executables")
-install(TARGETS write_phg_image_info DESTINATION bin)
+if (BUILD_EXECUTABLES)
+  add_executable(write_phg_image_info write_phg_image_info.c)
+  SET_PROPERTY(TARGET write_phg_image_info PROPERTY FOLDER "Executables")
+  install(TARGETS write_phg_image_info DESTINATION bin)
+endif()

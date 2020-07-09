@@ -92,8 +92,8 @@ void modellingTests::run_tests()
 
       PlasmaData::const_iterator cur_iter_1, cur_iter_2;
 
-      for (cur_iter_1=file_plasma_data.begin(), cur_iter_2=testing_plasma_data.begin(); 
-	   cur_iter_1!=file_plasma_data.end(), cur_iter_2!=testing_plasma_data.end() ; 
+      for (cur_iter_1=file_plasma_data.begin(), cur_iter_2=testing_plasma_data.begin();
+	   cur_iter_1!=file_plasma_data.end() && cur_iter_2!=testing_plasma_data.end();
 	   ++cur_iter_1, ++cur_iter_2)
 	{
 	  check_if_equal((*cur_iter_1).get_time_in_s(),(*cur_iter_2).get_time_in_s(), "Check Reading Time of PlasmaData ");
@@ -161,8 +161,8 @@ void modellingTests::run_tests()
     testing_plasma_data.decay_correct_PlasmaData();
     PlasmaData::const_iterator cur_iter_1, cur_iter_2;
     
-    for (cur_iter_1=sample_plasma_data_in_frames.begin()+16, cur_iter_2=testing_plasma_data.begin(); 
-	   cur_iter_1!=sample_plasma_data_in_frames.end(), cur_iter_2!=testing_plasma_data.end() ; 
+    for (cur_iter_1=sample_plasma_data_in_frames.begin()+16, cur_iter_2=testing_plasma_data.begin();
+	   cur_iter_1!=sample_plasma_data_in_frames.end() && cur_iter_2!=testing_plasma_data.end();
 	   ++cur_iter_1, ++cur_iter_2)
 	{	  
 	  check_if_equal((*cur_iter_1).get_plasma_counts_in_kBq(),(*cur_iter_2).get_plasma_counts_in_kBq(),"Check Plasma when sampling PlasmaData into frames");

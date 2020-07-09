@@ -24,29 +24,44 @@
 
 
 # add the STIR include directory to the search path for the compiler
-include_directories ("${PROJECT_SOURCE_DIR}/src/include")
+SET (STIR_INCLUDE_DIR 
+     "${PROJECT_SOURCE_DIR}/src/include"
+)
 
-SET( STIR_IO_REGISTRIES ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx)
+# add STIR include directories before existing include paths such that
+# files there are used, as opposed to an existing STIR installation elsewhere
+include_directories (BEFORE "${STIR_INCLUDE_DIR}")
+
+# registries
+SET (STIR_IO_REGISTRIES
+     ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
+     )
 
 SET ( STIR_REGISTRIES
 ${PROJECT_SOURCE_DIR}/src/buildblock/buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/data_buildblock/data_buildblock_registries.cxx
-${STIR_IO_REGISTRIES}
+${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
+${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
 )
 
-SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL  
+SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL   iterative_KOSMAPOSL
      iterative_OSSPS
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display  IO  data_buildblock numerics_buildblock  buildblock 
       spatial_transformation_buildblock
       Shape_buildblock eval_buildblock 
       # repeat for linking
-      numerics_buildblock modelling_buildblock listmode_buildblock)
+      numerics_buildblock modelling_buildblock listmode_buildblock
+      IO modelling_buildblock IO buildblock
+)
 
+#copy to PARENT_SCOPE
+SET( STIR_REGISTRIES ${STIR_REGISTRIES} PARENT_SCOPE)
+SET( STIR_LIBRARIES ${STIR_LIBRARIES} PARENT_SCOPE)
 
 SET( STIR_DIRS
      buildblock
@@ -68,6 +83,7 @@ SET( STIR_DIRS
      analytic/FBP2D
      analytic/FBP3DRP
      iterative/OSMAPOSL  
+     iterative/KOSMAPOSL
      iterative/OSSPS
      iterative/POSMAPOSL  
      iterative/POSSPS
@@ -87,3 +103,7 @@ SET( STIR_TEST_DIRS
      test/numerics
      test/modelling
 )
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND STIR_TEST_DIRS test/NiftyPET_projector)
+endif()

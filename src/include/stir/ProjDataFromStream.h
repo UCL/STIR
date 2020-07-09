@@ -6,6 +6,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataFromStream
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -37,7 +38,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/Bin.h"
 #include <iostream>
 #include <vector>
 
@@ -48,11 +49,14 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream.
 
-  Mainly useful for Interfile data.
+  At the end of every write (i.e., \ set_*) operation, the stream is flushed such that 
+  subsequent read operations from the same file will be able this data even if the 
+  stream isn't closed yet. This is important in an interactive context, as the object
+  owning the stream might not be deleted yet before we try to read the file again.
 
   \warning Data have to be contiguous.
-  \warning The parameter make_num_tangential_poss_odd (used in various 
-  get_ functions) is temporary and will be removed soon.
+  \warning The parameter \c make_num_tangential_poss_odd (used in various 
+  \c get_ functions) is temporary and will be removed soon.
 
 */
 class ProjDataFromStream : public ProjData
@@ -78,8 +82,8 @@ public:
     in which the segments occur in the stream. segment_sequence_in_stream[i]
     is the segment number of the i-th segment in the stream.
   */
-  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
-		      shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataFromStream (shared_ptr<const ExamInfo> const& exam_info_sptr,
+		      shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs, 
 		      const std::vector<int>& segment_sequence_in_stream,
@@ -92,8 +96,8 @@ public:
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
-  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
-		      shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataFromStream (shared_ptr<const ExamInfo> const& exam_info_sptr,
+		      shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs = 0, 
 		      StorageOrder o = Segment_View_AxialPos_TangPos,
@@ -138,6 +142,11 @@ public:
   //! Get scale factor
   float get_scale_factor() const;  
 
+  //! Get the value of bin.
+  float get_bin_value(const Bin& this_bin) const;
+  
+  //! Set the value of the bin
+  void set_bin_value(const Bin &bin);
     
 protected:
   //! the stream with the data
@@ -171,6 +180,13 @@ private:
   //! Calculate offsets for sinogram data
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
+  //! Calculate the offsets for specific bins.
+  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
+  
+private:
+#if __cplusplus > 199711L
+  ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;
+#endif
   
 };
 

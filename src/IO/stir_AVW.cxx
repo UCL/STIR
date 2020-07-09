@@ -153,6 +153,7 @@ AVW_Volume_to_VoxelsOnCartesianGrid(AVW_Volume const* const avw_volume,
     {
       warning("AVW_Volume_to_VoxelsOnCartesianGrid: unsupported data type %d\n",
         avw_volume->DataType);
+      delete volume_ptr;
       return 0;
     }
   }

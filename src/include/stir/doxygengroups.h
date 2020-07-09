@@ -65,6 +65,19 @@
 /*! \namespace stir::ecat::ecat6
   \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
   */
+
+
+/*! \namespace stir::GE
+  \brief Namespace for the part of the STIR library that handles GE data (and some/most of its applications)
+
+  This namespace contains all routines that are common to all GE formats
+*/
+/*! \namespace stir::GE:RDF_HDF5
+  \brief Namespace for the part of the STIR library that handles GE data with HDF5-based file formats
+
+  This namespace contains all routines that are used for GE RDF10 etc
+*/
+
 /*!
 \defgroup STIR STIR
 All of STIR.
@@ -190,10 +203,14 @@ from/to file.
 \ingroup IO
 */
 /*!
-\defgroup ECAT ECAT6 and ECAT7 support in the IO library
+\defgroup ECAT ECAT6 ... ECAT8 support in the IO library
 \ingroup IO
 */
 
+/*!
+\defgroup GE support for GE data
+\ingroup IO
+*/
 
 /*! 
 \defgroup listmode Support classes for reading list mode data
@@ -268,7 +285,13 @@ Everything related to priors, which are used for MAP-type (also knows as
 Classes and functions that are used to make a common interface for the serial
 and parallel implementation of the reconstruction algorithms.
 */
-
+/*!
+\defgroup NiftyPET Wrapped NiftyPET functionality in STIR
+\ingroup recon_buildblock
+Classes and functions that are used to provide an interface to NiftyPET
+functionality. This includes projectors, unlisting and norms and randoms
+estimation. Currently only available for the mMR scanner, and requires CUDA.
+*/
 
 /*!
 \defgroup reconstructors Reconstruction classes

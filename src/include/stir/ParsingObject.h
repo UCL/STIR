@@ -69,7 +69,7 @@ public:
 
    void ask_parameters();
 
-   std::string parameter_info();  
+   virtual std::string parameter_info();
 
 protected:
   //! Set defaults before parsing
@@ -78,7 +78,7 @@ protected:
   virtual void initialise_keymap();
     //! This will be called at the end of the parsing
   /*! \return false if everything OK, true if not */
-  virtual bool post_processing(); 
+  virtual bool post_processing();
 
   //! This will be called before parsing or parameter_info is called
   /*! 

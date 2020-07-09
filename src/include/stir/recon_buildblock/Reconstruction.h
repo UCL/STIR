@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,7 +38,10 @@
 #include "stir/shared_ptr.h"
 #include "stir/DataProcessor.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/RegisteredObject.h"
 #include <string>
+
+#include "stir/ExamData.h"
 
 START_NAMESPACE_STIR
 
@@ -68,16 +72,17 @@ class Succeeded;
   output file format :=
   \endverbatim
 
-  \todo Currently reconstruct() always write to an output_file, which is not desirable
-  when running a reconstruction inside some other code. Maybe this should
-  be moved into post_filter_sptr?
-
 */
 
 template <typename TargetT>
-class Reconstruction : public TimedObject, public ParsingObject 
+class Reconstruction :
+        public RegisteredObject<Reconstruction < TargetT > >,
+        public TimedObject
 {
 public:
+  //! default constructor (calls set_defaults())
+  Reconstruction();
+
   //! virtual destructor
   virtual ~Reconstruction() {};
   
@@ -101,6 +106,8 @@ public:
 
    Because of C++ rules, overloading one of the reconstruct() functions
    in a derived class, will hide the other. So you have to overload both.
+
+   \warning you need to call set_up() first.
   */     
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
@@ -131,7 +138,36 @@ public:
 
   //! post-filter
   void set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > &);
+
+  //! \brief set input data
+  virtual void set_input_data(const shared_ptr<ExamData>&) = 0;
+  //! get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual const ExamData& get_input_data() const = 0;
   //@}
+
+  //!
+  //! \brief set_disable_output
+  //! \param _val
+  //! \author Nikos Efthimiou
+  //! \details This function is called if the user deside to mute any output images.
+  //! The best way to do this is to use the "disable output" key in the par file.
+  //! \warning The "output filename prefix" has to be set.
+  void set_disable_output(bool _val);
+
+  //!
+  //! \brief set_enable_output
+  //! \param _val
+  //! \author Nikos Efthimiou
+  //! \details The counterpart of set_disable_output().
+  void set_enable_output(bool _val);
+
+  //!
+  //! \brief get_reconstructed_image
+  //! \author Nikos Efthimiou
+  //! \return
+  //!
+  shared_ptr<TargetT > get_target_image();
 
   // parameters
  protected:
@@ -146,6 +182,13 @@ public:
   shared_ptr<DataProcessor<TargetT> >  post_filter_sptr;
 
 protected:
+  //! do consistency checks
+  /*! calls error() if anything is wrong, in particular when set_up() hasn't been called yet.
+
+      If overriding this function in a derived class, you need to call this one.
+   */
+  virtual void check(TargetT const& target_data) const;
+  bool _already_set_up;
 
   /*! 
   \brief 
@@ -178,6 +221,23 @@ protected:
     \c set_post_processor_sptr() ).
   */
   virtual bool post_processing();
+
+  //!
+  //! \brief target_data_sptr
+  //!
+  shared_ptr<TargetT > target_data_sptr;
+
+  //!
+  //! \brief _disable_output
+  //! \author Nikos Efthimiou
+  //! \details This member mutes the creatation and write into an
+  //! output image. You want to use it if you call for reconstruction
+  //! from within some other code and want to use directly the output image.
+  bool _disable_output;
+
+
+  /// Verbosity level
+  int _verbosity;
 
 
 };

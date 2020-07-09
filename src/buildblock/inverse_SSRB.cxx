@@ -38,24 +38,24 @@ Succeeded
 inverse_SSRB(ProjData& proj_data_4D,
 			 const ProjData& proj_data_3D)
 {
-	const ProjDataInfo * const proj_data_3D_info_ptr =
-		dynamic_cast<ProjDataInfo const * >
-		(proj_data_3D.get_proj_data_info_ptr());
-	const ProjDataInfo * const proj_data_4D_info_ptr =
-		dynamic_cast<ProjDataInfo const * >
-		(proj_data_4D.get_proj_data_info_ptr());
-	if ((proj_data_3D_info_ptr->get_min_view_num() !=
-	     proj_data_4D_info_ptr->get_min_view_num()) ||
-	    (proj_data_3D_info_ptr->get_min_view_num() !=
-	     proj_data_4D_info_ptr->get_min_view_num()))
+	const shared_ptr<const ProjDataInfo> proj_data_3D_info_sptr =
+		dynamic_pointer_cast<const ProjDataInfo>
+		(proj_data_3D.get_proj_data_info_sptr());
+	const shared_ptr<const ProjDataInfo> proj_data_4D_info_sptr =
+		dynamic_pointer_cast<const ProjDataInfo>
+		(proj_data_4D.get_proj_data_info_sptr());
+	if ((proj_data_3D_info_sptr->get_min_view_num() !=
+	     proj_data_4D_info_sptr->get_min_view_num()) ||
+	    (proj_data_3D_info_sptr->get_min_view_num() !=
+	     proj_data_4D_info_sptr->get_min_view_num()))
 	  {
 	    warning("inverse_SSRB: incompatible view-information");
 	    return Succeeded::no;
 	  }
-	if ((proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
-	     proj_data_4D_info_ptr->get_min_tangential_pos_num()) ||
-	    (proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
-	     proj_data_4D_info_ptr->get_min_tangential_pos_num()))
+	if ((proj_data_3D_info_sptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_sptr->get_min_tangential_pos_num()) ||
+	    (proj_data_3D_info_sptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_sptr->get_min_tangential_pos_num()))
 	  {
 	    warning("inverse_SSRB: incompatible tangential_pos-information");
 	    return Succeeded::no;
@@ -80,7 +80,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 			{		
 				sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num);				
 				const float out_m = 
-					proj_data_4D_info_ptr->
+					proj_data_4D_info_sptr->
 					get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));				
 				int num_contributing_sinos = 0;
 								
@@ -90,7 +90,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 				{
 					sino_3D = proj_data_3D.get_sinogram(in_ax_pos_num,0);					
 					const float in_m = 
-						proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
+						proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
 
 					if (fabs(out_m - in_m) < 1E-2)
 					{
@@ -101,7 +101,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 						break;
 					}
 					const float in_m_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ? 
-						-1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num+1, 0));
+						-1000000.F : proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num+1, 0));
 
 					if (fabs(out_m - .5F*(in_m + in_m_next)) < 1E-2)
 					{

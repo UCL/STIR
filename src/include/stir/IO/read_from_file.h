@@ -29,6 +29,7 @@
 
 */
 #include "stir/IO/InputFileFormatRegistry.h"
+#include "stir/unique_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -44,7 +45,7 @@ START_NAMESPACE_STIR
  */
 template <class DataT, class FileT>
 inline 
-std::auto_ptr<DataT>
+unique_ptr<DataT>
 read_from_file(const FileSignature& signature, FileT file)
 {
   const InputFileFormat<DataT>& factory = 
@@ -67,13 +68,13 @@ read_from_file(const FileSignature& signature, FileT file)
 
     \code
     typedef DiscretisedDensity<3,float> DataType ;
-    std::auto_ptr<DataType> density_aptr(read_from_file<DataType>("my_file.hv"));
+    unique_ptr<DataType> density_uptr(read_from_file<DataType>("my_file.hv"));
     shared_ptr<DataType> density_sptr(read_from_file<DataType>("another_file.hv"));
     \endcode
 */
 template <class DataT, class FileT>
 inline
-std::auto_ptr<DataT>
+unique_ptr<DataT>
 read_from_file(FileT file)
 {
   const FileSignature signature(file);

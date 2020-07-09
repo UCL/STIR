@@ -36,7 +36,6 @@
 #include <typeinfo>
 
 using std::vector;
-using std::auto_ptr;
 
 START_NAMESPACE_STIR
 
@@ -75,13 +74,13 @@ DataSymmetriesForDensels::num_related_densels(const Densel& b) const
 {
   vector<Densel> rel_b;
   get_related_densels(rel_b, b);
-  return rel_b.size();
+  return static_cast<int>(rel_b.size());
 }
 
 /*! default implementation in terms of find_symmetry_operation_from_basic_densel */
 bool DataSymmetriesForDensels::find_basic_densel(Densel& b) const
 {
-  auto_ptr<SymmetryOperation> sym_op =
+  unique_ptr<SymmetryOperation> sym_op =
     find_symmetry_operation_from_basic_densel(b);
   return sym_op->is_trivial();
 }

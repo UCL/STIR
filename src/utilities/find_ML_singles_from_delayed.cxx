@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     {
       shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
       get_fan_info(num_rings, num_detectors_per_ring, max_ring_diff, fan_size, 
-		     *measured_data->get_proj_data_info_ptr());
+		     *measured_data->get_proj_data_info_sptr());
       data_fan_sums.grow(IndexRange2D(num_rings, num_detectors_per_ring));
 #if 0
       FanProjData measured_fan_data;

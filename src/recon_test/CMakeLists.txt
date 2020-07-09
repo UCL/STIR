@@ -24,12 +24,17 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
+        test_FBP2D
+        test_FBP3DRP
+        test_OSMAPOSL
 )
 
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
         fwdtest
         bcktest
+        recontest
+        test_data_processor_projectors
 )
 
 include(stir_test_exe_targets)
@@ -37,9 +42,12 @@ include(stir_test_exe_targets)
 # a test that uses MPI
 create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 
-# we currently need fwdtest for the recon_test_pack, and it (and bcktest)
-# could be useful on their own, so we'll add them to the installation targets
+# fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
+if (BUILD_TESTING)
+  install(TARGETS fwdtest bcktest DESTINATION bin)
+endif()
 
-install(TARGETS fwdtest bcktest DESTINATION bin)
+# test_data_processor_projectors requires input argument
+ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_SOURCE_DIR}/recon_test_pack/Utahscat600k_ca_seg4.hs)
 
 # TODO test_modelling.sh

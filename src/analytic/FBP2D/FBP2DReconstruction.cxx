@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012-01-09, Hammersmith Imanet Ltd
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013, 2020 University College London
 
     This file is part of STIR.
 
@@ -43,6 +43,7 @@
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
+#include <boost/format.hpp>
 
 #ifdef STIR_OPENMP
 #include <omp.h>
@@ -51,6 +52,9 @@
 
 START_NAMESPACE_STIR
 
+const char * const
+FBP2DReconstruction::registered_name =
+  "FBP2D";
 
 void 
 FBP2DReconstruction::
@@ -112,64 +116,55 @@ ask_parameters()
 
 bool FBP2DReconstruction::post_processing()
 {
-  if (base_type::post_processing())
-    return true;
-  return post_processing_only_FBP2D_parameters();
+  return base_type::post_processing();
 }
 
-bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
+Succeeded
+FBP2DReconstruction::
+set_up(shared_ptr <FBP2DReconstruction::TargetT > const& target_data_sptr)
 {
+  if (base_type::set_up(target_data_sptr) == Succeeded::no)
+    return Succeeded::no;
+
   if (fc_ramp<=0 || fc_ramp>.5000000001)
-    {
-      warning("Cut-off frequency has to be between 0 and .5 but is %g\n", fc_ramp);
-      return true;
-    }
+    error(boost::format("Cut-off frequency has to be between 0 and .5 but is %g") % fc_ramp);
+
   if (alpha_ramp<=0 || alpha_ramp>1.000000001)
-    {
-      warning("Alpha parameter for ramp has to be between 0 and 1 but is %g\n", alpha_ramp);
-      return true;
-    }
+    error(boost::format("Alpha parameter for ramp has to be between 0 and 1 but is %g") % alpha_ramp);
+
   if (pad_in_s<0 || pad_in_s>2)
-    {
-      warning("padding factor has to be between 0 and 2 but is %d\n", pad_in_s);
-      return true;
-    }
+    error(boost::format("padding factor has to be between 0 and 2 but is %d") % pad_in_s);
+
   if (pad_in_s<1)
-      warning("Transaxial extension for FFT:=0 should ONLY be used when the non-zero data\n"
-	      "occupy only half of the FOV. Otherwise aliasing will occur!");
+    warning("Transaxial extension for FFT:=0 should ONLY be used when the non-zero data\n"
+            "occupy only half of the FOV. Otherwise aliasing will occur!");
 
   if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
-    {
-      warning("num_segments_to_combine has to be odd (or -1), but is %d\n", num_segments_to_combine);
-      return true;
-    }
+    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
 
-    if (num_segments_to_combine==-1)
+  if (num_segments_to_combine==-1)
     {
-      const ProjDataInfoCylindrical * proj_data_info_cyl_ptr =
-	dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_ptr->get_proj_data_info_ptr());
+      const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr =
+	dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
 
-      if (proj_data_info_cyl_ptr==0)
+      if (is_null_ptr(proj_data_info_cyl_sptr))
         num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
       else
 	{
-	  if (proj_data_info_cyl_ptr->get_min_ring_difference(0) != 
-	      proj_data_info_cyl_ptr->get_max_ring_difference(0)
+	  if (proj_data_info_cyl_sptr->get_min_ring_difference(0) !=
+	      proj_data_info_cyl_sptr->get_max_ring_difference(0)
 	      ||
-	      proj_data_info_cyl_ptr->get_num_segments()==1)
+	      proj_data_info_cyl_sptr->get_num_segments()==1)
 	    num_segments_to_combine = 1;
 	  else
 	    num_segments_to_combine = 3;
 	}
     }
 
-    if (is_null_ptr(back_projector_sptr))
-      {
-	warning("Back projector not set.\n");
-	return true;
-      }
+  if (is_null_ptr(back_projector_sptr))
+    error("Back projector not set.");
 
-  return false;
+  return Succeeded::yes;
 }
 
 std::string FBP2DReconstruction::method_info() const
@@ -204,9 +199,6 @@ FBP2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   pad_in_s = pad_in_s_v;
   num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
-  // have to check here because we're not parsing
-  if (post_processing_only_FBP2D_parameters() == true)
-    error("FBP2D: Wrong parameter values. Aborting\n");
 }
 
 Succeeded 
@@ -219,7 +211,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     {  
       const ProjDataInfoCylindrical& proj_data_info_cyl =
 	dynamic_cast<const ProjDataInfoCylindrical&>
-	(*proj_data_ptr->get_proj_data_info_ptr());
+	(*proj_data_ptr->get_proj_data_info_sptr());
 
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << std::endl; 
@@ -241,7 +233,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
   // check if segment 0 has direct sinograms
   {
-    const float tan_theta = proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0));
+    const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
 	warning("FBP2D: segment 0 has non-zero tan(theta) %g", tan_theta);
@@ -252,25 +244,25 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   float tangential_sampling;
   // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
   // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
-  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;
 
   // arc-correction if necessary
   ArcCorrection arc_correction;
   bool do_arc_correction = false;
-  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
-      (proj_data_ptr->get_proj_data_info_ptr()) != 0)
+  if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+      (proj_data_ptr->get_proj_data_info_sptr())))
     {
       // it's already arc-corrected
       arc_corrected_proj_data_info_sptr =
-	proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
       tangential_sampling =
 	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
-	(*proj_data_ptr->get_proj_data_info_ptr()).get_tangential_sampling();  
+	(*proj_data_ptr->get_proj_data_info_sptr()).get_tangential_sampling();  
     }
   else
     {
       // TODO arc-correct to voxel_size
-      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) ==
 	  Succeeded::no)
 	return Succeeded::no;
       do_arc_correction = true;
@@ -297,95 +289,73 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     round(pow(2., ceil(log((double)(pad_in_s + 1)* arc_corrected_proj_data_info_sptr->get_num_tangential_poss()) / log(2.))));
   
   RampFilter filter(tangential_sampling,
-			 fft_size, 
-			 float(alpha_ramp), float(fc_ramp));   
+                    fft_size, 
+                    float(alpha_ramp), float(fc_ramp));   
 
+  back_projector_sptr->start_accumulating_in_new_target();
 
-  density_ptr->fill(0);
-  
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
   set_num_threads();
+  {
 #ifdef STIR_OPENMP
-  shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
+#pragma omp for schedule(runtime)  
 #endif
-
-#ifdef STIR_OPENMP
-#pragma omp parallel for shared(empty_density_ptr) schedule(dynamic)
-#endif
-  for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
-  {         
-    const ViewSegmentNumbers vs_num(view_num, 0);
+    for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
+      {         
+        const ViewSegmentNumbers vs_num(view_num, 0);
     
 #ifndef NDEBUG
 #ifdef STIR_OPENMP
-    info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
+        info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
 #endif 
 #endif
     
-    if (!symmetries_sptr->is_basic(vs_num))
-      continue;
+        if (!symmetries_sptr->is_basic(vs_num))
+          continue;
 
-    RelatedViewgrams<float> viewgrams;
+        RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
 #pragma omp critical(FBP2D_get_viewgrams)
 #endif
-    {
-      viewgrams =
-	proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
-    }
+        {
+          viewgrams =
+            proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
+        }
 
-    if (do_arc_correction)
-      viewgrams =
-	arc_correction.do_arc_correction(viewgrams);
+        if (do_arc_correction)
+          viewgrams =
+            arc_correction.do_arc_correction(viewgrams);
 
-    // now filter
-    for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-         viewgram_iter != viewgrams.end();
-         ++viewgram_iter)
-    {
+        // now filter
+        for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
+             viewgram_iter != viewgrams.end();
+             ++viewgram_iter)
+          {
 #ifdef NRFFT
-      filter.apply(*viewgram_iter);
+            filter.apply(*viewgram_iter);
 #else
-      std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
-		    filter);
+            std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
+                          filter);
 #endif
-    }
-    // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
+          }
+        // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
 
-  if(display_level>1) 
-    display( viewgrams,viewgrams.find_max(),"Ramp filter");
+        if(display_level>1) 
+          display( viewgrams,viewgrams.find_max(),"Ramp filter");
 
-#ifdef STIR_OPENMP 
-  //clone density_ptr and backproject    
-  shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr(empty_density_ptr->clone());
-           
-    back_projector_sptr->back_project(*omp_density_ptr, viewgrams);
-#pragma omp critical(FBP2D_REDUCTION)
-    {	//reduction
-      
-      DiscretisedDensity<3,float>::full_iterator density_iter = density_ptr->begin_all();
-      DiscretisedDensity<3,float>::full_iterator density_end = density_ptr->end_all();
-      DiscretisedDensity<3,float>::full_iterator omp_density_iter = omp_density_ptr->begin_all();
-      
-      while (density_iter!= density_end)
-	{
-	  *density_iter += (*omp_density_iter);
-	  ++density_iter;
-	  ++omp_density_iter;
-	}
-    }
-#else
-    //  and backproject
-    back_projector_sptr->back_project(*density_ptr, viewgrams);
-#endif
-  } 
+        //  and backproject
+        back_projector_sptr->back_project(viewgrams);
+      } 
+  } // end of OPENMP pragma
+
+  back_projector_sptr->get_output(*density_ptr);
  
   // Normalise the image
   const ProjDataInfoCylindrical& proj_data_info_cyl =
     dynamic_cast<const ProjDataInfoCylindrical&>
-    (*proj_data_ptr->get_proj_data_info_ptr());
+    (*proj_data_ptr->get_proj_data_info_sptr());
 
   float magic_number = 1.F;
   if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) != 0)
@@ -397,10 +367,10 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   else
     {
       if (proj_data_info_cyl.get_min_ring_difference(0)!=
-	  proj_data_info_cyl.get_max_ring_difference(0))
-	{
-	  magic_number=.5F;
-	}
+          proj_data_info_cyl.get_max_ring_difference(0))
+        {
+          magic_number=.5F;
+        }
     }
 #ifdef NEWSCALE
   // added binsize etc here to get units ok

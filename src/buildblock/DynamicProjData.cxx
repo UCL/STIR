@@ -22,6 +22,7 @@
   \brief Implementation of class stir::DynamicProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Richard Brown
 */
 
 #include "stir/DynamicProjData.h"
@@ -42,6 +43,7 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
+#include "stir/MultipleDataSetHeader.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <math.h>
@@ -59,34 +61,32 @@ read_interfile_DPDFS(const string& filename,
 const double
 DynamicProjData::
 get_start_time_in_secs_since_1970() const
-{ return this->get_exam_info_sptr()->start_time_in_secs_since_1970; }
+{ return this->get_exam_info().start_time_in_secs_since_1970; }
 
 void 
 DynamicProjData::
 set_start_time_in_secs_since_1970(const double start_time)
 { 
-  // reset local pointer to a new one (with the same info) to avoid changing
-  // other objects that happen to use the same shared_ptr
-  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
-  this->_exam_info_sptr->start_time_in_secs_since_1970=start_time; 
+  shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
+  sptr->start_time_in_secs_since_1970=start_time;
+  this->exam_info_sptr = sptr;
 }
 
 void
 DynamicProjData::
 set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
 { 
-  // reset local pointer to a new one (with the same info) to avoid changing
-  // other objects that happen to use the same shared_ptr
-  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
-  this->_exam_info_sptr->time_frame_definitions=time_frame_definitions; 
+  shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
+  sptr->time_frame_definitions=time_frame_definitions;
+  this->exam_info_sptr = sptr;
 }
 
 const TimeFrameDefinitions& 
 DynamicProjData::
 get_time_frame_definitions() const
-{   return this->_exam_info_sptr->time_frame_definitions;    }
+{   return this->exam_info_sptr->time_frame_definitions;    }
 
-DynamicProjData*
+unique_ptr<DynamicProjData>
 DynamicProjData::
 read_from_file(const string& filename) // The written projection data is read in respect to its center as origin!!!
 {
@@ -99,7 +99,7 @@ read_from_file(const string& filename) // The written projection data is read in
 #ifndef NDEBUG
     info(boost::format("DynamicProjData::read_from_file trying to read %s as Interfile") % filename);
 #endif
-    DynamicProjData* ptr(read_interfile_DPDFS(filename, std::ios::in));
+    unique_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
     if (!is_null_ptr(ptr))
       return ptr;
     else
@@ -121,10 +121,10 @@ read_from_file(const string& filename) // The written projection data is read in
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
         {
           warning("DynamicProjData::read_from_file cannot read '%s' as ECAT7", filename.c_str());
-          return 0;
+          return unique_ptr<DynamicProjData>();
         }
       shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(filename));
-      DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData(exam_info_sptr);
+      unique_ptr<DynamicProjData> dynamic_proj_data_ptr(new DynamicProjData(exam_info_sptr));
 
       // we no longer have a _scanner_sptr member, so next lines are commented out
       //dynamic_proj_data_ptr->_scanner_sptr.reset(
@@ -144,6 +144,7 @@ read_from_file(const string& filename) // The written projection data is read in
         }
       if (is_null_ptr(dynamic_proj_data_ptr->_proj_datas[0]))
               error("DynamicProjData: No frame available\n");
+
       return dynamic_proj_data_ptr;
     }
     else
@@ -151,21 +152,32 @@ read_from_file(const string& filename) // The written projection data is read in
       if (is_ECAT7_file(filename))
         {
           warning("DynamicProjData::read_from_file ECAT7 file '%s' should be projection data.", filename.c_str());
-          return 0;
+          return unique_ptr<DynamicProjData>();
         }
     }
   }
   else 
     {
       warning("DynamicProjData::read_from_file '%s' seems to correspond to ECAT projection data, but not ECAT7. I cannot read this.", filename.c_str());
-      return 0;
+      return unique_ptr<DynamicProjData>();
     }
 #endif // end of HAVE_LLN_MATRIX
 
+  if (strncmp(signature, "Multi", 5) == 0) {
+
+#ifndef NDEBUG
+        info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+#endif
+
+      unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename));
+      unique_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(*multi_proj_data));
+
+      return dynamic_proj_data;
+  }
   
   // return a zero pointer if we get here
   warning(boost::format("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?") % filename);
-  return 0;
+  return unique_ptr<DynamicProjData>();
 }
 
 Succeeded 
@@ -178,8 +190,8 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
-				      *get_exam_info_ptr(),
-                                      *get_proj_data(1).get_proj_data_info_ptr() );
+				      get_exam_info(),
+                                      *get_proj_data(1).get_proj_data_info_sptr() );
     
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
@@ -235,7 +247,7 @@ read_interfile_DPDFS(istream& input,
 	break;
       }
   
-   assert(hdr.data_info_ptr !=0);
+   assert(!is_null_ptr(hdr.data_info_sptr));
 
    shared_ptr<std::iostream> data_in(new std::fstream (full_data_file_name, open_mode | std::ios::binary));
    if (!data_in->good())
@@ -243,7 +255,7 @@ read_interfile_DPDFS(istream& input,
        warning("interfile parsing: error opening file %s",full_data_file_name);
        return 0;
      }
-   shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_ptr->create_shared_clone());
+   shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_sptr->create_shared_clone());
    unsigned long data_offset = hdr.data_offset_each_dataset[0];
    // offset in file between time frames
    unsigned long data_offset_increment = 0UL; // we will find it below
@@ -253,7 +265,7 @@ read_interfile_DPDFS(istream& input,
        error(boost::format("DynamicProjData: error allocating memory for new object (for file \"%1%\")")
 		    % full_data_file_name);
      }
-   dynamic_proj_data_ptr->resize(hdr.get_exam_info_ptr()->time_frame_definitions.get_num_time_frames());
+   dynamic_proj_data_ptr->resize(hdr.get_exam_info().time_frame_definitions.get_num_time_frames());
    
    // now set all proj_data_sptrs
    for (unsigned int frame_num=1; frame_num <= dynamic_proj_data_ptr->get_num_frames(); ++frame_num)
@@ -261,8 +273,8 @@ read_interfile_DPDFS(istream& input,
        info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
        shared_ptr<ExamInfo> current_exam_info_sptr(new ExamInfo(*hdr.get_exam_info_sptr()));
        std::vector<std::pair<double, double> > frame_times;
-       frame_times.push_back(std::make_pair(hdr.get_exam_info_ptr()->time_frame_definitions.get_start_time(frame_num),
-					    hdr.get_exam_info_ptr()->time_frame_definitions.get_end_time(frame_num)));
+       frame_times.push_back(std::make_pair(hdr.get_exam_info().time_frame_definitions.get_start_time(frame_num),
+					    hdr.get_exam_info().time_frame_definitions.get_end_time(frame_num)));
        TimeFrameDefinitions time_frame_defs(frame_times);
        current_exam_info_sptr->set_time_frame_definitions(time_frame_defs);
 

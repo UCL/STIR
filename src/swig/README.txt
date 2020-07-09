@@ -29,7 +29,7 @@ python-py isn't really required but used for testing so highly recommended.
 
 (in the future, you might need to copy /usr/share/pyshared/instant/swig/numpy.i to the STIR swig directory)
 
-Then (re)build and install STIR with BUILD_PYTHON ON. You probably 
+Then (re)build and install STIR with BUILD_SWIG_PYTHON ON. You probably 
 need to build with shared libraries.
 
 On Linux, you will have to tell the system where to find the STIR shared libraries. 

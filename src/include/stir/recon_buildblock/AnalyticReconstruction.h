@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd 
+    Copyright (C) 2016, 2018, 2019 University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -26,21 +27,19 @@
   \brief declares the stir::AnalyticReconstruction class
 
   \author Kris Thielemans
-  \author Matthew Jacobson
-  \author Claire Labbe
+  \author Nikos Efthimiou
   \author PARAPET project
 
-*/
-/* Modification history
-
-   KT 10122001
-   - added construct_target_image_ptr and 0 argument reconstruct()
 */
 
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/ParseAndCreateFrom.h"
 #include <string>
+
+#include "stir/ExamData.h"
 
 START_NAMESPACE_STIR
 
@@ -57,14 +56,15 @@ class Succeeded;
   because of conversion problems with stir::shared_ptr. Maybe it will be
   possible to correct this once we use boost:shared_ptr.
   */
-class AnalyticReconstruction : public Reconstruction<DiscretisedDensity<3,float> >
+class AnalyticReconstruction :
+        public       Reconstruction<DiscretisedDensity<3,float> >
 {
 public:
   typedef DiscretisedDensity<3,float> TargetT;
 private:
   typedef Reconstruction<TargetT > base_type;
 public:
-  
+
   //! construct an image from parameters set (e.g. during parsing)
   virtual DiscretisedDensity<3,float>*  
     construct_target_image_ptr() const;
@@ -93,31 +93,23 @@ public:
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr);
 
-  // parameters
+  virtual void set_input_data(const shared_ptr<ExamData>&);
+  virtual const ProjData& get_input_data() const;
+  //! @name forwarding functions for ParseDiscretisedDensityParameters
+  //@{
+  int get_output_image_size_xy() const;
+  void set_output_image_size_xy(int);
+  int get_output_image_size_z() const;
+  void set_output_image_size_z(int);
+  float get_zoom_xy() const;
+  void set_zoom_xy(float);
+  float get_zoom_z() const;
+  void set_zoom_z(float);
+  const CartesianCoordinate3D<float>& get_offset() const;
+  void set_offset(const CartesianCoordinate3D<float>&);
+  //@}
+
  protected:
-
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy;
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; 
-
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  //! offset in the z-direction
-  double Zoffset;
-
 
   //! the input projection data file name
   std::string input_filename;
@@ -136,6 +128,8 @@ public:
 
 
 protected:
+  ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
+
   //! executes the reconstruction storing result in \c target_image_sptr
   /*!
     \return Succeeded::yes if everything was alright.

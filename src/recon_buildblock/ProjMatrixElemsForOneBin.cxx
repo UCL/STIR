@@ -46,7 +46,6 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::copy;
-using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR
@@ -356,11 +355,12 @@ back_project(DiscretisedDensity<3,float>& density,
     if (data == 0)
       return;
     
+    BasicCoordinate<3,int> coords;
     const_iterator element_ptr = 
       begin();
     while (element_ptr != end())
     {
-      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
+      coords = element_ptr->get_coords();
       if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
         density[coords[1]][coords[2]][coords[3]] += element_ptr->get_value() * data;		
       element_ptr++;            
@@ -376,11 +376,12 @@ forward_project(Bin& single,
 {
   {  
     
+    BasicCoordinate<3,int> coords;
     const_iterator element_ptr = begin();
     
     while (element_ptr != end())
     {
-      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
+      coords = element_ptr->get_coords();
       
       if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
         single += density[coords[1]][coords[2]][coords[3]] * element_ptr->get_value();
@@ -408,7 +409,7 @@ back_project(DiscretisedDensity<3,float>& density,
     // KT 21/02/2002 added check on 0
     if (symmetric_bin.get_bin_value() == 0)
       return;
-    auto_ptr<SymmetryOperation> symm_ptr = 
+    unique_ptr<SymmetryOperation> symm_ptr = 
       symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
     symm_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.back_project(density,symmetric_bin);
@@ -431,7 +432,7 @@ forward_project(RelatedBins& r_bins,
   {    
     row_copy = *this;
     
-    auto_ptr<SymmetryOperation> symm_op_ptr = 
+    unique_ptr<SymmetryOperation> symm_op_ptr = 
       symmetries->find_symmetry_operation_from_basic_bin(*r_bins_iterator);
     symm_op_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.forward_project(*r_bins_iterator,density);
@@ -465,15 +466,27 @@ operator==(const ProjMatrixElemsForOneBin& lor) const
   const_iterator lor_iter = lor.begin();
   while (this_iter!= end() && lor_iter!=lor.end())
     {
-      // skip small elements
-      if (this_iter->get_value()<tolerance)
-	{ ++this_iter; continue; }
-      if (lor_iter->get_value()<tolerance)
-	{ ++lor_iter; continue; }
-      // compare coordinates and value
-      if (this_iter->get_coords() != lor_iter->get_coords() ||
-	  fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
-	return false;
+      if (this_iter->get_coords() == lor_iter->get_coords())
+        {
+          // coordinates are equal, so test for value
+          if (fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
+            return false;
+        }
+      else
+        {
+          // coordinates are not equal, so check if value of one of them is small and we should skip it 
+          if (this_iter->get_value() < tolerance)
+            {
+              ++this_iter; continue;
+            }
+          if (lor_iter->get_value() < tolerance)
+            {
+              ++lor_iter; continue;
+            }
+          // either one is not small
+          return false;
+        }
+      // we got here, so comparison was ok
       ++this_iter;
       ++lor_iter;
     }

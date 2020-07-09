@@ -25,7 +25,7 @@
   \author Kris Thielemans
 */
 #ifndef __stir_Shape_Ellipsoid_h__
-#define __stir_Shape_Elliposoid_h__
+#define __stir_Shape_Ellipsoid_h__
 
 
 #include "stir/RegisteredParsingObject.h"

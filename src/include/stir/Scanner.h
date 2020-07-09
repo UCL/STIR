@@ -2,6 +2,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
+    Copyright (C) 2016, 2019, UCL
+    Copyright (C 2017-2018, University of Leeds
  
     This file is part of STIR.
 
@@ -28,6 +30,8 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Ottavia Bertolli
+  \author Palak Wadhwa
   \author PARAPET project
 */
 #ifndef __stir_buildblock_SCANNER_H__
@@ -76,6 +80,11 @@ class Succeeded;
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
 
+      A further complication is that some scanners (including many Siemens scanners) 
+      insert virtual crystals in the sinogram data (corresponding to gaps between
+      detector blocks). We currently define the blocks as the "virtual" ones,
+      but provide extra members to find out how many of these virtual crystals there are.
+
       \warning This information is only sensible for discrete detector-based scanners.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
@@ -107,8 +116,8 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
   
@@ -131,7 +140,9 @@ class Scanner
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v);
+          int num_detector_layers_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -148,7 +159,9 @@ class Scanner
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v);
+          int num_detector_layers_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f);
 
 
 
@@ -257,10 +270,29 @@ class Scanner
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
 
+  //! \name number of "fake" crystals per block, inserted by the scanner
+  /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
+    The other members of the class return the size of the "virtual" block. With these
+    functions you can find its true size.
+  */
+  //@{! 
+  int get_num_virtual_axial_crystals_per_block() const;
+  int get_num_virtual_transaxial_crystals_per_block() const;
+  //@}
 
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)
+
+   //! \name Functions to get detector responce info
+  //@{
+
+  //! get the energy resolution of the system
+  inline float get_energy_resolution() const;
+  //! get the reference energy of the energy resolution
+  inline float get_reference_energy() const;
+
+  //@} (end of get detector responce info)
 
   //! \name Functions setting info
   /*! Be careful to keep consistency by setting all relevant parameters*/
@@ -305,7 +337,15 @@ class Scanner
   // TODO accomodate more complex geometries of singles units.
 
   //@} (end of block/bucket info)
+  //! set the energy resolution of the system
+  //! A negative value indicates, unknown || not set
+  inline void set_energy_resolution(const float new_num);
+  //! set the reference energy of the energy resolution
+  //! A negative value indicates, unknown || not set
+  inline void set_reference_energy(const float new_num);
 
+  inline bool has_energy_information() const;
+  //@} (end of set info)
   //@} (end of set info)
   
   // Calculate a singles bin index from axial and transaxial singles bin coordinates.
@@ -346,6 +386,21 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
+   //!
+  //! \brief energy_resolution
+  //! \author Nikos Efthimiou
+  //! \details This is the energy resolution of the system.
+  //! A negative value indicates, unknown.
+  //! This value is dominated by the material of the scintilation crystal
+  float energy_resolution;
+
+  //!
+  //! \brief reference_energy
+  //! \author Nikos Efthimiou
+  //! \details In PET application this should always be 511 keV.
+  //! A negative value indicates, unknown.
+  float reference_energy;
+
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -360,7 +415,9 @@ private:
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
+                  int num_detector_layers_v,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = -1.0f);
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -376,7 +433,9 @@ private:
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
+                  int num_detector_layers_v,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = -1.0f);
 
 
 };

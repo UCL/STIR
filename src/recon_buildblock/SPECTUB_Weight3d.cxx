@@ -26,6 +26,8 @@
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
+#include <boost/math/constants/constants.hpp>
+#include "stir/spatial_transformation/InvertAxis.h"
 
 //system libraries
 #include <stdio.h>
@@ -44,10 +46,6 @@ namespace SPECTUB {
 #define abs(a) ((a)>=0?(a):(-a))
 #define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
  
-#ifndef M_PI
-#define M_PI 3.14159265
-#endif
-
 #define REF_DIST 5.    //reference distance for fanbeam PSF
 
 using namespace std;
@@ -233,7 +231,7 @@ void wm_calculation( const int kOS,
 				}
 			
 				//=== LOOP4: IMAGE SLICES ================================================================
-				
+
 				for ( vox.islc = vol.first_sl ; vox.islc < vol.last_sl ; vox.islc++ ){
 					
 					vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
@@ -263,9 +261,10 @@ void wm_calculation( const int kOS,
 						weight = psf.val[ ie ] * eff * coeff_att ;
                         
                         //... fill image STIR indices ...........................
-						
+                        
                         if ( wm.do_save_STIR ){
-							wm.nx[ vox.iv ] = (short int)( vox.icol - (int) floor( vol.Ncold2 ) );  // centered index for STIR format
+                            stir::InvertAxis invert;
+                            wm.nx[ vox.iv ] = (short int)invert.invert_axis_index(( vox.icol - (int) floor( vol.Ncold2 ) ),vol.Ncold2*2, "x");  // centered index for STIR format
 							wm.ny[ vox.iv ] = (short int)( vox.irow - (int) floor( vol.Nrowd2 ) );  // centered index for STIR format
 							wm.nz[ vox.iv ] = (short int)  vox.islc ;                               // non-centered index for STIR format
 						}
@@ -462,7 +461,7 @@ void wm_size_estimation (int kOS,
 
 void calc_gauss( discrf_type *gaussdens )
 {
-	float K0 = (float)0.3989422863; //Normalization factor: 1/sqrt(2*M_PI)
+	const float K0 = 1.0f/boost::math::constants::root_two_pi<float>(); //Normalization factor: 1/sqrt(2*M_PI)
 	float x  = 0;
 	float g;
 	

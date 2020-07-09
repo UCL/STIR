@@ -21,6 +21,12 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
+
 echo This script should work with STIR version 2.2, 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
@@ -75,8 +81,8 @@ export LC_ALL
 
 echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
-echo "===  use that as template for attenuation"
-stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
+echo "===  make attenuation image"
+generate_image  generate_atten_cylinder.par
 echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
 template_sino=my_DSTE_3D_rd2_template.hs
 cat > my_input.txt <<EOF
@@ -174,7 +180,10 @@ done
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
+ exit 1
 fi
 

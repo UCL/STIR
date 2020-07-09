@@ -35,6 +35,7 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ProjDataInfo.h" // is used in .inl
 #include "stir/shared_ptr.h"
+#include "stir/unique_ptr.h"
 #include <vector>
 #include <memory>
 
@@ -80,7 +81,7 @@ private:
   typedef DataSymmetriesForBins self_type;
 
 public:
-  DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
   virtual ~DataSymmetriesForBins();
 
@@ -152,7 +153,7 @@ public:
   sets 'b' to the corresponding 'basic' bin and returns the symmetry 
   transformation from 'basic' to 'b'.
   */
-  virtual std::auto_ptr<SymmetryOperation>
+  virtual unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const = 0;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin
@@ -171,13 +172,13 @@ public:
     is_basic(const Bin& v_s) const;
 
   //! default implementation in terms of find_symmetry_operation_from_basic_bin
-  virtual std::auto_ptr<SymmetryOperation>
+  virtual unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
 
 protected:
   //! Member storing the info needed by get_related_bins() et al
-  const shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
   virtual bool blindly_equals(const root_type * const) const = 0;

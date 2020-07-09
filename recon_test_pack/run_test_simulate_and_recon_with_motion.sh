@@ -23,6 +23,12 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
+
 echo This script should work with STIR version 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
@@ -182,6 +188,9 @@ fi
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
+ exit 1
 fi

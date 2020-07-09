@@ -39,6 +39,7 @@
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -92,10 +93,23 @@ class Succeeded;
      
 
 */
-class FBP3DRPReconstruction: public AnalyticReconstruction
+class FBP3DRPReconstruction: public
+        RegisteredParsingObject<
+            FBP3DRPReconstruction,
+                Reconstruction<DiscretisedDensity<3,float> >,
+                AnalyticReconstruction
+             >
 {
-  typedef AnalyticReconstruction base_type;
+  //typedef AnalyticReconstruction base_type;
+    typedef RegisteredParsingObject<
+        FBP3DRPReconstruction,
+            Reconstruction<DiscretisedDensity<3,float> >,
+            AnalyticReconstruction
+         > base_type;
 public:
+
+    //! Name which will be used when parsing a ProjectorByBinPair object
+    static const char * const registered_name;
 
 
   //! Default constructor (calls set_defaults())
@@ -116,6 +130,9 @@ public:
 
 //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
   virtual std::string method_info() const;
+
+  Succeeded
+    set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr);
 
 protected:
 /*!
@@ -159,7 +176,6 @@ protected:
     void do_colsher_filter_view( RelatedViewgrams<float> & viewgrams);
 //!  3D backprojection implentation for 8 viewgrams.
     void do_3D_backprojection_view(RelatedViewgrams<float> const & viewgrams,
-                                   VoxelsOnCartesianGrid<float> &image,
                                    int rmin, int rmax);
 //!  Saving CPU timing and values of reconstruction parameters into a log file.    
     void do_log_file(const VoxelsOnCartesianGrid<float> &image);
@@ -177,8 +193,7 @@ public:
     virtual void do_process_viewgrams(
                                   RelatedViewgrams<float> & viewgrams,
                                   int rmin, int rmax,
-                                  int orig_min_ring, int orig_max_ring,
-                                  VoxelsOnCartesianGrid<float> &image);
+                                  int orig_min_ring, int orig_max_ring);
 
     // parameters stuff
  public:

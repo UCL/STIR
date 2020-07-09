@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2016, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +23,7 @@
   \ingroup buildblock
   \brief implementation of inline functions of class Scanner
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
@@ -150,7 +152,9 @@ Scanner::get_num_detector_layers() const
 int
 Scanner::get_num_axial_blocks() const
 {
-  return num_rings/num_axial_crystals_per_block;
+  // when using virtual crystals between blocks, there won't be one at the end, so we
+  // need to take this into account.
+  return (num_rings+get_num_virtual_axial_crystals_per_block())/num_axial_crystals_per_block;
 }
 
 int
@@ -192,7 +196,7 @@ Scanner::get_num_axial_singles_units() const
   if ( num_axial_crystals_per_singles_unit == 0 ) {
     return 0;
   } else {
-    return num_rings / num_axial_crystals_per_singles_unit;
+    return (num_rings+get_num_virtual_axial_crystals_per_block()) / num_axial_crystals_per_singles_unit;
   }
 }
 
@@ -215,10 +219,17 @@ Scanner::get_num_singles_units  () const
   return get_num_axial_singles_units() * get_num_transaxial_singles_units();
 }
 
+float
+Scanner::get_energy_resolution() const
+{
+    return energy_resolution;
+}
 
-
-
-
+float
+Scanner::get_reference_energy() const
+{
+    return reference_energy;
+}
 
 //************************ set ******************************8
 
@@ -258,7 +269,11 @@ void Scanner::set_average_depth_of_interaction(const float & new_depth_of_intera
   average_depth_of_interaction = new_depth_of_interaction;
 }
 
-
+bool Scanner::has_energy_information() const
+{
+    return (energy_resolution <= 0.0 ||
+            reference_energy <= 0.0) ? false : true;
+}
 
 void Scanner::set_ring_spacing(const float&  new_spacing)
 {
@@ -313,8 +328,17 @@ void Scanner::set_num_transaxial_crystals_per_singles_unit(const int& new_num)
   num_transaxial_crystals_per_singles_unit = new_num;
 }
 
+void
+Scanner::set_energy_resolution(const float new_num)
+{
+    energy_resolution = new_num;
+}
 
-
+void
+Scanner::set_reference_energy(const float new_num)
+{
+    reference_energy = new_num;
+}
 
 /********    Calculate singles bin index from detection position    *********/
 

@@ -2,6 +2,7 @@
 #
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2013 Kris Thielemans
+# Copyright 2016 University College London
 
 # This file is part of STIR.
 #
@@ -21,10 +22,19 @@
 # set dir_EXE_SOURCES to a list of executables that need to
 # be compiled and installed
 
+#
+# NIKOS EFTHIMIOU
+# Added dependency on ALL_HEADERS and ALL_INLINES in order
+# to display .h and .inl files in Qt-Creator
 foreach(executable ${${dir_EXE_SOURCES}})
-   add_executable(${executable} ${executable} ${STIR_REGISTRIES})
+ if(BUILD_EXECUTABLES)
+   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES}  ${ALL_TXXS} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
+   target_include_directories(${executable} PUBLIC ${Boost_INCLUDE_DIR})
+  endif()
 endforeach()
 
-install(TARGETS ${${dir_EXE_SOURCES}} DESTINATION bin)
+if(BUILD_EXECUTABLES)
+ install(TARGETS ${${dir_EXE_SOURCES}} DESTINATION bin)
+endif()

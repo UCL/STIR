@@ -88,8 +88,8 @@ public:
       The symmetry in phi is automatically reduced for non-square grids or when the number of
       views is not a multiple of 4.
   */    
-  DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                                          const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+  DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                                          const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr,
                                           const bool do_symmetry_90degrees_min_phi = true,
                                           const bool do_symmetry_180degrees_min_phi = true,
 					  const bool do_symmetry_swap_segment = true,
@@ -123,7 +123,7 @@ public:
   inline int
     num_related_bins(const Bin& b) const;
 
-  inline std::auto_ptr<SymmetryOperation>
+  inline unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const;
 
   inline bool
@@ -184,7 +184,7 @@ private:
   // at the moment, we don't need the following 2 members
 
   // TODO somehow store only the info
-  shared_ptr<DiscretisedDensity<3,float> > image_info_ptr;
+  shared_ptr<constDiscretisedDensity<3,float> > image_info_ptr;
 
   // a convenience function that does the dynamic_cast from the above
   inline const DiscretisedDensityOnCartesianGrid<3,float> *

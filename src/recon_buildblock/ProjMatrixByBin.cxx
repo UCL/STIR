@@ -119,9 +119,9 @@ reserve_num_elements_in_cache(const std::size_t num_elems)
 
 void
 ProjMatrixByBin::
-set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
+set_up(   
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
     )
 {
   const int min_view_num = proj_data_info_sptr->get_min_view_num();
@@ -160,7 +160,7 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
   assert(abs(bin.tangential_pos_num()) < (1<<12));
   return (CacheKey)( 
                     (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
-                    | (static_cast<boost::uint32_t>(bin.axial_pos_num())<<13) 
+                    | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<13) 
                     | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
                     |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
 } 
@@ -202,7 +202,7 @@ get_cached_proj_matrix_elems_for_one_bin(
   {
     // Check that this is a 'basic' coordinate
     Bin bin_copy = bin; 
-    assert ( symmetries_ptr->find_basic_bin(bin_copy) == 0);     
+    assert ( symmetries_sptr->find_basic_bin(bin_copy) == 0);
   }
 #endif         
   

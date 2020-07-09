@@ -82,23 +82,20 @@ BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
 
 Succeeded 
 BinNormalisationFromProjData::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
+  BinNormalisation::set_up(proj_data_info_ptr);
+
+  if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
   else
   {
-    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_ptr());
+    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
     const ProjDataInfo& proj = *proj_data_info_ptr;
     bool ok = 
-      typeid(norm_proj) == typeid(proj) &&
-      *norm_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
-      (norm_proj.get_min_view_num()==proj.get_min_view_num()) &&
-      (norm_proj.get_max_view_num()==proj.get_max_view_num()) &&
+      (norm_proj >= proj) &&
       (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
-      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
-      norm_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
-      norm_proj.get_max_segment_num() <= proj.get_max_segment_num();
+      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num());
     
     for (int segment_num=proj.get_min_segment_num();
 	 ok && segment_num<=proj.get_max_segment_num();
@@ -146,6 +143,7 @@ is_trivial() const
 void 
 BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
+    this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams *= 
@@ -156,6 +154,7 @@ void
 BinNormalisationFromProjData::
 undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
+    this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams /= 
@@ -170,6 +169,12 @@ BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double sta
   error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");
   return 1;
 
+}
+
+shared_ptr<ProjData>
+BinNormalisationFromProjData::get_norm_proj_data_sptr() const
+{
+  return this->norm_proj_data_ptr;
 }
  
 END_NAMESPACE_STIR

@@ -1,0 +1,45 @@
+ROOT header := 
+
+; More information regarding .hroot files may be found in the UsersGuide
+originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+Default number of arc-corrected bins 	 := 344
+View offset (degrees)					 := 0
+
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+
+name of data file := benchmarkPET.root
+
+name of input TChain := Coincidences
+
+; Gate scanner geometry terminology used to check scanner properties
+number of Rsectors := 504 
+number of modules_X := 1 
+number of modules_Y := 1
+number of modules_Z := 1
+number of submodules_X := 1
+number of submodules_Y := 1
+number of submodules_Z := 1
+number of crystals_X := 1
+number of crystals_Y := 1
+number of crystals_Z := 4
+
+Singles readout depth := 1
+exclude scattered events := 0
+exclude random events := 0 
+offset (num of detectors) := 0 
+
+low energy window (keV) := 0  		; Default 0
+upper energy window (keV):= 10000	; Default 10000
+
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 

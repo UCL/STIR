@@ -30,65 +30,52 @@
 
 START_NAMESPACE_STIR
 
-const ProjDataInfo*
-ProjData::get_proj_data_info_ptr() const
-{
-  return proj_data_info_ptr.get();
-}
-
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 ProjData::get_proj_data_info_sptr() const
 {
-  return proj_data_info_ptr;
-}
-
-const ExamInfo*
-ProjData::get_exam_info_ptr() const
-{
-  return exam_info_sptr.get();
-}
-
-shared_ptr<ExamInfo>
-ProjData::get_exam_info_sptr() const
-{
-  return exam_info_sptr;
+  return proj_data_info_sptr;
 }
 
 int ProjData::get_num_segments() const
-{ return proj_data_info_ptr->get_num_segments(); }
+{ return proj_data_info_sptr->get_num_segments(); }
 
 int ProjData::get_num_axial_poss(const int segment_num) const
-{ return proj_data_info_ptr->get_num_axial_poss(segment_num); }
+{ return proj_data_info_sptr->get_num_axial_poss(segment_num); }
 
 int ProjData::get_num_views() const
-{ return proj_data_info_ptr->get_num_views(); }
+{ return proj_data_info_sptr->get_num_views(); }
 
 int ProjData::get_num_tangential_poss() const
-{ return proj_data_info_ptr->get_num_tangential_poss(); }
+{ return proj_data_info_sptr->get_num_tangential_poss(); }
 
 int ProjData::get_min_segment_num() const
-{ return proj_data_info_ptr->get_min_segment_num(); }
+{ return proj_data_info_sptr->get_min_segment_num(); }
 
 int ProjData::get_max_segment_num() const
-{ return proj_data_info_ptr->get_max_segment_num(); }
+{ return proj_data_info_sptr->get_max_segment_num(); }
 
 int ProjData::get_min_axial_pos_num(const int segment_num) const
-{ return proj_data_info_ptr->get_min_axial_pos_num(segment_num); }
+{ return proj_data_info_sptr->get_min_axial_pos_num(segment_num); }
 
 int ProjData::get_max_axial_pos_num(const int segment_num) const
-{ return proj_data_info_ptr->get_max_axial_pos_num(segment_num); }
+{ return proj_data_info_sptr->get_max_axial_pos_num(segment_num); }
 
 int ProjData::get_min_view_num() const
-{ return proj_data_info_ptr->get_min_view_num(); }
+{ return proj_data_info_sptr->get_min_view_num(); }
 
 int ProjData::get_max_view_num() const
-{ return proj_data_info_ptr->get_max_view_num(); }
+{ return proj_data_info_sptr->get_max_view_num(); }
 
 int ProjData::get_min_tangential_pos_num() const
-{ return proj_data_info_ptr->get_min_tangential_pos_num(); }
+{ return proj_data_info_sptr->get_min_tangential_pos_num(); }
 
 int ProjData::get_max_tangential_pos_num() const
-{ return proj_data_info_ptr->get_max_tangential_pos_num(); }
+{ return proj_data_info_sptr->get_max_tangential_pos_num(); }
 
+int ProjData::get_num_sinograms() const
+{ return proj_data_info_sptr->get_num_sinograms(); }
+
+std::size_t ProjData::size_all() const
+{ return proj_data_info_sptr->size_all(); }
 
 END_NAMESPACE_STIR

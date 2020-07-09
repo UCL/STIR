@@ -25,8 +25,6 @@
 
 */
 
-#ifdef HAVE_LLN_MATRIX
-
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #include "stir/NumericType.h"
 #include "stir/IO/stir_ecat7.h"
@@ -157,6 +155,3 @@ actual_write_to_file(std::string& filename,
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
-
-
-#endif // #ifdef HAVE_LLN_MATRIX

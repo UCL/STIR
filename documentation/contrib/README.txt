@@ -24,3 +24,7 @@ Added "wedge" capabilities to EllipsoidalCylinder and Box3D.
 
 - code for (spatial) warping and motion correction (and GIPL IO and raw GATE projection data conversion) (licensed under LGPL)
   by Charalampos Tsoumpas
+
+- code for reading the SAFIR coincidence listmode format and sorting the events
+  into a virtual cylindrical scanner for reconstruction (licensed under Apache2).
+  by Jannis Fischer

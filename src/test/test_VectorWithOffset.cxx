@@ -430,8 +430,8 @@ VectorWithOffsetTests::run_tests()
       test.recycle();
       check_if_equal(test.capacity(), size_t(0), "test recycle");
       test = ref;
-      // not: test new size is smaller than original size, so no reallocation should occur
-      test.resize(test.get_max_index()+20,test.get_max_index()+20+ref.size()-3);
+      // note: test new size is smaller than original size, so no reallocation should occur
+      test.resize(test.get_max_index()+20, static_cast<int>(test.get_max_index()+20+ref.size()-3));
       check_if_equal(test.size(), size_t(ref.size()-2), 
 		     "check resize with resize non-overlapping to right (size)");
       check_if_equal(test.get_min_index(), ref.get_max_index()+20, 
@@ -447,7 +447,7 @@ VectorWithOffsetTests::run_tests()
       check_if_equal(test.capacity(), size_t(0), "test recycle");
       test = ref;
       // not: test new size is larger than original size, so reallocation should occur
-      test.resize(test.get_min_index()-300,test.get_min_index()-300+ref.size()+4);
+      test.resize(test.get_min_index()-300, static_cast<int>(test.get_min_index()-300+ref.size()+4));
       check_if_equal(test.size(), size_t(ref.size()+5), 
 		     "check resize with resize non-overlapping to left (size)");
       check_if_equal(test.get_min_index(), ref.get_min_index()-300, 
@@ -531,7 +531,7 @@ VectorWithOffsetTests::run_tests()
 	  // if we get here, there's a problem, so we report that by failing the next test.
 	  check(false, "test out-of-range on empty vector");
 	}
-      catch (std::out_of_range& e)
+      catch (std::out_of_range& )
 	{
 	}
     }
@@ -548,7 +548,7 @@ VectorWithOffsetTests::run_tests()
 	  // if we get here, there's a problem, so we report that by failing the next test.
 	  check(false, "test out-of-range on vector");
 	}
-      catch (std::out_of_range& e)
+      catch (std::out_of_range& )
 	{
 	}
     }
@@ -635,10 +635,10 @@ VectorWithOffsetTests::run_tests()
     // vector will again start at data_ptr
     check_if_equal(data_ptr[4-v.get_min_index()], 4, "test vector using data_ptr (negative min_index): data at 4-min_index after assignment and setting");
     // another assignment that does not reallocate
-    v = VectorWithOffset<int>(size-(data_ptr-data) );
+    v = VectorWithOffset<int>(static_cast<int>(size-(data_ptr-data) ));
     check(!v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): 2nd assignment should not allocate new memory");
     // assignment that does reallocate
-    v = VectorWithOffset<int>(size-(data_ptr-data)+1 );
+    v = VectorWithOffset<int>(static_cast<int>(size-(data_ptr-data)+1 ));
     check(v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): 3rd assignment should allocate new memory");     
   }
 }

@@ -25,20 +25,26 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 set(${dir_EXE_SOURCES}
   lm_to_projdata
   lm_to_projdata_bootstrap
+  lm_to_projdata_with_random_rejection
   lm_fansums
   list_lm_events
+  list_lm_countrates
 )
 
 if (HAVE_ECAT)
   # yes, the LLN files seem to be there, so we can compile more
   list(APPEND ${dir_EXE_SOURCES}
-	scan_sgl_file 
-	print_sgl_values 
-	rebin_sgl_file 
+	scan_sgl_file
+	print_sgl_values
+	rebin_sgl_file
 	add_ecat7_header_to_sgl
   )
 endif()
 
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND ${dir_EXE_SOURCES} conv_NiftyPET_stir)
+  list(APPEND ${dir_EXE_SOURCES} lm_to_projdata_NiftyPET)
+endif()
 
 
 include(stir_exe_targets)

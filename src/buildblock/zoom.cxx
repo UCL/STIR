@@ -1,8 +1,7 @@
-//
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,6 +25,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
+  \author Ludovica Brusaferri
 
 
 */
@@ -39,6 +39,8 @@
    
 #include "stir/interpolate.h"
 #include "stir/zoom.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h" 
 #include "stir/PixelsOnCartesianGrid.h" 
 #include "stir/Viewgram.h"
@@ -111,19 +113,19 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_viewgrams.get_proj_data_info_ptr()->clone();
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_viewgrams.get_proj_data_info_sptr()->clone());
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_ptr==0)
+  if ( new_proj_data_info_arccorr_sptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
-  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
-  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_max_tangential_pos_num(max_tang_pos_num);
   
-  new_proj_data_info_arccorr_ptr->
-    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+  new_proj_data_info_arccorr_sptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_sptr->
 			      get_tangential_sampling() / zoom);
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
@@ -131,7 +133,7 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
 
   RelatedViewgrams<float> 
     out_viewgrams = 
-    new_proj_data_info_arccorr_ptr->
+    new_proj_data_info_arccorr_sptr->
       get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(),
 				  symmetries_sptr);
 
@@ -157,23 +159,23 @@ zoom_viewgram (Viewgram<float>& in_view,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_view.get_proj_data_info_ptr()->clone();
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_view.get_proj_data_info_sptr()->clone());
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_ptr==0)
+  if ( new_proj_data_info_arccorr_sptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
-  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
-  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_max_tangential_pos_num(max_tang_pos_num);
   
-  new_proj_data_info_arccorr_ptr->
-    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+  new_proj_data_info_arccorr_sptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_sptr->
 			      get_tangential_sampling() / zoom);
 
   Viewgram<float> 
-    out_view = new_proj_data_info_arccorr_ptr->
+    out_view = new_proj_data_info_arccorr_sptr->
                      get_empty_viewgram(
 					in_view.get_view_num(),
 					in_view.get_segment_num());
@@ -190,30 +192,30 @@ zoom_viewgram (Viewgram<float>& out_view,
 	       const float x_offset_in_mm, const float y_offset_in_mm)
 {   
   // minimal checks on compatibility
-  assert(in_view.get_proj_data_info_ptr()->get_num_views() == 
-	 out_view.get_proj_data_info_ptr()->get_num_views());
+  assert(in_view.get_proj_data_info_sptr()->get_num_views() == 
+	 out_view.get_proj_data_info_sptr()->get_num_views());
   assert(in_view.get_view_num() == out_view.get_view_num());
-  assert(in_view.get_proj_data_info_ptr()->get_num_segments() == 
-	 out_view.get_proj_data_info_ptr()->get_num_segments());
+  assert(in_view.get_proj_data_info_sptr()->get_num_segments() == 
+	 out_view.get_proj_data_info_sptr()->get_num_segments());
   assert(in_view.get_segment_num() == out_view.get_segment_num());
   assert(in_view.get_min_axial_pos_num() == out_view.get_min_axial_pos_num());
   assert(in_view.get_max_axial_pos_num() == out_view.get_max_axial_pos_num());
 
   // get the pointers to the arc-corrected ProjDataInfo
-  const ProjDataInfoCylindricalArcCorr* in_proj_data_info_arccorr_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(in_view.get_proj_data_info_ptr());
-  const ProjDataInfoCylindricalArcCorr* out_proj_data_info_arccorr_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(out_view.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> in_proj_data_info_arccorr_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(in_view.get_proj_data_info_sptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> out_proj_data_info_arccorr_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(out_view.get_proj_data_info_sptr());
 
-  if (in_proj_data_info_arccorr_ptr==0 ||
-      out_proj_data_info_arccorr_ptr==0)
+  if (is_null_ptr(in_proj_data_info_arccorr_sptr) ||
+      is_null_ptr(out_proj_data_info_arccorr_sptr))
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
 
   
   const float in_bin_size = 
-    in_proj_data_info_arccorr_ptr->get_tangential_sampling();
+    in_proj_data_info_arccorr_sptr->get_tangential_sampling();
   const float out_bin_size = 
-    out_proj_data_info_arccorr_ptr->get_tangential_sampling();
+    out_proj_data_info_arccorr_sptr->get_tangential_sampling();
 
   const float zoom = in_bin_size / out_bin_size;
 
@@ -223,7 +225,7 @@ zoom_viewgram (Viewgram<float>& out_view,
     return;
     
   const float phi =
-     in_proj_data_info_arccorr_ptr->
+     in_proj_data_info_arccorr_sptr->
       get_phi(Bin(in_view.get_segment_num(), in_view.get_view_num(), 0,0));
 
   // compute offset in tangential_sampling_in units
@@ -258,7 +260,8 @@ construct_new_image_from_zoom_parameters(const VoxelsOnCartesianGrid<float> &ima
     origin(0.F,0.F,0.F);
   
   VoxelsOnCartesianGrid<float> 
-    new_image(IndexRange3D(0, new_sizes.z()-1,
+    new_image(image.get_exam_info_sptr(),
+              IndexRange3D(0, new_sizes.z()-1,
 			   -new_sizes.y()/2, -new_sizes.y()/2+new_sizes.y()-1,
 			   -new_sizes.x()/2, -new_sizes.x()/2+new_sizes.x()-1),
 	      origin,
@@ -295,10 +298,11 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const float zoom,
 		    const float x_offset_in_mm, const float y_offset_in_mm, 
-		    const int new_size )      
+		    const int new_size,
+                    const ZoomOptions zoom_options)
 {
   VoxelsOnCartesianGrid<float> new_image =
-    zoom_image(image, zoom, x_offset_in_mm, y_offset_in_mm, new_size);
+    zoom_image(image, zoom, x_offset_in_mm, y_offset_in_mm, new_size, zoom_options);
   image = new_image;
 }
 
@@ -306,7 +310,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
            const float zoom,
 	   const float x_offset_in_mm, const float y_offset_in_mm, 
-	   const int new_size )                          
+	   const int new_size,
+           const ZoomOptions zoom_options)
 {
   assert(new_size>=0);
   if(zoom==1 && x_offset_in_mm==0 && y_offset_in_mm==0 && new_size== image.get_x_size()) 
@@ -327,7 +332,7 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
     new_image2D = new_image.get_plane(new_image.get_min_z());
   for (int plane = image.get_min_z(); plane <= image.get_max_z(); plane++)
     {
-      zoom_image(new_image2D, image.get_plane(plane));
+      zoom_image(new_image2D, image.get_plane(plane), zoom_options);
       new_image.set_plane(new_image2D, plane);
     }
     
@@ -340,10 +345,11 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const CartesianCoordinate3D<float>& zooms,
 		    const CartesianCoordinate3D<float>& offsets_in_mm,
-		    const BasicCoordinate<3,int>& new_sizes)
+		    const BasicCoordinate<3,int>& new_sizes,
+                    const ZoomOptions zoom_options)
 {
   const VoxelsOnCartesianGrid<float> new_image =
-    zoom_image(image, zooms, offsets_in_mm, new_sizes);
+    zoom_image(image, zooms, offsets_in_mm, new_sizes, zoom_options);
   image = new_image;
 }
 
@@ -351,7 +357,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const CartesianCoordinate3D<float>& zooms,
 	   const CartesianCoordinate3D<float>& offsets_in_mm,
-	   const BasicCoordinate<3,int>& new_sizes)
+	   const BasicCoordinate<3,int>& new_sizes,
+           const ZoomOptions zoom_options)
 {
 
   VoxelsOnCartesianGrid<float> new_image =
@@ -359,15 +366,16 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 					     zooms,
 					     offsets_in_mm,
 					     new_sizes);
-  zoom_image(new_image, image);
+  zoom_image(new_image, image, zoom_options);
   return new_image;
 }
 
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-	   const VoxelsOnCartesianGrid<float> &image_in)
+           const VoxelsOnCartesianGrid<float> &image_in,
+           const ZoomOptions zoom_options)
 {
-
+  image_out.set_exam_info(image_in.get_exam_info());
 /*
      interpolation routine uses the following relation:
          x_in_index = x_out_index/zoom  + offset
@@ -442,12 +450,41 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
 
+  float scale_image = 1.F;
+
+  switch (zoom_options.get_scaling_option())
+    {
+    case ZoomOptions::preserve_values:
+      {
+        scale_image =  zoom_x*zoom_y*zoom_z;
+        break;
+      }
+
+    case ZoomOptions::preserve_projections:
+
+      {
+        scale_image =  zoom_y*zoom_z;
+        break;
+      }
+
+    case ZoomOptions::preserve_sum:
+      {
+        return; // no need to scale
+      }
+
+    }
+
+  if (scale_image != 1.F)
+    image_out*= scale_image;
+
 }
 
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
-           const PixelsOnCartesianGrid<float> &image2D_in)
+           const PixelsOnCartesianGrid<float> &image2D_in,
+           const ZoomOptions zoom_options)
 {
+  image2D_out.set_exam_info(image2D_in.get_exam_info());
   /*
     see above for how to find zoom and offsets
   */
@@ -482,6 +519,34 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
     overlap_interpolate(temp[y], image2D_in[y], zoom_x, x_offset);
 
   overlap_interpolate(image2D_out, temp, zoom_y, y_offset);   
+
+  float scale_image = 1.F;
+
+  switch (zoom_options.get_scaling_option())
+    {
+    case ZoomOptions::preserve_values:
+      {
+        scale_image =  zoom_x*zoom_y;
+        break;
+      }
+
+    case ZoomOptions::preserve_projections:
+
+      {
+        scale_image =  zoom_y;
+        break;
+      }
+
+    case ZoomOptions::preserve_sum:
+      {
+        return; // no need to scale
+      }
+
+    }
+
+  if (scale_image != 1.F)
+    image2D_out*= scale_image;
+
 }
 
 END_NAMESPACE_STIR

@@ -1,0 +1,164 @@
+# Language selection
+language: cpp
+
+cache: ccache
+
+# Environment variables:
+# To avoid too many builds, we mix some options (although independent tests would have been better)
+matrix:
+ include:
+   #### linux
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-6 CXX=g++-6
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_HDF5=ON" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-7 CXX=g++-7
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-8 CXX=g++-8
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON -DCMAKE_CXX_STANDARD=11" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   # need -Wno-deprecated-declarations to avoid log-file limit due to tons of warnings about auto_ptr
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CXXFLAGS="-Wno-deprecated-declarations" CC=clang-5.0 CXX=clang++-5.0
+# no clang-6 on trusty, so disabled
+# - os: linux
+#   python: 3
+#   # OPENMP on Travis seemed to be version 1 (???), so don't build it
+#   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DCMAKE#_CXX_STANDARD=11" CXXFLAGS="-Wno-deprecated-declarations" CC=clang-6.0 CXX=clang++-6.0
+
+   ####  osx
+   # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
+ - os: osx
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   # Disable as ROOT is currently failing via brew (as it wants to build it, and which causes a timeout)
+ #- os: osx
+ #  python: 3
+ #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+ - os: osx
+   osx_image: xcode11.3
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
+
+env:
+  global:
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
+
+
+# Ubuntu 14.04 LTS (trusty)
+dist: trusty
+
+# No need for sudo
+sudo: false
+
+# Compilation dependencies
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-trusty-5.0
+      # - llvm-toolchain-trusty-6.0
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-5
+      - g++-6
+      - g++-7
+      - g++-8
+      - libboost-dev
+      - libhdf5-serial-dev
+      - swig3.0
+      - python3-dev
+      - python3-numpy
+      - python3-pytest
+      - libgomp1
+      - clang-5.0
+      # - clang-6.0 # no clang-6 on trusty, so disabled
+      - root-system-bin
+      - libroot-tree-dev
+      - libroot-tree-treeplayer-dev
+      - libroot-io-dev
+
+# Actual compilation script
+
+before_install:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      brew update
+      # seems to be needed on Travis due to conflicts with gcc otherwise
+      # see https://github.com/travis-ci/travis-ci/issues/8826
+      brew cask uninstall oclint
+      brew install ccache
+      export PATH="/usr/local/opt/ccache/libexec:$PATH"
+      # Install ROOT, unless disabled
+      case "$EXTRA_BUILD_FLAGS" in
+          *DISABLE_CERN_ROOT=1*)
+              echo "Not installing ROOT to save some time (and potential time-outs)";;
+          *)
+              brew install root;;
+      esac
+      brew install swig
+      # use Python3 on Mac
+      brew upgrade python || true # don't fail if upgrading doesn't do anything
+      # find exact location of Python executable to pass to CMake
+      # we attempt to find the last one if there are multiple Python 3 versions installed
+      PYMVER=3
+      PY_INST=$(ls -d1 /usr/local/Cellar/python/$PYMVER.*/Frameworks/Python.framework/Versions/$PYMVER.*|tail -n 1)
+      PYMVER=$(basename ${PY_INST})
+      PY_EXE=$PY_INST/bin/python$PYMVER
+      if [ ! -x "$PY_EXE" ]; then
+        echo "Something wrong with finding Python executable for OSX"
+        echo "PY_EXE = $PY_EXE"
+        travis_terminate 1
+      fi
+      # Next lines are not necessary if we give the actual path for the executable to cmake
+      #PY_LIB=$PY_INST/Python
+      #PY_INC=$PY_INST/Headers
+      # BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB -DPYTHON_INCLUDE_DIR=$PY_INC"
+      ${PY_EXE} -m pip install -U pip
+      ${PY_EXE} -m pip install pytest numpy
+    else
+      PY_EXE=`which python3`
+      # needed for OPENMP support on Travis
+      # see https://github.com/travis-ci/travis-ci/issues/8613
+      export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
+    fi
+    ${PY_EXE} --version  
+    BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
+      
+
+
+install:
+  - mkdir build install
+  - cd build
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
+  - make -j 2 all
+  - make install
+  
+script:
+  - ctest --output-on-failure
+  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack
+  - ./run_test_simulate_and_recon.sh
+  - ./run_test_listmode_recon.sh
+  - ./run_test_simulate_and_recon_with_motion.sh
+  - ./run_scatter_tests.sh
+  - ./run_tests.sh --nointbp
+  - ./run_test_zoom_image.sh
+  - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
+  - ./run_SPECT_tests.sh
+  # Run examples to see if they work
+  - cd $TRAVIS_BUILD_DIR/examples/PET_simulation
+  - ./run_simulation.sh 1> /dev/null
+  - cd $TRAVIS_BUILD_DIR/src
+  # Run Python tests, making sure we're using the correct Python interpreter
+  - export PYTHON=$(cmake -LA -N $TRAVIS_BUILD_DIR/build |awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
+  - echo Using Python executable "$PYTHON"
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/install/python
+  - ${PYTHON} -m pytest .

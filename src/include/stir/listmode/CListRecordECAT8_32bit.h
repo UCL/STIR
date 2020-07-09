@@ -85,7 +85,7 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   DataType get_data() const { return this->data; }
 
  public:  
-  CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
+  CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
  //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -165,7 +165,7 @@ public:
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT8_32bit : public CListTime
+class CListTimeECAT8_32bit : public ListTime
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)
@@ -232,7 +232,7 @@ class CListTimeECAT8_32bit : public CListTime
   }	 
 
  public:     
- CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+ CListRecordECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
   event_data(proj_data_info_sptr)
     {}
 

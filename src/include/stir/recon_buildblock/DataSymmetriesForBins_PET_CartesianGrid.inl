@@ -75,8 +75,8 @@ find_transform_z(
 		 const int segment_num, 
 		 const int  axial_pos_num) const
 {
-  ProjDataInfoCylindrical* proj_data_info_cyl_ptr = 
-    static_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
+  const ProjDataInfoCylindrical* proj_data_info_cyl_ptr =
+    static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
 
   const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
 
@@ -364,11 +364,11 @@ find_basic_bin(Bin& b) const
 
 
 // TODO, optimise
-std::auto_ptr<SymmetryOperation>
+unique_ptr<SymmetryOperation>
 DataSymmetriesForBins_PET_CartesianGrid::
   find_symmetry_operation_from_basic_bin(Bin& b) const
 {
-  std::auto_ptr<SymmetryOperation> 
+  unique_ptr<SymmetryOperation> 
     sym_op(
       (b.tangential_pos_num()==0) ?
         find_sym_op_bin0(b.segment_num(), b.view_num(), b.axial_pos_num()) :

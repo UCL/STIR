@@ -2,7 +2,7 @@
 # A script to check to see if scatter simulation gives the expected result.
 #
 #  Copyright (C) 2011, Kris Thielemans
-#  Copyright (C) 2013, University College London
+#  Copyright (C) 2013, 2020 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -18,9 +18,9 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# 
+#
 
-echo This script should work with STIR version 2.3, 2.4 and 3.0. If you have
+echo This script should work with STIR version 4.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -52,21 +52,24 @@ if [ $? -ne 0 ]; then
   echo "Error running scatter simulation"
   error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log"
   echo "Check ${error_log_files}"
+  tail ${error_log_files}
   exit 1
 fi
 
 echo "===  compare result"
-# we need a fairly large threshold (4%) as scatter points are chosen randomly
-compare_projdata -t .04 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
+compare_projdata -t .0014 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
-  error_log_files="${error_log_files} my_scatter_compare_projdata.log"
+  error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log my_scatter_compare_projdata.log"
 fi
 
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail -n 80 ${error_log_files}
+ exit 1
 fi
 

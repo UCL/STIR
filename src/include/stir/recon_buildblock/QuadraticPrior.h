@@ -144,10 +144,13 @@ class QuadraticPrior:  public
       modify the image by manipulating the image refered to by this pointer.
       Unpredictable results will occur.
   */
-  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
 
   //! set kappa image
-  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
+
+  //! Has to be called before using this object
+  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -168,11 +171,14 @@ protected:
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename;
 
+  //! Check that the prior is ready to be used
+  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
  private:
-  shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
 };
 
 

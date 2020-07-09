@@ -76,7 +76,7 @@ int&
 
 #if 0
 const ProjDataInfo *
-Bin::get_proj_data_info_ptr() const
+Bin::get_proj_data_info_sptr() const
 {
   return proj_data_info_ptr.get();
 }
@@ -118,6 +118,24 @@ bool
 Bin::operator!=(const Bin& bin2) const
 { 
   return !(*this==bin2);
+}
+
+Bin&
+Bin::operator*=(const float dx)
+{
+    bin_value*=dx;
+    return *this;
+}
+
+Bin&
+Bin::operator/=(const float dx)
+{
+    if (dx == 0.f)
+        bin_value = 0.0f;
+    else
+        bin_value /= dx;
+
+    return *this;
 }
 
 END_NAMESPACE_STIR

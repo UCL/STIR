@@ -86,8 +86,7 @@ class Bin;
   only the 'basic' bins, and computes symmetry related bins from the 'basic' ones.
 */
 class ProjMatrixByBin :  
-  public RegisteredObject<ProjMatrixByBin>,  
-  public ParsingObject,
+  public RegisteredObject<ProjMatrixByBin>,
   public TimedObject
 {
 public:
@@ -102,13 +101,14 @@ public:
       call ProjMatrixByBin::set_up first.
   */
   virtual void set_up(
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
   ) = 0;
 
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const  DataSymmetriesForBins* get_symmetries_ptr() const;
-  
+  //! get a shared_ptr to an object encoding all symmetries that are used by this ProjMatrixByBin
+  inline const shared_ptr<DataSymmetriesForBins> get_symmetries_sptr() const;
   
   //! The main method for getting a row of the matrix.
   /*! 
@@ -155,7 +155,7 @@ public:
 
   
 protected:
-  shared_ptr<DataSymmetriesForBins> symmetries_ptr;
+  shared_ptr<DataSymmetriesForBins> symmetries_sptr;
   
   //! default ctor (calls set_defaults())
   /*! Note that due to the C++ definition (and some good reasons), 

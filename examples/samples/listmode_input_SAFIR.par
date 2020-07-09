@@ -1,0 +1,6 @@
+CListModeDataSAFIR Parameters:=
+	listmode data filename:= listmode_input.clm 
+	crystal map filename:= crystal_map_front.txt
+	template projection data filename:= sino.hs
+END CListModeDataSAFIR Parameters:=
+

@@ -8,6 +8,7 @@
   \brief Implementations of non-inline functions of class stir::DiscretisedDensity
 
   \author Kris Thielemans 
+  \author Ashley Gillman
   \author PARAPET project
 
 
@@ -15,6 +16,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2018, CSIRO
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -42,7 +44,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #ifdef STIR_USE_GE_IO
-#include "local/stir/IO/GE/niff.h"
+#include "stir_experimental/IO/GE/niff.h"
 #endif
 #endif
 
@@ -71,23 +73,8 @@ USING_NAMESPACE_ECAT6
 #endif
 
 /*! 
-   This function will attempt to determine the type of image in the file,
-   construct an object of the appropriate type, and return a pointer to 
-   the object.
-
-   The return value is a shared_ptr, to make sure that the 
-   object will be deleted.
-
-   If more than 1 image is in the file, only the first image is read.
-
-   Currently only Interfile, ECAT6 and ECAT7 file formats are supported. 
-   The image corresponding to frame 1 (and gate=1, data=1, bed=0 for CTI
-   formats) in the file will be read. Note that ECAT7 support depends on 
-   HAVE_LLN_MATRIX being defined.
-
-   Developer's note: ideally the return value would be an auto_ptr, but 
-   it seems to be difficult (impossible?) to assign auto_ptrs to shared_ptrs 
-   on older compilers (including VC 6.0).
+  \deprecated
+   This function just calls stir::read_from_file.
 */
 template<int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions,elemT> *
@@ -96,8 +83,8 @@ DiscretisedDensity<num_dimensions,elemT>::
 {
 
 #if 1
-  std::auto_ptr<DiscretisedDensity<num_dimensions,elemT> > density_aptr = 
-    stir::read_from_file<DiscretisedDensity<num_dimensions,elemT> >(filename);
+  unique_ptr<DiscretisedDensity<num_dimensions,elemT> > density_aptr
+    (stir::read_from_file<DiscretisedDensity<num_dimensions,elemT> >(filename));
   return density_aptr.release();
 
 #else

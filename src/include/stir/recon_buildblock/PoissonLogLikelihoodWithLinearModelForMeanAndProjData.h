@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,9 +30,10 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-#include "stir/ProjData.h"
+#include "stir/ParseAndCreateFrom.h"
+//#include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-#include "stir/recon_buildblock/BinNormalisation.h"
+//#include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
@@ -207,12 +209,16 @@ public:
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
+  //N.E. Changed to ExamData
+  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
-  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-  //@}
+  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
+
+  virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual const ProjData& get_input_data() const;
+//@}
   
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
@@ -228,7 +234,7 @@ public:
 
  protected:
   virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr);
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
 
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -277,30 +283,7 @@ protected:
   int max_segment_num_to_process;
 
   /**********************/
-  // image stuff
-  // TODO to be replaced with single class or so (TargetT obviously)
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; // KT 10122001 new
-
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double Zoffset;
+   ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
 
 
@@ -312,16 +295,16 @@ protected:
 
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;
- //! points to the additive projection data
-  /*! the projection data in this file is bin-wise added to forward projection results*/
- shared_ptr<ProjData> additive_proj_data_sptr;
+
+
+  shared_ptr<ProjData> additive_proj_data_sptr;
+
+  shared_ptr<BinNormalisation> normalisation_sptr;
 
  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
-  shared_ptr<BinNormalisation> normalisation_sptr;
-
 
 //Loglikelihood computation parameters
  // TODO rename and move higher up in the hierarchy 
@@ -353,15 +336,17 @@ protected:
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
-
+#if 0
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
+#endif
 };
 
 #ifdef STIR_MPI
 //made available to be called from DistributedWorker object
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
 #endif
 
 END_NAMESPACE_STIR

@@ -42,7 +42,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const Array<3,elemT>& v, 
-		  const shared_ptr<ProjDataInfo>& pdi_ptr,
+		  const shared_ptr<const ProjDataInfo>& pdi_ptr,
 		  const int segment_num)
   : 
   Segment<elemT>(pdi_ptr, segment_num), 
@@ -58,7 +58,7 @@ SegmentBySinogram(const Array<3,elemT>& v,
 
 template <typename elemT>  
 SegmentBySinogram<elemT> ::
-SegmentBySinogram(const shared_ptr<ProjDataInfo>& pdi_ptr,
+SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr,
 		  const int segment_num)
   : 
   Segment<elemT>(pdi_ptr, segment_num), 
@@ -73,7 +73,7 @@ SegmentBySinogram(const shared_ptr<ProjDataInfo>& pdi_ptr,
 template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const SegmentByView<elemT>& s_v )
-  : Segment<elemT>(s_v.get_proj_data_info_ptr()->create_shared_clone(),
+  : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(),
                    s_v.get_segment_num()),	      
    Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
 		                 s_v.get_min_view_num(), s_v.get_max_view_num(),
@@ -106,7 +106,7 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const
     pre_view[r] = Array<3,elemT>::operator[](r)[view_num];
   //KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, this->proj_data_info_ptr->create_shared_clone(), view_num, 
+  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num,
 			 this->get_segment_num());
 }
 
@@ -141,16 +141,16 @@ resize(const IndexRange<3>& range)
   // TODO
   assert(range[ax_min].get_min_index() == 0);
 
-  shared_ptr<ProjDataInfo> pdi_ptr = this->proj_data_info_ptr->create_shared_clone();
+  shared_ptr<ProjDataInfo> pdi_sptr = this->proj_data_info_sptr->create_shared_clone();
   
-  pdi_ptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
-  pdi_ptr->set_max_axial_pos_num(ax_max, this->get_segment_num());
+  pdi_sptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
+  pdi_sptr->set_max_axial_pos_num(ax_max, this->get_segment_num());
   
-  pdi_ptr->set_num_views(range[ax_min].get_max_index() + 1);
-  pdi_ptr->set_min_tangential_pos_num(range[ax_min][0].get_min_index());
-  pdi_ptr->set_max_tangential_pos_num(range[ax_min][0].get_max_index());
+  pdi_sptr->set_num_views(range[ax_min].get_max_index() + 1);
+  pdi_sptr->set_min_tangential_pos_num(range[ax_min][0].get_min_index());
+  pdi_sptr->set_max_tangential_pos_num(range[ax_min][0].get_max_index());
 
-  this->proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_sptr = pdi_sptr;
 
   Array<3,elemT>::resize(range);
 	

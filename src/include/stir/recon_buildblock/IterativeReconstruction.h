@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -238,16 +239,22 @@ public:
 
   //! subiteration interval at which to report the values of the objective function
   void set_report_objective_function_values_interval(const int);
-  //@}
 
-protected:
- 
-  IterativeReconstruction();
+  //!
+  //! \brief set_input_data
+  //! \author Nikos Efthimiou
+  void set_input_data(const shared_ptr<ExamData>& arg);
+  virtual const ExamData& get_input_data() const;
+  //@}
 
   virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_ptr);
 
   //! the principal operations for updating the data iterates at each iteration
   virtual void update_estimate(TargetT &current_estimate)=0;
+
+protected:
+ 
+  IterativeReconstruction();
 
   //! operations for the end of the iteration
   /*! At specific subiteration numbers, this 

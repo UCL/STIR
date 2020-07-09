@@ -70,9 +70,9 @@ const int task_do_distributable_sensitivity_computation=44;
 */
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
-                                     const shared_ptr<ExamInfo>& exam_info_sptr,
-                                     const ProjDataInfo * const proj_data_info_ptr,
-                                     const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
+                                     const shared_ptr<const ExamInfo>& exam_info_sptr,
+                                     const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
+                                     const shared_ptr<const DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled);
 
@@ -96,8 +96,6 @@ void end_distributable_computation();
 typedef  void RPC_process_related_viewgrams_type (
                                                   const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                   const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                  DiscretisedDensity<3,float>* output_image_ptr, 
-                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
                                                   RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                   int& count, int& count2, double* log_likelihood_ptr,
                                                   const RelatedViewgrams<float>* additive_binwise_correction_ptr,

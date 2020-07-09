@@ -36,19 +36,26 @@ demo3.cxx
 	Note that the same functionality could be provided without deriving
 	a new class from ParsingObject. One could have a KeyParser object
 	in main() and fill it in directly.
+
+demo4_obj_fun.cxx
+	A modified demo3.cxx that computes the objective function 
+	value of the image generated from demo3.cxx.
+	  It illustrates
+		- how to initialise and setup an objective function object
+		- how to compute the objective function (log-likelihood) value of an image
+	    - how to compute the objective function (log-likelihood) gradient
+	    - how a basic iterative optimisation works (or may not, if parameters are altered)
  
-exe.mk
-	A sub-makefile that allows building the demonstration programs
+CMakeLists.txt
+	A CMake file to say which files to build.
 
 Supporting files
 ----------------
-extra_dirs.mk
-	A sub-makefile that needs to be moved to STIR/src/local. This way, it
-	will be picked up by the Makefile. Its contents simply say
-	that there is an exe.mk sub-makefile in examples/.
-
 extra_stir_dirs.cmake
-	As extra_dirs.mk, but when using CMake
+	A sub-cmakefile that needs to be moved to STIR/src/local (or at least
+ 	pointed to, see below). This way, it
+	will be picked up by CMake. Its contents simply say
+	that there are extra files in examples/src.
 
 demo.par
 	An example parameter file for demo3.cxx, using the 
@@ -59,6 +66,11 @@ demoPM.par
 	An example parameter file for demo3.cxx, using the 
 	backprojector that uses a projection matrix (using the ray tracing 
 	model)
+
+demo_obj_fun.par
+	An example parameter file for demo4_obj_fun.cxx, used to
+	compute the objective function value of an image and perform 
+	some iterative gradient ascent updates.
 
 generate_image.par
 	An example parameter file for generate_image that allows it
@@ -71,22 +83,24 @@ small.*s
 	constructing projection data
 
 
-How to compile using the "hand-made" Makefiles
------------------------------------------------
-mkdir -p ../src/local
-cp extra_dirs.mk ../src/local/
-cd ..
-make examples
-
 How to compile using CMake (on Unix-type systems)
 -----------------------------------------------
+# step 1: tell STIR to use these files. 2 alternatives
+
+# alternative 1: copy extra_stir_dirs.cmake to a default location
 mkdir -p ../src/local
 cp extra_stir_dirs.cmake ../src/local/
 cd your-build-dir
 # reconfigure your project
 ccmake .
+
+# alternative 2: set STIR_LOCAL to this directory
+cd your-build-dir
+# reconfigure your project
+ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
+
 # make the examples
-make examples
+make demo1 demo2 demo3 demo4_obj_fun
 # optionally install everything, including the demos
 make install
 
@@ -101,25 +115,29 @@ First you need to create some data.
       forward_project sino.hs image.hv  small.hs
 
 # Run the demos.
-DEST=../opt
-# Note: Using ../opt/ above which is appropriate when using the hand-made Makefiles
-# for CMake, it'd have to be your-build-dir
-
-	$DEST/examples/demo1
-# you can display the output using for instance
-      manip_image output.hv
+EXE_LOC=/whereever/you/built/STIR/src/examples/src
+	
+# demo1
+	$EXE_LOC/demo1
+	# you can display the output using for instance
+	manip_image output.hv
       
+# demo2
+	$EXE_LOC/demo2
+	# demo2 contains a call `stir::display`, so you'll see the display immediately ( at least when on Unix)
 
-	$DEST/examples/demo2
-# demo2 contains a call stir::display, so you'll see the display immediately
-( at least when on Unix)
+# demo3
+	$EXE_LOC/demo3 demo.par
+	$EXE_LOC/demo3 demoPM.par
+	# the next one will ask the questions interactively
+	$EXE_LOC/demo3 
 
-
-	$DEST/examples/demo3 demo.par
-	$DEST/examples/demo3 demoPM.par
-# the next one will ask the questions interactively
-	$DEST/examples/demo3 
-
+# demo4_obj_fun
+	$EXE_LOC/demo4_obj_fun demo4_obj_fun.par
+	# Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par".
+	# However, it is quite easy to cause unstable behaviour in the estimates.
+	# Additionally, there is a lack of positivity constraint on the density images (typical for PET reconstruction).
+	
 
 What now ?
 ----------
@@ -129,4 +147,5 @@ Good luck
 
 Kris Thielemans
 12 November 2004
-(with minor updates until 2014)
+(with minor updates until 2017)
+Robert Twyman, 2020 (addition of demo4_obj_fun)

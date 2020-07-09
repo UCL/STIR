@@ -86,6 +86,13 @@ public CListEventCylindricalScannerWithDiscreteDetectors
     void 
     get_bin(Bin&, const ProjDataInfo&) const;
 
+  //! This method checks if the template is valid for LmToProjData
+  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
+   *  Most scanners have listmode data that correspond to non arc-corrected data and
+   *  this check avoids a crash when an unsupported template is used as input.
+   */
+  inline virtual bool is_valid_template(const ProjDataInfo&) const;
+
   inline void get_uncompressed_bin(Bin& bin) const;
 
 };

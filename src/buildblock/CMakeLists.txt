@@ -6,14 +6,15 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamData
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
   ProjDataInfoCylindricalArcCorr 
   ProjDataInfoCylindricalNoArcCorr 
   ArcCorrection 
-  ProjDataFromStream 
-  ProjDataGEAdvance 
+  ProjDataFromStream  
+  ProjDataGEAdvance
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 
@@ -29,6 +30,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 
@@ -45,6 +47,8 @@ set(${dir_LIB_SOURCES}
 	ArrayFilterUsingRealDFTWithPadding 
 	SeparableArrayFunctionObject 
 	SeparableMetzArrayFilter 
+        SeparableGaussianImageFilter
+        SeparableGaussianArrayFilter
 	MedianArrayFilter3D 
 	MedianImageFilter3D 
 	MinimalArrayFilter3D 
@@ -62,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	DynamicDiscretisedDensity 
 	DynamicProjData 
 	MultipleProjData 
+  MultipleDataSetHeader
 	GatedProjData 
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 
@@ -72,7 +77,14 @@ set(${dir_LIB_SOURCES}
         TimeGateDefinitions
 	ML_norm
         num_threads
+        GeneralisedPoissonNoiseGenerator
+        FilePath
 )
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    ProjDataGEHDF5
+ )
+endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
@@ -94,3 +106,6 @@ endif()
 # TODO currently needed as filters need fourier
 #target_link_libraries(buildblock numerics_buildblock)
 
+if (STIR_OPENMP)
+  target_link_libraries(buildblock ${OpenMP_EXE_LINKER_FLAGS})
+endif()

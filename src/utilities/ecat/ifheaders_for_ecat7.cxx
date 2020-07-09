@@ -46,7 +46,6 @@ only work on systems where this library works properly.
     See STIR/LICENSE.txt for details
 */
 
-#ifdef HAVE_LLN_MATRIX
 
 
 #include "stir/ProjDataInfo.h"
@@ -130,6 +129,3 @@ main( int argc, char **argv)
   }
   return EXIT_SUCCESS;
 }
-
-#endif
-

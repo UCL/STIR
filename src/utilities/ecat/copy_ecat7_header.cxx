@@ -409,6 +409,7 @@ set_defaults()
   gate_num=1;
   data_num=0;
   bed_pos_num=0;
+  plane_num=0;
 }
 
 void
