@@ -89,11 +89,13 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   data_offset = 0UL;
 
 
-  /*add_key("type of data", 
+  // use this as opposed to InterfileHeader::set_type_of_data() to cope with specifics for Siemens
+  remove_key("type of data");
+  add_key("type of data",
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
           &type_of_data_index, 
-          &type_of_data_values);*/
+          &type_of_data_values);
 
   add_key("%patient orientation",
 	  &patient_position_index,
@@ -144,6 +146,27 @@ bool InterfileHeaderSiemens::post_processing()
 void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
+
+  if (this->type_of_data_index == -1)
+    error("Interfile parsing: type_of_data needs to be set to supported value");
+
+  const string type_of_data = this->type_of_data_values[this->type_of_data_index];
+
+  if (type_of_data == "PET")
+    {
+      // already done in constructor
+#if 0
+      add_key("PET data type",
+              &PET_data_type_index,
+              &PET_data_type_values);
+      ignore_key("process status");
+      ignore_key("IMAGE DATA DESCRIPTION");
+#endif
+    }
+  else
+    {
+      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+    }
 }
 
 
@@ -179,6 +202,9 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("process status");
   remove_key("IMAGE DATA DESCRIPTION");
   ignore_key("IMAGE DATA DESCRIPTION");
+  ignore_key("PET STUDY (Emission data)");
+  ignore_key("PET STUDY (Image data)");
+  ignore_key("PET STUDY (General)");
   remove_key("data offset in bytes");
 
   ignore_key("%comment");
@@ -367,8 +393,8 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   // check for arc-correction
   if (applied_corrections.size() == 0)
     {
-    warning("\nParsing Interfile header for projection data: \n"
-      "\t'applied corrections' keyword not found. Assuming non-arc-corrected data\n");
+    warning("Parsing Interfile header for projection data: \n"
+      "\t'applied corrections' keyword not found or empty. Assuming non-arc-corrected data");
     is_arccorrected = false;
     }
   else
