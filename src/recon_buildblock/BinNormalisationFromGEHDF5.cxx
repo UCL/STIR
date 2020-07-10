@@ -148,6 +148,7 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
   return(ring1 + ring2);
 }
 
+// Returns a vetor with the segment sequence, as 0, 1, -1, 2, -2,...
 static
 std::vector<int> // Prefered since C++11
 create_segment_sequence(shared_ptr<ProjDataInfo> const& proj_data_info_ptr)
@@ -164,6 +165,7 @@ create_segment_sequence(shared_ptr<ProjDataInfo> const& proj_data_info_ptr)
   return segment_sequence;
 }
 
+// Returns the index in the segment sequance for a given segment number (e.g -1 returns 2)
 static
 unsigned int
 find_segment_index_in_sequence(std::vector<int>& segment_sequence, const int segment_num)
@@ -172,7 +174,7 @@ find_segment_index_in_sequence(std::vector<int>& segment_sequence, const int seg
   assert(iter !=  segment_sequence.end());
   return static_cast<int>(iter - segment_sequence.begin());
 }
-
+// Creates a vetro that has the axial position offset for each segment. 
 static
 std::vector<unsigned int> // Prefered since C++11
 create_ax_pos_offset(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, std::vector<int>& segment_sequence)
@@ -277,6 +279,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 }
 
 // Load all data that is needed for corrections
+// This function will take a filename, that can be either a GE norm file, or a GE geo file. If you wan to do geo and norm corrections
+// then you want the norm file as input, and if you only want geo files, then just the geo file is enough. The function will read from these files and
+// fill the atributes with a full sinogram of efficiency factors and geometry factors. 
 void
 BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
@@ -386,10 +391,9 @@ read_norm_data(const string& filename)
 
           //AB TODO:
           //  tangential axis needs to be flipped. Palak flips it here, but I think it would make more sense to flip it inside the reader function
-          //  If this stays, loops are the oposite order for memory efficiecy. Flip
           Viewgram<float> fliped_viegram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view,i_seg);
-          for (int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos <= viewgram.get_max_tangential_pos_num(); ++tang_pos)
-            for(int axial_pos = viewgram.get_min_axial_pos_num(); axial_pos <= viewgram.get_max_axial_pos_num(); ++axial_pos)
+          for(int axial_pos = viewgram.get_min_axial_pos_num(); axial_pos <= viewgram.get_max_axial_pos_num(); ++axial_pos)
+            for (int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos <= viewgram.get_max_tangential_pos_num(); ++tang_pos)
               fliped_viegram[axial_pos][-tang_pos] = viewgram[axial_pos][tang_pos];
 
           geo_norm_factors_sptr->set_viewgram(fliped_viegram);
@@ -398,7 +402,7 @@ read_norm_data(const string& filename)
     }// end segment for
   }// end loading of geo factors
 
-// TODO: Debugging code, remove later
+// AB TODO: Debugging code, remove later
 
 
 #if 1
