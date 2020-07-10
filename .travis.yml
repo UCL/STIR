@@ -111,11 +111,8 @@ before_install:
       # use Python3 on Mac
       brew upgrade python || true # don't fail if upgrading doesn't do anything
       # find exact location of Python executable to pass to CMake
-      # we attempt to find the last one if there are multiple Python 3 versions installed
       PYMVER=3
-      PY_INST=$(ls -d1 /usr/local/Cellar/python/$PYMVER.*/Frameworks/Python.framework/Versions/$PYMVER.*|tail -n 1)
-      PYMVER=$(basename ${PY_INST})
-      PY_EXE=$PY_INST/bin/python$PYMVER
+      PY_EXE=$(which python${PYMVER})
       if [ ! -x "$PY_EXE" ]; then
         echo "Something wrong with finding Python executable for OSX"
         echo "PY_EXE = $PY_EXE"
