@@ -148,7 +148,52 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
   return(ring1 + ring2);
 }
 
+static
+std::vector<int> // Prefered since C++11
+create_segment_sequence(shared_ptr<ProjDataInfo> const& proj_data_info_ptr)
+{
+  std::vector<int> segment_sequence;
+  segment_sequence.resize(2*proj_data_info_ptr->get_max_segment_num()+1);
+  segment_sequence[0] = 0;
+  // PW Flipped the segments, segment sequence is now as: 0,1,-1 and so on.
+  for (int segment_num = 1; segment_num<=proj_data_info_ptr->get_max_segment_num(); ++segment_num)
+  {
+    segment_sequence[2*segment_num-1] = segment_num;
+    segment_sequence[2*segment_num] = -segment_num;
+  }
+  return segment_sequence;
+}
 
+static
+unsigned int
+find_segment_index_in_sequence(std::vector<int>& segment_sequence, const int segment_num)
+{
+  std::vector<int>::const_iterator iter = std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
+  assert(iter !=  segment_sequence.end());
+  return static_cast<int>(iter - segment_sequence.begin());
+}
+
+static
+std::vector<unsigned int> // Prefered since C++11
+create_ax_pos_offset(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, std::vector<int>& segment_sequence)
+{
+  std::vector<unsigned int> seg_ax_offset;
+  seg_ax_offset.resize(proj_data_info_ptr->get_num_segments());
+
+  seg_ax_offset[0] = 0;
+
+  unsigned int previous_value = 0;
+
+  for (int i_seg = 1; i_seg < proj_data_info_ptr->get_num_segments(); ++i_seg)
+  {
+      const int segment_num = segment_sequence[i_seg-1];
+
+      seg_ax_offset[i_seg] = static_cast<unsigned int>(proj_data_info_ptr->get_num_axial_poss(segment_num)) +
+                                                       previous_value;
+      previous_value = seg_ax_offset[i_seg];
+  }
+  return seg_ax_offset;
+}
 
 } // end of namespace detail
 
@@ -278,7 +323,8 @@ read_norm_data(const string& filename)
     m_input_hdf5_sptr->read_efficiency_factors(buffer);
     // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
     // Lambda function, this just applies 1/buffer and stores it in efficiency_factors 
-    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin(), [](const float f) { return 1/f;} );
+    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin_all(), [](const float f) { return 1/f;} );
+
   }
   //
   // Read geo data from file
@@ -301,23 +347,29 @@ read_norm_data(const string& filename)
     // so that when accessed, re-indexes the bin number to the correct geometric factor.
     // Doing this would save lots of RAM, as there are lots of symetries that are exploited in the geo file, but we are here undoing all that and duplicating data.
     
-    // Auxiliary single viewgram as a buffer
-    Viewgram<float> viewgram = geo_norm_factors_sptr->get_empty_viewgram(0,0);
+    // These arrays will help us index the data to read. Just auxiliary variables.
+    std::vector<int>          segment_sequence              = detail::create_segment_sequence(projInfo);
+    std::vector<unsigned int> segment_axial_position_offset = detail::create_ax_pos_offset   (projInfo, segment_sequence);
+    
     // Geometric factors are related to geometry (ovbiously). This means that as the scanner has several geometric symetries itself, there is no need to
     // store all of them in a big file. This is what GE does in RDF9 files.
     // The following loops undo that. They go selecting different data pieces in the initialise_geo_factors() and reading different parts of 
     // it in read_geo_factors(), all to create a complete sinogram with all the geo factors loaded. 
     for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
     {
-      for(int i_view = scanner_ptr->get_max_num_views(); i_view <= scanner_ptr->get_max_num_views(); ++i_view)
+      // AB TODO: the loop in Palaks code starts at get_min_num_views(), which does not exist anywere in STIR. Is i_view = 0 OK?
+      for(int i_view = 0; i_view <= scanner_ptr->get_max_num_views(); ++i_view)
       {
-  
-          // TODO: is it 16 in all scanners? ir just GE Signa?
+          // Auxiliary single viewgram as a buffer
+          Viewgram<float> viewgram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view, i_seg);
+          // AB TODO This allocates the memory. I wish I knew how to do this without continous reallocation (by reusing)
+          viewgram.fill(0.0); 
+
+          // AB TODO: is it 16 in all scanners? or just GE Signa?
           m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,16)+1);
 
           // Define which chunk of the data we are reading from. 
-          // AB TODO: all this segment stuff does not exist in ProjInfo. We need some other place to have it. 
-          std::array<unsigned long long int, 2> offset = {projInfo->seg_ax_offset[projInfo->find_segment_index_in_sequence(i_seg)], 0};
+          std::array<unsigned long long int, 2> offset = {segment_axial_position_offset[detail::find_segment_index_in_sequence(segment_sequence,i_seg)], 0};
           std::array<unsigned long long int, 2> count  = {static_cast<unsigned long long int>(projInfo->get_num_axial_poss(i_seg)),
                                                           static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
           // Initialize buffer to store temp variables
@@ -325,26 +377,26 @@ read_norm_data(const string& filename)
           // read geo chunk
           m_input_hdf5_sptr->read_geometric_factors(buffer, offset, count);
           // copy data back
-          // AB TODO: can I just give the viewgram as a buffer? Would avoid this copy
+          // AB TODO: can I just give the viewgram as a buffer? Would avoid this copy.
+          // AB TODO: think not, as stir::Arrays are not a single array but arrays of pointers, and buffer is Array<1,T> and viegram is Array<2,T>
           std::copy(buffer.begin(),buffer.end(),viewgram.begin_all());
 
+          // AB TODO ????
+          viewgram *= 2.2110049e-4;
+
           //AB TODO:
-          //        1- This viegram is possibly worngly added. Not sure at which index is added
-          //        2- Views needs to be flipped from the GE data to STIR data. Palak's code just adds a loop here, but maybe we can just index it properly?
-          //        3- tangential axis needs to be flipped. Palak flips it here, but I think it would make more sense to flip it inside the reader function
-          geo_norm_factors_sptr->set_viewgram(viewgram);
+          //  tangential axis needs to be flipped. Palak flips it here, but I think it would make more sense to flip it inside the reader function
+          //  If this stays, loops are the oposite order for memory efficiecy. Flip
+          Viewgram<float> fliped_viegram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view,i_seg);
+          for (int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos <= viewgram.get_max_tangential_pos_num(); ++tang_pos)
+            for(int axial_pos = viewgram.get_min_axial_pos_num(); axial_pos <= viewgram.get_max_axial_pos_num(); ++axial_pos)
+              fliped_viegram[axial_pos][-tang_pos] = viewgram[axial_pos][tang_pos];
+
+          geo_norm_factors_sptr->set_viewgram(fliped_viegram);
 
       }// end view for
     }// end segment for
-  }
-
-
-
-
-
-
-
-
+  }// end loading of geo factors
 
 // TODO: Debugging code, remove later
 

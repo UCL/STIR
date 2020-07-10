@@ -72,8 +72,8 @@ private:
     Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const;
     //! Get the segment sequence
     std::vector<int> get_segment_sequence_in_hdf5() const;
-        std::vector< unsigned int > seg_ax_offset;
-        unsigned int find_segment_index_in_sequence(const int segment_num) const;
+    std::vector< unsigned int > seg_ax_offset;
+    unsigned int find_segment_index_in_sequence(const int segment_num) const;
     //! Cache the segment sequence of the GE data.
     //! \author Kris Thielemans
     void initialise_segment_sequence();
