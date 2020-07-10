@@ -1,5 +1,7 @@
 /*
  Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
+ Copyright (C) 2019-2020, University College London
+ Copyright (C) 2016-2017, PETsys Electronics
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -41,20 +43,63 @@
 #include "stir/ProjData.h"
 //#include "stir/ProjDataInterfile.h"
 
+static void print_usage_and_exit(const std::string& program_name)
+{
+  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model] \\\n"
+	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
+	   << " set num_iterations to 0 to do only efficiencies\n";
+  exit(EXIT_FAILURE);
+}
+
+
 USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    //check_geo_data();
-    if (argc!=6)
+    const char * const program_name = argv[0];
+    // skip program name
+    --argc;
+    ++argv;
+
+  bool do_display = false;
+  bool do_KL = false;
+  bool do_geo = true;
+  bool do_block = false;
+
+  // first process command line options
+  while (argc>0 && argv[0][0]=='-' && argc>=1)
     {
-        std::cerr << "Usage: " << argv[0]
-        << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-        << " set num_iterations to 0 to do only efficiencies\n";
-        return EXIT_FAILURE;
+      if (strcmp(argv[0], "--display")==0)
+	{
+	  do_display = true;
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--print-KL")==0)
+	{
+	  do_KL  = true;
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--include-geometric-model")==0)
+	{
+	  do_geo = true;
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--include-block-timing-model")==0)
+	{
+	  do_block = true;
+	  --argc; ++argv;
+	}
+      else
+	print_usage_and_exit(program_name);
     }
-  const bool do_display = ask("Display",false);
-  const bool do_KL = ask("Compute KL distances?",false);
+  // go back to previous counts such that we don't have to change code below
+  ++argc; --argv;
+  
+  //check_geo_data();
+  if (argc!=6)
+    {
+      print_usage_and_exit(program_name);
+    }
   const int num_eff_iterations = atoi(argv[5]);
   const int num_iterations = atoi(argv[4]);
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
@@ -212,7 +257,8 @@ int main(int argc, char **argv)
             apply_efficiencies(fan_data, efficiencies);
             apply_block_norm(fan_data, norm_block_data);
             
-            iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
+            if (do_geo)
+              iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
             
             #if 0
 
@@ -251,7 +297,8 @@ int main(int argc, char **argv)
                 fan_data = model_fan_data;
                 apply_efficiencies(fan_data, efficiencies);
                 apply_geo_norm(fan_data, norm_geo_data);
-                // iterate_block_norm(norm_block_data, measured_block_data, fan_data);
+                if (do_block)
+                  iterate_block_norm(norm_block_data, measured_block_data, fan_data);
                  #if 0
                  { // check
                  for (int a=0; a<measured_block_data.get_length(); ++a)
