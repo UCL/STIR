@@ -14,7 +14,11 @@ detailed below.
 <h2>Overall summary</h2>
 <p>
 <ul>
-  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</ul>
+  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</li>
+  <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
+    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL)
+  </li>
+
 </ul>  
 </p>
 
@@ -23,7 +27,7 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), and Robert Twyman (UCL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys) and Robert Twyman (UCL).
 </p>
 
     <h2>Patch release info</h2>
@@ -53,7 +57,13 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
-<li>
+  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors. See<br />
+    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
+    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
+</li>
+  <li>
       Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
   </li>
 </li>
