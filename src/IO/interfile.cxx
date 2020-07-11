@@ -1078,20 +1078,19 @@ read_interfile_PDFS(istream& input,
         warning("Interfile parsing failed");
         return 0;
       }
+    input.clear(); // clear EOF or other flags before we proceed
     input.seekg(offset);
     if (hdr.get_exam_info().imaging_modality.get_modality() ==
         ImagingModality::NM)
       {
         // spect data
-        input.seekg(offset);
         return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
       }
-	  if (!hdr.siemens_mi_version.empty())
+    if (!hdr.siemens_mi_version.empty())
       {
-		     input.seekg(offset);
          return read_interfile_PDFS_Siemens(input, directory_for_data, open_mode);
       }
-	}
+  }
     
   // if we get here, it's PET
 

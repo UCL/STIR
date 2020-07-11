@@ -38,13 +38,12 @@ matrix:
  - os: osx
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
-   # Disable as ROOT is currently failing via brew
- # - os: osx
- #   osx_image: xcode9 # need that for ROOT
- #   python: 3
- #   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   # Disable as ROOT is currently failing via brew (as it wants to build it, and which causes a timeout)
+ #- os: osx
+ #  python: 3
+ #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
-   osx_image: xcode9  # need that for ROOT
+   osx_image: xcode11.3
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
 
@@ -90,10 +89,15 @@ addons:
 before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-      brew update
+
       # seems to be needed on Travis due to conflicts with gcc otherwise
       # see https://github.com/travis-ci/travis-ci/issues/8826
       brew cask uninstall oclint
+
+      brew update
+      #now upgrade to avoid problems with outdated packages
+      brew upgrade
+
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
       # Install ROOT, unless disabled
@@ -107,11 +111,8 @@ before_install:
       # use Python3 on Mac
       brew upgrade python || true # don't fail if upgrading doesn't do anything
       # find exact location of Python executable to pass to CMake
-      # we attempt to find the last one if there are multiple Python 3 versions installed
       PYMVER=3
-      PY_INST=$(ls -d1 /usr/local/Cellar/python/$PYMVER.*/Frameworks/Python.framework/Versions/$PYMVER.*|tail -n 1)
-      PYMVER=$(basename ${PY_INST})
-      PY_EXE=$PY_INST/bin/python$PYMVER
+      PY_EXE=$(which python${PYMVER})
       if [ ! -x "$PY_EXE" ]; then
         echo "Something wrong with finding Python executable for OSX"
         echo "PY_EXE = $PY_EXE"

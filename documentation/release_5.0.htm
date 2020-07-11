@@ -62,7 +62,7 @@ improvements to the documentation.
 
 <h3>Changed functionality</h3>
 <ul>
-<li>
+<li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
 </li>
 </ul>
 
@@ -103,8 +103,9 @@ documentation</a> for supported values.
 
 <h3>Other changes to tests</h3>
 <ul>
-<li>
-</li>
+  <li>expanded <tt>test_proj_data_in_memory</tt> to also test <code>ProjDataInterfile</code> so renamed
+    the test to <tt>test_proj_data</tt>.
+  </li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
@@ -126,23 +127,27 @@ from the above):</H2>
         <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>, similar for <code>ExamInfo</code>.</li>
 	<li>Corresponding constructors and some functions, including <code>set_up</code>, that accept <code>shared_ptr</code> now take a <code>shared_ptr</code> to a <code>const</code> object.</li>
       </ul>
-      </li>
-  </ul>
-<li>
-</li>
+    </li>
+    <li><code>ProjData*::copy_to</code> and <code>fill_from</code> now return the updated iterator (as opposed to the size). This is like <code>std::copy</code>, and more convenient for reusing it.
+    </li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
-<li>
+  <li>New templated functions <code>stir::copy_to</code> and <code>stir::fill_from</code> in <tt>stir/copy_fill.h</tt> which
+    can be used to fill most STIR objects from an iterator range (or copy to).
+    The functions normally use <code>stir_object.begin_all()</code> but resort to <code>stir_object::fill_from</code> or <code>copy_to</code> for a few cases where no iterators exist. We use some specialisations to try and find the fastest version.
+  </li>
+  <li>Introduced <code>ProjData::standard_segment_sequence</code> function returning <tt>0,+1,-1,...</code>,
+as used by <code>copy_to</code> and <code>fill_from</code>
 </li>
 </ul>
 
 
 <h3>Other code changes</h3>
 <ul>
-<li>
-</li>
+    <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
+    </li>
 </ul>
 
 </body>

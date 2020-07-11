@@ -35,7 +35,7 @@
 #include "stir/Succeeded.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
-
+#include "stir/copy_fill.h"
 START_NAMESPACE_STIR
 
 
@@ -59,8 +59,8 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
 
     // Create arrays
     std::vector<float> arr1(n), arr2(n);
-    x.copy_to(arr1.begin());
-    y.copy_to(arr2.begin());
+    copy_to(x, arr1.begin());
+    copy_to(y, arr2.begin());
 
     // Check for mismatch
     for (unsigned i=0; i<n; ++i)
@@ -70,24 +70,6 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     // Check for non-zero
     if (std::abs(*std::max_element(arr1.begin(),arr1.end())) < 1e-4f)
         error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
-}
-
-static void fill(ProjData &pd, const float start_val)
-{
-    float val = start_val;
-    const int n_min = pd.get_min_segment_num();
-    const int n_max = pd.get_max_segment_num();
-    for (int s=n_min; s<=n_max; ++s) {
-        SegmentBySinogram<float> seg = pd.get_empty_segment_by_sinogram(s);
-        SegmentBySinogram<float>::full_iterator seg_iter;
-        for (seg_iter = seg.begin_all();
-             seg_iter != seg.end_all();
-             ++seg_iter, ++val)
-        {
-            *seg_iter = val;
-        }
-        pd.set_segment(seg);
-    }
 }
 
 void
@@ -110,12 +92,12 @@ run_tests()
 
     // Create x1 and x2
     ProjDataInMemory x1(pd1);
-    fill(x1,100.f);
+    x1.fill(100.f);
     ProjDataInMemory x2(x1);
 
     // Create y1 and y2
     ProjDataInMemory y1(pd1);
-    fill(y1,1000.f);
+    y1.fill(1000.f);
     ProjDataInMemory y2(y1);
 
     // Check axpby with general and ProjDataInMemory methods

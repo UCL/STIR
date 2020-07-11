@@ -3,8 +3,8 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016,2019, University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    Copyright (C) 2013-2016,2019,2020 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
@@ -73,8 +73,8 @@ static list<string>
    string_list(const string&, const string&, const string&);
 static list<string> 
    string_list(const string&, const string&, const string&, const string&);
-
-   
+static list<string>
+   string_list(const string&, const string&, const string&, const string&, const string&);
 
 
   
@@ -215,7 +215,7 @@ Scanner::Scanner(Type scanner_type)
 
   case Siemens_mCT:
     // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
-    set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */),
+    set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
                55, 400, (13+1)*48,
                421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
                4, 1, 13+1, 13+1, 0,0, 1 ); // TODO singles info incorrect
@@ -1386,6 +1386,18 @@ string_list(const string& s1, const string& s2, const string& s3, const string& 
   l.push_back(s2);
   l.push_back(s3);
   l.push_back(s4);
+  return l;
+}
+
+static list<string>
+string_list(const string& s1, const string& s2, const string& s3, const string& s4, const string& s5)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  l.push_back(s4);
+  l.push_back(s5);
   return l;
 }
 

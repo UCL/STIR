@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015, University College London
+    Copyright (C) 2013, 2015-2017, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -186,28 +186,40 @@ public:
 
   //! set all bins to the same value
   /*! will call error() if setting failed */
-  void fill(const float value);
+  virtual void fill(const float value);
 
   //! set all bins from another ProjData object
   /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
     The current check requires at least the same segment numbers (but the source can have more),
     all other geometric parameters have to be the same.
  */
-  void fill(const ProjData&);
+  virtual void fill(const ProjData&);
+
+  //! Return a vector with segment numbers in a standard order
+  /*! This returns a vector filled as \f$ [0, 1, -1, 2, -2, ...] \f$.
+    In the (unlikely!) case that the segment range is not symmetric,
+    the sequence just continues with
+    <i>valid</i> segment numbers, e.g. \f$ [0, 1, -1, 2, 3 ] \f$.
+   */
+  static
+    std::vector<int>
+    standard_segment_sequence(const ProjDataInfo& pdi);
 
   //! set all bins from an array iterator
   /*!
-    \return number of bins copied
+    \return \a array_iter advanced over the number of bins (as \c std::copy)
   
+    Data are filled by `SegmentBySinogram`, with segment order given by
+    standard_segment_sequence().
+
     \warning there is no range-check on \a array_iter
   */
   template < typename iterT>
-  std::size_t fill_from( iterT array_iter)
+  iterT fill_from( iterT array_iter)
   {
-      // A type check would be usefull.
+      // A type check would be useful.
       //      BOOST_STATIC_ASSERT((boost::is_same<typename std::iterator_traits<iterT>::value_type, Type>::value));
 
-      iterT init_pos = array_iter;
       for (int s=0; s<= this->get_max_segment_num(); ++s)
       {
           SegmentBySinogram<float> segment = this->get_empty_segment_by_sinogram(s);
@@ -228,32 +240,32 @@ public:
               this->set_segment(segment);
           }
       }
-      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
+      return array_iter;
   }
 
   //! Copy all bins to a range specified by a (forward) iterator
   /*! 
-    \return number of bins copied
+    \return \a array_iter advanced over the number of bins (as \c std::copy)
+
+    Data are filled by `SegmentBySinogram`, with segment order given by
+    standard_segment_sequence().
 
     \warning there is no range-check on \a array_iter
   */
   template < typename iterT>
-  std::size_t copy_to(iterT array_iter) const
+  iterT copy_to(iterT array_iter) const
   {
-      iterT init_pos = array_iter;
       for (int s=0; s<= this->get_max_segment_num(); ++s)
       {
           SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s);
-          std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-          std::advance(array_iter, segment.size_all());
+          array_iter = std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
           if (s!=0)
           {
               segment=this->get_segment_by_sinogram(-s);
-              std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-              std::advance(array_iter, segment.size_all());
+              array_iter = std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
           }
       }
-      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
+      return array_iter;
   }
 
   //! Get number of segments
@@ -280,7 +292,7 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
-  //! Get the number of sinograms
+  //! Get the total number of sinograms
   inline int get_num_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
@@ -292,7 +304,6 @@ public:
                      const float b, const ProjData& y);
 
 protected:
-//   shared_ptr<ExamInfo> exam_info_sptr;
 
    shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };

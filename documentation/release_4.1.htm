@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</title>
+    <title>Summary of changes in STIR release 4.1</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 4.1.0 (dated ?/?/2020)</h1>
+    <h1>Summary of changes in STIR release 4.1</h1>
 <h2>Overall summary</h2>
 
     <p>
@@ -24,9 +24,11 @@
           DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
         </li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
-        <li>Robert Twyman (UCL) for Relative Difference Prior and computation of the log-likelihood modification</li>  
+        <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
       </ul>
     </p>
+
+    <p>See also the <a href="https://github.com/UCL/STIR/milestone/3">GitHub milestone for v4.1</a></p>
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
@@ -43,12 +45,17 @@
     on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_NiftyPET.par</tt>.
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
+<li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
 </ul>
 
 
 <h3>Changed functionality</h3>
 <ul>
-<li>  Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Reconstruction algorithms perform now more checks during <code>set_up()</code> etc.
+    However, this means that <strong>you have to call <code>set_up()</code> also for analytic
+    reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
@@ -93,6 +100,8 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>Minor bug fixes</h3>
 <ul>
 <li>
+  Changes to GATE/root cylindrical PET geometry interpretation,
+  see <a href="https://github.com/UCL/STIR/pull/569">PR 569</a>.</li>
 </li>
 </ul>
 
@@ -106,7 +115,9 @@ None
 
 <h3>Other changes to tests</h3>
 <ul>
-<li></li>
+  <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
+    This is on top of the <tt>recon_test_pack</tt>.
+  </li>
 </ul>
 
 <h3>Build system</h3>
@@ -131,10 +142,12 @@ from the above):</H2>
 <ul>
   <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
+  <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
 </ul>
   
 <h3>Other code changes</h3>
-<li>estimate_triple_energy_window_scatter_sinogram can use different width for the upper and lower energy windows</li>
+<p>See the ChangeLog</p>
+
 </body>
 
 </html>

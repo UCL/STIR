@@ -163,6 +163,10 @@ private:
     int num_detectors_per_ring;
     //! Number of non arc corrected bins, set in the hroot file (optional)
     int max_num_non_arccorrected_bins;
+    //! Default number of arc corrected bins, set in the hroot file (optional)
+    int default_num_arccorrected_bins;
+    //! Angle in degrees corresponding to view offset (optional)
+    float view_offset;
     //! Inner ring diameter, set in the hroot file (optional)
     float inner_ring_diameter;
     //! Average depth of interaction, set in the hroot file (optional)
