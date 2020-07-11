@@ -89,11 +89,13 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   data_offset = 0UL;
 
 
-  /*add_key("type of data", 
+  // use this as opposed to InterfileHeader::set_type_of_data() to cope with specifics for Siemens
+  remove_key("type of data");
+  add_key("type of data",
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
           &type_of_data_index, 
-          &type_of_data_values);*/
+          &type_of_data_values);
 
   add_key("%patient orientation",
 	  &patient_position_index,
@@ -144,19 +146,27 @@ bool InterfileHeaderSiemens::post_processing()
 void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
-#if 0
-  // already done below
+
+  if (this->type_of_data_index == -1)
+    error("Interfile parsing: type_of_data needs to be set to supported value");
+
+  const string type_of_data = this->type_of_data_values[this->type_of_data_index];
+
+  if (type_of_data == "PET")
     {
-      add_key("PET data type", 
-              &PET_data_type_index, 
+      // already done in constructor
+#if 0
+      add_key("PET data type",
+              &PET_data_type_index,
               &PET_data_type_values);
       ignore_key("process status");
       ignore_key("IMAGE DATA DESCRIPTION");
-      // TODO rename keyword 
-      add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
-
-    }
 #endif
+    }
+  else
+    {
+      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+    }
 }
 
 
@@ -192,9 +202,10 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("process status");
   remove_key("IMAGE DATA DESCRIPTION");
   ignore_key("IMAGE DATA DESCRIPTION");
+  ignore_key("PET STUDY (Emission data)");
+  ignore_key("PET STUDY (Image data)");
+  ignore_key("PET STUDY (General)");
   remove_key("data offset in bytes");
-  add_key("data offset in bytes",
-	  KeyArgument::ULONG, &data_offset_each_dataset);
 
   ignore_key("%comment");
   ignore_key("%sms-mi header name space");
@@ -242,8 +253,10 @@ bool InterfileRawDataHeaderSiemens::post_processing()
   if (InterfileHeaderSiemens::post_processing() == true)
     return true;
 
-  if (standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]) != "emission")
-  { warning("Interfile error: expecting emission data\n");  return true; }
+  const std::string PET_data_type =
+    standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
+  if (PET_data_type != "emission" && PET_data_type != "transmission")
+    { error("Interfile error: expecting emission or transmission for 'PET data type'"); }
 
   // handle scanner
 
@@ -253,7 +266,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
       error("scanner not recognised from originating system");
     }
   // consistency check with values of the scanner
-  if (num_rings != scanner_sptr->get_num_rings())
+  if ((num_rings >= 0) && (num_rings != scanner_sptr->get_num_rings()))
     {
       error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
             num_rings, scanner_sptr->get_num_rings());
@@ -267,7 +280,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   // handle segments
   {
-    if (num_segments != segment_table.size())
+    if (static_cast<std::size_t>(num_segments) != segment_table.size())
       {
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
@@ -289,20 +302,27 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   : InterfileRawDataHeaderSiemens()
 {
+  remove_key("scan data type description");
   add_key("number of scan data types",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types, &num_scan_data_types);
   // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
-  add_key("scan data type description", &scan_data_types);
-
-  // scan data type size depends on the previous field
+  add_vectorised_key("scan data type description", &scan_data_types);
+  // size depends on the previous "number" field
   // data offset in bytes[1] : = 24504
   //  data offset in bytes[2] : = 73129037
+  add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
   add_key("%total number of sinograms", &total_num_sinograms);
   add_key("%compression", &compression_as_string);
   add_key("applied corrections", &applied_corrections);
+
+  ignore_key("%sinogram type"); // value: "step and shoot"
+  ignore_key("scale factor (degree/pixel)");
+  ignore_key("%tof mashing factor");
+  // add_key(%tof mashing factor", &tof_mashing_factor);
+  ignore_key("total number of data sets");
 
   add_key("%number of buckets",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
@@ -344,25 +364,23 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
     {
     error("Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin")
+  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
     {
     // use error message with index [1] as that is what the user sees.
-    warning("Interfile error: expecting 'matrix axis label[1] := bin'\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
     }
   num_bins = matrix_size[0][0];
 
-  if (matrix_labels[1] == "projection" && matrix_labels[2] == "plane")
+  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+      (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+      )
     {
     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     num_views = matrix_size[1][0];
     }
   else
     {
-    warning("Interfile error: matrix labels not in expected (or supported) format\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: matrix labels not in expected (or supported) format");
     }
 
   return false;
@@ -375,8 +393,8 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   // check for arc-correction
   if (applied_corrections.size() == 0)
     {
-    warning("\nParsing Interfile header for projection data: \n"
-      "\t'applied corrections' keyword not found. Assuming non-arc-corrected data\n");
+    warning("Parsing Interfile header for projection data: \n"
+      "\t'applied corrections' keyword not found or empty. Assuming non-arc-corrected data");
     is_arccorrected = false;
     }
   else
@@ -388,7 +406,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
       ++iter)
       {
         const string correction = standardise_keyword(*iter);
-        if (correction == "arc correction" || correction == "arc corrected")
+        if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected")
           {
             is_arccorrected = true;
             break;
