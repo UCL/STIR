@@ -1,5 +1,7 @@
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
+    Copyright (C) 2016-2017, PETsys Electronics
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

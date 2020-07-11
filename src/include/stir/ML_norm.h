@@ -2,6 +2,8 @@
 //
 /*
  Copyright (C) 2001- 2011, Hammersmith Imanet Ltd
+ Copyright (C) 2020, University College London
+ Copyright (C) 2016-2017, PETsys Electronics
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -21,6 +23,21 @@
  \ingroup buildblock
  
  \brief Preliminary things for ML normalisation factor estimation
+
+ Algorithms are described in
+
+ 1. Darren Hogg, Kris Thielemans, Terence J. Spinks, and Nicolas Spyrou. 2001.
+ <cite>Maximum-Likelihood Estimation of Normalisation Factors for PET</cite>
+ In 2001 IEEE Nuclear Science Symposium Conference Record, 4:2065–2069. San Diego, CA, USA: IEEE. https://doi.org/10.1109/nssmic.2001.1009231.
+
+ 2. Jacobson, Matthew W., and Kris Thielemans. 2008. 
+ <cite>Optimizability of Loglikelihoods for the Estimation of Detector Efficiencies and Singles Rates in PET</cite>
+ In 2008 IEEE Nuclear Science Symposium and Medical Imaging Conference (2008 NSS/MIC), 4580–4586. IEEE. https://doi.org/10.1109/nssmic.2008.4774352.
+
+ 3.  Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
+    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
  
  \author Kris Thielemans
  \author Tahereh Niknejad
