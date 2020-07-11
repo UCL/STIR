@@ -33,7 +33,7 @@
 #include "stir/LORCoordinates.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjData.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -103,10 +103,11 @@ initialise_keymap()
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
   this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
-  this->parser.add_parsing_key("Matrix type", &this->PM_sptr);
+  this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
+
 } 
 template <typename TargetT> 
 int 
@@ -453,7 +454,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
   const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
 
-  long num_stored_events = 0;
+  long num_used_events = 0;
   const float max_quotient = 10000.F;
 
   // Putting the Bins here I avoid rellocation.
@@ -466,9 +467,12 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   this->list_mode_data_sptr->reset();
   double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row;
-    gradient.fill(0);
+  gradient.fill(0);
+  shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
-  shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+  VectorWithOffset<ListModeData::SavedPosition>
+    frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
   long int more_events =
           this->do_time_frame? 1 : (this->num_events_to_use / this->num_subsets);
@@ -476,26 +480,26 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
 
-      if (this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+      if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
               {
                   info("End of file!");
                   break; //get out of while loop
               }
 
-    if(record_sptr->is_time() && end_time > 0.01)
+    if(record.is_time() && end_time > 0.01)
       {
-        current_time = record_sptr->time().get_time_in_secs();
+        current_time = record.time().get_time_in_secs();
         if (this->do_time_frame && current_time >= end_time)
             break; // get out of while loop
         if (current_time < start_time)
           continue;
       }
 
-    if (record_sptr->is_event() && record_sptr->event().is_prompt())
+    if (record.is_event() && record.event().is_prompt())
       {
         measured_bin.set_bin_value(1.0f);
 
-        record_sptr->event().get_bin(measured_bin, *proj_data_info_sptr);
+        record.event().get_bin(measured_bin, *proj_data_info_sptr);
 
         // In theory we have already done all these checks so we can
         // remove this if statement.
@@ -529,10 +533,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         }
 
         measured_bin.set_bin_value(1.0f);
-
-        this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
-                                                         measured_bin);
-
+        this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
         //in_the_range++;
         fwd_bin.set_bin_value(0.0f);
         proj_matrix_row.forward_project(fwd_bin,current_estimate);
@@ -548,10 +549,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         if(!this->do_time_frame)
             more_events -=1 ;
 
-        num_stored_events += 1;
+        num_used_events += 1;
 
-        if (num_stored_events%200000L==0)
-            info( boost::format("Stored Events: %1% ") % num_stored_events);
+        if (num_used_events%200000L==0)
+            info( boost::format("Stored Events: %1% ") % num_used_events);
 
         if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
             measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
@@ -563,7 +564,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
     }
   }
-  info(boost::format("Number of used events: %1%") % num_stored_events);
+  info(boost::format("Number of used events: %1%") % num_used_events);
 }
 
 #  ifdef _MSC_VER

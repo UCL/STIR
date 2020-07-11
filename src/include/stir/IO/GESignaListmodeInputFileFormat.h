@@ -1,7 +1,9 @@
 #ifndef __stir_IO_GESignaListmodeInputFileFormat_h__
 #define __stir_IO_GESignaListmodeInputFileFormat_h__
 /*
-    Copyright (C) 2013 University College London
+    Copyright (C) 2016-2019 University College London
+    Copyright (C) 2017-2019 University of Leeds
+    Copyright (C) 2017-2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,27 +21,34 @@
 /*!
 
   \file
-  \ingroup ECAT
-  \brief Declaration of class stir::ecat::GESignaListmodeInputFileFormat
+  \ingroup IO
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::IO::GESignaListmodeInputFileFormat
 
   \author Kris Thielemans
+  \author Ottavia Bertolli
+  \author Palak Wadhwa
+  \author Nikos Efthimiou
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataGESigna.h"
 //#include "stir/listmode/CListRecordGESigna.h"
 
-#include "stir/utilities.h"
 #include <string>
 #include "H5Cpp.h"
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 //! Class for being able to read list mode data from the GE Signa PET/MR scanner via the listmode-data registry.
 /*! 
   \ingroup listmode
+  \ingroup GE
 */
 class GESignaListmodeInputFileFormat :
-public InputFileFormat<CListModeData >
+public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string
@@ -94,7 +103,8 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   {
     warning("read_from_file for GESigna listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
-    return unique_ptr<data_type>();
+    return
+      unique_ptr<data_type>();
   }
   virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
@@ -103,7 +113,8 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   }
 };
 
-
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #endif

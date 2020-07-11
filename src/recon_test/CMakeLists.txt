@@ -24,6 +24,9 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
+        test_FBP2D
+        test_FBP3DRP
+        test_OSMAPOSL
 )
 
 

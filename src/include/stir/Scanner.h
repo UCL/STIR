@@ -2,8 +2,9 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, UCL
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2016, 2019, UCL
+    Copyright (C 2017-2018, University of Leeds
  
     This file is part of STIR.
 
@@ -31,6 +32,8 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Ottavia Bertolli
+  \author Palak Wadhwa
   \author PARAPET project
 */
 #ifndef __stir_buildblock_SCANNER_H__
@@ -79,6 +82,11 @@ class Succeeded;
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
 
+      A further complication is that some scanners (including many Siemens scanners) 
+      insert virtual crystals in the sinogram data (corresponding to gaps between
+      detector blocks). We currently define the blocks as the "virtual" ones,
+      but provide extra members to find out how many of these virtual crystals there are.
+
       \warning This information is only sensible for discrete detector-based scanners.
       \warning Currently, in a TOF compatible scanner template, the last three types have to
                 be explicitly defined to avoid ambiguity.
@@ -115,9 +123,9 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR, RPT,HiDAC,
-         Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoverySTE_nonTOF, DiscoveryRX, Discovery600,Discovery690,PETMR_Signa, PETMR_Signa_nonTOF,
-         HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+             Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoverySTE_nonTOF, DiscoveryRX, Discovery600,Discovery690,PETMR_Signa, PETMR_Signa_nonTOF,
+             HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50,
 	     Unknown_scanner};
   
   //! constructor that takes scanner type as an input argument
@@ -282,6 +290,16 @@ class Scanner
   //! Get the timing resolution of the scanner.
   inline float get_timing_resolution() const;
 
+  //! \name number of "fake" crystals per block, inserted by the scanner
+  /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
+    The other members of the class return the size of the "virtual" block. With these
+    functions you can find its true size.
+  */
+  //@{! 
+  int get_num_virtual_axial_crystals_per_block() const;
+  int get_num_virtual_transaxial_crystals_per_block() const;
+  //@}
+
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)
@@ -352,7 +370,8 @@ class Scanner
   //! Set timing resolution
   inline void set_timing_resolution(float new_num_in_ps);
   //@} (end of set info)
-  //@} (end of set info)
+
+  inline bool has_energy_information() const;
   
   //! Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;

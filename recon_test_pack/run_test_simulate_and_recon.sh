@@ -183,6 +183,7 @@ if [ -z "${error_log_files}" ]; then
  exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
  exit 1
 fi
 

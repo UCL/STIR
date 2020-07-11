@@ -165,7 +165,7 @@ public:
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT8_32bit : public CListTime
+class CListTimeECAT8_32bit : public ListTime
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)

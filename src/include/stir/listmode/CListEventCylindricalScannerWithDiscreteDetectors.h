@@ -30,6 +30,7 @@
 #include "stir/Succeeded.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/listmode/CListRecord.h"
 
 START_NAMESPACE_STIR
 

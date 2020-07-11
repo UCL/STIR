@@ -68,6 +68,13 @@ else()
   message(STATUS "RDF support disabled.")
 endif()
 
+if (HDF5_FOUND)
+  set(HAVE_HDF5 ON)
+  message(STATUS "HDF5 support enabled.")
+  include_directories(${HDF5_INCLUDE_DIRS})
+else()
+  message(STATUS "HDF5 support disabled.")
+endif()
 
 if (ITK_FOUND) 
   message(STATUS "ITK libraries added.")
@@ -281,13 +288,13 @@ if(BUILD_DOCUMENTATION)
     endif()
 endif()
 
-if(DOXYGEN_FOUND)
+if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
     if(DOXYGEN_DOT_FOUND)
         set(HAVE_DOT 1)
-    	message(WARNING "Graphviz dot is not found. It is recommended to install Graphviz for nicer Doxygen documentation")
+        message(STATUS "Graphviz dot found. It will be used for the Doxygen documentation.")
     else()
         set(HAVE_DOT 0)
-        message(STATUS "Graphviz dot found. It will be used for the Doxygen documentation.")
+    	message(WARNING "Graphviz dot is not found. It is recommended to install Graphviz for nicer Doxygen documentation")
     endif()
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
@@ -315,18 +322,14 @@ if(DOXYGEN_FOUND)
     # If BUILD_DOCUMENTATION, we add this target to the dependency list of "ALL"
     # to make sure it always gets run.
     # Otheriwse, the user has to build the target manually.
-    if(BUILD_DOCUMENTATION)
-        set(DOXY_ALL ALL)
-    endif()
+    set(DOXY_ALL ALL)
       
     add_custom_target(
         RUN_DOXYGEN ${DOXY_ALL}
         DEPENDS doxygen.stamp)
 
-    if(BUILD_DOCUMENTATION)
-        # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
-        install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
-    endif()
+    # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
 endif()
 
 #### SWIG settings

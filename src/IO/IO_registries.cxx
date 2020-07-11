@@ -142,7 +142,7 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdu
 #endif
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
 #ifdef HAVE_HDF5
-static RegisterInputFileFormat<GESignaListmodeInputFileFormat> LMdummyGESigna(7);
+static RegisterInputFileFormat<GE::RDF_HDF5::GESignaListmodeInputFileFormat> LMdummyGESigna(7);
 #endif
 
 END_NAMESPACE_STIR

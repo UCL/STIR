@@ -3,8 +3,9 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016, University College London
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,6 +32,8 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
+  \author Palak Wadhwa
+  \author Ottavia Bertolli
   \author PARAPET project
 */
 
@@ -68,7 +71,8 @@ static list<string>
    string_list(const string&, const string&, const string&);
 static list<string>
    string_list(const string&, const string&, const string&, const string&);
-
+static list<string>
+   string_list(const string&, const string&, const string&, const string&, const string&);
 
 
 
@@ -123,7 +127,7 @@ Scanner::Scanner(Type scanner_type)
                8, 192, 192, 2*256,
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F,
                2, 4, 4, 8, 4, 8 * 4, 1,
-               0.0F, 511.F,
+               0.37F, 511.F,
                0, 0.F, 0.F);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
@@ -205,13 +209,12 @@ Scanner::Scanner(Type scanner_type)
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
                41, 336, 336, 2*336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
-               1, 2, 41, 14, 41, 14, 1,
+               1, 2, 13+1, 13+1, 0,0, 1,
                0.0F, 511.F,
                0, 0.F, 0.F);
     // Transaxial blocks have 13 physical crystals and a gap at the
-    // 140th crystal where the counts are zero.
-    // There are 39 rings with 13 axial crystals per block. Two virtual
-    // rings are added, but contain counts after applying axial compression.
+    // 14th crystal where the counts are zero.
+    // There are 39 rings with 13 axial crystals per block.
     break;
 
   case Siemens_mMR:
@@ -222,7 +225,7 @@ Scanner::Scanner(Type scanner_type)
                64, 344, 344, 2*252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
                2, 1, 8, 9, 16, 9, 1,
-               0.0F, 511.F,
+               0.145F, 511.F,
                0, 0.F, 0.F); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
@@ -236,6 +239,20 @@ Scanner::Scanner(Type scanner_type)
                (short int)(410),
                (float)(10.0F),
                (float)(400.0F) );
+    break;
+
+  case Siemens_mCT:
+    // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
+    set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
+               55, 400, 336, (13+1)*48,
+               421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
+               4, 1, 13+1, 13+1, 0,0, 1,
+               // energy
+               0.F, 511.F,
+               // TOF TODO: timing res
+               13, 4.0625*1000/13, -1.F
+               ); // TODO singles info incorrect
+    // energy: 435-650
     break;
 
   case RPT:
@@ -417,10 +434,10 @@ case PETMR_Signa:
 	       357, 
 	       331, // TODO
 	       2 * 224,
-               317.0F, 
+           311.9F,
 	       9.4F,  
-	       5.55F,
-	       2.1306F, // TO CHECK
+           5.56F,
+           2.01565F, // TO CHECK
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
@@ -698,140 +715,177 @@ set_params(Type type_v, const std::list<std::string>& list_of_names_v,
   num_detector_layers = num_detector_layers_v;
 
   energy_resolution = energy_resolution_v;
-  reference_energy = reference_energy_v;
+  if (reference_energy_v <= 0)
+      reference_energy = 511.f;
+  else
+      reference_energy = reference_energy_v;
   max_num_of_timing_poss = max_num_of_timing_poss_v;
   size_timing_pos = size_timing_pos_v;
   timing_resolution = timing_resolution_v;
 
 }
 
-Succeeded
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_axial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_transaxial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+    case Siemens_mMR:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+Succeeded 
 Scanner::
 check_consistency() const
 {
   if (intrinsic_tilt<-_PI || intrinsic_tilt>_PI)
     warning("Scanner %s: intrinsic_tilt is very large. maybe it's in degrees (but should be in radians)",
-        this->get_name().c_str());
+	    this->get_name().c_str());
 
   {
     if (get_num_transaxial_crystals_per_block() <= 0 ||
-    get_num_transaxial_blocks() <= 0)
+	get_num_transaxial_blocks() <= 0)
       warning("Scanner %s: transaxial block info is not set (probably irrelevant unless you use a projector or normalisation that needs this block info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    const int dets_per_ring =
-      get_num_transaxial_blocks() *
-      get_num_transaxial_crystals_per_block();
-    if ( dets_per_ring != get_num_detectors_per_ring())
-      {
-        warning("Scanner %s: inconsistent transaxial block info",
-            this->get_name().c_str());
-        return Succeeded::no;
-      }
+	const int dets_per_ring =
+	  get_num_transaxial_blocks() *
+	  get_num_transaxial_crystals_per_block();
+	if ( dets_per_ring != get_num_detectors_per_ring())
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_transaxial_blocks_per_bucket() <= 0 ||
-    get_num_transaxial_buckets() <=0)
+	get_num_transaxial_buckets() <=0)
       warning("Scanner %s: transaxial bucket info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    const int blocks_per_ring =
-      get_num_transaxial_buckets() *
-      get_num_transaxial_blocks_per_bucket();
-    if ( blocks_per_ring != get_num_transaxial_blocks())
-      {
-        warning("Scanner %s: inconsistent transaxial block/bucket info",
-            this->get_name().c_str());
-        return Succeeded::no;
-      }
+	const int blocks_per_ring =
+	  get_num_transaxial_buckets() *
+	  get_num_transaxial_blocks_per_bucket();
+	if ( blocks_per_ring != get_num_transaxial_blocks())
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_crystals_per_block() <= 0 ||
-    get_num_axial_blocks() <=0)
+	get_num_axial_blocks() <=0)
       warning("Scanner %s: axial block info is not set (probably irrelevant unless you use a projector or normalisation that needs this block info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    const int dets_axial =
-      get_num_axial_blocks() *
-      get_num_axial_crystals_per_block();
-    if ( dets_axial != get_num_rings())
-      {
-        warning("Scanner %s: inconsistent axial block info",
-            this->get_name().c_str());
-        return Succeeded::no;
-      }
+	const int dets_axial =
+	  get_num_axial_blocks() *
+	  get_num_axial_crystals_per_block();
+	if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()))
+	  { 
+	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
+		    this->get_name().c_str(),
+                    dets_axial, get_num_rings() + get_num_virtual_axial_crystals_per_block()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_blocks_per_bucket() <= 0 ||
-    get_num_axial_buckets() <=0)
+	get_num_axial_buckets() <=0)
       warning("Scanner %s: axial bucket info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    const int blocks_axial =
-      get_num_axial_buckets() *
-      get_num_axial_blocks_per_bucket();
-    if ( blocks_axial != get_num_axial_blocks())
-      {
-        warning("Scanner %s: inconsistent axial block/bucket info",
-            this->get_name().c_str());
-        return Succeeded::no;
-      }
+	const int blocks_axial =
+	  get_num_axial_buckets() *
+	  get_num_axial_blocks_per_bucket();
+	if ( blocks_axial != get_num_axial_blocks())
+	  { 
+	    warning("Scanner %s: inconsistent axial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   // checks on singles units
   {
     if (get_num_transaxial_crystals_per_singles_unit() <= 0)
       warning("Scanner %s: transaxial singles_unit info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
-      {
-        warning("Scanner %s: inconsistent transaxial singles unit info:\n"
-            "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
-            this->get_name().c_str(),
-            get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit());
-        return Succeeded::no;
-      }
-    if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
-      {
-        warning("Scanner %s: inconsistent transaxial singles unit info:\n"
-            "\tnum_transaxial_crystals_per_bucket %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
-            this->get_name().c_str(),
-            get_num_transaxial_crystals_per_bucket(), get_num_transaxial_crystals_per_singles_unit());
-        return Succeeded::no;
-      }
+	if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_transaxial_crystals_per_bucket %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_transaxial_crystals_per_bucket(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_crystals_per_singles_unit() <= 0)
       warning("Scanner %s: axial singles_unit info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
-          this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-    if ( get_num_rings() % get_num_axial_crystals_per_singles_unit() != 0)
-      {
-        warning("Scanner %s: inconsistent axial singles unit info:\n"
-            "\tnum_rings %d should be a multiple of num_axial_crystals_per_singles_unit %d",
-            this->get_name().c_str(),
-            get_num_rings(), get_num_axial_crystals_per_singles_unit());
-        return Succeeded::no;
-      }
-    if ( get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_singles_unit() != 0)
-      {
-        warning("Scanner %s: inconsistent axial singles unit info:\n"
-            "\tnum_axial_crystals_per_bucket %d should be a multiple of num_axial_crystals_per_singles_unit %d",
-            this->get_name().c_str(),
-            get_num_axial_crystals_per_bucket(), get_num_axial_crystals_per_singles_unit());
-        return Succeeded::no;
-      }
+	if ( get_num_rings() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_rings %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_rings(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_axial_crystals_per_bucket %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_axial_crystals_per_bucket(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
       }
   }
 
@@ -856,7 +910,7 @@ Scanner::operator ==(const Scanner& scanner) const
 if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       !close_enough(reference_energy, scanner.reference_energy))
     warning("The energy resolution of the two scanners is different. \n"
-            " %d opposed to %d"
+            " %f opposed to %f"
             "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
 
   bool ok =
@@ -1198,6 +1252,18 @@ string_list(const string& s1, const string& s2, const string& s3, const string& 
   l.push_back(s2);
   l.push_back(s3);
   l.push_back(s4);
+  return l;
+}
+
+static list<string>
+string_list(const string& s1, const string& s2, const string& s3, const string& s4, const string& s5)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  l.push_back(s4);
+  l.push_back(s5);
   return l;
 }
 

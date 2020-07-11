@@ -720,6 +720,8 @@ blindly_equals(const root_type * const that) const
   const root_type & proj = *that;
 
   return
+   (get_min_segment_num()==proj.get_min_segment_num()) &&
+   (get_max_segment_num()==proj.get_max_segment_num()) &&
    (get_min_view_num()==proj.get_min_view_num()) &&
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&

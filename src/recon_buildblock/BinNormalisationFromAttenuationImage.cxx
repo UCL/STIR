@@ -33,6 +33,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -76,11 +77,15 @@ post_processing()
   if (is_null_ptr(forward_projector_ptr))
     forward_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
   
-  warning("\nWARNING: BinNormalisationFromAttenuationImage:\n"
-    "\tattenuation image data are supposed to be in units cm^-1\n"
-    "\tReference: water has mu .096 cm^-1\n" 
-    "\tMax in attenuation image: %g\n" ,
-    attenuation_image_ptr->find_max());
+  {
+    const float amax = attenuation_image_ptr->find_max();
+    if ((amax < .08F) || (amax > .2F))
+      warning(boost::format("BinNormalisationFromAttenuationImage:\n"
+                            "\tattenuation image data are supposed to be in units cm^-1\n"
+                            "\tReference: water has mu .096 cm^-1\n" 
+                            "\tMax in attenuation image: %1%\n"
+                            "\tContinuing as you might know what you are doing.") % amax);
+  }
 #ifndef NEWSCALE
     /*
     cerr << "WARNING: multiplying attenuation image by x-voxel size "

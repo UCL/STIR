@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
+  Copyright (C) 2013-2014, 2019 University College London
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -258,19 +258,20 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 #endif
 #if 0
   InterfileHeader interfile_parser;
- add_key("data format", 
-    KeyArgument::ASCII,	&KeyParser::do_nothing);
+ ignore_key("data format");
   interfile_parser.parse(filename.c_str());
 
 #else
   KeyParser parser;
   std::string originating_system;
   std::string data_file_name;
+  int num_buckets;
   {
     parser.add_start_key("INTERFILE");
     parser.add_stop_key("END OF INTERFILE"); // add this for safety (even though it isn't always there)
     parser.add_key("originating_system", &originating_system);
     parser.add_key("name_of_data_file", &data_file_name);
+    parser.add_key("%number of buckets", &num_buckets);
     parser.parse(filename.c_str());
   }
 #endif
@@ -282,10 +283,16 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
   /*interfile_parser.*/data_file_name=s;
   
-  if (/*interfile_parser.*/originating_system == "2008")
-    this->scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
-  else
-    error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
+  this->scanner_ptr.reset(Scanner::get_scanner_from_name(/*interfile_parser.*/originating_system));
+  switch(this->scanner_ptr->get_type())
+    {
+      //case Scanner::E1080:
+    case Scanner::Siemens_mCT:
+    case Scanner::Siemens_mMR:
+      break;
+    default:
+      error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
+    }
 
 	char directory_name[max_filename_length];
 	get_directory_name(directory_name, filename.c_str());
@@ -293,16 +300,6 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 	strcpy(full_data_file_name, data_file_name.c_str());
 	prepend_directory_name(full_data_file_name, directory_name);
 
-  const std::size_t buf_size = 344*127+9*344+504*64+837+64+64+9+837;
-  Array<1,float> buffer(buf_size);
-  {
-		std::ifstream binary_data(full_data_file_name, std::ios::binary | std::ios::in);
-		//std::ifstream binary_data(/*interfile_parser.*/data_file_name.c_str(), std::ios::binary | std::ios::in);
-		if (read_data(binary_data, buffer, ByteOrder::little_endian) != Succeeded::yes)
-			error("failed reading '%s'", full_data_file_name);
-			///*interfile_parser.*/data_file_name.c_str());
-
-  }
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
   // Calculate the number of axial blocks per singles unit and 
   // total number of blocks per singles unit.
@@ -345,7 +342,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
                   /*span=*/1, scanner_ptr->get_num_rings()-1,
                   /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
-				  /*num_tangential_poss=*/344, //XXXnrm_subheader_ptr->num_r_elements, 
+				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), //XXXnrm_subheader_ptr->num_r_elements, 
                   /*arc_corrected =*/false)
 						     ));
   
@@ -368,7 +365,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   3. efficiency_factors (number_of_rings*number_of_crystals ) */
 
   geometric_factors = 
-    Array<2,float>(IndexRange2D(0,127-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
+    Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()*2-1-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
                                 min_tang_pos_num, max_tang_pos_num));
   crystal_interference_factors =
     Array<2,float>(IndexRange2D(min_tang_pos_num, max_tang_pos_num,
@@ -384,23 +381,16 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   int cry_inter = num_transaxial_crystals_per_block * (max_tang_pos_num-min_tang_pos_num +1);
   int eff_test = scanner_ptr->get_num_detectors_per_ring() * scanner_ptr->get_num_rings();
 #endif
-  
-  {
-    Array<1,float>::const_iterator data_ptr = buffer.begin();
-    for (Array<2,float>::full_iterator iter = geometric_factors.begin_all();
-         iter != geometric_factors.end_all();
-    )
-      *iter++ = *data_ptr++;
-    for (Array<2,float>::full_iterator iter = crystal_interference_factors.begin_all();
-         iter != crystal_interference_factors.end_all();
-    )
-      *iter++ = *data_ptr++;
-    for (Array<2,float>::full_iterator iter = efficiency_factors.begin_all();
-         iter != efficiency_factors.end_all();
-    )
-      *iter++ = *data_ptr++;
-  }
 
+  std::ifstream binary_data(full_data_file_name, std::ios::binary | std::ios::in);
+  if (read_data(binary_data, geometric_factors, ByteOrder::little_endian) != Succeeded::yes)
+    error("failed reading geo factors from '%s'", full_data_file_name);
+  if (read_data(binary_data, crystal_interference_factors, ByteOrder::little_endian) != Succeeded::yes)
+    error("failed reading crystal_interference_factors from '%s'", full_data_file_name);
+  if (read_data(binary_data, efficiency_factors, ByteOrder::little_endian) != Succeeded::yes)
+    error("failed reading efficiency_factors from '%s'", full_data_file_name);
+
+  if (scanner_ptr->get_type() == Scanner::Siemens_mMR)
   {
     // for mMR, we need to shift the efficiencies for 1 crystal. This is probably because of where the gap is inserted
     // TODO we have no idea if this is necessary for other ECAT8 scanners.
@@ -419,14 +409,29 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 
   if (this->_use_gaps)
     {
-      // TODO we really have no idea where the gaps are for every ECAT8 scanners.
+      // TODO we really have no idea where the gaps are for every ECAT8 scanner.
       // The code below works for the mMR
-      for (int r=0; r<scanner_ptr->get_num_rings(); ++r)
-          for (int c=0; c<scanner_ptr->get_num_detectors_per_ring(); 
-               c+=scanner_ptr->get_num_transaxial_crystals_per_block())
-            {
-              efficiency_factors[r][c]=0.F;
-            }
+      if (scanner_ptr->get_num_virtual_transaxial_crystals_per_block()>0)
+        {
+          for (int r=0; r<scanner_ptr->get_num_rings(); ++r)
+            for (int c=0; c<scanner_ptr->get_num_detectors_per_ring(); 
+                 c+=scanner_ptr->get_num_transaxial_crystals_per_block())
+              for (int inc=0; inc<scanner_ptr->get_num_virtual_transaxial_crystals_per_block(); ++inc)
+                {
+                  efficiency_factors[r][c+inc]=0.F;
+                }
+        }
+      if (scanner_ptr->get_num_virtual_axial_crystals_per_block()>0)
+        {
+          // axial gaps for mCT etc
+          for (int r=scanner_ptr->get_num_axial_crystals_per_block()-scanner_ptr->get_num_virtual_axial_crystals_per_block();
+               r<scanner_ptr->get_num_rings();
+               r+=scanner_ptr->get_num_axial_crystals_per_block())
+            for (int inc=0; inc<scanner_ptr->get_num_virtual_axial_crystals_per_block(); ++inc)
+              {
+                efficiency_factors[r+inc].fill(0.F);
+              }
+        }
     }
 
   // TODO mvoe dead-time stuff to a separate function

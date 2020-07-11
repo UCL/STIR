@@ -80,7 +80,7 @@ I store both time and CListEvent info in one CListRecordLMF.
 That's obviously not necessary nor desirable.
 
  */
-class CListRecordLMF : public CListRecord, public CListTime, public CListEvent
+class CListRecordLMF : public CListRecord, public ListTime, public CListEvent
 {
 public:
 
@@ -97,9 +97,9 @@ public:
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
-  virtual CListTime&   time()
+  virtual ListTime&   time()
     { return *this; }
-  virtual const CListTime&   time() const
+  virtual const ListTime&   time() const
     { return *this; }
 
   bool operator==(const CListRecord& e2) const;

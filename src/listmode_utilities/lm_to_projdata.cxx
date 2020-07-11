@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
       if (strcmp(argv[1], "--input-formats") == 0)
       {
         cerr << endl << "Supported input file formats:\n";
-        InputFileFormatRegistry<CListModeData>::default_sptr()->
+        InputFileFormatRegistry<ListModeData>::default_sptr()->
           list_registered_names(cerr);
         exit(EXIT_SUCCESS);
       }

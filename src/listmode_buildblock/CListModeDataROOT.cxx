@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2017 University College London
     Copyright (C) 2017, 2018 University of Hull
+    Copyright (C) 2016, 2017, 2020 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +25,7 @@
   \author Nikos Efthimiou
   \author Harry Tsoumpas
   \author Kris Thielemans
+  \author Robbie Twyman
 */
 
 #include "stir/listmode/CListModeDataROOT.h"
@@ -56,7 +58,9 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("Average depth of interaction (cm)", &this->average_depth_of_interaction);
     this->parser.add_key("Distance between rings (cm)", &this->ring_spacing);
     this->parser.add_key("Default bin size (cm)", &this->bin_size);
+    this->parser.add_key("View offset (degrees)", &this->view_offset);
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
+    this->parser.add_key("Default number of arc-corrected bins", &this->default_num_arccorrected_bins);
     // end Scanner and physical dimensions.
 
     this->parser.add_key("energy resolution", &this->energy_resolution);
@@ -115,6 +119,10 @@ CListModeDataROOT(const std::string& hroot_filename)
         {
             error(error_str.c_str());
         }
+        if (default_num_arccorrected_bins == -1)
+        {
+            default_num_arccorrected_bins = max_num_non_arccorrected_bins;
+        }
 
         this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                              std::string ("ROOT_defined_scanner"),
@@ -125,14 +133,15 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /* number of non arccor bins */
                                              this->max_num_non_arccorrected_bins,
                                              /* number of maximum arccor bins */
-                                             this->max_num_non_arccorrected_bins,
+                                             this->default_num_arccorrected_bins,
                                              /* inner ring radius */
                                              this->inner_ring_diameter/0.2f,
                                              /* doi */ this->average_depth_of_interaction * 10.f,
                                              /* ring spacing */
                                              this->ring_spacing * 10.f,
                                              this->bin_size * 10.f,
-                                             /* offset*/ 0,
+                                             /* offset*/ 
+                                             this->view_offset * _PI /180,
                                              /*num_axial_blocks_per_bucket_v */
                                              this->root_file_sptr->get_num_axial_blocks_per_bucket_v(),
                                              /*num_transaxial_blocks_per_bucket_v*/
@@ -243,10 +252,12 @@ set_defaults()
     num_rings = -1;
     num_detectors_per_ring = -1;
     max_num_non_arccorrected_bins = -1;
+    default_num_arccorrected_bins = -1;
     inner_ring_diameter = -1.f;
     average_depth_of_interaction = -1.f;
     ring_spacing = -.1f;
     bin_size = -1.f;
+    view_offset = 0.f;
 }
 
 Succeeded
