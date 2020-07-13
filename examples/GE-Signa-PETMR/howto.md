@@ -5,7 +5,7 @@ Edits: Kris Thielemans
 
 These instructions use a  template that was created using the `create_projdata_template` utility using the following inputs:
 ```
-Enter the name of the scanner : GE PET/MR Signa
+Enter the name of the scanner : GE Signa PET/MR
 Mashing factor for views : 1
 Is the data arc-corrected?: N
 Number of the tangential positions: 357
