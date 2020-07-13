@@ -82,20 +82,20 @@ public:
 	};
 
 	//! Get rotation matrix for a given angle around z axis
-	inline stir::Array<2, float> get_rotation_matrix(float alpha);
+	stir::Array<2, float> get_rotation_matrix(float alpha) const;
 
 	//! Build crystal map in cartesian coordinate
 	void build_crystal_maps();
 
 	//! Get cartesian coordinate for a given detection position
 	inline Succeeded
-    find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& ,
-																												DetectionPosition<>);
+          find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& ,
+                                                             const DetectionPosition<>&) const;
 
-  //! Get cartesian coordinate for a given detection position
-	inline Succeeded
-    find_detection_position_given_cartesian_coordinate(DetectionPosition<>&,
-																									CartesianCoordinate3D<float>);
+        //! Get cartesian coordinate for a given detection position
+	Succeeded
+          find_detection_position_given_cartesian_coordinate(DetectionPosition<>&,
+                                                             const CartesianCoordinate3D<float>&) const;
 
 	//! Get scanner pointer
 	inline const Scanner* get_scanner_ptr() const;
