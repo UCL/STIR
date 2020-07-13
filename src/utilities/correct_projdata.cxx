@@ -261,7 +261,7 @@ run() const
       {
         viewgrams += 
           input_projdata.get_related_viewgrams(view_seg_nums,
-					       symmetries_ptr);
+					                                    symmetries_ptr);
       }	  
       else
       {
@@ -269,11 +269,11 @@ run() const
       }
       
       if (do_arc_correction && !apply_or_undo_correction)
-	{
-	  error("Cannot undo arc-correction yet. Sorry.");
-	  // TODO
-	  //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
-	}
+      {
+        error("Cannot undo arc-correction yet. Sorry.");
+        // TODO
+        //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
+      }
 
       if (do_scatter && !apply_or_undo_correction)
       {
@@ -291,41 +291,38 @@ run() const
 #if 0
       if (frame_num==-1)
       {
-	int num_frames = frame_def.get_num_frames();
-	for ( int i = 1; i<=num_frames; i++)
-	{ 
-	  //cerr << "Doing frame  " << i << endl; 
-	  const double start_frame = frame_def.get_start_time(i);
-	  const double end_frame = frame_def.get_end_time(i);
-	  //cerr << "Start time " << start_frame << endl;
-	  //cerr << " End time " << end_frame << endl;
-	  // ** normalisation **
-	  if (apply_or_undo_correction)
-	  {
-	    normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	  }
-	  else
-	  {
-	    normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	  }
-	}
+        int num_frames = frame_def.get_num_frames();
+        for ( int i = 1; i<=num_frames; i++)
+        { 
+          //cerr << "Doing frame  " << i << endl; 
+          const double start_frame = frame_def.get_start_time(i);
+          const double end_frame = frame_def.get_end_time(i);
+          //cerr << "Start time " << start_frame << endl;
+          //cerr << " End time " << end_frame << endl;
+          // ** normalisation **
+          if (apply_or_undo_correction)
+          {
+            normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+          }
+          else
+          {
+            normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+          }
+        }
       }
-
-
-
       else
 #endif
       {      
-	const double start_frame = frame_defs.get_start_time(frame_num);
-	const double end_frame = frame_defs.get_end_time(frame_num);
-	if (apply_or_undo_correction)
-	{
-	  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	}
-	else
-	{
-	  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	}    
+        const double start_frame = frame_defs.get_start_time(frame_num);
+        const double end_frame = frame_defs.get_end_time(frame_num);
+        if (apply_or_undo_correction)
+        {
+          normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+        }
+        else
+        {
+          normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+        }    
       }
       if (do_scatter && apply_or_undo_correction)
       {
@@ -475,6 +472,7 @@ set_up()
 {
   const int max_segment_num_available =
     input_projdata_ptr->get_max_segment_num();
+  // Set default or upper bound of data to process (if out of bounds)
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
@@ -485,70 +483,69 @@ set_up()
   if (!do_arc_correction)
     output_proj_data_info_sptr = input_proj_data_info_sptr;
   else
-    {
-      arc_correction_sptr = 
-	shared_ptr<ArcCorrection>(new ArcCorrection);
-      arc_correction_sptr->set_up(input_proj_data_info_sptr);
-      output_proj_data_info_sptr =
-	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
-    }
+  {
+    arc_correction_sptr = 
+      shared_ptr<ArcCorrection>(new ArcCorrection);
+    arc_correction_sptr->set_up(input_proj_data_info_sptr);
+    output_proj_data_info_sptr =
+	    arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
+  }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
-					  max_segment_num_to_process);
+					                                          max_segment_num_to_process);
 
   // construct output_projdata
   {
 #if 0
     // attempt to do mult-frame data, but then we should have different input data anyway
     if (frame_definition_filename.size()!=0 && frame_num==-1)
-      {
-	const int num_frames = frame_defs.get_num_frames();
-	for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", current_frame);
-	    const string output_filename_with_ext = output_filename + ext;	
-	    output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext);
-	  }
-      }
+    {
+      const int num_frames = frame_defs.get_num_frames();
+      for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", current_frame);
+          const string output_filename_with_ext = output_filename + ext;	
+          output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                  output_proj_data_info_sptr,output_filename_with_ext);
+        }
+    }
     else
 #endif
-      {
-	string output_filename_with_ext = output_filename;
+    {
+	    string output_filename_with_ext = output_filename;
 #if 0
-	if (frame_definition_filename.size()!=0)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", frame_num);
-	    output_filename_with_ext += ext;
-	  }
+      if (frame_definition_filename.size()!=0)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", frame_num);
+          output_filename_with_ext += ext;
+        }
 #endif
-	output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext));
-      }
+      output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                                                      output_proj_data_info_sptr,output_filename_with_ext));
+      }// output_projdata block
 
-  }
+  }// output_projdata block
  
   // read attenuation image and add it to the normalisation object
   if(atten_image_filename!="0" && atten_image_filename!="")
-    {
+  {
       
-      shared_ptr<BinNormalisation> atten_sptr
-	(new BinNormalisationFromAttenuationImage(atten_image_filename,
-						  forward_projector_ptr));
+    shared_ptr<BinNormalisation> atten_sptr
+	            (new BinNormalisationFromAttenuationImage(atten_image_filename,
+						                                            forward_projector_ptr));
       
-      normalisation_ptr = 
-	shared_ptr<BinNormalisation>
-	( new ChainedBinNormalisation(normalisation_ptr,
-				      atten_sptr));
-    }
+    normalisation_ptr = 
+        shared_ptr<BinNormalisation>
+        ( new ChainedBinNormalisation(normalisation_ptr, atten_sptr));
+  }
   else
-    {
-      // get rid of this object for now
-      // this is currently checked to find the symmetries: bad
-      // TODO
-      forward_projector_ptr.reset();
-    }
+  {
+    // get rid of this object for now
+    // this is currently checked to find the symmetries: bad
+    // TODO
+    forward_projector_ptr.reset();
+  }
 
   // set up normalisation object
   if (
