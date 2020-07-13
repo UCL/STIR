@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
+  Copyright (C) 2013-2014, 2020 University College London
 
   Largely a copy of the ECAT7 version. 
 
@@ -99,8 +99,9 @@ public:
   bool use_dead_time() const;
   bool use_geometric_factors() const;
   bool use_crystal_interference_factors() const;
+  bool use_axial_effects_factors() const;
 
-private:
+ private:
   Array<1,float> axial_t1_array;
   Array<1,float> axial_t2_array;
   Array<1,float> trans_t1_array;
@@ -108,6 +109,12 @@ private:
   Array<2,float> geometric_factors;
   Array<2,float> efficiency_factors;
   Array<2,float> crystal_interference_factors;
+  Array<1,float> axial_effects;
+  //! lookup table from STIR ring-pair to a Siemens sinogram-index
+  Array<2,int> sino_index;
+  //! number of sinograms in Siemens sinogram (span=11?)
+  int num_Siemens_sinograms;
+
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
@@ -124,11 +131,15 @@ private:
   bool _use_dead_time;
   bool _use_geometric_factors;
   bool _use_crystal_interference_factors;
+  bool _use_axial_effects_factors;
 
   void read_norm_data(const string& filename);
   float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
 				  const double start_time, const double end_time) const;
 
+  //! initialise sino_index and num_Siemens_sinograms
+  void construct_sino_lookup_table();
+  float find_axial_effects(int ring1, int ring2) const;
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();
