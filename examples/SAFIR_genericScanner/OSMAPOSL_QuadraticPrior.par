@@ -86,20 +86,6 @@ save estimates at subiteration intervals:= 3
 ; enable this for multiplicative form of OSMAPOSL (see User's Guide)
 ;MAP model := multiplicative
 
-inter-update filter subiteration interval:= 0
-inter-update filter type := None
-
-inter-iteration filter subiteration interval:= 0
-inter-iteration filter type := Separable Cartesian Metz
-  Separable Cartesian Metz Filter Parameters :=
-  x-dir filter FWHM (in mm):= 0.3
-  y-dir filter FWHM (in mm):= 0.3
-  z-dir filter FWHM (in mm):= 0.3
-  x-dir filter Metz power:= 2.0
-  y-dir filter Metz power:= 2.0
-  z-dir filter Metz power:= 2.0
-END Separable Cartesian Metz Filter Parameters :=
-
 post-filter type := None
 
 END :=
