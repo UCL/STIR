@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
   bool do_eff   = argc>=8?atoi(argv[7])!=0: true;
 #endif
- // const int eff_iter_num = atoi(argv[4]);
+  // const int eff_iter_num = atoi(argv[4]);
   const int iter_num = 1;//atoi(argv[5]);
   //const bool apply_or_undo = atoi(argv[4])!=0;
   shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[3]);
@@ -84,10 +84,10 @@ int main(int argc, char **argv)
   const string output_file_name = argv[1];
   const string program_name = argv[0];
 
-  ProjDataInterfile
+  ProjDataInterfile 
     proj_data(template_projdata_ptr->get_exam_info_sptr(),
               template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(),
-          output_file_name);
+              output_file_name);
 
   const int num_rings =
     template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
@@ -106,23 +106,23 @@ int main(int argc, char **argv)
   DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   {
-      GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
-      singles.read_singles_from_listmode_file(_listmode_filename);
+    GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
+    singles.read_singles_from_listmode_file(_listmode_filename);
     // efficiencies
     if (true)
-      {
-        //singles.write(std::cout);
+    {
+      //singles.write(std::cout);
 
-        for (int r=0; r<num_rings; ++r)
-            for (int c=0; c<num_detectors_per_ring; ++c)
-            {
-                DetectionPosition<> pos(c,r,0);
-                double time_init = 0.;
-                int time_final = static_cast<double>(singles.get_num_time_slices());
-                efficiencies[r][c]=singles.get_singles_rate(pos, time_init, time_final);
-            }
-       // int timesamples=singles._num_time_slices;
-      }
+      for (int r=0; r<num_rings; ++r)
+        for (int c=0; c<num_detectors_per_ring; ++c)
+        {
+          DetectionPosition<> pos(c,r,0);
+          double time_init = 0.;
+          int time_final = static_cast<double>(singles.get_num_time_slices());
+          efficiencies[r][c]=singles.get_singles_rate(pos, time_init, time_final);
+        }
+      // int timesamples=singles._num_time_slices;
+    }
 #if 0
     // block norm
     if (do_block)
@@ -142,37 +142,34 @@ int main(int argc, char **argv)
     }
       }
 #endif
-  }
+  }// nothing
 
   {
     const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (proj_data.get_proj_data_info_ptr());
+      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const> (proj_data.get_proj_data_info_ptr());
     if (proj_data_info_ptr == 0)
-      {
-    error("Can only process not arc-corrected data\n");
-      }
+    {
+      error("Can only process not arc-corrected data\n");
+    }
     const int half_fan_size =
       std::min(proj_data_info_ptr->get_max_tangential_pos_num(),
-          -proj_data_info_ptr->get_min_tangential_pos_num());
+              -proj_data_info_ptr->get_min_tangential_pos_num());
     const int fan_size = 2*half_fan_size+1;
+
     const int max_ring_diff =
-      proj_data_info_ptr->get_max_ring_difference
-      (proj_data_info_ptr->get_max_segment_num());
+      proj_data_info_ptr->get_max_ring_difference(proj_data_info_ptr->get_max_segment_num());
 
     const int mashing_factor =
       proj_data_info_ptr->get_view_mashing_factor();
 
     shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_ptr->get_scanner_ptr()));
+
     const ProjDataInfoCylindricalNoArcCorr * const uncompressed_proj_data_info_ptr =
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                    /*span=*/1, max_ring_diff,
-                    /*num_views=*/num_detectors_per_ring/2,
-                    fan_size,
-                    /*arccorrection=*/false));
-
-
+      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                                                  /*span=*/1, max_ring_diff,
+                                                                  /*num_views=*/num_detectors_per_ring/2,
+                                                                  fan_size,
+                                                                  /*arccorrection=*/false));
 
     shared_ptr<GE::RDF_HDF5::GEHDF5Wrapper> m_input_sptr;
     m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
@@ -182,13 +179,13 @@ int main(int argc, char **argv)
     Bin uncompressed_bin;
 
     for (bin.segment_num() = proj_data.get_min_segment_num();
-     bin.segment_num() <= proj_data.get_max_segment_num();
-     ++ bin.segment_num())
-      {
+         bin.segment_num() <= proj_data.get_max_segment_num();
+         ++ bin.segment_num())
+    {
 
-    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-         ++bin.axial_pos_num())
+      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+           ++bin.axial_pos_num())
       {
         Sinogram<float> sinogram =
           proj_data_info_ptr->get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
@@ -202,58 +199,57 @@ int main(int argc, char **argv)
 
         {
           for (uncompressed_bin.segment_num() = in_min_segment_num;
-           uncompressed_bin.segment_num() <= in_max_segment_num;
-           ++uncompressed_bin.segment_num())
-        for (uncompressed_bin.axial_pos_num() = uncompressed_proj_data_info_ptr->get_min_axial_pos_num(uncompressed_bin.segment_num());
-             uncompressed_bin.axial_pos_num()  <= uncompressed_proj_data_info_ptr->get_max_axial_pos_num(uncompressed_bin.segment_num());
-             ++uncompressed_bin.axial_pos_num() )
+               uncompressed_bin.segment_num() <= in_max_segment_num;
+               ++uncompressed_bin.segment_num())
           {
-            const float in_m = uncompressed_proj_data_info_ptr->get_m(uncompressed_bin);
-            if (fabs(out_m - in_m) > 1E-4)
-              continue;
+            for (uncompressed_bin.axial_pos_num() = uncompressed_proj_data_info_ptr->get_min_axial_pos_num(uncompressed_bin.segment_num());
+                uncompressed_bin.axial_pos_num()  <= uncompressed_proj_data_info_ptr->get_max_axial_pos_num(uncompressed_bin.segment_num());
+                ++uncompressed_bin.axial_pos_num() )
+            {
+              const float in_m = uncompressed_proj_data_info_ptr->get_m(uncompressed_bin);
+              if (fabs(out_m - in_m) > 1E-4)
+                continue;
 
 
-            // views etc
-            if (proj_data.get_min_view_num()!=0)
-              error("Can only handle min_view_num==0\n");
-            for (bin.view_num() = proj_data.get_min_view_num();
-             bin.view_num() <= proj_data.get_max_view_num();
-             ++ bin.view_num())
+              // views etc
+              if (proj_data.get_min_view_num()!=0)
+                error("Can only handle min_view_num==0\n");
+              for (bin.view_num() = proj_data.get_min_view_num();
+                   bin.view_num() <= proj_data.get_max_view_num();
+                   ++ bin.view_num())
               {
 
-            for (bin.tangential_pos_num() = -half_fan_size;
-                 bin.tangential_pos_num() <= half_fan_size;
-                 ++bin.tangential_pos_num())
-              {
-                uncompressed_bin.tangential_pos_num() =
-                  bin.tangential_pos_num();
-                for (uncompressed_bin.view_num() = bin.view_num()*mashing_factor;
-                 uncompressed_bin.view_num() < (bin.view_num()+1)*mashing_factor;
-                 ++ uncompressed_bin.view_num())
+                for (bin.tangential_pos_num() = -half_fan_size;
+                     bin.tangential_pos_num() <= half_fan_size;
+                     ++bin.tangential_pos_num())
+                {
+                  uncompressed_bin.tangential_pos_num() = bin.tangential_pos_num();
+                  for (uncompressed_bin.view_num() = bin.view_num()*mashing_factor;
+                       uncompressed_bin.view_num() < (bin.view_num()+1)*mashing_factor;
+                       ++ uncompressed_bin.view_num())
                   {
 
-                int ra = 0, a = 0;
-                int rb = 0, b = 0;
-                uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
-                                              uncompressed_bin);
+                    int ra = 0, a = 0;
+                    int rb = 0, b = 0;
+                    uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
+                                                  uncompressed_bin);
 
-                float coincidence_time_window = 0.00000000457f;
-                /*(*segment_ptr)[bin.axial_pos_num()]*/
-                // TODO 447 needs to be num_crystals_per_ring()-1
-                sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
-                }
-              }
-              }
-
-
-          }
-        }
+                    float coincidence_time_window = 0.00000000457f;
+                    /*(*segment_ptr)[bin.axial_pos_num()]*/
+                    // TODO 447 needs to be num_crystals_per_ring()-1
+                    sinogram[bin.view_num()][bin.tangential_pos_num()] +=
+                    num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
+                  }// endfor uncompresed view num
+                }//endfor tangeial pos num
+              }// endfor view num
+            }//endfor uncompresed axial pos
+          }//endfor uncompresed segment num
+        }// nothing
         proj_data.set_sinogram(sinogram);
-      }
+      }//endfor axial pos num
 
-      }
-  }
+    }//endfor segment num
+  }//nothing
 
 
   return EXIT_SUCCESS;
