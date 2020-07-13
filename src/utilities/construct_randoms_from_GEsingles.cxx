@@ -236,9 +236,10 @@ int main(int argc, char **argv)
 
                     float coincidence_time_window = 0.00000000457f;
                     /*(*segment_ptr)[bin.axial_pos_num()]*/
-                    // TODO 447 needs to be num_crystals_per_ring()-1
+                    // GE stores tangential pos in the opposite direction to STIR
+                    unsigned int num_crystals_per_ring=m_input_sptr->get_scanner_sptr()->get_num_detectors_per_ring();
                     sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                    num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
+                    num_slices*coincidence_time_window*efficiencies[ra][num_crystals_per_ring-a]*efficiencies[rb][num_crystals_per_ring-b%num_detectors_per_ring];
                   }// endfor uncompresed view num
                 }//endfor tangeial pos num
               }// endfor view num
