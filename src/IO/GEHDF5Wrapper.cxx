@@ -291,7 +291,16 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     //! \todo P.W: Find the crystal gaps and other info missing.
     H5::DataSet str_detector_axial_size = file.openDataSet("/HeaderData/SystemGeometry/detectorAxialSize");
     H5::DataSet str_intrinsic_tilt = file.openDataSet("/HeaderData/SystemGeometry/transaxial_crystal_0_offset");
-    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size"); // Bug in RDF9 makes this dimension2Size isntead of the expected dimension1Size
+    
+    H5::DataSet str_max_number_of_non_arc_corrected_bins;
+    // TODO RDF10, what happens here?
+    if (rdf_ver == 9)
+    {   // Bug in RDF9 makes this dimension2Size instead of the expected dimension1Size
+        if(is_sino_file())
+            str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension2Size");
+        else
+            str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension1Size"); 
+    }
     H5::DataSet str_axial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/axialCrystalsPerBlock");
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
     // Convert to numbers.
