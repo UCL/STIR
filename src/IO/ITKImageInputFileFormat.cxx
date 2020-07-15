@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2013-2014, University College London
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2020, University College London
     Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
                         Australian eHealth Research Centre
 
@@ -30,7 +30,7 @@
 */
 
 #include "stir/IO/ITKImageInputFileFormat.h"
-#include "stir/DICOM_date_time_functions.h"
+#include "stir/date_time_functions.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
@@ -279,13 +279,13 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
     if (!series_datetime.empty() && !acq_datetime.empty() && !actual_frame_duration.empty())
       {
         std::vector<double > start_times(1), durations(1);
-        start_times[0] = DICOM_datetime_to_secs_since_epoch(series_datetime, false) - DICOM_datetime_to_secs_since_epoch(acq_datetime, false);
+        start_times[0] = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime, false) - DICOM_datetime_to_secs_since_Unix_epoch(acq_datetime, false);
         durations[0] = boost::lexical_cast<double>(actual_frame_duration)/1000.;
         exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(start_times, durations));
       }
     if (!series_datetime.empty())
       {
-        exam_info_sptr->start_time_in_secs_since_1970 = DICOM_datetime_to_secs_since_epoch(series_datetime);
+        exam_info_sptr->start_time_in_secs_since_1970 = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime);
       }
   }
 

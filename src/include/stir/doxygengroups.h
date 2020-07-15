@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -162,6 +163,10 @@ A hierarchy of classes for performing image processing. Mechanisms
 for parsing are provided such that different image processors can
 be selected at run-time.
 
+*/
+/*!
+\defgroup date_time Items related to date/time processing
+\ingroup buildblock
 */
 
 /*!
