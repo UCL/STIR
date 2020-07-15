@@ -100,7 +100,7 @@ actual_write_to_file(std::string& filename,
 		     const DynamicDiscretisedDensity & density) const
 {
     {
-      FilePath file_path(filename);
+      FilePath file_path(filename, false); // create object without checking if a fo;e exists already
       if (!file_path.get_extension().empty())
         error("MultiDynamicDiscretisedDensityOutputFileFormat: currently needs an output filename without extension. sorry");
     }
