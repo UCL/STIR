@@ -215,7 +215,7 @@ BinNormalisationFromGEHDF5::set_defaults()
   //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
-  this->_use_geometric_factors = true;
+  this->_use_geometric_factors = false;
 }
 
 void 
@@ -289,7 +289,6 @@ read_norm_data(const string& filename)
   // If we actually do not want any correction, forget loading the data
   if(!this->use_detector_efficiencies() && !this->use_geometric_factors())
     return;
-
   // Build the HDF5 wrapper. This opens the file and makes sure its the correct type, plus loads all information about the scanner. 
   m_input_hdf5_sptr.reset(new GEHDF5Wrapper(filename));
 
@@ -323,14 +322,14 @@ read_norm_data(const string& filename)
     m_input_hdf5_sptr->initialise_efficiency_factors();
 
     // Do the reading using a buffer.
-    unsigned int total_size = scanner_ptr->get_num_rings()*scanner_ptr->get_num_detectors_per_ring();
+    unsigned long total_size = (scanner_ptr->get_num_rings()-1)*(scanner_ptr->get_num_detectors_per_ring()-1);
     stir::Array<1, float> buffer(0, total_size-1);
+    buffer.fill(0.0);
     m_input_hdf5_sptr->read_efficiency_factors(buffer);
     // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
     // Lambda function, this just applies 1/buffer and stores it in efficiency_factors 
-    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin_all(), [](const float f) { return 1/f;} );
+    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin_all(), [](const float f) { return 1/(f+0.000001);} );
 
-  }
   //
   // Read geo data from file
   //
@@ -401,30 +400,6 @@ read_norm_data(const string& filename)
       }// end view for
     }// end segment for
   }// end loading of geo factors
-
-// AB TODO: Debugging code, remove later
-
-
-#if 1
-   // to test pipe the obtained values into file
-    ofstream out_eff;
-    out_eff.open("eff_out.txt",ios::out);
-    //geo_norm_factors_sptr->write_to_file("geo_norm.hs");
-   for ( int i = efficiency_factors.get_min_index(); i<=efficiency_factors.get_max_index();i++)
-   {
-      for ( int j =efficiency_factors[i].get_min_index(); j <=efficiency_factors[i].get_max_index(); j++)
-      {
-     out_eff << efficiency_factors[i][j] << "   " ;
-      }
-      out_eff << std::endl<< std::endl;
-  }
-
-#endif
-
-#if 0
-   //display(geometric_factors, "geo");
-  display(efficiency_factors, "eff");
-#endif
 }
 
 bool 
@@ -550,6 +525,11 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
     view_efficiency += lor_efficiency;
     total_efficiency += view_efficiency;
   }
+  // AB TODO: this if here is horrendous. 
+  // If all previous loops have been skipped, this should be 1. 
+  if (total_efficiency==0)
+    total_efficiency=1;
+
   return total_efficiency;
 }
 #endif

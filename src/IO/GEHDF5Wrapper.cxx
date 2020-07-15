@@ -625,11 +625,12 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
 
 
         m_NX_SUB = dims[0];    // hyperslab dimensions
-        m_NY_SUB = dims[1]/scanner_sptr->get_num_detectors_per_ring();
+        // TODO: Why is this divided by 2??
+        m_NY_SUB = dims[1]/2;  // should be equal to scanner_sptr->get_num_detectors_per_ring();
         m_NZ_SUB = (rank==2)? 1 : dims[2]; 
 #if 0
         m_NX = dims[0];       // output buffer dimensions
-        m_NY = dims[1]/scanner_sptr->get_num_detectors_per_ring();
+        m_NY = dims[1]/2;  // should be equal to scanner_sptr->get_num_detectors_per_ring();
         m_NZ = (rank==2)? 1 : dims[2];
 #endif
     }
@@ -750,7 +751,7 @@ Succeeded GEHDF5Wrapper::read_efficiency_factors(Array<1, float> &output,
     // We know the size of the DataSpace
     hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
     output.resize(m_NX_SUB*m_NY_SUB);
-
+    
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
     m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
