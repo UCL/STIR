@@ -36,6 +36,7 @@
 #include "stir/unique_ptr.h"
 #include <memory>
 #include <iostream>
+#include <iomanip>
 USING_NAMESPACE_STIR
 
 static void print_usage_and_exit(const std::string& program_name)
