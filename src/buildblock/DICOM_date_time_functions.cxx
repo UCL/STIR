@@ -26,6 +26,7 @@
   \author Kris Thielemans
 */
 #include "stir/DICOM_date_time_functions.h"
+#include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "boost/lexical_cast.hpp"
@@ -34,16 +35,23 @@
 
 START_NAMESPACE_STIR
 
-std::string DICOM_date_time_to_DT(const std::string& date, const std::string& time, const std::string& TZ)
+std::string DICOM_date_time_to_DT(const std::string& date_org, const std::string& time_org, const std::string& TZ_org)
 {
+  // get rid of white spaces, just in case
+  const std::string date = standardise_interfile_keyword(date_org);
+  const std::string time = standardise_interfile_keyword(time_org);
+  const std::string TZ = standardise_interfile_keyword(TZ_org);
   if ((date.size()!=8) || (time.size()<6 || (time.size()>6 && time[6]!='.'))
       || (!TZ.empty() && TZ.size()!=5))
     error(boost::format("DICOM_date_time_to_DT: ill-formed input: date=%s, time=%s, TZ info=%s") % date % time % TZ);
   return date+time+TZ;
 }
 
-double DICOM_datetime_to_secs_since_epoch(const std::string& str, bool silent)
+double DICOM_datetime_to_secs_since_epoch(const std::string& str_org, bool silent)
 {
+  // get rid of white spaces, just in case
+  const std::string str = standardise_interfile_keyword(str_org);
+
   if (str.size()<14)
     error("DICOM DT '" + str + "' is ill-formed");
 
