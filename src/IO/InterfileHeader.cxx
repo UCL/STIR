@@ -612,7 +612,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Scanner orientation (X or Y)",
           KeyArgument::ASCII, &scanner_orientation);
 
-  scanner_geometry = "None";
+  scanner_geometry = "Cylindrical";
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
           KeyArgument::ASCII, &scanner_geometry);
 

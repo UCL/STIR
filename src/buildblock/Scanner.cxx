@@ -681,7 +681,12 @@ set_params(Type type_v,const list<string>& list_of_names_v,
       reference_energy = reference_energy_v;
   
   scanner_orientation = scanner_orientation_v;
-  scanner_geometry = scanner_geometry_v;
+  
+  if (scanner_geometry_v == "")
+      scanner_geometry = "Cylindrical";
+  else
+      scanner_geometry = scanner_geometry_v;
+      
   axial_crystal_spacing = axial_crystal_spacing_v;
   transaxial_crystal_spacing = transaxial_crystal_spacing_v;
   axial_block_spacing = axial_block_spacing_v;
