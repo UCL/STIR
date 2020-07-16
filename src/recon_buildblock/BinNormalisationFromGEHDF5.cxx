@@ -322,14 +322,13 @@ read_norm_data(const string& filename)
     m_input_hdf5_sptr->initialise_efficiency_factors();
 
     // Do the reading using a buffer.
-    unsigned long total_size = (scanner_ptr->get_num_rings()-1)*(scanner_ptr->get_num_detectors_per_ring()-1);
+    unsigned int total_size = (scanner_ptr->get_num_rings()-1)*(scanner_ptr->get_num_detectors_per_ring()-1);
     stir::Array<1, float> buffer(0, total_size-1);
-    buffer.fill(0.0);
     m_input_hdf5_sptr->read_efficiency_factors(buffer);
     // Aparently GE stores the normalization factor and not the "efficiency factor", so we just need to invert it. 
     // Lambda function, this just applies 1/buffer and stores it in efficiency_factors 
-    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin_all(), [](const float f) { return 1/(f+0.000001);} );
-
+    std::transform(buffer.begin(), buffer.end(),efficiency_factors.begin_all(), [](const float f) { return 1/f;} );
+  }
   //
   // Read geo data from file
   //
@@ -525,10 +524,6 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
     view_efficiency += lor_efficiency;
     total_efficiency += view_efficiency;
   }
-  // AB TODO: this if here is horrendous. 
-  // If all previous loops have been skipped, this should be 1. 
-  if (total_efficiency==0)
-    total_efficiency=1;
 
   return total_efficiency;
 }
@@ -567,8 +562,8 @@ BinNormalisationFromGEHDF5::get_efficiency_factors (const DetectionPositionPair<
   const DetectionPosition<>& pos1=detection_position_pair.pos1();
   const DetectionPosition<>& pos2=detection_position_pair.pos2();
   // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
-  return (this->efficiency_factors[pos1.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()] *
-          this->efficiency_factors[pos2.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-pos2.tangential_coord()]);;  
+  return (this->efficiency_factors[pos1.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-1-pos1.tangential_coord()] *
+          this->efficiency_factors[pos2.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-1-pos2.tangential_coord()]);;  
 }
 
 } // namespace
