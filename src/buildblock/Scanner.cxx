@@ -1001,7 +1001,7 @@ check_consistency() const
         }
   
         if (get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()
-            < 2*inner_ring_radius*tan(_PI/get_num_transaxial_blocks()/get_num_transaxial_blocks_per_bucket()))
+            < round (2*inner_ring_radius*tan(_PI/get_num_transaxial_blocks()/get_num_transaxial_blocks_per_bucket())*1000.0)/1000.0)
       {
          warning("Scanner %s: inconsistent transaxial spacing:\n"
               "\ttransaxial_block_spacing %f muliplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that encircles a cylinder with inner_ring_radius %f",
@@ -1144,12 +1144,15 @@ Scanner::parameter_info() const
   if (crystal_map_file_name != "")
     s << "Name of crystal map                                         := "
       << get_crystal_map_file_name() << '\n';
-  if (get_scanner_orientation() != "" && get_scanner_geometry() != "")
+  if (get_scanner_geometry() != "")
+  {
+    s << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
+      <<get_scanner_geometry() << '\n';
+  }
+  if (get_scanner_orientation() != "")
   {
     s << "Scanner orientation (X or Y)                                := "
-      <<get_scanner_orientation() << '\n'
-      << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
-      <<get_scanner_geometry() << '\n';
+      <<get_scanner_orientation() << '\n';
   }
   if (get_axial_crystal_spacing() >=0)
     s << "Distance between crystals in axial direction (cm)           := "
@@ -1215,9 +1218,25 @@ Scanner* Scanner::ask_parameters()
   // old scanners. This should stay here as a transitional step.
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
-      info("Two new options are available: (a) Energy Resolution and (b) Reference energy (in keV)."
-           "They are used in Scatter Simulation. In case, you need them, please set them"
-           "manually in your file.");
+      info("more options are available for the scanner: \n(a) Energy Resolution :=\n(b) Reference energy (in keV)\t:="
+        "\n(c) Scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) \n(d) Scanner orientation (X or Y)\t:="
+        "\n\n(a) and (b) are used in Scatter Simulation. \n (c) is used to choose more precise models of the scanner. "
+        "\n(d) is used in BlocksOnCylindrical Geometry to build the proper crystal map."
+        "\nIn case, you need them, set them manually in your interfile header before 'end scanner parameters:='.");
+      
+      //This is needed for finding effective central bin size, because it is different for different geometries.
+      const string ScannerGeometry =
+        ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
+      scanner_ptr->set_scanner_geometry(ScannerGeometry);
+
+      string CrystalMapFileName = "";
+      if (ScannerGeometry == "Generic")
+      {
+        CrystalMapFileName = ask_string("Enter the name of the crystal map: ", "");
+            scanner_ptr->set_crystal_map_file_name(CrystalMapFileName);
+        scanner_ptr->read_detectormap_from_file(CrystalMapFileName);
+      }
+  
 
       return scanner_ptr;
     }
@@ -1255,9 +1274,9 @@ Scanner* Scanner::ask_parameters()
       int AxialBlocksPerBucket = 
 	ask_num("Enter number of axial blocks per bucket: ",0,10,6);
       int AxialCrystalsPerBlock = 
-	ask_num("Enter number of axial crystals per block: ",0,12,8);
+	ask_num("Enter number of axial crystals per block: ",0,16,8);
       int TransaxialCrystalsPerBlock = 
-	ask_num("Enter number of transaxial crystals per block: ",0,12,8);
+	ask_num("Enter number of transaxial crystals per block: ",0,16,8);
       int AxialCrstalsPerSinglesUnit = 
         ask_num("Enter number of axial crystals per singles unit: ", 0, NoRings, 1);
       int TransaxialCrystalsPerSinglesUnit = 

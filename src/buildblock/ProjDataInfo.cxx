@@ -33,6 +33,8 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
@@ -421,22 +423,34 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   
   const float bin_size = scanner->get_default_bin_size();
   
-  
-  if (arc_corrected)
+  if (scanner->get_scanner_geometry() == "BlocksOnCylindrical")
+    return
+      new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Generic")
+    return
+      new ProjDataInfoGenericNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Cylindrical" && arc_corrected)
     return
     new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
                                        num_axial_pos_per_segment,
-                                       min_ring_difference, 
+                                       min_ring_difference,
                                        max_ring_difference,
                                        num_views,num_tangential_poss);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
-                                       num_axial_pos_per_segment,
-                                       min_ring_difference, 
-                                       max_ring_difference,
-                                       num_views,num_tangential_poss);
-
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
 }
 
 unique_ptr<ProjDataInfo>

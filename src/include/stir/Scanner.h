@@ -392,6 +392,8 @@ class Scanner
   inline void set_axial_block_spacing(const float & new_spacing);
   //! set block spacing in transaxial direction
   inline void set_transaxial_block_spacing(const float & new_spacing);
+  //! set crystal map file name for the generic geometry
+  inline void set_crystal_map_file_name(const std::string& new_crystal_map_file_name);
   //@} (end of block geometry info)
 
   //@} (end of block/bucket info)

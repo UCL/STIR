@@ -414,6 +414,11 @@ void Scanner::set_axial_block_spacing(const float&  new_spacing)
   axial_block_spacing = new_spacing;
 }
 
+void Scanner::set_crystal_map_file_name(const std::string& new_crystal_map_file_name)
+{
+  crystal_map_file_name = new_crystal_map_file_name;
+}
+
 /********    Calculate singles bin index from detection position    *********/
 
 
