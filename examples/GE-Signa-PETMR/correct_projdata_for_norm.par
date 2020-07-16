@@ -15,5 +15,4 @@ Bin Normalisation type := From GE HDF5
 Bin Normalisation From GE HDF5 :=
 normalisation filename:= norm3d
 End Bin Normalisation From GE HDF5:=
-g
 END:=
