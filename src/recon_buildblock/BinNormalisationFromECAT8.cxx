@@ -166,7 +166,7 @@ BinNormalisationFromECAT8::set_defaults()
   this->_use_dead_time = false;
   this->_use_geometric_factors = true;
   this->_use_crystal_interference_factors = true;
-  this->use_axial_effects_factors = true;
+  this->_use_axial_effects_factors = true;
 }
 
 void 
@@ -541,6 +541,13 @@ use_geometric_factors() const
 
 bool 
 BinNormalisationFromECAT8::
+use_axial_effects_factors() const
+{
+  return this->_use_axial_effects_factors;
+}
+
+bool 
+BinNormalisationFromECAT8::
 use_crystal_interference_factors() const
 {
   return this->_use_crystal_interference_factors;
@@ -664,9 +671,9 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	}
     }
     
-    if (this->use_axial_effects())
+    if (this->use_axial_effects_factors())
       {
-        const float axial_effect_factor = find_axial_effects(uncompressed_bin.segment(), uncompressed_bin.axial_pos());	
+        const float axial_effect_factor = find_axial_effects(uncompressed_bin.segment_num(), uncompressed_bin.axial_pos_num());	
 	total_efficiency += view_efficiency * axial_effect_factor;
       }
     else
@@ -682,24 +689,30 @@ void
 BinNormalisationFromECAT8::
 construct_sino_lookup_table()
 {
-  const int num_rings = this->scanner_sptr->get_num_rings();
-  this->sino_index(num_rings,num_rings);
+  const int num_rings = this->scanner_ptr->get_num_rings();
+  this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
+                                               0, num_rings-1));
   // construct proj_data_info in "native" Siemens space for the norm (span=11 usually?)
   // TODO will have to get "native" span from somewhere. is it in the norm header?
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr =
-    ProjDataInfo::construct_projdata...(span=11);
+ shared_ptr<ProjDataInfo> proj_data_info_uptr=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, 49,
+                                         this->scanner_ptr->get_max_num_views()-1,
+                                         this->scanner_ptr->get_max_num_non_arccorrected_bins());
+  
+   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
+               dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_uptr->clone()));
+              
   this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
   
-  auto segment_sequence = ecat::find_segment_sequence();
+  auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_sptr);
   Bin bin;
   std::vector<DetectionPositionPair<> > det_pos_pairs;
   for (int z=0; z < this->num_Siemens_sinograms; ++z)
     {
-      for (std::size_t i=0; i<this->segment_sequence.size();++i)
+      for (std::size_t i=0; i<segment_sequence.size();++i)
         {
           bin.segment_num() = segment_sequence[i];
-          const int num_ax_poss = proj_data_info_sptr->get_num_axial_poss(bin.segment_num();
-          if (z< num_ax_poss))
+          const int num_ax_poss = proj_data_info_sptr->get_num_axial_poss(bin.segment_num());
+          if (z< num_ax_poss)
             {
               bin.axial_pos_num() = z;
               proj_data_info_sptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
