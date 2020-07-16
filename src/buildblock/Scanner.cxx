@@ -1229,11 +1229,10 @@ Scanner* Scanner::ask_parameters()
         ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
       scanner_ptr->set_scanner_geometry(ScannerGeometry);
 
-      string CrystalMapFileName = "";
       if (ScannerGeometry == "Generic")
       {
-        CrystalMapFileName = ask_string("Enter the name of the crystal map: ", "");
-            scanner_ptr->set_crystal_map_file_name(CrystalMapFileName);
+        string CrystalMapFileName = ask_string("Enter the name of the crystal map: ", "");
+        scanner_ptr->set_crystal_map_file_name(CrystalMapFileName);
         scanner_ptr->read_detectormap_from_file(CrystalMapFileName);
       }
   
