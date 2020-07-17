@@ -722,15 +722,19 @@ Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
     if(stride[0] != 1 || stride[1] != 1)
         error("Only {1,1} stride supported. Aborting");
 
-    // We know the size of the DataSpace
-    //hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    Array<1, unsigned int> aux_reader;
     output.resize(count[0]*count[1]);
+    aux_reader.resize(count[0]*count[1]);
 
     m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
     m_memspace_ptr= new H5::DataSpace(2, count.data());
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
-    output.release_data_ptr();
+    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
+    aux_reader.release_data_ptr();
 
+    // GE/RDF9 stores the tangetial axis reversed to STIR. Flip.
+    for(unsigned int ax=0;ax<count[0];++ax)
+        for(unsigned int tan=0;tan<count[1];++tan)
+            output[ax*count[1]+((count[1]-1)-tan)]=aux_reader[ax*count[1]+tan];
     return Succeeded::yes;
 }
 
@@ -750,12 +754,19 @@ Succeeded GEHDF5Wrapper::read_efficiency_factors(Array<1, float> &output,
 
     // We know the size of the DataSpace
     hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    Array<1, float> aux_reader;
     output.resize(m_NX_SUB*m_NY_SUB);
-    
+    aux_reader.resize(m_NX_SUB*m_NY_SUB);
+
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
     m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
-    output.release_data_ptr();
+    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
+    aux_reader.release_data_ptr();
+
+    // GE/RDF9 stores the tangetial axis reversed to STIR. Flip.
+    for(unsigned int ax=0;ax<m_NX_SUB;++ax)
+        for(unsigned int tan=0;tan<m_NY_SUB;++tan)
+            output[ax*m_NY_SUB+((m_NY_SUB-1)-tan)]=aux_reader[ax*m_NY_SUB+tan];
 
     return Succeeded::yes;
 }

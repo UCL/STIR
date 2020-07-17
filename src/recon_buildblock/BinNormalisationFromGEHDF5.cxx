@@ -45,6 +45,7 @@
 #include "stir/Bin.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
 #include "stir/IO/InterfileHeader.h"
@@ -215,7 +216,7 @@ BinNormalisationFromGEHDF5::set_defaults()
   //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
-  this->_use_geometric_factors = false;
+  this->_use_geometric_factors = true;
 }
 
 void 
@@ -387,17 +388,24 @@ read_norm_data(const string& filename)
           // AB TODO ????
           viewgram *= 2.2110049e-4;
 
-          //AB TODO:
-          //  tangential axis needs to be flipped. Palak flips it here, but I think it would make more sense to flip it inside the reader function
-          Viewgram<float> fliped_viegram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view,i_seg);
-          for(int axial_pos = viewgram.get_min_axial_pos_num(); axial_pos <= viewgram.get_max_axial_pos_num(); ++axial_pos)
-            for (int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos <= viewgram.get_max_tangential_pos_num(); ++tang_pos)
-              fliped_viegram[axial_pos][-tang_pos] = viewgram[axial_pos][tang_pos];
-
-          geo_norm_factors_sptr->set_viewgram(fliped_viegram);
+          geo_norm_factors_sptr->set_viewgram(viewgram);
 
       }// end view for
     }// end segment for
+#if 0 // Use this to store loaded geo result in an interfile format. Useful for debugging purposes. 
+    shared_ptr<ProjData> output_projdata_ptr;
+    const string filename="geo_debug.hs";
+    output_projdata_ptr.reset(new ProjDataInterfile(m_input_hdf5_sptr->get_exam_info_sptr(),projInfo,filename));
+    for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
+      for(int i_view = 0; i_view < scanner_ptr->get_max_num_views(); ++i_view)
+      {
+        output_projdata_ptr->set_viewgram(geo_norm_factors_sptr->get_viewgram(i_view,i_seg));
+        // for(int axial_pos = auxview.get_min_axial_pos_num(); axial_pos <= auxview.get_max_axial_pos_num(); ++axial_pos)
+        //   for (int tang_pos = auxview.get_min_tangential_pos_num(); tang_pos <= auxview.get_max_tangential_pos_num(); ++tang_pos)
+        //     out_geom << auxview[axial_pos][tang_pos] << "   ";
+        // out_geom << std::endl;
+      }
+#endif
   }// end loading of geo factors
 }
 
@@ -552,8 +560,8 @@ BinNormalisationFromGEHDF5::get_efficiency_factors (const DetectionPositionPair<
   const DetectionPosition<>& pos1=detection_position_pair.pos1();
   const DetectionPosition<>& pos2=detection_position_pair.pos2();
   // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
-  return (this->efficiency_factors[pos1.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-1-pos1.tangential_coord()] *
-          this->efficiency_factors[pos2.axial_coord()][this->scanner_ptr->get_num_detectors_per_ring()-1-pos2.tangential_coord()]);;  
+  return (this->efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] *
+          this->efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()]);  
 }
 
 } // namespace
