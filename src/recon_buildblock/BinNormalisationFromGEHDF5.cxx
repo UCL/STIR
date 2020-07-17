@@ -165,7 +165,7 @@ create_segment_sequence(shared_ptr<ProjDataInfo> const& proj_data_info_ptr)
   return segment_sequence;
 }
 
-// Returns the index in the segment sequance for a given segment number (e.g -1 returns 2)
+// Returns the index in the segment sequence for a given segment number (e.g -1 returns 2)
 static
 unsigned int
 find_segment_index_in_sequence(std::vector<int>& segment_sequence, const int segment_num)
@@ -174,7 +174,7 @@ find_segment_index_in_sequence(std::vector<int>& segment_sequence, const int seg
   assert(iter !=  segment_sequence.end());
   return static_cast<int>(iter - segment_sequence.begin());
 }
-// Creates a vetro that has the axial position offset for each segment. 
+// Creates a vector that has the axial position offset for each segment. 
 static
 std::vector<unsigned int> // Prefered since C++11
 create_ax_pos_offset(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, std::vector<int>& segment_sequence)
@@ -361,7 +361,7 @@ read_norm_data(const string& filename)
     for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
     {
       // AB TODO: the loop in Palaks code starts at get_min_num_views(), which does not exist anywere in STIR. Is i_view = 0 OK?
-      for(int i_view = 0; i_view <= scanner_ptr->get_max_num_views(); ++i_view)
+      for(int i_view = 0; i_view < scanner_ptr->get_max_num_views(); ++i_view)
       {
           // Auxiliary single viewgram as a buffer
           Viewgram<float> viewgram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view, i_seg);
@@ -422,7 +422,6 @@ use_geometric_factors() const
   return this->_use_geometric_factors;
 }
 
-#if 1
 float 
 BinNormalisationFromGEHDF5::
 get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
@@ -496,13 +495,6 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         // Ring numbers out of range.
         continue;
       }
-
-      #ifndef NDEBUG
-      Bin check_bin;
-      check_bin.set_bin_value(bin.get_bin_value());
-      assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin,detection_position_pair) == Succeeded::yes);
-      assert(check_bin == bin);
-      #endif
       
       // Here is where the normalization is applied. Apply each of them if required. 
       float lor_efficiency_this_pair = 1.F;
@@ -527,8 +519,6 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 
   return total_efficiency;
 }
-#endif
-
 
 float 
 BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPositionPair<>& detection_position_pair,

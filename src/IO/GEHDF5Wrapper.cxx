@@ -723,11 +723,11 @@ Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
         error("Only {1,1} stride supported. Aborting");
 
     // We know the size of the DataSpace
-    hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
-    output.resize(m_NX_SUB*m_NY_SUB);
+    //hsize_t str_dimsf[2] {m_NX_SUB, m_NY_SUB} ;
+    output.resize(count[0]*count[1]);
 
-    m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, count.data());
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
