@@ -641,6 +641,22 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
     return Succeeded::yes;
 }
 
+float GEHDF5Wrapper::get_coincidence_time_window()
+{
+    if(!is_list_file())
+        error("The file provided is not list data. Aborting");
+
+    H5::DataSet ds_coincTimingPrecision = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision");
+    H5::DataSet ds_posCoincidenceWindow = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
+    float coincTimingPrecision = 0;
+    int posCoincidenceWindow = 0;
+    ds_coincTimingPrecision.read(&coincTimingPrecision,H5::PredType::NATIVE_FLOAT);
+    ds_posCoincidenceWindow.read(&posCoincidenceWindow,H5::PredType::NATIVE_INT32);
+
+    return (2*posCoincidenceWindow+1) *coincTimingPrecision*1e-9;
+}
+
+
 // Developed for listmode access
 Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_offset)
 {

@@ -173,6 +173,8 @@ int main(int argc, char **argv)
 
     shared_ptr<GE::RDF_HDF5::GEHDF5Wrapper> m_input_sptr;
     m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
+    float coincidence_time_window = m_input_sptr->get_coincidence_time_window();                    /*(*segment_ptr)[bin.axial_pos_num()]*/
+
     int num_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
 
     Bin bin;
@@ -234,8 +236,6 @@ int main(int argc, char **argv)
                     uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
                                                   uncompressed_bin);
 
-                    float coincidence_time_window = 0.00000000457f;
-                    /*(*segment_ptr)[bin.axial_pos_num()]*/
                     // GE stores tangential pos in the opposite direction to STIR
                     unsigned int num_crystals_per_ring=m_input_sptr->get_scanner_sptr()->get_num_detectors_per_ring();
                     sinogram[bin.view_num()][bin.tangential_pos_num()] +=

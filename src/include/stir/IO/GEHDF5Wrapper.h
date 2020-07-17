@@ -98,6 +98,9 @@ public:
 
     Succeeded initialise_efficiency_factors();
 
+    //! reads coincidence time window from file
+    float get_coincidence_time_window();
+
     //! reads a listmode event
     /* \param output: has to be pre-allocated and of the correct size (\c size_of_record_signature)
        \param current_offset will be incremented
