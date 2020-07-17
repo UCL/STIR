@@ -101,10 +101,8 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
       
     }  
 
-    // KT doubts that the offset code is correct unless the following holds
-    assert(proj_data_info_cyl_ptr->get_min_axial_pos_num(segment_num) == 0);
-
-    Bin first_bin(segment_num, proj_data_info_cyl_ptr->get_min_axial_pos_num(segment_num), 0, 0);
+    // get a bin (any bin) at axial position 0
+    Bin first_bin(segment_num, 0, 0, 0);
     const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
     const float segment_offset_in_z_gantry_coords = 
       proj_data_info_cyl_ptr->get_m(first_bin) - ring_spacing*delta/2;
