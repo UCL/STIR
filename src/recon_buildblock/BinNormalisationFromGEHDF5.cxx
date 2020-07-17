@@ -361,7 +361,6 @@ read_norm_data(const string& filename)
     // it in read_geo_factors(), all to create a complete sinogram with all the geo factors loaded. 
     for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
     {
-      // AB TODO: the loop in Palaks code starts at get_min_num_views(), which does not exist anywere in STIR. Is i_view = 0 OK?
       for(int i_view = 0; i_view < scanner_ptr->get_max_num_views(); ++i_view)
       {
           // Auxiliary single viewgram as a buffer
@@ -400,10 +399,6 @@ read_norm_data(const string& filename)
       for(int i_view = 0; i_view < scanner_ptr->get_max_num_views(); ++i_view)
       {
         output_projdata_ptr->set_viewgram(geo_norm_factors_sptr->get_viewgram(i_view,i_seg));
-        // for(int axial_pos = auxview.get_min_axial_pos_num(); axial_pos <= auxview.get_max_axial_pos_num(); ++axial_pos)
-        //   for (int tang_pos = auxview.get_min_tangential_pos_num(); tang_pos <= auxview.get_max_tangential_pos_num(); ++tang_pos)
-        //     out_geom << auxview[axial_pos][tang_pos] << "   ";
-        // out_geom << std::endl;
       }
 #endif
   }// end loading of geo factors
@@ -559,7 +554,6 @@ BinNormalisationFromGEHDF5::get_efficiency_factors (const DetectionPositionPair<
 {
   const DetectionPosition<>& pos1=detection_position_pair.pos1();
   const DetectionPosition<>& pos2=detection_position_pair.pos2();
-  // TODO change the tangetial axis flip (scanner_ptr->get_num_detectors_per_ring()-pos1.tangential_coord()) into GEWrapper
   return (this->efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] *
           this->efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()]);  
 }
