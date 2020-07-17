@@ -776,15 +776,24 @@ Succeeded GEHDF5Wrapper::read_singles(Array<1, unsigned int>& output, const unsi
 {
     BOOST_STATIC_ASSERT(sizeof(unsigned int)==4); // Compilation time assert. 
     if(!is_list_file())
-            error("The file provided is not listmode. Aborting");
+        error("The file provided is not listmode. Aborting");
 
     if(current_id == 0 || current_id > this->m_num_singles_samples)
-      error("internal error in GE HDF5 code: singles slice_id "+ std::to_string(current_id) +" is incorrect");
+        error("internal error in GE HDF5 code: singles slice_id "+ std::to_string(current_id) +" is incorrect");
+
+    Array<1, unsigned int> aux_reader;
+    output.resize(m_NX_SUB*m_NY_SUB);
+    aux_reader.resize(m_NX_SUB*m_NY_SUB);
 
     // AB: todo check if output allocated data size is correct.
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address + std::to_string(current_id))));
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
-    output.release_data_ptr();
+    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_UINT32);
+    aux_reader.release_data_ptr();
+
+    // GE/RDF9 stores the tangetial axis reversed to STIR. Flip.
+    for(unsigned int ax=0;ax<m_NX_SUB;++ax)
+        for(unsigned int tan=0;tan<m_NY_SUB;++tan)
+            output[ax*m_NY_SUB+((m_NY_SUB-1)-tan)]=aux_reader[ax*m_NY_SUB+tan];
 
     return Succeeded::yes;
 }

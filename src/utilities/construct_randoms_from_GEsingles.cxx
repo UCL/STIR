@@ -239,7 +239,7 @@ int main(int argc, char **argv)
                     // GE stores tangential pos in the opposite direction to STIR
                     unsigned int num_crystals_per_ring=m_input_sptr->get_scanner_sptr()->get_num_detectors_per_ring();
                     sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                    num_slices*coincidence_time_window*efficiencies[ra][num_crystals_per_ring-1-a]*efficiencies[rb][num_crystals_per_ring-1 - (b%num_detectors_per_ring)];
+                          num_slices*coincidence_time_window*efficiencies[ra][a]*efficiencies[rb][(b%num_detectors_per_ring)];
                   }// endfor uncompresed view num
                 }//endfor tangeial pos num
               }// endfor view num
