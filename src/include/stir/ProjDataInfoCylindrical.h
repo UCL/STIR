@@ -83,12 +83,9 @@ public:
  
   inline float get_t(const Bin&) const;
 
-  //! Return z-coordinate of the middle of the LOR
+  //! Return z-coordinate of the middle of the LOR in gantry coordinates
   /*!
-  The 0 of the z-axis is chosen in the middle of the scanner.
-  
-    \warning Current implementation assumes that the axial positions are always 'centred',
-    i.e. get_m(Bin(..., min_axial_pos_num,...)) == - get_m(Bin(..., max_axial_pos_num,...))
+  In gantry coordinates, the 0 of the z-axis is chosen in the middle of the scanner.
   */  
   inline float get_m(const Bin&) const;
 

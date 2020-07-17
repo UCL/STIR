@@ -146,8 +146,8 @@ public:
   //! find correspondence between axial_pos_num and image coordinates
   /*! <tt>z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset</tt>
   
-      compute the offset by matching up the centre of the scanner 
-      in the 2 coordinate systems
+      compute the offset with ProjDataInfoCylindrical's gantry to
+      physical coordinate systems mapping.
       */
   inline float get_num_planes_per_axial_pos(const int segment_num) const;
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
