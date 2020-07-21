@@ -140,10 +140,7 @@ get_size_of_buffer_in_bytes() const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num()); 
-    
-   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
-
+   return ProjDataFromStream::get_bin_value(bin); 
 }
 
 void
