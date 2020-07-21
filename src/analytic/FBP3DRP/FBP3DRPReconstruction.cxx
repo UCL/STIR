@@ -5,11 +5,13 @@
   \author Kris Thielemans
   \author Claire LABBE
   \author PARAPET project
+  \author Ashley Gillman
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2020, University College London
+    Copyright (C) 2020, CSIRO
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,6 +29,10 @@
 
 /*
  Modification history: (highlights in anti-chronological order)
+ AG 2020/07/21
+ - We no longer want to force images to be centre-aligned, rewrote implementation
+   of find_rmin_rmax().
+
  KT Oct 2004
  - no longer use Numerical Recipes fourier
  - option to 'stretch' the colsher filter during definition for better results
@@ -88,6 +94,7 @@
 
 #include "stir/analytic/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
+//#include "stir/info.h"
 //#include "stir/recon_buildblock/distributable.h"
 //#include "stir/FBP3DRP/process_viewgrams.h"
 
@@ -131,55 +138,47 @@ static void find_rmin_rmax(int& rmin, int& rmax,
                            const int seg_num, 
                            const VoxelsOnCartesianGrid<float>& image)
 {
-  
+  // precomupute a few values:
+  // Radius of the FOV as per the ProjDataInfo, in mm
   const float fovrad = 
     proj_data_info_cyl.get_s(Bin(0,0,0,proj_data_info_cyl.get_num_tangential_poss()/2 - 1));
-  // Compute minimum and maximum rings of 'missing' projections
-   
-  const float delta=proj_data_info_cyl.get_average_ring_difference(seg_num);
-  
-  // find correspondence between ring coordinates and image coordinates:
-  // z = num_planes_per_virtual_ring * ring + virtual_ring_offset
-  // compute the offset by matching up the centre of the scanner 
-  // in the 2 coordinate systems
-  // TODO get all this from ProjDataInfo or so
-
-  const int num_planes_per_virtual_ring =
-    (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 2 : 1;
+  // Radius of the detector rings in mm
+  const float ringrad = proj_data_info_cyl.get_ring_radius();
+  // delta, ring difference in units of n.rings
+  const float delta = proj_data_info_cyl.get_average_ring_difference(seg_num);
+  // if span > 1, we essentially have twice as many "virtual rings"
   const int num_virtual_rings_per_physical_ring =
     (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 1 : 2;
   
+  // This can be derived graphically by drawing a line from a top view of
+  // a scanner from ring to ring at angle theta (based on the segment)
+  // that just skims the field-of-view at the end of the ring.
+  // (Assume phi = y = 0, so no out-of-plane elements).
+  // The width of this line is delta (in units of n.rings), and height
+  // ringrad, and this triangle is similar to the smaller portion that
+  // still lies within the rings, which has width (delta - z) (where z
+  // is the overhang from the rings in units of n.rings) and height
+  // (ringrad - fovrad) / 2
+  const float lor_overhang_in_num_rings = fabs(delta) / 2 * (1 + fovrad / ringrad);
+  const float lor_overhang_in_num_virtual_rings = lor_overhang_in_num_rings * num_virtual_rings_per_physical_ring;
 
-   const float virtual_ring_offset = 
-    (image.get_max_z() + image.get_min_z())/2.F
-    - num_planes_per_virtual_ring
-    *(proj_data_info_cyl.get_max_axial_pos_num(seg_num)+ num_virtual_rings_per_physical_ring*delta 
-    + proj_data_info_cyl.get_min_axial_pos_num(seg_num))/2;
-  
-  
-  // we first consider the LOR at s=0, phi=0 which goes through z=0,y=0, x=fovrad
-  // later on, we will shift it to the 'left'most edge of the FOV.
-  
-  // find z position of intersection of this LOR with the detector radius 
-  // (i.e. y=0, x=-ring_radius)
-  // use image coordinates first
-  float z_in_image_coordinates =
-    -fabs(delta)*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
-    (fovrad + proj_data_info_cyl.get_ring_radius())/(2*proj_data_info_cyl.get_ring_radius());
-  // now shift it to the edge of the FOV 
-  // (taking into account that z==get_min_z() is in the middle of the voxel)
-  z_in_image_coordinates += image.get_min_z() - .5F;
-  
-  // now convert to virtual_ring_coordinates using z = num_planes_per_virtual_ring * ring + virtual_ring_offset
-  const float z_in_virtual_ring_coordinates = 
-    (z_in_image_coordinates - virtual_ring_offset)/num_planes_per_virtual_ring;
-
-  // finally find the 'ring' number
-  rmin = static_cast<int>(floor(z_in_virtual_ring_coordinates));
-  
-  
-  // rmax is determined by using symmetry: at both ends there are just as many missing rings 
+  // rmin should just be this number of virtual rings backward from 0.
+  rmin = static_cast<int>(floor(-lor_overhang_in_num_virtual_rings));
+  // and rmax can be calculated symmetrically (we assume here the axial positions
+  // are correctly centred, this won't work otherwise.)
   rmax =  proj_data_info_cyl.get_max_axial_pos_num(seg_num) + (proj_data_info_cyl.get_min_axial_pos_num(seg_num) - rmin);
+
+  // lastly, if we were, for some reason, provided a larger-than-standard
+  // sinogram, make sure we use at least that size.
+  if (proj_data_info_cyl.get_min_axial_pos_num(seg_num) < rmin) {
+    rmin = proj_data_info_cyl.get_min_axial_pos_num(seg_num);
+    rmax = proj_data_info_cyl.get_max_axial_pos_num(seg_num);
+  }
+
+  // info(boost::format("seg: %s : amin: %s, amax: %s")
+  //   % seg_num % proj_data_info_cyl.get_min_axial_pos_num(seg_num) % proj_data_info_cyl.get_max_axial_pos_num(seg_num));
+  // info(boost::format("seg: %s : rmin: %s, rmax: %s")
+  //   % seg_num % rmin % rmax);
 }
 
 
