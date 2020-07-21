@@ -643,8 +643,8 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
 
 float GEHDF5Wrapper::get_coincidence_time_window()
 {
-    if(!is_list_file())
-        error("The file provided is not list data. Aborting");
+    if(!is_list_file() && !is_sino_file())
+        error("The file provided is not list or sino data. Aborting");
 
     H5::DataSet ds_coincTimingPrecision = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision");
     H5::DataSet ds_posCoincidenceWindow = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
