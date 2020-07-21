@@ -140,7 +140,12 @@ get_size_of_buffer_in_bytes() const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   return ProjDataFromStream::get_bin_value(bin); 
+  // first find offset in the stream
+  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
+  const std::streamoff total_offset = offsets[0];
+  // now convert to index in the buffer
+  const int index = static_cast<int>(offsets[0]/sizeof(float));
+  return buffer[index];
 }
 
 void
