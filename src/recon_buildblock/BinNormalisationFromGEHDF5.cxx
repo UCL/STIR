@@ -546,7 +546,7 @@ BinNormalisationFromGEHDF5::get_geometric_factors (const DetectionPositionPair<>
   if (this->proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(bin,detection_position_pair) == Succeeded::no)
     error("BinNormalisationFromGEHDF5 internal error");
 
-  return this->geo_norm_factors_sptr->get_bin_value(bin);
+  return 1/this->geo_norm_factors_sptr->get_bin_value(bin);
 }
 
 float 
