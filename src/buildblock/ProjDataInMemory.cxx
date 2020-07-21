@@ -140,10 +140,12 @@ get_size_of_buffer_in_bytes() const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num()); 
-    
-   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
-
+  // first find offset in the stream
+  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
+  const std::streamoff total_offset = offsets[0];
+  // now convert to index in the buffer
+  const int index = static_cast<int>(total_offset/sizeof(float));
+  return buffer[index];
 }
 
 void
