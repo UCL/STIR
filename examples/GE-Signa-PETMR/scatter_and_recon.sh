@@ -61,9 +61,10 @@ echo "Estimating scatter (be patient). Log saved in output/scatter.log"
 total_additive_prefix=output/total_additive
 num_scat_iters=3
 scatter_pardir=${pardir}/../samples/scatter_estimation_par_files
-# you might have to change this for a different scanner than the mMR
-scatter_recon_num_subiterations=21
-scatter_recon_num_subsets=21
+# you might have to change this for a different scanner than the Signa PET/MR
+# (it needs to be a divisor of the number of views)
+scatter_recon_num_subiterations=28
+scatter_recon_num_subsets=28
 export scatter_pardir
 export num_scat_iters total_additive_prefix
 export scatter_recon_num_subiterations scatter_recon_num_subsets
@@ -76,7 +77,7 @@ additive_sino=${total_additive_prefix}_${num_scat_iters}.hs
 
 stir_math -s --mult output/mult_factors_3d.hs  ${acf3d} ${norm3d}
 
-# FBP recon (doesn't work for mMR due to gaps)
+# FBP recon (currently commented out, not checked)
 #stir_math -s --mult precorrected_data3d.hs ${data3d} mult_factors_3d.hs
 #stir_subtract -s --accumulate  precorrected_data3d.hs ${additive_sino}
 #ZOOM=.4 INPUT=precorrected_data3d.hs OUTPUT=final_activity_image_3d FBP3DRP FBP3DRP.par

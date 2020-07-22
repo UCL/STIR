@@ -5,7 +5,7 @@
 # right now randoms stuff only handles single time frame
 
 # directory with some standard .par files
-: ${pardir:=~/SIRF/workspace}
+: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
 
 # should get these parameters from command line
 : ${INPUT:=LIST0000.BLF}
