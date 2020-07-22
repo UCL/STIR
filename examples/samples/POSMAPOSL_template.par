@@ -1,0 +1,73 @@
+OSMAPOSLParameters :=
+; example file for running OSEM with interfiltering
+; filter specific things are at the end
+
+objective function type:=PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
+
+input file := ${SINOGRAMS}
+
+; if disabled, defaults to maximum segment number in the file
+maximum absolute segment number to process := 0
+; see User's Guide to see when you need this
+zero end planes of segment 0:= 0
+
+;zoom := .15645
+;xy output image size (in pixels) := 21
+;z output image size (in pixels) := 17
+;z offset (in mm) := 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  	number of rays in tangential direction to trace for each bin := 10
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+Dynamic bin normalisation filename := ${MULTIPLICATIVE}
+
+; we need this for backwards compatibility with the testing script
+use subset sensitivities:=1
+;sensitivity filename:= sens.img
+; if next is set to 1, sensitivity will be recomputed
+; and written to file (if "sensitivity filename" is set)
+recompute sensitivity := 1
+subset sensitivity filenames := subset_sensitivity_%d.hv
+
+; specify additive projection data to handle randoms or so
+; see User's Guide for more info
+additive sinograms := ${ADDITIVE}
+
+; patlak related files
+Kinetic Model type := Patlak Plot
+${PATLAK}
+
+Forward displacement field image := ${INVERSE_DISP_FIELDS}
+
+end PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
+
+; Number of subsets should be a divisor of num_views/4
+number of subsets:= 7
+; Use for starting the numbering from something else than 1
+start at subiteration number:=1
+; Use if you want to start from another subset than 0 (but why?)
+start at subset:= 0
+number of subiterations:= 70
+save estimates at subiteration intervals:= 10
+;write update image := 1
+
+initial estimate := ${INITIAL_ESTIMATE}
+; enable this when you read an initial estimate with negative data
+enforce initial positivity condition:=1
+
+inter-update filter subiteration interval:= 0
+inter-update filter type := None
+
+inter-iteration filter subiteration interval:= 0
+
+post-filter type := None
+
+output filename prefix := ${OUTPUT_PREFIX}
+
+END :=
