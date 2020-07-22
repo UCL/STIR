@@ -343,7 +343,7 @@ read_norm_data(const string& filename)
                                             /* num_tangential_poss */ scanner_ptr->get_max_num_non_arccorrected_bins(),
                                             /* arc_corrected */ false
                                              );
-    geo_norm_factors_sptr.reset(new ProjDataInMemory(m_input_hdf5_sptr->get_exam_info_sptr(),
+    geo_eff_factors_sptr.reset(new ProjDataInMemory(m_input_hdf5_sptr->get_exam_info_sptr(),
                                                  projInfo,
                                                  true)); // Initialize with zeroes (always true internally...)
 
@@ -382,12 +382,10 @@ read_norm_data(const string& filename)
           // copy data back
           // AB TODO: can I just give the viewgram as a buffer? Would avoid this copy.
           // AB TODO: think not, as stir::Arrays are not a single array but arrays of pointers, and buffer is Array<1,T> and viegram is Array<2,T>
-          std::copy(buffer.begin(),buffer.end(),viewgram.begin_all());
 
-          // AB TODO ????
-          viewgram *= 2.2110049e-4;
+          std::transform(buffer.begin(), buffer.end(),viewgram.begin_all(), [](const float f) { return 1/(f*2.2110049e-4);} );
 
-          geo_norm_factors_sptr->set_viewgram(viewgram);
+          geo_eff_factors_sptr->set_viewgram(viewgram);
 
       }// end view for
     }// end segment for
@@ -398,7 +396,7 @@ read_norm_data(const string& filename)
     for (int i_seg = projInfo->get_min_segment_num(); i_seg <= projInfo->get_max_segment_num(); ++i_seg)
       for(int i_view = 0; i_view < scanner_ptr->get_max_num_views(); ++i_view)
       {
-        output_projdata_ptr->set_viewgram(geo_norm_factors_sptr->get_viewgram(i_view,i_seg));
+        output_projdata_ptr->set_viewgram(geo_eff_factors_sptr->get_viewgram(i_view,i_seg));
       }
 #endif
   }// end loading of geo factors
@@ -507,11 +505,11 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       }
       if (this->use_dead_time())
       {
-        lor_efficiency_this_pair *=get_dead_time_efficiency(detection_position_pair, start_time, end_time);
+        lor_efficiency_this_pair *= get_dead_time_efficiency(detection_position_pair, start_time, end_time);
       }
       if (this->use_geometric_factors())
       {
-        lor_efficiency_this_pair *=get_geometric_factors(detection_position_pair);
+        lor_efficiency_this_pair *= get_geometric_efficiency_factors(detection_position_pair);
       }
       lor_efficiency += lor_efficiency_this_pair;
     }//endfor
@@ -536,17 +534,17 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPositionPai
 }
 
 float 
-BinNormalisationFromGEHDF5::get_geometric_factors (const DetectionPositionPair<>& detection_position_pair) const
+BinNormalisationFromGEHDF5::get_geometric_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const
 {
 
-  if (is_null_ptr(geo_norm_factors_sptr))
+  if (is_null_ptr(geo_eff_factors_sptr))
     return 1.F;
 
   Bin bin;
   if (this->proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(bin,detection_position_pair) == Succeeded::no)
     error("BinNormalisationFromGEHDF5 internal error");
 
-  return 1/this->geo_norm_factors_sptr->get_bin_value(bin);
+  return this->geo_eff_factors_sptr->get_bin_value(bin);
 }
 
 float 

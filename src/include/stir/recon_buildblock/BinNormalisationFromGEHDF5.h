@@ -110,7 +110,7 @@ private:
   Array<1,float> trans_t1_array;
   shared_ptr<SinglesRates> singles_rates_ptr;
   Array<2,float> efficiency_factors;
-  shared_ptr<ProjDataInMemory>  geo_norm_factors_sptr;
+  shared_ptr<ProjDataInMemory>  geo_eff_factors_sptr;
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
@@ -130,7 +130,7 @@ private:
   float get_dead_time_efficiency ( const DetectionPositionPair<>& detection_position_pair,
 				  const double start_time, const double end_time) const;
 
-  float get_geometric_factors  (const DetectionPositionPair<>& detection_position_pair) const;
+  float get_geometric_efficiency_factors  (const DetectionPositionPair<>& detection_position_pair) const;
   float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
   virtual void set_defaults();

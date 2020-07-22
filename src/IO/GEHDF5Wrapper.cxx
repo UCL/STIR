@@ -528,8 +528,6 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
     {
         m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view" + std::to_string(view_num);
 
-        info("GEHDF5Wrapper: reading from " + m_address, 2);
-
         m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
         m_dataspace = m_dataset_sptr->getSpace();
         // Create an array to host the size of the dimensions
@@ -641,7 +639,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
     return Succeeded::yes;
 }
 
-float GEHDF5Wrapper::get_coincidence_time_window()
+float GEHDF5Wrapper::get_coincidence_time_window() const
 {
     if(!is_list_file() && !is_sino_file())
         error("The file provided is not list or sino data. Aborting");
