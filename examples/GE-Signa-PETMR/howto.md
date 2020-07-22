@@ -25,7 +25,7 @@ stir_math -s output.hs RDF_filename
 where `RDF_filename` is the uncompressed RDF sinogram file extracted from the scanner.
 
 3. Randoms Correction: For the randoms correction sinogram, utility
-construct_randoms_from_GEsingles can be used as :
+`construct_randoms_from_GEsingles` can be used as :
 ```
 construct_randoms_from_GEsingles out_filename listmode_filename template.hs
 ```
