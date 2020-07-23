@@ -29,7 +29,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
-
+        test_DateTime
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}

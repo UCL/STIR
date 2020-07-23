@@ -79,11 +79,12 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        date_time_functions
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     ProjDataGEHDF5
- )
+    )
 endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)

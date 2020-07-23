@@ -39,6 +39,7 @@
 #include "stir/KeyParser.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ExamInfo.h"
+#include "stir/date_time_functions.h"
 
 START_NAMESPACE_STIR
 
@@ -159,6 +160,8 @@ public :
   // 'Final' variables
 
   std::string data_file_name;
+
+  DateTimeStrings study_date_time;
 
   //! This will be determined from number_format_index and bytes_per_pixel
   NumericType		type_of_numbers;
