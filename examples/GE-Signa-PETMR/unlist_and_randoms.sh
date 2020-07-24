@@ -13,8 +13,17 @@
 
 export INPUT FRAMES
 
+# Define some example frame_duration
+: ${frame_duration:=1000000000}
+
+# Create a fdef file with some example value (replace this for your desired fdef)
+if [ ! -f $FRAMES ]; then
+echo "1 100000000" > $FRAMES
+fi
+
 # create prompt sinograms
 OUTPUT=sinospan2 TEMPLATE=${pardir}/template.hs lm_to_projdata ${pardir}/lm_to_projdata.par 
 
 # estimate randoms from singles
 construct_randoms_from_GEsingles randomsspan2 ${INPUT} template.hs 
+

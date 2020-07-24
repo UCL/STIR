@@ -9,7 +9,7 @@
 : ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
 
 # names are from unlist_and_randoms
-: ${sino_input:=sinospan2.hs}
+: ${sino_input:=sinospan2_f1g1d0b0.hs}
 : ${randoms3d:=randomsspan2.hs}
 export sino_input randoms3d # used by scatter_estimation.par
 
@@ -18,7 +18,7 @@ export sino_input randoms3d # used by scatter_estimation.par
 : ${RDFNORM:=norm3d}
 export RDFNORM
 
-: ${atnimg:=20170809_NEMA_MUMAP_UCL.v.hdr}
+: ${atnimg:=att.hv}
 export atnimg # used in scatter_estimation.par
 
 # we will put most intermediate files in a separate directory
