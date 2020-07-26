@@ -308,6 +308,11 @@ estimation. Currently only available for the mMR scanner, and requires CUDA.
 Implementation of the OSMAP One-Step-Late reconstruction algorithm
 */
 /*!
+\defgroup KOSMAPOSL KOSMAPOSL
+\ingroup OSMAPOSL
+Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm
+*/
+/*!
 \defgroup OSSPS OSSPS
 \ingroup reconstructors
 Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm
