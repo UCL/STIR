@@ -231,6 +231,14 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
 /* Constructs an exam info object from an ITK meta data dictionary.
    Uses fields:
    - (0018, 5100) Patient Position
+   - SeriesDate and SeriesTime
+   - AcquisitionDateTime, or AcquisitionDate and AcquisitionTime
+   - (0018, 1242) ActualFrameDuration
+   - (0008, 0201) TimezoneOffsetFromUTC
+   - (0008, 0060) Modality
+
+   \todo This will only work for DICOM meta-data. Other fileformats store meta-data
+   with different names.
  */
 static
 shared_ptr<ExamInfo>
@@ -265,7 +273,8 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
       std::string series_date, series_time;
       itk::ExposeMetaData<std::string>(dictionary, "0008|0021", series_date);
       itk::ExposeMetaData<std::string>(dictionary, "0008|0031", series_time);
-      series_datetime = DICOM_date_time_to_DT(series_date, series_time, TimezoneOffsetFromUTC);
+      if (!series_date.empty() && !series_time.empty())
+        series_datetime = DICOM_date_time_to_DT(series_date, series_time, TimezoneOffsetFromUTC);
     }
     itk::ExposeMetaData<std::string>(dictionary, "0008|002a", acq_datetime);
     if (acq_datetime.empty())
@@ -273,7 +282,8 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
         std::string acq_date, acq_time;
         itk::ExposeMetaData<std::string>(dictionary, "0008|0022", acq_date);
         itk::ExposeMetaData<std::string>(dictionary, "0008|0032", acq_time);
-        acq_datetime = DICOM_date_time_to_DT(acq_date, acq_time, TimezoneOffsetFromUTC);
+        if (!acq_date.empty() && !acq_time.empty())
+          acq_datetime = DICOM_date_time_to_DT(acq_date, acq_time, TimezoneOffsetFromUTC);
       }
     itk::ExposeMetaData<std::string>(dictionary, "0018|1242", actual_frame_duration);
     if (!series_datetime.empty() && !acq_datetime.empty() && !actual_frame_duration.empty())
