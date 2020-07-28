@@ -349,7 +349,7 @@ xapyb(const Array& x, const elemT2 a,
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())
       || (this->get_index_range() != y.get_index_range()))
-       error("Array::axpby: index ranges don't match");
+       error("Array::xapyb: index ranges don't match");
 
   typename Array::iterator this_iter = this->begin();
   typename Array::const_iterator x_iter = x.begin();
@@ -357,6 +357,32 @@ xapyb(const Array& x, const elemT2 a,
   while (this_iter != this->end())
     {
       this_iter->xapyb(*x_iter++, a, *y_iter++, b);
+      ++this_iter;
+    }
+}
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions,elemT>::
+xapyb_vec(const Array& x, const Array& a,
+          const Array& y, const Array& b)
+{  
+  this->check_state();
+  if ((this->get_index_range() != x.get_index_range())
+      || (this->get_index_range() != y.get_index_range())
+      || (this->get_index_range() != a.get_index_range())
+      || (this->get_index_range() != b.get_index_range()))
+       error("Array::xapyb: index ranges don't match");
+
+  typename Array::iterator this_iter = this->begin();
+  typename Array::const_iterator x_iter = x.begin();
+  typename Array::const_iterator y_iter = y.begin();
+  typename Array::const_iterator a_iter = a.begin();
+  typename Array::const_iterator b_iter = b.begin();
+
+  while (this_iter != this->end())
+    {
+      this_iter->xapyb_vec(*x_iter++, *a_iter++, *y_iter++, *b_iter++);
       ++this_iter;
     }
 }
