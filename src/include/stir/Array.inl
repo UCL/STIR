@@ -336,6 +336,16 @@ Array<num_dimensions,elemT>::
 axpby(const elemT2 a, const Array& x,
       const elemT2 b, const Array& y)
 {  
+  Array<num_dimensions,elemT>::xapyb(x,a,y,b);
+}
+
+template <int num_dimensions, typename elemT>
+template <typename elemT2>
+void
+Array<num_dimensions,elemT>::
+xapyb(const Array& x, const elemT2 a,
+      const Array& y, const elemT2 b)
+{  
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())
       || (this->get_index_range() != y.get_index_range()))
@@ -346,7 +356,7 @@ axpby(const elemT2 a, const Array& x,
   typename Array::const_iterator y_iter = y.begin();
   while (this_iter != this->end())
     {
-      this_iter->axpby(a,*x_iter++, b, *y_iter++);
+      this_iter->xapyb(*x_iter++, a, *y_iter++, b);
       ++this_iter;
     }
 }

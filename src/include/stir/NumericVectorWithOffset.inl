@@ -284,6 +284,16 @@ NumericVectorWithOffset<T, NUMBER>::
 axpby(const NUMBER2 a, const NumericVectorWithOffset& x,
       const NUMBER2 b, const NumericVectorWithOffset& y)
 {  
+  NumericVectorWithOffset<T, NUMBER>::xapyb(x,a,y,b);
+}
+
+template <class T, class NUMBER>
+template <class NUMBER2>
+inline void
+NumericVectorWithOffset<T, NUMBER>::
+xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
+      const NumericVectorWithOffset& y, const NUMBER2 b)
+{  
   this->check_state();
   if ((this->get_min_index() != x.get_min_index())
       || (this->get_min_index() != y.get_min_index())

@@ -34,6 +34,7 @@
 
 
 #include "stir/VectorWithOffset.h"
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 /*! 
@@ -126,11 +127,15 @@ public:
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
-  //! a*x+b*y, where a and b are scalar, and x and y are vectors
+  //! DEPRECATED a*x+b*y, where a and b are scalar, and x and y are vectors
   template <typename elemT2>
-    inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
+    DEPRECATED inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
                       const elemT2 b, const NumericVectorWithOffset& y);
 
+  //! x*a+y*b, where a and b are scalar, and x and y are vectors
+  template <typename elemT2>
+    inline void xapyb(const NumericVectorWithOffset& x, const elemT2 a,
+                      const NumericVectorWithOffset& y, const elemT2 b);
 };
 
 END_NAMESPACE_STIR
