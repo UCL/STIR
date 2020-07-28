@@ -257,6 +257,28 @@ public:
 
   //@}
 
+  //! \name Convenience functions for the image centre
+  //@{
+
+  // TODO - use this as the implementation for where the image should be centred
+  // //! Get the voxel nearest the image centre
+  // inline BasicCoordinate<num_dimensions, int>
+  // get_image_central_index() const;
+
+  //! Get the "most-central" voxel
+  virtual BasicCoordinate<num_dimensions,float>
+  get_image_centre_in_index_coordinates() const = 0;
+
+  //! Get the average location of image sample points in physical coordinates
+  virtual CartesianCoordinate3D<float>
+  get_image_centre_in_physical_coordinates() const = 0;
+
+  //! Get the average location of image sample points in LPS patient coordinates
+  virtual CartesianCoordinate3D<float>
+  get_image_centre_in_LPS_coordinates() const = 0;
+
+  //@}
+
   //! Allocate a new DiscretisedDensity object with same characteristics as the current one.
   virtual DiscretisedDensity<num_dimensions, elemT>* get_empty_copy() const = 0;
 

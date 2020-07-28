@@ -41,6 +41,10 @@ START_NAMESPACE_STIR
   \ingroup densitydata
   \brief This abstract class is the basis for images on a Cartesian grid.
 
+  STIR grid sampling MUST axes align with the gantry sampling axes (i.e., z runs
+  along the axis, y in the direction of gravity, and x perpendicular to both).
+  Only the LPS coordinate system is allowed to be rotated.
+
   The only new information compared to DiscretisedDensity is the grid_spacing.
   This is currently a BasicCoordinate<num_dimensions,float> object. 
   It really should be CartesianCoordinate<num_dimensions,float> object, but
@@ -76,6 +80,27 @@ public:
   //! Set the grid_spacing
   inline void set_grid_spacing(const BasicCoordinate<num_dimensions,float>& grid_spacing_v);
 
+  // TODO: this is a confusing name
+  //! Get the size of the cartesian grid
+  inline BasicCoordinate<num_dimensions,int> get_lengths() const;
+
+  //! Get the smallest indices on the sampling grid for each dim
+  inline BasicCoordinate<num_dimensions,int> get_min_indices() const;
+
+  //! Get the largest indices on the sampling grid for each dim
+  inline BasicCoordinate<num_dimensions,int> get_max_indices() const;
+
+  //! Get the "most-central" voxel
+  BasicCoordinate<num_dimensions,float>
+  get_image_centre_in_index_coordinates() const;
+
+  //! Get the average location of image sample points in physical coordinates
+  CartesianCoordinate3D<float>
+  get_image_centre_in_physical_coordinates() const;
+
+  //! Get the average location of image sample points in LPS patient coordinates
+  CartesianCoordinate3D<float>
+  get_image_centre_in_LPS_coordinates() const;
 
 protected:
   virtual inline bool

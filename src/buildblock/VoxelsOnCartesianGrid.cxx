@@ -372,35 +372,6 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
   this->grow(IndexRange<3>(min_indices, max_indices));
 }
 
-template<class elemT>
-BasicCoordinate<3,int>
-VoxelsOnCartesianGrid<elemT>::
-get_lengths() const
-{
-  return make_coordinate(this->get_z_size(), this->get_y_size(), this->get_x_size());
-}
-
-template<class elemT>
-BasicCoordinate<3,int>
-VoxelsOnCartesianGrid<elemT>::
-get_min_indices() const
-{
-  CartesianCoordinate3D<int> min_indices;
-  CartesianCoordinate3D<int> max_indices;
-  this->get_regular_range(min_indices, max_indices);
-  return min_indices;
-}
-
-template<class elemT>
-BasicCoordinate<3,int>
-VoxelsOnCartesianGrid<elemT>::
-get_max_indices() const
-{
-  CartesianCoordinate3D<int> min_indices;
-  CartesianCoordinate3D<int> max_indices;
-  this->get_regular_range(min_indices, max_indices);
-  return max_indices;
-}
 #if 0
 
 /****************************
