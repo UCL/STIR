@@ -141,7 +141,10 @@ public:
     if (t1.get_min_index() != t2.get_min_index() ||
         t1.get_max_index() != t2.get_max_index())
     {
-      std::cerr << "Error: unequal ranges. " << str << std::endl;
+      std::cerr << "Error: unequal ranges: ("
+      << t1.get_min_index() << "," << t1.get_max_index() << ") ("
+      << t2.get_min_index() << "," << t2.get_max_index() << "). "
+      << str << std::endl;
       return everything_ok = false;
     }
 
