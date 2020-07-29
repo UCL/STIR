@@ -694,12 +694,12 @@ construct_sino_lookup_table()
                                                0, num_rings-1));
   // construct proj_data_info in "native" Siemens space for the norm (span=11 usually?)
   // TODO will have to get "native" span from somewhere. is it in the norm header?
- shared_ptr<ProjDataInfo> proj_data_info_uptr=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, 49,
+  ProjDataInfo* proj_data_info=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, 49,
                                          this->scanner_ptr->get_max_num_views()-1,
-                                         this->scanner_ptr->get_max_num_non_arccorrected_bins());
+                                         this->scanner_ptr->get_max_num_non_arccorrected_bins())->clone();
   
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
-               dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_uptr->clone()));
+   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
+           (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info));
               
   this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
   
