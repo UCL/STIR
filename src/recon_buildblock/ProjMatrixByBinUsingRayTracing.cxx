@@ -241,7 +241,7 @@ ProjMatrixByBinUsingRayTracing::set_up(
     const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr_v // TODO should be Info only
 )
 {
-  auto image_info_sptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(density_info_sptr_v.get());
+  auto image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(density_info_sptr_v.get());
 
   if (!image_info_ptr)
     error("ProjMatrixByBinUsingRayTracing initialised with wrong type of DiscretisedDensity.");
@@ -263,6 +263,7 @@ ProjMatrixByBinUsingRayTracing::set_up(
     }
 
   ProjMatrixByBin::set_up(proj_data_info_sptr_v, density_info_sptr_v);
+  this->density_info_sptr = density_info_sptr_v;
 
   if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical" && !use_actual_detector_boundaries)
     {
@@ -273,9 +274,10 @@ ProjMatrixByBinUsingRayTracing::set_up(
 
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
+  image_info_ptr->get_regular_range(min_index, max_index);
+
   if (std::abs(origin.x()) > .05F || std::abs(origin.y()) > .05F)
     error("ProjMatrixByBinUsingRayTracing sadly doesn't support shifted x/y origin yet");
-  image_info_sptr->get_regular_range(min_index, max_index);
 
   symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr,
                                                                     density_info_sptr_v,
@@ -386,6 +388,20 @@ ProjMatrixByBinUsingRayTracing::set_up(
       if (use_actual_detector_boundaries)
         info("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true.", 3);
     }
+
+  // precalculate some values that are constant over all bins
+  CartesianCoordinate3D<float> min_pos, max_pos;
+  image_info_ptr->get_regular_range(min_index, max_index);
+#ifdef STIR_PMRT_LARGER_FOV
+  // use FOV which is slightly 'inside' the image to avoid
+  // index out of range
+  CartesianCoordinate3D<float> max_pos = density_info_sptr->get_relative_coordinates_for_indices(max_index + 0.45F);
+  CartesianCoordinate3D<float> min_pos = density_info_sptr->get_relative_coordinates_for_indices(min_index - 0.45F);
+#else
+  max_pos = density_info_sptr->get_relative_coordinates_for_indices(max_index);
+  min_pos = density_info_sptr->get_relative_coordinates_for_indices(min_index);
+#endif
+  fovrad_in_mm = min(min(max_pos.x(), -min_pos.x()), min(max_pos.y(), -min_pos.y()));
 
 #if 0
   // test if our 2D code does not have problems
@@ -677,7 +693,7 @@ ProjMatrixByBinUsingRayTracing::calculate_proj_matrix_elems_for_one_bin(ProjMatr
 
   const float tantheta = proj_data_info_sptr->get_tantheta(bin);
   const float costheta = 1 / sqrt(1 + square(tantheta));
-  const float m_in_mm = proj_data_info_ptr->get_m(bin);
+  const float m_in_mm = proj_data_info_sptr->get_m(bin);
 
   const float sampling_distance_of_adjacent_LORs_z = proj_data_info_sptr->get_sampling_in_t(bin) / costheta;
 
@@ -737,28 +753,6 @@ ProjMatrixByBinUsingRayTracing::calculate_proj_matrix_elems_for_one_bin(ProjMatr
       if (fabs(modulo((m_in_mm + offset_in_z) / voxel_size.z(), 1.F) - .5) < .001)
         offset_in_z -= .1F * voxel_size.z();
     }
-
-    // use FOV which is slightly 'inside' the image to avoid
-    // index out of range
-#ifdef STIR_PMRT_LARGER_FOV
-  CartesianCoordinate3D<float> max_pos = density_info_sptr->get_relative_coordinates_for_indices(max_index + 0.45F);
-  CartesianCoordinate3D<float> min_pos = density_info_sptr->get_relative_coordinates_for_indices(min_index - 0.45F);
-#else
-  if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
-    {
-      // N.E.: TODO: Not sure what to do here
-      // fovrad_in_mm = min((min(max_index.x(), -min_index.x()) - 5.f) * voxel_size.x(),
-      //   (min(max_index.y(), -min_index.y()) - 5.f) * voxel_size.y());
-      CartesianCoordinate3D<float> max_pos = density_info_sptr->get_relative_coordinates_for_indices(max_index);
-      CartesianCoordinate3D<float> min_pos = density_info_sptr->get_relative_coordinates_for_indices(min_index);
-    }
-  else
-    {
-      CartesianCoordinate3D<float> max_pos = density_info_sptr->get_relative_coordinates_for_indices(max_index);
-      CartesianCoordinate3D<float> min_pos = density_info_sptr->get_relative_coordinates_for_indices(min_index);
-    }
-#endif
-  const float fovrad_in_mm = min(min(max_pos.x(), -min_pos.x()), min(max_pos.y(), -min_pos.y()));
 
   if (num_tangential_LORs == 1)
     {
