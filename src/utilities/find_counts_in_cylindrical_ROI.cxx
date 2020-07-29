@@ -223,7 +223,7 @@ int main(int argc, char **argv)
         }
       }
     }
-    STD=sqrt(sum_for_std/total_count);
+    STD=sqrt(sum_for_std/num_voxels);
     std::cout<<"num_voxels total_count mean_count STD min_count max_count : "
               <<num_voxels<<" "<<total_count<<" "<<mean_count<<" "
               <<STD<<" "<<min_count<<" "<<max_count<<"\n";
