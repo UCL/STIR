@@ -98,7 +98,7 @@ private:
     const shared_ptr<ProjDataInfo> proj_data_info_sptr,
     const shared_ptr<ExamInfo> exam_info_sptr);
 
-  Succeeded run_tests_for_extended_axial_fov(
+  Succeeded run_tests_for_1_projdata_extended_axial_fov(
     const shared_ptr<ProjDataInfo> proj_data_info_sptr,
     const shared_ptr<ExamInfo> exam_info_sptr,
     const shared_ptr<VoxelsOnCartesianGrid<float> > standard_image_sptr,
@@ -229,18 +229,66 @@ fill_in_cylinder_test_image(VoxelsOnCartesianGrid<float> &image) {
   filter.apply(image);
 }
 
+// Succeeded
+// CoordinateSystemMappingTests::
+// run_tests_for_1_projdata_extended_axial_fov_for_1_projector_pair(
+//   const shared_ptr<ProjDataInfo> proj_data_info_sptr,
+//   const shared_ptr<ExamInfo> exam_info_sptr,
+//   const shared_ptr<VoxelsOnCartesianGrid<float> > standard_image_sptr,
+//   const std::vector<shared_ptr<ProjectorByBinPair> > projector_pair_sptrs)
+// {
+
+void do_forward_then_back_projections(
+  ProjData &projection, shared_ptr<VoxelsOnCartesianGrid<float> > backprojection_sptr,
+  const shared_ptr<ProjDataInfo> proj_data_info_sptr,
+  const shared_ptr<VoxelsOnCartesianGrid<float> > standard_image_sptr,
+  shared_ptr<ProjectorByBinPair> projector_pair_sptr)
+{
+    // set up projectors
+    projector_pair_sptr->set_up(proj_data_info_sptr, standard_image_sptr);
+    shared_ptr<ForwardProjectorByBin> fwd_projector_sptr =
+      projector_pair_sptr->get_forward_projector_sptr();
+    // std::cerr << "... using " << fwd_projector_sptr->get_registered_name()
+    //           << " for forward:"  << std::endl
+    //           << fwd_projector_sptr->parameter_info();
+    shared_ptr<BackProjectorByBin> bck_projector_sptr =
+      projector_pair_sptr->get_back_projector_sptr();
+    // std::cerr << "... using " << bck_projector_sptr->get_registered_name()
+    //           << " for backward:"  << std::endl
+    //           << bck_projector_sptr->parameter_info();
+
+    // std::cerr << "# Test with fwd(" << fwd_projector_sptr->get_registered_name()
+    //           << ") bck(" << bck_projector_sptr->get_registered_name() << ")"
+    //           << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << "## Forward and back project standard image..." << std::endl;
+
+    std::cerr << std::endl;
+    std::cerr << "### Running forward" << std::endl;
+    fwd_projector_sptr->set_input(*standard_image_sptr);
+    fwd_projector_sptr->forward_project(projection);
+
+    std::cerr << std::endl;
+    std::cerr << "### Running backward" << std::endl;
+    bck_projector_sptr->start_accumulating_in_new_target();
+    bck_projector_sptr->back_project(projection);
+    bck_projector_sptr->get_output(*backprojection_sptr);
+}
+
 // Motivated by changing the definition of the coordinate system mapping to/from
 // image space and sinogram space, we want to make sure that the desired
 // behaviour of having oversize and non-centred-in-z-plane images are consistent
 // with the standard image size.
 Succeeded
-CoordinateSystemMappingTests::run_tests_for_extended_axial_fov(
+CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
   const shared_ptr<ProjDataInfo> proj_data_info_sptr,
   const shared_ptr<ExamInfo> exam_info_sptr,
   const shared_ptr<VoxelsOnCartesianGrid<float> > standard_image_sptr,
   const std::vector<shared_ptr<ProjectorByBinPair> > projector_pair_sptrs)
 {
-  std::cerr << "Seting up extended images..." << std::endl;
+  std::cerr << "#" << std::endl;
+  std::cerr << "# Seting up extended images..." << std::endl;
+  std::cerr << "#" << std::endl;
   Succeeded succeeded = Succeeded::yes;
 
   const int EXTEND_BY = 3;
@@ -279,44 +327,51 @@ CoordinateSystemMappingTests::run_tests_for_extended_axial_fov(
   std::cerr << std::endl;
 
   for (shared_ptr<ProjectorByBinPair> projector_pair_sptr : projector_pair_sptrs) {
-    std::cerr << "Forward and back project standard image..." << std::endl;
-
     // outputs
     ProjDataInMemory standard_projection =
+    //   ProjDataInMemory(exam_info_sptr, proj_data_info_sptr);
+    // ProjDataInMemory extended_fov_projection =
       ProjDataInMemory(exam_info_sptr, proj_data_info_sptr);
     shared_ptr<VoxelsOnCartesianGrid<float> > standard_backprojection_sptr(
       standard_image_sptr->get_empty_copy());
+    // shared_ptr<VoxelsOnCartesianGrid<float> > extended_fov_backprojection_sptr(
+    //   standard_image_sptr->get_empty_copy());
 
-    // set up projectors
-    projector_pair_sptr->set_up(proj_data_info_sptr, standard_image_sptr);
-    shared_ptr<ForwardProjectorByBin> fwd_projector_sptr =
-      projector_pair_sptr->get_forward_projector_sptr();
-    std::cerr << "... using " << fwd_projector_sptr->get_registered_name()
-              << " for forward:"  << std::endl
-              << fwd_projector_sptr->parameter_info();
-    shared_ptr<BackProjectorByBin> bck_projector_sptr =
-      projector_pair_sptr->get_back_projector_sptr();
-    std::cerr << "... using " << bck_projector_sptr->get_registered_name()
-              << " for backward:"  << std::endl
-              << bck_projector_sptr->parameter_info();
+    // project
+    do_forward_then_back_projections(
+      standard_projection, standard_backprojection_sptr,
+      proj_data_info_sptr, standard_image_sptr, projector_pair_sptr);
 
-    std::cerr << "Running forward." << std::endl;
-    fwd_projector_sptr->set_input(*standard_image_sptr);
-    fwd_projector_sptr->forward_project(standard_projection);
-
-    std::cerr << "Running backward." << std::endl;
-    bck_projector_sptr->start_accumulating_in_new_target();
-    bck_projector_sptr->back_project(standard_projection);
-    bck_projector_sptr->get_output(*standard_backprojection_sptr);
-
+    // check
     if (not compare_original_with_backprojection(
         *standard_image_sptr, *standard_backprojection_sptr,
         "Checking backprojection matches original.")) {
       succeeded = Succeeded::no;
+      everything_ok = false;
       std::cerr << "Saving last failed image comparison to last_failed_{1,2}.hv. "
                 << "(may be overwritten)" << std::endl;
       write_to_file("last_failed_1.hv", *standard_image_sptr);
       write_to_file("last_failed_2.hv", *standard_backprojection_sptr);
+    }
+
+    for (shared_ptr<VoxelsOnCartesianGrid<float> > extended_image : extended_images) {
+
+      // // project
+      // do_forward_then_back_projections(
+      //   standard_projection, standard_backprojection_sptr,
+      //   proj_data_info_sptr, standard_image_sptr, projector_pair_sptr)
+
+      // // check
+      // if (not compare_original_with_backprojection(
+      //     *standard_image_sptr, *standard_backprojection_sptr,
+      //     "Checking backprojection matches original.")) {
+      //   succeeded = Succeeded::no;
+      //   std::cerr << "Saving last failed image comparison to last_failed_{1,2}.hv. "
+      //             << "(may be overwritten)" << std::endl;
+      //   write_to_file("last_failed_1.hv", *standard_image_sptr);
+      //   write_to_file("last_failed_2.hv", *standard_backprojection_sptr);
+      // }
+
     }
 
     std::cerr << std::endl;
@@ -366,8 +421,9 @@ CoordinateSystemMappingTests::run_tests_for_1_projdatainfo(
   std::vector<shared_ptr<ForwardProjectorByBin> > fwd_projector_sptrs;
   shared_ptr<ForwardProjectorByBin> reference_fwd_projector_sptr =
     projector_pair_matrix_raytrace_sptr->get_forward_projector_sptr();
-  fwd_projector_sptrs.push_back(
-    projector_pair_matrix_raytrace_sptr->get_forward_projector_sptr());
+  // don't add the RT, all combos already covered
+  // fwd_projector_sptrs.push_back(
+  //   projector_pair_matrix_raytrace_sptr->get_forward_projector_sptr());
   fwd_projector_sptrs.push_back(
     projector_pair_matrix_interp_sptr->get_forward_projector_sptr());
 
@@ -375,7 +431,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdatainfo(
   std::vector<shared_ptr<BackProjectorByBin> > bck_projector_sptrs;
   shared_ptr<BackProjectorByBin> reference_bck_projector_sptr =
     projector_pair_matrix_raytrace_sptr->get_back_projector_sptr();
-  // don't add the RT again, all combos already covered
+  // don't add the RT, all combos already covered
   // bck_projectors.push_back(
   //   projector_pair_matrix_raytrace_sptr->get_back_projector_sptr());
   bck_projector_sptrs.push_back(
@@ -383,17 +439,26 @@ CoordinateSystemMappingTests::run_tests_for_1_projdatainfo(
 
   // Set up pairs to test
   std::vector<shared_ptr<ProjectorByBinPair> > projector_pair_sptrs;
+  // Test the correctly paired projectors first
+  projector_pair_sptrs.push_back(projector_pair_matrix_raytrace_sptr);
+  projector_pair_sptrs.push_back(projector_pair_matrix_interp_sptr);
+  // each back projector against the reference forward projector
+  for (shared_ptr<BackProjectorByBin> bck_projector_sptr : bck_projector_sptrs) {
+    projector_pair_sptrs.push_back(
+      shared_ptr<ProjectorByBinPair>(
+        new ProjectorByBinPairUsingSeparateProjectors(
+          reference_fwd_projector_sptr, bck_projector_sptr)));
+  }
+  // each forward projector against the reference back projector
   for (shared_ptr<ForwardProjectorByBin> fwd_projector_sptr : fwd_projector_sptrs) {
-    for (shared_ptr<BackProjectorByBin> bck_projector_sptr : bck_projector_sptrs) {
-      projector_pair_sptrs.push_back(
-        shared_ptr<ProjectorByBinPair>(
-          new ProjectorByBinPairUsingSeparateProjectors(
-            fwd_projector_sptr, bck_projector_sptr)));
-    }
+    projector_pair_sptrs.push_back(
+      shared_ptr<ProjectorByBinPair>(
+        new ProjectorByBinPairUsingSeparateProjectors(
+          fwd_projector_sptr, reference_bck_projector_sptr)));
   }
 
-
-  succeeded &= run_tests_for_extended_axial_fov(
+  // Now test each of the pairs
+  succeeded &= run_tests_for_1_projdata_extended_axial_fov(
       proj_data_info_sptr, exam_info_sptr,
       standard_image_sptr, projector_pair_sptrs);
 
