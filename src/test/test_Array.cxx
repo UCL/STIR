@@ -749,16 +749,16 @@ ArrayTests::run_tests()
       check_if_equal(tmp, by_hand, "test xapyb (Array4D)");
     }
 
-    // test xapyb_vec
+    // test xapyb
     {
       Array<4,float> tmp(test4.get_index_range());
       Array<4,float> tmp2(test4+2);
       Array<4,float> tmpa(test4+4);
       Array<4,float> tmpb(test4+6);
 
-      tmp.xapyb_vec(test4, tmpa, tmp2, tmpb);
+      tmp.xapyb(test4, tmpa, tmp2, tmpb);
       const Array<4,float> by_hand = test4*(test4+4) + (test4+2)*(test4+6);
-      check_if_equal(tmp, by_hand, "test xapyb_vec (Array4D)");
+      check_if_equal(tmp, by_hand, "test xapyb where a,b are Arrays (Array4D)");
     }   
 
   }

@@ -52,6 +52,7 @@ set(buildblock_simple_tests
         test_SeparableGaussianArrayFilter
         test_NestedIterator
         test_VectorWithOffset
+        test_NumericVectorWithOffset
         test_convert_array
 	test_IndexRange
 	test_coordinates

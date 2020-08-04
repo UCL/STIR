@@ -313,7 +313,7 @@ xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
 template <class T, class NUMBER>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
-xapyb_vec(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
       const NumericVectorWithOffset& y, const NumericVectorWithOffset& b)
 {  
   this->check_state();

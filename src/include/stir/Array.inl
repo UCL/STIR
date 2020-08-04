@@ -351,12 +351,12 @@ xapyb(const Array& x, const elemT2 a,
       || (this->get_index_range() != y.get_index_range()))
        error("Array::xapyb: index ranges don't match");
 
-  typename Array::iterator this_iter = this->begin();
-  typename Array::const_iterator x_iter = x.begin();
-  typename Array::const_iterator y_iter = y.begin();
-  while (this_iter != this->end())
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all_const();
+  typename Array::const_full_iterator y_iter = y.begin_all_const();
+  while (this_iter != this->end_all())
     {
-      this_iter->xapyb(*x_iter++, a, *y_iter++, b);
+      *this_iter = (*x_iter++) * a + (*y_iter++) * b;
       ++this_iter;
     }
 }
@@ -364,7 +364,7 @@ xapyb(const Array& x, const elemT2 a,
 template <int num_dimensions, typename elemT>
 void
 Array<num_dimensions,elemT>::
-xapyb_vec(const Array& x, const Array& a,
+xapyb(const Array& x, const Array& a,
           const Array& y, const Array& b)
 {  
   this->check_state();
@@ -374,15 +374,15 @@ xapyb_vec(const Array& x, const Array& a,
       || (this->get_index_range() != b.get_index_range()))
        error("Array::xapyb: index ranges don't match");
 
-  typename Array::iterator this_iter = this->begin();
-  typename Array::const_iterator x_iter = x.begin();
-  typename Array::const_iterator y_iter = y.begin();
-  typename Array::const_iterator a_iter = a.begin();
-  typename Array::const_iterator b_iter = b.begin();
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all_const();
+  typename Array::const_full_iterator y_iter = y.begin_all_const();
+  typename Array::const_full_iterator a_iter = a.begin_all_const();
+  typename Array::const_full_iterator b_iter = b.begin_all_const();
 
-  while (this_iter != this->end())
+  while (this_iter != this->end_all())
     {
-      this_iter->xapyb_vec(*x_iter++, *a_iter++, *y_iter++, *b_iter++);
+      *this_iter = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
       ++this_iter;
     }
 }

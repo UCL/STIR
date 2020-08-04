@@ -241,18 +241,18 @@ public:
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
 
-  //! DEPRECATED a*x+b*y, where a and b are scalar, and x and y are arrays
+  //! DEPRECATED a*x+b*y
   template <typename elemT2>
     DEPRECATED inline void axpby(const elemT2 a, const Array& x,
                       const elemT2 b, const Array& y);
 
-  //! x*a+y*b, where a and b are scalar, and x and y are arrays
+  //! set values of the array to x*a+y*b
   template <typename elemT2>
     inline void xapyb(const Array& x, const elemT2 a,
                       const Array& y, const elemT2 b);
 
-   //! x*a+y*b, where a, b, x and y are arrays
-    inline void xapyb_vec(const Array& x, const Array& a,
+   //! set values of the array to x*a+y*b (sizes have to match)
+    inline void xapyb(const Array& x, const Array& a,
                           const Array& y, const Array& b);                     
                    
 };
