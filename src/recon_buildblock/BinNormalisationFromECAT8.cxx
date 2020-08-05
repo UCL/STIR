@@ -45,6 +45,7 @@
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>
@@ -259,8 +260,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
 #endif
 #if 0
-  InterfileHeader interfile_parser;
- ignore_key("data format");
+  InterfileRawDataHeaderSiemens interfile_parser;
+//  interfile_parser.ignore_key("data format");
   interfile_parser.parse(filename.c_str());
 
 #else
@@ -474,12 +475,13 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   
 #if 1
    // to test pipe the obtained values into file
-    ofstream out_geom;
+    ofstream out_geom, out_axial;
     ofstream out_inter;
     ofstream out_eff;
     out_geom.open("geom_out.txt",ios::out);
     out_inter.open("inter_out.txt",ios::out);
     out_eff.open("eff_out.txt",ios::out);
+    out_axial.open("axial_out.txt",ios::out);
 
     for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
     {
@@ -507,6 +509,11 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 	 out_eff << efficiency_factors[i][j] << "   " ;
       }
       out_eff << std::endl<< std::endl;
+   }
+   
+   for ( int i = axial_effects.get_min_index(); i<=axial_effects.get_max_index();i++)
+   {
+       out_axial << axial_effects[i] << "   " << std::endl;
    }
 
 #endif
@@ -595,7 +602,8 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 					      uncompressed_bin, detection_position_pair);
 
       
-        
+      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+     const DetectionPosition<>& pos2 = detection_position_pair.pos2();
       float lor_efficiency= 0.;   
       
       /*
@@ -669,17 +677,18 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	{
 	  view_efficiency += lor_efficiency;
 	}
-    }
+    
     
     if (this->use_axial_effects_factors())
       {
-        const float axial_effect_factor = find_axial_effects(uncompressed_bin.segment_num(), uncompressed_bin.axial_pos_num());	
+        const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());	
 	total_efficiency += view_efficiency * axial_effect_factor;
       }
     else
       {
 	total_efficiency += view_efficiency;
       }
+    }
   }
   return total_efficiency;
 }
@@ -693,23 +702,28 @@ construct_sino_lookup_table()
   this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
                                                0, num_rings-1));
   // construct proj_data_info in "native" Siemens space for the norm (span=11 usually?)
-  // TODO will have to get "native" span from somewhere. is it in the norm header?
-  ProjDataInfo* proj_data_info=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, 49,
-                                         this->scanner_ptr->get_max_num_views()-1,
-                                         this->scanner_ptr->get_max_num_non_arccorrected_bins())->clone();
-  
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
-           (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info));
+  // TODO will have to get "native" span from somewhere. is it in the norm header?  49
+ unique_ptr<ProjDataInfo> proj_data_info_uptr=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, num_rings -1,
+                                         this->scanner_ptr->get_max_num_views(),
+                                         this->scanner_ptr->get_max_num_non_arccorrected_bins(),
+                                         false);
+ 
+ shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
+             dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_uptr->clone()));
               
   this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
   
   auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_sptr);
   Bin bin;
+  bin.tangential_pos_num()=0;
+  bin.view_num()=0;
   std::vector<DetectionPositionPair<> > det_pos_pairs;
-  for (int z=0; z < this->num_Siemens_sinograms; ++z)
+  for (int Siemens_sino_index=0; Siemens_sino_index< this->num_Siemens_sinograms; ++Siemens_sino_index)
     {
+      int z=Siemens_sino_index;
+             
       for (std::size_t i=0; i<segment_sequence.size();++i)
-        {
+        { 
           bin.segment_num() = segment_sequence[i];
           const int num_ax_poss = proj_data_info_sptr->get_num_axial_poss(bin.segment_num());
           if (z< num_ax_poss)
