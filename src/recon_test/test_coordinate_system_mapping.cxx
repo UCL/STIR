@@ -83,12 +83,6 @@ public:
   void set_correlation_tolerance(const double correlation_tolerance);
   double get_correlation_tolerance();
 
-  //! check correlations using appropriate tolerance
-  template <class T>
-  bool compare_original_with_backprojection(
-      const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2,
-      const std::string& str="");
-
 private:
   char const * template_proj_data_filename;
 
@@ -104,8 +98,9 @@ private:
     const shared_ptr<VoxelsOnCartesianGrid<float> > standard_image_sptr,
     const std::vector<shared_ptr<ProjectorByBinPair> > projector_pair_sptrs);
 
-  // const float BACKPROJ_TO_ORIG_TOLERANCE = 0.05;
   const float BACKPROJ_TO_ORIG_COR_TOLERANCE = 0.85;
+  const float DIFFERENT_PROJECTORS_TOLERANCE = 0.01;
+  const float SAME_PROJECTORS_TOLERANCE = 0.001;
 };
 
 CoordinateSystemMappingTests::
@@ -157,13 +152,6 @@ bool CoordinateSystemMappingTests::check_if_correlated(
       std::cerr << "Error: vectors are empty. " << str << std::endl;
       return everything_ok = false;
     }
-    // std::cerr
-    //   << "sum_x: " << sum_x << std::endl
-    //   << "sum_y: " << sum_y << std::endl
-    //   << "sum_xx: " << sum_xx << std::endl
-    //   << "sum_yy: " << sum_yy << std::endl
-    //   << "sum_xy: " << sum_xy << std::endl
-    //   << "n: " << n << std::endl;
     const float correlation = (n*sum_xy - sum_x*sum_y)
       / sqrt((n*sum_xx - sum_x*sum_x) * (n*sum_yy - sum_y*sum_y));
     if (correlation < correlation_tolerance) {
@@ -187,17 +175,6 @@ bool CoordinateSystemMappingTests::check_if_correlated(
 void CoordinateSystemMappingTests::set_correlation_tolerance(
     const double correlation_tolerance_v) {
   correlation_tolerance = correlation_tolerance_v;
-}
-
-template <class T>
-bool CoordinateSystemMappingTests::compare_original_with_backprojection(
-    const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2,
-    const std::string& str) {
-  const double orig_tolerance = correlation_tolerance;
-  set_correlation_tolerance(BACKPROJ_TO_ORIG_COR_TOLERANCE);
-  bool result = check_if_correlated(t1, t2, str);
-  set_correlation_tolerance(orig_tolerance);
-  return result;
 }
 
 void
@@ -292,7 +269,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
   Succeeded succeeded = Succeeded::yes;
 
   const int EXTEND_BY = 3;
-  std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > extended_images;
+  std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > extended_image_sptrs;
 
   {
     std::cerr << "... extend in both directions (test 1)" << std::endl;
@@ -301,7 +278,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
     extended_axial_image_sptr->grow_z_range(
       standard_image_sptr->get_min_z() - EXTEND_BY,
       standard_image_sptr->get_max_z() + EXTEND_BY);
-    extended_images.push_back(extended_axial_image_sptr);
+    extended_image_sptrs.push_back(extended_axial_image_sptr);
   }
 
   {
@@ -311,7 +288,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
     extended_axial_image_sptr->grow_z_range(
       standard_image_sptr->get_min_z(),
       standard_image_sptr->get_max_z() + EXTEND_BY);
-    extended_images.push_back(extended_axial_image_sptr);
+    extended_image_sptrs.push_back(extended_axial_image_sptr);
   }
 
   {
@@ -321,7 +298,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
     extended_axial_image_sptr->grow_z_range(
       standard_image_sptr->get_min_z() - EXTEND_BY,
       standard_image_sptr->get_max_z());
-    extended_images.push_back(extended_axial_image_sptr);
+    extended_image_sptrs.push_back(extended_axial_image_sptr);
   }
 
   std::cerr << std::endl;
@@ -329,57 +306,60 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
   for (shared_ptr<ProjectorByBinPair> projector_pair_sptr : projector_pair_sptrs) {
     // outputs
     ProjDataInMemory standard_projection =
-    //   ProjDataInMemory(exam_info_sptr, proj_data_info_sptr);
-    // ProjDataInMemory extended_fov_projection =
+      ProjDataInMemory(exam_info_sptr, proj_data_info_sptr);
+    ProjDataInMemory extended_projection =
       ProjDataInMemory(exam_info_sptr, proj_data_info_sptr);
     shared_ptr<VoxelsOnCartesianGrid<float> > standard_backprojection_sptr(
       standard_image_sptr->get_empty_copy());
-    // shared_ptr<VoxelsOnCartesianGrid<float> > extended_fov_backprojection_sptr(
-    //   standard_image_sptr->get_empty_copy());
 
     // project
     do_forward_then_back_projections(
       standard_projection, standard_backprojection_sptr,
       proj_data_info_sptr, standard_image_sptr, projector_pair_sptr);
 
-    // check
-    if (not compare_original_with_backprojection(
+    // basically just a sanity check
+    if (not check_if_correlated(
         *standard_image_sptr, *standard_backprojection_sptr,
         "Checking backprojection matches original.")) {
       succeeded = Succeeded::no;
-      everything_ok = false;
-      std::cerr << "Saving last failed image comparison to last_failed_{1,2}.hv. "
+      std::cerr << "Saving last failed image comparison to last_failed_{ref,oth}.hv. "
                 << "(may be overwritten)" << std::endl;
-      write_to_file("last_failed_1.hv", *standard_image_sptr);
-      write_to_file("last_failed_2.hv", *standard_backprojection_sptr);
+      write_to_file("last_failed_ref.hv", *standard_image_sptr);
+      write_to_file("last_failed_oth.hv", *standard_backprojection_sptr);
     }
 
-    for (shared_ptr<VoxelsOnCartesianGrid<float> > extended_image : extended_images) {
+    for (shared_ptr<VoxelsOnCartesianGrid<float> > extended_image_sptr : extended_image_sptrs) {
+      // outputs
+      shared_ptr<VoxelsOnCartesianGrid<float> > extended_backprojection_sptr(
+        extended_image_sptr->get_empty_copy());
 
-      // // project
-      // do_forward_then_back_projections(
-      //   standard_projection, standard_backprojection_sptr,
-      //   proj_data_info_sptr, standard_image_sptr, projector_pair_sptr)
+      // project
+      do_forward_then_back_projections(
+        extended_projection, extended_backprojection_sptr,
+        proj_data_info_sptr, extended_image_sptr, projector_pair_sptr);
 
-      // // check
-      // if (not compare_original_with_backprojection(
-      //     *standard_image_sptr, *standard_backprojection_sptr,
-      //     "Checking backprojection matches original.")) {
-      //   succeeded = Succeeded::no;
-      //   std::cerr << "Saving last failed image comparison to last_failed_{1,2}.hv. "
-      //             << "(may be overwritten)" << std::endl;
-      //   write_to_file("last_failed_1.hv", *standard_image_sptr);
-      //   write_to_file("last_failed_2.hv", *standard_backprojection_sptr);
-      // }
-
+      // check
+      // TODO: which is faster/natural - viewgram or sinogram?
+      // These are within 0.01, but I thought they'd actually be closer..
+      set_tolerance(SAME_PROJECTORS_TOLERANCE);
+      if (not check_if_equal(
+          standard_projection.begin_all(), standard_projection.end_all(),
+          extended_projection.begin_all(), extended_projection.end_all(),
+          "Checking extended FOV projection matches standard.")) {
+        succeeded = Succeeded::no;
+        std::cerr << "Saving last failed image comparison to last_failed_{ref,oth}.hs. "
+                  << "(may be overwritten)" << std::endl;
+        standard_projection.write_to_file("last_failed_ref.hs");
+        extended_projection.write_to_file("last_failed_oth.hs");
+      }
     }
 
     std::cerr << std::endl;
   }
 
   // for (
-  //   std::vector<VoxelsOnCartesianGrid<float>>::iterator extended_image = extended_images.begin();
-  //   extended_image != extended_images.end();
+  //   std::vector<VoxelsOnCartesianGrid<float>>::iterator extended_image = extended_image_sptrs.begin();
+  //   extended_image != extended_image_sptrs.end();
   //   ++extended_image) {
   //     fwd_projector_sptr->set_up(proj_data_info_sptr, standard_image_sptr);
   //   }
@@ -395,6 +375,8 @@ CoordinateSystemMappingTests::run_tests_for_1_projdatainfo(
 {
   Succeeded succeeded = Succeeded::yes;
   const float zoom = 1.F;
+
+  set_correlation_tolerance(BACKPROJ_TO_ORIG_COR_TOLERANCE);
 
   CartesianCoordinate3D<float> standard_origin(0,0,0);
   shared_ptr<VoxelsOnCartesianGrid<float> > 
