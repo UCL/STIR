@@ -16,6 +16,16 @@
 
     See STIR/LICENSE.txt for details
 */
+#ifndef __stir_deprecated_H__
+#define __stir_deprecated_H__
+/*!
+  \file 
+  \ingroup buildblock
+  \brief This file declares a deprecation function.
+
+  \author PARAPET project
+*/
+START_NAMESPACE_STIR
 
 // Deprecation function. With C++14, could use [[deprecated("some message")]]
 #if defined(__GNUC__) || defined(__clang__)
@@ -26,3 +36,8 @@
 #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
 #define DEPRECATED
 #endif
+
+END_NAMESPACE_STIR
+
+
+#endif // __stir_deprecated_H__
