@@ -396,9 +396,14 @@ public:
   //! Vector represention bed position in 3D
   CartesianCoordinate3D<float> get_bed_position() const;
 
-  // Convert coordinates from a sinogram-based
+  // Convert coordinates from gantry to physical
   inline CartesianCoordinate3D<float>
   get_physical_coordinates_for_gantry_coordinates
+  (const CartesianCoordinate3D<float>& coords) const;
+
+  // Convert coordinates from physical to gantry
+  inline CartesianCoordinate3D<float>
+  get_gantry_coordinates_for_physical_coordinates
   (const CartesianCoordinate3D<float>& coords) const;
 
 protected:

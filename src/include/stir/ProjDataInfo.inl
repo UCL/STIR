@@ -132,6 +132,14 @@ get_physical_coordinates_for_gantry_coordinates
   return coords + get_vector_centre_of_first_ring_to_centre_of_gantry();
 }
 
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_gantry_coordinates_for_physical_coordinates
+(const CartesianCoordinate3D<float>& coords) const
+{
+  // TODO: bed postion
+  return coords - get_vector_centre_of_first_ring_to_centre_of_gantry();
+}
 
 int
 ProjDataInfo::get_num_non_tof_sinograms() const
