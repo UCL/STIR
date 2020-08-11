@@ -281,15 +281,15 @@ template <class T, class NUMBER>
 template <class NUMBER2>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
-axpby(const NUMBER2 a, const NumericVectorWithOffset& x,
-      const NUMBER2 b, const NumericVectorWithOffset& y)
+xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
+      const NumericVectorWithOffset& y, const NUMBER2 b)
 {  
   this->check_state();
   if ((this->get_min_index() != x.get_min_index())
       || (this->get_min_index() != y.get_min_index())
       || (this->get_max_index() != x.get_max_index())
       || (this->get_max_index() != y.get_max_index()))
-       error("NumericVectorWithOffset::axpby: index ranges don't match");
+       error("NumericVectorWithOffset::xapyb: index ranges don't match");
 
   typename NumericVectorWithOffset::iterator this_iter = this->begin();
   typename NumericVectorWithOffset::const_iterator x_iter = x.begin();

@@ -731,13 +731,13 @@ ArrayTests::run_tests()
                      "test operator+(float)");
     }
 
-    // test apxby
+    // test xapyb
     {
       Array<4,float> tmp(test4.get_index_range());
       Array<4,float> tmp2(test4+2);
-      tmp.axpby(2.F, test4, 3.3F, tmp2);
+      tmp.xapyb(test4, 2.F, tmp2, 3.3F);
       const Array<4,float> by_hand = test4*2.F + (test4+2)*3.3F;
-      check_if_equal(tmp, by_hand, "test apxby (Array4D)");
+      check_if_equal(tmp, by_hand, "test xapyb (Array4D)");
     }
   }
 

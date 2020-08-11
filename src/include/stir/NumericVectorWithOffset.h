@@ -126,10 +126,10 @@ public:
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
-  //! a*x+b*y, where a and b are scalar, and x and y are vectors
+  //! set values of the array to x*a+y*b, where a and b are scalar
   template <typename elemT2>
-    inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
-                      const elemT2 b, const NumericVectorWithOffset& y);
+    inline void xapyb(const NumericVectorWithOffset& x, const elemT2 a,
+                      const NumericVectorWithOffset& y, const elemT2 b);
 
 };
 

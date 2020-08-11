@@ -240,10 +240,10 @@ public:
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
 
-  //! a*x+b*y, where a and b are scalar, and x and y are arrays
+  //! set values of the array to x*a+y*b, where a and b are scalar
   template <typename elemT2>
-    inline void axpby(const elemT2 a, const Array& x,
-                      const elemT2 b, const Array& y);
+    inline void xapyb(const Array& x, const elemT2 a,
+                      const Array& y, const elemT2 b);
 };
 
 
