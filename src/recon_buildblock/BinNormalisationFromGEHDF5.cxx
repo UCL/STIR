@@ -354,7 +354,8 @@ read_norm_data(const string& filename)
     // These arrays will help us index the data to read. Just auxiliary variables.
     std::vector<int>          segment_sequence              = detail::create_segment_sequence(projInfo);
     std::vector<unsigned int> segment_axial_position_offset = detail::create_ax_pos_offset   (projInfo, segment_sequence);
-    
+
+    int num_crystals_per_bucket=scanner_ptr->get_num_transaxial_crystals_per_bucket();
     // Geometric factors are related to geometry (ovbiously). This means that as the scanner has several geometric symetries itself, there is no need to
     // store all of them in a big file. This is what GE does in RDF9 files.
     // The following loops undo that. They go selecting different data pieces in the initialise_geo_factors() and reading different parts of 
@@ -371,12 +372,12 @@ read_norm_data(const string& filename)
           {
           case 9:
           {
-            m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,16)+1);
+            m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,num_crystals_per_bucket)+1);
 
             // Define which chunk of the data we are reading from. 
-            std::array<unsigned long long int, 2> offset = {segment_axial_position_offset[detail::find_segment_index_in_sequence(segment_sequence,i_seg)], 0};
-            std::array<unsigned long long int, 2> count  = {static_cast<unsigned long long int>(projInfo->get_num_axial_poss(i_seg)),
-                                                            static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
+            std::array<hsize_t, 2> offset = {segment_axial_position_offset[detail::find_segment_index_in_sequence(segment_sequence,i_seg)], 0};
+            std::array<hsize_t, 2> count  = {static_cast<hsize_t>(projInfo->get_num_axial_poss(i_seg)),
+                                             static_cast<hsize_t>(projInfo->get_num_tangential_poss())};
             // Initialize buffer to store temp variables
             stir::Array<1, unsigned int> buffer(0, count[0]*count[1]-1);
             // read geo chunk
@@ -390,8 +391,8 @@ read_norm_data(const string& filename)
           {
             m_input_hdf5_sptr->initialise_geo_factors_data(1);
 
-            std::array<unsigned long long int, 2> offset = {modulo(i_view,16), 0};
-            std::array<unsigned long long int, 2> count  = {1, static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
+            std::array<hsize_t, 2> offset = {modulo(i_view,num_crystals_per_bucket), 0};
+            std::array<hsize_t, 2> count  = {1, static_cast<hsize_t>(projInfo->get_num_tangential_poss())};
             // Initialize buffer to store temp variables
             stir::Array<1, unsigned int> buffer(0, count[1]-1);
             // read geo chunk
