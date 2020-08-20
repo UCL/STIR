@@ -227,11 +227,22 @@ GEHDF5Wrapper::check_file()
     {
         is_norm=true;
         is_geo =true; // in RFD9, if its norm, it is also geo (it contains it)
+        // Check the type of geo file it contains. 
+        if (H5Lexists( file.getId(), "/SegmentData/Segment4/3D_Norm_Correction/slice2", H5P_DEFAULT ) > 0)
+            geo_type = 9;
+        else
+            geo_type = 8;
+        
         return Succeeded::yes;
     }
     if(is_geo_file())
     {
         is_geo=true;
+        if (H5Lexists( file.getId(), "/SegmentData/Segment4/3D_Norm_Correction/slice2", H5P_DEFAULT ) > 0)
+            geo_type = 9;
+        else
+            geo_type = 8;
+        
         return Succeeded::yes;
     }
     // should not get here.

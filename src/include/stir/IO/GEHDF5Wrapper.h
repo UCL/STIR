@@ -133,6 +133,8 @@ public:
 
     inline hsize_t get_dataset_size() const;
 
+    inline unsigned int get_geo_type() const;
+
     unsigned int get_num_singles_samples();
  //   inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
@@ -181,6 +183,10 @@ private:
     bool is_geo  = false;
     bool is_norm = false;
 
+    // There are two types of geometry that behave very differently. We need to know which type it is. 
+    // 9 is the version in where there are 16 slices, each with [n_sinogram x n_tangential_pos] data, and 8 is the version with 1 slice, with [16 x n_tangential_pos] data. 
+    // AB: I think an enum is better to describe them, and perhaps they need a better name than "9, 8". 
+    unsigned int geo_type = 0;
     std::string m_address;
 
     unsigned int  rdf_ver = 0;

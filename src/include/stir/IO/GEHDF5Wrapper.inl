@@ -57,6 +57,11 @@ hsize_t GEHDF5Wrapper::get_dataset_size() const
     return m_list_size;
 }
 
+unsigned int GEHDF5Wrapper::get_geo_type() const
+{
+    return geo_type;
+}
+
 /*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
 {
     //! \todo For examInfo get timeframe definitions

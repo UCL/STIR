@@ -367,24 +367,49 @@ read_norm_data(const string& filename)
           Viewgram<float> viewgram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view, i_seg);
           // AB TODO This allocates the memory. I wish I knew how to do this without continous reallocation (by reusing)
           viewgram.fill(0.0); 
+          switch (m_input_hdf5_sptr->get_geo_type())
+          {
+          case 9:
+          {
+            m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,16)+1);
 
-          // AB TODO: is it 16 in all scanners? or just GE Signa?
-          m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,16)+1);
+            // Define which chunk of the data we are reading from. 
+            std::array<unsigned long long int, 2> offset = {segment_axial_position_offset[detail::find_segment_index_in_sequence(segment_sequence,i_seg)], 0};
+            std::array<unsigned long long int, 2> count  = {static_cast<unsigned long long int>(projInfo->get_num_axial_poss(i_seg)),
+                                                            static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
+            // Initialize buffer to store temp variables
+            stir::Array<1, unsigned int> buffer(0, count[0]*count[1]-1);
+            // read geo chunk
+            m_input_hdf5_sptr->read_geometric_factors(buffer, offset, count);
+            // copy data back
+            // AB TODO: Hardcoded magic number, remove somehow (when magic is discovered)
+            std::transform(buffer.begin(), buffer.end(),viewgram.begin_all(), [](const float f) { return 1/(f*2.2110049e-4);} );
+            break;
+          }
+          case 8:
+          {
+            m_input_hdf5_sptr->initialise_geo_factors_data(1);
 
-          // Define which chunk of the data we are reading from. 
-          std::array<unsigned long long int, 2> offset = {segment_axial_position_offset[detail::find_segment_index_in_sequence(segment_sequence,i_seg)], 0};
-          std::array<unsigned long long int, 2> count  = {static_cast<unsigned long long int>(projInfo->get_num_axial_poss(i_seg)),
-                                                          static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
-          // Initialize buffer to store temp variables
-          stir::Array<1, unsigned int> buffer(0, count[0]*count[1]-1);
-          // read geo chunk
-          m_input_hdf5_sptr->read_geometric_factors(buffer, offset, count);
-          // copy data back
-          // AB TODO: can I just give the viewgram as a buffer? Would avoid this copy.
-          // AB TODO: think not, as stir::Arrays are not a single array but arrays of pointers, and buffer is Array<1,T> and viegram is Array<2,T>
-
-          std::transform(buffer.begin(), buffer.end(),viewgram.begin_all(), [](const float f) { return 1/(f*2.2110049e-4);} );
-
+            std::array<unsigned long long int, 2> offset = {modulo(i_view,16), 0};
+            std::array<unsigned long long int, 2> count  = {1, static_cast<unsigned long long int>(projInfo->get_num_tangential_poss())};
+            // Initialize buffer to store temp variables
+            stir::Array<1, unsigned int> buffer(0, count[1]-1);
+            // read geo chunk
+            m_input_hdf5_sptr->read_geometric_factors(buffer, offset, count);
+            std::vector<unsigned int> repeat_buffer;
+            repeat_buffer.reserve(projInfo->get_num_axial_poss(i_seg)*count[1]-1);
+            // repeat the values
+            for (unsigned int i=0; i<projInfo->get_num_axial_poss(i_seg);i++)
+              repeat_buffer.insert(repeat_buffer.end(),buffer.begin(),buffer.end());
+            // copy data back
+            // AB TODO: Hardcoded magic number, remove somehow (when magic is discovered)
+            std::transform(repeat_buffer.begin(), repeat_buffer.end(),viewgram.begin_all(), [](const float f) { return 1/(f*2.2110049e-4);} );
+            break;
+          }
+          default:
+            error("BinNormalisationFromGEHDF5: Unexpected geometry type");
+          }
+          
           geo_eff_factors_sptr->set_viewgram(viewgram);
 
       }// end view for
