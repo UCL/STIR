@@ -64,7 +64,10 @@ ProjDataInMemory::
 ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
 		 shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
-  ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
+  ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), // trick: first initialise sino_stream_ptr to 0
+                     std::streamoff(0),
+                     ProjData::standard_segment_sequence(*proj_data_info_ptr),
+                     StorageOrder::Segment_AxialPos_View_TangPos)
 {
   this->create_buffer(initialise_with_0);
   this->create_stream();
@@ -109,7 +112,10 @@ create_stream()
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+		       proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
+                       std::streamoff(0),
+                       ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
+                       StorageOrder::Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
@@ -121,13 +127,17 @@ ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::
 ProjDataInMemory (const ProjDataInMemory& proj_data)
     : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+                         proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
+                         std::streamoff(0),
+                         ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
+                         StorageOrder::Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
 
   // copy data
-  this->fill(proj_data);
+  std::copy(proj_data.begin_all(), proj_data.end_all(), begin_all());
+  //this->fill(proj_data);
 }
 
 size_t
