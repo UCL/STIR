@@ -67,7 +67,7 @@ ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
   ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), // trick: first initialise sino_stream_ptr to 0
                      std::streamoff(0),
                      ProjData::standard_segment_sequence(*proj_data_info_ptr),
-                     StorageOrder::Segment_AxialPos_View_TangPos)
+                     Segment_AxialPos_View_TangPos)
 {
   this->create_buffer(initialise_with_0);
   this->create_stream();
@@ -137,7 +137,7 @@ ProjDataInMemory(const ProjData& proj_data)
 		       proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
                        std::streamoff(0),
                        ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
-                       StorageOrder::Segment_AxialPos_View_TangPos)
+                       Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
@@ -152,7 +152,7 @@ ProjDataInMemory (const ProjDataInMemory& proj_data)
                          proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
                          std::streamoff(0),
                          ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
-                         StorageOrder::Segment_AxialPos_View_TangPos)
+                         Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
@@ -172,10 +172,12 @@ get_size_of_buffer_in_bytes() const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num()); 
-    
-   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
-
+  // first find offset in the stream
+  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
+  const std::streamoff total_offset = offsets[0];
+  // now convert to index in the buffer
+  const int index = static_cast<int>(total_offset/sizeof(float));
+  return buffer[index];
 }
 
 void

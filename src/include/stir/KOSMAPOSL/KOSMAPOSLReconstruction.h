@@ -23,7 +23,7 @@
 */
 /*!
   \file
-  \ingroup OSMAPOSL
+  \ingroup KOSMAPOSL
   \brief Declaration of class stir::KOSMAPOSLReconstruction
 
   \author Daniel Deidda
@@ -178,7 +178,7 @@ public:
   void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
   void set_anatomical_image_filename(const std::string&, const int index);
   void set_anatomical_image_filename(const std::string&);
-
+  //@}
 
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
