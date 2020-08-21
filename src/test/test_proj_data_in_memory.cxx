@@ -35,6 +35,7 @@
 #include "stir/Succeeded.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
+#include "stir/IndexRange3D.h"
 
 START_NAMESPACE_STIR
 
@@ -93,6 +94,28 @@ run_tests()
     check_if_equal(viewgram2.find_min(),
                    viewgram.find_min(),
                    "test set/get_viewgram");
+  }
+
+  // test copy_to consistent with iterators
+  {
+    Array<3,float> test_array(IndexRange3D(proj_data.get_num_sinograms(), proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+    // copy to the array
+    proj_data.copy_to(test_array.begin_all());
+
+    {
+      Array<3,float>::const_full_iterator test_array_iter = test_array.begin_all_const();
+      ProjDataInMemory::full_iterator proj_data_iter = proj_data.begin_all();
+      while (test_array_iter != test_array.end_all_const())
+        {
+          if (!check_if_equal(*proj_data_iter, *test_array_iter, "check if array iterator in correct order"))
+            {
+              // get out as there will be lots of other failures
+              break;
+            }
+          ++test_array_iter;
+          ++proj_data_iter;
+        }
+    }
   }
 
   // test making a copy 
