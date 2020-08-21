@@ -57,9 +57,9 @@ hsize_t GEHDF5Wrapper::get_dataset_size() const
     return m_list_size;
 }
 
-unsigned int GEHDF5Wrapper::get_geo_type() const
+unsigned int GEHDF5Wrapper::get_geo_dims() const
 {
-    return geo_type;
+    return geo_dims;
 }
 
 /*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const

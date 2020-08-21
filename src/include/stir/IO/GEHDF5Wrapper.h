@@ -133,7 +133,7 @@ public:
 
     inline hsize_t get_dataset_size() const;
 
-    inline unsigned int get_geo_type() const;
+    inline unsigned int get_geo_dims() const;
 
     unsigned int get_num_singles_samples();
  //   inline TimeFrameDefinitions* get_timeframe_definitions() const;
@@ -166,6 +166,8 @@ private:
 
     Succeeded check_file(); 
 
+    unsigned int check_geo_type();
+
     H5::H5File file;
 
     shared_ptr<H5::DataSet> m_dataset_sptr;
@@ -183,10 +185,9 @@ private:
     bool is_geo  = false;
     bool is_norm = false;
 
-    // There are two types of geometry that behave very differently. We need to know which type it is. 
-    // 9 is the version in where there are 16 slices, each with [n_sinogram x n_tangential_pos] data, and 8 is the version with 1 slice, with [16 x n_tangential_pos] data. 
-    // AB: I think an enum is better to describe them, and perhaps they need a better name than "9, 8". 
-    unsigned int geo_type = 0;
+    // There are two types of geometry that behave very differently. We need to know which type it is.
+    // In essence, the options are 2D (2) or 3D (3). In 2D, all transaxial values are the same. 
+    unsigned int geo_dims = 0;
     std::string m_address;
 
     unsigned int  rdf_ver = 0;

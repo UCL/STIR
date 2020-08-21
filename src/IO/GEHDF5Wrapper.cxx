@@ -172,6 +172,23 @@ GEHDF5Wrapper::GEHDF5Wrapper(const std::string& filename)
         error("GEHDF5Wrapper: Error opening HDF5 file. Abort.");
 }
 
+unsigned int
+GEHDF5Wrapper::check_geo_type()
+{
+    if(!is_geo )
+        error("Not a geo file. Aborting");
+    if(file.getId() == -1)
+        error("File is not open. Aborting");
+
+    unsigned int geo_type=0;
+    H5::DataSet str_geo_size = file.openDataSet("/HeaderData/Sorter/Segment4/dimension3Size");
+    str_geo_size.read(&geo_type, H5::PredType::NATIVE_UINT32);
+    if (geo_type>1)
+        geo_type=3;
+    else 
+        geo_type=2;
+    return geo_type;
+}
 // Function that error checks the input file and sets flags for the correct formats. GEHDF5Wrapper.file must be already open.
 // AB todo: this file is only valid for RDF 9. 
 Succeeded 
@@ -228,20 +245,14 @@ GEHDF5Wrapper::check_file()
         is_norm=true;
         is_geo =true; // in RFD9, if its norm, it is also geo (it contains it)
         // Check the type of geo file it contains. 
-        if (H5Lexists( file.getId(), "/SegmentData/Segment4/3D_Norm_Correction/slice2", H5P_DEFAULT ) > 0)
-            geo_type = 9;
-        else
-            geo_type = 8;
-        
+        geo_dims = check_geo_type();
+   
         return Succeeded::yes;
     }
     if(is_geo_file())
     {
         is_geo=true;
-        if (H5Lexists( file.getId(), "/SegmentData/Segment4/3D_Norm_Correction/slice2", H5P_DEFAULT ) > 0)
-            geo_type = 9;
-        else
-            geo_type = 8;
+        geo_dims = check_geo_type();
         
         return Succeeded::yes;
     }
@@ -340,11 +351,7 @@ Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
     scanner_sptr.reset(Scanner::get_scanner_from_name(read_str_scanner));
     if (is_null_ptr(scanner_sptr))
        error("Scanner read from RDF file is " + read_str_scanner + ", but this is not supported yet");
-    if (scanner_sptr->get_type() != Scanner::PETMR_Signa)
-      warning("Scanner name read from RDF file is " + read_str_scanner + ", recognised by STIR as "
-              + scanner_sptr->get_name()
-              + ", but this code is only tested for the Signa PET/MR");
-       
+
     scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
     scanner_sptr->set_num_rings(num_rings);
     if (!is_list_file())

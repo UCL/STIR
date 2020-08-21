@@ -368,9 +368,9 @@ read_norm_data(const string& filename)
           Viewgram<float> viewgram = projInfo->get_empty_viewgram(projInfo->get_num_views()-1-i_view, i_seg);
           // AB TODO This allocates the memory. I wish I knew how to do this without continous reallocation (by reusing)
           viewgram.fill(0.0); 
-          switch (m_input_hdf5_sptr->get_geo_type())
+          switch (m_input_hdf5_sptr->get_geo_dims())
           {
-          case 9:
+          case 3:
           {
             m_input_hdf5_sptr->initialise_geo_factors_data(modulo(i_view,num_crystals_per_bucket)+1);
 
@@ -387,11 +387,11 @@ read_norm_data(const string& filename)
             std::transform(buffer.begin(), buffer.end(),viewgram.begin_all(), [](const float f) { return 1/(f*2.2110049e-4);} );
             break;
           }
-          case 8:
+          case 2:
           {
             m_input_hdf5_sptr->initialise_geo_factors_data(1);
 
-            std::array<hsize_t, 2> offset = {modulo(i_view,num_crystals_per_bucket), 0};
+            std::array<hsize_t, 2> offset = {static_cast<hsize_t>(modulo(i_view,num_crystals_per_bucket)), 0};
             std::array<hsize_t, 2> count  = {1, static_cast<hsize_t>(projInfo->get_num_tangential_poss())};
             // Initialize buffer to store temp variables
             stir::Array<1, unsigned int> buffer(0, count[1]-1);
