@@ -117,6 +117,8 @@ None
 
 <h3>Other changes to tests</h3>
 <ul>
+    <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
+    </li>
   <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
     This is on top of the <tt>recon_test_pack</tt>.
   </li>
