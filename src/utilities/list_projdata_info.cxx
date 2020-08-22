@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/is_null_ptr.h"
+#include "stir/date_time_functions.h"
 #include <iostream> 
 #include <limits>
 #include <string>
@@ -129,6 +130,12 @@ int main(int argc, char *argv[])
       std::cout << "Modality: " << exam_info.imaging_modality.get_name() << '\n';
       std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
       std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
+      if (exam_info.start_time_in_secs_since_1970>0)
+        {
+          DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(exam_info.start_time_in_secs_since_1970);
+          std::cout << "   which is " << time.date << " " << time.time << '\n';
+        }
+      
       if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
 	{
 	  std::cout << "Time frame start - end (duration), all in secs: "

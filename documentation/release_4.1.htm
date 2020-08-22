@@ -45,7 +45,9 @@
     on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_NiftyPET.par</tt>.
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
-<li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
+  <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
 </ul>
 
 
@@ -115,6 +117,8 @@ None
 
 <h3>Other changes to tests</h3>
 <ul>
+    <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
+    </li>
   <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
     This is on top of the <tt>recon_test_pack</tt>.
   </li>
@@ -143,6 +147,7 @@ from the above):</H2>
   <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
+  <li>added functions for date-time processing</li>
 </ul>
   
 <h3>Other code changes</h3>
