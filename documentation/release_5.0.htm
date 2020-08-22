@@ -79,10 +79,18 @@ improvements to the documentation.
 
 <h3>Build system</h3>
 <ul>
+  <li>We now require CMake at least version 3.1, although we highly recommended to use a very recent version
+    of CMake to avoid problems with libraries or compilers which are more recent than your CMake version.
+    </li>
 <li>
-At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. Change C++ version
-by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
-documentation</a> for supported values.
+  At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. When building,
+  you can change the C++ version
+  by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
+  documentation</a> for supported values.<br />
+  When importing STIR's <tt>STIRConfig.cmake</tt> via <code>find_package(STIR)</code>, your compiler will be set to use
+  at least C++-11 (via CMake's <code>target_compile_features</code>).<br />
+  Note that some external libraries that STIR depends on (such as ROOT) might increase the required C++ version,
+  depending on how they were built.
 </li>
 <li>CERN's <tt>ROOT</tt> library is now preferentially found by searching for
   its own exported <tt>ROOTConfig.cmake</tt>. Set the CMake variable <tt>ROOT_DIR</tt> accordingly. Older behaviour relying on <tt>ROOTSYS</tt> and <tt>root-config</tt> will be deprecated in a future version.
