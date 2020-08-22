@@ -328,7 +328,8 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
-\item CERN ROOT files used by GEANT and GATE.
+\item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
+  If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
