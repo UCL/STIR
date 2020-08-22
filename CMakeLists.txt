@@ -13,8 +13,8 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-cmake_minimum_required(VERSION 2.8.3)
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
+cmake_minimum_required(VERSION 3.1.0)
+
 
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
