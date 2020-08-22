@@ -84,6 +84,9 @@ At least C++-11 is now required. We are not aware of any problems with most rece
 by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
 documentation</a> for supported values.
 </li>
+<li>CERN's <tt>ROOT</tt> library is now preferentially found by searching for
+  its own exported <tt>ROOTConfig.cmake</tt>. Set the CMake variable <tt>ROOT_DIR</tt> accordingly. Older behaviour relying on <tt>ROOTSYS</tt> and <tt>root-config</tt> will be deprecated in a future version.
+  </li>
 </ul>
 
 
