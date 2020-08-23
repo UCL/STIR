@@ -17,6 +17,7 @@
 */
 
 #include "stir/IO/InputStreamFromROOTFileForECATPET.h"
+#include <TChain.h>
 
 START_NAMESPACE_STIR
 
