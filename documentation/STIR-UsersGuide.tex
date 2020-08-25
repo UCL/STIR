@@ -3976,6 +3976,29 @@ set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.
 Otherwise, all non-positive entries in the data are set to SMALL\_NUM 
 times the minimum strictly positive value.
 
+{ \subsubsubsection{HUToMu}
+}
+
+This data processors is intended to convert a CT image in Hounsfield Units to mu-values.
+It takes a file in JSON format specifying the piecewise-linear for various systems, Xray voltages and gamma energies.
+
+A sample file JSON is currently located in the source of STIR (\texttt{src/utilities/share}).
+This file is installed in your \texttt{install\_prefix/share} folder.
+
+{ \subsubsubsubsection{Parameters}
+}
+Example parameters are given by
+\begin{verbatim}
+    HUToMu Parameters:=
+      slope filename := json_filename
+      ; next defaults to GENERIC
+      manufacturer_name := IN_CAPITALS
+      ; CT tube voltage (defaults to 120)
+      ;kilovoltage_peak :=
+      ; gamma energy (defaults to 511 for PET)
+      ;target_photon_energy :=
+    End HUToMu Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{Chained Data Processor}
 }
@@ -4133,7 +4156,7 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   \noindent where $\lambda$ is the image where the gradient is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
-  $\gamma$ is a edge preservation hyper-parameter and $\eplion$ is small 
+  $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
   modification the penatly function used to prevent divide by zero's.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
