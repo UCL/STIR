@@ -67,6 +67,13 @@ improvements to the documentation.
       Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
   </li>
 </li>
+<li>Moved most code from the <tt>ctac_to_mu_values.cxx</tt> utility to a new
+  <code>HUToMuImageProcessor</code> class (derived from <code>DataProcessor</code>.
+  This allows combining it with filtering etc, also from in Python. It means that the
+  <tt>ctac_to_mu_values.cxx</tt> utility itself is now obsolete, but it still exists in
+  this version. (Note that this functionality depends on an external
+  <a href=https://github.com/nlohmann/json>JSON library</a>.)
+</li>
 </ul>
 
 
