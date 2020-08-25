@@ -27,6 +27,7 @@
 
 #include "stir/HUToMuImageProcessor.h"
 #include "stir/info.h"
+#include "stir/round.h"
 #include <nlohmann/json.hpp>
 
 START_NAMESPACE_STIR
@@ -139,9 +140,9 @@ get_record_from_json()
     manufacturer_upper_case[i] = std::toupper(manufacturer_name[i],loc);
 
   //Get desired keV as integer value
-  const int keV = std::round(this->target_photon_energy);
+  const int keV = stir::round(this->target_photon_energy);
   //Get desired kVp as integer value
-  const int kVp = std::round(this->kilovoltage_peak);
+  const int kVp = stir::round(this->kilovoltage_peak);
   stir::info(boost::format("HUToMu: finding record with manufacturer: '%s', keV=%d, kVp=%d in file '%s'")
              % manufacturer_upper_case % keV % kVp % this->filename, 2);
 
@@ -151,7 +152,7 @@ get_record_from_json()
   int location = -1;
   int pos = 0;
   for (auto entry : target){
-    if ( (entry["kev"] == keV) && (entry["kvp"] == kVp) )
+    if ( (stir::round(float(entry["kev"])) == keV) && (stir::round(float(entry["kvp"])) == kVp) )
       location = pos;
     pos++;
   }

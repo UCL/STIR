@@ -47,6 +47,7 @@ End HUToMu Parameters:=
   \par Format of the slope filename
 
   This file is in JSON format. An example is distributed with STIR.
+  The manufacturer name has to be in capitals. kvp and kev are matched after rounding.
 \verbatim
 {"scale": {
   "MANUFACTURER": {
