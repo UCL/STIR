@@ -144,7 +144,7 @@ if(NOT DISABLE_NLOHMANN_JSON)
       message(STATUS "nlohmann JSON library found.")
       set(HAVE_JSON ON)
     else()
-      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_jsonDIR if you have it.")
+      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
     endif()
 endif()
 
