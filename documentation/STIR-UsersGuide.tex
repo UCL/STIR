@@ -188,6 +188,10 @@ the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
+\subsubsection{JSON}
+The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+\url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
+instructions for this library are available on its github page.
 
 \subsubsection{
 C++ Compiler}
@@ -3979,8 +3983,10 @@ times the minimum strictly positive value.
 { \subsubsubsection{HUToMu}
 }
 
-This data processors is intended to convert a CT image in Hounsfield Units to mu-values.
+This data processor (class \texttt{HUToMuImageProcessor}) is intended to convert a CT image in Hounsfield Units to mu-values.
 It takes a file in JSON format specifying the piecewise-linear for various systems, Xray voltages and gamma energies.
+Currently, it supports 2-segment piecewise linear transformations only.
+In practice, this needs to be combined with a smoothing filter to match CT to PET resolution.
 
 A sample file JSON is currently located in the source of STIR (\texttt{src/utilities/share}).
 This file is installed in your \texttt{install\_prefix/share} folder.

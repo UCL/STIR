@@ -27,6 +27,7 @@ START_NAMESPACE_STIR
   \brief A class in the DataProcessor hierarchy that convert from Hounsfield Units to mu-values
 
   This convert HU to mu-values using a piece-wise linear curve.
+  Currently, it supports 2-segment piecewise linear transformations only.
 
   \warning This does not implement post-filtering to PET resolution, nor resampling to the PET voxel-size.
 
