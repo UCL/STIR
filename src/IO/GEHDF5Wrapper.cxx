@@ -489,8 +489,8 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
 Succeeded GEHDF5Wrapper::initialise_singles_data()
 {
     
-    if(!is_list_file())
-        error("The file provided is not listmode. Aborting");
+    if(!is_list_file() && !is_sino_file())
+        error("The file provided is not listmode or sinogram data. Aborting");
 
     if(rdf_ver==9)
     {
@@ -537,7 +537,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
 Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
 {
     if(!is_sino_file())
-        error("The file provided is not projection/sinogram data. Aborting");
+        error("The file provided is not sinogram data. Aborting");
 
     if(view_num == 0 || view_num > static_cast<unsigned>(this->scanner_sptr->get_num_detectors_per_ring()/2))
       error("internal error in GE HDF5 code: view number "+ std::to_string(view_num) +" is incorrect");
@@ -807,8 +807,8 @@ Succeeded GEHDF5Wrapper::read_efficiency_factors(Array<1, float> &output,
 Succeeded GEHDF5Wrapper::read_singles(Array<1, unsigned int>& output, const unsigned int current_id)
 {
     BOOST_STATIC_ASSERT(sizeof(unsigned int)==4); // Compilation time assert. 
-    if(!is_list_file())
-        error("The file provided is not listmode. Aborting");
+    if(!is_list_file()&& !is_sino_file())
+        error("The file provided is not listmode or sinogram data. Aborting");
 
     if(current_id == 0 || current_id > this->m_num_singles_samples)
         error("internal error in GE HDF5 code: singles slice_id "+ std::to_string(current_id) +" is incorrect");

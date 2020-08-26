@@ -350,14 +350,24 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
               slice, m_num_time_slices);
         //TODO resize singles to return array with new sizes
     }
-
+    // AB TODO: if listmode or/and m_num_time_slices>!
     _times = std::vector<double>(m_num_time_slices);
-    for(unsigned int slice = 0;slice < m_num_time_slices;++slice)
-        _times[slice] = slice+1.0;
+    if (m_num_time_slices>1) // this is the same as checking if the input file is a listmode file
+    {
+      for(unsigned int slice = 0;slice < m_num_time_slices;++slice)
+          _times[slice] = slice+1.0; 
 
-    assert(_times.size()!=0);
-    _singles_time_interval = _times[1] - _times[0];
-
+      assert(_times.size()!=0);
+      _singles_time_interval = _times[1] - _times[0];
+    }
+    else // Then it must be a sinogram, and therefore only has 1 time and 1 interval.
+    {
+        TimeFrameDefinitions tf = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions();
+        _times[0]= tf.get_duration(1);
+        _singles_time_interval = tf.get_duration(1);
+    }
+    
+    
     // Return number of time slices read.
     return slice;
     
