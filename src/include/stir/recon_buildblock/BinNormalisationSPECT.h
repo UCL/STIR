@@ -42,7 +42,7 @@ public:
   BinNormalisationSPECT(const std::string& filename);
 
   void read_norm_data(const std::string& filename);
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&, ExamInfo exam_info);
   void set_num_views(int num_views) const { this->num_views=num_views;}
 
   void set_uniformity(Array<3,float>& uniformity){

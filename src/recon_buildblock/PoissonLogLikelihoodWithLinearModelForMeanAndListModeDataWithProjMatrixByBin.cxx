@@ -209,7 +209,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     }
 
     if (this->normalisation_sptr->set_up(
-                proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
+                proj_data_info_sptr->create_shared_clone(), this->list_mode_data_sptr->get_exam_info()) == Succeeded::no)
         return Succeeded::no;
 
     if (this->current_frame_num<=0)
@@ -324,7 +324,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           }
       }
 
-  if( this->normalisation_sptr->set_up(proj_data_info_sptr)
+  if( this->normalisation_sptr->set_up(proj_data_info_sptr, this->list_mode_data_sptr->get_exam_info())
    == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "

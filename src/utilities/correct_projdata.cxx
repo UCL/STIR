@@ -552,7 +552,7 @@ set_up()
 
   // set up normalisation object
   if (
-      normalisation_ptr->set_up(input_proj_data_info_sptr)
+      normalisation_ptr->set_up(input_proj_data_info_sptr, input_projdata_ptr->get_exam_info())
       != Succeeded::yes)
     {
       warning("correct_projdata: set-up of normalisation failed\n");

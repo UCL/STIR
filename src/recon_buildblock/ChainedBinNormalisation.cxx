@@ -76,14 +76,14 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first_v,
 
 Succeeded
 ChainedBinNormalisation::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, ExamInfo exam_info)
 {
-  BinNormalisation::set_up(proj_data_info_ptr);
+  BinNormalisation::set_up(proj_data_info_ptr, exam_info);
   if (!is_null_ptr(apply_first))
-    if (apply_first->set_up(proj_data_info_ptr) == Succeeded::no)
+    if (apply_first->set_up(proj_data_info_ptr,exam_info  ) == Succeeded::no)
       return  Succeeded::no;
   if (!is_null_ptr(apply_second))
-    return apply_second->set_up(proj_data_info_ptr);
+    return apply_second->set_up(proj_data_info_ptr,exam_info);
   else
     return Succeeded::yes;  
 }
@@ -99,12 +99,12 @@ ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams,const double s
 }
 
 void
-ChainedBinNormalisation::apply(ProjData& proj_data,const double start_time, const double end_time) const
+ChainedBinNormalisation::apply(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->apply(proj_data,start_time,end_time);
+    apply_first->apply(proj_data);
   if (!is_null_ptr(apply_second))
-    apply_second->apply(proj_data,start_time,end_time);
+    apply_second->apply(proj_data);
 }
 
 void
@@ -118,7 +118,7 @@ void
 ChainedBinNormalisation::apply_only_first(ProjData& proj_data,const double start_time, const double end_time) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->apply(proj_data,start_time,end_time);
+    apply_first->apply(proj_data);
 }
 
 void
@@ -132,7 +132,7 @@ void
 ChainedBinNormalisation::apply_only_second(ProjData& proj_data,const double start_time, const double end_time) const
 {
   if (!is_null_ptr(apply_second))
-    apply_second->apply(proj_data,start_time,end_time);
+    apply_second->apply(proj_data);
 }
 
 void 

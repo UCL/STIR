@@ -116,9 +116,9 @@ BinNormalisationSPECT()
 
 Succeeded
 BinNormalisationSPECT::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, ExamInfo exam_info)
 {
-  return BinNormalisation::set_up(proj_data_info_ptr_v);
+  return BinNormalisation::set_up(proj_data_info_ptr_v, exam_info);
 }
 
 BinNormalisationSPECT::

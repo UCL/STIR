@@ -92,7 +92,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT8(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&, ExamInfo exam_info);
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;

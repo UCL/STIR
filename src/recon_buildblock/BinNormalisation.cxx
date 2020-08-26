@@ -52,10 +52,11 @@ BinNormalisation::
 
 Succeeded
 BinNormalisation::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, ExamInfo exam_info)
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
+  this->exam_info=exam_info;
   return Succeeded::yes;  
 }
 
@@ -113,9 +114,11 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 
 void 
 BinNormalisation::
-apply(ProjData& proj_data,const double start_time, const double end_time, 
+apply(ProjData& proj_data,
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
+    float start_time=exam_info.get_time_frame_definitions().get_start_time();
+    float end_time=exam_info.get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));

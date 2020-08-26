@@ -591,7 +591,7 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
     return Succeeded::no;
   }
 
-  if (this->normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
+  if (this->normalisation_sptr->set_up(proj_data_info_sptr, proj_data_sptr->get_exam_info()) == Succeeded::no)
     return Succeeded::no;
 
   if (frame_num<=0)

@@ -209,9 +209,9 @@ BinNormalisationFromECAT8(const string& filename)
 
 Succeeded
 BinNormalisationFromECAT8::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, ExamInfo exam_info)
 {
-  BinNormalisation::set_up(proj_data_info_ptr_v);
+  BinNormalisation::set_up(proj_data_info_ptr_v, exam_info);
 
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =

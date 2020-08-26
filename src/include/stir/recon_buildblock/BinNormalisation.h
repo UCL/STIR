@@ -32,6 +32,8 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
+
+#include "stir/ExamInfo.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -71,7 +73,7 @@ public:
 
   //! initialises the object and checks if it can handle such projection data
   /*! Default version does nothing. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&, ExamInfo exam_info);
 
   //! Return the 'efficiency' factor for a single bin
   /*! With the notation of the class documentation, this returns the factor
@@ -113,7 +115,7 @@ public:
 
     The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
   */
-  void apply(ProjData&,const double start_time, const double end_time, 
+  void apply(ProjData&, 
              shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const;
 
   //! undo the normalisation of some data
@@ -139,6 +141,7 @@ public:
   virtual void check(const ProjDataInfo& proj_data_info) const;
   bool _already_set_up;
 private:
+  ExamInfo  exam_info;
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 

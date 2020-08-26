@@ -82,7 +82,7 @@ public:
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors 
       with the ProjDataInfo supplied. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&, ExamInfo exam_info);
 
   //! Normalise some data
   /*! 

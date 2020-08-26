@@ -207,9 +207,9 @@ BinNormalisationFromGEHDF5(const string& filename)
 
 Succeeded
 BinNormalisationFromGEHDF5::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v, ExamInfo exam_info)
 {
-  BinNormalisation::set_up(proj_data_info_ptr_v);
+  BinNormalisation::set_up(proj_data_info_ptr_v, exam_info);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
