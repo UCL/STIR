@@ -45,7 +45,7 @@ matrix:
  - os: osx
    osx_image: xcode11.3
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
 
 env:
   global:
@@ -97,6 +97,9 @@ before_install:
       brew update
       #now upgrade to avoid problems with outdated packages
       brew upgrade
+
+      export DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:"/usr/local/opt/llvm/lib"
+      export LDFLAGS="-L/usr/local/opt/llvm/lib
 
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
