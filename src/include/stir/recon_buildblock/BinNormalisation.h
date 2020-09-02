@@ -73,7 +73,7 @@ public:
 
   //! initialises the object and checks if it can handle such projection data
   /*! Default version does nothing. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&, ExamInfo exam_info);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
 
   //! Return the 'efficiency' factor for a single bin
   /*! With the notation of the class documentation, this returns the factor
@@ -141,7 +141,7 @@ public:
   virtual void check(const ProjDataInfo& proj_data_info) const;
   bool _already_set_up;
 private:
-  ExamInfo  exam_info;
+  shared_ptr<const ExamInfo> exam_info_sptr;
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 

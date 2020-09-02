@@ -326,7 +326,7 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  if (this->_normalisation_sptr->set_up(proj_data_info_sptr, this->_dyn_proj_data_sptr->get_exam_info()) == Succeeded::no)
+  if (this->_normalisation_sptr->set_up(this->_dyn_proj_data_sptr->get_exam_info_sptr(), proj_data_info_sptr) == Succeeded::no)
     return Succeeded::no;
 
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)

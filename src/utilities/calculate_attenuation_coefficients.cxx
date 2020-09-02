@@ -148,7 +148,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(), template_proj_data_ptr->get_exam_info())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");

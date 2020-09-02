@@ -335,7 +335,7 @@ set_up()
         extras_path = current_full_path.append("extras");
     }
 
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr(), this->input_projdata_sptr->get_exam_info());
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(), this->input_projdata_sptr->get_proj_data_info_sptr());
 
     if (is_null_ptr(this->input_projdata_sptr))
     {
@@ -642,7 +642,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 #endif
     if (run_in_2d_projdata)
     {
-	this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),this->back_projdata_sptr->get_exam_info());
+	this->multiplicative_binnorm_2d_sptr->set_up(this->back_projdata_sptr->get_exam_info_sptr(), this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
     }
     else
@@ -1308,7 +1308,7 @@ ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisati
     else //Just trivial, then ..
     {
         shared_ptr<BinNormalisation> normalisation_factors_sptr(new TrivialBinNormalisation());
-        normalisation_factors_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr(), this->input_projdata_sptr->get_exam_info());
+        normalisation_factors_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(), this->input_projdata_sptr->get_proj_data_info_sptr());
 	return normalisation_factors_sptr;
     }
 }

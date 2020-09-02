@@ -93,7 +93,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&, ExamInfo exam_info);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>&);
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;

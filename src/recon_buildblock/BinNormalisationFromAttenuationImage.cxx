@@ -135,9 +135,9 @@ BinNormalisationFromAttenuationImage(shared_ptr<const DiscretisedDensity<3,float
 
 Succeeded 
 BinNormalisationFromAttenuationImage::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, ExamInfo exam_info)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(proj_data_info_ptr, exam_info);
+  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);
   forward_projector_ptr->set_input(*attenuation_image_ptr);
   return Succeeded::yes;

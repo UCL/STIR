@@ -76,14 +76,14 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first_v,
 
 Succeeded
 ChainedBinNormalisation::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, ExamInfo exam_info)
+set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(proj_data_info_ptr, exam_info);
+  BinNormalisation::set_up( exam_info_sptr,proj_data_info_ptr);
   if (!is_null_ptr(apply_first))
-    if (apply_first->set_up(proj_data_info_ptr,exam_info  ) == Succeeded::no)
+    if (apply_first->set_up(exam_info_sptr,proj_data_info_ptr  ) == Succeeded::no)
       return  Succeeded::no;
   if (!is_null_ptr(apply_second))
-    return apply_second->set_up(proj_data_info_ptr,exam_info);
+    return apply_second->set_up(exam_info_sptr,proj_data_info_ptr);
   else
     return Succeeded::yes;  
 }
