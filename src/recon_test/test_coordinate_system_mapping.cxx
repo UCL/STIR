@@ -76,10 +76,11 @@ struct ForwardBackProjectorPair {
   const shared_ptr<ForwardProjectorByBin> forward_projector_sptr;
   const shared_ptr<BackProjectorByBin> back_projector_sptr;
   ForwardBackProjectorPair(
-    std::string forward_name, std::string back_name, bool matched_projectors,
-    shared_ptr<ForwardProjectorByBin> forward_projector_sptr,
-    shared_ptr<BackProjectorByBin> back_projector_sptr,
-    std::string name_="")
+    const std::string forward_name, const std::string back_name,
+    const bool matched_projectors,
+    const shared_ptr<ForwardProjectorByBin> forward_projector_sptr,
+    const shared_ptr<BackProjectorByBin> back_projector_sptr,
+    const std::string name_="")
     : forward_name{ forward_name }, back_name{ back_name },
       name { forward_name + "-" + back_name },
       matched_projectors{ matched_projectors },
@@ -102,11 +103,11 @@ struct OneForwardBackTest {
   shared_ptr<VoxelsOnCartesianGrid<float> > backprojection_sptr;
 
   OneForwardBackTest(
-    shared_ptr<ProjDataInfo> proj_data_info_sptr,
-    shared_ptr<ExamInfo> exam_info_sptr,
-    shared_ptr<VoxelsOnCartesianGrid<float> > image_sptr,
-    ForwardBackProjectorPair projector_pair,
-    std::string name="")
+    const shared_ptr<ProjDataInfo> proj_data_info_sptr,
+    const shared_ptr<ExamInfo> exam_info_sptr,
+    const shared_ptr<VoxelsOnCartesianGrid<float> > image_sptr,
+    const ForwardBackProjectorPair projector_pair,
+    const std::string name="")
     : name{ name + "-" + projector_pair.name },
       proj_data_info_sptr{ proj_data_info_sptr },
       exam_info_sptr{ exam_info_sptr },
@@ -414,7 +415,7 @@ CoordinateSystemMappingTests::run_tests_for_1_projdata_extended_axial_fov(
       // TODO: which is faster/natural - viewgram or sinogram?
       // These are within 0.01, but I thought they'd actually be closer..
       set_tolerance(SAME_PROJECTORS_TOLERANCE);
-      if (not check_if_equal(
+      if (not check_if_equal<float>(
           standard_fov_test.projection_sptr->begin_all(),
           standard_fov_test.projection_sptr->end_all(),
           extended_fov_test.projection_sptr->begin_all(),
