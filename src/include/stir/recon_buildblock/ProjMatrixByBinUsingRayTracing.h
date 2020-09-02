@@ -193,15 +193,13 @@ private:
   bool do_symmetry_swap_s;
   bool do_symmetry_shift_z;
 
-  // explicitly list necessary members for image details (should use an Info object instead)
-  CartesianCoordinate3D<float> voxel_size;
-  CartesianCoordinate3D<float> origin;  
-  CartesianCoordinate3D<int> min_index;
-  CartesianCoordinate3D<int> max_index;
-
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   shared_ptr<const  DiscretisedDensity<3,float> > density_info_sptr;
 
+  // chase a few needed and constant after set_up() image details
+  CartesianCoordinate3D<float> voxel_size;
+  CartesianCoordinate3D<int> min_index, max_index;
+  float fovrad_in_mm;
 
   virtual void 
     calculate_proj_matrix_elems_for_one_bin(
