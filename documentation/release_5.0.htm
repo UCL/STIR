@@ -173,8 +173,15 @@ from the above):</H2>
     can be used to fill most STIR objects from an iterator range (or copy to).
     The functions normally use <code>stir_object.begin_all()</code> but resort to <code>stir_object::fill_from</code> or <code>copy_to</code> for a few cases where no iterators exist. We use some specialisations to try and find the fastest version.
   </li>
-  <li>Introduced <code>ProjData::standard_segment_sequence</code> function returning <tt>0,+1,-1,...</code>,
+  <li>Introduced <code>ProjData::standard_segment_sequence</code> function returning <tt>0,+1,-1,...</tt>,
 as used by <code>copy_to</code> and <code>fill_from</code>
+</li>
+<li><code>stir::read_from_file</code> can now be called with a "node", e.g.
+  <pre>
+    auto uptr = read_from_file&lt;VoxelsOnCartesianGrid&lt;float&gt; &gt;(filename);
+  </pre>
+  To do this, we now need a <code>typedef</code> <code>hierarchy_base_type</code> at the top level, as otherwise
+  we would need multiple registries. However, this was already required by <code>write_to_file</code> anyway.
 </li>
 </ul>
 
