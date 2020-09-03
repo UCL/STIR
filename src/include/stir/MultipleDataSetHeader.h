@@ -47,10 +47,11 @@ public:
     static const char * const registered_name;
 
     //! Get number of data sets
-    int get_num_data_sets() const { return _num_data_sets; }
+    std::size_t get_num_data_sets() const { return _num_data_sets; }
 
     //! Get ith filename
-    std::string get_filename(int i) const { return _filenames.at(i); }
+    /*! \warning Indexing here starts from 0*/
+    std::string get_filename(std::size_t i) const { return _filenames.at(i); }
 
     //! Create a Multi header pointing to a set of filenames
     template <class VectorOfStringsT>
