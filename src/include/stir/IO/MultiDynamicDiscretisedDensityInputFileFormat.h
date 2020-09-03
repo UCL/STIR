@@ -89,7 +89,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
     DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
     ExamInfo exam_info;
-    for (int i=1; i<=header.get_num_data_sets(); ++i) {
+    for (std::size_t i=1U; i<=header.get_num_data_sets(); ++i) {
         unique_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i-1)));
 
         // Check that there is time frame information

@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018 - 2019, University College London
+    Copyright (C) 2018 - 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -71,6 +71,16 @@ ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
     tdefs.set_time_frame(1,start,end);
     _exam_info.set_time_frame_definitions(tdefs);
     this->set_exam_info(_exam_info);
+}
+
+TEMPLATE
+ParamDiscDensity::
+ParametricDiscretisedDensity(const SingleDiscretisedDensityType& im)
+    : base_type(im.get_index_range(),
+      im.get_origin(),
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(im).get_grid_spacing())
+{
+    this->set_exam_info(im.get_exam_info());
 }
 
 #if 0

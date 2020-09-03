@@ -4,7 +4,7 @@
 #define __stir_modelling_ParametricDiscretisedDensity_H__
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2019, University College London
+    Copyright (C) 2019 - 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@ struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters,
 
 //! Class to store parametric images
 /*! \ingroup modelling
-  \param DiscDensT should be a class for storing an image, e.g. VoxelsOnCartesianGrid<KineticParameters<..> 
+  \param DiscDensT should be a class for storing an image, e.g. VoxelsOnCartesianGrid<KineticParameters<..> >
 
   This class stores parametric images as an image of parameters (as opposed to a sequence of images, one
   for each parameter). However, it provides various functions to get single images out, e.g. corresponding
@@ -100,7 +100,12 @@ public DiscDensT
     {}
 
   /// Create blank parametric image from a dynamic image
+  /*! Uses only its geometric/exam info and timing */
   ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im);
+
+  /// Create blank parametric image from a single VoxelsOnCartesianGrid
+  /*! Uses only its geometric/exam info and timing */
+  ParametricDiscretisedDensity(const SingleDiscretisedDensityType& im);
 
   // implementation works, although only for VoxelsOnCartesianGrid , but not needed for now
   // ParametricDiscretisedDensity(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > & densities);
@@ -169,19 +174,8 @@ public DiscDensT
   const SingleDiscretisedDensityType
     construct_single_density(const int index) const;
 #if 0   //!< Implementation of non-const functions - which should be able to update a single parameter of a parametric image.
-
-  template <class KPFunctionObject>
-    void 
-    construct_single_density_using_function(SingleDiscretisedDensityType& density, KPFunctionObject f) ;
-  
-  template <class KPFunctionObject>
-    SingleDiscretisedDensityType &
-    construct_single_density_using_function(KPFunctionObject f) ;
-  
-  void 
-    construct_single_density(SingleDiscretisedDensityType& density, const int i) ;
-  
-  SingleDiscretisedDensityType & // Maybe this should be a reference...
+  // can't be done really
+  SingleDiscretisedDensityType &
     construct_single_density(const int index);
 #endif
    //@}

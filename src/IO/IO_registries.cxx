@@ -38,6 +38,8 @@
 #include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
 #include "stir/IO/MultiDynamicDiscretisedDensityInputFileFormat.h"
 #include "stir/IO/MultiDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -84,9 +86,10 @@ static InterfileOutputFileFormat::RegisterIt dummy1;
 #ifdef HAVE_ITK
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
-static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
-static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
-static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiIn;
+static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfOut;
+static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfOut;
+static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiOut;
+static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
@@ -133,7 +136,8 @@ static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,Cart
 #endif
 static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
 static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
-static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> multidummy_intf(1);
+static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> dynim_dummy_multi(1);
+static RegisterInputFileFormat<MultiParametricDiscretisedDensityInputFileFormat> parim_dummy_multi(1);
 
 
 /*************************** listmode data **********************/
