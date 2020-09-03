@@ -36,17 +36,9 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
-#include <fstream>
-#include "stir/IO/interfile.h"
-
-#include "stir/DynamicProjData.h"
-#include "stir/MultipleDataSetHeader.h"
-
 #include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
-using std::fstream;
-using std::cerr;
 using std::string;
 #endif
 
