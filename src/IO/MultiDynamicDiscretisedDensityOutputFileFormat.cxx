@@ -33,7 +33,7 @@
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
 #include "stir/FilePath.h"
-#include <fstream>
+#include "stir/MultipleDataSetHeader.h"
 
 START_NAMESPACE_STIR
 
@@ -118,18 +118,7 @@ actual_write_to_file(std::string& filename,
     
     // Write some multi header info
     filename = filename + ".txt";
-    std::ofstream multi_file(filename.c_str());
-    if (!multi_file.is_open()) {
-        warning("MultiDynamicDiscretisedDensity error: Failed to write \"" + filename + "\".\n");
-        return Succeeded::no;
-    }
-    multi_file << "Multi :=\n";
-    multi_file << "\ttotal number of data sets := " << density.get_num_time_frames() << "\n";
-    for (int i=1; i<=int(density.get_num_time_frames()); i++)
-        multi_file << "\tdata set["<<i<<"] := "<<individual_filenames[i]<<"\n";
-    multi_file << "end :=\n";
-    multi_file.close();
-
+    MultipleDataSetHeader::write_header(filename, individual_filenames);
     return Succeeded::yes;
 }
 

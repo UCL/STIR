@@ -52,6 +52,10 @@ public:
     //! Get ith filename
     std::string get_filename(int i) const { return _filenames.at(i); }
 
+    //! Create a Multi header pointing to a set of filenames
+    template <class VectorOfStringsT>
+      inline static void write_header(const std::string& filename, const VectorOfStringsT& individual_filenames);
+
 protected:
 
 //! Read number of data sets
@@ -70,4 +74,6 @@ std::vector<std::string> _filenames;
 };
 
 END_NAMESPACE_STIR
+
+#include "stir/MultipleDataSetHeader.inl"
 #endif
