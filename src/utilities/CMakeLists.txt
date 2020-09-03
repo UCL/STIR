@@ -40,6 +40,7 @@ set(${dir_EXE_SOURCES}
 	list_image_values 
         list_detector_and_bin_info
 	find_maxima_in_image 
+        create_multi_header
 	create_projdata_template 
 	SSRB 
         invert_axis
