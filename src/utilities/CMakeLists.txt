@@ -31,7 +31,8 @@ set(${dir_EXE_SOURCES}
 	postfilter 
 	compare_projdata 
 	compare_image 
-	extract_segments 
+	extract_segments
+	extract_single_images_from_dynamic_image
         estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
