@@ -21,7 +21,7 @@
 # First, dynamic data is simulated from parametric images.
 # Then the estimated parametric images are compared with the originals.
 # 
-# This script currently needs to be executed in the parent-directory of "recon_test"
+# This script currently needs to be executed in "recon_test_pack"
 # (This could be changed by adjusting INPUTDIR below).
 
 # Author: Charalampos Tsoumpas
@@ -34,7 +34,7 @@ trap "echo ERROR" ERR
 #Run Parametric Reconstruction
 WORKSPACE=`pwd`
 
-INPUTDIR=$WORKSPACE/recon_test/input/
+INPUTDIR=$WORKSPACE/test_modelling_input/
 NUMSUBS=4 # 16 subsets create a difference in the direct method of more than 8%!!!
 ITER=40
 SAVITER=40
