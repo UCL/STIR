@@ -63,6 +63,10 @@ struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters,
   This class stores parametric images as an image of parameters (as opposed to a sequence of images, one
   for each parameter). However, it provides various functions to get single images out, e.g. corresponding
   to a single parameter, or by applying a function on all parameters.
+
+  Note that the ExamInfo object stored by the image can contain multiple time frames (presumably
+  corresponding to the time frames of the data where the parametric image is derived from).
+  In some cases, there could only be a single time frame (start to end of the study).
 */
 template <typename DiscDensT>
 class ParametricDiscretisedDensity:

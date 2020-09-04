@@ -1,7 +1,7 @@
 //
 //
 /*
-  Copyright (C) 2018, University College London
+  Copyright (C) 2018,2020 University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -88,6 +88,17 @@ int main(int argc, char *argv[])
         for (unsigned i=1; i<=param_im_sptr->get_num_params(); ++i) {
 
             auto disc = param_im_sptr->construct_single_density(i);
+            {
+              // Get the time frame definition (from start of first frame to end of last)
+              ExamInfo exam_info = disc.get_exam_info();
+              TimeFrameDefinitions tdefs = exam_info.get_time_frame_definitions();
+              const double start = tdefs.get_start_time(1);
+              const double end   = tdefs.get_end_time(tdefs.get_num_frames());
+              tdefs.set_num_time_frames(1);
+              tdefs.set_time_frame(1,start,end);
+              exam_info.set_time_frame_definitions(tdefs);
+              disc.set_exam_info(exam_info);
+            }
 
             std::string current_filename;
             try {

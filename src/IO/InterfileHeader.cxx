@@ -520,12 +520,6 @@ bool InterfileImageHeader::post_processing()
       return true; 
     }
   std::vector<double>	first_pixel_offsets;
-  
-  if (num_time_frames > 1 && num_image_data_types > 1)
-    { 
-      warning("Interfile error: only supporting num_time_frames OR num_image_data_types > 1 for now\n"); 
-      return true; 
-    }
 
   return false;
 }
