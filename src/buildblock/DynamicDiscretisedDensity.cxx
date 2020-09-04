@@ -121,7 +121,11 @@ get_isotope_halflife() const
 const float  
 DynamicDiscretisedDensity::
 get_scanner_default_bin_size() const
-{ return this->_scanner_sptr->get_default_bin_size(); }
+{
+  if (!this->_scanner_sptr)
+    error("DynamicDiscretisedDensity::get_scanner_default_bin_size(): scanner not set");
+  return this->_scanner_sptr->get_default_bin_size();
+}
 
 const float  
 DynamicDiscretisedDensity::
