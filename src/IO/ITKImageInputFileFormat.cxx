@@ -57,7 +57,8 @@ typedef itk::Image<float, 3>                                 ITKImageSingle;
 typedef itk::VectorImage<float, 3>                           ITKImageMulti;
 typedef DiscretisedDensity<3, float>                         STIRImageSingle;
 typedef VoxelsOnCartesianGrid<float>                         STIRImageSingleConcrete;
-typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
+typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
+typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 typedef itk::MetaDataObject< std::string >                   MetaDataStringType;
 
 template<typename STIRImageType>
@@ -175,9 +176,9 @@ ITK_pixel_to_STIR_pixel(ITKPixelType itk_pixel,
 /* Specialisation if the pixel is a vector and we want a multi-image */
 template<>
 inline
-typename STIRImageMulti::full_value_type
+typename STIRImageMultiConcrete::full_value_type
 ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
-                        const STIRImageMulti &stir_image,
+                        const STIRImageMultiConcrete &stir_image,
                         bool is_displacement_field)
 {
   // ITK VariableLengthVector to ITK FixedArray
@@ -580,7 +581,7 @@ read_file_itk(const std::string &filename)
 
       ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
-      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti>
+      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMultiConcrete>
         (itk_image, true);
 
     }
