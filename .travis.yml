@@ -168,6 +168,7 @@ script:
   - ./run_tests.sh --nointbp
   - ./run_test_zoom_image.sh
   - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+  - ./run_tests_modelling.sh
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
   # Run examples to see if they work

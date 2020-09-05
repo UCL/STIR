@@ -127,6 +127,8 @@ class ExamInfo;
 class ListModeData : public ExamData
 {
 public:
+  //! typedef used by read_from_file
+  typedef ListModeData hierarchy_base_type;
 
   //! Use this typedef for save/set_get_position
   typedef unsigned int SavedPosition;

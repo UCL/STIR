@@ -33,6 +33,7 @@ set(${dir_LIB_SOURCES}
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDiscretisedDensityOutputFileFormat
   MultiDynamicDiscretisedDensityOutputFileFormat
+  MultiParametricDiscretisedDensityOutputFileFormat
 
   GIPL_ImageFormat
   stir_ecat_common 

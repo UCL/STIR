@@ -36,17 +36,9 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
-#include <fstream>
-#include "stir/IO/interfile.h"
-
-#include "stir/DynamicProjData.h"
-#include "stir/MultipleDataSetHeader.h"
-
 #include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
-using std::fstream;
-using std::cerr;
 using std::string;
 #endif
 
@@ -129,7 +121,11 @@ get_isotope_halflife() const
 const float  
 DynamicDiscretisedDensity::
 get_scanner_default_bin_size() const
-{ return this->_scanner_sptr->get_default_bin_size(); }
+{
+  if (!this->_scanner_sptr)
+    error("DynamicDiscretisedDensity::get_scanner_default_bin_size(): scanner not set");
+  return this->_scanner_sptr->get_default_bin_size();
+}
 
 const float  
 DynamicDiscretisedDensity::

@@ -785,6 +785,21 @@ in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
 
+\subsection{Multi header format}
+\label{multi-file-format}
+It is often useful to be able to constract a single dataset from multiply components (e.g. images
+or projection data). We have a (STIR-specific) header format for this which is very simple, for example
+\begin{verbatim}
+Multi :=
+  total number of data sets := 2
+  data set[1] := sinogram_1.hs
+  data set[2] := sinogram_2.hs
+end :=
+\end{verbatim}
+Each ``component'' will be read independently, so could in principle be in a different file format
+from the others.
+
+We currently support this format for dynamic images and projection data.
 \subsection{
 List mode processing}
 
@@ -2876,13 +2891,30 @@ This is a test-release of a program that can be used to find
 ROI values for an image. See the online documentation generated 
 by doxygen for more info.
 
-{ \subsubsubsection{extract\_dynamic\_images}
+{ \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
 
 This executable can be used to get the individual components of a 
 dynamic image as separate images. 
 To use it, simply give the pattern of the output filename, the input filename, and optionally
-supply a parameter file for saving the output images.
+supply a parameter file for the file-format used to save the output images.
+
+{ {\subsubsubsection{extract\_single\_images\_from\_parametric\_image}
+}
+
+As above but for parametric images.
+
+{ \subsubsubsection{create\_multi\_header}
+  This is a command line utility for creating a header that "points" to several other
+  data-sets, useful for e.g. dynamic images/data. The output header is in the \texttt{multi}
+  file-format (see \ref{multi-file-format}) and can then be used in
+  other STIR utilities. This is useful for instance if you have
+  a set of reconstruct images corresponding to several time frames, but need to read the data
+  as a single study.
+
+  To use it, specify the output filename and a list of input filenames (in the order you want
+  them to appear in the header).
+  There is no check that the data sizes and other info are compatible.
 
 { \subsubsubsection{ctac\_to\_mu\_values}
 }

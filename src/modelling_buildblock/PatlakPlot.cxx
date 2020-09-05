@@ -220,6 +220,8 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
         dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      if (dyn_image.get_scanner_default_bin_size()<=0)
+        error("PatlakPlot: The dynamic image currently needs to know the Scanner's default_bin_size. Did you set the 'originating system'?");
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
       this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
@@ -290,6 +292,8 @@ PatlakPlot::multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesi
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
         dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      if (dyn_image.get_scanner_default_bin_size()<=0)
+        error("PatlakPlot: The dynamic image currently needs to know the Scanner's default_bin_size. Did you set the 'originating system'?");
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
       this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
@@ -310,6 +314,8 @@ PatlakPlot::multiply_dynamic_image_with_model_gradient_and_add_to_input(Parametr
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
         dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      if (dyn_image.get_scanner_default_bin_size()<=0)
+        error("PatlakPlot: The dynamic image currently needs to know the Scanner's default_bin_size. Did you set the 'originating system'?");
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
       this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
@@ -330,6 +336,8 @@ PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & 
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
         dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      if (dyn_image.get_scanner_default_bin_size()<=0)
+        error("PatlakPlot: The dynamic image currently needs to know the Scanner's default_bin_size. Did you set the 'originating system'?");
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
       this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
