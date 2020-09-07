@@ -14,8 +14,8 @@
   \author Palak Wadhwa (fix to STIR conventions and checks)
 */
 
-#ifndef __stir_listmode_CListRecordGESigna_H__
-#define __stir_listmode_CListRecordGESigna_H__
+#ifndef __stir_listmode_CListRecordGEHDF5_H__
+#define __stir_listmode_CListRecordGEHDF5_H__
 
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
@@ -59,9 +59,9 @@ enum ExtendedEvtType
 //! Class for storing and using a coincidence event from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGEHDF5 to work.
 */
-class CListEventDataGESigna
+class CListEventDataGEHDF5
 {
  public:  
   inline bool is_prompt() const { return true; } // TODO
@@ -108,9 +108,9 @@ class CListEventDataGESigna
 //! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGEHDF5 to work.
  */
-class ListTimeDataGESigna
+class ListTimeDataGEHDF5
 {
  public:
   inline unsigned long get_time_in_millisecs() const
@@ -158,9 +158,9 @@ private:
 //! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGEHDF5 to work.
  */
-class CListGatingDataGESigna
+class CListGatingDataGEHDF5
 {
  public:
   #if 0
@@ -204,18 +204,18 @@ private:
 //! A class for a general element (or "record") of a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   \ingroup GE
-  All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
+  All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGEHDF5.
   This class essentially just forwards the work to the "basic" classes.
 */
-class CListRecordGESigna : public CListRecord, public ListTime, // public CListGatingInput,
+class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGatingInput,
     public  CListEventCylindricalScannerWithDiscreteDetectors
 {
-  typedef CListEventDataGESigna DataType;
-  typedef ListTimeDataGESigna TimeType;
-  //typedef CListGatingDataGESigna GatingType;
+  typedef CListEventDataGEHDF5 DataType;
+  typedef ListTimeDataGEHDF5 TimeType;
+  //typedef CListGatingDataGEHDF5 GatingType;
 
  public:  
-  CListRecordGESigna() :
+  CListRecordGEHDF5() :
   CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::PETMR_Signa)))
     {}
 
@@ -251,9 +251,9 @@ class CListRecordGESigna : public CListRecord, public ListTime, // public CListG
     return false;
 #if 0
 // TODO
-dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
-      raw[0] == static_cast<CListRecordGESigna const &>(e2).raw[0] &&
-      (this->is_event() || (raw[1] == static_cast<CListRecordGESigna const &>(e2).raw[1]));
+dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
+      raw[0] == static_cast<CListRecordGEHDF5 const &>(e2).raw[0] &&
+      (this->is_event() || (raw[1] == static_cast<CListRecordGEHDF5 const &>(e2).raw[1]));
 #endif
   }	    
 

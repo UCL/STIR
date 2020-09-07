@@ -6,18 +6,18 @@
   \file
   \ingroup listmode
   \ingroup GE
-  \brief Declaration of class stir::GE::RDF_HDF5::CListModeDataGESigna
+  \brief Declaration of class stir::GE::RDF_HDF5::CListModeDataGEHDF5
     
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Palak Wadhwa
 */
 
-#ifndef __stir_listmode_CListModeDataGESigna_H__
-#define __stir_listmode_CListModeDataGESigna_H__
+#ifndef __stir_listmode_CListModeDataGEHDF5_H__
+#define __stir_listmode_CListModeDataGEHDF5_H__
 
 #include "stir/listmode/CListModeData.h"
-#include "stir/listmode/CListRecordGESigna.h"
+#include "stir/listmode/CListRecordGEHDF5.h"
 #include "stir/IO/InputStreamWithRecordsFromHDF5.h"
 #include "stir/shared_ptr.h"
 #include <iostream>
@@ -33,11 +33,11 @@ namespace RDF_HDF5 {
     \ingroup GE
     This file format is used by GE Signa PET/MR.
 */
-class CListModeDataGESigna : public CListModeData
+class CListModeDataGEHDF5 : public CListModeData
 {
 public:
   //! Constructor taking a filename
-  CListModeDataGESigna(const std::string& listmode_filename);
+  CListModeDataGEHDF5(const std::string& listmode_filename);
 
   virtual std::string
     get_name() const;
@@ -60,7 +60,7 @@ public:
   virtual
     Succeeded set_get_position(const SavedPosition&);
 
-  //! returns \c false, as GESigna listmode data does not store delayed events (and prompts)
+  //! returns \c false, as GEHDF5 listmode data does not store delayed events (and prompts)
   /*! \todo this depends on the acquisition parameters */
   virtual bool has_delayeds() const { return false; }
 
@@ -68,7 +68,7 @@ private:
 
 //  shared_ptr<GEHDF5Wrapper> input_sptr;
 
-  typedef CListRecordGESigna CListRecordT;
+  typedef CListRecordGEHDF5 CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecordsFromHDF5<CListRecordT> > current_lm_data_ptr;
   float lm_start_time;

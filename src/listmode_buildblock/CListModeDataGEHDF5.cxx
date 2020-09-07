@@ -8,7 +8,7 @@
   \file
   \ingroup listmode
   \ingroup GE
-  \brief Implementation of class stir::GE::RDF_HDF5::CListModeDataGESigna
+  \brief Implementation of class stir::GE::RDF_HDF5::CListModeDataGEHDF5
 
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -17,7 +17,7 @@
 */
 
 
-#include "stir/listmode/CListModeDataGESigna.h"
+#include "stir/listmode/CListModeDataGEHDF5.h"
 #include "stir/Succeeded.h"
 #include "stir/ExamInfo.h"
 #include "stir/info.h"
@@ -32,25 +32,25 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-CListModeDataGESigna::
-CListModeDataGESigna(const std::string& listmode_filename)
+CListModeDataGEHDF5::
+CListModeDataGEHDF5(const std::string& listmode_filename)
   : listmode_filename(listmode_filename)
 {
   if (open_lm_file() == Succeeded::no)
-    error(boost::format("CListModeDataGESigna: error opening the first listmode file for filename %s") %
+    error(boost::format("CListModeDataGEHDF5: error opening the first listmode file for filename %s") %
       listmode_filename);
  printf( "\n Success in opening the listmode\n" );
 }
 
 std::string
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 get_name() const
 {
   return listmode_filename;
 }
 
 std::time_t
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 get_scan_start_time_in_secs_since_1970() const
 {
   return std::time_t(-1); // TODO
@@ -58,7 +58,7 @@ get_scan_start_time_in_secs_since_1970() const
 
 
 shared_ptr <CListRecord>
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 get_empty_record_sptr() const
 {
   shared_ptr<CListRecord> sptr(new CListRecordT);
@@ -66,10 +66,10 @@ get_empty_record_sptr() const
 }
 
 Succeeded
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 open_lm_file()
 {
-  info(boost::format("CListModeDataGESigna: opening file %1%") % listmode_filename);
+  info(boost::format("CListModeDataGEHDF5: opening file %1%") % listmode_filename);
 #if 0
   shared_ptr<std::istream> stream_ptr(new std::fstream(listmode_filename.c_str(), std::ios::in | std::ios::binary));
   if (!(*stream_ptr))
@@ -113,7 +113,7 @@ open_lm_file()
 }
 
 Succeeded
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 get_next_record(CListRecord& record_of_general_type) const
 {
   CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
@@ -123,7 +123,7 @@ get_next_record(CListRecord& record_of_general_type) const
 
 
 Succeeded
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 reset()
 {
   return current_lm_data_ptr->reset();
@@ -131,15 +131,15 @@ reset()
 
 
 CListModeData::SavedPosition
-CListModeDataGESigna::
+CListModeDataGEHDF5::
 save_get_position()
 {
   return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position());
 }
 
 Succeeded
-CListModeDataGESigna::
-set_get_position(const CListModeDataGESigna::SavedPosition& pos)
+CListModeDataGEHDF5::
+set_get_position(const CListModeDataGEHDF5::SavedPosition& pos)
 {
   return
     current_lm_data_ptr->set_get_position(pos);
