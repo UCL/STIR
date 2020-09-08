@@ -10,7 +10,7 @@
   \brief Classes for listmode records of GE Signa PET/MR data
 
   \author Kris Thielemans (major mods for GE Dimension data)
-  \author Ottavia Bertolli (major mods for GE Signa (i.e. RDF 10) data)
+  \author Ottavia Bertolli (major mods for GE Signa (i.e. RDF 9) data)
   \author Palak Wadhwa (fix to STIR conventions and checks)
 */
 
@@ -63,28 +63,17 @@ enum ExtendedEvtType
 */
 class CListEventDataGEHDF5
 {
- public:  
+ public:
   inline bool is_prompt() const { return true; } // TODO
   inline Succeeded set_prompt(const bool prompt = true) 
   { 
     //if (prompt) random=1; else random=0; return Succeeded::yes; 
     return Succeeded::no;
   }
-  inline void get_detection_position(DetectionPositionPair<>& det_pos) const
-  {
-    // TODO 447->get_num_detectors_per_ring()-1
-    det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
-    det_pos.pos1().axial_coord() = loXtalAxialID;
-    det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
-//    std::cout << hiXtalTransAxID << " "  << loXtalTransAxID << std::endl;
-    det_pos.pos2().axial_coord() = hiXtalAxialID;
-  }
   inline bool is_event() const
     { 
       return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
      } // TODO need to find out how to see if it's a coincidence event
-
- private:
 
 #if STIRIsNativeByteOrderBigEndian
   // Do byteswapping first before using this bit field.
@@ -215,8 +204,8 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
   //typedef CListGatingDataGEHDF5 GatingType;
 
  public:  
-  CListRecordGEHDF5() :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::PETMR_Signa)))
+  CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr) :
+  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
     {}
 
   bool is_time() const
@@ -274,7 +263,12 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   { return event_data.set_prompt(prompt); }
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
-  { event_data.get_detection_position(det_pos); }
+  {
+    det_pos.pos1().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
+    det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
+    det_pos.pos2().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
+  }
 
   //! This routine sets in a coincidence event from detector "indices"
   virtual void set_detection_position(const DetectionPositionPair<>&)
@@ -331,7 +325,7 @@ private:
     boost::int32_t  raw[2];
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
-  BOOST_STATIC_ASSERT(sizeof(DataType)==6); 
+  BOOST_STATIC_ASSERT(sizeof(DataType)==6);
   BOOST_STATIC_ASSERT(sizeof(TimeType)==6); 
   //BOOST_STATIC_ASSERT(sizeof(GatingType)==8); 
 

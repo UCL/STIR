@@ -61,7 +61,7 @@ shared_ptr <CListRecord>
 CListModeDataGEHDF5::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordT);
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
   return sptr;
 }
 
