@@ -228,6 +228,7 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
 #endif //NDEBUG
     }
   //  const DynamicDiscretisedDensity & dyn_image=this->_dyn_image;
+  // TODO check consistency of time-frame definitions
   const unsigned int num_frames=(this->_frame_defs).get_num_frames();
   unsigned int frame_num;
   unsigned int starting_frame= this->_starting_frame; 
@@ -402,7 +403,7 @@ post_processing()
        PlasmaData plasma_data_temp;
        plasma_data_temp.read_plasma_data(this->_blood_data_filename);   // The implementation assumes three list file. 
        // TODO have parameter
-       warning("Assuming F-18 tracer for plasma data!!!");
+       warning("Assuming F-18 tracer for half-life!!!");
        plasma_data_temp.set_isotope_halflife(6586.2F);
        plasma_data_temp.shift_time(this->_time_shift);
        this->_plasma_frame_data=plasma_data_temp.get_sample_data_in_frames(this->_frame_defs);

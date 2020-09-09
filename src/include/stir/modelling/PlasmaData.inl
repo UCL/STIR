@@ -192,6 +192,7 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
             {
               if(plasma_frame_vector.size()<1) /* In case of no plasma data inside a frame, e.g. when there is large time_shift. */
                 {
+                  // TODO really should write a warning or something
                   plasma_frame_vector.push_back(0.);
                   blood_frame_vector.push_back(0.);
                   time_frame_vector.push_back((frame_start_time+frame_end_time)*.5);

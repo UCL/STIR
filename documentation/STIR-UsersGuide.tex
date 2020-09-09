@@ -1708,11 +1708,9 @@ they need a different type of objective function. Currently, the only defined ve
 where the input is dynamic projection data and the Patlak linear model is used to go from
 dynamic images to parametric images. See section {sec:KineticModels} for more information.
 
-Currently, the input and output has to be in ECAT7 format. 
-
-Below is an excerpt of a possible parameter for file POSMAPOSL. A complete parameter file
+Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
 can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
-form the input, and that a (linear) kinetic model has to be specified.
+form the input, and that a (linear) kinetic model has to be specified, see \ref{sec:KineticModels}.
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -2274,12 +2272,13 @@ is derived from the \textbf{KineticModel} class.
 The user will need to provide information about:
 \begin{itemize} 
 \item	File of input function (e.g. plasma activity or reference tissue activity values); 
-\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units with the input function) 
+\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units as the input function)
 \item	Starting frame to apply  \textit{Patlak Plot} 
 \item	Delay between input function and PET measurement 
-\item	Time-frame definition file. 
-\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total or mean over each frame 
-\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size}
+\item	Time-frame definition file \textbf{There is currently no check that these time-frame definitions are consistent with the actual data!}
+\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total (which is currently the case in STIR reconstructions) or mean over each frame
+\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size} (i.e. voxels have the
+   same values as for \texttt{zoom=1}) (this needs to be set to 0 for STIR reconstructions).
 \end{itemize}
 Example Sample File: \texttt{PatlakPlot.par} 
 
@@ -2289,7 +2288,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
-scale factor := FLOAT
 blood data filename := plasma.if
 ; In seconds
 Time Shift := FLOAT
@@ -2300,14 +2298,19 @@ end Patlak Plot Parameters:=
 \end{verbatim}
 
 Current assumptions are that an \textit{F-18} tracer is used; the input function is not decay corrected and it
-is given in a text file with three columns (i.e. \textbf{PlasmaSample}): time in \textit{seconds}, plasma-activity in
-\textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}) 
-%HARRY TODO "and multiple" ?
-and multiple the total number of \textbf{PlasmaSample}
-is usually given in the very first row. Currently, the parametric image
-has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+is given in a text file with three columns: time of the sample in \textit{seconds}, plasma-activity\footnote{%
+If you have no plasma info, it is customary to use a published function to convert blood activity to plasma activity.
+\textit{STIR} has currently no functionality for this however.}
+in \textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}). The total number of samples has to be in the very first row.
+(See an example in the \texttt{recon\_test\_pack/test\_modelling\_input}). The data are stored as a vector
+of \texttt{PlasmaSample} objects.
 
-How to Run \textit{Patlak Plot}:
+
+Currently, the parametric image
+can be in (STIR-specific) \texttt{Interfile}, use a \texttt{Multi} header (see \ref{multi-file-format}), or
+\textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+
+How to use \textit{Patlak Plot} for post-reconstruction fitting:
 
 \cmdline{%
 apply\_patlak\_to\_images \textbackslash \\
@@ -2326,7 +2329,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := 1
-scale factor := 1
 blood data filename := tac.roi
 ; In seconds
 Time Shift := 0
@@ -2345,7 +2347,7 @@ Moreover, two direct reconstruction version of linear kinetic models have been a
 
 
 The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
-\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
+\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}, see \ref{sec:ParametricImageIterativeAlgorithms}.
 
 %TODO More information could be included for \textbf{MAP} estimation e.g. \textbf{quadratic priors}. 
 
