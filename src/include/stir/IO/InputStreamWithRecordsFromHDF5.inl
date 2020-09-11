@@ -81,7 +81,6 @@ set_up()
     data_sptr.reset(new char[this->max_size_of_record]);
 
     input_sptr->initialise_listmode_data();
-    //! \todo edit
     m_list_size = input_sptr->get_dataset_size() - this->size_of_record_signature;
 
     return Succeeded::yes;
@@ -93,18 +92,18 @@ InputStreamWithRecordsFromHDF5<RecordT>::
 get_next_record(RecordT& record)
 {
 
-  if (current_offset > m_list_size)
+  if (current_offset > static_cast<std::streampos>(m_list_size))
       return Succeeded::no;
-char* data_ptr = data_sptr.get();
-  input_sptr->read_list_data(data_ptr, current_offset);
-
-    // NE: Is this really meaningful?
-
+  char* data_ptr = data_sptr.get();
+  input_sptr->read_list_data(data_ptr, current_offset, hsize_t(this->size_of_record_signature));
   const std::size_t size_of_record =
     record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
 
   assert(size_of_record <= this->max_size_of_record);
-
+  // read more bytes if necessary
+  auto remainder = size_of_record - this->size_of_record_signature;
+  if (remainder > 0)
+    input_sptr->read_list_data(data_ptr, current_offset, hsize_t(remainder));
 
   return
     record.init_from_data_ptr(data_ptr, size_of_record,false);

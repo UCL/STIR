@@ -102,11 +102,12 @@ public:
     float get_coincidence_time_window() const;
 
     //! reads a listmode event
-    /* \param output: has to be pre-allocated and of the correct size (\c size_of_record_signature)
+    /* \param output: has to be pre-allocated and of the correct size
        \param current_offset will be incremented
     */
     Succeeded read_list_data(char* output,
-                            std::streampos& current_offset);
+                             std::streampos& current_offset,
+                             const hsize_t size) const;
 
     //! read singles at time slice \c current_id
     /*! \param current)id is 1-based index */

@@ -674,14 +674,14 @@ float GEHDF5Wrapper::get_coincidence_time_window() const
 
 
 // Developed for listmode access
-Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_offset)
+Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_offset, const hsize_t size) const
 {
     if(!is_list_file())
         error("The file provided is not list data. Aborting");
     hsize_t pos = static_cast<hsize_t>(current_offset);
-    m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
+    m_dataspace.selectHyperslab( H5S_SELECT_SET, &size, &pos );
     m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
-    current_offset += static_cast<std::streampos>(m_size_of_record_signature);
+    current_offset += static_cast<std::streampos>(size);
 
     return Succeeded::yes;
 }
