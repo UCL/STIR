@@ -2641,19 +2641,11 @@ The programs are \textbf{manip\_image}, \textbf{stir\_write\_pgm}, \textbf{list\
 for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
 \textbf{list\_projdata\_info} for 
-projection data and \textbf{stir\_math} for both. Run them with the 
-name of the image or projection data file as an argument. For 
-example, for \textbf{manip\_image}:
-\cmdline{manip\_image file\_name.hv}
-
+projection data, and \textbf{stir\_math} and \textbf{get\_time\_frame\_info} for both.
+Run them without arguments to get usage information.
 
 See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate projection 
 data.
-
-
-The program \textbf{get\_time\_frame\_info} is \textit{STIR}'s first (small!) 
-step into supporting dynamic data.
-
 
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
@@ -2668,6 +2660,7 @@ convert your \textit{STIR} data to another format using (X)medcon
 
 A utility that lists information about an image on stdout. This includes number of voxels,
 physical sizes, bounding boxes, etc. It also prints min/max/sum of the data. 
+Optionally this can be listed per time-frame.
 
 { \subsubsubsection{stir\_write\_pgm}
 }
@@ -2679,7 +2672,7 @@ This utility is mainly useful for shell/batch scripts.
 { \subsubsubsection{manip\_image}
 }
 
-This program works on two modes. Additionally to the display 
+This program works in two modes. Additionally to the display 
 possibility, the main mode allows to retrieve information about 
 the image:
 
