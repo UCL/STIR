@@ -25,5 +25,5 @@ fi
 OUTPUT=sinospan2 TEMPLATE=${pardir}/template.hs lm_to_projdata ${pardir}/lm_to_projdata.par 
 
 # estimate randoms from singles
-construct_randoms_from_GEsingles randomsspan2 ${INPUT} template.hs 
+construct_randoms_from_GEsingles randomsspan2 ${INPUT} ${pardir}template.hs 
 

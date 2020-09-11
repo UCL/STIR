@@ -42,3 +42,6 @@ correct_projdata correct_projdata_for_norm.par
 
 5. Attenuation Correction: In order to conduct the attenuation correction, the MRAC image needs to
 be rotated by 5.23 degrees in (anti-clockwise) direction.
+
+
+These steps are made somewhat easier by the provided example scripts.
