@@ -54,7 +54,8 @@ else()
         endif()
 
         execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
-            CERN_ROOT_INCLUDE_DIRS)
+            CERN_ROOT_INCLUDE_DIRS
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         # Attempt fo find libraries from root-config. However, this doesn't work if
         # not all libraries are installed (as root-config lists them anyway).
