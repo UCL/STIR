@@ -96,10 +96,6 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
 
-      # seems to be needed on Travis due to conflicts with gcc otherwise
-      # see https://github.com/travis-ci/travis-ci/issues/8826
-      brew cask uninstall oclint
-
       brew update
       #now upgrade to avoid problems with outdated packages
       brew upgrade
