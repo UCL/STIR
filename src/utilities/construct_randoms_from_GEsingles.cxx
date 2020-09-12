@@ -5,8 +5,7 @@
   \ingroup GE
   \brief Construct randoms as a product of singles estimates
 
-  \todo This file is somewhat preliminary. 
-  - It contains some hard-wired numbers for the Sigma
+  \todo This file is somewhat preliminary.
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -123,25 +122,6 @@ int main(int argc, char **argv)
         }
       // int timesamples=singles._num_time_slices;
     }
-#if 0
-    // block norm
-    if (do_block)
-      {
-    {
-      char *in_filename = new char[in_filename_prefix.size() + 30];
-      sprintf(in_filename, "%s_%s_%d.out",
-          in_filename_prefix.c_str(), "block",  iter_num);
-      ifstream in(in_filename);
-      in >> norm_block_data;
-      if (!in)
-        {
-          warning("Error reading %s, using all 1s instead\n", in_filename);
-          do_block = false;
-        }
-      delete[] in_filename;
-    }
-      }
-#endif
   }// nothing
 
   {
@@ -236,8 +216,6 @@ int main(int argc, char **argv)
                     uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
                                                   uncompressed_bin);
 
-                    // GE stores tangential pos in the opposite direction to STIR
-                    unsigned int num_crystals_per_ring=m_input_sptr->get_scanner_sptr()->get_num_detectors_per_ring();
                     sinogram[bin.view_num()][bin.tangential_pos_num()] +=
                           num_slices*coincidence_time_window*efficiencies[ra][a]*efficiencies[rb][(b%num_detectors_per_ring)];
                   }// endfor uncompresed view num

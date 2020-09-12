@@ -9,13 +9,13 @@
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
-
+  \author Ander Biguri
 
 */
 /*
     Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2019, University College London
+    Copyright (C) 2018-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -67,12 +67,6 @@ unsigned int GEHDF5Wrapper::get_geo_dims() const
 {
     return geo_dims;
 }
-
-/*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
-{
-    //! \todo For examInfo get timeframe definitions
-    return &exam_info_sptr->time_frame_definitions;
-}*/
 
 const H5::H5File& GEHDF5Wrapper::get_file() const
 { return file; }

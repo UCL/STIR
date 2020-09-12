@@ -23,6 +23,7 @@
           Methods 2020,
           DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
         </li>
+        <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
       </ul>
@@ -35,7 +36,9 @@
 
 <h3>New functionality</h3>
 <ul>
-  <li>Reading of GE HDF5 data (GE fileformat RDF 10) for the GE Signa PET/MR, including listmode, sinograms and calibration files.
+  <li>Reading of GE HDF5 data (GE fileformat RDF 9) for the GE Signa PET/MR and recent GE PET/CT scanners (but depending on their
+    software version).
+    We currently read listmode, sinograms and calibration files.
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
     will be non-TOF.
   </li>

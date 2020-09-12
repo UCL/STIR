@@ -7,11 +7,12 @@
   \file
   \ingroup listmode
   \ingroup GE
-  \brief Classes for listmode records of GE Signa PET/MR data
+  \brief Classes for listmode records of GE RDF9 data
 
   \author Kris Thielemans (major mods for GE Dimension data)
   \author Ottavia Bertolli (major mods for GE Signa (i.e. RDF 9) data)
   \author Palak Wadhwa (fix to STIR conventions and checks)
+  \author Ander Biguri (generalise from Signa to RDF9)
 */
 
 #ifndef __stir_listmode_CListRecordGEHDF5_H__
@@ -123,7 +124,7 @@ namespace RDF_HDF5 {
     }; /*-coincidence event*/
 
 
-    //! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
+    //! A class for storing and using a timing 'event' from a GE RDF9 listmode file
     /*! \ingroup listmode
       \ingroup GE
       This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGEHDF5 to work.
@@ -174,7 +175,7 @@ namespace RDF_HDF5 {
 
   }
 
-//! A class for a general element (or "record") of a GE Signa PET/MR listmode file
+//! A class for a general element (or "record") of a GE RDF9 listmode file
 /*! \ingroup listmode
   \ingroup GE
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGEHDF5.

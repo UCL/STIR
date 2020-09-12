@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013-2019 University College London
+    Copyright (C) 2013-2020 University College London
     Copyright (C) 2017-2019 University of Leeds
 */
 /*!
@@ -11,6 +11,7 @@
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Palak Wadhwa
+  \author Ander Biguri (generalise from Signa to RDF9)
 */
 
 #ifndef __stir_listmode_CListModeDataGEHDF5_H__
@@ -28,10 +29,11 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-//! A class that reads the listmode data for GE Signa PET/MR scanners
+//! A class that reads the listmode data for GE scanners using the RDF9 format
 /*!  \ingroup listmode
     \ingroup GE
-    This file format is used by GE Signa PET/MR.
+    This file format is used by GE Signa PET/MR and can be used by GE PET/CT scanners (D690 up to DMI)
+    depending on software version.
 */
 class CListModeDataGEHDF5 : public CListModeData
 {
