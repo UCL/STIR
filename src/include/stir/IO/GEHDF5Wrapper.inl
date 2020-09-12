@@ -38,7 +38,13 @@ namespace RDF_HDF5 {
 shared_ptr<Scanner>
 GEHDF5Wrapper::get_scanner_sptr() const
 {
-    return this->scanner_sptr;
+    return this->proj_data_info_sptr->get_scanner_sptr();
+}
+
+shared_ptr<const ProjDataInfo>
+GEHDF5Wrapper::get_proj_data_info_sptr() const
+{
+  return this->proj_data_info_sptr;
 }
 
 shared_ptr<ExamInfo>

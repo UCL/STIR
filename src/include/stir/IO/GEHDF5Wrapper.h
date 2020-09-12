@@ -31,6 +31,7 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/ExamInfo.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/Array.h"
@@ -148,19 +149,29 @@ public:
     inline shared_ptr<Scanner>
     get_scanner_sptr() const;
 
+    inline shared_ptr<const ProjDataInfo>
+    get_proj_data_info_sptr() const;
+
     //! \obsolete
     inline const H5::H5File& get_file() const;
 
     ~GEHDF5Wrapper() {}
 
 protected:
+    //! enum for encoding head/feet first in the RDF file
+    enum AcqPatientEntries
+    { ACQ_HEAD_FIRST=0, ACQ_FEET_FIRST=1};
+    //! enum for encoding patient orientation in the RDF file
+    enum AcqPatientPositions
+    { ACQ_SUPINE=0, ACQ_PRONE=1, ACQ_LEFT_DECUB=2, ACQ_RIGHT_DECUB=3};
 
-    Succeeded initialise_scanner_from_HDF5();
+    void initialise_proj_data_info_from_HDF5();
+    void initialise_exam_info();
 
-    Succeeded initialise_exam_info();
+    std::uint32_t read_dataset_uint32(const std::string& dataset_name);
+    std::int32_t read_dataset_int32(const std::string& dataset_name);
 
-    shared_ptr<Scanner> scanner_sptr;
-
+    shared_ptr<ProjDataInfo> proj_data_info_sptr;
     shared_ptr<ExamInfo> exam_info_sptr;
 
 private:
@@ -168,6 +179,7 @@ private:
     Succeeded check_file(); 
 
     unsigned int check_geo_type();
+    shared_ptr<Scanner> get_scanner_from_HDF5();
 
     H5::H5File file;
 

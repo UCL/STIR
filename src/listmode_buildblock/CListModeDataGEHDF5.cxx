@@ -93,17 +93,10 @@ open_lm_file()
 
 #endif
 
-  //! \todo N.E: Probably can do without the GEHDF5Wrapper here.
   GEHDF5Wrapper inputFile(listmode_filename);
- // CListModeData::scaner_sptr = inputFile.get_scanner_sptr();
-  shared_ptr<Scanner> tmp = inputFile.get_scanner_sptr();
-  shared_ptr<ProjDataInfo> proj_data_tmp(ProjDataInfo::ProjDataInfoCTI(tmp,2,tmp->get_num_rings()-1,
-  tmp->get_num_detectors_per_ring()/2,tmp->get_max_num_non_arccorrected_bins(),
-  false));
-  this->set_proj_data_info_sptr(proj_data_tmp);
+  this->set_proj_data_info_sptr(inputFile.get_proj_data_info_sptr()->create_shared_clone());
   this->set_exam_info(*inputFile.get_exam_info_sptr());
   //! \todo N.E: Remove hard-coded sizes;
-  //! \todo Check the list record size of the signature and the maximum record size.
   current_lm_data_ptr.
   reset(
         new InputStreamWithRecordsFromHDF5<CListRecordT>(listmode_filename,
