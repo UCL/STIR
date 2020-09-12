@@ -42,6 +42,7 @@ if [ -z "$last" ]; then
     exit 1
 fi
 duration=`echo $first $last|awk '{print ($2 - $1)/1000}'`
+first_secs=`echo $first |awk '{print $1/1000}'`
 echo "Found first event: $first, last event: $last, duration in secs: $duration"
-echo "0 $first" > $out_filename
+echo "0 $first_secs" > $out_filename
 echo "1 $duration" >> $out_filename
