@@ -32,7 +32,7 @@ if [ -r ${norm_sino_prefix}.hs ]; then
   echo "Reusing existing ${norm_sino_prefix}.hs"
 else
   echo "Creating ${norm_sino_prefix}.hs"
-  OUTPUT=${norm_sino_prefix} INPUT=${sino_input} correct_projdata ${pardir}/correct_projdata.par > ${norm_sino_prefix}.log 2>&1
+  OUTPUT=${norm_sino_prefix} INPUT=${sino_input} correct_projdata ${pardir}/correct_projdata_for_norm.par > ${norm_sino_prefix}.log 2>&1
 fi
 
 : ${acf3d:=output/acf.hs} # will be created if it doesn't exist yet
