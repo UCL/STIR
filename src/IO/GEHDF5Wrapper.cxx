@@ -414,8 +414,8 @@ Succeeded GEHDF5Wrapper::initialise_exam_info()
     str_high_energy_thres.read(&high_energy_thres, H5::PredType::NATIVE_UINT32);
 
     // PW Set these values in exam_info_sptr.
-    exam_info_sptr->set_high_energy_thres(static_cast<float>(low_energy_thres));
-    exam_info_sptr->set_low_energy_thres(static_cast<float>(high_energy_thres));
+    exam_info_sptr->set_high_energy_thres(static_cast<float>(high_energy_thres));
+    exam_info_sptr->set_low_energy_thres(static_cast<float>(low_energy_thres));
 
     // read time since 1970
     std::uint32_t scanStartTime = 0;

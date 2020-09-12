@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013-2019 University College London
+    Copyright (C) 2013-2020 University College London
     Copyright (C) 2017-2018 University of Hull
     Copyright (C) 2017-2019 University of Leeds
 
@@ -101,7 +101,7 @@ open_lm_file()
   tmp->get_num_detectors_per_ring()/2,tmp->get_max_num_non_arccorrected_bins(),
   false));
   this->set_proj_data_info_sptr(proj_data_tmp);
-
+  this->set_exam_info(*inputFile.get_exam_info_sptr());
   //! \todo N.E: Remove hard-coded sizes;
   //! \todo Check the list record size of the signature and the maximum record size.
   current_lm_data_ptr.
