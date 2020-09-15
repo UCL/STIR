@@ -10,7 +10,7 @@
   \todo We currently assume F-18 for decay.
 
   \todo This file is somewhat preliminary. Main functionality needs to moved elsewhere.
-  There is hardly anything GE-specific here anyway (only reading the singles).
+  There is hardly anything GE-specific here anyway (only reading the data).
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -66,41 +66,60 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc!=4)
+  if (argc!=4 && argc!=3)
     {
       cerr << "Usage: " << argv[0]
-           << " out_filename GE_RDF_filename template_projdata\n";
+           << " out_filename GE_RDF_filename [template_projdata]\n"
+           << "The template is used for size- and time-frame-info, but actual counts are ignored.\n"
+           << "If no template is specified, we will use the normal GE sizes and the time frame information of the RDF.\n";
       return EXIT_FAILURE;
     }
-#if 0
-  bool do_block = argc>=10?atoi(argv[9])!=0: true;
-  bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
-  bool do_eff   = argc>=8?atoi(argv[7])!=0: true;
-#endif
   // const int eff_iter_num = atoi(argv[4]);
   const int iter_num = 1;//atoi(argv[5]);
-  //const bool apply_or_undo = atoi(argv[4])!=0;
-  shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[3]);
-  const string _listmode_filename = argv[2];
+
+  
+  const string input_filename = argv[2];
   const string output_file_name = argv[1];
   const string program_name = argv[0];
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<ExamInfo> exam_info_sptr;
+
+  GE::RDF_HDF5::GEHDF5Wrapper input_file(input_filename);
+  std::string template_filename;
+  if (argc==4)
+    {
+      template_filename = argv[3];
+      shared_ptr<ProjData> template_projdata_sptr = ProjData::read_from_file(template_filename);
+      proj_data_info_sptr = template_projdata_sptr->get_proj_data_info_sptr();
+      exam_info_sptr = template_projdata_sptr->get_exam_info_sptr();
+    }
+  else
+    {
+      template_filename = input_filename;
+      proj_data_info_sptr = input_file.get_proj_data_info_sptr();
+      exam_info_sptr = input_file.get_exam_info_sptr();
+    }
+
+  if (exam_info_sptr->get_time_frame_definitions().get_num_time_frames()==0 ||
+      exam_info_sptr->get_time_frame_definitions().get_duration(1) < .0001)
+    error("Missing time-frame information in \"" + template_filename +'\"');
 
   ProjDataInterfile 
-    proj_data(template_projdata_ptr->get_exam_info_sptr(),
-              template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+    proj_data(exam_info_sptr,
+              proj_data_info_sptr->create_shared_clone(),
               output_file_name);
 
   const int num_rings =
-    template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
+    proj_data_info_sptr->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring =
-    template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
+    proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
   // this uses the wrong naming currently. It so happens that the formulas are the same
   // as when multiplying efficiencies
   DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   {
     GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
-    singles.read_singles_from_listmode_file(_listmode_filename);
+    singles.read_singles_from_listmode_file(input_filename);
     // efficiencies
     if (true)
     {
@@ -109,8 +128,8 @@ int main(int argc, char **argv)
         {
           DetectionPosition<> pos(c,r,0);
           efficiencies[r][c]=singles.get_singles_rate(pos,
-                                                      proj_data.get_exam_info_sptr()->get_time_frame_definitions().get_start_time(1),
-                                                                                     proj_data.get_exam_info_sptr()->get_time_frame_definitions().get_end_time(1));
+                                                      exam_info_sptr->get_time_frame_definitions().get_start_time(1),
+                                                      exam_info_sptr->get_time_frame_definitions().get_end_time(1));
         }
     }
   }// nothing
@@ -142,9 +161,7 @@ int main(int argc, char **argv)
                                                                   fan_size,
                                                                   /*arccorrection=*/false));
 
-    shared_ptr<GE::RDF_HDF5::GEHDF5Wrapper> m_input_sptr;
-    m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
-    float coincidence_time_window = m_input_sptr->get_coincidence_time_window();                    /*(*segment_ptr)[bin.axial_pos_num()]*/
+    const float coincidence_time_window = input_file.get_coincidence_time_window();
 
     /* Randoms from singles formula is
 
@@ -157,7 +174,7 @@ int main(int argc, char **argv)
 
        That leads to the formula below.
     */
-    const double duration = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_duration(1);
+    const double duration = exam_info_sptr->get_time_frame_definitions().get_duration(1);
     warning("Assuming F-18 tracer!!!");
     const double isotope_halflife = 6586.2;
     const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
