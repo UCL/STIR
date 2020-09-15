@@ -1,7 +1,7 @@
 #! /bin/sh -e
 # Example script to reconstruct GE-Signa PET/MR data with randoms, norm and scatter.
 # Currently supposes you have randoms estimated already.
-# Default filenames are for output of unlist_and_randoms.sh, and for the NEMA demo files
+# Default filenames are for output of unlist_and_randoms.sh.
 # Author: Kris Thielemans
 # Edits: Ander Biguri
 
@@ -12,6 +12,9 @@
 : ${sino_input:=sinospan2_f1g1d0b0.hs}
 : ${randoms3d:=randomsspan2.hs}
 export sino_input randoms3d # used by scatter_estimation.par
+
+: ${num_subsets:=14}
+: ${num_subiters:=42}
 
 # RDF9 norm file 
 # note: variable name is used in correct_projdata.par
@@ -27,13 +30,7 @@ mkdir -p output
 
 # output name (or input if it exists already) for normalisation sinogram
 : ${norm_sino_prefix:=output/fullnormfactorsspan2}
-
-if [ -r ${norm_sino_prefix}.hs ]; then
-  echo "Reusing existing ${norm_sino_prefix}.hs"
-else
-  echo "Creating ${norm_sino_prefix}.hs"
-  OUTPUT=${norm_sino_prefix} INPUT=${sino_input} correct_projdata ${pardir}/correct_projdata_for_norm.par > ${norm_sino_prefix}.log 2>&1
-fi
+${pardir}/create_norm_projdata.sh ${norm_sino_prefix} ${RDFNORM} ${sino_input}
 
 : ${acf3d:=output/acf.hs} # will be created if it doesn't exist yet
 export acf3d  # used in scatter_estimation.par
@@ -63,8 +60,8 @@ num_scat_iters=3
 scatter_pardir=${pardir}/../samples/scatter_estimation_par_files
 # you might have to change this for a different scanner than the Signa PET/MR
 # (it needs to be a divisor of the number of views)
-scatter_recon_num_subiterations=28
-scatter_recon_num_subsets=28
+scatter_recon_num_subiterations=$num_subsets
+scatter_recon_num_subsets=$num_subsets
 export scatter_pardir
 export num_scat_iters total_additive_prefix
 export scatter_recon_num_subiterations scatter_recon_num_subsets
@@ -85,5 +82,5 @@ stir_math -s --mult output/mult_factors_3d.hs  ${acf3d} ${norm3d}
 echo "Running OSMAPOSL"
 echo "Log will be in final_activity_image.log"
 INPUT=${data3d} OUTPUT=final_activity_image NORM=output/mult_factors_3d.hs ADDSINO=${additive_sino} \
-     SUBSETS=14 SUBITERS=42 SAVEITERS=14 SENS=output/subset_sens RECOMP_SENS=1 \
+     SUBSETS=$num_subsets SUBITERS=$num_subiters SAVEITERS=$num_subsets SENS=output/subset_sens RECOMP_SENS=1 \
      OSMAPOSL ${pardir}/OSMAPOSLbackground.par 2>&1 | tee final_activity_image.log
