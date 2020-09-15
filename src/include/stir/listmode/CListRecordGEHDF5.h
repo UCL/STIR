@@ -188,14 +188,21 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
   typedef detail::ListTimeDataGEHDF5 TimeType;
   //typedef CListGatingDataGEHDF5 GatingType;
 
- public:  
-  CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+ public:
+  //! constructor
+  /*! Takes the scanner and first_time stamp. The former will be used for checking and swapping,
+    the latter for adjusting the time of each event, as GE listmode files do not start with time-stamp 0.
+
+    get_time_in_millisecs() should therefore be zero at the first time stamp.
+  */
+ CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr, const unsigned long first_time_stamp) :
+  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr),
+    first_time_stamp(first_time_stamp)
     {}
 
   bool is_time() const
   { 
-   return this->time_data.is_time();
+    return this->time_data.is_time();
   }
 #if 0
   bool is_gating_input() const
@@ -233,7 +240,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
   // time 
   inline unsigned long get_time_in_millisecs() const 
-    { return time_data.get_time_in_millisecs(); }
+    { return time_data.get_time_in_millisecs() - first_time_stamp; }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
@@ -302,6 +309,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   }
 
 private:
+  unsigned long first_time_stamp;
   union {
     DataType  event_data;
     TimeType   time_data; 

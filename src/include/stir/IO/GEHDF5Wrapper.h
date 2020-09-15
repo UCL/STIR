@@ -157,6 +157,10 @@ public:
 
     ~GEHDF5Wrapper() {}
 
+
+    std::uint32_t read_dataset_uint32(const std::string& dataset_name);
+    std::int32_t read_dataset_int32(const std::string& dataset_name);
+    
 protected:
     //! enum for encoding head/feet first in the RDF file
     enum AcqPatientEntries
@@ -167,9 +171,6 @@ protected:
 
     void initialise_proj_data_info_from_HDF5();
     void initialise_exam_info();
-
-    std::uint32_t read_dataset_uint32(const std::string& dataset_name);
-    std::int32_t read_dataset_int32(const std::string& dataset_name);
 
     shared_ptr<ProjDataInfo> proj_data_info_sptr;
     shared_ptr<ExamInfo> exam_info_sptr;
