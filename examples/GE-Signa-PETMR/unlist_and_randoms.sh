@@ -1,8 +1,9 @@
 #! /bin/sh -e
-# unlists listmode data into span2 and creates MLrandoms estimate from the listmode data
+# unlists listmode data into span2 and creates randoms estimate from the singles in the listmode data
 # Author: Kris Thielemans
 
 # right now randoms stuff only handles single time frame
+# we would need a simple loop to cover that case as well.
 
 # directory with some standard .par files
 : ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
@@ -13,17 +14,14 @@
 
 export INPUT FRAMES
 
-# Define some example frame_duration
-: ${frame_duration:=1000000000}
-
-# Create a fdef file with some example value (replace this for your desired fdef)
 if [ ! -f $FRAMES ]; then
-echo "1 100000000" > $FRAMES
+    # make a frame definition file with 1 frame for all the data
+    create_fdef_from_listmode.sh frames.fdef $listmode
 fi
 
 # create prompt sinograms
 OUTPUT=sinospan2 TEMPLATE=${pardir}/template.hs lm_to_projdata ${pardir}/lm_to_projdata.par 
 
 # estimate randoms from singles
-construct_randoms_from_GEsingles randomsspan2 ${INPUT} ${pardir}template.hs 
+construct_randoms_from_GEsingles randomsspan2 ${INPUT} sinospan2_f1g1d0b0.hs
 
