@@ -38,7 +38,6 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/is_null_ptr.h"
-#include "stir/date_time_functions.h"
 #include <iostream> 
 #include <limits>
 #include <string>
@@ -125,34 +124,7 @@ int main(int argc, char *argv[])
     }
 
   if (print_exam)
-    {
-      const ExamInfo& exam_info = *proj_data_sptr->get_exam_info_ptr();
-      std::cout << "Modality: " << proj_data_sptr->get_exam_info_ptr()->imaging_modality.get_name() << '\n';
-      std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
-      std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
-      if (exam_info.start_time_in_secs_since_1970>0)
-        {
-          DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(exam_info.start_time_in_secs_since_1970);
-          std::cout << "   which is " << time.date << " " << time.time << '\n';
-        }
-      
-      if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
-	{
-	  std::cout << "Time frame start - end (duration), all in secs: "
-		    << exam_info.time_frame_definitions.get_start_time(1)
-		    << " - "
-		    << exam_info.time_frame_definitions.get_end_time(1)
-		    << " ("
-		    << exam_info.time_frame_definitions.get_duration(1)
-		    << ")\n";
-	}
-      std::cout << "number of energy windows:=1\n"
-                << "energy window lower level[1] := "
-                << exam_info.get_low_energy_thres() << '\n'
-                << "energy window upper level[1] := "
-                << exam_info.get_high_energy_thres() << '\n';
-        
-    }
+    std::cout << proj_data_sptr->get_exam_info_ptr()->parameter_info();
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
 
