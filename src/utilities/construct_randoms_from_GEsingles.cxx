@@ -5,7 +5,12 @@
   \ingroup GE
   \brief Construct randoms as a product of singles estimates
 
-  \todo This file is somewhat preliminary.
+  Dead-time is not taken into account.
+
+  \todo We currently assume F-18 for decay.
+
+  \todo This file is somewhat preliminary. Main functionality needs to moved elsewhere.
+  There is hardly anything GE-specific here anyway (only reading the singles).
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -14,6 +19,7 @@
 /*
   Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
   Copyright (C) 2017- 2019, University of Leeds
+  Copyright (C) 2020, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -32,23 +38,19 @@
 #include "stir/ML_norm.h"
 
 #include "stir/ProjDataInterfile.h"
-
-
+#include "stir/decay_correction_factor.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
-#include "stir/stream.h"
 #include "stir/Sinogram.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IO/GEHDF5Wrapper.h"
-#include "stir/Array.h"
-#include "stir/RegisteredParsingObject.h"
-#include "stir/display.h"
+#include "stir/info.h"
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <algorithm>
 #include "stir/data/SinglesRatesFromGEHDF5.h"
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -67,7 +69,7 @@ int main(int argc, char **argv)
   if (argc!=4)
     {
       cerr << "Usage: " << argv[0]
-           << " out_filename listmode_filename template_projdata\n";
+           << " out_filename GE_RDF_filename template_projdata\n";
       return EXIT_FAILURE;
     }
 #if 0
@@ -92,16 +94,8 @@ int main(int argc, char **argv)
     template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring =
     template_projdata_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-#if 0
-  const int num_tangential_crystals_per_block = 8;
-  const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
-  const int num_axial_crystals_per_block = num_rings/2;
-  warning("TODO num_axial_crystals_per_block == num_rings/2\n");
-  const int num_axial_blocks = num_rings/num_axial_crystals_per_block;
-
-  BlockData3D norm_block_data(num_axial_blocks, num_tangential_blocks,
-                              num_axial_blocks-1, num_tangential_blocks-1);
-#endif
+  // this uses the wrong naming currently. It so happens that the formulas are the same
+  // as when multiplying efficiencies
   DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   {
@@ -110,17 +104,14 @@ int main(int argc, char **argv)
     // efficiencies
     if (true)
     {
-      //singles.write(std::cout);
-
       for (int r=0; r<num_rings; ++r)
         for (int c=0; c<num_detectors_per_ring; ++c)
         {
           DetectionPosition<> pos(c,r,0);
-          double time_init = 0.;
-          int time_final = static_cast<double>(singles.get_num_time_slices());
-          efficiencies[r][c]=singles.get_singles_rate(pos, time_init, time_final);
+          efficiencies[r][c]=singles.get_singles_rate(pos,
+                                                      proj_data.get_exam_info_sptr()->get_time_frame_definitions().get_start_time(1),
+                                                                                     proj_data.get_exam_info_sptr()->get_time_frame_definitions().get_end_time(1));
         }
-      // int timesamples=singles._num_time_slices;
     }
   }// nothing
 
@@ -155,7 +146,25 @@ int main(int argc, char **argv)
     m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
     float coincidence_time_window = m_input_sptr->get_coincidence_time_window();                    /*(*segment_ptr)[bin.axial_pos_num()]*/
 
-    int num_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
+    /* Randoms from singles formula is
+
+           randoms-rate[i,j] = coinc_window * singles-rate[i] * singles-rate[j]
+
+       However, we actually have total counts in the singles (despite the current name),
+       and need total counts in the randoms. This gives
+
+           randoms-counts[i,j] * total_to_activity = coinc_window * singles-counts[i] * singles-counts[j] * total_to_activity^2
+
+       That leads to the formula below.
+    */
+    const double duration = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_duration(1);
+    warning("Assuming F-18 tracer!!!");
+    const double isotope_halflife = 6586.2;
+    const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
+    const double total_to_activity = decay_corr_factor / duration;
+    info(boost::format("decay correction factor: %1%, time frame duration: %2%. total correction factor from activity to counts: %3%")
+         % decay_corr_factor % duration % (1/total_to_activity),
+         2);
 
     Bin bin;
     Bin uncompressed_bin;
@@ -217,7 +226,7 @@ int main(int argc, char **argv)
                                                   uncompressed_bin);
 
                     sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                          num_slices*coincidence_time_window*efficiencies[ra][a]*efficiencies[rb][(b%num_detectors_per_ring)];
+                          coincidence_time_window*efficiencies[ra][a]*efficiencies[rb][(b%num_detectors_per_ring)]*total_to_activity;
                   }// endfor uncompresed view num
                 }//endfor tangeial pos num
               }// endfor view num
