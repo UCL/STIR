@@ -152,7 +152,6 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
       {
         m_offset[segment_num]
             = ((get_max_axial_pos_num(segment_num) + get_min_axial_pos_num(segment_num)) * get_axial_sampling(segment_num)) / 2;
-        // ORIGINTODO: ^
       }
   }
   // initialise ax_pos_num_offset
@@ -283,7 +282,6 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
               const float ring1_plus_ring2_float = 2 * ax_pos_num / get_num_axial_poss_per_ring_inc(s_num)
                                                    - 2 * m_offset[s_num] / ring_spacing
                                                    + (get_scanner_ptr()->get_num_rings() - 1);
-              // ORIGINTODO: ^
               const int ring1_plus_ring2 = round(ring1_plus_ring2_float);
               // check that it was integer
               assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4);
