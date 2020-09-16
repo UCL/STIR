@@ -928,7 +928,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		CartesianCoordinate3D<float> coord_1;
 		CartesianCoordinate3D<float> coord_2;
 	  
-		proj_data_info.find_cartesian_coordinates_given_scanner_coordinates (coord_1,coord_2,
+		proj_data_info.get_det_pair_locations_in_gantry_coordinates (coord_1,coord_2,
 										     Ring_A,Ring_B, 
 										     det1,det2);
 	  
@@ -937,7 +937,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	  
 		int det1_f, det2_f,ring1_f, ring2_f;
 	  
-		check(proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
+		check(proj_data_info.get_det_pair_for_gantry_coordinate_pair(det1_f, det2_f, ring1_f, ring2_f,
 										    coord_1_new, coord_2_new) ==
 		      Succeeded::yes);
 		if (det1_f == det1 && Ring_A == ring1_f)

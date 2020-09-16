@@ -409,6 +409,10 @@ public:
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
+  //! Vector from image frame of reference (centre of first ring) to gantry centre
+  CartesianCoordinate3D<float>
+  get_vector_centre_of_first_ring_to_centre_of_gantry() const;
+
 private:
   shared_ptr<Scanner> scanner_ptr;
   int min_view_num;
@@ -419,10 +423,6 @@ private:
   VectorWithOffset<int> max_axial_pos_per_seg;
   float bed_position_horizontal;
   float bed_position_vertical;
-
-  //! Vector from image frame of reference (centre of first ring) to gantry centre
-  CartesianCoordinate3D<float>
-  get_vector_centre_of_first_ring_to_centre_of_gantry() const;
 };
 
 END_NAMESPACE_STIR

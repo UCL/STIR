@@ -104,16 +104,17 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
   // ORIGINTODO: ^
   /* TODO replace with image.get_index_coordinates_for_physical_coordinates */
   ProjMatrixElemsForOneBin lor;
-  RayTraceVoxelsOnCartesianGrid(lor, 
-                                (scatter_point-origin)/voxel_size,  // should be in voxel units
-                                (detector_coord-origin)/voxel_size, // should be in voxel units
-                                voxel_size, //should be in mm
+  RayTraceVoxelsOnCartesianGrid(
+    lor,
+    density.get_index_coordinates_for_physical_coordinates(scatter_point),
+    density.get_index_coordinates_for_physical_coordinates(detector_coord),
+    voxel_size, //should be in mm
 #ifdef NEWSCALE
-                                1.F // normalise to mm
+    1.F // normalise to mm
 #else
-                                1/voxel_size.x() // normalise to some kind of 'pixel units'
+    1/voxel_size.x() // normalise to some kind of 'pixel units'
 #endif
-                                );
+  );
   lor.sort();
   float sum = 0;  // add up values along LOR
   {     

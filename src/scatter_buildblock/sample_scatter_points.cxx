@@ -59,14 +59,6 @@ sample_scatter_points()
   const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
-  CartesianCoordinate3D<float>  origin = image.get_origin();
-  // shift origin such that we refer to the middle of the scanner
-  // this is to be consistent with projector conventions
-  // TODO use class function once it exists
-  const float z_to_middle =
-    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
-  // ORIGINTODO: ^
-  origin.z() -= z_to_middle;
 
   this->scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
 
@@ -90,8 +82,9 @@ sample_scatter_points()
                 CartesianCoordinate3D<float>(random_point(-.5,.5),
                                              random_point(-.5,.5),
                                              random_point(-.5,.5));
+            // AG: ^ Should this not be in range (0, 1) not (-0.5, 0.5)?
             scatter_point.coord =
-              voxel_size*scatter_point.coord + origin;
+              image.get_physical_coordinates_for_indices(scatter_point.coord);
             scatter_point.mu_value = attenuation_map[coord];
             this->scatt_points_vector.push_back(scatter_point);
           }

@@ -76,15 +76,10 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 #endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
   this->proj_data_info_cyl_noarc_cor_sptr->
-    find_cartesian_coordinates_of_detection(
-                                            detector_coord_A,detector_coord_B,bin);
-  det_num_A =
-    this->find_in_detection_points_vector(detector_coord_A + 
-                                          this->shift_detector_coordinates_to_origin);
-  // ORIGINTODO: ^
-  det_num_B =
-    this->find_in_detection_points_vector(detector_coord_B + 
-                                          this->shift_detector_coordinates_to_origin);
+    get_bin_detector_locations_in_gantry_coordinates(
+      detector_coord_A, detector_coord_B, bin);
+  det_num_A = this->find_in_detection_points_vector(detector_coord_A);
+  det_num_B = this->find_in_detection_points_vector(detector_coord_B);
 }
 
 float

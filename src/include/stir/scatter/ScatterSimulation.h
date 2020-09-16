@@ -250,6 +250,8 @@ protected:
     virtual bool post_processing();
 
     enum image_type{act_image_type, att_image_type};
+
+    //! Scatter emission point in gantry coordinates
     struct ScatterPoint
     {
         CartesianCoordinate3D<float> coord;
@@ -301,8 +303,6 @@ protected:
 
     unsigned
     find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
-
-    CartesianCoordinate3D<float>  shift_detector_coordinates_to_origin;
 
     //! average detection efficiency of unscattered counts
     double

@@ -76,13 +76,13 @@ struct ForwardBackProjectorPair {
   const shared_ptr<ForwardProjectorByBin> forward_projector_sptr;
   const shared_ptr<BackProjectorByBin> back_projector_sptr;
   ForwardBackProjectorPair(
-    const std::string forward_name, const std::string back_name,
+    const std::string& forward_name, const std::string& back_name,
     const bool matched_projectors,
     const shared_ptr<ForwardProjectorByBin> forward_projector_sptr,
     const shared_ptr<BackProjectorByBin> back_projector_sptr,
-    const std::string name_="")
+    const std::string& name="Projectors")
     : forward_name{ forward_name }, back_name{ back_name },
-      name { forward_name + "-" + back_name },
+      name { name + "_" + forward_name + "-" + back_name },
       matched_projectors{ matched_projectors },
       forward_projector_sptr{ forward_projector_sptr },
       back_projector_sptr{ back_projector_sptr } { };
@@ -107,8 +107,8 @@ struct OneForwardBackTest {
     const shared_ptr<ExamInfo> exam_info_sptr,
     const shared_ptr<VoxelsOnCartesianGrid<float> > image_sptr,
     const ForwardBackProjectorPair projector_pair,
-    const std::string name="")
-    : name{ name + "-" + projector_pair.name },
+    const std::string& name="Test")
+    : name{ name + "_" + projector_pair.name },
       proj_data_info_sptr{ proj_data_info_sptr },
       exam_info_sptr{ exam_info_sptr },
       image_sptr{ image_sptr },
