@@ -30,10 +30,19 @@
 
 START_NAMESPACE_STIR
 
+/*! 
+  \ingroup spatial_transformation
+ 
+  \brief a utility class to "invert" an axis
+  \warning this will reorder the voxel values without adjusting the geometric information.
+*/
 class InvertAxis{
 
 public:
 
+  //! transform the image
+  /*! \a axis_name has to be x, y, z. Otherwise error() will be called.
+   */
 void
 invert_axis(DiscretisedDensity<3, float> &inverted_image,
            const DiscretisedDensity<3, float> &input_image,
