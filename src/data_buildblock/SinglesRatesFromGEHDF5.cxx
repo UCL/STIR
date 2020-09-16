@@ -114,7 +114,7 @@ int
 SinglesRatesFromGEHDF5::
 get_end_time_slice_index(double t) const {
 
-  int slice_index = 0;
+  unsigned int slice_index = 0;
 
   // Start with an initial estimate.
   if ( _singles_time_interval != 0 ) {
@@ -159,7 +159,7 @@ int
 SinglesRatesFromGEHDF5::
 get_start_time_slice_index(double t) const {
 
-  int slice_index = 0;
+  unsigned int slice_index = 0;
 
   // Start with an initial estimate.
   if ( _singles_time_interval != 0 ) {
@@ -203,10 +203,10 @@ get_start_time_slice_index(double t) const {
 // Get rates using time slice and singles bin indices.
 int 
 SinglesRatesFromGEHDF5::
-get_singles_rate(int singles_bin_index, int time_slice) const {
+get_singles_rate(int singles_bin_index,int time_slice) const {
   
   // Check ranges.
-  int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
+  unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
        time_slice < 0 || time_slice >= m_num_time_slices ) {
@@ -224,7 +224,7 @@ void
 SinglesRatesFromGEHDF5::
 set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   
-  int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
+  unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
        time_slice >= 0 && time_slice < m_num_time_slices ) {
@@ -331,16 +331,15 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     // Get total number of bins for this type of scanner.
     const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
-
-    m_num_time_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
-    // Allocate the main array.
-    m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
-
     m_input_sptr->initialise_singles_data();
+
+    // Allocate the main array.
+    m_num_time_slices = m_input_sptr->get_num_singles_samples();
+    m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
     
     while ( slice < m_num_time_slices)
     {
-        m_input_sptr->get_dataspace(slice+1, (*m_singles_sptr)[slice] );
+        m_input_sptr->read_singles((*m_singles_sptr)[slice],slice+1);
         ++slice;
     }
 
@@ -351,14 +350,24 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
               slice, m_num_time_slices);
         //TODO resize singles to return array with new sizes
     }
-
+    // AB TODO: if listmode or/and m_num_time_slices>!
     _times = std::vector<double>(m_num_time_slices);
-    for(unsigned int slice = 0;slice < m_num_time_slices;++slice)
-        _times[slice] = slice+1.0;
+    if (m_num_time_slices>1) // this is the same as checking if the input file is a listmode file
+    {
+      for(unsigned int slice = 0;slice < m_num_time_slices;++slice)
+          _times[slice] = slice+1.0; 
 
-    assert(_times.size()!=0);
-    _singles_time_interval = _times[1] - _times[0];
-
+      assert(_times.size()!=0);
+      _singles_time_interval = _times[1] - _times[0];
+    }
+    else // Then it must be a sinogram, and therefore only has 1 time and 1 interval.
+    {
+        TimeFrameDefinitions tf = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions();
+        _times[0]= tf.get_duration(1);
+        _singles_time_interval = tf.get_duration(1);
+    }
+    
+    
     // Return number of time slices read.
     return slice;
     
