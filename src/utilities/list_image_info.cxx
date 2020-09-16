@@ -28,7 +28,6 @@
 
   \author Kris Thielemans
 
-
   \warning It only supports stir::VoxelsOnCartesianGrid type of images.
 */
 
@@ -40,7 +39,7 @@
 #include "stir/date_time_functions.h"
 #include <memory>
 #include <iostream>
-#include <iomanip>
+
 USING_NAMESPACE_STIR
 
 static void print_usage_and_exit(const std::string& program_name)
@@ -128,31 +127,7 @@ int main(int argc, char *argv[])
   auto image_aptr = read_from_file<DynamicDiscretisedDensity>(filename);
 
   if (print_exam)
-    {
-      const ExamInfo& exam_info = image_aptr->get_exam_info();
-      std::cout << "Modality: " << exam_info.imaging_modality.get_name() << '\n';
-      std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
-      std::cout << "Scan start time: " << exam_info.start_time_in_secs_since_1970 << '\n';
-      if (exam_info.start_time_in_secs_since_1970>0)
-        {
-          DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(exam_info.start_time_in_secs_since_1970);
-          std::cout << "   which is " << time.date << " " << time.time << '\n';
-        }
-      if (exam_info.time_frame_definitions.get_num_time_frames() > 0)
-	{
-	  std::cout << "Time frame start - end (duration), all in secs:\n";
-          for (unsigned frame  = 1U; frame <= exam_info.time_frame_definitions.get_num_time_frames(); ++frame)
-            {
-              std::cout << "\t"
-                        << exam_info.time_frame_definitions.get_start_time(frame)
-                        << " - "
-                        << exam_info.time_frame_definitions.get_end_time(frame)
-                        << " ("
-                        << exam_info.time_frame_definitions.get_duration(frame)
-                        << ")\n";
-            }
-	}
-    }
+    std::cout << image_aptr->get_exam_info_sptr()->parameter_info();
 
   if (print_geom)
     {
