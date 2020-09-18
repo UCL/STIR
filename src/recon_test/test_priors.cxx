@@ -34,6 +34,7 @@
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
@@ -102,31 +103,34 @@ run_tests_for_objective_function(const std::string& test_name,
   if (!check(objective_function.set_up(target_sptr)==Succeeded::yes, "set-up of objective function"))
     return;
 
+  // setup images
   target_type& target(*target_sptr);
-
   shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
   shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
+
   info("Computing gradient",3);
   objective_function.compute_gradient(*gradient_sptr, target);
   this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max()))/1000);
+
   info("Computing objective function at target",3);
   const double value_at_target = objective_function.compute_value(target);
   target_type::full_iterator target_iter=target.begin_all();
   target_type::full_iterator gradient_iter=gradient_sptr->begin_all();
   target_type::full_iterator gradient_2_iter=gradient_2_sptr->begin_all(); 
-  const float eps = 5e-3F;
+
+  // setup perturbation response
+  const float eps = 1e-2F;
   bool testOK = true;
   info("Computing gradient of objective function by numerical differences (this will take a while)",3);
   while(target_iter!=target.end_all())// && testOK)
     {
       const float org_image_value = *target_iter;
-      *target_iter += eps;
+      *target_iter += eps;  // perturb current voxel
       const double value_at_inc = objective_function.compute_value(target);
       *target_iter = org_image_value; // restore
       const float ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
       *gradient_2_iter = ngradient_at_iter;
-      testOK = testOK &&
-        this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
+      testOK = testOK && this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
       //for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
         {
           ++gradient_2_iter; ++target_iter; ++ gradient_iter;
@@ -147,7 +151,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
 {
   if (this->density_filename == 0)
     {
-      // construct a small image
+      // construct a small image with random voxel values between 0 and 1
 
       shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
       exam_info_sptr->imaging_modality = ImagingModality::PT;
@@ -168,10 +172,10 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
     }
   else
     {
+      // load image from file
       shared_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
       density_sptr = aptr;
     }
-
     return;
 }
 
@@ -186,6 +190,12 @@ run_tests()
   {
     QuadraticPrior<float> objective_function(true, 3.F);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
+  }
+  std::cerr << "Tests for Relative Difference Prior\n";
+  {
+    // gamma and epsilon are default
+    RelativeDifferencePrior<float> objective_function(true, 3.F, 2.F, 0.0001);
+    this->run_tests_for_objective_function("RDP_no_kappa", objective_function, density_sptr);
   }
   std::cerr << "Tests for PLSPrior\n";
   {
