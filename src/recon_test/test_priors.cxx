@@ -114,7 +114,7 @@ run_tests_for_objective_function(const std::string& test_name,
   target_type::full_iterator target_iter=target.begin_all();
   target_type::full_iterator gradient_iter=gradient_sptr->begin_all();
   target_type::full_iterator gradient_2_iter=gradient_2_sptr->begin_all(); 
-  const float eps = 1e-2F;
+  const float eps = 5e-3F;
   bool testOK = true;
   info("Computing gradient of objective function by numerical differences (this will take a while)",3);
   while(target_iter!=target.end_all())// && testOK)
