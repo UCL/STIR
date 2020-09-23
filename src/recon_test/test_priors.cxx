@@ -159,7 +159,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       CartesianCoordinate3D<float> voxel_size(2.F,3.F,3.F);
       
       density_sptr.reset(new VoxelsOnCartesianGrid<float>(exam_info_sptr,
-                                                          IndexRange<3>(make_coordinate(20,19,18)),
+                                                          IndexRange<3>(make_coordinate(10,9,8)),
                                                           origin, voxel_size));
       // fill with random numbers between 0 and 1
       typedef boost::mt19937 base_generator_type;
