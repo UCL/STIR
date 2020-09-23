@@ -188,18 +188,18 @@ run_tests()
 
   std::cerr << "Tests for QuadraticPrior\n";
   {
-    QuadraticPrior<float> objective_function(true, 3.F);
+    QuadraticPrior<float> objective_function(false, 1.F);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
   }
   std::cerr << "Tests for Relative Difference Prior\n";
   {
     // gamma and epsilon are default
-    RelativeDifferencePrior<float> objective_function(true, 3.F, 2.F, 0.0001);
+    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.0001);
     this->run_tests_for_objective_function("RDP_no_kappa", objective_function, density_sptr);
   }
   std::cerr << "Tests for PLSPrior\n";
   {
-    PLSPrior<float> objective_function(true, 3.F);
+    PLSPrior<float> objective_function(false, 1.F);
     shared_ptr<DiscretisedDensity<3,float> > anatomical_image_sptr(density_sptr->get_empty_copy());
     anatomical_image_sptr->fill(1.F);
     objective_function.set_anatomical_image_sptr(anatomical_image_sptr);
