@@ -110,7 +110,7 @@ run_tests_for_objective_function(const std::string& test_name,
 
   info("Computing gradient",3);
   objective_function.compute_gradient(*gradient_sptr, target);
-  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max()))/1000);
+  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), fabs(double(gradient_sptr->find_max()))) /1000);
 
   info("Computing objective function at target",3);
   const double value_at_target = objective_function.compute_value(target);
@@ -119,7 +119,7 @@ run_tests_for_objective_function(const std::string& test_name,
   target_type::full_iterator gradient_2_iter=gradient_2_sptr->begin_all(); 
 
   // setup perturbation response
-  const float eps = 1e-2F;
+  const float eps = 1e-3F;
   bool testOK = true;
   info("Computing gradient of objective function by numerical differences (this will take a while)",3);
   while(target_iter!=target.end_all())// && testOK)
