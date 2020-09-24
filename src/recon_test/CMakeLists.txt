@@ -27,6 +27,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
         test_FBP2D
         test_FBP3DRP
         test_OSMAPOSL
+        test_priors
 )
 
 
@@ -35,7 +36,6 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         bcktest
         recontest
         test_data_processor_projectors
-        test_priors
 )
 
 include(stir_test_exe_targets)
