@@ -393,7 +393,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                                       (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
                                        current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * this->epsilon))/
                                      (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) + this->epsilon));
+                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon)));
                         if (do_kappa)
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
