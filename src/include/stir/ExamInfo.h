@@ -64,11 +64,16 @@ public :
 
   std::string originating_system;
   
+  std::string radionuclide;
+  
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+  double calibration_factor;
+  double branching_ration;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
   { return time_frame_definitions; }
@@ -83,6 +88,8 @@ public :
   inline float get_low_energy_thres() const;
   //! Get the high energy boundary
   inline float get_high_energy_thres() const;
+  //! Get the radionuclide name
+  inline std::string get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -91,6 +98,8 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+  //! Set the radionuclide
+  inline void set_radionuclide(std::string name);
   //@}
 
   inline bool has_energy_information() const
@@ -108,6 +117,8 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  bool operator == (const ExamInfo &p1) const { return  *this==p1; }
+  
   private:
      //!
   //! \brief low_energy_thres

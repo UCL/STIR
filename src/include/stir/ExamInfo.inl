@@ -50,6 +50,12 @@ ExamInfo::set_high_energy_thres(float new_val)
     up_energy_thres = new_val;
 }
 
+void
+ExamInfo::set_radionuclide(std::string name)
+{
+    radionuclide = name;
+}
+
 float
 ExamInfo::get_low_energy_thres() const
 {
@@ -62,4 +68,10 @@ ExamInfo::get_high_energy_thres() const
     return up_energy_thres;
 }
 
+
+std::string
+ExamInfo::get_radionuclide() const
+{
+    return radionuclide;
+}
 END_NAMESPACE_STIR

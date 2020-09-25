@@ -33,6 +33,8 @@ START_NAMESPACE_STIR
 class BinNormalisationWithCalibration : 
         public RegisteredParsingObject<BinNormalisationWithCalibration, BinNormalisation >
 {
+private:
+  using base_type = RegisteredParsingObject<BinNormalisationWithCalibration, BinNormalisation >;
 public:
 
     //! Name which will be used when parsing a BinNormalisationWithCalibration object

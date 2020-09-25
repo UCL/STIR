@@ -32,8 +32,6 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
-
-#include "stir/ExamInfo.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -43,6 +41,7 @@ class Succeeded;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
+class ExamInfo;
 /*!
   \ingroup normalisation
   \brief Abstract base class for implementing bin-wise normalisation of data.
@@ -139,6 +138,8 @@ public:
       If overriding this function in a derived class, you need to call this one.
    */
   virtual void check(const ProjDataInfo& proj_data_info) const;
+  
+  virtual void check(const ExamInfo& exam_info) const;
   bool _already_set_up;
 private:
   shared_ptr<const ExamInfo> exam_info_sptr;

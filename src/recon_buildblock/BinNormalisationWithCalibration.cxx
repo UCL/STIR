@@ -41,13 +41,10 @@
 
 START_NAMESPACE_STIR
 
-
-const char * const 
-BinNormalisationWithCalibration::registered_name = "Calibration";
-
 void 
 BinNormalisationWithCalibration::set_defaults()
 {
+  base_type::set_defaults();
   this->calibration_factor = 1;
   this->branching_ratio=1;
 }
@@ -56,17 +53,16 @@ void
 BinNormalisationWithCalibration::
 initialise_keymap()
 {
-  this->parser.add_start_key("Bin Normalisation Calibration");
+  base_type::initialise_keymap();
   this->parser.add_key("calibration_factor", &this->calibration_factor);
   this->parser.add_key("branching_ratio", &this->branching_ratio);
-  this->parser.add_stop_key("End Bin Normalisation Calibration");
 }
 
 bool 
 BinNormalisationWithCalibration::
 post_processing()
 {
-  return false;
+  return base_type::post_processing();;
 }
 
 

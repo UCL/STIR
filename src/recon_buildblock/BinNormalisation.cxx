@@ -70,6 +70,14 @@ check(const ProjDataInfo& proj_data_info) const
     error(boost::format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
 }
+
+void
+BinNormalisation::
+check(const ExamInfo &exam_info) const
+{
+  if (!(*this->exam_info_sptr==exam_info))
+      error("BinNormalisation set-up with different ExamInfo.");
+}
   
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
@@ -117,9 +125,10 @@ BinNormalisation::
 apply(ProjData& proj_data,
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
-    float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-    float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
+  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
+  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
+  this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
