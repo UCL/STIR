@@ -6,6 +6,7 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamInfo
   ExamData
   ProjData 
   ProjDataInfo 
@@ -79,11 +80,12 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        date_time_functions
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     ProjDataGEHDF5
- )
+    )
 endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
@@ -91,7 +93,16 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
+if (HAVE_JSON)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
+endif()
+
 include(stir_lib_target)
+
+
+if (HAVE_JSON)
+  target_link_libraries(buildblock PRIVATE nlohmann_json::nlohmann_json)
+endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

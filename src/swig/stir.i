@@ -87,6 +87,9 @@
 
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+#include "stir/HUToMuImageProcessor.h"
+#endif
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -1484,12 +1487,21 @@ namespace stir {
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+#ifdef HAVE_JSON
+%shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
+#endif
 #undef elemT
 #endif
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+%include "stir/HUToMuImageProcessor.h"
+#endif
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -1502,8 +1514,15 @@ namespace stir {
              stir::SeparableCartesianMetzImageFilter<elemT>,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+#ifdef HAVE_JSON
+%template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
+             stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+
+%template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
+#endif
 #undef elemT
 
 %include "stir/GeneralisedPoissonNoiseGenerator.h"

@@ -33,9 +33,8 @@
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/RegisteredObject.h"
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TChain.h>
+// forward declaration of ROOT's TChain
+class TChain;
 
 START_NAMESPACE_STIR
 
@@ -179,15 +178,20 @@ protected:
     //! function accordingly.
     bool read_optional_root_fields;
 
-    //! \name Variables to hold data from each entry.
+    //! \name ROOT Variables, e.g. to hold data from each entry.
     //@{
     TChain *stream_ptr;
-    Int_t eventID1, eventID2, runID, sourceID1, sourceID2;
-    Double_t time1, time2;
-    Float_t energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
-    Int_t comptonphantom1, comptonphantom2;
-    Float_t globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
-    Float_t sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+    // note: should be ROOT's Int_t, Double_t and Float_t types, but those
+    // are only defined when including ROOT .h files, which we want to avoid
+    // here, as it creates a public dependency on the ROOT .h files
+    // checking https://github.com/root-project/root/blob/8695045aeff4b2e606a5febdcd58a0a7e7f6c7af/core/base/inc/RtypesCore.h
+    // we can use int32_t, float and double instead
+    std::int32_t eventID1, eventID2, runID, sourceID1, sourceID2;
+    double time1, time2;
+    float energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
+    int32_t comptonphantom1, comptonphantom2;
+    float globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
+    float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)

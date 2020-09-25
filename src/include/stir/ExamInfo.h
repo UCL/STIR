@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, 2018, University College London
+    Copyright (C) 2013, 2018, 202 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -119,6 +119,16 @@ public :
 
   bool operator == (const ExamInfo &p1) const { return  *this==p1; }
   
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
+  //! Return a string with info on parameters
+  /*! the returned string is not intended for parsing. */
+  std::string parameter_info() const;
+
   private:
      //!
   //! \brief low_energy_thres

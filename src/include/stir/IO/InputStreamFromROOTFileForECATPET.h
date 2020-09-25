@@ -138,8 +138,8 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
-    Int_t blockID1, blockID2;
-    Int_t crystalID1, crystalID2;
+    std::int32_t blockID1, blockID2;
+    std::int32_t crystalID1, crystalID2;
 
     int crystal_repeater_x;
     int crystal_repeater_y;

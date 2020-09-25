@@ -37,6 +37,7 @@
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
 #include "stir/copy_fill.h"
+#include "stir/IndexRange3D.h"
 #include "stir/CPUTimer.h"
 
 START_NAMESPACE_STIR
@@ -189,7 +190,7 @@ run_tests_on_proj_data(ProjData& proj_data)
 void
 ProjDataTests::run_tests_in_memory_only(ProjDataInMemory& proj_data)
 {
-  //  test set_bin_value() and get_bin_value
+  std::cerr << "\ntest set_bin_value() and get_bin_value\n";
   {
       std::vector<float> test;
       test.resize(proj_data.size_all());
@@ -212,13 +213,34 @@ ProjDataTests::run_tests_in_memory_only(ProjDataInMemory& proj_data)
       check_if_equal(bin.get_bin_value(),viewgram[bin.axial_pos_num()][bin.tangential_pos_num()],
             "ProjDataInMemory::set_bin_value/get_viewgram not consistent");
   }
+  std::cerr << "test if copy_to is consistent with iterators\n";
+  {
+    Array<3,float> test_array(IndexRange3D(proj_data.get_num_sinograms(), proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+    // copy to the array
+    copy_to(proj_data, test_array.begin_all());
+
+    {
+      Array<3,float>::const_full_iterator test_array_iter = test_array.begin_all_const();
+      ProjDataInMemory::full_iterator proj_data_iter = proj_data.begin_all();
+      while (test_array_iter != test_array.end_all_const())
+        {
+          if (!check_if_equal(*proj_data_iter, *test_array_iter, "check if array iterator in correct order"))
+            {
+              // get out as there will be lots of other failures
+              break;
+            }
+          ++test_array_iter;
+          ++proj_data_iter;
+        }
+    }
+  }
 }
 
 void
 ProjDataTests::
 run_tests()
 {
-  std::cerr << "-------- Testing ProjDataInMemory --------\n";
+  std::cerr << "-------- Testing ProjData --------\n";
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr
