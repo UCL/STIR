@@ -192,14 +192,14 @@ RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, fl
 }
 
 
-  //! get penalty weights for the neigbourhood
+  //! get penalty weights for the neighbourhood
 template <typename elemT>
 Array<3,float>  
 RelativeDifferencePrior<elemT>::
 get_weights() const
 { return this->weights; }
 
-  //! set penalty weights for the neigbourhood
+  //! set penalty weights for the neighbourhood
 template <typename elemT>
 void 
 RelativeDifferencePrior<elemT>::
@@ -208,7 +208,7 @@ set_weights(const Array<3,float>& w)
 
   //! get current kappa image
   /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-      modify the image by manipulating the image refered to by this pointer.
+      modify the image by manipulating the image referred to by this pointer.
       Unpredictable results will occur.
   */
 template <typename elemT>
@@ -314,6 +314,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                       {
                         elemT current;
                         if (this->epsilon ==0.0 && current_image_estimate[z][y][x] == 0.0 && current_image_estimate[z+dz][y+dy][x+dx] == 0.0){
+                          // handle the undefined nature of the function
                           current = 0.0;
                         } else {
                           current = weights[dz][dy][dx] * 0.5 *
@@ -393,6 +394,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
                         elemT current;
                         if (this->epsilon ==0.0 && current_image_estimate[z][y][x] == 0.0 && current_image_estimate[z+dz][y+dy][x+dx] == 0.0){
+                          // handle the undefined nature of the gradient
                           current = 0.0;
                         } else {
                             current = weights[dz][dy][dx] *
