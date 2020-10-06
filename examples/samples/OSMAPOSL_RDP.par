@@ -32,9 +32,9 @@ prior type := Relative Difference Prior
   ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; see class documentation for more info
   ; kappa filename:=
-  ; gamma value is a RDP specific parameter and controls the edge preservation
+  ; gamma value is a RDP specific parameter and controls the edge preservation. Default value is 2
   ; gamma value := 
-  ; epsilon value - a small non-negitve float
+  ; epsilon value - a small non-negative float to smooth the prior at very small values. Default value is 0
   ; epsilon value :=
 END Relative Difference Prior Parameters:=
 
