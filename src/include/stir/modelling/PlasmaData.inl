@@ -55,8 +55,28 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
   if(!data_stream)    
     error("cannot read plasma data from file.\n");    
   else
-    data_stream >> _sample_size ;
-  
+  { 
+    // Get the first line, which should be the number of samples
+    std::string first_line;
+    if (std::getline(data_stream, first_line))
+    {
+      // replace leading/trailing whitespace 
+      first_line.erase(std::find_if(first_line.rbegin(), first_line.rend(), std::bind1st(std::not_equal_to<char>(), ' ')).base(), first_line.end());
+      first_line.erase(first_line.begin(), std::find_if(first_line.begin(), first_line.end(), std::bind1st(std::not_equal_to<char>(), ' ')));
+      // now first, check if the first line is a single character. 
+      // this is best done in C style, cleaner than iterating over chars
+      char* p;
+      long converted = strtol(first_line.c_str(), &p, 10);
+      if (*p)
+        error("First line of input function file ("+ input_string + ") is not number of samples");
+      else
+        _sample_size=converted;
+    }
+    else
+    {
+      error("Input function file ("+ input_string + ") is empty");
+    }
+  }
   while(true)
     {
       float sample_time=0, blood_sample_radioactivity=0, plasma_sample_radioactivity=0;
@@ -192,7 +212,6 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
             {
               if(plasma_frame_vector.size()<1) /* In case of no plasma data inside a frame, e.g. when there is large time_shift. */
                 {
-                  // TODO really should write a warning or something
                   plasma_frame_vector.push_back(0.);
                   blood_frame_vector.push_back(0.);
                   time_frame_vector.push_back((frame_start_time+frame_end_time)*.5);
