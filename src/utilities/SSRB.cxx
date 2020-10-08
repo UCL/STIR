@@ -64,6 +64,7 @@
 #include "stir/SSRB.h"
 #include <string>
 #include <string.h>
+#include <stir/ProjDataInterfile.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -107,22 +108,17 @@ int main(int argc, char **argv)
 
   if (strcmp(argv[3], "--template")==0)
   {
-    //Check if 3rd argument is a --template
+    //Check if 3rd argument is "--template"
     shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[4]);
+    ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
+                                    template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
+    SSRB(out_proj_data, *in_projdata_ptr, do_norm);
 
-    SSRB(output_filename,
-         *in_projdata_ptr,
-         *template_projdata_ptr,
-         do_norm
-    );
-
-  }
-  else
-  {
+  } else {
     // All this needs checking for standard usage
     if (argc>1 && strcmp(argv[1], "-t")==0)
     {
-      num_tangential_poss_to_trim =  atoi(argv[2]);
+      num_tangential_poss_to_trim = atoi(argv[2]);
       argc -= 2; argv += 2;
     }
     if (argc >3)

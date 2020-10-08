@@ -186,20 +186,6 @@ SSRB(const string& output_filename,
   SSRB(out_proj_data, in_proj_data, do_norm);
 }
 
-void
-SSRB(const string& output_filename,
-     const ProjData& in_proj_data,
-     const ProjData& template_projdata,
-     const bool do_norm
-     )
-{
-
-  ProjDataInterfile out_proj_data(in_proj_data.get_exam_info_sptr(),
-                                  template_projdata.get_proj_data_info_sptr(), output_filename, std::ios::out);
-  SSRB(out_proj_data, in_proj_data, do_norm);
-}
-
-
 void 
 SSRB(ProjData& out_proj_data,
      const ProjData& in_proj_data,

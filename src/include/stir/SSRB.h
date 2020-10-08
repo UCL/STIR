@@ -115,13 +115,6 @@ SSRB(const std::string& output_filename,
      const int max_in_segment_num_to_process = -1
      );
 
-void
-SSRB(const std::string& output_filename,
-     const ProjData& in_projdata,
-     const ProjData& template_projdata,
-     const bool do_norm = true
-);
-
 //! Perform Single Slice Rebinning and write output to ProjData
 /*! 
   \ingroup projdata
