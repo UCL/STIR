@@ -102,16 +102,15 @@ int main(int argc, char **argv)
   const string output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
 
-  if (argc >5)
-    if (atoi(argv[5]) == 0)
-      do_norm = false;
-
   if (strcmp(argv[3], "--template")==0)
   {
-    //Check if 3rd argument is "--template"
+    //3rd argument is "--template", load this template sinogram
     shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[4]);
     ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
                                     template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
+    if (argc >5)
+      if (atoi(argv[5]) == 0)
+        do_norm = false;
     SSRB(out_proj_data, *in_projdata_ptr, do_norm);
 
   } else {
@@ -125,6 +124,9 @@ int main(int argc, char **argv)
       span = atoi(argv[3]);
     if (argc >4)
       num_views_to_combine = atoi(argv[4]);
+    if (argc >5)
+      if (atoi(argv[5]) == 0)
+        do_norm = false;
     if (argc >6)
       max_segment_num_to_process = -atoi(argv[6]);
 
