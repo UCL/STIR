@@ -74,12 +74,6 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  int num_tangential_poss_to_trim = 0;
-  if (argc>1 && strcmp(argv[1], "-t")==0)
-    {
-      num_tangential_poss_to_trim =  atoi(argv[2]);
-      argc -= 2; argv += 2;
-    }
   if (argc > 7 || argc < 3 )
     {
       cerr << "Usage:\n"
@@ -102,6 +96,7 @@ int main(int argc, char **argv)
   int num_views_to_combine = 1;
   int max_segment_num_to_process = -1;
   bool do_norm = true;
+  int num_tangential_poss_to_trim = 0;
 
   const string output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
@@ -124,6 +119,12 @@ int main(int argc, char **argv)
   }
   else
   {
+    // All this needs checking for standard usage
+    if (argc>1 && strcmp(argv[1], "-t")==0)
+    {
+      num_tangential_poss_to_trim =  atoi(argv[2]);
+      argc -= 2; argv += 2;
+    }
     if (argc >3)
       span = atoi(argv[3]);
     if (argc >4)
