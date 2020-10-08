@@ -186,6 +186,31 @@ SSRB(const string& output_filename,
   SSRB(out_proj_data, in_proj_data, do_norm);
 }
 
+void
+SSRB(const string& output_filename,
+     const ProjData& in_proj_data,
+     const ProjData& template_projdata,
+     const bool do_norm
+     )
+{
+  const int num_segments_to_combine = in_proj_data.get_num_segments() / template_projdata.get_num_segments();
+  const int num_views_to_combine = in_proj_data.get_num_views() / template_projdata.get_num_views();
+  const int num_tang_poss_to_trim = in_proj_data.get_num_tangential_poss() / template_projdata.get_num_tangential_poss();
+  const int max_in_segment_num_to_process = template_projdata.get_max_segment_num();
+  shared_ptr<ProjDataInfo> out_proj_data_info_sptr(
+          SSRB(*in_proj_data.get_proj_data_info_sptr(),
+               num_segments_to_combine,
+               num_views_to_combine,
+               num_tang_poss_to_trim,
+               max_in_segment_num_to_process
+          ));
+  ProjDataInterfile out_proj_data(in_proj_data.get_exam_info_sptr(),
+                                  out_proj_data_info_sptr, output_filename, std::ios::out);
+
+  SSRB(out_proj_data, in_proj_data, do_norm);
+}
+
+
 void 
 SSRB(ProjData& out_proj_data,
      const ProjData& in_proj_data,

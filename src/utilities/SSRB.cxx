@@ -96,19 +96,52 @@ int main(int argc, char **argv)
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
     }
-  const string  output_filename = argv[1];
+
+  // Define defaults
+  int span = 1;
+  int num_views_to_combine = 1;
+  int max_segment_num_to_process = -1;
+  bool do_norm = true;
+
+  const string output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
-  const int span = argc<=3?1 : atoi(argv[3]);
-  const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
-  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
-  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[6]);
-  SSRB(output_filename,
-       *in_projdata_ptr,
-       span,
-       num_views_to_combine,
-       num_tangential_poss_to_trim,
-       do_norm,
-       max_segment_num_to_process
-       );
+
+  if (argc >5)
+    if (atoi(argv[5]) == 0)
+      do_norm = false;
+
+  if (strcmp(argv[3], "--template")==0)
+  {
+    //Check if 3rd argument is a --template
+    shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[4]);
+
+    SSRB(output_filename,
+         *in_projdata_ptr,
+         *template_projdata_ptr,
+         do_norm
+    );
+
+  }
+  else
+  {
+    if (argc >3)
+      span = atoi(argv[3]);
+    if (argc >4)
+      num_views_to_combine = atoi(argv[4]);
+    if (argc >6)
+      max_segment_num_to_process = -atoi(argv[6]);
+
+    // do standard SSRB
+    SSRB(output_filename,
+         *in_projdata_ptr,
+         span,
+         num_views_to_combine,
+         num_tangential_poss_to_trim,
+         do_norm,
+         max_segment_num_to_process
+    );
+  }
+
+
   return EXIT_SUCCESS;
 }
