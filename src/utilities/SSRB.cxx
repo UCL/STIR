@@ -84,14 +84,14 @@ void classic_SSRB(int argc, char **argv)
   }
   const string output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
-  const int span = argc<=3?1 : atoi(argv[3]);
+  const int num_segments_to_combine = argc <= 3 ? 1 : atoi(argv[3]);
   const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
   const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
   const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[6]);
   // do standard SSRB
   SSRB(output_filename,
        *in_projdata_ptr,
-       span,
+       num_segments_to_combine,
        num_views_to_combine,
        num_tangential_poss_to_trim,
        do_norm,
