@@ -1579,6 +1579,10 @@ namespace stir {
 #undef elemT
 #endif
 
+%newobject *::get_prior_ptr;
+%factory(stir::GeneralisedPrior *stir::GeneralisedObjectiveFunction::get_prior_ptr, stir::QuadraticPrior, stir::PLSPrior, stir::RelativeDifferencePrior);
+//%factory(stir::GeneralisedPrior<TargetT> *stir::GeneralisedObjectiveFunction< TargetT >::get_prior_ptr, stir::QuadraticPrior<elemT>, stir::PLSPrior<elemT>, stir::RelativeDifferencePrior<elemT>);
+
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
