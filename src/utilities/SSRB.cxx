@@ -31,6 +31,9 @@
         output_filename input_projdata_name [num_segments_to_combine \
       [ num_views_to_combine [do_normalisation [max_in_segment_num_to_process ]]]]
    \endcode
+   \code
+   SSRB --template template_projdata_filename output_filename input_projdata_name [do_normalisation]
+   \endcode
    \param num_segments_to_combine has to be odd. It is used as the number of segments
       in the original data to combine.
    \param num_views_to_combine has to be at least 1 (which is the default). 
@@ -39,6 +42,8 @@
       of tangential positions.
    \param do_normalisation has to be 1 (normalise the result, which is the default) or 0
    \param max_in_segment_num_to_process defaults to all segments
+   \param template_projdata_filename , indicated by the --template option, a template projection
+      data which SSRB will map too.
 
   \par Example:
   \code
@@ -47,7 +52,7 @@
   If in.hs is a file without axial compression (span=1) nor mashing, then the
   output would correspond to a span=3 file with mashing factor 2, and would be
   normalised (at least as far as SSRB concerns). \a num_segments_to_combine=3
-  results in ring differences -1,0,1 to be combined all into segment 0, etc. 
+  results in ring differences -1,0,1 to be combined all into segment 0, etc.
   \see 
   stir::SSRB(const std::string& output_filename,
              const stir::ProjData& in_projdata,
@@ -58,6 +63,10 @@
 	     const int max_in_segment_num_to_process
      )
   for info on parameters and restrictions.
+  \code
+  SSRB --template template_sino.hs out in.hs 1
+  \endcode
+  This use SSRB to convert in.hs into the shape of template_sino.hs and save the result as interile out.
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -91,8 +100,8 @@ static void print_usage_and_exit(const std::string& prog_name)
        << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
        << "max_in_segment_num_to_process defaults to all segments\n"
        << "\n\t - Template Based SSRB method\n"
-       << prog_name << "--template template_filename output_filename input_projdata_name [do_norm]\n"
-       << "template_filename the format of the output sinogram.\n"
+       << prog_name << "--template template_projdata_filename output_filename input_projdata_name [do_norm]\n"
+       << "template_projdata_filename the format of the output sinogram.\n"
        << "output_filename, input_projdata_name, and do_norm are as above.\n"
        << "SSRB act in the same way as Classical but allows for even num_segments_to_combine.\n";
   exit(EXIT_FAILURE);
