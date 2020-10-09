@@ -73,6 +73,24 @@ using std::cerr;
 
 USING_NAMESPACE_STIR
 
+
+static void print_usage_and_exit(const std::string& prog_name)
+{
+  cerr << "Usage:\n"
+       << prog_name << " [-t num_tangential_poss_to_trim] \\\n"
+       << "\toutput_filename input_projdata_name \\\n"
+       << "\t[num_segments_to_combine \\\n"
+       <<"\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
+       << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
+       << "  in the original data to combine.\n"
+       << "num_views_to_combine has to be at least 1 (which is the default)\n"
+       << "num_tangential_poss_to_trim has to be smaller than the available number\n"
+       << "  of tangential positions.\n"
+       << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
+       << "max_in_segment_num_to_process defaults to all segments\n";
+  exit(EXIT_FAILURE);
+}
+
 void classic_SSRB(int argc, char **argv)
 {
   // All this needs checking for standard usage
@@ -117,21 +135,9 @@ void template_based_SSRB(int argc, char **argv)
 int main(int argc, char **argv)
 {
   if (argc > 7 || argc < 3 )
-    {
-      cerr << "Usage:\n"
-	   << argv[0] << " [-t num_tangential_poss_to_trim] \\\n"
-	   << "\toutput_filename input_projdata_name \\\n"
-           << "\t[num_segments_to_combine \\\n"
-           <<"\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
-	   << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
-	   << "  in the original data to combine.\n"
-           << "num_views_to_combine has to be at least 1 (which is the default)\n"
-	   << "num_tangential_poss_to_trim has to be smaller than the available number\n"
-	   << "  of tangential positions.\n"
-	   << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
-	   << "max_in_segment_num_to_process defaults to all segments\n";
-      exit(EXIT_FAILURE);
-    }
+  {
+    print_usage_and_exit(argv[0]);
+  }
 
   if (strcmp(argv[1], "--template")==0)
   {
@@ -139,7 +145,6 @@ int main(int argc, char **argv)
   } else {
     classic_SSRB(argc, argv);
   }
-
-
+  
   return EXIT_SUCCESS;
 }
