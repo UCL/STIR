@@ -109,7 +109,7 @@ static void print_usage_and_exit(const std::string& prog_name)
 
 void classic_SSRB(int argc, char **argv)
 {
-  // All this needs checking for standard usage
+  // Does the standard method of SSRB based upon numerical inputs
   int num_tangential_poss_to_trim = 0;
   if (argc>1 && strcmp(argv[1], "-t")==0)
   {
@@ -135,7 +135,7 @@ void classic_SSRB(int argc, char **argv)
 
 void template_based_SSRB(int argc, char **argv)
 {
-
+  // Does the template based SSRB whereby the target template is given as an argument
   shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[2]);
   const string output_filename = argv[3];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[4]);
