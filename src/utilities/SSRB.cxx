@@ -43,7 +43,7 @@
    \param do_normalisation has to be 1 (normalise the result, which is the default) or 0
    \param max_in_segment_num_to_process defaults to all segments
    \param template_projdata_filename , indicated by the --template option, a template projection
-      data which SSRB will map too.
+      data which SSRB will map to.
 
   \par Example:
   \code
