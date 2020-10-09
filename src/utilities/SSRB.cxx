@@ -73,6 +73,47 @@ using std::cerr;
 
 USING_NAMESPACE_STIR
 
+void classic_SSRB(int argc, char **argv)
+{
+  // All this needs checking for standard usage
+  int num_tangential_poss_to_trim = 0;
+  if (argc>1 && strcmp(argv[1], "-t")==0)
+  {
+    num_tangential_poss_to_trim = atoi(argv[2]);
+    argc -= 2; argv += 2;
+  }
+  const string output_filename = argv[1];
+  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
+  const int span = argc<=3?1 : atoi(argv[3]);
+  const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
+  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
+  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[6]);
+  // do standard SSRB
+  SSRB(output_filename,
+       *in_projdata_ptr,
+       span,
+       num_views_to_combine,
+       num_tangential_poss_to_trim,
+       do_norm,
+       max_segment_num_to_process
+  );
+}
+
+void template_based_SSRB(int argc, char **argv)
+{
+  //3rd argument is "--template", load this template sinogram
+  shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[2]);
+  const string output_filename = argv[3];
+  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[4]);
+  ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
+                                  template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
+  bool do_norm = true;
+  if (argc >5)
+    if (atoi(argv[5]) == 0)
+      do_norm = false;
+  SSRB(out_proj_data, *in_projdata_ptr, do_norm);
+}
+
 int main(int argc, char **argv)
 {
   if (argc > 7 || argc < 3 )
@@ -92,53 +133,11 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
 
-  // Define defaults
-  int span = 1;
-  int num_views_to_combine = 1;
-  int max_segment_num_to_process = -1;
-  bool do_norm = true;
-  int num_tangential_poss_to_trim = 0;
-
-  const string output_filename = argv[1];
-  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
-
-  if (strcmp(argv[3], "--template")==0)
+  if (strcmp(argv[1], "--template")==0)
   {
-    //3rd argument is "--template", load this template sinogram
-    shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[4]);
-    ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
-                                    template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
-    if (argc >5)
-      if (atoi(argv[5]) == 0)
-        do_norm = false;
-    SSRB(out_proj_data, *in_projdata_ptr, do_norm);
-
+    template_based_SSRB(argc, argv);
   } else {
-    // All this needs checking for standard usage
-    if (argc>1 && strcmp(argv[1], "-t")==0)
-    {
-      num_tangential_poss_to_trim = atoi(argv[2]);
-      argc -= 2; argv += 2;
-    }
-    if (argc >3)
-      span = atoi(argv[3]);
-    if (argc >4)
-      num_views_to_combine = atoi(argv[4]);
-    if (argc >5)
-      if (atoi(argv[5]) == 0)
-        do_norm = false;
-    if (argc >6)
-      max_segment_num_to_process = -atoi(argv[6]);
-
-    // do standard SSRB
-    SSRB(output_filename,
-         *in_projdata_ptr,
-         span,
-         num_views_to_combine,
-         num_tangential_poss_to_trim,
-         do_norm,
-         max_segment_num_to_process
-    );
+    classic_SSRB(argc, argv);
   }
 
 
