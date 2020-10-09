@@ -22,7 +22,7 @@
   \ingroup utilities
   \brief Main program for stir::SSRB
 
-  \author Kris Thielemans
+  \author Kris Thielemans & Robert Twyman
 
 
    \par Usage:
@@ -76,7 +76,9 @@ USING_NAMESPACE_STIR
 
 static void print_usage_and_exit(const std::string& prog_name)
 {
-  cerr << "Usage:\n"
+  cerr << "Usage:\n\n"
+       << "Two options:\n"
+       << "\t - Classical STIR SSRB method\n"
        << prog_name << " [-t num_tangential_poss_to_trim] \\\n"
        << "\toutput_filename input_projdata_name \\\n"
        << "\t[num_segments_to_combine \\\n"
@@ -87,7 +89,12 @@ static void print_usage_and_exit(const std::string& prog_name)
        << "num_tangential_poss_to_trim has to be smaller than the available number\n"
        << "  of tangential positions.\n"
        << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
-       << "max_in_segment_num_to_process defaults to all segments\n";
+       << "max_in_segment_num_to_process defaults to all segments\n"
+       << "\n\t - Template Based SSRB method\n"
+       << prog_name << "--template template_filename output_filename input_projdata_name [do_norm]\n"
+       << "template_filename the format of the output sinogram.\n"
+       << "output_filename, input_projdata_name, and do_norm are as above.\n"
+       << "SSRB act in the same way as Classical but allows for even num_segments_to_combine.\n";
   exit(EXIT_FAILURE);
 }
 
@@ -119,16 +126,13 @@ void classic_SSRB(int argc, char **argv)
 
 void template_based_SSRB(int argc, char **argv)
 {
-  //3rd argument is "--template", load this template sinogram
+
   shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[2]);
   const string output_filename = argv[3];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[4]);
   ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
                                   template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
-  bool do_norm = true;
-  if (argc >5)
-    if (atoi(argv[5]) == 0)
-      do_norm = false;
+  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
   SSRB(out_proj_data, *in_projdata_ptr, do_norm);
 }
 
@@ -145,6 +149,6 @@ int main(int argc, char **argv)
   } else {
     classic_SSRB(argc, argv);
   }
-  
+
   return EXIT_SUCCESS;
 }
