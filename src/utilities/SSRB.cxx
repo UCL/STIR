@@ -64,7 +64,7 @@
 #include "stir/SSRB.h"
 #include <string>
 #include <string.h>
-#include <stir/ProjDataInterfile.h>
+#include "stir/ProjDataInterfile.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
