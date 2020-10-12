@@ -60,7 +60,7 @@ private:
   bool use_calibration_factor; // default to true
 //  bool use_branching_ratio; // default to true
   float calibration_factor;
-  float radionuclide;
+  std::string radionuclide;
 };
 
 END_NAMESPACE_STIR

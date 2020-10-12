@@ -80,7 +80,7 @@ set_calibration_factor(const float calib){
 
 void
 BinNormalisationWithCalibration::
-set_radionuclide(const float rnuclide){
+set_radionuclide(const std::string& rnuclide){
     this->radionuclide=rnuclide;
 }
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
