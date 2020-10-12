@@ -129,7 +129,7 @@ virtual void undo_only_second(RelatedViewgrams<float>& viewgrams,const double st
 
 virtual void undo_only_second(ProjData&,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
  //! Returns the is_trivial() status of the first normalisation object.
  //! \warning Currently, if the object has not been set the function throws an error.
   virtual bool is_first_trivial() const;

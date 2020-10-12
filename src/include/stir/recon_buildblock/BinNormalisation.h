@@ -80,7 +80,7 @@ public:
 
     \warning Some derived classes might implement this very inefficiently.
   */
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const =0;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const =0;
 
   //! normalise some data
   /*! 
@@ -88,7 +88,7 @@ public:
     notation of the class documentation, this would \c divide by the factors 
     \f$\mathrm{norm}_b \f$.
 
-    Default implementation divides with the factors returned by get_bin_efficiency()
+    Default implementation divides with the factors returned by get_uncalibrated_bin_efficiency()
     (after applying a threshold to avoid division by 0).
   */
   virtual void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const;
@@ -100,7 +100,7 @@ public:
     notation of the class documentation, this would \c multiply by the factors 
     \f$\mathrm{norm}_b \f$.
 
-    Default implementation multiplies with the factors returned by get_bin_efficiency().
+    Default implementation multiplies with the factors returned by get_uncalibrated_bin_efficiency().
   */
   virtual void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const; 
 

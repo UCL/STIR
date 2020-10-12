@@ -188,15 +188,15 @@ undo_only_second(ProjData& proj_data,const double start_time, const double end_t
 }
 
 float
-ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+ChainedBinNormalisation:: get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   return 
     (!is_null_ptr(apply_first) 
-     ? apply_first->get_bin_efficiency(bin,start_time,end_time)
+     ? apply_first->get_uncalibrated_bin_efficiency(bin,start_time,end_time)
      : 1)
     *
     (!is_null_ptr(apply_second) 
-     ? apply_second->get_bin_efficiency(bin,start_time,end_time)
+     ? apply_second->get_uncalibrated_bin_efficiency(bin,start_time,end_time)
      : 1);
 }
  

@@ -163,10 +163,10 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
   }
 
 float 
-BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+BinNormalisationFromProjData::get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   //TODO
-  error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");
+  error("BinNormalisationFromProjData::get_uncalibrated_bin_efficiency is not implemented");
   return 1;
 
 }

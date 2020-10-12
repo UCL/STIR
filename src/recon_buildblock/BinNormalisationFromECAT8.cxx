@@ -209,10 +209,11 @@ BinNormalisationFromECAT8(const string& filename)
 
 Succeeded
 BinNormalisationFromECAT8::
-set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr_v, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
+  BinNormalisation::set_up(exam_info_sptr_v, proj_data_info_ptr_v);
 
+  exam_info_sptr=exam_info_sptr_v;
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
@@ -542,7 +543,7 @@ use_crystal_interference_factors() const
 #if 1
 float 
 BinNormalisationFromECAT8::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
+get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
 
 
   // TODO disable when not HR+ or HR++
@@ -555,7 +556,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
   Scatter has a higher efficiency than trues when the axial angle is 0 (direct
   planes)
   As the axial angle increase the difference in efficiencies between trues and
-  scatter become closer
+  scatter become closer=
     */
   const float geo_Z_corr = 1;
 

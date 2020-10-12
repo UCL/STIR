@@ -451,7 +451,7 @@ use_geometric_factors() const
 
 float 
 BinNormalisationFromGEHDF5::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
 {  
   float	total_efficiency = 0 ;
 

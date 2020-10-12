@@ -107,7 +107,7 @@ public:
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const; 
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const; 
 
 private:
   shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_ptr;
