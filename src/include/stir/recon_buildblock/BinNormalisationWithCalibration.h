@@ -53,7 +53,7 @@ public:
     { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
 
    void set_calibration_factor(const float);
-   void set_radionuclide(const float);
+   void set_radionuclide(const std::string&);
 private:
   // provide facility to switch off things?
   //  need to be added to the parsing keywords
