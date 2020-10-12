@@ -31,33 +31,36 @@ START_NAMESPACE_STIR
   \ingroup normalisation
 */
 class BinNormalisationWithCalibration : 
-        public RegisteredParsingObject<BinNormalisationWithCalibration, BinNormalisation >
+        public  BinNormalisation
 {
 private:
-  using base_type = RegisteredParsingObject<BinNormalisationWithCalibration, BinNormalisation >;
+  using base_type = BinNormalisation;
 public:
-
-    //! Name which will be used when parsing a BinNormalisationWithCalibration object
-    static const char * const registered_name; 
+    
     
   BinNormalisationWithCalibration();
-
-  //! Return the 'efficiency' factor for a single bin
-
-  float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const =0;
-
-  //! normalise some data: divide by the factors 
-  void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const;
-
-  //! undo the normalisation of some data: multiply by the factors 
-  void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const; 
 
  protected:
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-  float calibration_factor, branching_ratio;
+
+   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
+   // needs to be implemented by derived class
+   virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
+   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time)
+    { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
+
+   void set_calibration_factor(const float);
+   void set_radionuclide(const float);
+private:
+  // provide facility to switch off things?
+  //  need to be added to the parsing keywords
+  bool use_calibration_factor; // default to true
+//  bool use_branching_ratio; // default to true
+  float calibration_factor;
+  float radionuclide;
 };
 
 END_NAMESPACE_STIR

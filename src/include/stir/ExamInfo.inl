@@ -51,7 +51,7 @@ ExamInfo::set_high_energy_thres(float new_val)
 }
 
 void
-ExamInfo::set_radionuclide(std::string name)
+ExamInfo::set_radionuclide(const std::string& name)
 {
     radionuclide = name;
 }

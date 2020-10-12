@@ -63,9 +63,7 @@ public :
   }
 
   std::string originating_system;
-  
-  std::string radionuclide;
-  
+    
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
@@ -73,7 +71,7 @@ public :
   TimeFrameDefinitions time_frame_definitions;
   
   double calibration_factor;
-  double branching_ration;
+//  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
   { return time_frame_definitions; }
@@ -99,7 +97,7 @@ public :
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
   //! Set the radionuclide
-  inline void set_radionuclide(std::string name);
+  inline void set_radionuclide(const std::string& name);
   //@}
 
   inline bool has_energy_information() const
@@ -117,7 +115,17 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
-  bool operator == (const ExamInfo &p1) const { return  *this==p1; }
+  bool operator == (const ExamInfo &p1) const { 
+      return  this->get_high_energy_thres()==p1.get_high_energy_thres() &&
+              this->get_low_energy_thres()==p1.get_low_energy_thres() &&
+              this->get_radionuclide()==p1.get_radionuclide() &&
+              this->get_time_frame_definitions()==p1.get_time_frame_definitions() &&
+//              this->branching_ratio==p1.branching_ratio &&
+              this->calibration_factor==p1.calibration_factor &&
+              this->imaging_modality==p1.imaging_modality &&
+              this->originating_system==p1.originating_system &&
+              this->patient_position==p1.patient_position &&
+              this->start_time_in_secs_since_1970==p1.start_time_in_secs_since_1970; }
   
   //! Clone and create shared_ptr of the copy
   shared_ptr<ExamInfo> create_shared_clone()
@@ -138,6 +146,8 @@ public :
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
+  
+  std::string radionuclide;
 
   //!
   //! \brief up_energy_thres

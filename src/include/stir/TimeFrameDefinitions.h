@@ -108,7 +108,7 @@ public:
     //! Set time frame
     void set_time_frame(const int frame_num, const double start, const double end);
     
-    bool operator == (const TimeFrameDefinitions &t) const { return *this==t;}
+    bool operator == (const TimeFrameDefinitions &t) const { return this->frame_times==t.frame_times;}
 
 private:
   //! Stores start and end time for each frame
