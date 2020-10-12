@@ -70,7 +70,6 @@ BinNormalisationWithCalibration::
 BinNormalisationWithCalibration()
 {
   set_defaults();
-  this->calibration_factor=1;
 }
 
 void
@@ -88,4 +87,3 @@ set_radionuclide(const float rnuclide){
 
 
 END_NAMESPACE_STIR
-
