@@ -105,51 +105,58 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const std::string out_filename_prefix = argv[1];
-  const int num_rings = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_rings();
-  const int num_detectors_per_ring = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_detectors_per_ring();
   const int num_transaxial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_blocks();
-  const int num_axial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_blocks();
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_blocks();
+    const int num_axial_blocks =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_blocks();
+    const int virtual_axial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                get_num_virtual_axial_crystals_per_block();
+    const int virtual_transaxial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_virtual_transaxial_crystals_per_block();
+    const int num_rings =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_rings() -(num_axial_blocks-1)*virtual_axial_crystals;
+    const int num_detectors_per_ring =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
+
     const int num_transaxial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_crystals_per_block();
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
     const int num_axial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_crystals_per_block();
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_crystals_per_block()-virtual_axial_crystals;
 
 
-    
+
     CPUTimer timer;
     timer.start();
-    
+
     FanProjData model_fan_data;
     FanProjData fan_data;
     Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
     DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
-    
+
     GeoData3D measured_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
     GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    
+
     BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
     BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
 
 
-    make_fan_data(model_fan_data, *model_data);
+    make_fan_data_remove_gaps(model_fan_data, *model_data);
     {
         // next could be local if KL is not computed below
         FanProjData measured_fan_data;
         float threshold_for_KL;
         // compute factors dependent on the data
         {
-            make_fan_data(measured_fan_data, *measured_data);
-    
+            make_fan_data_remove_gaps(measured_fan_data, *measured_data);
+
 /* TEMP FIX */
  for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
     {
@@ -157,12 +164,13 @@ int main(int argc, char **argv)
         {
           for (int rb = std::max(ra,model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
             {
-              for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)      
+              for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
                 if (model_fan_data(ra,a,rb,b) == 0)
                   measured_fan_data(ra,a,rb,b) = 0;
             }
         }
     }
+
 
            threshold_for_KL = measured_fan_data.find_max()/100000.F;
             //display(measured_fan_data, "measured data");
