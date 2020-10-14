@@ -493,10 +493,15 @@ set_up(
 	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << endl;
 	cout << "Number of subsets: " << wmh.prj.NOS << endl;
 	if ( wmh.do_att ){
-		cout << "Correction for atenuation: " << wmh.att_fn << "\t\tdo_msk_att: " << wmh.do_msk_att << endl;
+		cout << "Correction for attenuation: " << wmh.att_fn << "\t\tdo_msk_att: " << wmh.do_msk_att << endl;
 		cout << "Attenuation map: " << wmh.att_fn << endl;
 	}
-	cout << "Rotation radius: " << Rrad[0] << endl;
+	cout << "Rotation radii: {" << Rrad[0];
+        for (int i=1; i<prj.Nang; ++i)
+          {
+            cout << ", " << Rrad[i];
+          }
+        cout << "}\n";
 	cout << "Minimum weight: " << wmh.min_w << endl;
 
 	//... to sort angles into subsets ......................................
