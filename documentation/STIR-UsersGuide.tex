@@ -873,6 +873,11 @@ Results are written as a simple text file. This could be used to check if all de
 properly for instance.
 
 \subsubsection{
+list\_lm\_info}
+Writes exam-info and (optionally) geometric info on underlying projection data to stdout.
+Run without arguments to see a usage message.
+
+\subsubsection{
 list\_lm\_events}
 Allows inspecting the events in a list mode file. Run without arguments to see a usage message.
 
@@ -921,6 +926,8 @@ i.e. add views together.
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
 {[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+or
+\cmdline{SSRB --template template\_filename output\_filename input\_projdata\_name [do\_normalisation]}
 
 \begin{description}
 \item[num\_segments\_to\_combine] has to be odd. It is used as the 
@@ -932,6 +939,12 @@ data to combine.
 the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num\_views\_to\_combine}. 
 This is appropriate for rebinning data where normalisation has 
 already been applied, but inappropriate otherwise.
+
+\item[template\_filename] inicated by the \textit{--template} flag, 
+is the sinogram type that the \textit{input\_projdata\_name} will 
+be mapped to. This allows for the effective use of 
+\textit{num\_segments\_to\_combine} to be an even number, 
+e.g. the conversion between span-1 and span-2 projection data sets. 
 
 \item[max\_in\_segment\_num\_to\_process] defaults to all segments. 
 Can be used to ignore the most oblique segments in the input 

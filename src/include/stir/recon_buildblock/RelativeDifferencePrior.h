@@ -59,17 +59,18 @@ START_NAMESPACE_STIR
 
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
-  a smoothing scalar term and the \f$\epsilon\f$ is a small positive value included to prevent division by zero.
-  For more details, see: <em> J. Nuyts, D. Bequ&eacute;, P. Dupont, and L. Mortelmans,
-  "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
-  vol. 49, no. 1, pp. 56-60, 2002. </em>
+  a smoothing scalar term and the \f$\epsilon\f$ is a small non-negative value included to prevent division by zero.
+  Please note that the RDP is only well defined for non-negative voxel values.
+  For more details, see: <em> J. Nuyts, D. Beque, P. Dupont, and L. Mortelmans,
+  “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
+  vol. 49, no. 1, pp. 56–60, 2002. </em>
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in 
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
   use 1 for all \f$\kappa\f$'s.
 
-  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  By default, a 3x3 or 3x3x3 neighbourhood is used where the weights are set to
   x-voxel_size divided by the Euclidean distance between the points.
 
 \par Parsing
