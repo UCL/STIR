@@ -1706,8 +1706,3 @@ namespace stir {
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-
-%include "stir/recon_buildblock/RelativeDifferencePrior.h"
-#define elemT float
-%template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT >;
-
