@@ -774,7 +774,7 @@ get_ratio(const ProjData& projdata,const ProjData& norm,const ProjData &add_proj
 
     if(ratio_vector.size()!=counter)
         error("SIZE is %d , but it should be %d",ratio_vector.size(),counter);
-return est_projdata_HR;
+return est_projdata_HR;//
 }
 END_NAMESPACE_STIR
 
