@@ -444,8 +444,6 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     const float rescale =
     0.1F;
 #endif
-
-
       //normalisation
       // we will divide by the solid angle factors for unscattered photons
       // (computed with the same detection model as used in the scatter code)
