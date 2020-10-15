@@ -1,5 +1,5 @@
-Reconstruction :=
-reconstruction method := OSMAPOSL
+Reconstruction Parameters :=
+reconstruction type := OSMAPOSL
 OSMAPOSLParameters :=
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
@@ -29,7 +29,7 @@ number of subsets:= ${scatter_recon_num_subsets}
 number of subiterations:=${scatter_recon_num_subiterations}
 ;save estimates at subiteration intervals:= ${scatter_recon_num_subiterations}
 
-; smooth a bit as we're have a down-sampled scanner, and during the scatter estimation resolution can be low
+; smooth a bit as we use a down-sampled scanner (during the scatter estimation resolution can be low)
 post-filter type :=  Separable Gaussian
 Separable Gaussian Filter Parameters :=
   x-dir filter FWHM (in mm):= 15
@@ -41,4 +41,4 @@ END Separable Gaussian Filter Parameters :=
 ;
 disable output := 1
 End OSMAPOSLParameters:=
-End reconstruction :=
+End reconstruction Parameters:=

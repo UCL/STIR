@@ -2,7 +2,7 @@
 //
 /*
   Copyright (C) 2006-2009, Hammersmith Imanet Ltd
-  Copyright (C) 2018, University College London
+  Copyright (C) 2018,2020 University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "stir/DynamicDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
+#include "stir/FilePath.h"
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -43,7 +44,7 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 MultiDynamicDiscretisedDensityOutputFileFormat(const NumericType& type, 
 					const ByteOrder& byte_order) 
 {
-  base_type::set_defaults();
+  this->set_defaults();
   this->set_type_of_numbers(type);
   this->set_byte_order(byte_order);
 }
@@ -53,6 +54,9 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 set_defaults()
 {
   base_type::set_defaults();
+  this->set_type_of_numbers(NumericType::FLOAT);
+  this->set_byte_order(ByteOrder::native);
+  this->individual_output_type_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 
@@ -95,6 +99,11 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 actual_write_to_file(std::string& filename, 
 		     const DynamicDiscretisedDensity & density) const
 {
+    {
+      FilePath file_path(filename);
+      if (!file_path.get_extension().empty())
+        error("MultiDynamicDiscretisedDensityOutputFileFormat: currently needs an output filename without extension. sorry");
+    }
     // Create all the filenames
     VectorWithOffset<std::string> individual_filenames(1,int(density.get_num_time_frames()));
     for (int i=1; i<=int(density.get_num_time_frames()); i++)

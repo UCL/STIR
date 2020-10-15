@@ -44,21 +44,29 @@ mask projdata filename := ${mask_projdata_filename}
 recompute mask image := 1
 mask image filename := ${mask_image}
 mask attenuation image min threshold  := 0.003
-mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian.par
+mask attenuation image filter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the scatter data (within the mask)
-tail fitting par filename := ${scatter_pardir}/tail_fitting.par
+tail fitting parameter filename := ${scatter_pardir}/tail_fitting.par
 
-; Run simulation and reconstruction in 2D and export SSRB sinograms
+; Run simulation and reconstruction in 2D and export SSRB sinograms (currently required)
 run in 2d projdata := 1
 
 ; ScatterSimulation parameters 
-scatter simulation parameters file := ${scatter_pardir}/scatter_simulation.par 
+; could read from a file, but instead we have them below
+; scatter simulation parameter filename := ${scatter_pardir}/scatter_simulation.par
+Scatter Simulation type := PET Single Scatter Simulation
+  PET Single Scatter Simulation Parameters :=
+    ; could change some parameters here if you need to (not recommended)
+  End PET Single Scatter Simulation Parameters:=
+
 ; next option is the default
 use scanner downsampling in scatter simulation := 1
 
-reconstruction parameter template file := ${scatter_pardir}/run_reconstruction.par 
+; could add parameters below, but reading it from file
+; reconstruction type := ...
+reconstruction parameter filename := ${scatter_pardir}/run_reconstruction.par 
 
 ;
 ; This is the number of times which the Scatter Estimation will

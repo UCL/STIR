@@ -65,7 +65,11 @@ namespace stir {
 
 #cmakedefine HAVE_RDF
 
+#cmakedefine HAVE_HDF5
+
 #cmakedefine HAVE_ITK
+
+#cmakedefine STIR_WITH_NiftyPET_PROJECTOR
 
 #cmakedefine STIR_OPENMP
 

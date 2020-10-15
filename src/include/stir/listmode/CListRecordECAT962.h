@@ -29,6 +29,8 @@
 #define __stir_listmode_CListRecordECAT962_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListGatingInput.h"
+#include "stir/listmode/ListTime.h"
 #include "stir/listmode/CListEventCylindricalScannerWithViewTangRingRingEncoding.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -195,7 +197,7 @@ class CListEnergyDataECAT962
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
-class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, public CListGatingInput,
+class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, public ListGatingInput,
     public  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>
 {
  public:
@@ -223,9 +225,9 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
     { return *this; }
   virtual const ListTime&   time() const
     { return *this; }
-  virtual CListGatingInput&  gating_input()
+  virtual ListGatingInput&  gating_input()
     { return *this; }
-  virtual const CListGatingInput&  gating_input() const
+  virtual const ListGatingInput&  gating_input() const
   { return *this; }
 
   bool operator==(const CListRecord& e2) const

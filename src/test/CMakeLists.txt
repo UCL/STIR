@@ -68,6 +68,7 @@ set(buildblock_simple_tests
 	test_find_fwhm_in_image
 	test_proj_data_info
 	test_proj_data_in_memory
+	test_proj_data_maths
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
         test_multiple_proj_data

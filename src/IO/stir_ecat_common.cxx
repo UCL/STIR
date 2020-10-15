@@ -4,7 +4,7 @@
   \file
   \ingroup ECAT
 
-  \brief Implementation of routines which convert ECAT6 and ECAT7 things into our  building blocks and vice versa. 
+  \brief Implementation of routines which convert ECAT6, ECAT7 and ECAT8 things into our  building blocks and vice versa. 
 
   \author Kris Thielemans
   \author PARAPET project
@@ -13,6 +13,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,6 +32,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/NumericType.h"
 #include "stir/Scanner.h" 
+#include "stir/ProjDataInfo.h"
 #include "stir/IO/stir_ecat_common.h"
 
 START_NAMESPACE_STIR
@@ -185,6 +187,22 @@ Scanner* find_scanner_from_ECAT_system_type(const short system_type)
   default :  
     return new Scanner(Scanner::Unknown_scanner);
   }
+}
+
+std::vector<int>
+find_segment_sequence(const ProjDataInfo& pdi)
+{
+  const int max_segment_num = pdi.get_max_segment_num();
+  std::vector<int> segment_sequence(2*max_segment_num+1);
+  // KT 25/10/2000 swapped segment order
+  // ECAT 7 always stores segments as 0, -1, +1, ...
+  segment_sequence[0] = 0;
+  for (int segment_num = 1; segment_num<=max_segment_num; ++segment_num)
+  {
+    segment_sequence[2*segment_num-1] = -segment_num;
+    segment_sequence[2*segment_num] = segment_num;
+  }
+  return segment_sequence;
 }
 
 END_NAMESPACE_ECAT

@@ -77,6 +77,12 @@ if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
 endif()
 
+if (HDF5_FOUND)
+ list(APPEND ${dir_EXE_SOURCES}
+    construct_randoms_from_GEsingles
+ )
+endif()
+
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
 
@@ -85,3 +91,7 @@ if (nlohmann_json_FOUND)
 endif()
 
 include(stir_exe_targets)
+
+if (BUILD_EXECUTABLES AND nlohmann_json_FOUND)
+  target_link_libraries(ctac_to_mu_values nlohmann_json::nlohmann_json)
+endif()

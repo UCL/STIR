@@ -13,8 +13,8 @@ set(${dir_LIB_SOURCES}
   ProjDataInfoCylindricalArcCorr 
   ProjDataInfoCylindricalNoArcCorr 
   ArcCorrection 
-  ProjDataFromStream 
-  ProjDataGEAdvance 
+  ProjDataFromStream  
+  ProjDataGEAdvance
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 
@@ -82,6 +82,11 @@ set(${dir_LIB_SOURCES}
         GeneralisedPoissonNoiseGenerator
         FilePath
 )
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    ProjDataGEHDF5
+ )
+endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock

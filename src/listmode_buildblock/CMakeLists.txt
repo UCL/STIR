@@ -8,6 +8,7 @@ set(${dir_LIB_SOURCES}
         ListModeData
         ListEvent
         CListEvent
+        LmToProjDataAbstract
 	LmToProjData 
         LmToProjDataBootstrap
 	LmToProjDataWithRandomRejection
@@ -16,6 +17,13 @@ set(${dir_LIB_SOURCES}
 	CListModeDataSAFIR
 	DetectorCoordinateMapFromFile
 )
+
+if (HAVE_HDF5)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataGESigna
+        # CListRecordGESigna
+)
+endif()
 
 if (HAVE_ECAT)
   list(APPEND ${dir_LIB_SOURCES}
@@ -30,6 +38,12 @@ if (HAVE_CERN_ROOT)
 		CListModeDataROOT
 		CListRecordROOT
 	)
+endif()
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    NiftyPET_listmode/LmToProjDataNiftyPET
+  )
 endif()
 
 

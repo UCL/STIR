@@ -3,7 +3,8 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016, University College London
+    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,6 +31,8 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
+  \author Palak Wadhwa
+  \author Ottavia Bertolli
   \author PARAPET project
 */
 
@@ -67,8 +70,8 @@ static list<string>
    string_list(const string&, const string&, const string&);
 static list<string> 
    string_list(const string&, const string&, const string&, const string&);
-
-   
+static list<string>
+   string_list(const string&, const string&, const string&, const string&, const string&);
 
 
   
@@ -189,9 +192,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
                41, 336, 2* 336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
-               1, 2, 41, 14, 41, 14, 1);
+               1, 2, 13+1, 13+1, 0, 0, 1);// TODO bucket/singles info?
     // Transaxial blocks have 13 physical crystals and a gap at the  
-    // 140th crystal where the counts are zero.
+    // 14th crystal where the counts are zero.
     // There are 39 rings with 13 axial crystals per block. Two virtual
     // rings are added, but contain counts after applying axial compression.
     break;
@@ -205,6 +208,16 @@ Scanner::Scanner(Type scanner_type)
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
                2, 1, 8, 9, 16, 9, 1,
                0.145f, 511.f); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+    break;
+
+  case Siemens_mCT:
+    // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
+    set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
+               55, 400, (13+1)*48,
+               421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
+               4, 1, 13+1, 13+1, 0,0, 1 ); // TODO singles info incorrect
+    // energy: 435-650
+    // 13 TOF bins
     break;
 
   case RPT:
@@ -328,6 +341,24 @@ Scanner::Scanner(Type scanner_type)
 	       6, 8, 1, 1, 1);
     break;
 
+
+case PETMR_Signa: 
+
+    set_params(PETMR_Signa, string_list("GE PET/MR Signa", "GE PET/MR Signa"), 
+	       45, 
+	       357, 
+	       331, // TODO
+	       2 * 224,
+           311.9F,
+	       9.4F,  
+           5.56F,
+           2.01565F, // TO CHECK
+	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
+	       5,
+	       4,
+	       9, 4, 1, 1, 1);
+break;
+
   case Discovery690:
     // same as 710
     set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690",
@@ -351,6 +382,7 @@ Scanner::Scanner(Type scanner_type)
 			   (float)(550.0F)
 #endif
 );
+
     break;
   
   case HZLR:
@@ -598,7 +630,38 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
 }
 
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_axial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+      return 1;
+    default:
+      return 0;
+    }
+}
 
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_transaxial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+    case Siemens_mMR:
+      return 1;
+    default:
+      return 0;
+    }
+}
 
 Succeeded 
 Scanner::
@@ -654,10 +717,11 @@ check_consistency() const
 	const int dets_axial =
 	  get_num_axial_blocks() *
 	  get_num_axial_crystals_per_block();
-	if ( dets_axial != get_num_rings())
+	if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()))
 	  { 
-	    warning("Scanner %s: inconsistent axial block info",
-		    this->get_name().c_str()); 
+	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
+		    this->get_name().c_str(),
+                    dets_axial, get_num_rings() + get_num_virtual_axial_crystals_per_block()); 
 	    return Succeeded::no; 
 	  }
       }
@@ -1078,6 +1142,18 @@ string_list(const string& s1, const string& s2, const string& s3, const string& 
   l.push_back(s2);
   l.push_back(s3);
   l.push_back(s4);
+  return l;
+}
+
+static list<string>
+string_list(const string& s1, const string& s2, const string& s3, const string& s4, const string& s5)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  l.push_back(s4);
+  l.push_back(s5);
   return l;
 }
 

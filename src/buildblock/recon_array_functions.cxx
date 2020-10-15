@@ -386,7 +386,7 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 	  if (projection_data[r][b]<=small_value)
 	    sub_result += - double(new_estimate);
 	  else
-	    sub_result += double(projection_data[r][b]*log(new_estimate) - new_estimate);
+	    sub_result += projection_data[r][b]*log(double(new_estimate)) - double(new_estimate);
 	}
     result += sub_result;
   }

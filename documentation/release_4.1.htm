@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 4.1</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 4.1</h1>
+<h2>Overall summary</h2>
+
+    <p>
+    </p>
+    
+    <p>This release contains mainly code written by
+      <ul>
+        <li>Kris Thielemans (UCL) for general overview, fixes, help and maintenance</li>
+        <li>Palak Wadhwa (Leeds) addition of support for GE Signa PET/MR, with help from many others, including
+          coding by Ottavia Bertolli (UCL), Nikos Efthimiou (Hull), Elise Emond (UCL) and Kris Thielemans (UCL),
+          and supervision by Ch. Tsoumpas (Leeds). This work received help from GE Healthcare with particular thanks to
+          Gaspar Delso, Kristen Wangerin and Floris Jansen. See the publication for more details<br />
+          Palak Wadwha et al.<br />
+          <cite>PET Image Reconstruction Using Physical and Mathematical Modelling For Time of Flight PET-MR Scanners in the STIR Library</cite><br />
+          Methods 2020,
+          DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
+        </li>
+        <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
+        <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
+      </ul>
+    </p>
+
+    <p>See also the <a href="https://github.com/UCL/STIR/milestone/3">GitHub milestone for v4.1</a></p>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+
+<h3>New functionality</h3>
+<ul>
+  <li>Reading of GE HDF5 data (GE fileformat RDF 10) for the GE Signa PET/MR, including listmode, sinograms and calibration files.
+    This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
+    will be non-TOF.
+  <li>
+    Addition of the Relative Difference Prior [J. Nuyts, et al., 2002].
+  </li>
+  <li>NiftyPET's GPU projectors have been wrapped. If NiftyPET is installed, these projectors can be used 
+    on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_NiftyPET.par</tt>.
+    NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
+  </li>
+  <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
+</ul>
+
+
+<h3>Changed functionality</h3>
+<ul>
+  <li>Modification of log-likelihood computation to use more doubles, improving numerical stability, see <a href="https://github.com/UCL/STIR/pull/528">PR 528</a>.</li>
+  <li>Reconstruction algorithms perform now more checks during <code>set_up()</code> etc.
+    However, this means that <strong>you have to call <code>set_up()</code> also for analytic
+    reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
+  </li>
+</ul>
+<h4>Python (and MATLAB) interface</h4>
+none
+
+
+
+<h3>Known problems</h3>
+<p>See the Github issues for more information.</p>
+<ul>
+<li>SPECT related
+ <ul>
+ <li> Do NOT use current PET projectors on SPECT Data. You will have to choose the "SPECT UB" projector 
+    in all cases (see the sample .par files).</li>
+ <li>The quantitative scale of reconstructed SPECT images is generally different than for PET reconstructions.
+    It probably also behaves differently than the PET projectors when using different voxel sizes.</li>
+ <li>Images are still written as PET Interfile (but this is ignored when reading).</li>
+ <li>At present, the collimator model varies the width of the PSF linearly with distance. This was
+   experimentally verified with some collimators (for normal distances to the collimator).
+   However, we need to add the possibility to use different models.
+  </li>
+  <li><tt>list_projdata_info</tt> still reports SPECT data as if it's a PET scanner, but you can see
+    all necessary geometric info from it anyway.</li>
+  <li><tt>create_projdata_template</tt> only works for PET scanners. For SPECT, you could take the 
+   sample Interfile header, modify it to your needs (and create an empty file for the binary data pointed to
+   by the Interfile header).
+  </li>
+  </ul>
+</li>
+<li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>The incremental interpolating back-projector still gives problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
+We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
+<tt>stir_write_pgm</tt>).
+</li>
+</ul>
+
+<h3>Minor bug fixes</h3>
+<ul>
+<li>
+  Changes to GATE/root cylindrical PET geometry interpretation,
+  see <a href="https://github.com/UCL/STIR/pull/569">PR 569</a>.</li>
+</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>Added documentation on new features</li> 
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+None
+
+<h3>Other changes to tests</h3>
+<ul>
+  <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
+    This is on top of the <tt>recon_test_pack</tt>.
+  </li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+  <li>To enable the functionality for GE HDF5 files, you will need to first install HDF5 libraries. For most operating systems
+    this can be done via your package manager which we highly recommend. You could also
+    download from the <a href="https://www.hdfgroup.org/downloads/hdf5/">HDF5 group download page</a>.
+  </li>
+</ul>
+
+
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<ul>
+<li>see above</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+  <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
+  <li><code>ProjDataInMemory</code> now provides iterators.</li>
+  <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
+</ul>
+  
+<h3>Other code changes</h3>
+<p>See the ChangeLog</p>
+
+</body>
+
+</html>

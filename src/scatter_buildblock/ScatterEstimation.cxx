@@ -106,7 +106,7 @@ initialise_keymap()
                          &this->recompute_mask_projdata);
     this->parser.add_key("mask projdata filename",
                          &this->mask_projdata_filename);
-    this->parser.add_key("tail fitting par filename",
+    this->parser.add_key("tail fitting parameter filename",
                          &this->tail_mask_par_filename);
     // END MASK
     this->parser.add_key("background projdata filename",
@@ -115,7 +115,9 @@ initialise_keymap()
                          &this->multiplicative_binnorm_sptr);
 
     // RECONSTRUCTION RELATED
-    this->parser.add_parsing_key("reconstruction method",
+    this->parser.add_key("reconstruction parameter filename",
+                         &this->recon_template_par_filename);
+    this->parser.add_parsing_key("reconstruction type",
                                  &this->reconstruction_template_sptr);
 
     this->parser.add_key("reconstruction parameter template file",
@@ -126,9 +128,9 @@ initialise_keymap()
     this->parser.add_key("number of scatter iterations",
                          &this->num_scatter_iterations);
     //Scatter simulation
-    this->parser.add_parsing_key("Simulation method",
+    this->parser.add_parsing_key("Scatter Simulation type",
                                  &this->scatter_simulation_sptr);
-    this->parser.add_key("scatter simulation parameters file",
+    this->parser.add_key("scatter simulation parameter filename",
                          &this->scatter_sim_par_filename);
     this->parser.add_key("use scanner downsampling in scatter simulation",
                          &this->downsample_scanner_bool);
@@ -195,16 +197,15 @@ post_processing()
     // file. I prefer this implementation since makes smaller modular files.
     if (this->recon_template_par_filename.size() == 0)
     {
-        warning("ScatterEstimation: Please define a reconstruction method. Aborting.");
-        return true;
+      if (is_null_ptr(reconstruction_template_sptr))
+        error("ScatterEstimation: Please define a reconstruction type.");
     }
     else
     {
         KeyParser local_parser;
-
-        local_parser.add_start_key("Reconstruction");
-        local_parser.add_stop_key("End Reconstruction");
-        local_parser.add_parsing_key("reconstruction method", &this->reconstruction_template_sptr);
+        local_parser.add_start_key("Reconstruction Parameters");
+        local_parser.add_stop_key("End Reconstruction Parameters");
+        local_parser.add_parsing_key("reconstruction type", &this->reconstruction_template_sptr);
         if (!local_parser.parse(this->recon_template_par_filename.c_str()))
         {
             warning(boost::format("ScatterEstimation: Error parsing reconstruction parameters file %1%. Aborting.")
@@ -265,8 +266,8 @@ post_processing()
     info ("ScatterEstimation: Initialising Scatter Simulation ... ");
     if (this->scatter_sim_par_filename.size() == 0)
     {
-        warning("ScatterEstimation: Please define a scatter simulation method. Aborting.");
-        return true;
+      if (is_null_ptr(this->scatter_simulation_sptr))
+        error("ScatterEstimation: Please define a scatter simulation method. Aborting.");
     }
     else // Parse locally
     {
@@ -865,14 +866,8 @@ process_data()
         }
 
         info("ScatterEstimation: Scatter simulation in progress...");
-	if (i_scat_iter == 1)
-	{
-	    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
-	    {
-		warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
-		return Succeeded::no;
-	    }
-	}
+        if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
+            error("ScatterEstimation: Failure at set_up() of the Scatter Simulation.");
 
         if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
             error("ScatterEstimation: Scatter simulation failed");

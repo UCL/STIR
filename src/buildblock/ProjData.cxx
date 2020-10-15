@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
-    Copyright (C) 2015, University College London
+    Copyright (C) 2015, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -423,6 +423,28 @@ write_to_file(const string& output_filename) const
   }
   return success;
 
+}
+
+void
+ProjData::
+axpby(const float a, const ProjData& x,
+      const float b, const ProjData& y)
+{
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+            *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
+        error("ProjData::axpby: ProjDataInfo don't match");
+
+    const int n_min = get_min_segment_num();
+    const int n_max = get_max_segment_num();
+
+    for (int s=n_min; s<=n_max; ++s)
+    {
+        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+        seg.axpby(a, sx, b, sy);
+        set_segment(seg);
+    }
 }
 
 END_NAMESPACE_STIR
