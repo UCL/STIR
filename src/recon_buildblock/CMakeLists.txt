@@ -70,6 +70,7 @@ set(${dir_LIB_SOURCES}
 	PLSPrior
         QuadraticPrior
         RelativeDifferencePrior
+		LogcoshPrior
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
 	PoissonLogLikelihoodWithLinearModelForMean 
