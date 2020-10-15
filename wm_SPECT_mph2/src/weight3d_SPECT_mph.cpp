@@ -54,15 +54,16 @@ void wm_calculation_mph ( bool do_calc,
     //... collimator parameters ........................................
     
     mphcoll_type  * c  = & wmh.collim;
+
+    //... STIR origin offset ........................................
+    Dimxd2 = wmh.vol.Dimx / 2 ;
+    Dimyd2 = wmh.vol.Dimy / 2 ;
     
     if ( !do_calc ){
         
         //... STIR indices .......................................................................
         
         if ( wm.do_save_STIR ){
-            
-            Dimxd2 = wmh.vol.Dimx / 2 ;
-            Dimyd2 = wmh.vol.Dimy / 2 ;
             
             wm.ns = new int [ wmh.prj.Nbt ];
             wm.nb = new int [ wmh.prj.Nbt ];
