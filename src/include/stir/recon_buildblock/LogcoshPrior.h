@@ -86,102 +86,102 @@ START_NAMESPACE_STIR
 
 
  */
-    template <typename elemT>
-    class LogcoshPrior:  public
-                         RegisteredParsingObject< LogcoshPrior<elemT>,
-                                 GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                                 PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
-                         >
-    {
-    private:
-        typedef
-        RegisteredParsingObject< LogcoshPrior<elemT>,
-                GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
-                base_type;
+template <typename elemT>
+class LogcoshPrior:  public
+                     RegisteredParsingObject< LogcoshPrior<elemT>,
+                             GeneralisedPrior<DiscretisedDensity<3,elemT> >,
+                             PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
+                     >
+{
+private:
+    typedef
+    RegisteredParsingObject< LogcoshPrior<elemT>,
+            GeneralisedPrior<DiscretisedDensity<3,elemT> >,
+            PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
+            base_type;
 
-    public:
-        //! Name which will be used when parsing a GeneralisedPrior object
-        static const char * const registered_name;
+public:
+    //! Name which will be used when parsing a GeneralisedPrior object
+    static const char * const registered_name;
 
-        //! Default constructor
-        LogcoshPrior();
+    //! Default constructor
+    LogcoshPrior();
 
-        //! Constructs it explicitly
-        LogcoshPrior(const bool only_2D, float penalization_factor);
+    //! Constructs it explicitly
+    LogcoshPrior(const bool only_2D, float penalization_factor);
 
-        //! Constructs it explicitly with scalar
-        LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
+    //! Constructs it explicitly with scalar
+    LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
-        virtual bool
-        parabolic_surrogate_curvature_depends_on_argument() const
-        { return false; }
+    virtual bool
+    parabolic_surrogate_curvature_depends_on_argument() const
+    { return false; }
 
-        //! compute the value of the function
-        double
-        compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+    //! compute the value of the function
+    double
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-        //! compute gradient
-        void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                              const DiscretisedDensity<3,elemT> &current_image_estimate);
+    //! compute gradient
+    void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
+                          const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-        //! compute the parabolic surrogate for the prior
-        /*! in the case of logcosh priors this will just be the sum of weighting coefficients*/
-        void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
-                                           const DiscretisedDensity<3,elemT> &current_image_estimate);
+    //! compute the parabolic surrogate for the prior
+    /*! in the case of logcosh priors this will just be the sum of weighting coefficients*/
+    void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
+                                       const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-        //! compute Hessian
-        void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
-                             const BasicCoordinate<3,int>& coords,
-                             const DiscretisedDensity<3,elemT> &current_image_estimate);
+    //! compute Hessian
+    void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                         const BasicCoordinate<3,int>& coords,
+                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-        virtual Succeeded
-        add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
-                                                    const DiscretisedDensity<3,elemT>& input) const;
+    virtual Succeeded
+    add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
+                                                const DiscretisedDensity<3,elemT>& input) const;
 
-        //! get penalty weights for the neigbourhood
-        Array<3,float> get_weights() const;
+    //! get penalty weights for the neigbourhood
+    Array<3,float> get_weights() const;
 
-        //! set penalty weights for the neigbourhood
-        void set_weights(const Array<3,float>&);
+    //! set penalty weights for the neigbourhood
+    void set_weights(const Array<3,float>&);
 
-        //! get current kappa image
-        /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-         modify the image by manipulating the image refered to by this pointer.
-         Unpredictable results will occur.
-         */
-        shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+    //! get current kappa image
+    /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
+     modify the image by manipulating the image refered to by this pointer.
+     Unpredictable results will occur.
+     */
+    shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
 
-        //! set kappa image
-        void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+    //! set kappa image
+    void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
 
-    protected:
-        //! can be set during parsing to restrict the weights to the 2D case
-        bool only_2D;
-        //!
-        float scalar;
-        //! filename prefix for outputing the gradient whenever compute_gradient() is called.
-        /*! An internal counter is used to keep track of the number of times the
-         gradient is computed. The filename will be constructed by concatenating
-         gradient_filename_prefix and the counter.
-         */
-        std::string gradient_filename_prefix;
+protected:
+    //! can be set during parsing to restrict the weights to the 2D case
+    bool only_2D;
+    //!
+    float scalar;
+    //! filename prefix for outputing the gradient whenever compute_gradient() is called.
+    /*! An internal counter is used to keep track of the number of times the
+     gradient is computed. The filename will be constructed by concatenating
+     gradient_filename_prefix and the counter.
+     */
+    std::string gradient_filename_prefix;
 
-        //! penalty weights
-        /*!
-         \todo This member is mutable at present because some const functions initialise it.
-         That initialisation should be moved to a new set_up() function.
-         */
-        mutable Array<3,float> weights;
-        //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
-        std::string kappa_filename;
+    //! penalty weights
+    /*!
+     \todo This member is mutable at present because some const functions initialise it.
+     That initialisation should be moved to a new set_up() function.
+     */
+    mutable Array<3,float> weights;
+    //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
+    std::string kappa_filename;
 
-        virtual void set_defaults();
-        virtual void initialise_keymap();
-        virtual bool post_processing();
-    private:
-        shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
-    };
+    virtual void set_defaults();
+    virtual void initialise_keymap();
+    virtual bool post_processing();
+private:
+    shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+};
 
 
 END_NAMESPACE_STIR
