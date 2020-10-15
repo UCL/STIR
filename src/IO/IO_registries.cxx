@@ -60,7 +60,7 @@
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 #ifdef HAVE_HDF5
-#include "stir/IO/GESignaListmodeInputFileFormat.h"
+#include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
 #endif
 
 //! Addition for SAFIR listmode input file format
@@ -143,7 +143,7 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdu
 #endif
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
 #ifdef HAVE_HDF5
-static RegisterInputFileFormat<GE::RDF_HDF5::GESignaListmodeInputFileFormat> LMdummyGESigna(7);
+static RegisterInputFileFormat<GE::RDF_HDF5::GEHDF5ListmodeInputFileFormat> LMdummyGEHDF5(7);
 #endif
 
 END_NAMESPACE_STIR

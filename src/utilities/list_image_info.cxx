@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2006- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +24,7 @@
  
   \brief  This program lists basic image info
 
-  \author Thielemans
-
+  \author Kris Thielemans
 
   \warning It only supports stir::VoxelsOnCartesianGrid type of images.
 */
@@ -36,6 +35,7 @@
 #include "stir/unique_ptr.h"
 #include <memory>
 #include <iostream>
+
 USING_NAMESPACE_STIR
 
 static void print_usage_and_exit(const std::string& program_name)
@@ -127,22 +127,7 @@ int main(int argc, char *argv[])
   edge_max_indices+= 0.5F;
 
   if (print_exam)
-    {
-      const ExamInfo& exam_info = *image_aptr->get_exam_info_ptr();
-      std::cout << "Modality: " << exam_info.imaging_modality.get_name() << '\n';
-      std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
-      std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
-      if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
-	{
-	  std::cout << "Time frame start - end (duration), all in secs: "
-		    << exam_info.time_frame_definitions.get_start_time(1)
-		    << " - "
-		    << exam_info.time_frame_definitions.get_end_time(1)
-		    << " ("
-		    << exam_info.time_frame_definitions.get_duration(1)
-		    << ")\n";
-	}
-    }
+    std::cout << image_aptr->get_exam_info_ptr()->parameter_info();
 
   if (print_geom)
     std::cout << "\nOrigin in mm {z,y,x}    :" << image_aptr->get_origin()

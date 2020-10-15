@@ -20,8 +20,8 @@ set(${dir_LIB_SOURCES}
 
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
-        CListModeDataGESigna
-        # CListRecordGESigna
+        CListModeDataGEHDF5
+        # CListRecordGEHDF5
 )
 endif()
 

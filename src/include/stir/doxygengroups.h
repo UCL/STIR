@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -163,6 +164,10 @@ for parsing are provided such that different image processors can
 be selected at run-time.
 
 */
+/*!
+\defgroup date_time Items related to date/time processing
+\ingroup buildblock
+*/
 
 /*!
 \defgroup threads Items relating to threading of certain STIR functions.
@@ -301,6 +306,11 @@ estimation. Currently only available for the mMR scanner, and requires CUDA.
 \defgroup OSMAPOSL OSMAPOSL
 \ingroup reconstructors
 Implementation of the OSMAP One-Step-Late reconstruction algorithm
+*/
+/*!
+\defgroup KOSMAPOSL KOSMAPOSL
+\ingroup OSMAPOSL
+Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm
 */
 /*!
 \defgroup OSSPS OSSPS

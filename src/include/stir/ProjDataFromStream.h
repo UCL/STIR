@@ -149,6 +149,9 @@ protected:
   //! the stream with the data
   shared_ptr<std::iostream> sino_stream;
 
+  //! Calculate the offsets for specific bins.
+  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
+
 private:
   //! offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
@@ -177,9 +180,6 @@ private:
   //! Calculate offsets for sinogram data
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
-  //! Calculate the offsets for specific bins.
-  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
-  
 private:
 #if __cplusplus > 199711L
   ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;

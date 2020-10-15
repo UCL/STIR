@@ -55,6 +55,7 @@
 #include "stir/error.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/date_time_functions.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
@@ -611,6 +612,13 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "!GENERAL DATA :=\n";
   write_interfile_patient_position(output_header, exam_info);
   output_header << "!GENERAL IMAGE DATA :=\n";
+  if (exam_info.start_time_in_secs_since_1970>0)
+    {
+      const DateTimeStrings dt =
+        secs_since_Unix_epoch_to_Interfile_datetime(exam_info.start_time_in_secs_since_1970);
+      output_header << "study date := " << dt.date << '\n';
+      output_header << "study time := " << dt.time << '\n';
+    }
   output_header << "!type of data := " << (is_spect ? "Tomographic" : "PET") << '\n';
   output_header << "imagedata byte order := " <<
     (byte_order == ByteOrder::little_endian 
