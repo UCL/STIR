@@ -223,20 +223,14 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
-    float detection_efficiency_num(const float energy, const int en_window = 0) const;
-    float detection_efficiency_integral(const float incoming_photon_energy, const float LT, const float HT, const float FWHM) const;
-    float detection_efficiency_integral(const float incoming_photon_energy, const int en_window = 0) const;
     float detection_efficiency(const float incoming_photon_energy, const int en_window = 0) const;
-    std::vector<double> detection_spectrum(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const;
+    float detection_efficiency_numerical_formulation(const float energy, const int en_window = 0) const;
+    std::vector<double> detection_spectrum_numerical_formulation(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const;
     float detection_model_with_fitted_parameters(const float x, const float energy) const;
     float photoelectric(const float K, const float std_peak, const float x, const float energy) const;
     float compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const;
     float flat_continuum(const float K, const float std_peak, const float x, const float energy) const;
     float exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const;
-    float integral_photoelectric(const float LT, const float HT, const float FWHM, const float energy) const;
-    float integral_compton_plateau(const float LT, const float HT, const float FWHM, const float energy) const;
-    float integral_flat_continuum(const float LT, const float HT, const float FWHM, const float energy) const;
-    float integral_exponential_tail(const float LT, const float HT, const float FWHM, const float energy) const;
     //! find scatter points
     /*! This function sets scatt_points_vector and scatter_volume. It will also
         remove any cached integrals as they would be incorrect otherwise.

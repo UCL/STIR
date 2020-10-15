@@ -131,57 +131,8 @@ detection_efficiency(const float energy, const int en_window) const
   return efficiency;
 }
 
-std::vector<double>
-ScatterSimulation::detection_spectrum(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
-{
-
-    std::vector<double> output(size);
-    double increment_x = (HLD - LLD) / (size - 1);
-
-    for(int i = 0; i < size; ++i)
-    {
-        output[i] = LLD + (i * increment_x);
-        std::cout << output[i] << std::endl;
-    }
-
-    for(int i = 0; i < size; ++i)
-    {
-        output[i] = detection_model_with_fitted_parameters(output[i], incoming_photon_energy);
-    }
-
-    return output;
-}
-
 float
-ScatterSimulation::detection_efficiency_integral(const float incoming_photon_energy, const int en_window) const
-{
-
-    const float HT = this->template_exam_info_sptr->get_high_energy_thres(en_window);
-    const float LT = this->template_exam_info_sptr->get_low_energy_thres(en_window);
-    const float FWHM = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
-    const float f1 = integral_photoelectric(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f2 = integral_compton_plateau(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f3 = integral_flat_continuum(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f4 = integral_exponential_tail(LT,HT, FWHM, incoming_photon_energy) ;
-    return f1+f2+f3+f4;
- }
-
-float
-ScatterSimulation::detection_efficiency_integral(const float incoming_photon_energy, const float LT, const float HT, const float FWHM) const
-{
-
-    //const float HT = this->template_exam_info_sptr->get_high_energy_thres(en_window);
-    //const float LT = this->template_exam_info_sptr->get_low_energy_thres(en_window);
-    //const float FWHM = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
-    const float f1 = integral_photoelectric(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f2 = integral_compton_plateau(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f3 = integral_flat_continuum(LT,HT, FWHM, incoming_photon_energy) ;
-    const float f4 = integral_exponential_tail(LT,HT, FWHM, incoming_photon_energy) ;
-    return f1+f2+f3+f4;
- }
-
-float
-ScatterSimulation::detection_efficiency_num(const float incoming_photon_energy, const int en_window) const
+ScatterSimulation::detection_efficiency_numerical_formulation(const float incoming_photon_energy, const int en_window) const
 {
 
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
@@ -200,6 +151,27 @@ ScatterSimulation::detection_efficiency_num(const float incoming_photon_energy, 
     }
     sum*=increment_x;
     return sum;
+}
+
+std::vector<double>
+ScatterSimulation::detection_spectrum_numerical_formulation(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
+{
+
+    std::vector<double> output(size);
+    double increment_x = (HLD - LLD) / (size - 1);
+
+    for(int i = 0; i < size; ++i)
+    {
+        output[i] = LLD + (i * increment_x);
+        std::cout << output[i] << std::endl;
+    }
+
+    for(int i = 0; i < size; ++i)
+    {
+        output[i] = detection_model_with_fitted_parameters(output[i], incoming_photon_energy);
+    }
+
+    return output;
 }
 
 
@@ -277,60 +249,6 @@ exponential_tail(const float K, const float std_peak, const float x, const float
     else
     	return 0;
 }
-
-float
-ScatterSimulation::
-integral_photoelectric(const float LT, const float HT, const float FWHM, const float energy) const
-{
-const float den = energy;
-const float num = -145.897*erf((1.66511*(energy -HT))/(energy*FWHM))+145.897*erf((1.66511*abs((energy -LT)))/(energy*FWHM));
-    return num/den;
-}
-
-float
-ScatterSimulation::
-integral_compton_plateau(const float LT, const float HT, const float FWHM, const float energy) const
-{
-const float a = pow((255.5+energy),3);
-const float b = sqrt(energy*FWHM);
-const float fact1 = 1/(a*b)*FWHM;
-const float fact2a = 8.88178*1e-16*erf(0.0832061*sqrt(energy/FWHM));
-const float fact2b = -6.28408*erf((0.0832061*energy-0.141027*HT)/sqrt(energy*FWHM));
-const float fact2c = ((0.522874*energy-0.886227*LT)*erf((0.0832061*abs(energy-1.69492*LT))/(sqrt(energy*FWHM))))/(abs(0.0832061*energy-0.141027*LT));
-const float fact2 = fact2a+fact2b+fact2c;
-const float fact3 = (energy*(96199.6+energy*(753.03+(1.65785+0.00036048*energy)*energy))
-                      + (-2.4579*1e07+energy*(-240499+energy*(-705.966+(-0.36841+0.000720959*energy)*energy)))*log(1+0.00391389*energy));
-
-return fact1*fact2*fact3;
-}
-
-float
-ScatterSimulation::
-integral_flat_continuum(const float LT, const float HT, const float FWHM, const float energy) const
-{
-  const float num1 = pow((energy-LT),2);
-  const float den1 = pow((energy*FWHM),2);
-  const float fact1 = -5.52632*1e-07+5.52632*1e-07*exp(-(2.77259*num1)/(den1))*energy*FWHM;
-  const float fact2 = 1.631*1e-06*energy-1.631*1e-06*LT;
-  const float fact3 = erfc((1.66511*(-energy*LT))/(energy*FWHM));
-  return fact1 + fact2*fact3;
-}
-
-float
-ScatterSimulation::
-integral_exponential_tail(const float LT, const float HT, const float FWHM, const float energy) const
-{
-const float fact1 = 6.058*1e-06*exp(0.64874/FWHM)*energy*FWHM;
-const float fact2 = -1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*LT)/(energy))/FWHM);
-const float fact3 = 1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*HT)/(energy))/FWHM);
-const float fact4 = 1.54145*exp(-0.64874*LT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*LT)/(energy))/FWHM);
-const float fact5 = -1.54145*exp(-0.64874*HT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*HT)/(energy))/FWHM);
-if (energy<150)
-        return 0;
-else
- return fact1*(fact2+fact3+fact4+fact5);
-}
-
 
 float
 ScatterSimulation::
