@@ -236,7 +236,7 @@ void
 ScatterSimulation::set_defaults()
 {
     this->attenuation_threshold =  0.01f ;
-    this->randomly_place_scatter_points = true;
+    this->randomly_place_scatter_points = false;
     this->use_cache = true;
     this->zoom_xy = -1.f;
     this->zoom_z = -1.f;
@@ -259,7 +259,7 @@ ScatterSimulation::
 ask_parameters()
 {
     this->attenuation_threshold = ask_num("attenuation threshold(cm^-1)",0.0f, 5.0f, 0.01f);
-    this->randomly_place_scatter_points = ask_num("random place scatter points?",0, 1, 1);
+    this->randomly_place_scatter_points = ask_num("random place scatter points?",0, 1, 0);
     this->use_cache =  ask_num(" Use cache?",0, 1, 1);
     this->density_image_filename = ask_string("density image filename", "");
     this->activity_image_filename = ask_string("activity image filename", "");
