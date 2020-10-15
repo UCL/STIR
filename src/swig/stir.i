@@ -1398,7 +1398,7 @@ namespace stir {
     { 
       Array<3,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_3D(*$self, array);
+      fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
@@ -1431,7 +1431,7 @@ namespace stir {
     { 
       Array<3,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_3D(*$self, array);
+      fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
