@@ -1656,6 +1656,13 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
         stir::PriorWithParabolicSurrogate<TargetT  > >;
 %template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
 
+// Allows for access to parabolic surrogate type prior methods ( THIS IS A TEMPORARY FIX )
+%inline %{template <class T> stir::PriorWithParabolicSurrogate<T> * ToPriorWithParabolicSurrogate(stir::GeneralisedPrior<T> *b) {
+  return dynamic_cast<stir::PriorWithParabolicSurrogate<T>*>(b);
+}
+%}
+%template(ToPriorWithParabolicSurrogate) ToPriorWithParabolicSurrogate<TargetT >;
+
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<TargetT >;
