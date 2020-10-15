@@ -105,11 +105,14 @@ public :
   inline void set_low_energy_thres(float new_val,int en_window = 0);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val,int en_window = 0);
+  //! Set the low energy boundary as a vector (currently only used in listmode code)
+  inline void set_low_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
+  //! Set the high energy boundary as a vector (currently only used in listmode code)
+  inline void set_high_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
   //! Set the number of energy windows
   inline void set_num_energy_windows(int n_win);
+  //! Set the energy window pair
   inline void set_energy_window_pair(std::vector<int> val,int n_win);
-  inline void set_low_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
-  inline void set_high_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
   //@}
 
   inline bool has_energy_information() const
@@ -158,6 +161,11 @@ public :
   //! If scatter simulation is not needed, can default to -1
   std::vector<float> up_energy_thres;
 
+  //!
+  //! \brief en_win_pair
+  //! \author Ludovica Brusaferri
+  //! \details This is the value of the energy window pair for a certain sinogram
+  //! Can default to {1,1}
   std::vector<int> en_win_pair;
 
 };

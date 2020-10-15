@@ -57,7 +57,6 @@ ExamInfo::set_low_energy_thres_vect(std::vector<float> new_val, bool switch_ener
 {
     low_energy_thres = new_val;
     //TODO extend to the case of more than two
-
     //Decrescent ordering
     if (switch_energy)
     {
@@ -72,7 +71,6 @@ ExamInfo::set_high_energy_thres_vect(std::vector<float> new_val, bool switch_ene
 {
     up_energy_thres = new_val;
     //TODO extend to the case of more than two
-
     //Decrescent ordering
     if (switch_energy)
     {

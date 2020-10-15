@@ -223,12 +223,8 @@ InterfileHeader::InterfileHeader()
   // support for Louvain la Neuve's extension of 3.3
   add_key("quantification units", &lln_quantification_units);
 
-add_key("energy window pair",
-  KeyArgument::LIST_OF_INTS,
-  (KeywordProcessor)&InterfileHeader::en_window_pair_set,
-  &energy_window_pair);
-  add_key("number of energy windows",
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
+  add_key("energy window pair", KeyArgument::LIST_OF_INTS, (KeywordProcessor)&InterfileHeader::en_window_pair_set, &energy_window_pair);
+  add_key("number of energy windows", KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
   add_vectorised_key("energy window lower level", &lower_en_window_thresholds);
   add_vectorised_key("energy window upper level", &upper_en_window_thresholds);
 
