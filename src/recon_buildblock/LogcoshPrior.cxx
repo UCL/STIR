@@ -2,7 +2,7 @@
 //
 /*
  Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
- Copyright (C) 2020, UCL
+ Copyright (C) 2016, 2020, UCL
  This file is part of STIR.
 
  This file is free software; you can redistribute it and/or modify
@@ -481,9 +481,12 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     for (int dy=min_dy;dy<=max_dy;++dy)
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
-        // dz==0,dy==0,dx==0 will have weight 0, so we can just include it in the loop
-        elemT current =
-                weights[dz][dy][dx];
+        // (temp sech^2(|temp|/scalar)) / (|temp|)
+        // sech(temp) = 1/cosh(temp)
+        elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+        elemT current = weights[dz][dy][dx] * (temp / fabs(temp)) *
+                pow((1/ cosh(fabs(temp) / this->scalar)), 2);
+
 
         if (do_kappa)
           current *=
@@ -572,13 +575,6 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
   }
 
   info(boost::format("parabolic_surrogate_curvature max %1%, min %2%\n") % parabolic_surrogate_curvature.find_max() % parabolic_surrogate_curvature.find_min());
-  /*{
-   static int count = 0;
-   ++count;
-   char filename[20];
-   sprintf(filename, "normalised_gradient%d.v",count);
-   write_basic_interfile(filename, parabolic_surrogate_curvature);
-   }*/
 }
 
 template <typename elemT>
