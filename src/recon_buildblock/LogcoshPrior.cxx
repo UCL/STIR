@@ -485,7 +485,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
         // sech(temp) = 1/cosh(temp)
         elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
         elemT current = weights[dz][dy][dx] * (temp / fabs(temp)) *
-                pow((1/ cosh(fabs(temp) / this->scalar)), 2);
+                square((1/ cosh(fabs(temp) / this->scalar)));
 
 
         if (do_kappa)
@@ -554,13 +554,10 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               // psi'(t)/t = tanh/t
-              elemT current;
               elemT temp = fabs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]);
 
-              //if (temp <= 0.01)
-              //    current = weights[dz][dy][dx];
-              //else
-              current = weights[dz][dy][dx] * (1/(this->scalar))*tanh(this->scalar*(temp+0.01))/(temp+0.01);
+              elemT current  = weights[dz][dy][dx] * (1/(this->scalar))* surrogate(this->scalar*temp);
+//              current = weights[dz][dy][dx] * (1/(this->scalar))*tanh(this->scalar*(temp+0.01))/(temp+0.01);
 
               if (do_kappa)
                 current *=
@@ -633,8 +630,16 @@ add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT current =
-                      weights[dz][dy][dx] * input[z+dz][y+dy][x+dx];
+//              elemT temp = (fabs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) /
+//                      this->scalar);
+              elemT temp = (fabs(input[z][y][x] - input[z+dz][y+dy][x+dx]) /
+                            this->scalar);
+
+              //This method will lead to divide by 0 problems
+//              elemT current =
+//                      weights[dz][dy][dx]  * tanh(temp)/temp * input[z+dz][y+dy][x+dx];
+
+              elemT current = weights[dz][dy][dx] * surrogate(temp) * input[z+dz][y+dy][x+dx];
 
               if (do_kappa)
                 current *=

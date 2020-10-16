@@ -181,6 +181,20 @@ protected:
     virtual bool post_processing();
 private:
     shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+
+    static inline float surrogate(float x)
+    {
+      const float eps = 0.1;
+      if (fabs(x)<eps)
+      {
+        //  use Taylor: tanh(x) = x - x^3/3
+        return 1- square(x)/3;
+      }
+      else
+      {
+        return tanh(x)/x;
+      }
+    }
 };
 
 
