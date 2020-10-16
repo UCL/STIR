@@ -74,11 +74,12 @@ process_data()
 {
     if (!this->_already_set_up)
         error("ScatterSimulation: need to call set_up() first");
-
     // this is useful in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
     //show energy window information
 
+     std::cerr << "LOW THRES PROCESS DATA 0:" << this->template_exam_info_sptr->get_low_energy_thres(0) << "\n";
+     std::cerr << "LOW THRES PROCESS DATA 1:" << this->template_exam_info_sptr->get_low_energy_thres(1) << "\n";
     std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
     if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
@@ -742,7 +743,8 @@ set_template_proj_data_info(const std::string& filename)
     shared_ptr<ProjData> template_proj_data_sptr(ProjData::read_from_file(this->template_proj_data_filename));
 
     this->set_exam_info(template_proj_data_sptr->get_exam_info());
-
+    std::cerr << "LOW THRES SET TEMP 0:" << template_proj_data_sptr->get_exam_info().get_low_energy_thres(0) << "\n";
+    std::cerr << "LOW THRES SET TEMP 1:" << template_proj_data_sptr->get_exam_info().get_low_energy_thres(1) << "\n";
     this->set_template_proj_data_info(*template_proj_data_sptr->get_proj_data_info_sptr());
 }
 
