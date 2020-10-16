@@ -63,8 +63,8 @@ public :
       low_energy_thres.resize(1);
       up_energy_thres.resize(1);
       en_win_pair.resize(2);
-      low_energy_thres[0]=1.F;
-      up_energy_thres[0]=1.F;
+      low_energy_thres[0]=-1.F;
+      up_energy_thres[0]=-1.F;
       en_win_pair[0]=1.F;
       en_win_pair[1]=1.F;
 
@@ -106,17 +106,18 @@ public :
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val,int en_window = 0);
   //! Set the low energy boundary as a vector (currently only used in listmode code)
-  inline void set_low_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
+  inline void set_low_energy_thres_vect(std::vector<float> new_val);
   //! Set the high energy boundary as a vector (currently only used in listmode code)
-  inline void set_high_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
+  inline void set_high_energy_thres_vect(std::vector<float> new_val);
   //! Set the number of energy windows
   inline void set_num_energy_windows(int n_win);
   //! Set the energy window pair
-  inline void set_energy_window_pair(std::vector<int> val,int n_win);
+  inline void set_energy_window_pair(std::vector<int> val);
   //@}
 
   inline bool has_energy_information() const
   {
+    //TODO ADD LOOP: for (int i=0; i< num_windows; i++)
     return (low_energy_thres[0] > 0.f)&&(up_energy_thres[0] > 0.f);
   }
 
@@ -141,15 +142,21 @@ public :
   std::string parameter_info() const;
 
   private:
-     //!
+  //!
+  //! \brief num_windows
+  //! \author Ludovica Brusaferri
+  //! \details This is the value of the number of enegry windows
+  //! This parameter was initially introduced for scatter simulation.
+  //! If scatter simulation is not needed, can default to 1
+  int num_windows;
+
+  //!
   //! \brief low_energy_thres
   //! \author Nikos Efthimiou
   //! \details This is the value of low energy threshold of the energy window.
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
-
-  int num_windows;
   std::vector<float> low_energy_thres;
 
   //!

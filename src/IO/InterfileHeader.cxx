@@ -391,7 +391,7 @@ bool InterfileHeader::post_processing()
       if (energy_window_pair[1] > num_energy_windows)
           error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[1],num_energy_windows);
 
-      exam_info_sptr->set_energy_window_pair(energy_window_pair,num_energy_windows);
+      exam_info_sptr->set_energy_window_pair(energy_window_pair);
   }
 
     //set the high and low energy window threshold
