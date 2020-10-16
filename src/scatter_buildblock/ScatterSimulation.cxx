@@ -78,8 +78,6 @@ process_data()
     this->output_proj_data_sptr->fill(0.f);
     //show energy window information
 
-     std::cerr << "LOW THRES PROCESS DATA 0:" << this->template_exam_info_sptr->get_low_energy_thres(0) << "\n";
-     std::cerr << "LOW THRES PROCESS DATA 1:" << this->template_exam_info_sptr->get_low_energy_thres(1) << "\n";
     std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
     if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
@@ -344,7 +342,8 @@ set_up()
         error("ScatterSimulation: projection data info not set. Aborting.");
 
     if(!template_exam_info_sptr->has_energy_information())
-        error("ScatterSimulation: template energy window information not set. Aborting.");
+        std::cerr << "DOES NOT HAVE ENERGY\n";
+      //  error("ScatterSimulation: template energy window information not set. Aborting.");
 
     if(is_null_ptr(activity_image_sptr))
         error("ScatterSimulation: activity image not set. Aborting.");
@@ -781,6 +780,8 @@ ScatterSimulation::
 set_exam_info(const ExamInfo& arg)
 {
   this->template_exam_info_sptr = arg.create_shared_clone();
+    std::cerr << "LOW THRES EX INFO 0:" << template_exam_info_sptr->get_low_energy_thres(0) << "\n";
+    std::cerr << "LOW THRES EX INFO 1:" << template_exam_info_sptr->get_low_energy_thres(1) << "\n";
 }
 
 Succeeded
