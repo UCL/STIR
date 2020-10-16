@@ -71,7 +71,7 @@ L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, 
 {
 
     shared_ptr<ProjData> add_sino(new ProjDataInMemory(this->output_proj_data_sptr->get_exam_info_sptr(),
-                                                            this->output_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+                                                            this->output_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     add_sino->fill(0.000000000000000000001); //automatically fills an additive sinogram to avoid division by 0
     L_G_function(data,*add_sino,gradient_image,compute_gradient,isgradient_mu,rescale);
 }

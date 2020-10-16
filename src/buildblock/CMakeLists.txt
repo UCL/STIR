@@ -95,7 +95,16 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
+if (HAVE_JSON)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
+endif()
+
 include(stir_lib_target)
+
+
+if (HAVE_JSON)
+  target_link_libraries(buildblock PRIVATE nlohmann_json::nlohmann_json)
+endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

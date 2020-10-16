@@ -90,7 +90,7 @@ class ParseAndCreateFrom
   the VoxelsOnCartesianGrid constructor with ExamInfo and ProjDataInfo arguments
   to obtain an image that is suitable to store the reconstruction.
 
-  Assumes that \c ExamDataT has \c get_exam_info_sptr() and \c get_proj_data_info_ptr()
+  Assumes that \c ExamDataT has \c get_exam_info_sptr() and \c get_proj_data_info_sptr()
   members.
 
   \todo Currently only supports VoxelsOnCartesianGrid parameters (we could introduce

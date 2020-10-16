@@ -156,10 +156,10 @@ transform_3d_object(ProjData& out_proj_data,
 #ifndef NEW_ROT
   const ProjDataInfoCylindricalNoArcCorr* const 
    out_proj_data_info_noarccor_ptr = 
-       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(out_proj_data.get_proj_data_info_ptr());
+       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(out_proj_data.get_proj_data_info_sptr());
   const ProjDataInfoCylindricalNoArcCorr* const 
     in_proj_data_info_noarccor_ptr = 
-       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(in_proj_data.get_proj_data_info_ptr());
+       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(in_proj_data.get_proj_data_info_sptr());
   if (out_proj_data_info_noarccor_ptr == 0 ||
       in_proj_data_info_noarccor_ptr == 0)
     {
@@ -169,9 +169,9 @@ transform_3d_object(ProjData& out_proj_data,
 #else
   const ProjDataInfo&
    out_proj_data_info = 
-       *out_proj_data.get_proj_data_info_ptr();
+       *out_proj_data.get_proj_data_info_sptr();
   const ProjDataInfo& 
-    in_proj_data_info = *in_proj_data.get_proj_data_info_ptr();
+    in_proj_data_info = *in_proj_data.get_proj_data_info_sptr();
 #endif
   const int out_min_segment_num = out_proj_data.get_min_segment_num();
   const int out_max_segment_num = out_proj_data.get_max_segment_num();

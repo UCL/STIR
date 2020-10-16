@@ -16,6 +16,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#include <TChain.h>
 
 START_NAMESPACE_STIR
 

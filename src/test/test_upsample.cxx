@@ -124,7 +124,7 @@ run_tests()
     sss->downsample_scanner(down_rings, down_dets);
 
 
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
+    //shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
 
 
     // construct x

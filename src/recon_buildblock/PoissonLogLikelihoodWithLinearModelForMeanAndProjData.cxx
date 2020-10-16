@@ -531,7 +531,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (is_null_ptr(this->proj_data_sptr))
 	error("you need to set the input data before calling set_up");
@@ -547,7 +547,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
 #if 0
   // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
@@ -561,7 +561,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   setup_distributable_computation(this->projector_pair_ptr,
                                   this->proj_data_sptr->get_exam_info_sptr(),
-                                  this->proj_data_sptr->get_proj_data_info_ptr(),
+                                  this->proj_data_sptr->get_proj_data_info_sptr(),
                                   target_sptr,
                                   zero_seg0_end_planes,
                                   distributed_cache_enabled);
@@ -723,7 +723,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
 
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
-     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
+     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(
+                                                  this->proj_data_sptr->get_exam_info_sptr(),
+                                                  this->proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
      sens_proj_data_sptr->fill(1.0F);
 
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
@@ -836,7 +838,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_ptr(),
+    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
 					 *symmetries_sptr,
 					 -this->get_max_segment_num_to_process(),
 					 this->get_max_segment_num_to_process(),

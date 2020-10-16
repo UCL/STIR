@@ -85,7 +85,7 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   DataType get_data() const { return this->data; }
 
  public:  
-  CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
+  CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
  //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -244,7 +244,7 @@ class CListTimeECAT8_32bit : public ListTime
   }	 
 
  public:     
- CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+ CListRecordECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
   event_data(proj_data_info_sptr)
     {}
 

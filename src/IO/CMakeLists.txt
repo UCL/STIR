@@ -33,6 +33,7 @@ set(${dir_LIB_SOURCES}
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDiscretisedDensityOutputFileFormat
   MultiDynamicDiscretisedDensityOutputFileFormat
+  MultiParametricDiscretisedDensityOutputFileFormat
 
   GIPL_ImageFormat
   stir_ecat_common 
@@ -84,6 +85,7 @@ if (LLN_FOUND)
 endif()
 
 if (CERN_ROOT_FOUND)
+  target_include_directories(IO PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
   target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
 endif()
 

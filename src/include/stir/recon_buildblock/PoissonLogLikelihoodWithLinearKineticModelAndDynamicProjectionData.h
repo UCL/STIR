@@ -88,7 +88,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                       const int subset_num);
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <TargetT> const& target_sptr);
+  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites

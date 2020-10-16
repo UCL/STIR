@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   const string output_file_name = argv[1];
   const string program_name = argv[0];
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
-  shared_ptr<ExamInfo> exam_info_sptr;
+  shared_ptr<const ExamInfo> exam_info_sptr;
 
   GE::RDF_HDF5::GEHDF5Wrapper input_file(input_filename);
   std::string template_filename;
@@ -115,6 +115,7 @@ int main(int argc, char **argv)
     proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
   // this uses the wrong naming currently. It so happens that the formulas are the same
   // as when multiplying efficiencies
+
   DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   {
@@ -136,7 +137,8 @@ int main(int argc, char **argv)
 
   {
     const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const> (proj_data.get_proj_data_info_ptr());
+      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
+      (proj_data.get_proj_data_info_sptr().get());
     if (proj_data_info_ptr == 0)
     {
       error("Can only process not arc-corrected data\n");

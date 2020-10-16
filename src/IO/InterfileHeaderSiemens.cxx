@@ -260,7 +260,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   // handle scanner
 
-  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
     {
       error("scanner not recognised from originating system");

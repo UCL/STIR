@@ -321,7 +321,7 @@ post_processing()
     return false;
 }
 
-shared_ptr<const ProjData> 
+shared_ptr<ProjData> 
 ScatterEstimation::get_output() const
 {
     return scatter_estimate_sptr;
@@ -341,7 +341,7 @@ set_up()
         extras_path = current_full_path.append("extras");
     }
 
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr());
 
     if (is_null_ptr(this->input_projdata_sptr))
     {
@@ -360,7 +360,7 @@ set_up()
     {
         info("ScatterEstimation: Running SSRB on input data...");
         shared_ptr<ProjDataInfo> proj_data_info_2d_sptr(
-                    SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
+                    SSRB(*this->input_projdata_sptr->get_proj_data_info_sptr(),
                           this->input_projdata_sptr->get_num_segments(), 1, false));
 
 	this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
@@ -458,12 +458,12 @@ set_up()
         if (run_in_2d_projdata)
         {
             this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_2d_sptr->get_proj_data_info_sptr());
-            this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
+            this->scatter_simulation_sptr->set_exam_info(this->input_projdata_2d_sptr->get_exam_info());
         }
         else
         {
             this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_sptr->get_proj_data_info_sptr());
-            this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_sptr->get_exam_info_sptr());
+            this->scatter_simulation_sptr->set_exam_info(this->input_projdata_sptr->get_exam_info());
         }
 
     }
@@ -480,9 +480,9 @@ set_up()
             // Applying mask
             // 1. Clone from the original image.
             // 2. Apply to the new clone.
-            this->mask_image_sptr.reset(this->atten_image_sptr->clone());
-            this->apply_mask_in_place(*this->mask_image_sptr, this->masking_parameters);
-
+            auto mask_image_ptr(this->atten_image_sptr->clone());
+            this->apply_mask_in_place(*mask_image_ptr, this->masking_parameters);
+            this->mask_image_sptr.reset(mask_image_ptr);
             if (this->mask_image_filename.size() > 0 )
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
                         write_to_file(this->mask_image_filename, *this->mask_image_sptr);
@@ -1212,19 +1212,19 @@ ScatterEstimation::project_mask_image()
     shared_ptr<ProjData> mask_projdata;
     if(run_in_2d_projdata)
     {
-        forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+        forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr(),
                                     this->mask_image_sptr );
 
         mask_projdata.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                 this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+                                                 this->input_projdata_2d_sptr->get_proj_data_info_sptr()));
     }
     else
     {
-        forw_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+        forw_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr(),
                                     this->mask_image_sptr );
 
         mask_projdata.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                 this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+                                                 this->input_projdata_sptr->get_proj_data_info_sptr()));
     }
 
     forw_projector_sptr->forward_project(*mask_projdata, *this->mask_image_sptr);
@@ -1255,12 +1255,12 @@ ScatterEstimation::project_mask_image()
 
     if (this->mask_projdata_filename.size() > 0)
         this->mask_projdata_sptr.reset(new ProjDataInterfile(mask_projdata->get_exam_info_sptr(),
-                                                             mask_projdata->get_proj_data_info_ptr()->create_shared_clone(),
+                                                             mask_projdata->get_proj_data_info_sptr(),
                                                              this->mask_projdata_filename,
                                                              std::ios::in | std::ios::out | std::ios::trunc));
     else
         this->mask_projdata_sptr.reset(new ProjDataInMemory(mask_projdata->get_exam_info_sptr(),
-                                                            mask_projdata->get_proj_data_info_ptr()->create_shared_clone()));
+                                                            mask_projdata->get_proj_data_info_sptr()));
 
     CreateTailMaskFromACFs create_tail_mask_from_acfs;
 
@@ -1322,8 +1322,8 @@ ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisati
 }
 
 shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string& filename,
-                                                             const shared_ptr<ExamInfo> exam_info_sptr,
-                                                             const shared_ptr<ProjDataInfo> proj_data_info_sptr) const
+                                                             const shared_ptr<const ExamInfo> exam_info_sptr,
+                                                             const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const
 {
     shared_ptr<ProjData> pd_sptr;
     if (run_debug_mode)

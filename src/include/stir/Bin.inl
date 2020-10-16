@@ -92,7 +92,7 @@ int&
 
 #if 0
 const ProjDataInfo *
-Bin::get_proj_data_info_ptr() const
+Bin::get_proj_data_info_sptr() const
 {
   return proj_data_info_ptr.get();
 }

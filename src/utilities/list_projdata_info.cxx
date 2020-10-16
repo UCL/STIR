@@ -124,17 +124,9 @@ int main(int argc, char *argv[])
     }
 
   if (print_exam)
-   {
-      std::cout << "number of energy windows:=1\n"
-                << "energy window lower level[1] := "
-                << proj_data_sptr->get_exam_info_ptr()->get_low_energy_thres() << '\n'
-                << "energy window upper level[1] := "
-                << proj_data_sptr->get_exam_info_ptr()->get_high_energy_thres() << '\n';
-        
-    }
-    std::cout << proj_data_sptr->get_exam_info_ptr()->parameter_info();
+    std::cout << proj_data_sptr->get_exam_info_sptr()->parameter_info();
   if (print_geom)
-    std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
+    std::cout << proj_data_sptr->get_proj_data_info_sptr()->parameter_info() << std::endl;
 
   if (print_min || print_max || print_sum)
     {

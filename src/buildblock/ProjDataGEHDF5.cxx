@@ -66,7 +66,7 @@ ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr) :
 void ProjDataGEHDF5::initialise_from_wrapper()
 {
     this->exam_info_sptr = this->m_input_hdf5_sptr->get_exam_info_sptr();
-    this->proj_data_info_ptr = this->m_input_hdf5_sptr->get_proj_data_info_sptr()->create_shared_clone();
+    this->proj_data_info_sptr = this->m_input_hdf5_sptr->get_proj_data_info_sptr()->create_shared_clone();
     this->initialise_segment_sequence();
     this->initialise_ax_pos_offset();
     this->initialise_viewgram_buffer();
@@ -139,7 +139,7 @@ get_viewgram(const int view_num, const int segment_num,
     const int num_tof_poss = max_index[2] - min_index[2] + 1;
     if (num_tof_poss <= 0)
       error("ProjDataGEHDF5: internal error on TOF data dimension");
-    if (proj_data_info_ptr->get_scanner_ptr()->get_type() == Scanner::PETMR_Signa)
+    if (proj_data_info_sptr->get_scanner_ptr()->get_type() == Scanner::PETMR_Signa)
       if (num_tof_poss != 27)
       error("ProjDataGEHDF5: internal error on TOF data dimension for GE Signa");
       

@@ -59,10 +59,10 @@ void
 find_inverse( ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in)
 {  
   const ProjDataInfo * proj_data_info_ptr =
-    proj_data_ptr_in->get_proj_data_info_ptr();
+    proj_data_ptr_in->get_proj_data_info_sptr();
   
   const ProjDataInfo * proj_data_info_ptr_out =
-    proj_data_ptr_out->get_proj_data_info_ptr();
+    proj_data_ptr_out->get_proj_data_info_sptr();
   
   const ProjDataFromStream*  projdatafromstream_in = 
     dynamic_cast< const ProjDataFromStream*>(proj_data_ptr_in);
@@ -156,7 +156,7 @@ main(int argc, char **argv)
    }
 
  const ProjDataInfo * proj_data_info_ptr = 
-    proj_data_ptr->get_proj_data_info_ptr();
+    proj_data_ptr->get_proj_data_info_sptr();
 
  shared_ptr<ProjData> proj_data_inv_ptr
    (new ProjDataInterfile (proj_data_info_ptr->create_shared_clone(),argv[2]));

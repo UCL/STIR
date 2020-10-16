@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
     }
 
   if (print_exam)
-    std::cout << lm_data_sptr->get_exam_info_ptr()->parameter_info();
+    std::cout << lm_data_sptr->get_exam_info_sptr()->parameter_info();
   if (print_geom)
-    std::cout << lm_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
+    std::cout << lm_data_sptr->get_proj_data_info_sptr()->parameter_info() << std::endl;
   return EXIT_SUCCESS;
 }

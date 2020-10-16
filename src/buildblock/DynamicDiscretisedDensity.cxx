@@ -36,16 +36,9 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
-#include <fstream>
-#include "stir/IO/interfile.h"
-
-#include "stir/DynamicProjData.h"
-#include "stir/MultipleDataSetHeader.h"
-
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
-using std::fstream;
-using std::cerr;
 using std::string;
 #endif
 
@@ -61,7 +54,7 @@ DynamicDiscretisedDensity&
 DynamicDiscretisedDensity::
 operator=(const DynamicDiscretisedDensity& argument)
 {
-  this->set_exam_info(*argument.get_exam_info_sptr());
+  this->set_exam_info(argument.get_exam_info());
   this->_densities.resize(argument._densities.size());
   for (unsigned int i=0; i<argument._densities.size(); ++i)
     this->_densities[i].reset(argument._densities[i]->clone());
@@ -95,10 +88,12 @@ set_density(const DiscretisedDensity<3,float>& density,
     double dis_end      = density.get_exam_info().time_frame_definitions.get_end_time(1);
 
     if (fabs(dyn_start - dis_start) > 1e-10)
-        error("DynamicDiscretisedDensity::set_density: Time frame start should match");
+      error(boost::format("DynamicDiscretisedDensity::set_density: Time frame start should match (is %1% but expected %2%)")
+                          % dis_start % dyn_start);
 
     if (fabs(dyn_end - dis_end) > 1e-10)
-        error("DynamicDiscretisedDensity::set_density: Time frame end should match");
+        error(boost::format("DynamicDiscretisedDensity::set_density: Time frame end should match (is %1% but expected %2%)")
+                          % dis_end % dyn_end);
 
     this->_densities.at(frame_num-1).reset(density.clone());
 }
@@ -126,7 +121,11 @@ get_isotope_halflife() const
 const float  
 DynamicDiscretisedDensity::
 get_scanner_default_bin_size() const
-{ return this->_scanner_sptr->get_default_bin_size(); }
+{
+  if (!this->_scanner_sptr)
+    error("DynamicDiscretisedDensity::get_scanner_default_bin_size(): scanner not set");
+  return this->_scanner_sptr->get_default_bin_size();
+}
 
 const float  
 DynamicDiscretisedDensity::

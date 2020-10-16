@@ -256,12 +256,12 @@ run() const
       // ** first fill in the data **      
       RelatedViewgrams<float> 
         viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,
-							       symmetries_ptr);
+                                                               symmetries_ptr);
       if (use_data_or_set_to_1)
       {
         viewgrams += 
           input_projdata.get_related_viewgrams(view_seg_nums,
-					                                    symmetries_ptr);
+                                               symmetries_ptr);
       }	  
       else
       {
@@ -269,11 +269,11 @@ run() const
       }
       
       if (do_arc_correction && !apply_or_undo_correction)
-      {
-        error("Cannot undo arc-correction yet. Sorry.");
-        // TODO
-        //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
-      }
+       {
+         error("Cannot undo arc-correction yet. Sorry.");
+         // TODO
+         //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
+       }
 
       if (do_scatter && !apply_or_undo_correction)
       {
@@ -477,21 +477,21 @@ set_up()
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
   shared_ptr<ProjDataInfo>  
-    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_ptr()->clone());
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr()->clone());
   shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
 
   if (!do_arc_correction)
     output_proj_data_info_sptr = input_proj_data_info_sptr;
   else
-  {
-    arc_correction_sptr = 
-      shared_ptr<ArcCorrection>(new ArcCorrection);
-    arc_correction_sptr->set_up(input_proj_data_info_sptr);
-    output_proj_data_info_sptr =
-	    arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
-  }
+    {
+      arc_correction_sptr = 
+	shared_ptr<ArcCorrection>(new ArcCorrection);
+      arc_correction_sptr->set_up(input_proj_data_info_sptr);
+      output_proj_data_info_sptr =
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
+    }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
-					                                          max_segment_num_to_process);
+                                                   max_segment_num_to_process);
 
   // construct output_projdata
   {

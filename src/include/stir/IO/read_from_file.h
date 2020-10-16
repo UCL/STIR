@@ -41,17 +41,35 @@ START_NAMESPACE_STIR
     Note that (at the time of writing) InputFileFormatRegistry::find_factory() calls
     error() if no matching file format was found.
 
-    You probably want to use read_from_file(filename);
+    The input file format class used is not for \c DataT but actually for
+    \c DataT::hierarchy_base_type. This is necessary such that this function can
+    work for \c data being from a derived class (e.g. VoxelsOnCartesianGrid)
+    while the input file format is defined for the base (i.e. DiscretisedDensity).
+
+    Sadly, this requires that the DataT::hierarchy_base_type typedef exists.
  */
 template <class DataT, class FileT>
 inline 
 unique_ptr<DataT>
 read_from_file(const FileSignature& signature, FileT file)
 {
-  const InputFileFormat<DataT>& factory = 
-    InputFileFormatRegistry<DataT>::default_sptr()->
+  using hierarchy_base_type = typename DataT::hierarchy_base_type;
+  const InputFileFormat<hierarchy_base_type>& factory =
+    InputFileFormatRegistry<hierarchy_base_type>::default_sptr()->
     find_factory(signature, file);
-  return factory.read_from_file(file);
+  auto uptr(factory.read_from_file(file));
+  // There is no dynamic_pointer_cast for unique_ptr
+  // See https://stackoverflow.com/questions/11002641/dynamic-casting-for-unique-ptr why
+  // We use a trick mentioned in that link
+  auto data_ptr = dynamic_cast<DataT*>(uptr.get());
+  if (!data_ptr)
+    {
+      // TODO improve on the following cryptic error message
+      error("data read from file is an incorrect type");
+    }
+  // get rid of the original uptr (but not the object pointed to) and create a new one
+  uptr.release();
+  return unique_ptr<DataT>(data_ptr);
 }
 
 //! Function that reads data from file using the default InputFileFormatRegistry

@@ -64,11 +64,11 @@ public:
 
   //! Constructor that sets the data to a given 3d Array
   SegmentByView(const Array<3,elemT>& v,  
-		const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+		const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
 		const int segment_num);
 
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  SegmentByView(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+  SegmentByView(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
 		const int segment_num);
 
   

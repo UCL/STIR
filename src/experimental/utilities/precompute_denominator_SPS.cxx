@@ -199,7 +199,7 @@ main(int argc, char *argv[])
     argc>=5 ? ProjData::read_from_file(argv[4]) : 0; 
 
   const ProjDataInfo * proj_data_info_ptr = 
-    proj_data_ptr->get_proj_data_info_ptr();
+    proj_data_ptr->get_proj_data_info_sptr();
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;
   if (argc >=6)
     {
@@ -260,7 +260,7 @@ main(int argc, char *argv[])
 
  
  
-  PM->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),image_sptr);
+  PM->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),image_sptr);
   shared_ptr<BackProjectorByBin>  bck_projector_ptr  =
     new BackProjectorByBinUsingProjMatrixByBin(PM);   
      

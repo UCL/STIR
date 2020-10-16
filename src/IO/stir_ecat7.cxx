@@ -2149,7 +2149,7 @@ ByteOrder::big_endian;
 
   if (mhead.file_type == AttenCor)
   {
-    make_subheader_for_ECAT7(attn_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    make_subheader_for_ECAT7(attn_shead, mhead, *proj_data.get_proj_data_info_sptr());
     // Setup remaining subheader params
     attn_shead.data_type= cti_data_type;
     attn_shead.scale_factor= scale_factor; 
@@ -2157,7 +2157,7 @@ ByteOrder::big_endian;
   }
   else
   {
-    make_subheader_for_ECAT7(scan3d_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    make_subheader_for_ECAT7(scan3d_shead, mhead, *proj_data.get_proj_data_info_sptr());
     // Setup remaining subheader params
     scan3d_shead.data_type= cti_data_type;
     scan3d_shead.loss_correction_fctr= 1.F; 
@@ -2321,8 +2321,8 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
   Main_header mhead;
 
   make_ECAT7_main_header(mhead, orig_name, 
-			 *proj_data.get_exam_info_ptr(),
-			 *proj_data.get_proj_data_info_ptr(),
+			 proj_data.get_exam_info(),
+			 *proj_data.get_proj_data_info_sptr(),
                          write_as_attenuation, output_type);
 
   MatrixFile *mptr= matrix_create(cti_name.c_str(), MAT_CREATE, &mhead);   

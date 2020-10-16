@@ -75,7 +75,7 @@ public:
   inline Bin get_basic_bin() const;
 
   // get the pointer to a ProjDataInfo class 
-  // inline const ProjDataInfo * get_proj_data_info_ptr() const;
+  // inline const ProjDataInfo * get_proj_data_info_sptr() const;
 
   //! return the symmetries used
   inline const DataSymmetriesForBins* get_symmetries_ptr() const ;

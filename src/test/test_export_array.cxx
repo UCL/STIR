@@ -35,6 +35,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/info.h"
+#include "stir/copy_fill.h"
 
 #include <boost/format.hpp>
 
@@ -179,7 +180,7 @@ void ExportArrayTests::test_dynamic_data()
 
     // Copy data to array.
     info("Copying test dynamic projdata to array ...");
-    test_dynamic_projData_sptr->copy_to< Array<2,float>::full_iterator >( test_array_iter);
+    copy_to(*test_dynamic_projData_sptr, test_array_iter);
 
     // Convert it to ProjData
     info("Copying data from array to check dynamic projdata ...");
@@ -199,7 +200,7 @@ void ExportArrayTests::test_dynamic_data()
         check_dynamic_projData_sptr->set_proj_data_sptr(test_proj_data_gate_ptr, (i_gate+1));
     }
 
-    check_dynamic_projData_sptr->fill_from<Array<2,float>::full_iterator>(test_array_iter);
+    fill_from(*check_dynamic_projData_sptr, test_array.begin_all_const(), test_array.end_all_const());
 
     info ("Checking if data are the same...");
     for(int i_gate = 1; i_gate <= num_of_gates; i_gate++)
@@ -278,7 +279,7 @@ void ExportArrayTests :: run_static_test(ProjData& test_proj_data,
 
     //-
     info("Copying from ProjData to array ...");
-    test_proj_data.copy_to(test_array_iter);
+    copy_to(test_proj_data, test_array_iter);
 
     //- Check if segment order is as expected
     {
@@ -303,7 +304,7 @@ void ExportArrayTests :: run_static_test(ProjData& test_proj_data,
 
     // Convert it back to ProjData
     info("Copying from array to a new ProjData ...");
-    check_proj_data.fill_from(test_array.begin_all());
+    fill_from(check_proj_data, test_array.begin_all_const(), test_array.end_all_const());
     this->check_if_equal_projdata(test_proj_data, check_proj_data, test_name);
 }
 

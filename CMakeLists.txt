@@ -13,6 +13,8 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
+cmake_minimum_required(VERSION 3.1.0)
+
 
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
@@ -27,6 +29,7 @@ endif()
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
 cmake_minimum_required(VERSION 2.8.3)
 if (POLICY CMP0025)
@@ -37,7 +40,7 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX("${CMAKE_CXX_STANDARD}")
+UseCXX(11)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -57,10 +60,10 @@ else()
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   4)
-set(VERSION_MINOR   1)
+set(VERSION_MAJOR   5)
+set(VERSION_MINOR   0)
 set(VERSION_PATCH   0-prealpha)
-set(VERSION   040100) # only used in STIRConfig.h.in
+set(VERSION   050000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -116,13 +119,6 @@ if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT)
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    # Find which major version this is
-    string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
-    list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
-    if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
-      message(WARNING "This ROOT version needs C++-11, so we will enable this.")
-      UseCXX(11)
-    endif()
   endif()
 endif()
 
@@ -143,11 +139,12 @@ if(NOT DISABLE_HDF5)
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0 QUIET)
+    find_package(nlohmann_json 3.2.0)# QUIET)
     if (nlohmann_json_FOUND)
-        message(STATUS "nlohmann JSON library found.")
-        message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
-        UseCXX(11)
+      message(STATUS "nlohmann JSON library found.")
+      set(HAVE_JSON ON)
+    else()
+      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
     endif()
 endif()
 

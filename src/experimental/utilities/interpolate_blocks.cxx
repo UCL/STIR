@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
   ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr * >
-      (in_projdata_ptr->get_proj_data_info_ptr()->clone());
+      (in_projdata_ptr->get_proj_data_info_sptr()->clone());
   if (proj_data_info_ptr == NULL)
   {
     cerr << argv[0] << " can only work on not-arccorrected data\n";

@@ -34,6 +34,14 @@ Default bin size (cm)                    := -1
 View offset (degrees)                    := 0
 Maximum number of non-arc-corrected bins := 0
 Default number of arc-corrected bins     := 0
+Number of blocks per bucket in transaxial direction         := 1
+Number of blocks per bucket in axial direction              := 1
+Number of crystals per block in axial direction             := 4
+Number of crystals per block in transaxial direction        := 4
+Number of detector layers                                   := 1
+Number of crystals per singles unit in axial direction      := 1
+Number of crystals per singles unit in transaxial direction := 1
+
 Energy resolution := 0.22
 Reference energy (in keV) := 511
 end scanner parameters:=

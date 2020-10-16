@@ -119,7 +119,7 @@ namespace detail_interpolate_projdata
   make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
   {
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_sinogram.get_proj_data_info_ptr()) == NULL)
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr())))
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     assert(out_sinogram.get_min_view_num() == 0);
@@ -179,8 +179,8 @@ namespace detail_interpolate_projdata
   transpose_make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
   {
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_sinogram.get_proj_data_info_ptr()) == NULL)
-      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+      if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr())))
+        error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
    // Sinogram<float>& out_sinogram2 = out_sinogram.get_empty_copy();
     assert(out_sinogram.get_min_view_num() == 0);
@@ -249,7 +249,7 @@ namespace detail_interpolate_projdata
   make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
                                const SegmentBySinogram<float>& in_segment)
   {
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_segment.get_proj_data_info_ptr()) == NULL)
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr())))
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     for (int axial_pos_num = out_segment.get_min_axial_pos_num();
@@ -270,8 +270,8 @@ namespace detail_interpolate_projdata
   transpose_make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
                                const SegmentBySinogram<float>& in_segment)
   {
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_segment.get_proj_data_info_ptr()) == NULL)
-      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+      if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr())))
+        error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     for (int axial_pos_num = out_segment.get_min_axial_pos_num();
          axial_pos_num <= out_segment.get_max_axial_pos_num();
@@ -345,9 +345,9 @@ interpolate_projdata(ProjData& proj_data_out,
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
   const ProjDataInfo & proj_data_in_info =
-    *proj_data_in.get_proj_data_info_ptr();
+    *proj_data_in.get_proj_data_info_sptr();
   const ProjDataInfo & proj_data_out_info =
-    *proj_data_out.get_proj_data_info_ptr();
+    *proj_data_out.get_proj_data_info_sptr();
 
   if (typeid(proj_data_in_info) != typeid(proj_data_out_info))
     {
@@ -487,9 +487,9 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
   const ProjDataInfo & proj_data_in_info =
-    *proj_data_in.get_proj_data_info_ptr();
+    *proj_data_in.get_proj_data_info_sptr();
   const ProjDataInfo & proj_data_out_info =
-    *proj_data_out.get_proj_data_info_ptr();
+    *proj_data_out.get_proj_data_info_sptr();
 
   if (typeid(proj_data_in_info) != typeid(proj_data_out_info))
     {
@@ -595,9 +595,9 @@ interpolate_projdata_push(ProjData& proj_data_out,
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
   const ProjDataInfo & proj_data_in_info =
-    *proj_data_in.get_proj_data_info_ptr();
+    *proj_data_in.get_proj_data_info_sptr();
   const ProjDataInfo & proj_data_out_info =
-    *proj_data_out.get_proj_data_info_ptr();
+    *proj_data_out.get_proj_data_info_sptr();
 
   if (typeid(proj_data_in_info) != typeid(proj_data_out_info))
     {

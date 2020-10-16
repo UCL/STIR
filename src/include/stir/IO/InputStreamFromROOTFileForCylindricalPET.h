@@ -149,10 +149,10 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
-    Int_t crystalID1, crystalID2;
-    Int_t submoduleID1, submoduleID2;
-    Int_t moduleID1, moduleID2;
-    Int_t rsectorID1, rsectorID2;
+    std::int32_t crystalID1, crystalID2;
+    std::int32_t submoduleID1, submoduleID2;
+    std::int32_t moduleID1, moduleID2;
+    std::int32_t rsectorID1, rsectorID2;
 
     int crystal_repeater_x;
     int crystal_repeater_y;

@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -21,6 +21,11 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/error.h"
 #include "stir/FilePath.h"
+
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TChain.h>
+#include <type_traits>
 
 START_NAMESPACE_STIR
 
@@ -90,6 +95,11 @@ InputStreamFromROOTFile::post_processing()
 Succeeded
 InputStreamFromROOTFile::set_up(const std::string & header_path)
 {
+    // check types, really should be compile time assert
+    if (!std::is_same<Int_t, std::int32_t>::value ||
+        !std::is_same<Float_t, float>::value ||
+        !std::is_same<Double_t, double>::value)
+      error("Internal error: ROOT types are not what we think they are.");
 
     FilePath f(filename,false);
     f.prepend_directory_name(header_path);

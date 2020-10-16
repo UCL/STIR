@@ -242,7 +242,7 @@ ProjData::get_empty_viewgram(const int view_num, const int segment_num,
 			     const bool make_num_tangential_poss_odd) const
 {
   return
-    proj_data_info_ptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
 }
 
 Sinogram<float>
@@ -250,7 +250,7 @@ ProjData::get_empty_sinogram(const int ax_pos_num, const int segment_num,
 			     const bool make_num_tangential_poss_odd) const
 {
   return
-    proj_data_info_ptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd);
 }
 
 
@@ -259,7 +259,7 @@ ProjData::get_empty_segment_by_sinogram(const int segment_num,
       const bool make_num_tangential_poss_odd) const
 {
   return
-    proj_data_info_ptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd);
 }  
 
 
@@ -268,7 +268,7 @@ ProjData::get_empty_segment_by_view(const int segment_num,
 				   const bool make_num_tangential_poss_odd) const
 {
   return
-    proj_data_info_ptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd);
 
 }
 
@@ -279,7 +279,7 @@ ProjData::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num
 		   const bool make_num_tangential_poss_odd) const
 {
   return
-    proj_data_info_ptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd);
 }
 
 
@@ -318,7 +318,7 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
   {
     if (set_viewgram(*r_viewgrams_iter)== Succeeded::no)
       return Succeeded::no;
-      ++r_viewgrams_iter;
+    ++r_viewgrams_iter;
   }
   return Succeeded::yes;
 }
@@ -336,7 +336,7 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
 SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num) const
 {
   SegmentBySinogram<float> segment =
-    proj_data_info_ptr->get_empty_segment_by_sinogram(segment_num,false);
+    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num,false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
     segment.set_viewgram(get_viewgram(view_num, segment_num, false));
@@ -347,7 +347,7 @@ SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num
 SegmentByView<float> ProjData::get_segment_by_view(const int segment_num) const
 {
   SegmentByView<float> segment =
-    proj_data_info_ptr->get_empty_segment_by_view(segment_num,false);
+    proj_data_info_sptr->get_empty_segment_by_view(segment_num,false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
     segment.set_viewgram(get_viewgram(view_num, segment_num, false));
@@ -395,10 +395,10 @@ ProjData::fill(const float value)
 void 
 ProjData::fill(const ProjData& proj_data)
 {
-  shared_ptr<ProjDataInfo> source_proj_data_info_sptr = proj_data.get_proj_data_info_ptr()->create_shared_clone();
+  shared_ptr<ProjDataInfo> source_proj_data_info_sptr = proj_data.get_proj_data_info_sptr()->create_shared_clone();
   source_proj_data_info_sptr->reduce_segment_range(std::max(this->get_min_segment_num(), proj_data.get_min_segment_num()),
                                                    std::min(this->get_max_segment_num(), proj_data.get_max_segment_num()));
-  if ((*this->get_proj_data_info_ptr()) != (*source_proj_data_info_sptr))
+  if ((*this->get_proj_data_info_sptr()) != (*source_proj_data_info_sptr))
       error("Filling projection data from incompatible  source");
 
   for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
@@ -413,9 +413,9 @@ ProjData:: ProjData()
     :ExamData()
 {}
 
-ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
-  :ExamData(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
+ProjData::ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
+		   const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+  :ExamData(exam_info_sptr), proj_data_info_sptr(proj_data_info_sptr)
 {}
 
 Succeeded
@@ -424,11 +424,11 @@ write_to_file(const string& output_filename) const
 {
 
   ProjDataInterfile out_projdata(get_exam_info_sptr(),
-                 this->proj_data_info_ptr, output_filename, ios::out);
+                 this->proj_data_info_sptr, output_filename, ios::out);
 
   Succeeded success=Succeeded::yes;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
+  for (int segment_num = proj_data_info_sptr->get_min_segment_num();
+       segment_num <= proj_data_info_sptr->get_max_segment_num();
        ++segment_num)
   {
     Succeeded success_this_segment =

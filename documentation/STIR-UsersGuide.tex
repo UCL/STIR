@@ -188,6 +188,10 @@ the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
+\subsubsection{JSON}
+The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+\url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
+instructions for this library are available on its github page.
 
 \subsubsection{
 C++ Compiler}
@@ -328,7 +332,8 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
-\item CERN ROOT files used by GEANT and GATE.
+\item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
+  If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
@@ -780,6 +785,21 @@ in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
 
+\subsection{Multi header format}
+\label{multi-file-format}
+It is often useful to be able to constract a single dataset from multiply components (e.g. images
+or projection data). We have a (STIR-specific) header format for this which is very simple, for example
+\begin{verbatim}
+Multi :=
+  total number of data sets := 2
+  data set[1] := sinogram_1.hs
+  data set[2] := sinogram_2.hs
+end :=
+\end{verbatim}
+Each ``component'' will be read independently, so could in principle be in a different file format
+from the others.
+
+We currently support this format for dynamic images and projection data.
 \subsection{
 List mode processing}
 
@@ -906,6 +926,8 @@ i.e. add views together.
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
 {[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+or
+\cmdline{SSRB --template template\_filename output\_filename input\_projdata\_name [do\_normalisation]}
 
 \begin{description}
 \item[num\_segments\_to\_combine] has to be odd. It is used as the 
@@ -917,6 +939,12 @@ data to combine.
 the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num\_views\_to\_combine}. 
 This is appropriate for rebinning data where normalisation has 
 already been applied, but inappropriate otherwise.
+
+\item[template\_filename] inicated by the \textit{--template} flag, 
+is the sinogram type that the \textit{input\_projdata\_name} will 
+be mapped to. This allows for the effective use of 
+\textit{num\_segments\_to\_combine} to be an even number, 
+e.g. the conversion between span-1 and span-2 projection data sets. 
 
 \item[max\_in\_segment\_num\_to\_process] defaults to all segments. 
 Can be used to ignore the most oblique segments in the input 
@@ -1693,11 +1721,9 @@ they need a different type of objective function. Currently, the only defined ve
 where the input is dynamic projection data and the Patlak linear model is used to go from
 dynamic images to parametric images. See section {sec:KineticModels} for more information.
 
-Currently, the input and output has to be in ECAT7 format. 
-
-Below is an excerpt of a possible parameter for file POSMAPOSL. A complete parameter file
+Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
 can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
-form the input, and that a (linear) kinetic model has to be specified.
+form the input, and that a (linear) kinetic model has to be specified, see \ref{sec:KineticModels}.
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -2259,12 +2285,13 @@ is derived from the \textbf{KineticModel} class.
 The user will need to provide information about:
 \begin{itemize} 
 \item	File of input function (e.g. plasma activity or reference tissue activity values); 
-\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units with the input function) 
+\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units as the input function)
 \item	Starting frame to apply  \textit{Patlak Plot} 
 \item	Delay between input function and PET measurement 
-\item	Time-frame definition file. 
-\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total or mean over each frame 
-\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size}
+\item	Time-frame definition file \textbf{There is currently no check that these time-frame definitions are consistent with the actual data!}
+\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total (which is currently the case in STIR reconstructions) or mean over each frame
+\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size} (i.e. voxels have the
+   same values as for \texttt{zoom=1}) (this needs to be set to 0 for STIR reconstructions).
 \end{itemize}
 Example Sample File: \texttt{PatlakPlot.par} 
 
@@ -2274,7 +2301,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
-scale factor := FLOAT
 blood data filename := plasma.if
 ; In seconds
 Time Shift := FLOAT
@@ -2285,14 +2311,19 @@ end Patlak Plot Parameters:=
 \end{verbatim}
 
 Current assumptions are that an \textit{F-18} tracer is used; the input function is not decay corrected and it
-is given in a text file with three columns (i.e. \textbf{PlasmaSample}): time in \textit{seconds}, plasma-activity in
-\textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}) 
-%HARRY TODO "and multiple" ?
-and multiple the total number of \textbf{PlasmaSample}
-is usually given in the very first row. Currently, the parametric image
-has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+is given in a text file with three columns: time of the sample in \textit{seconds}, plasma-activity\footnote{%
+If you have no plasma info, it is customary to use a published function to convert blood activity to plasma activity.
+\textit{STIR} has currently no functionality for this however.}
+in \textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}). The total number of samples has to be in the very first row.
+(See an example in the \texttt{recon\_test\_pack/test\_modelling\_input}). The data are stored as a vector
+of \texttt{PlasmaSample} objects.
 
-How to Run \textit{Patlak Plot}:
+
+Currently, the parametric image
+can be in (STIR-specific) \texttt{Interfile}, use a \texttt{Multi} header (see \ref{multi-file-format}), or
+\textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+
+How to use \textit{Patlak Plot} for post-reconstruction fitting:
 
 \cmdline{%
 apply\_patlak\_to\_images \textbackslash \\
@@ -2311,7 +2342,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := 1
-scale factor := 1
 blood data filename := tac.roi
 ; In seconds
 Time Shift := 0
@@ -2330,7 +2360,7 @@ Moreover, two direct reconstruction version of linear kinetic models have been a
 
 
 The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
-\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
+\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}, see \ref{sec:ParametricImageIterativeAlgorithms}.
 
 %TODO More information could be included for \textbf{MAP} estimation e.g. \textbf{quadratic priors}. 
 
@@ -2624,19 +2654,11 @@ The programs are \textbf{manip\_image}, \textbf{stir\_write\_pgm}, \textbf{list\
 for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
 \textbf{list\_projdata\_info} for 
-projection data and \textbf{stir\_math} for both. Run them with the 
-name of the image or projection data file as an argument. For 
-example, for \textbf{manip\_image}:
-\cmdline{manip\_image file\_name.hv}
-
+projection data, and \textbf{stir\_math} and \textbf{get\_time\_frame\_info} for both.
+Run them without arguments to get usage information.
 
 See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate projection 
 data.
-
-
-The program \textbf{get\_time\_frame\_info} is \textit{STIR}'s first (small!) 
-step into supporting dynamic data.
-
 
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
@@ -2651,6 +2673,7 @@ convert your \textit{STIR} data to another format using (X)medcon
 
 A utility that lists information about an image on stdout. This includes number of voxels,
 physical sizes, bounding boxes, etc. It also prints min/max/sum of the data. 
+Optionally this can be listed per time-frame.
 
 { \subsubsubsection{stir\_write\_pgm}
 }
@@ -2662,7 +2685,7 @@ This utility is mainly useful for shell/batch scripts.
 { \subsubsubsection{manip\_image}
 }
 
-This program works on two modes. Additionally to the display 
+This program works in two modes. Additionally to the display 
 possibility, the main mode allows to retrieve information about 
 the image:
 
@@ -2876,13 +2899,30 @@ This is a test-release of a program that can be used to find
 ROI values for an image. See the online documentation generated 
 by doxygen for more info.
 
-{ \subsubsubsection{extract\_dynamic\_images}
+{ \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
 
 This executable can be used to get the individual components of a 
 dynamic image as separate images. 
 To use it, simply give the pattern of the output filename, the input filename, and optionally
-supply a parameter file for saving the output images.
+supply a parameter file for the file-format used to save the output images.
+
+{ {\subsubsubsection{extract\_single\_images\_from\_parametric\_image}
+}
+
+As above but for parametric images.
+
+{ \subsubsubsection{create\_multi\_header}
+  This is a command line utility for creating a header that "points" to several other
+  data-sets, useful for e.g. dynamic images/data. The output header is in the \texttt{multi}
+  file-format (see \ref{multi-file-format}) and can then be used in
+  other STIR utilities. This is useful for instance if you have
+  a set of reconstruct images corresponding to several time frames, but need to read the data
+  as a single study.
+
+  To use it, specify the output filename and a list of input filenames (in the order you want
+  them to appear in the header).
+  There is no check that the data sizes and other info are compatible.
 
 { \subsubsubsection{ctac\_to\_mu\_values}
 }
@@ -3980,6 +4020,31 @@ set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.
 Otherwise, all non-positive entries in the data are set to SMALL\_NUM 
 times the minimum strictly positive value.
 
+{ \subsubsubsection{HUToMu}
+}
+
+This data processor (class \texttt{HUToMuImageProcessor}) is intended to convert a CT image in Hounsfield Units to mu-values.
+It takes a file in JSON format specifying the piecewise-linear for various systems, Xray voltages and gamma energies.
+Currently, it supports 2-segment piecewise linear transformations only.
+In practice, this needs to be combined with a smoothing filter to match CT to PET resolution.
+
+A sample file JSON is currently located in the source of STIR (\texttt{src/utilities/share}).
+This file is installed in your \texttt{install\_prefix/share} folder.
+
+{ \subsubsubsubsection{Parameters}
+}
+Example parameters are given by
+\begin{verbatim}
+    HUToMu Parameters:=
+      slope filename := json_filename
+      ; next defaults to GENERIC
+      manufacturer_name := IN_CAPITALS
+      ; CT tube voltage (defaults to 120)
+      ;kilovoltage_peak :=
+      ; gamma energy (defaults to 511 for PET)
+      ;target_photon_energy :=
+    End HUToMu Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{Chained Data Processor}
 }
@@ -4137,7 +4202,7 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   \noindent where $\lambda$ is the image where the gradient is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
-  $\gamma$ is a edge preservation hyper-parameter and $\eplion$ is small 
+  $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
   modification the penatly function used to prevent divide by zero's.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.

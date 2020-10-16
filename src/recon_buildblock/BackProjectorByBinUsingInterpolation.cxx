@@ -50,13 +50,13 @@ using std::max;
 START_NAMESPACE_STIR
 
 JacobianForIntBP::
-JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact)
+JacobianForIntBP(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr, bool exact)
      
-     : R2(square(proj_data_info_ptr->get_ring_radius())),
-       dxy2(square(proj_data_info_ptr->get_tangential_sampling())),
-       ring_spacing2 (square(proj_data_info_ptr->get_ring_spacing())),
+     : R2(square(proj_data_info_sptr->get_ring_radius())),
+       dxy2(square(proj_data_info_sptr->get_tangential_sampling())),
+       ring_spacing2 (square(proj_data_info_sptr->get_ring_spacing())),
        backprojection_normalisation 
-      (proj_data_info_ptr->get_ring_spacing()/2/proj_data_info_ptr->get_num_views()),
+      (proj_data_info_sptr->get_ring_spacing()/2/proj_data_info_sptr->get_num_views()),
       use_exact_Jacobian_now(exact)      
    {}
 
@@ -119,8 +119,8 @@ BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolati
 }
 
 BackProjectorByBinUsingInterpolation::
-BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
+BackProjectorByBinUsingInterpolation(shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+				     shared_ptr<const DiscretisedDensity<3,float> > const& image_info_ptr,
 				     const bool use_piecewise_linear_interpolation,
                                      const bool use_exact_Jacobian)
 {
@@ -131,8 +131,8 @@ BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_i
 }
 
 void
-BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
+BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+				     shared_ptr<const DiscretisedDensity<3,float> > const& image_info_ptr)
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   this->symmetries_ptr.
@@ -200,11 +200,11 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 		    const int min_tangential_pos_num, const int max_tangential_pos_num)
 
 {
-  const ProjDataInfoCylindricalArcCorr* proj_data_info_cyl_ptr = 
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*> (viewgrams.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_cyl_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (viewgrams.get_proj_data_info_sptr());
  
 
-  if ( proj_data_info_cyl_ptr==NULL)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
   {
     error("\nBackProjectorByBinUsingInterpolation:\n"
 	  "can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
@@ -215,7 +215,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   // TODO somehow check symmetry object in RelatedViewgrams
 
   const float zoom = 
-    proj_data_info_cyl_ptr->get_tangential_sampling()/
+    proj_data_info_cyl_sptr->get_tangential_sampling()/
     image.get_voxel_size().x();
 
   // zoom the viewgrams if necessary
@@ -253,7 +253,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
       zoomed_viewgrams_ptr = &viewgrams;
     }
 
-  const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
+  const int num_views = viewgrams.get_proj_data_info_sptr()->get_num_views();
   RelatedViewgrams<float>::const_iterator r_viewgrams_iter = zoomed_viewgrams_ptr->begin();
   if (zoomed_viewgrams_ptr->get_basic_segment_num() == 0)
     {
@@ -592,11 +592,11 @@ BackProjectorByBinUsingInterpolation::back_project_all_symmetries(
 				 const int min_axial_pos_num, const int max_axial_pos_num,
 				 const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  const ProjDataInfoCylindricalArcCorr* proj_data_info_cyl_ptr = 
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*> (pos_view.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_cyl_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pos_view.get_proj_data_info_sptr());
  
 
-  if ( proj_data_info_cyl_ptr==NULL)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
   {
     error("\nBackProjectorByBinUsingInterpolation:\n\
 can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
@@ -617,20 +617,20 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 #endif
 
   
-  assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
+  assert(proj_data_info_cyl_sptr ->get_average_ring_difference(segment_num) >= 0);
   assert(pos_view.get_view_num() > 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/4 ||
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/4 ||
 	 (!symmetries_ptr->using_symmetry_90degrees_min_phi() &&
-	  pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2 &&
+	  pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/2 &&
 	  pos_plus90.find_max()==0 && neg_plus90.find_max()==0 && 
 	  pos_min90.find_max()==0 && neg_min90.find_max()==0) );
 
-  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
+  const int nviews = pos_view.get_proj_data_info_sptr()->get_num_views();
 
   // warning: error check has to be the same as what is used for the criterion to do the zooming
   // (see lines concerning zoomed_viewgrams)
-  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4
-     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4)
+  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_sptr->get_tangential_sampling() - 1) > 1E-4
+     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_sptr->get_tangential_sampling() - 1) > 1E-4)
     error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size.");
       
   // KTxxx not necessary anymore
@@ -669,15 +669,15 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   start_timers();
 
-  const JacobianForIntBP jacobian(proj_data_info_cyl_ptr, use_exact_Jacobian_now);
+  const JacobianForIntBP jacobian(proj_data_info_cyl_sptr, use_exact_Jacobian_now);
 
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
   // a variable which will be used in the loops over s to get s_in_mm
   Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
 
   // KT 20/06/2001 rewrite using get_phi  
-  const float cphi = cos(proj_data_info_cyl_ptr->get_phi(bin));
-  const float sphi = sin(proj_data_info_cyl_ptr->get_phi(bin));
+  const float cphi = cos(proj_data_info_cyl_sptr->get_phi(bin));
+  const float sphi = sin(proj_data_info_cyl_sptr->get_phi(bin));
  
 
   // Do a loop over all axial positions. However, because we use interpolation of
@@ -773,7 +773,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	}
 	const int segment_num = pos_view.get_segment_num();
 
-        const float delta=proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
+        const float delta=proj_data_info_cyl_sptr->get_average_ring_difference(segment_num);
 
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
         Proj2424 *= jacobian(delta, s+ 0.5F);
@@ -790,7 +790,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
           (Proj2424,
           image,
-          proj_data_info_cyl_ptr, 
+          proj_data_info_cyl_sptr,
           delta, 
           cphi, sphi, s, ax_pos, 
           num_planes_per_axial_pos,
@@ -799,7 +799,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
           linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
           (Proj2424,
           image,
-          proj_data_info_cyl_ptr, 
+          proj_data_info_cyl_sptr,
           delta, 
           cphi, sphi, s, ax_pos, 
           num_planes_per_axial_pos,
@@ -829,10 +829,10 @@ back_project_view_plus_90_and_delta(
 				         const int min_tangential_pos_num, 
 					 const int max_tangential_pos_num)				   
 {
-  const ProjDataInfoCylindricalArcCorr* proj_data_info_cyl_ptr = 
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*> (pos_view.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_cyl_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pos_view.get_proj_data_info_sptr());
 
-  if ( proj_data_info_cyl_ptr==NULL)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
     {
       error("\nBackProjectorByBinUsingInterpolation:,\n\
 can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
@@ -851,9 +851,9 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   const int segment_num = pos_view.get_segment_num();
 #endif
 
-  assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
+  assert(proj_data_info_cyl_sptr ->get_average_ring_difference(segment_num) >= 0);
 
-  const int num_views =  pos_view.get_proj_data_info_ptr()->get_num_views();
+  const int num_views =  pos_view.get_proj_data_info_sptr()->get_num_views();
 
   assert(pos_view.get_view_num()>=0);
   assert(pos_view.get_view_num() <num_views/2 ||
@@ -863,8 +863,8 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   // warning: error check has to be the same as what is used for the criterion to do the zooming
   // (see lines concerning zoomed_viewgrams)
-  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4
-     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4)
+  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_sptr->get_tangential_sampling() - 1) > 1E-4
+     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_sptr->get_tangential_sampling() - 1) > 1E-4)
     error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size.");
 
   // KTXXX not necessary anymore
@@ -872,7 +872,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   start_timers();
 
-  const JacobianForIntBP jacobian(proj_data_info_cyl_ptr, use_exact_Jacobian_now);
+  const JacobianForIntBP jacobian(proj_data_info_cyl_sptr, use_exact_Jacobian_now);
 
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
 
@@ -886,14 +886,14 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   const float cphi = 
    bin.view_num()==0? 1 :
    2*bin.view_num()==num_views ? 0 :
-   cos(proj_data_info_cyl_ptr->get_phi(bin));
+   cos(proj_data_info_cyl_sptr->get_phi(bin));
   const float sphi = 
    bin.view_num()==0? 0 :
    2*bin.view_num()==num_views ? 1 :
-  sin(proj_data_info_cyl_ptr->get_phi(bin));
+  sin(proj_data_info_cyl_sptr->get_phi(bin));
  
-  assert(fabs(cphi-cos(proj_data_info_cyl_ptr->get_phi(bin)))<.001);
-  assert(fabs(sphi-sin(proj_data_info_cyl_ptr->get_phi(bin)))<.001);
+  assert(fabs(cphi-cos(proj_data_info_cyl_sptr->get_phi(bin)))<.001);
+  assert(fabs(sphi-sin(proj_data_info_cyl_sptr->get_phi(bin)))<.001);
   // KT XXX
   const float fovrad_in_mm   = 
     min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
@@ -975,7 +975,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	  }
 
 	const int segment_num = pos_view.get_segment_num();
-	const float delta=proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
+	const float delta=proj_data_info_cyl_sptr->get_average_ring_difference(segment_num);
 
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
         Proj2424 *= jacobian(delta, s+ 0.5F);
@@ -990,14 +990,14 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
         if (use_piecewise_linear_interpolation_now && num_planes_per_axial_pos>1)
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90( Proj2424, image, 
-									 proj_data_info_cyl_ptr, 
+									 proj_data_info_cyl_sptr,
 									 delta, 
 									 cphi, sphi, s, ax_pos, 
 									 num_planes_per_axial_pos,
 									 axial_pos_to_z_offset);
         else
           linear_interpolation_backproj3D_Cho_view_viewplus90( Proj2424, image, 
-							       proj_data_info_cyl_ptr, 
+							       proj_data_info_cyl_sptr,
 							       delta, 
 							       cphi, sphi, s, ax_pos, 
 							       num_planes_per_axial_pos,

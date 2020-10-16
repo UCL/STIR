@@ -67,7 +67,7 @@ set(buildblock_simple_tests
 	test_ArcCorrection
 	test_find_fwhm_in_image
 	test_proj_data_info
-	test_proj_data_in_memory
+	test_proj_data
 	test_proj_data_maths
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
@@ -141,6 +141,8 @@ ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Multi
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 # Dynamic tests
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 

@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2019, 2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,6 +37,9 @@
 #include "stir/SeparableConvolutionImageFilter.h"
 #include "stir/NonseparableConvolutionUsingRealDFTImageFilter.h"
 #include "stir/TruncateToCylindricalFOVImageProcessor.h"
+#ifdef HAVE_JSON
+#include "stir/HUToMuImageProcessor.h"
+#endif
 START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
@@ -47,4 +51,8 @@ static NonseparableConvolutionUsingRealDFTImageFilter<float>::RegisterIt dummy7;
 static TruncateToCylindricalFOVImageProcessor<float> ::RegisterIt dummy6;
 static ChainedDataProcessor<DiscretisedDensity<3,float> >::RegisterIt dummy3;
 static ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3,float> >::RegisterIt dummy4;
+
+#ifdef HAVE_JSON
+static HUToMuImageProcessor<DiscretisedDensity<3, float>>::RegisterIt dummyHUToMu;
+#endif
 END_NAMESPACE_STIR

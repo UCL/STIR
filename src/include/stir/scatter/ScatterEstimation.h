@@ -147,7 +147,7 @@ public:
     virtual Succeeded process_data();
 
     //! Get current scatter estimate
-    shared_ptr<const ProjData> get_output() const;
+    shared_ptr<ProjData> get_output() const;
 
     //!
     //! \brief set_up
@@ -172,7 +172,7 @@ public:
     //! Set the reconstruction method for the scatter estimation
     inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
     //! Set the full resolution attenuation image.
-    inline void set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3, float > > );
+    inline void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float > > );
     //!
     inline void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
     //!
@@ -180,11 +180,12 @@ public:
     //!
     inline void set_background_proj_data_sptr(const shared_ptr<ProjData>);
     //!
-    inline void set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >);
+    inline void set_initial_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
 
-    inline void set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> >);
-    //!
-    inline void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float> >);
+    //! set mask for tail-fitting
+    /*! \c arg will not be modified */
+    inline void set_mask_proj_data_sptr(const shared_ptr<ProjData> arg);
 
     inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
@@ -220,7 +221,7 @@ protected:
     //! The current activity estimate.
     shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_sptr;
     //! Image with attenuation values.
-    shared_ptr<DiscretisedDensity < 3, float > > atten_image_sptr;
+    shared_ptr<const DiscretisedDensity < 3, float > > atten_image_sptr;
     //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
     //! and second the atten.
     shared_ptr<BinNormalisation>  multiplicative_binnorm_2d_sptr;
@@ -278,7 +279,7 @@ private:
     shared_ptr<ProjData> scatter_estimate_sptr;
     
     //! variable storing the mask image
-    shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
+    shared_ptr < const DiscretisedDensity < 3, float >  > mask_image_sptr;
 
     //! \brief set_up iterative reconstruction
     Succeeded set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > arg);
@@ -314,8 +315,8 @@ private:
     //! Returns a shared pointer to a new ProjData. If we run in run_debug_mode and
     //! the extras_path has been set, then it will be a ProjDataInterfile, otherwise it will be a ProjDataInMemory.
     shared_ptr<ProjData> create_new_proj_data(const std::string& filename,
-					      const shared_ptr<ExamInfo> exam_info_sptr,
-					      const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
+					      const shared_ptr<const ExamInfo> exam_info_sptr,
+					      const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const;
 
     //! \details Average the two first activity images 0 and 1 (defaults to \c true)
     bool do_average_at_2;

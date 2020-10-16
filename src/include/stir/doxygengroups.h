@@ -214,7 +214,7 @@ from/to file.
 
 /*!
 \defgroup GE support for GE data
-\ingroup GE
+\ingroup IO
 */
 
 /*! 

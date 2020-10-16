@@ -194,7 +194,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
       out[ax_pos_num] =
         detail::
         extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num], 
-                                 *(sino.get_proj_data_info_ptr()),
+                                 *(sino.get_proj_data_info_sptr()),
                                  min_view_extension, max_view_extension);
     }
   return out;
@@ -210,7 +210,7 @@ extend_sinogram_in_views(const Sinogram<float>& sino,
   return 
     detail::
     extend_sinogram_in_views(sino, sino,
-                             *(sino.get_proj_data_info_ptr()),
+                             *(sino.get_proj_data_info_sptr()),
                              min_view_extension, max_view_extension);
 }
 
@@ -236,7 +236,7 @@ transpose_extend_segment_in_views(const SegmentBySinogram<float>& sino,
       out[ax_pos_num] =
         detail::
         transpose_extend_sinogram_in_views(sino[ax_pos_num],
-                                 *(sino.get_proj_data_info_ptr()),
+                                 *(sino.get_proj_data_info_sptr()),
                                  min_view_compression, max_view_compression);
     }
   return out;
@@ -252,7 +252,7 @@ transpose_extend_sinogram_in_views(const Sinogram<float>& sino,
   return
     detail::
     transpose_extend_sinogram_in_views(sino,
-                             *(sino.get_proj_data_info_ptr()),
+                             *(sino.get_proj_data_info_sptr()),
                              min_view_compression, max_view_compression);
 }
 
