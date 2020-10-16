@@ -741,8 +741,6 @@ set_template_proj_data_info(const std::string& filename)
     shared_ptr<ProjData> template_proj_data_sptr(ProjData::read_from_file(this->template_proj_data_filename));
 
     this->set_exam_info(template_proj_data_sptr->get_exam_info());
-    std::cerr << "LOW THRES SET TEMP 0:" << template_proj_data_sptr->get_exam_info().get_low_energy_thres(0) << "\n";
-    std::cerr << "LOW THRES SET TEMP 1:" << template_proj_data_sptr->get_exam_info().get_low_energy_thres(1) << "\n";
     this->set_template_proj_data_info(*template_proj_data_sptr->get_proj_data_info_sptr());
 }
 
@@ -785,8 +783,6 @@ set_exam_info(const ExamInfo& arg)
      this->template_exam_info_sptr->set_high_energy_thres(arg.get_high_energy_thres(i),i);
      this->template_exam_info_sptr->set_low_energy_thres(arg.get_low_energy_thres(i),i);
      }
-    std::cerr << "LOW THRES EX INFO 0:" << template_exam_info_sptr->get_low_energy_thres(0) << "\n";
-    std::cerr << "LOW THRES EX INFO 1:" << template_exam_info_sptr->get_low_energy_thres(1) << "\n";
 }
 
 Succeeded
