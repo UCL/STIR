@@ -271,8 +271,9 @@ add_multiplication_with_approximate_sub_Hessian(TargetT& output,
     {
       // TODO used boost:scoped_ptr
       shared_ptr<TargetT>  prior_output_sptr(output.get_empty_copy());
-      if (this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, output, output) == Succeeded::no)
-	    return Succeeded::no;
+      if (this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output) ==
+	  Succeeded::no)
+	return Succeeded::no;
 
 
        // (*prior_output_sptr)/= num_subsets;
