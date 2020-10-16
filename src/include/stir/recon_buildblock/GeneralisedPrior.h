@@ -76,6 +76,11 @@ public:
     add_multiplication_with_approximate_Hessian(DataT& output,
 						const DataT& input) const;
 
+  virtual Succeeded accumulate_Hessian_times_input(DataT& output,
+    const DataT& current_estimate,
+    const DataT& input) const;
+
+
   inline float get_penalisation_factor() const;
   inline void set_penalisation_factor(float new_penalisation_factor);
 
