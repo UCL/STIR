@@ -1277,7 +1277,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       else
         {
           output_header << "orbit := Non-circular\n";
-          output_header << "Radius := " << ring_radii << '\n';
+          output_header << "Radii := " << ring_radii << '\n';
         }
 
       output_header << "!matrix size [1] := "
