@@ -79,36 +79,19 @@ set_saved_get_positions(const std::vector<unsigned long> &poss)
     saved_get_positions = poss;
 }
 
-int
+float
 InputStreamFromROOTFile::
-get_number_of_energy_windows() const
+get_low_energy_thres() const
 {
-    return num_en_windows;
-}
-
-std::vector<float>
-InputStreamFromROOTFile::
-get_low_energy_thres_in_keV() const
-{
-    std::vector<float> low_energy_window;
-    low_energy_window.resize(2);
-    low_energy_window[0]=1e3*low_energy_window_1;
-    low_energy_window[1]=1e3*low_energy_window_2;
     return low_energy_window;
 }
 
-std::vector<float>
+float
 InputStreamFromROOTFile::
-get_up_energy_thres_in_keV() const
+get_up_energy_thres() const
 {
-    std::vector<float> up_energy_window;
-    up_energy_window.resize(2);
-    up_energy_window[0]=1e3*up_energy_window_1;
-    up_energy_window[1]=1e3*up_energy_window_2;
     return up_energy_window;
 }
-
-
 
 std::string
 InputStreamFromROOTFile::
@@ -142,13 +125,6 @@ InputStreamFromROOTFile::set_exclude_scattered_events(bool val)
 }
 
 void
-InputStreamFromROOTFile::set_maximum_order_of_scatter(int val)
-{
-    maximum_order_of_scatter= val;
-}
-
-
-void
 InputStreamFromROOTFile::set_exclude_random_events(bool val)
 {
     exclude_randoms = val;
@@ -163,13 +139,13 @@ InputStreamFromROOTFile::set_detectors_offset(int val)
 void
 InputStreamFromROOTFile::set_low_energy_window(float val)
 {
-    low_energy_window_1= val;
+    low_energy_window = val;
 }
 
 void
 InputStreamFromROOTFile::set_upper_energy_window(float val)
 {
-    up_energy_window_1 = val;
+    up_energy_window = val;
 }
 
 void

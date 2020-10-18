@@ -33,9 +33,6 @@ bool CListRecordROOT::is_time() const
 bool CListRecordROOT::is_event() const
 { return true; }
 
-bool CListRecordROOT::is_energy() const
-{ return true; }
-
 bool CListRecordROOT::is_full_event() const
 { return true; }
 

@@ -80,9 +80,8 @@ public:
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
-                            bool exclude_scattered, bool exclude_randoms,int maximum_order_of_scatter,
-                            float low_energy_window_1, float up_energy_window_1,
-                            float low_energy_window_2, float up_energy_window_2,
+                            bool exclude_scattered, bool exclude_randoms,
+                            float low_energy_window, float up_energy_window,
                             int offset_dets);
 
 
@@ -131,12 +130,10 @@ public:
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! Lower energy threshold
-    inline std::vector<float> get_low_energy_thres_in_keV() const;
+    inline float get_low_energy_thres() const;
     //! Upper energy threshold
-    inline std::vector<float> get_up_energy_thres_in_keV() const;
+    inline float get_up_energy_thres() const;
 
-    //! Upper number of energy windows
-    inline int get_number_of_energy_windows() const;
     //! Set singles_readout_depth
     inline void set_singles_readout_depth(int);
 
@@ -147,8 +144,6 @@ public:
     inline void set_exclude_scattered_events(bool);
 
     inline void set_exclude_random_events(bool);
-
-    inline void set_maximum_order_of_scatter(int);
 
     inline void set_detectors_offset(int);
 
@@ -201,20 +196,12 @@ protected:
 
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
-    //! Scatter order to skip;
-    bool maximum_order_of_scatter;
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
     //! Lower energy threshold
-    float low_energy_window_1;
+    float low_energy_window;
     //! Upper energy threshold
-    float up_energy_window_1;
-    //! Lower energy threshold
-    float low_energy_window_2;
-    //! Upper energy threshold
-    float up_energy_window_2;
-
-    int num_en_windows;
+    float up_energy_window;
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
     //!For the singles_readout_depth from GATE's online documentation:

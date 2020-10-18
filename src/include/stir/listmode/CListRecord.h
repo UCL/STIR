@@ -55,9 +55,6 @@ class CListEvent : public ListEvent
 {
 public:
 
-   virtual bool is_swapped() const = 0;
-
-
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */
   virtual 

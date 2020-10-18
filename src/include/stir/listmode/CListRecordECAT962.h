@@ -66,7 +66,6 @@ class CListEventDataECAT962
 {
  public:  
   inline bool is_prompt() const { return random == 0; }
-  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) random=0; else random=1; return Succeeded::yes; }
 
@@ -184,16 +183,6 @@ private:
 #endif
 };
 
-
-//! A class for storing and using an energy 'event' from a listmode file
-/*! \ingroup listmode
- */
-class CListEnergyDataECAT962
-{
- public:
-};
-
-
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
@@ -211,8 +200,6 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
 
   bool is_time() const
   { return time_data.type == 1U; }
-  bool is_energy() const
-  { return true; }
   bool is_gating_input() const
   { return this->is_time(); }
   bool is_event() const
@@ -246,12 +233,6 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
   inline Succeeded set_gating(unsigned int g) 
     { return time_data.set_gating(g); }
 
-  // energy
-  inline double get_energyA_in_keV() const
-  { return 0.F;  }
-  inline double get_energyB_in_keV() const
-  { return 0.F;  }
-
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
   inline Succeeded set_prompt(const bool prompt = true) 
@@ -279,7 +260,6 @@ private:
   union {
     CListEventDataECAT962  event_data;
     CListTimeDataECAT962   time_data; 
-    CListEnergyDataECAT962 energy_data;
     boost::int32_t         raw;
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);

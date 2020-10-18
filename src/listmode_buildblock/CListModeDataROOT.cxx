@@ -252,16 +252,12 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
     if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
     {
         stream << "the number of rings, ";
-        std::cout << "rings STIR:" << scanner_sptr->get_num_rings() << "\n";
-        std::cout << "rings GATE:" << root_file_sptr->get_num_rings() << "\n";
         ok = false;
     }
 
     if (scanner_sptr->get_num_detectors_per_ring() != root_file_sptr->get_num_dets_per_ring())
     {
         stream << "the number of detector per ring, ";
-        std::cout << "n det STIR:" << scanner_sptr->get_num_detectors_per_ring() << "\n";
-        std::cout << "n det GATE:" << root_file_sptr->get_num_dets_per_ring() << "\n";
         ok = false;
     }
 

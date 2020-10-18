@@ -130,7 +130,6 @@ class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRin
       return Succeeded::yes;
     }
   inline bool is_prompt() const { return this->data.random == 0; }
-  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) this->data.random=0; else this->data.random=1; return Succeeded::yes; }
 
@@ -201,21 +200,6 @@ class CListTimeECAT966 : public ListTime, public ListGatingInput
   };
 };
 
-
-//! A class for storing and using a energy'event' from a listmode file from the ECAT 966 scanner
-/*! \ingroup listmode
- */
-class CListEnergyECAT966 : public CListEnergy
-{
- public:
-  bool is_energy() const
-  {return true; }
-  inline double get_energyA_in_keV() const
-  { return 0.F;  }
-  inline double get_energyB_in_keV() const
-  { return 0.F;  }
-};
-
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 966 it's either a coincidence event, or a timing flag.*/
@@ -236,13 +220,8 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
     { return this->event_data; }
   virtual CListTimeECAT966&   time()
     { return this->time_data; }
-  virtual const CListTimeECAT966&   time() const  
+  virtual const CListTimeECAT966&   time() const
     { return this->time_data; }
-  virtual CListEnergyECAT966&   energy()
-    { return this->energy_data; }
-  virtual const CListEnergyECAT966&   energy() const
-    { return this->energy_data; }
-
   virtual CListTimeECAT966&  gating_input()
     { return this->time_data; }
   virtual const CListTimeECAT966&  gating_input() const
@@ -281,7 +260,6 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
  private:
   CListEventECAT966  event_data;
   CListTimeECAT966   time_data; 
-  CListEnergyECAT966 energy_data;
   boost::int32_t         raw;
 
 };

@@ -81,7 +81,6 @@ public:
 	//! Returns 0 if event is prompt and 1 if random/delayed
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
-    inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
 	//! Function to set map for detector indices to coordinates.
 	inline void set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) { map = new_map; }
 
@@ -165,8 +164,6 @@ private:
 #endif
 };
 
-
-
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
 class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR>
 {
@@ -187,7 +184,6 @@ public:
 	virtual bool is_event() const
 	{ return time_data.type == 0; }
 
-
 	virtual CListEvent&  event()
 	{ return *this; }
 
@@ -206,8 +202,6 @@ public:
     virtual const ListTime&   time() const
 	{ return *this; }
 
-
-
 	virtual bool operator==(const CListRecord& e2) const
 	{
 		return dynamic_cast<CListRecordSAFIR const *>(&e2) != 0 &&
@@ -219,7 +213,6 @@ public:
 
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{ return time_data.set_time_in_millisecs(time_in_millisecs); }
-
 
 	inline bool is_prompt() const { return !(event_data.isRandom); }
 

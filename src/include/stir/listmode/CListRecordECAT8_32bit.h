@@ -100,7 +100,6 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
       return Succeeded::yes;
     }
   inline bool is_prompt() const { return this->data.delayed == 1; }
-  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) this->data.delayed=1; else this->data.delayed=0; return Succeeded::yes; }
 
@@ -186,8 +185,6 @@ class CListTimeECAT8_32bit : public ListTime
     return Succeeded::yes;
   }
 
-
-
  private:
   BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
   union 
@@ -196,12 +193,6 @@ class CListTimeECAT8_32bit : public ListTime
     boost::int32_t         raw;
   };
 };
-
-
-
-//! A class for storing and using an energy 'event' from a listmode file from the ECAT 8_32bit scanner
-/*! \ingroup listmode
- */
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
@@ -225,8 +216,6 @@ class CListTimeECAT8_32bit : public ListTime
   */
   bool is_event() const
   { return this->any_data.is_event(); }
-
-
   virtual CListEventECAT8_32bit&  event() 
     { return this->event_data; }
   virtual const CListEventECAT8_32bit&  event() const
@@ -235,7 +224,6 @@ class CListTimeECAT8_32bit : public ListTime
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
-
 
   bool operator==(const CListRecord& e2) const
   {
@@ -275,7 +263,7 @@ class CListTimeECAT8_32bit : public ListTime
 
  private:
   CListEventECAT8_32bit  event_data;
-  CListTimeECAT8_32bit   time_data;
+  CListTimeECAT8_32bit   time_data; 
   CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 

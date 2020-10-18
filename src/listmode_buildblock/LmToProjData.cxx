@@ -213,7 +213,7 @@ post_processing()
       warning("You have to specify template_projdata\n");
       return true;
     }
-  template_proj_data_ptr =
+  shared_ptr<ProjData> template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
@@ -427,8 +427,8 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
     const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
-
+    event.get_bin(bin, *template_proj_data_info_ptr);
+   
     if (bin.get_bin_value()>0)
       {
 	bin.set_bin_value(bin_value);
@@ -437,7 +437,7 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
+      event.get_bin(bin, *template_proj_data_info_ptr);
     }
 
 } 
@@ -528,25 +528,8 @@ process_data()
   // few coincidence events (as happens with ECAT scanners)
   current_time = 0;
 
-  int num_en_windows = template_proj_data_ptr->get_exam_info().get_num_energy_windows();
-  std::vector<float> high_en_thres(num_en_windows);
-  std::vector<float> low_en_thres(num_en_windows);
-  std::vector<int> energy_window_pair_vec(2);
- // const std::pair<int,int> energy_window_pair = template_proj_data_ptr->get_exam_info().get_energy_window_pair();
-
-  energy_window_pair_vec[0]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().first;
-  energy_window_pair_vec[1]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().second;
-
-  for (int i = 0; i< num_en_windows; ++i)
-  {
-      low_en_thres[i] =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(i);
-      high_en_thres[i] =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(i);
-  }
-
-
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
-
   VectorWithOffset<segment_type *> 
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
@@ -585,11 +568,11 @@ process_data()
       
         proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
-
       }
 
       long num_prompts_in_frame = 0;
       long num_delayeds_in_frame = 0;
+
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
 
@@ -660,20 +643,18 @@ process_data()
 		     assert(current_time>=start_time);
 		     process_new_time_event(record.time());
 		   }
-
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
-         if (record.is_event())
+		 if (record.is_event())
 		   {
-
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             get_bin_from_event(bin, record.event());
-
+                     get_bin_from_event(bin, record.event());
+		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
@@ -696,32 +677,30 @@ process_data()
             
 			 if (!do_time_frame)
 			   more_events-= event_increment;
+            
+			 // now check if we have its segment in memory
+			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
+			   {
+			     do_post_normalisation(bin);
+			 
+			     num_stored_events += event_increment;
+			     if (record.event().is_prompt())
+			       ++num_prompts_in_frame;
+			     else
+			       ++num_delayeds_in_frame;
 
-                     // now check if we have its segment in memory
-                     if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
-
-                       {
-                         do_post_normalisation(bin);
-
-                         num_stored_events += event_increment;
-                         if (record.event().is_prompt())
-                           ++num_prompts_in_frame;
-                         else
-                           ++num_delayeds_in_frame;
-
-                         if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
-
-                         if (interactive)
-                           printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n",
-                              bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
-                              current_time, event_increment);
-                         else
-                           (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
-                           bin.get_bin_value() *
-                           event_increment;
-             }
-
-            }
+			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
+                            
+			     if (interactive)
+			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
+				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
+				      current_time, event_increment);
+			     else
+			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+			       bin.get_bin_value() * 
+			       event_increment;
+			   }
+		       }
 		     else 	// event is rejected for some reason
 		       {
 			 if (interactive)
