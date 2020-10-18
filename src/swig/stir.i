@@ -472,6 +472,7 @@
 #endif
 
 %include "attribute.i"
+%include "factory.i"
 
 %init %{
 #if defined(SWIGPYTHON)
@@ -1575,13 +1576,23 @@ namespace stir {
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
+// tell SWIG to convert the return of get_prior_ptr etc to the appropriate object
+/* This currently fails, so is still commented out
+
+%newobject *::get_objective_function;
+%factory(
+         stir::GeneralisedObjectiveFunction<TargetT >& stir::IterativeReconstruction<TargetT >::get_objective_function,
+         %arg(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >));
+*/       
+%newobject *::get_prior_ptr;
+%factory(stir::GeneralisedPrior<TargetT> *stir::GeneralisedObjectiveFunction< TargetT >::get_prior_ptr,
+         stir::QuadraticPrior<elemT>,
+         stir::PLSPrior<elemT>,
+         stir::RelativeDifferencePrior<elemT>);
+
 #undef TargetT
 #undef elemT
 #endif
-
-%newobject *::get_prior_ptr;
-%factory(stir::GeneralisedPrior *stir::GeneralisedObjectiveFunction::get_prior_ptr, stir::QuadraticPrior, stir::PLSPrior, stir::RelativeDifferencePrior);
-//%factory(stir::GeneralisedPrior<TargetT> *stir::GeneralisedObjectiveFunction< TargetT >::get_prior_ptr, stir::QuadraticPrior<elemT>, stir::PLSPrior<elemT>, stir::RelativeDifferencePrior<elemT>);
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
