@@ -38,9 +38,9 @@ START_NAMESPACE_STIR
 
 void 
 ListEvent::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+get_bin(Bin& bin, const ProjDataInfo& proj_data_info, const std::pair<int,int> &energy_window_pair) const
 {
-  bin = proj_data_info.get_bin(get_LOR());
+  bin = proj_data_info.get_bin(get_LOR(),energy_window_pair);
 }
 
 END_NAMESPACE_STIR

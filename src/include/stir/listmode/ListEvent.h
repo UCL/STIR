@@ -92,7 +92,7 @@ public:
   */
   virtual
     void
-    get_bin(Bin& bin, const ProjDataInfo&) const;
+    get_bin(Bin& bin, const ProjDataInfo&, const std::pair<int,int> &energy_window_pair = std::pair<int,int>(1,1)) const;
 
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()

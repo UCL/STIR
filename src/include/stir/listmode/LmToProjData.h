@@ -197,7 +197,7 @@ protected:
     (on top of anything done by normalisation_ptr). 
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
-  virtual void get_bin_from_event(Bin& bin, const ListEvent&) const;
+  virtual void get_bin_from_event(Bin& bin, const ListEvent&, const std::pair<int,int> &energy_window_pair = std::pair<int,int>(1,1))  const;
 
   //! A function that should return the number of uncompressed bins in the current bin
   /*! \todo it is not compatiable with e.g. HiDAC doesn't belong here anyway
@@ -238,6 +238,8 @@ protected:
   bool interactive;
 
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
+
+  //shared_ptr<ExamInfo> template_exam_info_sptr;
   //! This will be used for pre-normalisation
   shared_ptr<BinNormalisation> normalisation_ptr;
   //! This will be used for post-normalisation
