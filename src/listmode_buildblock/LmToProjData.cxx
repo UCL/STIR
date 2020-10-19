@@ -665,11 +665,11 @@ process_data()
 			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
 			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
 			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
-             && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num()))
-             //&& record.energy().get_energyA_in_keV() >= (low_en_thres[bin.first_energy_window_num()-1])
-             //&& record.energy().get_energyA_in_keV() <= (high_en_thres[bin.first_energy_window_num()-1])
-             //&& record.energy().get_energyB_in_keV() >= (low_en_thres[bin.second_energy_window_num()-1])
-             //&& record.energy().get_energyB_in_keV() <= (high_en_thres[bin.second_energy_window_num()-1]))
+             && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
+             && record.energy().get_energyA_in_keV() >= lm_data_ptr->get_exam_info_sptr()->get_low_energy_thres(0)
+             && record.energy().get_energyA_in_keV() <= lm_data_ptr->get_exam_info_sptr()->get_high_energy_thres(0)
+             && record.energy().get_energyB_in_keV() >= lm_data_ptr->get_exam_info_sptr()->get_low_energy_thres(1)
+             && record.energy().get_energyB_in_keV() <= lm_data_ptr->get_exam_info_sptr()->get_high_energy_thres(1))
 		       {
              std::cout<< "energy A new: " << record.energy().get_energyA_in_keV()<< '\n';
              std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
