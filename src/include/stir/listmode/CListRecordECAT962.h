@@ -31,6 +31,7 @@
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/ListGatingInput.h"
 #include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListEnergy.h"
 #include "stir/listmode/CListEventCylindricalScannerWithViewTangRingRingEncoding.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -183,10 +184,18 @@ private:
 #endif
 };
 
+//! A class for storing and using an energy 'event' from a listmode file
+/*! \ingroup listmode
+ */
+class CListEnergyDataECAT962
+{
+ public:
+};
+
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
-class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, public ListGatingInput,
+class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, public ListEnergy, public ListGatingInput,
     public  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>
 {
  public:
@@ -200,6 +209,8 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
 
   bool is_time() const
   { return time_data.type == 1U; }
+  bool is_energy() const
+  { return true; }
   bool is_gating_input() const
   { return this->is_time(); }
   bool is_event() const
@@ -211,6 +222,10 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
   virtual ListTime&   time()
     { return *this; }
   virtual const ListTime&   time() const
+    { return *this; }
+  virtual ListEnergy&   energy()
+    { return *this; }
+  virtual const ListEnergy&   energy() const
     { return *this; }
   virtual ListGatingInput&  gating_input()
     { return *this; }
@@ -232,6 +247,12 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, p
     { return time_data.get_gating(); }
   inline Succeeded set_gating(unsigned int g) 
     { return time_data.set_gating(g); }
+
+  // energy
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
 
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
@@ -260,6 +281,7 @@ private:
   union {
     CListEventDataECAT962  event_data;
     CListTimeDataECAT962   time_data; 
+    CListEnergyDataECAT962 energy_data;
     boost::int32_t         raw;
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);

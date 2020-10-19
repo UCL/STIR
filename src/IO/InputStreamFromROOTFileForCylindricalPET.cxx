@@ -122,7 +122,8 @@ get_next_record(CListRecordROOT& record)
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
                                   time1, time2,
-                                  eventID1, eventID2);
+                                  eventID1, eventID2,
+                                  energy1,energy2);
 }
 
 std::string

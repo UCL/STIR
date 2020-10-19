@@ -663,6 +663,8 @@ process_data()
 			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
+             std::cout<< "energy A new: " << record.energy().get_energyA_in_keV()<< '\n';
+             std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
 			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_sptr->get_max_view_num());
             

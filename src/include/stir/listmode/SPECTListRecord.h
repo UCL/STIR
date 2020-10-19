@@ -33,6 +33,7 @@
 
 
 #include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListEnergy.h"
 #include "ListRecord.h"
 #include "stir/listmode/SPECTListEvent.h"
 
@@ -59,11 +60,14 @@ public:
 
   virtual bool is_event() const = 0;
 
+  //virtual bool is_energy() const = 0;
+
   virtual SPECTListEvent&  event() = 0;
   virtual const SPECTListEvent&  event() const = 0;
   virtual ListTime&   time() = 0;
   virtual const ListTime&   time() const = 0;
-
+  virtual ListEnergy & energy() = 0;
+  virtual const ListEnergy&   energy() const = 0;
   virtual bool operator==(const SPECTListRecord& e2) const = 0;
   bool operator!=(const SPECTListRecord& e2) const { return !(*this == e2); }
 

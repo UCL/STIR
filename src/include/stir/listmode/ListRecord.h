@@ -34,6 +34,7 @@
 
 #include "ListEvent.h"
 #include "ListTime.h"
+#include "ListEnergy.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -60,10 +61,14 @@ public:
 
   virtual bool is_event() const = 0;
 
+  virtual bool is_energy() const = 0;
+
   virtual ListEvent&  event() = 0;
   virtual const ListEvent&  event() const = 0;
   virtual ListTime&   time() = 0;
-  virtual const ListTime&   time() const = 0;
+  virtual const ListTime&   time() const = 0;  
+  virtual ListEnergy&   energy() = 0;
+  virtual const  ListEnergy&   energy() const = 0;
 };
 
 END_NAMESPACE_STIR

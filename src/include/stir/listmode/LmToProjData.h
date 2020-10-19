@@ -45,6 +45,7 @@ START_NAMESPACE_STIR
 
 class ListEvent;
 class ListTime;
+class ListEnergy;
 
 /*!
   \ingroup listmode
