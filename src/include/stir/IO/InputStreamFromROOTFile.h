@@ -80,8 +80,9 @@ public:
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
-                            bool exclude_scattered, bool exclude_randoms,
-                            float low_energy_window, float up_energy_window,
+                            int maximum_order_of_scatter, bool exclude_randoms,
+                            float low_energy_window_1, float up_energy_window_1,
+                            float low_energy_window_2, float up_energy_window_2,
                             int offset_dets);
 
 
@@ -130,9 +131,11 @@ public:
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! Lower energy threshold
-    inline float get_low_energy_thres() const;
+    inline std::vector<float> get_low_energy_thres_in_keV() const;
     //! Upper energy threshold
-    inline float get_up_energy_thres() const;
+    inline std::vector<float> get_up_energy_thres_in_keV() const;
+    //! Number of energy windows
+    inline int get_number_of_energy_windows() const;
 
     //! Set singles_readout_depth
     inline void set_singles_readout_depth(int);
@@ -141,15 +144,15 @@ public:
 
     inline void set_chain_name(const std::string&);
 
-    inline void set_exclude_scattered_events(bool);
+    inline void set_maximum_order_of_scatter(int);
 
     inline void set_exclude_random_events(bool);
 
     inline void set_detectors_offset(int);
 
-    inline void set_low_energy_window(float);
+    inline void set_low_energy_window(const std::vector<float> &);
 
-    inline void set_upper_energy_window(float);
+    inline void set_upper_energy_window(const std::vector<float> &);
     //! Set the read_optional_root_fields flag
     inline void set_optional_ROOT_fields(bool);
 
@@ -194,14 +197,20 @@ protected:
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
-    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
-    bool exclude_scattered;
+    //! Skip scattered events (comptonphantom1 + comptonphantom2 > maximum_order_of_scatter);
+    int maximum_order_of_scatter;
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
     //! Lower energy threshold
-    float low_energy_window;
+    float low_energy_window_1;
     //! Upper energy threshold
-    float up_energy_window;
+    float up_energy_window_1;
+    //! Lower energy threshold
+    float low_energy_window_2;
+    //! Upper energy threshold
+    float up_energy_window_2;
+    //! Number of energy windows
+    int num_en_windows;
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
     //!For the singles_readout_depth from GATE's online documentation:
