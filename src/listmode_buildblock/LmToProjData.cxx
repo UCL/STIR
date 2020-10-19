@@ -218,13 +218,6 @@ post_processing()
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
 
-  /*shared_ptr<ExamInfo> template_exam_info_sptr = template_proj_data_ptr->get_exam_info().create_shared_clone();
-  template_exam_info_sptr->set_num_energy_windows(template_proj_data_ptr->get_exam_info().get_num_energy_windows());
-  for (int i=0; i<template_exam_info_sptr->get_num_energy_windows(); i++)
-  {
-      template_exam_info_sptr->set_high_energy_thres(template_proj_data_ptr->get_exam_info().get_high_energy_thres(i),i);
-      template_exam_info_sptr->set_low_energy_thres(template_proj_data_ptr->get_exam_info().get_low_energy_thres(i),i);
-  }*/
   // propagate relevant metadata
   template_proj_data_info_ptr->set_bed_position_horizontal
     (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
@@ -534,6 +527,9 @@ process_data()
   // we have to do this because the first time tag might occur only after a
   // few coincidence events (as happens with ECAT scanners)
   current_time = 0;
+  shared_ptr<ProjData> template_proj_data_ptr =
+    ProjData::read_from_file(template_proj_data_name);
+
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
   VectorWithOffset<segment_type *> 
@@ -571,6 +567,16 @@ process_data()
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
+        this_frame_exam_info.set_num_energy_windows(template_proj_data_ptr->get_exam_info_sptr()->get_num_energy_windows());
+        std::vector<int> energy_window_pair(2);
+        energy_window_pair.at(0) = template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair().first;
+        energy_window_pair.at(1) = template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair().second;
+        this_frame_exam_info.set_energy_window_pair(energy_window_pair);
+        for (int i = 0; i < template_proj_data_ptr->get_exam_info_sptr()->get_num_energy_windows(); ++i )
+        {
+            this_frame_exam_info.set_high_energy_thres(template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(i),i);
+            this_frame_exam_info.set_low_energy_thres(template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(i),i);
+         }
         proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
       }
@@ -666,11 +672,12 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
 			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= lm_data_ptr->get_exam_info_sptr()->get_low_energy_thres(0)
-             && record.energy().get_energyA_in_keV() <= lm_data_ptr->get_exam_info_sptr()->get_high_energy_thres(0)
-             && record.energy().get_energyB_in_keV() >= lm_data_ptr->get_exam_info_sptr()->get_low_energy_thres(1)
-             && record.energy().get_energyB_in_keV() <= lm_data_ptr->get_exam_info_sptr()->get_high_energy_thres(1))
+             && record.energy().get_energyA_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(0)
+             && record.energy().get_energyA_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(0)
+             && record.energy().get_energyB_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(1)
+             && record.energy().get_energyB_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(1))
 		       {
+
              std::cout<< "energy A new: " << record.energy().get_energyA_in_keV()<< '\n';
              std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
 			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
