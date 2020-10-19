@@ -664,7 +664,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_event(bin, record.event());
+                     get_bin_from_event(bin, record.event(), template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair());
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -672,10 +672,10 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
 			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(0)
-             && record.energy().get_energyA_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(0)
-             && record.energy().get_energyB_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(1)
-             && record.energy().get_energyB_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(1))
+             && record.energy().get_energyA_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(bin.first_energy_window_num()-1)
+             && record.energy().get_energyA_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(bin.first_energy_window_num()-1)
+             && record.energy().get_energyB_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(bin.second_energy_window_num()-1)
+             && record.energy().get_energyB_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(bin.second_energy_window_num()-1))
 		       {
 
              std::cout<< "energy A new: " << record.energy().get_energyA_in_keV()<< '\n';
