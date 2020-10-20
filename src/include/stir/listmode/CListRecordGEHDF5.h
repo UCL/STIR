@@ -183,7 +183,7 @@ namespace RDF_HDF5 {
   This class essentially just forwards the work to the "basic" classes.
 */
 
- class CListEnergyDataGEHDF5: public ListEnergy
+ class CListEnergyDataGEHDF5
   {
    public:
     bool is_energy() const
