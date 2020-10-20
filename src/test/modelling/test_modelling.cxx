@@ -181,6 +181,7 @@ void modellingTests::run_tests()
       patlak_plot._plasma_frame_data=sample_plasma_data_in_frames;
       patlak_plot._frame_defs=time_frame_def;
       patlak_plot._starting_frame=starting_frame;
+      patlak_plot._cal_factor=10.0F;
       patlak_plot.set_up();
       ModelMatrix<2> stir_model_matrix=(patlak_plot.get_model_matrix());
       ModelMatrix<2> mathematica_model_matrix;
@@ -191,8 +192,8 @@ void modellingTests::run_tests()
 
       for(unsigned int frame_num=23;frame_num<=28;++frame_num)
 	{
-	  check_if_equal(mathematica_model_array[1][frame_num],stir_model_array[1][frame_num],"Check _model_array-1st column in ModelMatrix");
-	  check_if_equal(mathematica_model_array[2][frame_num],stir_model_array[2][frame_num],"Check _model_array-2nd column in ModelMatrix");
+	  check_if_equal(mathematica_model_array[1][frame_num]/patlak_plot._cal_factor,stir_model_array[1][frame_num],"Check _model_array-1st column in ModelMatrix");
+	  check_if_equal(mathematica_model_array[2][frame_num]/patlak_plot._cal_factor,stir_model_array[2][frame_num],"Check _model_array-2nd column in ModelMatrix");
 	}
   }
 
