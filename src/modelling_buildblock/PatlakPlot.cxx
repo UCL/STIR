@@ -85,7 +85,12 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
   if(_matrix_is_stored==false)
     {
       // Create empty Model matrix. this is a 2xFrames matrix, that contains Cp(t) and \int{Ct(t)} for each frame (Cp(t): radiotracer concentration on plasma)
-      // BasicCoordinate just changes the indexing range (instead of 0-N, to some min to some max) 
+
+      // NOTE: as we are working in time frames, and not discrete time points, Cp(t) is not a value of Cp at a given single time, t, but instead 
+      //       it is the integral of Cp on thta time frame , \int_{t_start}^{t_end} Cp(t) dt, for each time frame. The same happens with \int{Cp(t)}
+      //       All this is handled in the PlasmaData class, and its not visible here. 
+
+      // BasicCoordinate just changes the indexing range (instead of 0-N, to some min to some max).
       this->_starting_frame=starting_frame;
       BasicCoordinate<2,int> min_range;
       BasicCoordinate<2,int> max_range;
@@ -150,6 +155,11 @@ create_model_matrix()
   if(_matrix_is_stored==false)
     {
       // Create empty Model matrix. this is a 2xFrames matrix, that contains Cp(t) and \int{Ct(t)} for each frame (Cp(t): radiotracer concentration on plasma)
+
+      // NOTE: as we are working in time frames, and not discrete time points, Cp(t) is not a value of Cp at a given single time, t, but instead 
+      //       it is the integral of Cp on thta time frame , \int_{t_start}^{t_end} Cp(t) dt, for each time frame. The same happens with \int{Cp(t)}
+      //       All this is handled in the PlasmaData class, and its not visible here. 
+
       // BasicCoordinate just changes the indexing range (instead of 0-N, to some min to some max) 
       BasicCoordinate<2,int> min_range;
       BasicCoordinate<2,int> max_range;
@@ -250,9 +260,13 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
   VectorWithOffset<float> patlak_y(starting_frame-1,num_frames-1); 
   VectorWithOffset<float> weights(starting_frame-1,num_frames-1);
 
-  // Patlak Linear regression is applied to teh data in the format:
+  // Patlak Linear regression is applied to the data in the format:
   // C(t)/Cp(t)=Ki*\int{Cp(t)}/Cp(t)+Vb
   // therefore our "x" value for the regression is \int{Cp(t)}/Cp(t)  (which we know from the model)
+  //
+  // NOTE: as we are working in time frames, and not discrete time points, Cp(t) is not a value of Cp at a given single time, t, but instead 
+  //       it is the integral of Cp on thta time frame , \int_{t_start}^{t_end} Cp(t) dt, for each time frame. The same happens with \int{Cp(t)}
+  //       All this is handled in the PlasmaData class, and its not visible here. 
   for(unsigned int frame_num = starting_frame; 
       frame_num<=num_frames ; ++frame_num )
     {      
@@ -282,6 +296,7 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
                 // Patlak Linear regression is applied to teh data in the format:
                 // C(t)/Cp(t)=Ki*\int{Cp(t)}/Cp(t)+Vb
                 // therefore our "y" value for the regression is C(t)/Cp(t). C(t) is the dynamic image value. 
+                // (remember, these are integrals over the time frame, not singel values at discrete t) 
                 for ( frame_num = starting_frame; 
                       frame_num<=num_frames ; ++frame_num )
                   patlak_y[frame_num-1]=dyn_image[frame_num][k][j][i]/patlak_model_array[2][frame_num];
