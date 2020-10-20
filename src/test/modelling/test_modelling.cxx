@@ -178,18 +178,21 @@ void modellingTests::run_tests()
       std::cerr << "\nTesting the creation of Model Matrix based on Plasma Data..." << std::endl;     
       PatlakPlot patlak_plot;      
       const unsigned int starting_frame=23;
-      ModelMatrix<2> stir_model_matrix=(patlak_plot.get_model_matrix(sample_plasma_data_in_frames,time_frame_def,starting_frame));
+      patlak_plot._plasma_frame_data=sample_plasma_data_in_frames;
+      patlak_plot._frame_defs=time_frame_def;
+      patlak_plot._starting_frame=starting_frame;
+      patlak_plot.set_up();
+      ModelMatrix<2> stir_model_matrix=(patlak_plot.get_model_matrix());
       ModelMatrix<2> mathematica_model_matrix;
       mathematica_model_matrix.read_from_file(this->add_directory("math_model_matrix.in"));
-      stir_model_matrix.uncalibrate(10);
       //     stir_model_matrix.convert_to_total_frame_counts(time_frame_def);
       Array<2,float> stir_model_array=stir_model_matrix.get_model_array();
       Array<2,float> mathematica_model_array=mathematica_model_matrix.get_model_array();
 
       for(unsigned int frame_num=23;frame_num<=28;++frame_num)
 	{
-	  check_if_equal(mathematica_model_array[1][frame_num]/10.F,stir_model_array[1][frame_num],"Check _model_array-1st column in ModelMatrix");
-	  check_if_equal(mathematica_model_array[2][frame_num]/10.F,stir_model_array[2][frame_num],"Check _model_array-2nd column in ModelMatrix");
+	  check_if_equal(mathematica_model_array[1][frame_num],stir_model_array[1][frame_num],"Check _model_array-1st column in ModelMatrix");
+	  check_if_equal(mathematica_model_array[2][frame_num],stir_model_array[2][frame_num],"Check _model_array-2nd column in ModelMatrix");
 	}
   }
 
