@@ -565,7 +565,7 @@ get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,co
 
     int bin_counter = 0;
     int axial_bins = 0 ;
-    double sum = 0;
+    //double sum = 0; TODO : return the likelihood rather than estimated projdata
 
 //    #ifdef STIR_OPENMP
 //    #pragma omp parallel for reduction(+:axial_bins) schedule(dynamic)
