@@ -6,14 +6,16 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamInfo
+  ExamData
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
   ProjDataInfoCylindricalArcCorr 
   ProjDataInfoCylindricalNoArcCorr 
   ArcCorrection 
-  ProjDataFromStream 
-  ProjDataGEAdvance 
+  ProjDataFromStream  
+  ProjDataGEAdvance
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 
@@ -29,6 +31,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 
@@ -45,6 +48,8 @@ set(${dir_LIB_SOURCES}
 	ArrayFilterUsingRealDFTWithPadding 
 	SeparableArrayFunctionObject 
 	SeparableMetzArrayFilter 
+        SeparableGaussianImageFilter
+        SeparableGaussianArrayFilter
 	MedianArrayFilter3D 
 	MedianImageFilter3D 
 	MinimalArrayFilter3D 
@@ -54,7 +59,9 @@ set(${dir_LIB_SOURCES}
 	ThresholdMinToSmallPositiveValueDataProcessor 
 	ChainedDataProcessor 
 	ArrayFilter1DUsingConvolution 
-	SeparableConvolutionImageFilter 
+	SeparableConvolutionImageFilter
+  SeparableGaussianImageFilter
+  SeparableGaussianArrayFilter
 	NonseparableConvolutionUsingRealDFTImageFilter 
 	SSRB 
 	inverse_SSRB 
@@ -62,6 +69,7 @@ set(${dir_LIB_SOURCES}
 	DynamicDiscretisedDensity 
 	DynamicProjData 
 	MultipleProjData 
+  MultipleDataSetHeader
 	GatedProjData 
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 
@@ -74,14 +82,29 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        date_time_functions
 )
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    ProjDataGEHDF5
+    )
+endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
+if (HAVE_JSON)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
+endif()
+
 include(stir_lib_target)
+
+
+if (HAVE_JSON)
+  target_link_libraries(buildblock PRIVATE nlohmann_json::nlohmann_json)
+endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

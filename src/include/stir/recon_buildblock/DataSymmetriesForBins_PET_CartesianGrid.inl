@@ -75,8 +75,8 @@ find_transform_z(
 		 const int segment_num, 
 		 const int  axial_pos_num) const
 {
-  ProjDataInfoCylindrical* proj_data_info_cyl_ptr = 
-    static_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
+  const ProjDataInfoCylindrical* proj_data_info_cyl_ptr =
+    static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
 
   const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
 

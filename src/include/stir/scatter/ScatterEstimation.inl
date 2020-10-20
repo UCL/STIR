@@ -1,33 +1,6 @@
+#include "stir/scatter/ScatterEstimation.h"
+
 START_NAMESPACE_STIR
-
-void
-ScatterEstimation::
-set_zoom_xy(float arg)
-{
-    this->zoom_xy = arg;
-}
-
-void
-ScatterEstimation::
-set_zoom_z(float arg)
-{
-    this->zoom_z = arg;
-}
-
-
-float
-ScatterEstimation::
-get_zoom_xy()
-{
-    return zoom_xy;
-}
-
-float
-ScatterEstimation::
-get_zoom_z()
-{
-    return zoom_z;
-}
 
 void
 ScatterEstimation::
@@ -45,7 +18,7 @@ set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDens
 
 void
 ScatterEstimation::
-set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
     this->atten_image_sptr = arg;
 }
@@ -73,14 +46,14 @@ set_background_proj_data_sptr(const shared_ptr<ProjData> arg)
 
 void
 ScatterEstimation::
-set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
+set_initial_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
-    this->current_activity_image_sptr = arg;
+    this->current_activity_image_sptr.reset(arg->clone());
 }
 
 void
 ScatterEstimation::
-set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> > arg)
+set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float> > arg)
 {
     this->mask_image_sptr = arg;
 }

@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012-01-29, Kris Thielemans
+    Copyright (C) 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,7 +30,7 @@
 
 #include "stir/KeyParser.h"
 #include "stir/Succeeded.h"
-#include "stir/Object.h"
+#include "stir/RegisteredObjectBase.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
@@ -194,41 +195,48 @@ static void read_line(istream& input, string& line,
 // map_element implementation;
 
 map_element::map_element()
-{
-  type=KeyArgument::NONE;
-  p_object_member=0;
-  p_object_variable=0;
-  p_object_list_of_values=0;
-}
+  :
+  type(KeyArgument::NONE),
+  p_object_member(0),
+  p_object_variable(0),
+  vectorised_key_level(0),
+  p_object_list_of_values(0)
+{}
 
 map_element::map_element(KeyArgument::type t, 
 			 KeyParser::KeywordProcessor pom, 
 			 void* pov,
+                         const int vectorised_key_level_v,
 			 const ASCIIlist_type *list_of_values)
-{
-  type=t;
-  p_object_member=pom;
-  p_object_variable=pov;
-  p_object_list_of_values=list_of_values;
-}
+  :
+  type(t),
+  p_object_member(pom),
+  p_object_variable(pov),
+  vectorised_key_level(vectorised_key_level_v),
+  p_object_list_of_values(list_of_values)
+{}
 
 map_element::map_element(void (KeyParser::*pom)(),
-	      Object** pov, 
+	      RegisteredObjectBase** pov, 
               Parser* parser)
   :
   type(KeyArgument::PARSINGOBJECT),
   p_object_member(pom),
   p_object_variable(pov),
+  vectorised_key_level(0),
+  p_object_list_of_values(0),
   parser(parser)//static_cast<Parser *>(parser))
   {}
 
 map_element::map_element(void (KeyParser::*pom)(),
-	      shared_ptr<Object>* pov, 
+	      shared_ptr<RegisteredObjectBase>* pov, 
               Parser* parser)
   :
   type(KeyArgument::SHARED_PARSINGOBJECT),
   p_object_member(pom),
   p_object_variable(pov),
+  vectorised_key_level(0),
+  p_object_list_of_values(0),
   parser(parser)//static_cast<Parser *>(parser))
   {}
 
@@ -242,6 +250,7 @@ map_element& map_element::operator=(const map_element& me)
   type=me.type;
   p_object_member=me.p_object_member;
   p_object_variable=me.p_object_variable;
+  vectorised_key_level=me.vectorised_key_level;
   p_object_list_of_values=me.p_object_list_of_values;
   parser = me.parser;
   return *this;
@@ -360,11 +369,29 @@ KeyParser::add_key(const string& keyword, float * variable)
   {
     add_key(keyword, KeyArgument::FLOAT, variable);
   }
-  
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<float> * variable)
+  {
+    add_key(keyword, KeyArgument::FLOAT, variable, 1);
+  }
+
 void
 KeyParser::add_key(const string& keyword, double * variable)
   {
     add_key(keyword, KeyArgument::DOUBLE, variable);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<double> * variable)
+  {
+    add_key(keyword, KeyArgument::DOUBLE, variable, 1);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<vector<double> > * variable)
+  {
+    add_key(keyword, KeyArgument::LIST_OF_DOUBLES, variable, 1);
   }
 
 void
@@ -374,9 +401,33 @@ KeyParser::add_key(const string& keyword, int * variable)
   }
 
 void
+KeyParser::add_key(const string& keyword, vector<int> * variable)
+  {
+    add_key(keyword, KeyArgument::LIST_OF_INTS, variable);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<int> * variable)
+  {
+    add_key(keyword, KeyArgument::INT, variable, 1);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<vector<int> > * variable)
+  {
+    add_key(keyword, KeyArgument::LIST_OF_INTS, variable, 1);
+  }
+
+void
 KeyParser::add_key(const string& keyword, unsigned int * variable)
   {
     add_key(keyword, KeyArgument::UINT, variable);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<unsigned int> * variable)
+  {
+    add_key(keyword, KeyArgument::UINT, variable, 1);
   }
 
 void
@@ -389,6 +440,12 @@ void
 KeyParser::add_key(const string& keyword, unsigned long * variable)
   {
     add_key(keyword, KeyArgument::ULONG, variable);
+  }
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<unsigned long> * variable)
+  {
+    add_key(keyword, KeyArgument::ULONG, variable, 1);
   }
 
 void
@@ -439,6 +496,13 @@ KeyParser::add_key(const string& keyword, string * variable)
     add_key(keyword, KeyArgument::ASCII, variable);
   }
 
+
+void
+KeyParser::add_vectorised_key(const string& keyword, vector<string> * variable)
+  {
+    add_key(keyword, KeyArgument::ASCII, variable, 1);
+  }
+
 void
 KeyParser::add_key(const string& keyword, int * variable,
                    const ASCIIlist_type * list_of_values_ptr)
@@ -446,6 +510,12 @@ KeyParser::add_key(const string& keyword, int * variable,
     add_key(keyword, KeyArgument::ASCIIlist, variable, list_of_values_ptr);
   }
  
+void
+KeyParser::ignore_key(const string& keyword)
+  {
+    add_key(keyword, KeyArgument::NONE, &KeyParser::do_nothing);
+  }
+
 void
 KeyParser::add_start_key(const string& keyword)
   {
@@ -466,7 +536,26 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
-  add_in_keymap(keyword, map_element(t, function, variable, list_of_values/*, trilian::unknown*/));
+
+  add_in_keymap(keyword, map_element(t, function, variable, 0, list_of_values));
+}
+
+void KeyParser::add_key(const string& keyword, 
+			KeyArgument::type t, 
+			KeywordProcessor function,
+			void* variable,
+                        const int vectorised_key_level,
+			const ASCIIlist_type * const list_of_values)
+{
+  add_in_keymap(keyword, map_element(t, function, variable, vectorised_key_level, list_of_values));
+}
+
+void KeyParser::add_key(const string& keyword, 
+			KeyArgument::type t, 
+			void* variable,
+			const ASCIIlist_type * const list_of_values)
+{
+  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, 0, list_of_values));
 }
 
 #if 0
@@ -482,10 +571,12 @@ void KeyParser::add_vectored_key(const string& keyword,
 void KeyParser::add_key(const string& keyword, 
 			KeyArgument::type t, 
 			void* variable,
+                        const int vectorised_key_level,
 			const ASCIIlist_type * const list_of_values)
 {
-  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, list_of_values));
+  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, vectorised_key_level, list_of_values));
 }
+
 
 void
 KeyParser::print_keywords_to_stream(ostream& out) const
@@ -737,9 +828,9 @@ static int get_index(const string& line)
     if (eok == string::npos)
     {
       // TODO do something more graceful
-      warning("Interfile warning: invalid vectored key in line \n'%s'.\n%s",
+      warning("Interfile warning: invalid vectorised key in line \n'%s'.\n%s",
         line.c_str(), 
-        "Assuming this is not a vectored key.");
+        "Assuming this is not a vectorised key.");
       return 0;
     }
     in=atoi(line.substr(sok,eok-sok).c_str());
@@ -893,13 +984,13 @@ void KeyParser::set_parsing_object()
   if (!keyword_has_a_value)
     return;
 
-  // TODO this does not handle the vectored key convention
+  // TODO this does not handle the vectorised key convention
   
   // current_index is set to 0 when there was no index
   if(current_index!=0)
-    error("KeyParser::PARSINGOBJECT can't handle vectored keys yet\n");
+    error("KeyParser::PARSINGOBJECT can't handle vectorised keys yet\n");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  *reinterpret_cast<Object **>(current->p_object_variable) =
+  *reinterpret_cast<RegisteredObjectBase **>(current->p_object_variable) =
     (*current->parser)(input, par_ascii);	    
 }
 
@@ -911,13 +1002,13 @@ void KeyParser::set_shared_parsing_object()
   if (!keyword_has_a_value)
     return;
   
-  // TODO this does not handle the vectored key convention
+  // TODO this does not handle the vectorised key convention
   
   // current_index is set to 0 when there was no index
   if(current_index!=0)
-    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet");
+    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectorised keys yet");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable)->
+  reinterpret_cast<shared_ptr<RegisteredObjectBase> *>(current->p_object_variable)->
     reset((*current->parser)(input, par_ascii));
 }
 
@@ -942,11 +1033,14 @@ void KeyParser::set_variable()
   if (!keyword_has_a_value)
     return;
 
-  // TODO this does not handle the vectored key convention
+  // TODO this does not handle the vectorised key convention
   
   // current_index is set to 0 when there was no index
   if(!current_index)
     {
+      if (current->vectorised_key_level>0)
+        error(boost::format("Error parsing: expected a vectorised key as in \"%1%[1]\", but no bracket found") % keyword);
+
       switch(current->type)
 	{	  
 #define KP_case_assign(KeyArgumentValue, type) \
@@ -1014,6 +1108,9 @@ void KeyParser::set_variable()
     }
   else	// Sets vector elements using current_index
     {
+      if (current->vectorised_key_level==0)
+        error(boost::format("Error parsing: encountered unexpected \"vectorisation\" of key: \"%1%[%2%]\"") % keyword % current_index);
+
       switch(current->type)
 	{
 #define KP_case_assign(KeyArgumentValue, type) \
@@ -1138,8 +1235,6 @@ namespace detail
   }
 }
 
-// TODO breaks with vectored keys (as there is no way of finding out if the
-// variable is actually a vector of the relevant type
 string KeyParser::parameter_info() const
 {  
 #ifdef BOOST_NO_STRINGSTREAM
@@ -1163,10 +1258,15 @@ string KeyParser::parameter_info() const
          i->second.p_object_member == &KeyParser::stop_parsing)
          continue;
 
+      if (i->second.vectorised_key_level > 0)
+        {
+          warning("KeyParser: cannot handle vectorised key yet");//TODO
+          continue;
+        }
       s << i->first << " := ";
       switch(i->second.type)
       {
-        // TODO will break with vectored keys
+        // TODO will break with vectorised keys
       case KeyArgument::DOUBLE:
         s << *reinterpret_cast<double*>(i->second.p_object_variable); break;
       case KeyArgument::FLOAT:
@@ -1195,8 +1295,8 @@ string KeyParser::parameter_info() const
 	}
       case KeyArgument::PARSINGOBJECT:
         {
-          Object* parsing_object_ptr =
-            *reinterpret_cast<Object**>(i->second.p_object_variable);
+          RegisteredObjectBase* parsing_object_ptr =
+            *reinterpret_cast<RegisteredObjectBase**>(i->second.p_object_variable);
 	  if (parsing_object_ptr!=0)
 	  {
 	    s << parsing_object_ptr->get_registered_name() << endl;
@@ -1212,8 +1312,8 @@ string KeyParser::parameter_info() const
 
           s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
 #else
-          shared_ptr<Object> parsing_object_ptr =
-            (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
+          shared_ptr<RegisteredObjectBase> parsing_object_ptr =
+            (*reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(i->second.p_object_variable));
           
           if (!is_null_ptr(parsing_object_ptr))
 	  {
@@ -1267,9 +1367,6 @@ string KeyParser::parameter_info() const
     return s.str();
   }
 
-// KT 13/03/2001 new 
-// TODO breaks with vectored keys (as there is no way of finding out if the
-// variable is actually a vector of the relevant type
 void KeyParser::ask_parameters()
 {   
   // This is necessary for set_parsing_object. It will allow the 
@@ -1286,6 +1383,12 @@ void KeyParser::ask_parameters()
           i->second.p_object_member == &KeyParser::start_parsing ||
           i->second.p_object_member == &KeyParser::stop_parsing)
           continue;
+
+      if (i->second.vectorised_key_level > 0)
+        {
+          warning("KeyParser: cannot handle vectorised key yet");//TODO
+          continue;
+        }
 
       keyword = i->first;
 

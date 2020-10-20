@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, 202 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/shared_ptr.h"
 
 #include "stir/shared_ptr.h"
 
@@ -40,7 +41,7 @@ START_NAMESPACE_STIR
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
 
-  \todo This should be an abtract registered object, in oreder to serve as a complete
+  \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
   */
 class ExamInfo
@@ -49,8 +50,8 @@ class ExamInfo
 public :
 
   //! Default constructor
-  /*! Most fields take there default values (much might be invalid).
-     \a start_time_in_secs_since_1970 is set to zero to 
+  /*! Most fields take their default values (which might be invalid).
+     \a start_time_in_secs_since_1970 is set to zero, energy window info to -1, to
      indicate that it is not initialised.
   */
 
@@ -59,16 +60,15 @@ public :
     {
 
       num_windows = 1;
-      low_energy_thres.resize(num_windows);
-      up_energy_thres.resize(num_windows);
+      low_energy_thres.resize(1);
+      up_energy_thres.resize(1);
       en_win_pair.resize(2);
       low_energy_thres[0]=-1.F;
       up_energy_thres[0]=-1.F;
-      en_win_pair[0]=-1.F;
-      en_win_pair[1]=-1.F;
+      en_win_pair[0]=1.F;
+      en_win_pair[1]=1.F;
 
    }
-
 
 
   std::string originating_system;
@@ -79,6 +79,11 @@ public :
 
   TimeFrameDefinitions time_frame_definitions;
 
+  const TimeFrameDefinitions& get_time_frame_definitions() const
+  { return time_frame_definitions; }
+  TimeFrameDefinitions& get_time_frame_definitions()
+  { return time_frame_definitions; }
+
   double start_time_in_secs_since_1970;
 
   //! \name Functions that return info related on the acquisition settings
@@ -87,6 +92,7 @@ public :
   inline float  get_low_energy_thres(int en_window = 0) const;
   //! Get the high energy boundary
   inline float  get_high_energy_thres(int en_window = 0) const;
+
   //! Get the number of energy windows
   inline int  get_num_energy_windows() const;
   inline std::pair<int,int> get_energy_window_pair() const;
@@ -99,10 +105,21 @@ public :
   inline void set_low_energy_thres(float new_val,int en_window = 0);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val,int en_window = 0);
+  //! Set the low energy boundary as a vector (currently only used in listmode code)
+  inline void set_low_energy_thres_vect(std::vector<float> new_val);
+  //! Set the high energy boundary as a vector (currently only used in listmode code)
+  inline void set_high_energy_thres_vect(std::vector<float> new_val);
   //! Set the number of energy windows
   inline void set_num_energy_windows(int n_win);
-  inline void set_energy_window_pair(std::vector<int> val,int n_win);
+  //! Set the energy window pair
+  inline void set_energy_window_pair(std::vector<int> val);
   //@}
+
+  inline bool has_energy_information() const
+  {
+    //TODO ADD LOOP: for (int i=0; i< num_windows; i++)
+    return (low_energy_thres[0] > 0.f)&&(up_energy_thres[0] > 0.f);
+  }
 
   //! Standard trick for a 'virtual copy-constructor'
   inline ExamInfo* clone() const;
@@ -113,16 +130,33 @@ public :
     {
       time_frame_definitions = new_time_frame_definitions;
     }
+
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
+  //! Return a string with info on parameters
+  /*! the returned string is not intended for parsing. */
+  std::string parameter_info() const;
+
   private:
-     //!
+  //!
+  //! \brief num_windows
+  //! \author Ludovica Brusaferri
+  //! \details This is the value of the number of enegry windows
+  //! This parameter was initially introduced for scatter simulation.
+  //! If scatter simulation is not needed, can default to 1
+  int num_windows;
+
+  //!
   //! \brief low_energy_thres
   //! \author Nikos Efthimiou
   //! \details This is the value of low energy threshold of the energy window.
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
-
-  int num_windows;
   std::vector<float> low_energy_thres;
 
   //!
@@ -134,6 +168,11 @@ public :
   //! If scatter simulation is not needed, can default to -1
   std::vector<float> up_energy_thres;
 
+  //!
+  //! \brief en_win_pair
+  //! \author Ludovica Brusaferri
+  //! \details This is the value of the energy window pair for a certain sinogram
+  //! Can default to {1,1}
   std::vector<int> en_win_pair;
 
 };

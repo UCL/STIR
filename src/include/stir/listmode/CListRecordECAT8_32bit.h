@@ -36,6 +36,7 @@
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 #include "stir/DetectionPositionPair.h"
+#include "stir/listmode/ListEnergy.h"
 
 START_NAMESPACE_STIR
 namespace ecat {
@@ -85,7 +86,7 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   DataType get_data() const { return this->data; }
 
  public:  
-  CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
+  CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
  //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -165,7 +166,7 @@ public:
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT8_32bit : public CListTime
+class CListTimeECAT8_32bit : public ListTime
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)
@@ -194,6 +195,20 @@ class CListTimeECAT8_32bit : public CListTime
   };
 };
 
+//! A class for storing and using an energy 'event' from a listmode file from the ECAT 8_32bit scanner
+/*! \ingroup listmode
+ */
+class CListEnergyECAT8_32bit : public ListEnergy
+{
+ public:
+  bool is_energy() const
+  { return true; }
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
+};
+
 //! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
    We currently only support coincidence events and  a timing flag.
@@ -210,6 +225,8 @@ class CListTimeECAT8_32bit : public CListTime
 
   bool is_time() const
   { return this->any_data.is_time(); }
+  bool is_energy() const
+  { return true; }
   /*
   bool is_gating_input() const
   { return this->is_time(); }
@@ -224,7 +241,10 @@ class CListTimeECAT8_32bit : public CListTime
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
-
+  virtual CListEnergyECAT8_32bit&   energy()
+    { return this->energy_data; }
+  virtual const CListEnergyECAT8_32bit&   energy() const
+    { return this->energy_data; }
   bool operator==(const CListRecord& e2) const
   {
     return dynamic_cast<CListRecordECAT8_32bit const *>(&e2) != 0 &&
@@ -232,7 +252,7 @@ class CListTimeECAT8_32bit : public CListTime
   }	 
 
  public:     
- CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+ CListRecordECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
   event_data(proj_data_info_sptr)
     {}
 
@@ -264,6 +284,7 @@ class CListTimeECAT8_32bit : public CListTime
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
+  CListEnergyECAT8_32bit    energy_data;
   CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 

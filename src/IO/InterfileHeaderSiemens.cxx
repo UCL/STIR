@@ -2,7 +2,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2018 STFC
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/IO/stir_ecat_common.h"
 #include <numeric>
 #include <functional>
 
@@ -87,24 +89,23 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   data_offset = 0UL;
 
 
-  /*add_key("type of data", 
+  // use this as opposed to InterfileHeader::set_type_of_data() to cope with specifics for Siemens
+  remove_key("type of data");
+  add_key("type of data",
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
           &type_of_data_index, 
-          &type_of_data_values);*/
+          &type_of_data_values);
 
   add_key("%patient orientation",
-	  KeyArgument::ASCIIlist,
 	  &patient_position_index,
 	  &patient_position_values);
   
   add_key("image data byte order", 
-    KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
   
-  add_key("scale factor (mm/pixel)", 
-    KeyArgument::DOUBLE, &pixel_sizes);
+  add_vectorised_key("scale factor (mm/pixel)", &pixel_sizes);
 
   // only a single time frame supported by Siemens currently
   num_time_frames = 1;
@@ -145,23 +146,27 @@ bool InterfileHeaderSiemens::post_processing()
 void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
-#if 0
-  // already done below
-    {
-      add_key("PET data type", 
-              KeyArgument::ASCIIlist,
-              &PET_data_type_index, 
-              &PET_data_type_values);
-      add_key("process status", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("IMAGE DATA DESCRIPTION", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      // TODO rename keyword 
-      add_key("data offset in bytes", 
-	      KeyArgument::ULONG,	&data_offset_each_dataset);
 
-    }
+  if (this->type_of_data_index == -1)
+    error("Interfile parsing: type_of_data needs to be set to supported value");
+
+  const string type_of_data = this->type_of_data_values[this->type_of_data_index];
+
+  if (type_of_data == "PET")
+    {
+      // already done in constructor
+#if 0
+      add_key("PET data type",
+              &PET_data_type_index,
+              &PET_data_type_values);
+      ignore_key("process status");
+      ignore_key("IMAGE DATA DESCRIPTION");
 #endif
+    }
+  else
+    {
+      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+    }
 }
 
 
@@ -180,85 +185,67 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("%axial compression", &axial_compression);
   add_key("%maximum ring difference", &maximum_ring_difference);  
   add_key("%number of segments", &num_segments);
-  add_key("%segment table", KeyArgument::LIST_OF_INTS, &segment_table);
+  add_key("%segment table", &segment_table);
   add_key("%number of tof time bins", &num_tof_bins);
   
-  num_energy_windows = -1;
-  add_key("number of energy windows",
-    KeyArgument::INT, (KeywordProcessor)&InterfileRawDataHeaderSiemens::read_num_energy_windows, &num_energy_windows);
-  add_key("%energy window lower level (keV)",
-    KeyArgument::FLOAT, &lower_en_window_thresholds);
+  add_vectorised_key("%energy window lower level (keV)", &lower_en_window_thresholds);
 
-  add_key("%energy window upper level (keV)",
-    KeyArgument::FLOAT, &upper_en_window_thresholds);
+  add_vectorised_key("%energy window upper level (keV)", &upper_en_window_thresholds);
 
   remove_key("PET data type");
   add_key("PET data type",
-	  KeyArgument::ASCIIlist,
 	  &PET_data_type_index,
 	  &PET_data_type_values);
 
   // TODO should add data format:=CoincidenceList|sinogram and then check its value
   remove_key("process status");
-  add_key("process status",
-	  KeyArgument::NONE, &KeyParser::do_nothing);
+  ignore_key("process status");
   remove_key("IMAGE DATA DESCRIPTION");
-  add_key("IMAGE DATA DESCRIPTION",
-	  KeyArgument::NONE, &KeyParser::do_nothing);
+  ignore_key("IMAGE DATA DESCRIPTION");
+  ignore_key("PET STUDY (Emission data)");
+  ignore_key("PET STUDY (Image data)");
+  ignore_key("PET STUDY (General)");
   remove_key("data offset in bytes");
-  add_key("data offset in bytes",
-	  KeyArgument::ULONG, &data_offset_each_dataset);
 
-  add_key("%comment", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%sms-mi header name space", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%listmode header file", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%listmode data file", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%compressor version", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%study date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%study time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("isotope name", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("isotope gamma halflife (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("isotope branching factor", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("radiopharmaceutical", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%tracer injection date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%tracer injection time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("relative time of tracer injection (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("tracer activity at time of injection (bq)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("injected volume (ml)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("horizontal bed translation", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("start horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("end horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("start vertical bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%coincidence window width (ns)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("gantry tilt angle (degrees)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("method of attenuation correction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("method of scatter correction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%method of random correction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%decay correction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%decay correction reference date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%decay correction reference time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("decay correction factor", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("scatter fraction (%)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("scan data type description", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("total prompts events", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("total prompts", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%total randoms", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%total net trues", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%image duration from timing tags (msec)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%gim loss fraction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%pdr loss fraction", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%detector block singles", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%total uncorrected singles rate", KeyArgument::NONE, &KeyParser::do_nothing);
+  ignore_key("%comment");
+  ignore_key("%sms-mi header name space");
+  ignore_key("%listmode header file");
+  ignore_key("%listmode data file");
+  ignore_key("%compressor version");
+  ignore_key("%study date (yyyy");
+  ignore_key("%study time (hh");
+  ignore_key("isotope name");
+  ignore_key("isotope gamma halflife (sec)");
+  ignore_key("isotope branching factor");
+  ignore_key("radiopharmaceutical");
+  ignore_key("%tracer injection date (yyyy");
+  ignore_key("%tracer injection time (hh");
+  ignore_key("relative time of tracer injection (sec)");
+  ignore_key("tracer activity at time of injection (bq)");
+  ignore_key("injected volume (ml)");
+  ignore_key("horizontal bed translation");
+  ignore_key("end horizontal bed position (mm)");
+  ignore_key("%coincidence window width (ns)");
+  ignore_key("gantry tilt angle (degrees)");
+  ignore_key("method of attenuation correction");
+  ignore_key("method of scatter correction");
+  ignore_key("%method of random correction");
+  ignore_key("%decay correction");
+  ignore_key("%decay correction reference date (yyyy");
+  ignore_key("%decay correction reference time (hh");
+  ignore_key("decay correction factor");
+  ignore_key("scatter fraction (%)");
+  ignore_key("scan data type description");
+  ignore_key("total prompts events");
+  ignore_key("total prompts");
+  ignore_key("%total randoms");
+  ignore_key("%total net trues");
+  ignore_key("%image duration from timing tags (msec)");
+  ignore_key("%gim loss fraction");
+  ignore_key("%pdr loss fraction");
+  ignore_key("%detector block singles");
+  ignore_key("%total uncorrected singles rate");
 
-}
-
-
-void InterfileRawDataHeaderSiemens::read_num_energy_windows()
-{
-  set_variable();
-
-  lower_en_window_thresholds.resize(num_energy_windows, -1.);
-  upper_en_window_thresholds.resize(num_energy_windows, -1.);
 }
 
 bool InterfileRawDataHeaderSiemens::post_processing()
@@ -266,25 +253,20 @@ bool InterfileRawDataHeaderSiemens::post_processing()
   if (InterfileHeaderSiemens::post_processing() == true)
     return true;
 
-  if (standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]) != "emission")
-  { warning("Interfile error: expecting emission data\n");  return true; }
-
-  if (num_energy_windows >= 1)
-    {
-    // TODO support more energy windows
-    exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
-    exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
-    }
+  const std::string PET_data_type =
+    standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
+  if (PET_data_type != "emission" && PET_data_type != "transmission")
+    { error("Interfile error: expecting emission or transmission for 'PET data type'"); }
 
   // handle scanner
 
-  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
     {
       error("scanner not recognised from originating system");
     }
   // consistency check with values of the scanner
-  if (num_rings != scanner_sptr->get_num_rings())
+  if ((num_rings >= 0) && (num_rings != scanner_sptr->get_num_rings()))
     {
       error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
             num_rings, scanner_sptr->get_num_rings());
@@ -298,21 +280,17 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   // handle segments
   {
-    if (num_segments != segment_table.size())
+    if (static_cast<std::size_t>(num_segments) != segment_table.size())
       {
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
-    // same order as in stir_ecat7
-    // Siemens always stores segments as 0, -1, +1, ...
-    segment_sequence.resize(num_segments);
-    segment_sequence[0] = 0;
-    for (int segment_num = 1; segment_num <= num_segments/2; ++segment_num)
-      {
-        segment_sequence[2 * segment_num - 1] = -segment_num;
-        segment_sequence[2 * segment_num] = segment_num;
-      }
+    segment_sequence = ecat::find_segment_sequence(*data_info_ptr);
     //XXX check if order here and segment_table are consistent
   }
+
+  // Set the bed position
+  data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_ptr->set_bed_position_vertical(bed_position_vertical);
 
   return false;
 }
@@ -324,25 +302,31 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   : InterfileRawDataHeaderSiemens()
 {
+  remove_key("scan data type description");
   add_key("number of scan data types",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types, &num_scan_data_types);
   // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
-  add_key("scan data type description", KeyArgument::ASCII, &scan_data_types);
-
-  // scan data type size depends on the previous field
+  add_vectorised_key("scan data type description", &scan_data_types);
+  // size depends on the previous "number" field
   // data offset in bytes[1] : = 24504
   //  data offset in bytes[2] : = 73129037
+  add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
   add_key("%total number of sinograms", &total_num_sinograms);
   add_key("%compression", &compression_as_string);
-  add_key("applied corrections",
-    KeyArgument::LIST_OF_ASCII, &applied_corrections);
+  add_key("applied corrections", &applied_corrections);
+
+  ignore_key("%sinogram type"); // value: "step and shoot"
+  ignore_key("scale factor (degree/pixel)");
+  ignore_key("%tof mashing factor");
+  // add_key(%tof mashing factor", &tof_mashing_factor);
+  ignore_key("total number of data sets");
 
   add_key("%number of buckets",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
-  add_key("%bucket singles rate", KeyArgument::INT, &bucket_singles_rates);
+  add_vectorised_key("%bucket singles rate", &bucket_singles_rates);
   
   
 }
@@ -380,25 +364,23 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
     {
     error("Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin")
+  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
     {
     // use error message with index [1] as that is what the user sees.
-    warning("Interfile error: expecting 'matrix axis label[1] := bin'\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
     }
   num_bins = matrix_size[0][0];
 
-  if (matrix_labels[1] == "projection" && matrix_labels[2] == "plane")
+  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+      (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+      )
     {
     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     num_views = matrix_size[1][0];
     }
   else
     {
-    warning("Interfile error: matrix labels not in expected (or supported) format\n");
-    stop_parsing();
-    return true;
+    error("Interfile error: matrix labels not in expected (or supported) format");
     }
 
   return false;
@@ -411,8 +393,8 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   // check for arc-correction
   if (applied_corrections.size() == 0)
     {
-    warning("\nParsing Interfile header for projection data: \n"
-      "\t'applied corrections' keyword not found. Assuming non-arc-corrected data\n");
+    warning("Parsing Interfile header for projection data: \n"
+      "\t'applied corrections' keyword not found or empty. Assuming non-arc-corrected data");
     is_arccorrected = false;
     }
   else
@@ -424,7 +406,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
       ++iter)
       {
         const string correction = standardise_keyword(*iter);
-        if (correction == "arc correction" || correction == "arc corrected")
+        if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected")
           {
             is_arccorrected = true;
             break;
@@ -502,27 +484,27 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   data_offset_each_dataset.resize(1, 0UL);
   add_key("data offset in bytes", &data_offset_each_dataset[0]);
 
-  add_key("%bed zero offset (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("pet scanner type", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("transaxial fov diameter (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("distance between rings (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("gantry crystal radius (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("bin size (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("septa state", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%tof mashing factor", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%preset type", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%preset value", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%preset unit", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%total listmode word counts", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%coincidence list data", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%lm event and tag words format (bits)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%timing tagwords interval (msec)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%singles polling method", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%singles polling interval (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%singles scale factor", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%total number of singles blocks", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%time sync", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("%comment", KeyArgument::NONE, &KeyParser::do_nothing);
+  ignore_key("%bed zero offset (mm)");
+  ignore_key("pet scanner type");
+  ignore_key("transaxial fov diameter (cm)");
+  ignore_key("distance between rings (cm)");
+  ignore_key("gantry crystal radius (cm)");
+  ignore_key("bin size (cm)");
+  ignore_key("septa state");
+  ignore_key("%tof mashing factor");
+  ignore_key("%preset type");
+  ignore_key("%preset value");
+  ignore_key("%preset unit");
+  ignore_key("%total listmode word counts");
+  ignore_key("%coincidence list data");
+  ignore_key("%lm event and tag words format (bits)");
+  ignore_key("%timing tagwords interval (msec)");
+  ignore_key("%singles polling method");
+  ignore_key("%singles polling interval (sec)");
+  ignore_key("%singles scale factor");
+  ignore_key("%total number of singles blocks");
+  ignore_key("%time sync");
+  ignore_key("%comment");
   }
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
@@ -533,6 +515,14 @@ int InterfileListmodeHeaderSiemens::find_storage_order()
   return false;
 }
 
+int InterfileListmodeHeaderSiemens::get_axial_compression() const
+{return axial_compression;}
+int InterfileListmodeHeaderSiemens::get_maximum_ring_difference() const
+{return maximum_ring_difference;}
+int InterfileListmodeHeaderSiemens::get_num_views() const
+{return num_views;}
+int InterfileListmodeHeaderSiemens::get_num_projections() const
+{return num_bins;}
 
 
 bool InterfileListmodeHeaderSiemens::post_processing()

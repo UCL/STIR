@@ -4,7 +4,8 @@ done by the STIR-SPECT team when developing the code. These are in the org direc
 
 Sadly, when the files were generated, we made a mistake such that the attenuation map is actually rotated
 over 90 degrees and flipped in z-direction (as compared to the reconstructed image). 
-This was spotted by Katherine Royston. This means that the "original" reconstructions are actually incorrect. 
+This was spotted by Katherine Royston. This means that the "original" reconstructions are actually incorrect.
+In addition, the reconstructed images are inverted along x. So the script inverts the reconstructed images along x.
 
 However, as the test was not designed to check for correctness, but consistency over different STIR versions,
 Kris Thielemans decided to keep the files as they are.

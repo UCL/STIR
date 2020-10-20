@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2005 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2016-2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,10 +26,11 @@
   \author Kris Thielemans
 */
 #include "stir/ProjData.h"
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
 #include "stir/is_null_ptr.h"
+#include "stir/copy_fill.h"
 //#include "stir/Scanner.h"
 #include <vector>
 
@@ -39,9 +40,9 @@ class MultipleProjData : public ExamData
 {
 public:
 
-  MultipleProjData():ExamData() {};
+  MultipleProjData():ExamData() {}
 
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
     :ExamData(exam_info_sptr)
   {
   }
@@ -53,8 +54,12 @@ public:
   //! \author Nikos Efthimiou
   //! \details Convinience constructor which sets the number of gates.
   //! \warning The _proj_datas have been resized, but are still empty.
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                    const int num_gates);
+
+  static
+  unique_ptr<MultipleProjData>
+  read_from_file(const std::string &parameter_file);
 
   //N.E.14/07/16 Inherited from ExamData
   // //! Get a pointer to the exam information
@@ -132,9 +137,9 @@ public:
       return this->_proj_datas[index-1]; 
     }
 
-  const ProjDataInfo *
-    get_proj_data_info_ptr() const;
-  // return get_proj_data_sptr(1))->get_proj_data_info_ptr()
+  const shared_ptr<const ProjDataInfo>
+    get_proj_data_info_sptr() const;
+  // return get_proj_data_sptr(1))->get_proj_data_info_sptr()
 
   /*! \deprecated */
   unsigned int get_num_gates() const
@@ -144,22 +149,23 @@ public:
 
   //!
   //! \brief copy_to
+  //! \return \a array_iter advanced over the number of bins (as \c std::copy)
   //! \param full_iterator of some array
   //! \details Copy all data to an array.
   //! \author Nikos Efthimiou
   //! \warning Full::iterator should be supplied.
   template < typename iterT>
-  void copy_to(iterT array_iter)
+  iterT copy_to(iterT array_iter) const
   {
-      for ( std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
+    for ( std::vector<shared_ptr<ProjData> >::const_iterator it = _proj_datas.begin();
             it != _proj_datas.end(); ++it)
       {
           if ( is_null_ptr( *(it)))
-              error("Dynamic ProjData have not been properly allocated.Abort.");
+              error("Dynamic/gated ProjData have not been properly allocated. Abort.");
 
-          const std::size_t num_bins = (*it)->copy_to(array_iter);
-          std::advance(array_iter, num_bins);
+          array_iter = stir::copy_to(*(*it), array_iter);
       }
+      return array_iter;
   }
 
   //!
@@ -171,15 +177,13 @@ public:
   template <typename iterT>
   void fill_from(iterT array_iter)
   {
-      long int cur_pos = 0;
       for (std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
            it != _proj_datas.end(); ++it)
       {
           if ( is_null_ptr( *(it)))
               error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          cur_pos = (*it)->fill_from(array_iter);
-          std::advance(array_iter, cur_pos);
+          array_iter = (*it)->fill_from(array_iter);
       }
   }
 
@@ -204,6 +208,36 @@ protected:
   //N.E:14/07/16 Inherited from ExamData.
 //  shared_ptr<ExamInfo> _exam_info_sptr;
 };
+
+
+//! Copy all bins to a range specified by an iterator
+/*! 
+  \ingroup copy_fill
+  \return \a iter advanced over the range (as std::copy)
+  
+  \warning there is no range-check on \a iter
+*/
+template<>
+struct CopyFill<MultipleProjData>
+{ template < typename iterT>
+    static
+iterT copy_to(const MultipleProjData& stir_object, iterT iter)
+{
+  //std::cerr<<"Using MultipleProjData::copy_to\n";
+  return stir_object.copy_to(iter);
+}
+};
+
+//! set all elements of a MultipleProjData  from an iterator
+/*!  
+   Implementation that resorts to MultipleProjData::fill_from
+   \warning there is no size/range-check on \a iter
+*/
+template < typename iterT>
+void fill_from(MultipleProjData& stir_object, iterT iter, iterT /*iter_end*/)
+{
+  return stir_object.fill_from(iter);
+}
 
 END_NAMESPACE_STIR
 #endif

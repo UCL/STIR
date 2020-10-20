@@ -78,7 +78,7 @@ private:
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeROOT : public CListTime
+class CListTimeROOT : public ListTime
 {
 public:
     void init_from_data(double time1, double time2)
@@ -127,6 +127,45 @@ private:
     double timeB;
 };
 
+//! A class for storing and using an energy 'event' from a listmode file
+/*! \ingroup listmode
+ */
+class CListEnergyROOT : public ListEnergy
+{
+public:
+
+    void init_energy_from_data(double energy1, double energy2)
+    {
+        energyA = energy1;
+        energyB = energy2;
+    }
+
+    //! Returns always true
+    bool is_energy() const
+    { return true; }
+    //! Get the detection energy of the first photon
+    //! in keV
+    inline double get_energyA_in_keV() const
+    { return 1e3*energyA; }
+    //! Get the detection energy of the second photon
+    //! in keV
+    inline double get_energyB_in_keV() const
+    { return 1e3*energyB; }
+
+private:
+
+    //!
+    //! \brief energyA
+    //! \details The detected energy of the first of the two photons, in MeV
+    double energyA;
+
+    //!
+    //! \brief energyB
+    //! \details The detected energy of the second of the two photons, in MeV
+    double energyB;
+
+
+};
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
 class CListRecordROOT : public CListRecord // currently no gating yet
 {
@@ -135,6 +174,8 @@ public:
     bool inline is_time() const;
     //! Returns always true
     bool inline is_event() const;
+    //! Returns always true
+    bool inline is_energy() const;
     //! Returns always true
     bool inline is_full_event() const;
 
@@ -158,6 +199,16 @@ public:
         return this->time_data;
     }
 
+    virtual CListEnergyROOT& energy()
+    {
+        return this->energy_data;
+    }
+
+    virtual const CListEnergyROOT& energy() const
+    {
+        return this->energy_data;
+    }
+
     bool operator==(const CListRecord& e2) const
     {
         return dynamic_cast<CListRecordROOT const *>(&e2) != 0 &&
@@ -174,7 +225,8 @@ public:
                                       const int& crystal1,
                                       const int& crystal2,
                                       double time1, double time2,
-                                      const int& event1, const int& event2)
+                                      const int& event1, const int& event2,
+                                      double energy1 = 0.511F, double energy2 = 0.511F)
     {
         /// \warning ROOT data are time and event at the same time.
 
@@ -184,6 +236,7 @@ public:
         this->time_data.init_from_data(
                     time1,time2);
 
+        this->energy_data.init_energy_from_data(energy1,energy2);
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
         raw[0] = event1;
@@ -195,6 +248,7 @@ public:
 private:
     CListEventROOT  event_data;
     CListTimeROOT   time_data;
+    CListEnergyROOT energy_data;
     boost::int32_t raw[2]; // this raw field isn't strictly necessary, get rid of it?
 
 };

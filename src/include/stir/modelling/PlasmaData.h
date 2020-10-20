@@ -33,8 +33,10 @@
 
 START_NAMESPACE_STIR
 
-//! A class for storing plasma samples of a single study.
+//! A class for storing plasma and blood samples of a single study.
 /*! \ingroup modelling
+
+  \see PlasmaSample
  */
 class PlasmaData 
 {

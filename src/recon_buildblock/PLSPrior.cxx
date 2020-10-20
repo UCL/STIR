@@ -62,7 +62,7 @@ PLSPrior<elemT>::initialise_keymap()
 
 template <typename elemT>
 Succeeded
-PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr)
+PLSPrior<elemT>::set_up (shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr)
 {
     base_type::set_up(target_sptr);
 
@@ -71,6 +71,9 @@ PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_
        error("PLS prior needs an anatomical image");
       return Succeeded::no;
     }
+
+    if(! (*target_sptr).has_same_characteristics(*this->anatomical_sptr))
+        error("anatomical and target images are not compatible! Make sure they are");
 
     shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr;
     if (!only_2D)
@@ -94,7 +97,7 @@ PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_
 
     compute_normalisation_anatomical_gradient (*norm_sptr,*anatomical_im_grad_z_sptr,*anatomical_im_grad_y_sptr,*anatomical_im_grad_x_sptr );
 
-    this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr));
+    this->set_anatomical_grad_norm_sptr (shared_ptr<const DiscretisedDensity<3,elemT> >(norm_sptr));
 
 return Succeeded::yes;
 }
@@ -159,7 +162,7 @@ PLSPrior<elemT>::PLSPrior(const bool only_2D_v, float penalisation_factor_v)
 }
 
 template <typename elemT>
-shared_ptr<DiscretisedDensity<3,elemT> >
+shared_ptr<const DiscretisedDensity<3,elemT> >
 PLSPrior<elemT>::
 get_anatomical_grad_sptr(int direction) const{
 
@@ -178,14 +181,14 @@ get_anatomical_grad_sptr(int direction) const{
 }
 
 template <typename elemT>
-shared_ptr<DiscretisedDensity<3,elemT> >
+shared_ptr<const DiscretisedDensity<3,elemT> >
 PLSPrior<elemT>::
 get_norm_sptr () const{
 return this->norm_sptr;
 }
 
 template <typename elemT>
-shared_ptr<DiscretisedDensity<3,elemT> >
+shared_ptr<const DiscretisedDensity<3,elemT> >
 PLSPrior<elemT>::
 get_anatomical_image_sptr() const{
 return this->anatomical_sptr;
@@ -208,7 +211,7 @@ return this->alpha;
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_anatomical_image_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg)
+set_anatomical_image_sptr (const shared_ptr<const DiscretisedDensity<3,elemT> >& arg)
 {
     this->anatomical_sptr = arg;
     this->anatomical_filename = ""; // Clear filename in case it was set.
@@ -217,18 +220,18 @@ set_anatomical_image_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg)
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_eta (const double& arg)
+set_eta (const double arg)
 { this->eta = arg; }
 
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_alpha (const double& arg)
+set_alpha (const double arg)
 { this->alpha = arg; }
 
 template <typename elemT>
 void
-PLSPrior<elemT>::set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& arg, int direction){
+PLSPrior<elemT>::set_anatomical_grad_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >& arg, int direction){
 
     if(direction==2){
         this->anatomical_grad_x_sptr=arg;}
@@ -242,7 +245,7 @@ PLSPrior<elemT>::set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,
 
 template <typename elemT>
 void
-PLSPrior<elemT>::set_anatomical_grad_norm_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg){
+PLSPrior<elemT>::set_anatomical_grad_norm_sptr (const shared_ptr<const DiscretisedDensity<3,elemT> >& arg){
 
 
         this->norm_sptr=arg;
@@ -254,7 +257,7 @@ PLSPrior<elemT>::set_anatomical_grad_norm_sptr (const shared_ptr<DiscretisedDens
       Unpredictable results will occur.
   */
 template <typename elemT>
-shared_ptr<DiscretisedDensity<3,elemT> >
+shared_ptr<const DiscretisedDensity<3,elemT> >
 PLSPrior<elemT>::
 get_kappa_sptr() const
 { return this->kappa_ptr; }
@@ -263,7 +266,7 @@ get_kappa_sptr() const
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
+set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >& k)
 {
     this->kappa_ptr = k;
     kappa_filename = ""; // Clear filename in case it was set.

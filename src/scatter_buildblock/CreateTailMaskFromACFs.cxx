@@ -49,7 +49,7 @@ CreateTailMaskFromACFs::
 set_output_projdata(std::string& arg)
 {
     this->mask_proj_data.reset(new ProjDataInterfile(ACF_sptr->get_exam_info_sptr(),
-                                                     ACF_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+                                                     ACF_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                                                      arg));
 }
 
@@ -65,8 +65,8 @@ void
 CreateTailMaskFromACFs::
 set_defaults()
 {
-    float ACF_threshold = 1.1F;
-    int safety_margin=4;
+    ACF_threshold = 1.1F;
+    safety_margin = 4;
 }
 
 CreateTailMaskFromACFs::
@@ -145,7 +145,7 @@ process_data()
                          mask_proj_data.get_max_tangential_pos_num();
                          ++bin.tangential_pos_num())
                         if (att_sinogram[bin.view_num()][bin.tangential_pos_num()]<ACF_threshold &&
-                                (mask_radius_in_mm<0 || mask_radius_in_mm>= std::fabs(scatter_proj_data.get_proj_data_info_ptr()->get_s(bin))))
+                                (mask_radius_in_mm<0 || mask_radius_in_mm>= std::fabs(scatter_proj_data.get_proj_data_info_sptr()->get_s(bin))))
                         {
                             ++count;
                             mask_sinogram[bin.view_num()][bin.tangential_pos_num()]=1;

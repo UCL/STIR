@@ -29,6 +29,7 @@
 
 
 #include "stir/IO/interfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/Sinogram.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
@@ -189,14 +190,16 @@ Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
-                            const std::string& orig_name                     
+                            const std::string& orig_name,
+                            ExamInfo const& exam_info
                             )
 {
 #ifndef STIR_ORIGINAL_ECAT6
-  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name);
+  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name, exam_info);
   strcpy(mhead.magic_number, "MATRIX6.4");
   mhead.sw_version= 64;
 #else
+  warning("Exam_info currently ignored when creating an ECAT6 file");
   mhead= main_zero_fill();
   mhead.calibration_factor = 1.F;
   
@@ -222,7 +225,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                             DiscretisedDensity<3,float> const & density
                             )
 {
-  make_ECAT6_Main_header(mhead, scanner, orig_name);
+  make_ECAT6_Main_header(mhead, scanner, orig_name, density.get_exam_info());
   
   DiscretisedDensityOnCartesianGrid<3,float> const & image =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
@@ -239,8 +242,9 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                             ProjDataInfo const & proj_data_info
                             )
 {
-  
-  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  warning("Exam_info currently ignored when creating an ECAT6 raw-data file");
+  ExamInfo dummy_exam_info;
+  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_sptr(), orig_name, dummy_exam_info);
   
   // extra main parameters that depend on data type
   mhead.file_type= matScanFile;
@@ -251,7 +255,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
       ++segment_num)
     mhead.num_planes+= proj_data_info.get_num_axial_poss(segment_num);
   
-  mhead.plane_separation=proj_data_info.get_scanner_ptr()->get_ring_spacing()/10/2;
+  mhead.plane_separation=proj_data_info.get_scanner_sptr()->get_ring_spacing()/10/2;
 }
 
 VoxelsOnCartesianGrid<float> *
@@ -887,7 +891,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     ProjDataInfoCylindricalArcCorr const * const
       proj_data_info_cyl_ptr =
       dynamic_cast<ProjDataInfoCylindricalArcCorr const * const>
-      (proj_data.get_proj_data_info_ptr());
+      (proj_data.get_proj_data_info_sptr().get());
     if (proj_data_info_cyl_ptr==NULL)
     {
       warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
@@ -896,7 +900,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
 #else
       shead.sample_distance= 
 #endif
-        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10;
+        proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_default_bin_size()/10;
     }
     else
     {
@@ -915,7 +919,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     ProjDataInfoCylindrical const * const
       proj_data_info_cyl_ptr =
       dynamic_cast<ProjDataInfoCylindrical const * const>
-      (proj_data.get_proj_data_info_ptr());
+      (proj_data.get_proj_data_info_sptr().get());
     if (proj_data_info_cyl_ptr!=NULL)
       {
 	// check if spanned data in segment 0
@@ -934,10 +938,10 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
   }
 	      
 
-  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
+  if (num_rings != proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings())
 {
     warning("Expected %d num_rings from scanner while segment 0 implies %d rings\n",
-            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
+            proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings(), num_rings);
 }
   
   short *cti_data= new short[plane_size];
@@ -1015,7 +1019,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, std::string const & cti_name, std::
 		  const bool write_2D_sinograms)
 {  
   ECAT6_Main_header mhead;
-  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
+  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_sptr());
   
   
   FILE *fptr= cti_create(cti_name.c_str(), &mhead);   

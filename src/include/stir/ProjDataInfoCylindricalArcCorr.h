@@ -78,7 +78,7 @@ public:
 
   virtual 
     Bin
-    get_bin(const LOR<float>&) const;
+    get_bin(const LOR<float>&, const std::pair<int,int>&) const;
 
   virtual std::string parameter_info() const;
 private:

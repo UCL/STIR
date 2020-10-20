@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 - 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -273,6 +274,7 @@ void
 IterativeReconstruction<TargetT>::
 set_num_subsets(const int arg)
 {
+  this->_already_set_up = false;
   this->num_subsets  = arg;
 }
 
@@ -297,6 +299,8 @@ void
 IterativeReconstruction<TargetT>::
 set_start_subset_num(const int arg)
 {
+  if (arg<0 || arg>= this->num_subsets)
+    error("set_start_subset_num out-of-range error");
   this->start_subset_num  = arg;
 }
 
@@ -370,22 +374,30 @@ template <typename TargetT>
 TargetT *
 IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 {
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling get_initial_data_ptr");
+
+  TargetT * result;
+
   if(this->initial_data_filename=="0")
   {
-    return this->objective_function_sptr->construct_target_ptr();
+    result = this->objective_function_sptr->construct_target_ptr();
   }
   else if(this->initial_data_filename=="1")
   {
-    TargetT * target_data_ptr =
-      this->objective_function_sptr->construct_target_ptr();    
-    std::fill(target_data_ptr->begin_all(), target_data_ptr->end_all(), 1.F);
-    return target_data_ptr;
+    result = this->objective_function_sptr->construct_target_ptr();
+    std::fill(result->begin_all(), result->end_all(), 1.F);
   }
   else
     {
-      return 
-        TargetT::read_from_file(this->initial_data_filename);
+      result = TargetT::read_from_file(this->initial_data_filename);
+      result->set_exam_info(*this->get_input_data().get_exam_info_sptr());
     }
+  if (this->_already_set_up)
+    if (!this->target_data_sptr->has_same_characteristics(*result))
+      error("IterativeReconstruction::get_initial_data_ptr() results in different characteristics than what was used for set_up()");
+
+  return result;
 }
 
 // KT 10122001 new
@@ -414,8 +426,8 @@ Succeeded
 IterativeReconstruction<TargetT>::
 reconstruct(shared_ptr<TargetT > const& target_data_sptr)
 {
-
   this->start_timers();
+  this->check(*target_data_sptr);
 #if 0
   if (this->set_up(target_data_sptr) == Succeeded::no)
     {
@@ -616,8 +628,22 @@ void
 IterativeReconstruction<TargetT>::
 set_input_data(const shared_ptr<ExamData> &arg)
 {
-    this->objective_function_sptr->set_input_data(arg);
+  this->_already_set_up = false;
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling set_input_data");
+  this->objective_function_sptr->set_input_data(arg);
 }
+
+template <typename TargetT>
+const ExamData&
+IterativeReconstruction<TargetT>::
+get_input_data() const
+{
+  if (is_null_ptr(this->objective_function_sptr))
+    error("objective function needs to be set before calling get_input_data");
+  return this->objective_function_sptr->get_input_data();
+}
+
 
 template <typename TargetT>
 int

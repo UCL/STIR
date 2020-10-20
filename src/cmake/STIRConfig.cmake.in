@@ -1,7 +1,8 @@
 # The original *cmake.in file is part of STIR.
 #
 # Author: Kris Thielemans
-# Copyright 2016 University College London
+# Author Richard Brown
+# Copyright 2016, 2019, 2020 University College London
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,34 +26,53 @@
 # At this point in time, you do need to add
 #  include_directories("${STIR_INCLUDE_DIRS}")
 # to your CMake file to get the STIR_REGISTRIES to compile.
-
+#
+# The file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
+# in case you need to how it was built.
 @PACKAGE_INIT@ 
 
 # add folder where this file resides to the cmake path such that it can use our find_package modules and .cmake files
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 
 include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 
 set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
-#set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+# cannot use set_and_check on lists at present
+# https://gitlab.kitware.com/cmake/cmake/issues/16219
+#set(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
 set(STIR_LIBRARIES @STIR_LIBRARIES@)
-set(STIR_REGISTRIES @STIR_REGISTRIES@)
+set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
 
 ## find external packages
 # we use a trick by Matt McCormick (kitware)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
-
-if (@BOOST_ROOT@)
-  set(BOOST_ROOT "@BOOST_ROOT@")
+if (STIR_FIND_QUIETLY)
+  SET(STIR_FIND_TYPE "QUIET")
+else()
+  SET(STIR_FIND_TYPE "REQUIRED")
 endif()
-set (BOOST_INCLUDEDIR "@Boost_INCLUDE_DIRS@")
-find_package(Boost REQUIRED)
 
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
-  find_package(ITK REQUIRED)
+  find_package(ITK ${STIR_FIND_TYPE})
+  if(NOT ITK_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
+  include(${ITK_USE_FILE})
+  set(STIR_BUILT_WITH_ITK TRUE)
+endif()
+
+if (@HDF5_FOUND@)
+  message(STATUS "HDF5 support in STIR enabled.")
+  # should really look for CXX only, as that's all we need. However, this can create conflicts
+  # with current CMake, see https://gitlab.kitware.com/cmake/cmake/-/issues/20909
+  # find_package(HDF5 @HDF5_VERSION@ COMPONENTS CXX REQUIRED)
+  find_package(HDF5 @HDF5_VERSION@ REQUIRED)
+  include_directories(${HDF5_INCLUDE_DIRS})
+
+  set(STIR_BUILT_WITH_HDF5 TRUE)
 endif()
 
 if (@LLN_FOUND@)
@@ -61,30 +81,55 @@ if (@LLN_FOUND@)
   # need to add this as stir_ecat7.h etc rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories("@LLN_INCLUDE_DIRS@")
+  set(STIR_BUILT_WITH_LLN_MATRIX TRUE)
 endif()
 
 if (@CERN_ROOT_FOUND@)
   set(CERN_ROOT_CONFIG @CERN_ROOT_CONFIG@)
-  find_package(CERN_ROOT REQUIRED)
+  find_package(CERN_ROOT @CERN_ROOT_VERSION@ REQUIRED ${STIR_FIND_TYPE})
   message(STATUS "CERN ROOT support in STIR enabled.")
-  # need to add this as registries rely on it
-  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
-  include_directories(${CERN_ROOT_INCLUDE_DIRS})
+  set(STIR_BUILT_WITH_CERN_ROOT TRUE)
 endif()
 
 if (@AVW_FOUND@)
   set(AVW_ROOT_DIR @AVW_ROOT_DIR@)
-  find_package(AVW REQUIRED)
+  find_package(AVW ${STIR_FIND_TYPE})
+  if(NOT AVW_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
   message(STATUS "AVW support in STIR enabled.")
   # need to add this as registries rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories(${AVW_INCLUDE_DIRS})
+  set(STIR_BUILT_WITH_AVW TRUE)
 endif()
 
 if (@STIR_MPI@)
-  find_package(MPI REQUIRED)
+  find_package(MPI ${STIR_FIND_TYPE})
+  if(NOT MPI_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
+  set(STIR_BUILT_WITH_MPI TRUE)
 endif()
 
 if(@STIR_OPENMP@)
-  find_package(OpenMP REQUIRED)  
+  find_package(OpenMP ${STIR_FIND_TYPE})
+  set(STIR_BUILT_WITH_OpenMP TRUE)
+endif()
+
+if(@STIR_WITH_NiftyPET_PROJECTOR@)
+  find_package(CUDAToolkit REQUIRED)
+  find_package(NiftyPET REQUIRED)
+  set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
+endif()
+
+SET(STIR_WITH_EXPERIMENTAL @STIR_ENABLE_EXPERIMENTAL@)
+if(STIR_WITH_EXPERIMENTAL)
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+      add_definitions(-DSTIR_WITH_EXPERIMENTAL)
+    else()
+      add_compile_definitions(STIR_WITH_EXPERIMENTAL)
+    endif()
+else()
+  remove_definitions(-DSTIR_WITH_EXPERIMENTAL)
 endif()

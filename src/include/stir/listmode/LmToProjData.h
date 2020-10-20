@@ -10,10 +10,13 @@
  
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Daniel Deidda
   
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,8 +33,9 @@
 */
 
 
+#include "stir/listmode/LmToProjDataAbstract.h"
 #include "stir/ProjDataInfo.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ParsingObject.h"
 #include "stir/TimeFrameDefinitions.h"
 
@@ -39,8 +43,9 @@
 
 START_NAMESPACE_STIR
 
-class CListEvent;
-class CListTime;
+class ListEvent;
+class ListTime;
+class ListEnergy;
 
 /*!
   \ingroup listmode
@@ -157,11 +162,11 @@ class CListTime;
   of bin.get_bin_value(). This is really because we should be using 
   something like a EventNormalisation class for pre-normalisation.
 
-  \see CListModeData for more info on list mode data. 
+  \see ListModeData for more info on list mode data.
 
 */
 
-class LmToProjData : public ParsingObject
+class LmToProjData : public LmToProjDataAbstract
 {
 public:
 
@@ -184,7 +189,7 @@ protected:
   virtual void start_new_time_frame(const unsigned int new_frame_num);
 
   //! will be called after a new timing event is found in the file
-  virtual void process_new_time_event(const CListTime&);
+  virtual void process_new_time_event(const ListTime&);
 
   //! will be called to get the bin for a coincidence event
   /*! If bin.get_bin_value()<=0, the event will be ignored. Otherwise,
@@ -192,7 +197,7 @@ protected:
     (on top of anything done by normalisation_ptr). 
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
-  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+  virtual void get_bin_from_event(Bin& bin, const ListEvent&, const std::pair<int,int> &energy_window_pair = std::pair<int,int>(1,1))  const;
 
   //! A function that should return the number of uncompressed bins in the current bin
   /*! \todo it is not compatiable with e.g. HiDAC doesn't belong here anyway
@@ -233,6 +238,8 @@ protected:
   bool interactive;
 
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
+
+  //shared_ptr<ExamInfo> template_exam_info_sptr;
   //! This will be used for pre-normalisation
   shared_ptr<BinNormalisation> normalisation_ptr;
   //! This will be used for post-normalisation
@@ -241,7 +248,7 @@ protected:
   //@}
 
   //! Pointer to the actual data
-  shared_ptr<CListModeData> lm_data_ptr;
+  shared_ptr<ListModeData> lm_data_ptr;
 
   //! Time frames
   TimeFrameDefinitions frame_defs;
@@ -254,7 +261,7 @@ protected:
 
   //! Internal variable that will be used for pre-normalisation
   /*! Will be removed when we have EventNormalisation (or similar) hierarchy */
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
 
 
   /*! \brief variable that will be set according to if we are using 

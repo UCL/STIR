@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -124,6 +125,11 @@ public:
 
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
+
+  //! a*x+b*y, where a and b are scalar, and x and y are vectors
+  template <typename elemT2>
+    inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
+                      const elemT2 b, const NumericVectorWithOffset& y);
 
 };
 

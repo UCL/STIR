@@ -41,11 +41,4 @@ set_prompt(const bool)
   return Succeeded::no; 
 }
 
-void 
-CListEvent::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-{
-  bin = proj_data_info.get_bin(get_LOR());
-}
-
 END_NAMESPACE_STIR

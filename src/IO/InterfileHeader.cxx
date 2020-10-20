@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Richard Brown
 */
 
 #include "stir/IO/InterfileHeader.h"
@@ -33,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/info.h"
 #include <numeric>
 #include <functional>
 
@@ -51,16 +53,16 @@ const double
 MinimalInterfileHeader::
 double_value_not_set = -12345.60789;
 
-const ExamInfo*
-MinimalInterfileHeader::get_exam_info_ptr() const
-{
-  return exam_info_sptr.get();
-}
-
-shared_ptr<ExamInfo>
+shared_ptr<const ExamInfo>
 MinimalInterfileHeader::get_exam_info_sptr() const
 {
   return exam_info_sptr;
+}
+
+const ExamInfo&
+MinimalInterfileHeader::get_exam_info() const
+{
+  return *exam_info_sptr;
 }
 
 MinimalInterfileHeader::MinimalInterfileHeader()
@@ -68,18 +70,19 @@ MinimalInterfileHeader::MinimalInterfileHeader()
 {
   exam_info_sptr.reset(new ExamInfo);
   // need to default to PET for backwards compatibility
-  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
+  //this->exam_info_sptr->imaging_modality = ImagingModality::PT;
 
   add_start_key("INTERFILE");
   add_key("imaging modality",
-    KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+    KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
 
-  add_key("version of keys", &version_of_keys);
+  add_key("version of keys",
+          KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
+          &version_of_keys);
 
   // support for siemens interfile
-  add_key("%sms-mi version number",
-    KeyArgument::ASCII, &siemens_mi_version);
+  add_key("%sms-mi version number", &siemens_mi_version);
   add_stop_key("END OF INTERFILE");
 }
 
@@ -89,6 +92,11 @@ void MinimalInterfileHeader::set_imaging_modality()
 {
   set_variable();
   this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
+}
+
+void MinimalInterfileHeader::set_version_specific_keys()
+{
+  set_variable();
 }
 
 InterfileHeader::InterfileHeader()
@@ -147,10 +155,10 @@ InterfileHeader::InterfileHeader()
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
   num_energy_windows = 1;
-  lower_en_window_thres.resize(num_energy_windows);
-  upper_en_window_thres.resize(num_energy_windows);
-  lower_en_window_thres[0]=-1.F;
-  upper_en_window_thres[0]=-1.F;
+  lower_en_window_thresholds.resize(num_energy_windows);
+  upper_en_window_thresholds.resize(num_energy_windows);
+  lower_en_window_thresholds[0]=-1.F;
+  upper_en_window_thresholds[0]=-1.F;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
@@ -164,14 +172,13 @@ InterfileHeader::InterfileHeader()
 
 
 
-  add_key("name of data file", 
-    KeyArgument::ASCII,	&data_file_name);
-  add_key("originating system",
-    KeyArgument::ASCII, &exam_info_sptr->originating_system);
-  add_key("GENERAL DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("GENERAL IMAGE DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
+
+  add_key("name of data file", &data_file_name);
+  add_key("originating system", &exam_info_sptr->originating_system);
+  ignore_key("GENERAL DATA");
+  ignore_key("GENERAL IMAGE DATA");
+  add_key("study date", &study_date_time.date);
+  add_key("study_time", &study_date_time.time);
   add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeader::set_type_of_data,
@@ -179,72 +186,68 @@ InterfileHeader::InterfileHeader()
           &type_of_data_values);
 
   add_key("patient orientation",
-	  KeyArgument::ASCIIlist,
 	  &patient_orientation_index,
 	  &patient_orientation_values);
   add_key("patient rotation",
-	  KeyArgument::ASCIIlist,
 	  &patient_rotation_index,
 	  &patient_rotation_values);
 
 
   add_key("imagedata byte order", 
-    KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
   
-  add_key("data format", 
-    KeyArgument::ASCII,	&KeyParser::do_nothing);
+  ignore_key("data format");
   add_key("number format", 
-    KeyArgument::ASCIIlist,
     &number_format_index,
     &number_format_values);
-  add_key("number of bytes per pixel", 
-    KeyArgument::INT,	&bytes_per_pixel);
+  add_key("number of bytes per pixel", &bytes_per_pixel);
   add_key("number of dimensions", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_matrix_info,&num_dimensions);
-  add_key("matrix size", 
-    KeyArgument::LIST_OF_INTS,&matrix_size);
-  add_key("matrix axis label", 
-    KeyArgument::ASCII,	&matrix_labels);
-  add_key("scaling factor (mm/pixel)", 
-    KeyArgument::DOUBLE, &pixel_sizes);
+  add_vectorised_key("matrix size", &matrix_size);
+  add_vectorised_key("matrix axis label", &matrix_labels);
+  add_vectorised_key("scaling factor (mm/pixel)", &pixel_sizes);
   add_key("number of time frames", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
-  add_key("image relative start time (sec)",
-	  KeyArgument::DOUBLE, &image_relative_start_times);
-  add_key("image duration (sec)",
-	  KeyArgument::DOUBLE, &image_durations);
+  add_vectorised_key("image relative start time (sec)", &image_relative_start_times);
+  add_vectorised_key("image duration (sec)", &image_durations);
     //image start time[<f>] := <TimeFormat>
 
   // ignore these as we'll never use them
-  add_key("maximum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("minimum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("maximum pixel count");
+  ignore_key("minimum pixel count");
 
   // TODO move to PET?
-  add_key("image scaling factor", 
-    KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
+  add_vectorised_key("image scaling factor", &image_scaling_factors);
 
   // support for Louvain la Neuve's extension of 3.3
-  add_key("quantification units",
-    KeyArgument::DOUBLE, &lln_quantification_units);
+  add_key("quantification units", &lln_quantification_units);
 
+  add_key("energy window pair", KeyArgument::LIST_OF_INTS, (KeywordProcessor)&InterfileHeader::en_window_pair_set, &energy_window_pair);
+  add_key("number of energy windows", KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
+  add_vectorised_key("energy window lower level", &lower_en_window_thresholds);
+  add_vectorised_key("energy window upper level", &upper_en_window_thresholds);
 
-  add_key("number of energy windows",
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
-  add_key("energy window lower level",
-    KeyArgument::FLOAT,&lower_en_window_thres);
-  add_key("energy window upper level",
-    KeyArgument::FLOAT,&upper_en_window_thres);
+  bed_position_horizontal = 0.F;
+  add_key("start horizontal bed position (mm)", &bed_position_horizontal);
+  bed_position_vertical = 0.F;
+  add_key("start vertical bed position (mm)", &bed_position_vertical);
 
-  add_key("energy window pair",
-    KeyArgument::LIST_OF_INTS,
-    (KeywordProcessor)&InterfileHeader::en_window_pair_set,
-    &energy_window_pair);
 }
 
+void InterfileHeader::set_version_specific_keys()
+{
+  MinimalInterfileHeader::set_version_specific_keys();
+  if (this->version_of_keys == "STIR3.0")
+    {
+      info("Setting energy window keys as in STIR3.0");
+      // only a single energy window, and non-vectorised
+      /*remove_key("energy window lower level");
+      remove_key("energy window upper level");
+      add_key("energy window lower level", &lower_en_window_thresholds[0]);
+      add_key("energy window upper level", &upper_en_window_thresholds[0]);*/
+    }
+}
 
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
@@ -254,6 +257,17 @@ bool InterfileHeader::post_processing()
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
       return true;
+    }
+
+  if (!study_date_time.date.empty() && !study_date_time.time.empty())
+    {
+      try
+        {
+          exam_info_sptr->start_time_in_secs_since_1970 =
+            Interfile_datetime_to_secs_since_Unix_epoch(study_date_time);
+        }
+      catch(...)
+        {}
     }
 
   if (patient_orientation_index<0 || patient_rotation_index<0)
@@ -310,7 +324,7 @@ bool InterfileHeader::post_processing()
     }
   }
 
-  for (int frame=0; frame<num_time_frames; frame++)
+  for (int frame=0; frame<this->get_num_datasets(); frame++)
   {
     if (image_scaling_factors[frame].size() == 1)
     {
@@ -333,7 +347,7 @@ bool InterfileHeader::post_processing()
   if (lln_quantification_units!=1.)
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<num_time_frames; frame++)
+    for (int frame=0; frame<this->get_num_datasets(); frame++)
       for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
@@ -359,10 +373,11 @@ bool InterfileHeader::post_processing()
 
  //set the lower and the higher energy thresholds for all the energy windows available. Default: 1.
 
-  //set the number of energy windows and pair
+  //set the number of energy windows
 
   exam_info_sptr->set_num_energy_windows(num_energy_windows);
 
+   //set the number of energy window pair
   if (energy_window_pair.size() > 0) {
 
       if (energy_window_pair.size() != 2)
@@ -376,7 +391,7 @@ bool InterfileHeader::post_processing()
       if (energy_window_pair[1] > num_energy_windows)
           error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[1],num_energy_windows);
 
-      exam_info_sptr->set_energy_window_pair(energy_window_pair,num_energy_windows);
+      exam_info_sptr->set_energy_window_pair(energy_window_pair);
   }
 
     //set the high and low energy window threshold
@@ -384,14 +399,12 @@ bool InterfileHeader::post_processing()
       for (int i = 0; i < num_energy_windows; ++i)
       {
 
-          if (upper_en_window_thres[i] >0 && lower_en_window_thres[i] >0)
+          if (upper_en_window_thresholds[i] >0 && lower_en_window_thresholds[i] >0)
             {
-              exam_info_sptr->set_high_energy_thres(upper_en_window_thres[i],i);
-              exam_info_sptr->set_low_energy_thres(lower_en_window_thres[i],i);
-
+              exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[i],i);
+              exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[i],i);
              }
        }
-
 
   exam_info_sptr->time_frame_definitions = 
   TimeFrameDefinitions(image_relative_start_times, image_durations);
@@ -410,20 +423,6 @@ void InterfileHeader::read_matrix_info()
   
 }
 
-
-void InterfileHeader::read_num_energy_windows()
-{
-
-
-  set_variable();
-
-  upper_en_window_thres.resize(num_energy_windows,-1.);
-  lower_en_window_thres.resize(num_energy_windows,-1.);
-
-
-}
-
-
 void InterfileHeader::en_window_pair_set()
 {
 
@@ -432,8 +431,13 @@ void InterfileHeader::en_window_pair_set()
 
 
 }
+void InterfileHeader::read_num_energy_windows()
+{
+  set_variable();
 
-
+  upper_en_window_thresholds.resize(num_energy_windows,-1.);
+  lower_en_window_thresholds.resize(num_energy_windows,-1.);
+}
 
 void InterfileHeader::set_type_of_data()
 {
@@ -446,36 +450,26 @@ void InterfileHeader::set_type_of_data()
 
   if (type_of_data == "PET")
     {
-      add_key("PET STUDY (Emission data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (Image data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (General)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+      ignore_key("PET STUDY (Emission data)");
+      ignore_key("PET STUDY (Image data)");
+      ignore_key("PET STUDY (General)");
       add_key("PET data type", 
-              KeyArgument::ASCIIlist,
               &PET_data_type_index, 
               &PET_data_type_values);
-      add_key("process status", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("IMAGE DATA DESCRIPTION", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      // TODO rename keyword 
-      add_key("data offset in bytes", 
-          KeyArgument::ULONG,	&data_offset_each_dataset);
+      ignore_key("process status");
+      ignore_key("IMAGE DATA DESCRIPTION");
+      // TODO rename keyword
+      add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
     }
   else if (type_of_data == "Tomographic")
     {
-      add_key("SPECT STUDY (General)" , 
-              KeyArgument::NONE,	&KeyParser::do_nothing);  
-      add_key("SPECT STUDY (acquired data)",
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+      ignore_key("SPECT STUDY (General)" );  
+      ignore_key("SPECT STUDY (acquired data)");
 
       process_status_values.push_back("Reconstructed");
       process_status_values.push_back("Acquired");
       add_key("process status", 
-              KeyArgument::ASCIIlist,
               &process_status_index,
               &process_status_values);
 
@@ -489,10 +483,11 @@ void InterfileHeader::set_type_of_data()
 void InterfileHeader::read_frames_info()
 {
   set_variable();
-  image_scaling_factors.resize(num_time_frames);
-  for (int i=0; i<num_time_frames; i++)
+  const int num_datasets = this->get_num_datasets();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(num_datasets, 0UL);
   image_relative_start_times.resize(num_time_frames, 0.);
   image_durations.resize(num_time_frames, 0.);
 }
@@ -501,9 +496,28 @@ void InterfileHeader::read_frames_info()
 InterfileImageHeader::InterfileImageHeader()
   : InterfileHeader()
 {
-  add_key("first pixel offset (mm)",
-	   KeyArgument::DOUBLE, &first_pixel_offsets);
+  num_image_data_types = 1;
+  index_nesting_level.resize(1, "");
+  image_data_type_description.resize(num_image_data_types, "");
+    
+  add_vectorised_key("first pixel offset (mm)", &first_pixel_offsets);
+  add_key("number of image data types", 
+    KeyArgument::INT,	(KeywordProcessor)&InterfileImageHeader::read_image_data_types,&num_image_data_types);
+  add_key("index nesting level", &index_nesting_level);
+  add_vectorised_key("image data type description", &image_data_type_description);
+}
 
+void InterfileImageHeader::read_image_data_types()
+{
+  set_variable();
+  const int num_datasets = this->get_num_datasets();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
+    image_scaling_factors[i].resize(1, 1.);
+  data_offset_each_dataset.resize(num_datasets, 0UL);
+  // should do this if ever we support multiple indices (TODO)
+  //index_nesting_level.resize(2,"");
+  image_data_type_description.resize(num_image_data_types,"");
 }
 
 void 
@@ -569,11 +583,9 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   
   // warning these keys should match what is in Scanner::parameter_info()
   // TODO get Scanner to parse these
-  add_key("Scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("Scanner parameters");
   // this is currently ignored (use "originating system" instead)
-  add_key("Scanner type",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("Scanner type");
 
   // first set to some crazy values
   num_rings = -1;
@@ -637,15 +649,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
-  add_key("end scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("end scanner parameters");
   
   effective_central_bin_size_in_cm = -1;
   add_key("effective central bin size (cm)",
 	  &effective_central_bin_size_in_cm);
-  add_key("applied corrections",
-    KeyArgument::LIST_OF_ASCII, &applied_corrections);
-
+  add_key("applied corrections", &applied_corrections);
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -1023,7 +1032,7 @@ bool InterfilePDFSHeader::post_processing()
   
   // handle scanner
 
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   bool originating_system_was_recognised = 
     guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
@@ -1314,7 +1323,7 @@ bool InterfilePDFSHeader::post_processing()
   // data from the Interfile header (or the guessed scanner).
   shared_ptr<Scanner> scanner_ptr_from_file(
     new Scanner(guessed_scanner_ptr->get_type(), 
-                get_exam_info_ptr()->originating_system,
+                get_exam_info().originating_system,
 		num_detectors_per_ring, 
                 num_rings, 
 		max_num_non_arccorrected_bins, 
@@ -1364,37 +1373,41 @@ bool InterfilePDFSHeader::post_processing()
 		effective_central_bin_size_in_cm,
 		scanner_ptr_from_file->get_default_bin_size()/10);
       
-      data_info_ptr = 
+      data_info_sptr.reset(
 	new ProjDataInfoCylindricalArcCorr (
 					    scanner_ptr_from_file,
 					    float(effective_central_bin_size_in_cm*10.),
 					    sorted_num_rings_per_segment,
 					    sorted_min_ring_diff,
 					    sorted_max_ring_diff,
-					    num_views,num_bins);
+					    num_views,num_bins));
     }
   else
     {
-      data_info_ptr = 
+      data_info_sptr.reset(
 	new ProjDataInfoCylindricalNoArcCorr (
 					      scanner_ptr_from_file,
 					      sorted_num_rings_per_segment,
 					      sorted_min_ring_diff,
 					      sorted_max_ring_diff,
-					      num_views,num_bins);
+					      num_views,num_bins));
       if (effective_central_bin_size_in_cm>0 &&
 	  fabs(effective_central_bin_size_in_cm - 
-	       data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+	       data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
 	{
 	  warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
 		  "Value in header is %g while I expect %g from the inner ring radius etc\n"
 		  "Ignoring value in header",
 		  effective_central_bin_size_in_cm,
-		  data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+		  data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
 	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
   
+  // Set the bed position
+  data_info_sptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_sptr->set_bed_position_vertical(bed_position_vertical);
+
   return false;
 }
 

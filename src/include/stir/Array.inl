@@ -329,6 +329,28 @@ Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) co
   return (*this).at(c[1]).at(cut_first_dimension(c)); 
 }				    
 
+template <int num_dimensions, typename elemT>
+template <typename elemT2>
+void
+Array<num_dimensions,elemT>::
+axpby(const elemT2 a, const Array& x,
+      const elemT2 b, const Array& y)
+{  
+  this->check_state();
+  if ((this->get_index_range() != x.get_index_range())
+      || (this->get_index_range() != y.get_index_range()))
+       error("Array::axpby: index ranges don't match");
+
+  typename Array::iterator this_iter = this->begin();
+  typename Array::const_iterator x_iter = x.begin();
+  typename Array::const_iterator y_iter = y.begin();
+  while (this_iter != this->end())
+    {
+      this_iter->axpby(a,*x_iter++, b, *y_iter++);
+      ++this_iter;
+    }
+}
+
 /**********************************************
  inlines for Array<1, elemT>
  **********************************************/

@@ -48,8 +48,7 @@ class Succeeded;
 */
 template <typename DataT>
 class GeneralisedPrior: 
-   public RegisteredObject<GeneralisedPrior<DataT> >,
-   public ParsingObject
+   public RegisteredObject<GeneralisedPrior<DataT> >
 			 
 {
 public:
@@ -82,7 +81,7 @@ public:
 
   //! Has to be called before using this object
   virtual Succeeded 
-    set_up(shared_ptr<DataT> const& target_sptr);
+    set_up(shared_ptr<const DataT> const& target_sptr);
 
 protected:
   float penalisation_factor;

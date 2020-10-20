@@ -38,9 +38,8 @@ Bin::Bin()
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value)
 	 :segment(segment_num),view(view_num),
-	 axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value)
+     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value)
      {}
-
      
 int
  Bin:: axial_pos_num()const
@@ -58,6 +57,14 @@ int
  Bin::view_num() const
 { return view;}
 
+int
+ Bin::first_energy_window_num() const
+{ return first_energy_window;}
+
+int
+ Bin::second_energy_window_num() const
+{ return second_energy_window;}
+
 int&
  Bin::axial_pos_num()
 { return axial_pos;}
@@ -74,9 +81,18 @@ int&
  Bin:: view_num() 
 { return view;}
 
+int&
+ Bin::first_energy_window_num()
+{ return first_energy_window;}
+
+int&
+ Bin::second_energy_window_num()
+{ return second_energy_window;}
+
+
 #if 0
 const ProjDataInfo *
-Bin::get_proj_data_info_ptr() const
+Bin::get_proj_data_info_sptr() const
 {
   return proj_data_info_ptr.get();
 }
@@ -99,6 +115,24 @@ void
 Bin::set_bin_value( float v )
 { bin_value = v ;}
 
+
+float
+Bin::get_first_energy_window_num()const
+{ return first_energy_window;}
+
+void
+Bin::set_first_energy_window_num( int v )
+{ first_energy_window = v ;}
+
+float
+Bin::get_second_energy_window_num()const
+{ return second_energy_window;}
+
+void
+Bin::set_second_energy_window_num( int v )
+{ second_energy_window = v ;}
+
+
 Bin&  
 Bin::operator+=(const float dx) 
 { bin_value+=dx;  
@@ -118,6 +152,24 @@ bool
 Bin::operator!=(const Bin& bin2) const
 { 
   return !(*this==bin2);
+}
+
+Bin&
+Bin::operator*=(const float dx)
+{
+    bin_value*=dx;
+    return *this;
+}
+
+Bin&
+Bin::operator/=(const float dx)
+{
+    if (dx == 0.f)
+        bin_value = 0.0f;
+    else
+        bin_value /= dx;
+
+    return *this;
 }
 
 END_NAMESPACE_STIR

@@ -33,7 +33,13 @@
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
-#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
+#include "stir/IO/InterfileDynamicDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/MultiDynamicDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/MultiDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -55,9 +61,12 @@
 #endif
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
+#ifdef HAVE_HDF5
+#include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
+#endif
+
 //! Addition for SAFIR listmode input file format
 #include "stir/IO/SAFIRCListmodeInputFileFormat.h"
-
 
 //! Addition for ROOT support - Nikos Efthimiou
 #ifdef HAVE_CERN_ROOT
@@ -77,8 +86,10 @@ static InterfileOutputFileFormat::RegisterIt dummy1;
 #ifdef HAVE_ITK
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
-static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
-static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfOut;
+static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfOut;
+static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiOut;
+static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
@@ -120,8 +131,13 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 #ifdef HAVE_ITK
 // we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
-static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,float> > > idummy6(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,CartesianCoordinate3D<float> > > > idummy7(10000);
 #endif
+static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
+static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
+static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> dynim_dummy_multi(1);
+static RegisterInputFileFormat<MultiParametricDiscretisedDensityInputFileFormat> parim_dummy_multi(1);
 
 
 /*************************** listmode data **********************/
@@ -130,5 +146,8 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT966ListmodeInputFileFormat> LMdu
 static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdummyECAT962(5);
 #endif
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
+#ifdef HAVE_HDF5
+static RegisterInputFileFormat<GE::RDF_HDF5::GEHDF5ListmodeInputFileFormat> LMdummyGEHDF5(7);
+#endif
 
 END_NAMESPACE_STIR

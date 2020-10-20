@@ -88,12 +88,13 @@ int main(int argc, const char *argv[])
     parser.parse(argv[1]);
 
     shared_ptr<ProjData> data = ProjData::read_from_file("simulated_scatter_sino.hs");
-    const float rescale = 1;
-    shared_ptr<DiscretisedDensity<3,float> > a(read_from_file<DiscretisedDensity<3,float> >("initial_atn_image_LR.hv"));
+   //const float rescale = 1;
+    shared_ptr<DiscretisedDensity<3,float> > a(read_from_file<DiscretisedDensity<3,float> >("true_atn_image.hv"));
     VoxelsOnCartesianGrid<float>& gradient_image = dynamic_cast< VoxelsOnCartesianGrid<float>& > (*a);
     gradient_image.fill(0);
 
-    double g= simulation_method_sptr->L_G_function(*data,gradient_image, rescale, false);
+
+    double g= simulation_method_sptr->L_G_function(*data,gradient_image, false);
 
     t.stop();
     cout << "Total Wall clock timetime: " << t.value() << " seconds" << endl;

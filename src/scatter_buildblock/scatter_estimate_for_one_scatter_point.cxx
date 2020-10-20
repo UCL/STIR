@@ -60,7 +60,7 @@ SingleScatterSimulation::
     int low = 0;
 
  // TODO: check that the selected windows don't overcome the max num windows
-    
+
     if (this->template_exam_info_sptr->get_num_energy_windows()>1)
 
     {
@@ -103,7 +103,7 @@ SingleScatterSimulation::
   // note: costheta is identical for scatter to A or scatter to B
   // Hence, the Compton_cross_section and energy are identical for both cases as well.
   if(max_single_scatter_cos_angle>costheta)
-    return 0;
+  return 0;
   const float new_energy =
     photon_energy_after_Compton_scatter_511keV(costheta);
 
@@ -117,49 +117,35 @@ SingleScatterSimulation::
 std::vector<float>detection_efficiency_scattered;
 std::vector<float>detection_efficiency_unscattered;
 
+
+detection_efficiency_scattered.push_back(0);
+detection_efficiency_unscattered.push_back(0);
+
+
+
+//detection efficiency of each window for that energy
   for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered.push_back(0);
-        detection_efficiency_unscattered.push_back(0);
+  {
+      detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
+      detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
+  }
 
-    }
-
-
-    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
-        detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
-
-        if (detection_efficiency_scattered[i]==0)
-          return 0;
-        if (detection_efficiency_unscattered[i]==0)
-          return 0;
-    }
-
-
-
-//Set the probability of detection for one energy window (Default)
 
     int index0 = 0;
     int index1 = 0;
 
     if (this->template_exam_info_sptr->get_num_energy_windows()>1)
     {
-        //TODO: check if the values are insered correctly (i.e. index<=num_windows)
-
-        /*if (this->template_exam_info_sptr->get_energy_window_pair().first!=-1 &&
-                this->template_exam_info_sptr->get_energy_window_pair().second!=-1)
-        {*/
-            index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
-            index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
+        index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
+        index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
 
     }
 
-
-    //compute the probability of detection for two given energy windows X and Y
     float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
     float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 
+  if ((detection_probability_XY==0)&&(detection_probability_YX==0))
+      return 0;
 
 
   const float emiss_to_detA =
@@ -197,61 +183,37 @@ std::vector<float>detection_efficiency_unscattered;
   const float cos_incident_angle_AS = static_cast<float>(
     cos_angle(scatter_point - detector_coord_A,
               detA_to_ring_center)) ;
+
   const float cos_incident_angle_BS = static_cast<float>(
     cos_angle(scatter_point - detector_coord_B,
               detB_to_ring_center)) ;
-
+  if (cos_incident_angle_AS*cos_incident_angle_BS<0)
+      return 0;
 #ifndef NDEBUG
   {  
     // check if mu-value ok
     // currently terribly shift needed as in sample_scatter_points (TODO)
     const VoxelsOnCartesianGrid<float>& image =
-      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*this->density_image_for_scatter_points_sptr);
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*this->get_density_image_for_scatter_points_sptr());
     const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
     const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
     CartesianCoordinate3D<float> shifted=scatter_point;
     shifted.z() += z_to_middle;
     assert(scatter_point_mu==
-	   (*this->density_image_for_scatter_points_sptr)[this->density_image_for_scatter_points_sptr->get_indices_closest_to_physical_coordinates(shifted)]);
+	   (*this->get_density_image_for_scatter_points_sptr())[this->get_density_image_for_scatter_points_sptr()->get_indices_closest_to_physical_coordinates(shifted)]);
   }
 #endif
 
 
-  // we will divide by the effiency of the detector pair for unscattered photons
+  //normalisation
+  // we will divide by the solid angle factors for unscattered photons
   // (computed with the same detection model as used in the scatter code)
-  // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
+  // the energy dependency is left out
 
-  // there is a scatter_volume factor for every scatter point, as the sum over scatter points
-  // is an approximation for the integral over the scatter point.
-
-  // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
-
-
- // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
-  //find the window that contains 511 keV
-
-  int index_photopeak = 0; //default for one energy window
-
-  if (this->template_exam_info_sptr->get_num_energy_windows()>1)
-  {
-     for (int i = 0 ; i < this->template_exam_info_sptr->get_num_energy_windows() ; ++i)
-     {
-            if( this->template_exam_info_sptr->get_high_energy_thres(i) >= 511.F &&  this->template_exam_info_sptr->get_low_energy_thres(i) <= 511.F)
-
-            {
-
-                 index_photopeak = i;
-              }
-
-     }
-   }
-
-  //normalisation factor between trues and scattered counts
-
-    const double common_factor =
-        1/detection_efficiency_no_scatter(det_num_A, det_num_B, index_photopeak) *
-        scatter_volume/total_Compton_cross_section_511keV;
+  const double common_factor =
+      1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
+      scatter_volume/total_Compton_cross_section_511keV;
 
 
   float scatter_ratio=0 ;
@@ -270,6 +232,8 @@ std::vector<float>detection_efficiency_unscattered;
 
 
   return scatter_ratio;
+
+
           
 }
 

@@ -1,5 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,6 +23,7 @@
   \brief Declaration of class stir::ITKOutputFileFormat
 
   \author Berta Marti Fuster
+  \author Ashley Gillman
 */
 
 #ifndef __stir_IO_ITKOutputFileFormat_H__

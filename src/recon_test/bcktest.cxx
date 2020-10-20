@@ -102,6 +102,8 @@ do_segments(DiscretisedDensity<3,float>& image,
   
   list<ViewSegmentNumbers> already_processed;
   
+  back_projector_ptr->start_accumulating_in_new_target();
+
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)
   { 
@@ -137,7 +139,7 @@ do_segments(DiscretisedDensity<3,float>& image,
 	r_viewgrams_iter++;	  
       } 
       
-      back_projector_ptr->back_project(image,viewgrams_empty,
+      back_projector_ptr->back_project(viewgrams_empty,
 				       std::max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()), 
 				       std::min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()),
 				       start_tang_pos_num, end_tang_pos_num);
@@ -170,12 +172,14 @@ do_segments(DiscretisedDensity<3,float>& image,
 	++r_viewgrams_iter;
       }
 	
-      back_projector_ptr->back_project(image,viewgrams,
+      back_projector_ptr->back_project(viewgrams,
 				       std::max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()), 
 				       std::min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()),
 				       start_tang_pos_num, end_tang_pos_num);      
     } // fill
   } // for view_num, segment_num    
+    
+  back_projector_ptr->get_output(image);
     
 }
 
@@ -232,8 +236,8 @@ main(int argc, char **argv)
       parser.parse(argv[4]);
     }
 
-  const ProjDataInfo * proj_data_info_ptr =
-    proj_data_ptr->get_proj_data_info_ptr();
+  const shared_ptr<const ProjDataInfo> proj_data_info_sptr =
+    proj_data_ptr->get_proj_data_info_sptr();
  
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;
 
@@ -246,10 +250,10 @@ main(int argc, char **argv)
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
       int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-      int z_size = 2*proj_data_info_ptr->get_scanner_ptr()->get_num_rings()-1;
+      int z_size = 2*proj_data_info_sptr->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
       VoxelsOnCartesianGrid<float> * vox_image_ptr =
-	new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr,
+	new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,
 					 zoom,
 					 Coordinate3D<float>(0,0,0),
 					 Coordinate3D<int>(z_size,xy_size,xy_size));
@@ -269,34 +273,34 @@ main(int argc, char **argv)
       back_projector_ptr.reset(BackProjectorByBin::ask_type_and_parameters());
     }
 
-  back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+  back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 			     image_sptr);
  
   do
   {    
     
     int min_segment_num = ask_num("Minimum segment number to backproject",
-      proj_data_info_ptr->get_min_segment_num(), proj_data_info_ptr->get_max_segment_num(), 0);
+      proj_data_info_sptr->get_min_segment_num(), proj_data_info_sptr->get_max_segment_num(), 0);
     int max_segment_num = ask_num("Maximum segment number to backproject",
-      min_segment_num,proj_data_info_ptr->get_max_segment_num(), 
+      min_segment_num,proj_data_info_sptr->get_max_segment_num(),
       min_segment_num);
     
     // find max_axial_pos_num in the range of segments
     // TODO relies on axial_pos_num starting from 0
-    assert(proj_data_info_ptr->get_min_axial_pos_num(0) == 0);
+    assert(proj_data_info_sptr->get_min_axial_pos_num(0) == 0);
 #if 1  
     int max_axial_pos_num;
     if (min_segment_num <= 0 && 0 <= max_segment_num)
     {
       // all axial_poss are addressed for segment 0
-      max_axial_pos_num = proj_data_info_ptr->get_max_axial_pos_num(0);
+      max_axial_pos_num = proj_data_info_sptr->get_max_axial_pos_num(0);
     }
     else 
     {
       if (min_segment_num>0) // which implies max_segment_num>0
-	max_axial_pos_num = proj_data_info_ptr->get_max_axial_pos_num(min_segment_num);      
+	max_axial_pos_num = proj_data_info_sptr->get_max_axial_pos_num(min_segment_num);
       else // min_segment_num <= max_segment_num < 0      
-	max_axial_pos_num = proj_data_info_ptr->get_max_axial_pos_num(max_segment_num);
+	max_axial_pos_num = proj_data_info_sptr->get_max_axial_pos_num(max_segment_num);
     }
     
     const int start_axial_pos_num = 
@@ -304,8 +308,8 @@ main(int argc, char **argv)
     const int end_axial_pos_num = 
       ask_num("End   axial_pos", start_axial_pos_num, max_axial_pos_num, max_axial_pos_num);
 #else
-    const int min_axial_pos_num = proj_data_info_ptr->get_min_axial_pos_num(segment_num);  
-    const int max_axial_pos_num = proj_data_info_ptr->get_max_axial_pos_num(segment_num);  
+    const int min_axial_pos_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+    const int max_axial_pos_num = proj_data_info_sptr->get_max_axial_pos_num(segment_num);
     const int start_axial_pos_num = 
       ask_num("Start axial_pos", min_axial_pos_num, max_axial_pos_num, min_axial_pos_num);
     const int end_axial_pos_num = 
@@ -313,7 +317,7 @@ main(int argc, char **argv)
 #endif
     
     // TODO this message is symmetry specific
-    const int nviews = proj_data_info_ptr->get_num_views();
+    const int nviews = proj_data_info_sptr->get_num_views();
     cerr << "Special views are at 0, "
       << nviews/4 <<", " << nviews/2 <<", " << nviews/4*3 << endl;
     
@@ -322,14 +326,14 @@ main(int argc, char **argv)
     
     const int start_tang_pos_num = 
       ask_num("Start tang_pos", 
-	      proj_data_info_ptr->get_min_tangential_pos_num(), 
-	      proj_data_info_ptr->get_max_tangential_pos_num(),
-	      proj_data_info_ptr->get_min_tangential_pos_num());
+	      proj_data_info_sptr->get_min_tangential_pos_num(),
+	      proj_data_info_sptr->get_max_tangential_pos_num(),
+	      proj_data_info_sptr->get_min_tangential_pos_num());
     const int end_tang_pos_num = 
       ask_num("End  tang_pos", 
 	      start_tang_pos_num, 
-	      proj_data_info_ptr->get_max_tangential_pos_num(),
-	      proj_data_info_ptr->get_max_tangential_pos_num());
+	      proj_data_info_sptr->get_max_tangential_pos_num(),
+	      proj_data_info_sptr->get_max_tangential_pos_num());
     //const int start_tang_pos_num = -end_tang_pos_num;
 
     if (!ask("Add this backprojection to image of previous run ?", false))

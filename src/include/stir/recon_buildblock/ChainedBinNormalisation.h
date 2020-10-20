@@ -95,7 +95,7 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
 
   //! Checks if we can handle certain projection data.
   /*! Calls set_up for the BinNormalisation members. */
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
 
   //! Normalise some data
   /*! 

@@ -32,13 +32,21 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
+#include "stir/CPUTimer.h"
 #include <iostream>
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
 
 START_NAMESPACE_STIR
 unsigned 
 ScatterSimulation::
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   unsigned int ret_value = 0;
 #pragma omp critical(SCATTERESTIMATIONFINDDETECTIONPOINTS)
   {
@@ -66,6 +74,10 @@ void
 ScatterSimulation::
 find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
   this->proj_data_info_cyl_noarc_cor_sptr->
     find_cartesian_coordinates_of_detection(
@@ -97,8 +109,13 @@ compute_emis_to_det_points_solid_angle_factor(
 
 float
 ScatterSimulation::
-detection_efficiency(const float energy,int en_window) const
+detection_efficiency(const float energy, const int en_window) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
+
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
     sqrt(2.*energy*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_reference_energy())*
@@ -110,7 +127,127 @@ detection_efficiency(const float energy,int en_window) const
     0.5f*( erf((this->template_exam_info_sptr->get_high_energy_thres(en_window)-energy)/sigma_times_sqrt2)
           - erf((this->template_exam_info_sptr->get_low_energy_thres(en_window)-energy)/sigma_times_sqrt2 ));
   /* Maximum efficiency is 1.*/
+
   return efficiency;
+}
+
+float
+ScatterSimulation::detection_efficiency_numerical_formulation(const float incoming_photon_energy, const int en_window) const
+{
+
+    const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
+    const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
+    float sum = 0;
+    const int size = 30;
+    double increment_x = (HLD - LLD) / (size - 1);
+
+    #ifdef STIR_OPENMP
+    #pragma omp parallel for reduction(+:sum) schedule(dynamic)
+    #endif
+    for(int i = 0 ; i< size; ++i)
+    {
+        const float energy_range = LLD+i*increment_x;
+        sum+= detection_model_with_fitted_parameters(energy_range, incoming_photon_energy);
+    }
+    sum*=increment_x;
+    return sum;
+}
+
+std::vector<double>
+ScatterSimulation::detection_spectrum_numerical_formulation(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
+{
+
+    std::vector<double> output(size);
+    double increment_x = (HLD - LLD) / (size - 1);
+
+    for(int i = 0; i < size; ++i)
+    {
+        output[i] = LLD + (i * increment_x);
+        std::cout << output[i] << std::endl;
+    }
+
+    for(int i = 0; i < size; ++i)
+    {
+        output[i] = detection_model_with_fitted_parameters(output[i], incoming_photon_energy);
+    }
+
+    return output;
+}
+
+
+float
+ScatterSimulation::
+detection_model_with_fitted_parameters(const float x, const float energy) const
+{
+  //! Brief
+  //! All the parameters are obtained by fitting the model to the energy spectrum obtained with GATE.
+  //! The crystal used here is LSO, the one for the Siemens mMR (atomic number Z = 66).
+  //! We consider to have four terms: (i) gaussian model for the photopeak, (ii) compton plateau, (iii) flat continuum, (iv) exponential tale
+  //! The model has be trained with 511 keV and tested with 370 keV.
+
+  //const int Z = 66; // atomic number of LSO
+  //const float H_1 = pow(Z,5)/energy; //the height of the photopeak is prop. to the photoelectric cross section
+  //const float H_2 = 9.33*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
+  //const float H_3 = 7; //fitting parameter
+  //const float H_4 = 29.4; //fitting parameter
+  //const float beta = -0.8401; //fitting parameter
+  //const float global_scale = 0.29246*0.8*1e-06;//2.33*1e-07; //fitting parameter
+  //const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
+  //const float fwhm = 0.14;
+  //const float std_peak = energy*fwhm/2.35482;
+  //const float scaling_std_compton = 28.3; //fitting parameter
+  //const float shift_compton = 0.597; //fitting parameter
+  const float f1 = photoelectric((66*66*66*66*66)/energy, (energy*0.14f)/2.35482f, x, energy);
+  const float f2 = compton_plateau(9.33f*1e+25*total_Compton_cross_section(energy)*66, (energy*0.14f)/2.35482f, x, energy, 28.3f,0.597f);
+  const float f3 = flat_continuum(7,(energy*0.14f)/2.35482f, x, energy);
+  const float f4 = exponential_tail(29.4f,(energy*0.14f)/2.35482f, x, energy,-0.8401f);
+
+  return 0.29246f*0.8f*1e-06*(f1+f2+f3+f4);
+}
+
+float
+ScatterSimulation::
+photoelectric(const float K, const float std_peak, const float x, const float energy) const
+{
+  const float diff = x - energy;
+  const float pow_diff = diff*diff;
+  const float pow_std_peak = std_peak*std_peak;
+  return  K/(std_peak*2.5066f)*exp(-pow_diff/(2*pow_std_peak));
+}
+
+float
+ScatterSimulation::
+compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const
+{
+    const float m_0_c_2 = 511.0f;
+    const float alpha = energy/m_0_c_2;
+    const float E_1 = energy/(1+alpha*(2));
+    const float mean = energy*shift_compton;
+    const float x_minus_mean = x - mean;
+    return ((energy/E_1)+(E_1/energy)-2)*(K*exp(-(x_minus_mean*x_minus_mean)/(4*scaling_std_compton*std_peak)));
+}
+float
+ScatterSimulation::
+flat_continuum(const float K, const float std_peak, const float x, const float energy) const
+{
+    const float den = 1.4142f*std_peak;
+        if (x<=energy)
+            return K* erfc((x-energy)/den);
+        else
+            return 0;
+}
+
+float
+ScatterSimulation::
+exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const
+{
+    const float den1 = 1.4142f*M_PI*std_peak*beta;
+    const float den2 = 1.4142f*std_peak;
+    const float den3 = 2*beta;
+    if (x > 210) //i am not sure of the behaviour of the function at too low energies
+        return K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
+    else
+    	return 0;
 }
 
 float
@@ -134,14 +271,8 @@ energy_lower_limit(const float low, const float approx, const float resolution_a
 double
 ScatterSimulation::
 detection_efficiency_no_scatter(const unsigned det_num_A, 
-                                const unsigned det_num_B, int en_window) const
+                                const unsigned det_num_B) const
 {
-  // TODO: slightly dangerous to use a static here
-  // it would give wrong results when the energy_thresholds are changed...
-    static const float detector_efficiency_no_scatter = 1 ;
-    /*detection_efficiency(511.F, en_window) > 0
-    ? detection_efficiency(511.F, en_window)
-    : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);*/
 
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];
@@ -163,7 +294,7 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
   return
     1./(  0.75/2./_PI *
     rAB_squared
-    /pow(detector_efficiency_no_scatter,2.0)/
+    /pow(1,2.0)/
     (cos_incident_angle_A*
      cos_incident_angle_B));
 }

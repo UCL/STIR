@@ -127,7 +127,10 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
       get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
 					      const ParametricVoxelsOnCartesianGrid & par_image) const;
 
-    //! This is the common method used to estimate the parametric images from the dynamic images. 
+    //! This is the common method used to estimate the parametric images from the dynamic images.
+    /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
+      the same as the ones encoded in the model.
+    */
     void 
       apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const;
 

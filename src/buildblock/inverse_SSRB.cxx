@@ -38,24 +38,24 @@ Succeeded
 inverse_SSRB(ProjData& proj_data_4D,
 			 const ProjData& proj_data_3D)
 {
-	const ProjDataInfo * const proj_data_3D_info_ptr =
-		dynamic_cast<ProjDataInfo const * >
-		(proj_data_3D.get_proj_data_info_ptr());
-	const ProjDataInfo * const proj_data_4D_info_ptr =
-		dynamic_cast<ProjDataInfo const * >
-		(proj_data_4D.get_proj_data_info_ptr());
-	if ((proj_data_3D_info_ptr->get_min_view_num() !=
-	     proj_data_4D_info_ptr->get_min_view_num()) ||
-	    (proj_data_3D_info_ptr->get_min_view_num() !=
-	     proj_data_4D_info_ptr->get_min_view_num()))
+	const shared_ptr<const ProjDataInfo> proj_data_3D_info_sptr =
+		dynamic_pointer_cast<const ProjDataInfo>
+		(proj_data_3D.get_proj_data_info_sptr());
+	const shared_ptr<const ProjDataInfo> proj_data_4D_info_sptr =
+		dynamic_pointer_cast<const ProjDataInfo>
+		(proj_data_4D.get_proj_data_info_sptr());
+	if ((proj_data_3D_info_sptr->get_min_view_num() !=
+	     proj_data_4D_info_sptr->get_min_view_num()) ||
+	    (proj_data_3D_info_sptr->get_min_view_num() !=
+	     proj_data_4D_info_sptr->get_min_view_num()))
 	  {
 	    warning("inverse_SSRB: incompatible view-information");
 	    return Succeeded::no;
 	  }
-	if ((proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
-	     proj_data_4D_info_ptr->get_min_tangential_pos_num()) ||
-	    (proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
-	     proj_data_4D_info_ptr->get_min_tangential_pos_num()))
+	if ((proj_data_3D_info_sptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_sptr->get_min_tangential_pos_num()) ||
+	    (proj_data_3D_info_sptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_sptr->get_min_tangential_pos_num()))
 	  {
 	    warning("inverse_SSRB: incompatible tangential_pos-information");
 	    return Succeeded::no;
@@ -66,10 +66,11 @@ inverse_SSRB(ProjData& proj_data_4D,
 	Sinogram<float> sino_4D = 
 		proj_data_4D.
 		get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
+    sino_4D.fill(0);
 	Sinogram<float> sino_3D = 
 		proj_data_3D.
 		get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
-	
+    sino_3D.fill(0);
 	for (int out_segment_num = proj_data_4D.get_min_segment_num(); 
 	     out_segment_num <= proj_data_4D.get_max_segment_num();
 	     ++out_segment_num)
@@ -78,9 +79,13 @@ inverse_SSRB(ProjData& proj_data_4D,
 		     out_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
 		     ++out_ax_pos_num )
 			{		
+
+          // if((out_segment_num+out_ax_pos_num )>proj_data_4D.get_max_axial_pos_num(out_segment_num)||(out_segment_num+out_ax_pos_num)<proj_data_4D.get_min_axial_pos_num(out_segment_num))
+            //std::cout << "SEGMENT: " << bin.segment_num()  << "AXIAL: " << bin.axial_pos_num() << '\n';
+          //     continue;
 				sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num);				
 				const float out_m = 
-					proj_data_4D_info_ptr->
+					proj_data_4D_info_sptr->
 					get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));				
 				int num_contributing_sinos = 0;
 								
@@ -90,7 +95,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 				{
 					sino_3D = proj_data_3D.get_sinogram(in_ax_pos_num,0);					
 					const float in_m = 
-						proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
+						proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
 
 					if (fabs(out_m - in_m) < 1E-2)
 					{
@@ -101,7 +106,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 						break;
 					}
 					const float in_m_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ? 
-						-1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num+1, 0));
+						-1000000.F : proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num+1, 0));
 
 					if (fabs(out_m - .5F*(in_m + in_m_next)) < 1E-2)
 					{
@@ -119,6 +124,84 @@ inverse_SSRB(ProjData& proj_data_4D,
 					  out_segment_num, out_ax_pos_num);
 		}
 	}
+   // Sinogram<float>  test = proj_data_4D.get_sinogram(1,0);
+    //std::cout << "expeted:1\n" << proj_data_4D.get_sinogram(1,0)[0][0];
+    //std::cout << "expected: ?\n" << proj_data_4D.get_sinogram(1,-2)[0][0];
+   // std::cout << "expected: /=1\n" << proj_data_4D.get_sinogram(1,2)[0][0];
 	return Succeeded::yes;
 }
+
+
+Succeeded
+transpose_inverse_SSRB(ProjData& proj_data_3D,
+             const ProjData& proj_data_4D)
+{
+    //construct projdata info
+    const shared_ptr<const ProjDataInfo> proj_data_3D_info_sptr =
+        dynamic_pointer_cast<const ProjDataInfo>
+        (proj_data_3D.get_proj_data_info_sptr());
+    const shared_ptr<const ProjDataInfo> proj_data_4D_info_sptr =
+        dynamic_pointer_cast<const ProjDataInfo>
+        (proj_data_4D.get_proj_data_info_sptr());
+
+    // keep sinograms out of the loop to avoid reallocations. initialise to something because there's no default constructor
+    Sinogram<float> sino_3D = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
+    Sinogram<float> sino_3D2 = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
+    Sinogram<float> sino_4D =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
+
+    sino_3D.fill(0);
+    sino_3D2.fill(0);
+    sino_4D.fill(0);
+    for (int out_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); out_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0); ++out_ax_pos_num )
+    {
+        sino_3D = proj_data_3D.get_empty_sinogram(out_ax_pos_num, 0);
+        const float out_m = proj_data_3D_info_sptr->get_m(Bin(0, 0, out_ax_pos_num, 0));
+        const float out_m_next = out_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ?
+            -1000000.F : proj_data_3D_info_sptr->get_m(Bin(0, 0, out_ax_pos_num+1, 0));
+        const float out_m_prev = out_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0) ?
+            -1000000.F : proj_data_3D_info_sptr->get_m(Bin(0, 0, out_ax_pos_num-1, 0));
+
+        for (int in_segment_num = proj_data_4D.get_min_segment_num(); in_segment_num <= proj_data_4D.get_max_segment_num(); ++in_segment_num)
+          {
+             for (int in_ax_pos_num = proj_data_4D.get_min_axial_pos_num(in_segment_num);in_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(in_segment_num); ++in_ax_pos_num )
+            {
+
+              //if((in_segment_num+out_ax_pos_num )>proj_data_4D.get_max_axial_pos_num(in_segment_num)||(in_segment_num+out_ax_pos_num)<proj_data_4D.get_min_axial_pos_num(in_segment_num))
+//               continue;
+
+                const float in_m = proj_data_4D_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, 0));
+
+                if (fabs(out_m - in_m) < 1E-2)
+                 {
+                     sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
+                    sino_3D += sino_4D;
+                  }
+
+
+                if ((fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2) || (fabs(in_m - .5F*(out_m + out_m_prev)) < 1E-2))
+                 {
+                     // for (int i = out_ax_pos_num + 1; i <= proj_data_3D.get_max_axial_pos_num(0); ++i)
+                    //{
+                      //  sino_4D *= .5F;
+                       sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
+                        sino_3D += sino_4D/2;
+                       // sino_3D2 = proj_data_3D.get_empty_sinogram(i, 0);
+                       // sino_3D2 += sino_4D;
+
+                   }
+
+
+            }
+
+        }
+
+         proj_data_3D.set_sinogram(sino_3D);
+         //proj_data_3D.set_sinogram(sino_3D2);
+        }
+
+
+
+    return Succeeded::yes;
+}
+
 END_NAMESPACE_STIR

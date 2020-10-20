@@ -84,7 +84,7 @@ public:
 	\todo Implement this properly to check for delayed events in LM files.
 	*/
 	virtual bool has_delayeds() const { return false; }
-	
+
 private:
 	std::string listmode_filename;
 	mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;

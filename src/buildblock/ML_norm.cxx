@@ -1,5 +1,7 @@
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2016, 2020, University College London
+    Copyright (C) 2016-2017, PETsys Electronics
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,11 +24,11 @@
   \brief utilities for finding normalisation factors using an ML approach
 
   \author Kris Thielemans
+  \author Tahereh Niknejad
 
 */
 
 #include "stir/ML_norm.h"
-#include "stir/display.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/stream.h"
 
@@ -128,17 +130,6 @@ int DetPairData::get_num_detectors() const
   return num_detectors;
 }
 
-void display(const DetPairData& det_pair_data, const char * const title)
-{
-  const int num_detectors = det_pair_data.get_num_detectors();
-  Array<2,float> full_data(IndexRange2D(num_detectors,num_detectors));
-  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
-    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
-       full_data[a%num_detectors][b%num_detectors] =
-         det_pair_data(a,b);
-  display(full_data,title);
-}
-
 void make_det_pair_data(DetPairData& det_pair_data,
 			const ProjDataInfo& proj_data_info_general_type,
 			const int segment_num,
@@ -173,13 +164,13 @@ void make_det_pair_data(DetPairData& det_pair_data,
 			const int ax_pos_num)
 {
   make_det_pair_data(det_pair_data,
-		     *proj_data.get_proj_data_info_ptr(),
+		     *proj_data.get_proj_data_info_sptr(),
 		     segment_num,
 		     ax_pos_num);
   const int num_detectors = 
     det_pair_data.get_num_detectors();
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_ptr());
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
 
   shared_ptr<Sinogram<float> > 
     pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
@@ -213,10 +204,10 @@ void set_det_pair_data(ProjData& proj_data,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  const ProjDataInfo* proj_data_info_ptr =
-    proj_data.get_proj_data_info_ptr();
+  const shared_ptr<const ProjDataInfo> proj_data_info_sptr =
+    proj_data.get_proj_data_info_sptr();
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
 
   const int num_detectors = det_pair_data.get_num_detectors();
   assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
@@ -442,7 +433,7 @@ void iterate_block_norm(BlockData& norm_block_data,
       }
 }
 
-float KL(const DetPairData& d1, const DetPairData& d2, const float threshold)
+double KL(const DetPairData& d1, const DetPairData& d2, const double threshold)
 {
   double sum=0;
   for (int a = d1.get_min_index(); a <= d1.get_max_index(); ++a)
@@ -452,10 +443,266 @@ float KL(const DetPairData& d1, const DetPairData& d2, const float threshold)
         bsum += KL(d1(a,b), d2(a,b), threshold);
       sum += bsum;
     }
-  return static_cast<float>(sum);
+  return static_cast<double>(sum);
 }
 
-//************ 3D
+
+//////////   *******   GeoData3D   ********  //////
+GeoData3D::GeoData3D()
+{}
+
+GeoData3D::~GeoData3D()
+{}
+
+
+GeoData3D::
+GeoData3D(const int num_axial_crystals_per_block, const int half_num_transaxial_crystals_per_block, const int num_rings, const int num_detectors_per_ring)
+:num_axial_crystals_per_block(num_axial_crystals_per_block), half_num_transaxial_crystals_per_block(half_num_transaxial_crystals_per_block),
+num_rings(num_rings), num_detectors_per_ring(num_detectors_per_ring)
+{
+    
+   // assert(max_ring_diff<num_axial_crystals_per_block-1);
+    // I assumed that max_ring_diff is always >= (num_axial_crystals_per_block -1)
+
+    
+    IndexRange<4> fan_indices;
+    fan_indices.grow(0,num_axial_crystals_per_block-1);
+    for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+    {
+        const int min_rb = ra;
+        const int max_rb = num_rings-1; // I assumed max ring diff is num_ring_1
+        fan_indices[ra].grow(0,half_num_transaxial_crystals_per_block-1);
+        for (int a = 0; a < half_num_transaxial_crystals_per_block; ++a)
+        {
+            // store only 1 half of data as ra,a,rb,b = rb,b,ra,a
+            fan_indices[ra][a].grow(min_rb, max_rb);
+            for (int rb = min_rb; rb <= max_rb; ++rb)
+                fan_indices[ra][a][rb] =
+                IndexRange<1>(a,
+                              a+num_detectors_per_ring -1); // I assumed fan size is number of detector per ring  - 2
+        }
+    }
+    grow(fan_indices);
+    fill(0);
+}
+
+GeoData3D&
+GeoData3D::operator=(const GeoData3D& other)
+{
+    base_type::operator=(other);
+    num_axial_crystals_per_block = other.num_axial_crystals_per_block;
+    half_num_transaxial_crystals_per_block = other.half_num_transaxial_crystals_per_block;
+    num_rings = other.num_rings;
+    num_detectors_per_ring = other.num_detectors_per_ring;
+    return *this;
+}
+
+/*float & GeoData3D::operator()(const int ra, const int a, const int rb, const int b)
+{
+    assert(a>=0);
+    assert(b>=0);
+    return
+    ra<rb
+    ? (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b]
+    : b < half_num_transaxial_crystals_per_block ? (*this)[rb][b%num_detectors_per_ring][ra][a<get_min_b(b%num_detectors_per_ring) ? a+num_detectors_per_ring: a] : (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b];
+}
+
+
+float GeoData3D::operator()(const int ra, const int a, const int rb, const int b) const
+{
+   assert(a>=0);
+    assert(b>=0);
+    return
+    ra<rb
+    ? (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b]
+    : b < half_num_transaxial_crystals_per_block  ? (*this)[rb][b%num_detectors_per_ring][ra][a<get_min_b(b%num_detectors_per_ring) ? a+num_detectors_per_ring: a] : (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b];
+} */
+
+float & GeoData3D::operator()(const int ra, const int a, const int rb, const int b)
+{
+    assert(a>=0);
+    assert(b>=0);
+    return
+
+    (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b];
+   
+}
+
+float GeoData3D::operator()(const int ra, const int a, const int rb, const int b) const
+{
+   assert(a>=0);
+    assert(b>=0);
+    return
+
+    (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b];
+
+} 
+
+bool
+GeoData3D::
+is_in_data(const int ra, const int a, const int rb, const int b) const
+{
+    assert(a>=0);
+    assert(b>=0);
+    if (rb<(*this)[ra][a].get_min_index() || rb >(*this)[ra][a].get_max_index())
+        return false;
+    if (b>=get_min_b(a))
+        return b<=get_max_b(a);
+    else
+        return b+num_detectors_per_ring<=get_max_b(a);
+}
+void GeoData3D::fill(const float d)
+{
+    base_type::fill(d);
+}
+
+
+int GeoData3D::get_min_ra() const
+{
+    return base_type::get_min_index();
+}
+
+int GeoData3D::get_max_ra() const
+{
+    return base_type::get_max_index();
+}
+
+
+int GeoData3D::get_min_a() const
+{
+    return (*this)[get_min_index()].get_min_index();
+}
+
+int GeoData3D::get_max_a() const
+{
+    return (*this)[get_min_index()].get_max_index();
+}
+
+
+int GeoData3D::get_min_rb(const int ra) const
+{
+    return 0;
+    // next is no longer true because we store only half the data
+    //return (*this)[ra][(*this)[ra].get_min_index()].get_min_index();
+}
+
+
+int GeoData3D::get_max_rb(const int ra) const
+{
+    return (*this)[ra][(*this)[ra].get_min_index()].get_max_index();
+}
+
+int GeoData3D::get_min_b(const int a) const
+{
+    return (*this)[get_min_index()][a][(*this)[get_min_index()][a].get_min_index()].get_min_index();
+}
+
+int GeoData3D::get_max_b(const int a) const
+{
+    return (*this)[get_min_index()][a][(*this)[get_min_index()][a].get_min_index()].get_max_index();
+}
+
+
+float GeoData3D::sum() const
+{
+    //return base_type::sum();
+    float sum = 0;
+    for (int ra=get_min_ra(); ra <= get_max_ra(); ++ra)
+        for (int a = get_min_a(); a <= get_max_a(); ++a)
+            sum += this->sum(ra,a);
+    return sum;
+}
+
+float GeoData3D::sum(const int ra, const int a) const
+{
+    //return (*this)[ra][a].sum();
+    float sum = 0;
+    for (int rb=get_min_rb(ra); rb <= get_max_rb(ra); ++rb)
+        for (int b = get_min_b(a); b <= get_max_b(a); ++b)
+            sum += (*this)(ra,a,rb,b%num_detectors_per_ring);
+    return sum;
+}
+
+float GeoData3D::find_max() const
+{
+    return base_type::find_max();
+}
+
+float GeoData3D::find_min() const
+{
+    return base_type::find_min();
+}
+
+int GeoData3D::get_num_axial_crystals_per_block() const
+{
+    return num_axial_crystals_per_block;
+}
+
+int GeoData3D::get_half_num_transaxial_crystals_per_block() const
+{
+    return half_num_transaxial_crystals_per_block;
+}
+
+
+std::ostream& operator<<(std::ostream& s, const GeoData3D& geo_data)
+{
+    return s << static_cast<GeoData3D::base_type>(geo_data);
+}
+
+std::istream& operator>>(std::istream& s, GeoData3D& geo_data)
+{
+    s >> static_cast<GeoData3D::base_type&>(geo_data);
+    if (!s)
+        return s;
+    geo_data.half_num_transaxial_crystals_per_block = geo_data.get_max_a() - geo_data.get_min_a() + 1;
+    geo_data.num_axial_crystals_per_block = geo_data.get_max_ra() - geo_data.get_min_ra() + 1;
+    
+    
+    const int max_delta = geo_data[0][0].get_length()-1;
+    const int num_detectors_per_ring =
+    geo_data[0][0][0].get_length();
+    geo_data.num_detectors_per_ring = num_detectors_per_ring;
+    geo_data.num_rings = max_delta+1;
+    
+    
+
+    
+    for (int ra = 0; ra < geo_data.num_axial_crystals_per_block; ++ra)
+        
+
+    {
+        const int min_rb = ra;
+        const int max_rb = geo_data.num_rings-1;
+        for (int a = 0; a < geo_data.half_num_transaxial_crystals_per_block; ++a)
+        {
+
+            if (geo_data[ra][a].get_length() != max_rb - max(ra,min_rb) + 1)
+            {
+                warning("Reading GeoData3D: inconsistent length %d for rb at ra=%d, a=%d, "
+                        "Expected length %d\n",
+                        geo_data[ra][a].get_length(), ra, a, max_rb - max(ra,min_rb) + 1);
+            }
+            geo_data[ra][a].set_offset(max(ra,min_rb));
+            for (int rb = geo_data[ra][a].get_min_index(); rb <= geo_data[ra][a].get_max_index(); ++rb)
+            {
+                if (geo_data[ra][a][rb].get_length() != num_detectors_per_ring)
+                {
+                    warning("Reading GeoData3D: inconsistent length %d for b at ra=%d, a=%d, rb=%d\n"
+                            "Expected length %d\n", 
+                            geo_data[ra][a][rb].get_length(), ra, a, rb, num_detectors_per_ring);
+                }
+                geo_data[ra][a][rb].set_offset(a);
+            }
+        }
+    }
+    
+    return s;
+}
+
+
+////////////////////////////////////////////////////
+
+
 
 
 FanProjData::FanProjData()
@@ -697,24 +944,7 @@ std::istream& operator>>(std::istream& s, FanProjData& fan_data)
   return s;
 }
 
-void display(const FanProjData& fan_data, const char * const title)
-{
-  const int num_rings = fan_data.get_num_rings();
-  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
-  Array<3,float> full_data(IndexRange3D(num_rings,num_detectors_per_ring,num_detectors_per_ring));
-  for (int ra=fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
-  {
-    full_data.fill(0);
-    for (int a = 0; a<num_detectors_per_ring; ++a)
-      for (int rb=fan_data.get_min_rb(ra); rb <= fan_data.get_max_rb(ra); ++rb)
-        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
-          full_data[rb][a%num_detectors_per_ring][b%num_detectors_per_ring] =
-             fan_data(ra,a,rb,b);
-      display(full_data, full_data.find_max(), title);
-  }
-}
-
-shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
 get_fan_info(int& num_rings, int& num_detectors_per_ring, 
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info)
@@ -756,9 +986,9 @@ void make_fan_data(FanProjData& fan_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size/2;
   fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
@@ -790,6 +1020,88 @@ void make_fan_data(FanProjData& fan_data,
   }
 }
 
+/// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
+/// *** fan_data doesn't have gaps, proj_data has gaps *** ///
+void make_fan_data_remove_gaps(FanProjData& fan_data,
+                   const ProjData& proj_data)
+{
+    int num_rings;
+    int num_detectors_per_ring;
+    int fan_size;
+    int max_delta;
+    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
+                 *proj_data.get_proj_data_info_sptr());
+    
+    const int half_fan_size = fan_size/2;
+
+    
+    // ****  Added by me **** //
+    
+    
+     const int num_transaxial_blocks =
+     proj_data_info_ptr ->get_scanner_sptr()->
+     get_num_transaxial_blocks();
+     const int num_axial_blocks =
+     proj_data_info_ptr->get_scanner_sptr()->
+     get_num_axial_blocks();
+     const int num_transaxial_crystals_per_block =
+     proj_data_info_ptr->get_scanner_sptr()->
+     get_num_transaxial_crystals_per_block();
+     const int num_axial_crystals_per_block =
+     proj_data_info_ptr->get_scanner_sptr()->
+     get_num_axial_crystals_per_block();
+     
+    
+
+    const int num_transaxial_blocks_in_fansize = fan_size/num_transaxial_crystals_per_block;
+    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize;
+    const int new_half_fan_size = new_fan_size/2;
+    const int num_axial_blocks_in_max_delta = max_delta/num_axial_crystals_per_block;
+    const int new_max_delta = max_delta - num_axial_blocks_in_max_delta - 1;
+    const int new_num_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks;
+    const int new_num_rings = num_rings - num_axial_blocks;
+    
+    // ****    End     ****  //
+
+    fan_data = FanProjData(new_num_rings, new_num_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
+
+    
+    shared_ptr<SegmentBySinogram<float> > segment_ptr;
+    Bin bin;
+    
+    for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+    {
+        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+        
+        for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+             ++bin.axial_pos_num())
+            for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+                for (bin.tangential_pos_num() = -half_fan_size;
+                     bin.tangential_pos_num() <= half_fan_size;
+                     ++bin.tangential_pos_num())
+                {
+                    int ra = 0, a = 0;
+                    int rb = 0, b = 0;
+                    
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    int new_a = a - a/num_transaxial_crystals_per_block;
+                    int new_b = b - b/num_transaxial_crystals_per_block;
+                    int new_ra = ra - ra/ num_axial_crystals_per_block;
+                    int new_rb = rb - rb/num_axial_crystals_per_block;
+                    
+                    if ((ra == num_rings -1) || (rb  == num_rings -1) || (a == num_detectors_per_ring-1) || (b == num_detectors_per_ring-1)) continue;
+                    
+
+                    fan_data(new_ra, new_a, new_rb, new_b) =
+                    fan_data(new_rb, new_b, new_ra, new_a) =
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+                }
+    }
+}
+
+
 void set_fan_data(ProjData& proj_data,
 		  const FanProjData& fan_data)
 {
@@ -797,15 +1109,14 @@ void set_fan_data(ProjData& proj_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size/2;
   assert(num_rings == fan_data.get_num_rings());
   assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
 
-    
   Bin bin;
   shared_ptr<SegmentBySinogram<float> > segment_ptr;    
  
@@ -831,6 +1142,83 @@ void set_fan_data(ProjData& proj_data,
           }
     proj_data.set_segment(*segment_ptr);
   }
+}
+
+/// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
+/// *** fan_data doesn't have gaps, proj_data has gaps *** ///
+void set_fan_data_add_gaps(ProjData& proj_data,
+                  const FanProjData& fan_data)
+{
+    int num_rings;
+    int num_detectors_per_ring;
+    int fan_size;
+    int max_delta;
+    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
+                 *proj_data.get_proj_data_info_sptr());
+    
+    const int half_fan_size = fan_size/2;
+    //assert(num_rings == fan_data.get_num_rings());
+    //assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
+    
+    
+    // ****  Added by Tahereh Nikjenad **** //
+    
+    const int num_transaxial_crystals_per_block =
+    proj_data_info_ptr->get_scanner_sptr()->
+    get_num_transaxial_crystals_per_block();
+    const int num_axial_crystals_per_block =
+    proj_data_info_ptr->get_scanner_sptr()->
+    get_num_axial_crystals_per_block();
+    
+   // const int num_axial_detectors = fan_data.get_num_rings();      // Number of ring in fan data (w/o gaps)
+   // const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();   // number of detector per ring in fan data w/o gaps
+    
+   // const int num_axial_crystals_per_block = num_axial_detectors/num_axial_blocks;  // number of axial detector per block in fan_data w/o gaps
+   // const int num_transaxial_crystals_per_block = num_transaxial_detectors/num_transaxial_blocks; // number of transaxial detector per block in fan_data w/o gaps
+
+    
+    // ****    End     ****  //
+    
+    Bin bin;
+    shared_ptr<SegmentBySinogram<float> > segment_ptr;
+    
+    for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+    {
+        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
+        
+        for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+             ++bin.axial_pos_num())
+            for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+                for (bin.tangential_pos_num() = -half_fan_size;
+                     bin.tangential_pos_num() <= half_fan_size;
+                     ++bin.tangential_pos_num())
+                {
+                    int ra = 0, a = 0;
+                    int rb = 0, b = 0;
+
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = 1e20;
+
+                    
+                    if ((ra+1)% num_axial_crystals_per_block == 0) continue;
+                    if ((rb+1)% num_axial_crystals_per_block == 0) continue;
+                    if ((a+1)% num_transaxial_crystals_per_block == 0) continue;
+                    if ((b+1)% num_transaxial_crystals_per_block == 0) continue;
+                    
+                    int new_a = a - a/num_transaxial_crystals_per_block;
+                    int new_b = b - b/num_transaxial_crystals_per_block;
+                    int new_ra = ra - ra/ num_axial_crystals_per_block;
+                    int new_rb = rb - rb/num_axial_crystals_per_block;
+                    
+                    
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
+                    fan_data(new_ra, new_a, new_rb, new_b);
+                }
+        proj_data.set_segment(*segment_ptr);
+    }
 }
 
 
@@ -895,6 +1283,90 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData& geo_data, const bool a
 }
 #endif
 
+void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool apply)
+{
+    
+    const int num_axial_detectors = fan_data.get_num_rings();
+    const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
+    const int num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
+    const int num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block()*2;
+    
+    const int num_transaxial_blocks = num_transaxial_detectors/num_transaxial_crystals_per_block;
+    const int num_axial_blocks = num_axial_detectors/num_axial_crystals_per_block;
+    
+    FanProjData work = fan_data;
+    work.fill(0);
+    
+    
+    for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+        for (int a = 0; a < num_transaxial_crystals_per_block /2; ++a)
+            // loop rb from ra to avoid double counting
+            for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+                {
+                    
+                    
+                    // rotation
+                    
+                    for (int axial_block_num = 0; axial_block_num<num_axial_blocks; ++axial_block_num)
+                    {
+                        
+                        for (int transaxial_block_num = 0; transaxial_block_num<num_transaxial_blocks; ++transaxial_block_num)
+                        {
+                            
+                            
+                            const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
+                            const int new_det_num_a = (a+transaxial_det_inc)%num_transaxial_detectors;
+                            const int new_det_num_b = (b+transaxial_det_inc)%num_transaxial_detectors;
+                            const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
+                            const int new_ring_num_a = ra+axial_det_inc;
+                            const int new_ring_num_b = rb+axial_det_inc;
+                            
+                            const int ma = num_transaxial_detectors-1-new_det_num_a;
+                            const int mb = (2*num_transaxial_detectors-1-new_det_num_b)%num_transaxial_detectors;
+                            const int mra = num_axial_detectors-1-new_ring_num_a;
+                            const int mrb = num_axial_detectors-1-new_ring_num_b;
+                            
+                            if (work.is_in_data(new_ring_num_a,new_det_num_a,new_ring_num_b,new_det_num_b))
+                                work(new_ring_num_a, new_det_num_a,new_ring_num_b, new_det_num_b) =
+                                geo_data(ra,a,rb,b%num_transaxial_detectors);
+                            
+                            if (work.is_in_data(new_ring_num_a,ma,new_ring_num_b,mb))
+                                work(new_ring_num_a,ma,new_ring_num_b,mb) = geo_data(ra,a,rb,b%num_transaxial_detectors);
+                            
+                            if (work.is_in_data(mra,new_det_num_a,mrb,new_det_num_b))
+                                
+                                work(mra,new_det_num_a,mrb,new_det_num_b) = geo_data(ra,a,rb,b%num_transaxial_detectors);
+                            
+                            if (work.is_in_data(mra,ma,mrb,mb))
+                                
+                                work(mra,ma,mrb,mb) = geo_data(ra,a,rb,b%num_transaxial_detectors);
+                            
+                            
+                            
+                        }
+                        
+                    }
+                }
+    
+    for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+        for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+        //    for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+	     for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+                {
+                    
+                    if (fan_data(ra,a,rb,b) == 0)
+                        continue;
+                    if (apply)
+                        fan_data(ra,a,rb,b) *= work(ra,a,rb,b%num_transaxial_detectors);
+                    else
+                        fan_data(ra,a,rb,b) /= work(ra,a,rb,b%num_transaxial_detectors);
+                }
+    
+}
+
+
 void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
   const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
@@ -929,9 +1401,9 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size/2;
   data_fan_sums.fill(0);
 
@@ -981,6 +1453,81 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
 	    fan_sum += efficiencies[rb][b%num_detectors_per_ring];
 	data_fan_sums[ra][a] = efficiencies[ra][a]*fan_sum;
       }
+}
+
+
+void make_geo_data(GeoData3D& geo_data, const FanProjData& fan_data)
+{
+    
+    const int num_axial_detectors = fan_data.get_num_rings();
+    const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
+    const int num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
+    const int num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block()*2;
+    const int num_transaxial_blocks = num_transaxial_detectors/num_transaxial_crystals_per_block;
+    const int num_axial_blocks = num_axial_detectors/num_axial_crystals_per_block;
+    
+    
+    // transaxial and axial mirroring
+    
+    FanProjData work = fan_data;
+    work.fill(0);
+    
+    for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+        for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+           //1// for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+            for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+                {
+                    
+                    const int ma = num_transaxial_detectors-1-a;
+                    const int mb = (2*num_transaxial_detectors-1-b)%num_transaxial_detectors;
+                    const int mra = num_axial_detectors-1-ra;
+                    const int mrb = (num_axial_detectors-1-rb);
+                    
+                    
+                    if (ra!=mra && rb !=mrb)
+                        work(ra,a,rb,b)= fan_data(ra,a,rb,b) + fan_data(ra,ma,rb,mb) + fan_data(mra,a,mrb,b) + fan_data(mra,ma,mrb,mb);
+                    else
+                        work(ra,a,rb,b)= fan_data(ra,a,rb,b) + fan_data(ra,ma,rb,mb);
+                    
+                }
+    
+    
+    geo_data.fill(0);
+    
+    
+    for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+      //  for (int a = 0; a <= num_transaxial_detectors/2; ++a)
+        for (int a = 0; a <num_transaxial_crystals_per_block/2; ++a)
+            // loop rb from ra to avoid double counting
+           // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+	     for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+                {
+                    
+                    
+                    // rotation
+                    
+                    for (int axial_block_num = 0; axial_block_num<num_axial_blocks; ++axial_block_num)
+                    {
+                        
+                        for (int transaxial_block_num = 0; transaxial_block_num<num_transaxial_blocks; ++transaxial_block_num)
+                        {
+                            
+                            const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
+                            const int new_det_num_a = (a+transaxial_det_inc)%num_transaxial_detectors;
+                            const int new_det_num_b = (b+transaxial_det_inc)%num_transaxial_detectors;
+                            const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
+                            const int new_ring_num_a = ra+axial_det_inc;
+                            const int new_ring_num_b = rb+axial_det_inc;
+                            if (fan_data.is_in_data(new_ring_num_a,new_det_num_a,new_ring_num_b,new_det_num_b))
+                                geo_data(ra,a,rb,b%num_transaxial_detectors) +=
+                                work(new_ring_num_a, new_det_num_a,new_ring_num_b, new_det_num_b);
+                                
+                                }
+                        
+                    }
+                }
 }
 
 
@@ -1079,6 +1626,31 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
     }
 }
 
+void iterate_geo_norm(GeoData3D& norm_geo_data,
+                      const GeoData3D& measured_geo_data,
+                      const FanProjData& model)
+{
+    make_geo_data(norm_geo_data, model);
+    //norm_geo_data = measured_geo_data / norm_geo_data;
+    
+    const int num_axial_crystals_per_block = measured_geo_data.get_num_axial_crystals_per_block();
+    const int num_transaxial_crystals_per_block = measured_geo_data.get_half_num_transaxial_crystals_per_block()*2;
+    
+    const float threshold = measured_geo_data.find_max()/10000.F;
+    
+    for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+        for (int a = 0; a <num_transaxial_crystals_per_block/2; ++a)
+            // loop rb from ra to avoid double counting
+         //   for (int rb = model.get_min_ra(); rb <= model.get_max_ra(); ++rb)
+	     for (int rb = max(ra,model.get_min_rb(ra)); rb <= model.get_max_rb(ra); ++rb)
+                for (int b =model.get_min_b(a); b <= model.get_max_b(a); ++b)
+                {
+                    
+                    norm_geo_data(ra,a,rb,b) = (measured_geo_data(ra,a,rb,b)>=threshold || measured_geo_data(ra,a,rb,b) < 10000*norm_geo_data(ra,a,rb,b))? measured_geo_data(ra,a,rb,b) / norm_geo_data(ra,a,rb,b)
+                    : 0;
+                }
+}
+
 void iterate_block_norm(BlockData3D& norm_block_data,
 		      const BlockData3D& measured_block_data,
 		      const FanProjData& model)
@@ -1101,7 +1673,7 @@ void iterate_block_norm(BlockData3D& norm_block_data,
 }
 
 
-float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
+double KL(const FanProjData& d1, const FanProjData& d2, const double threshold)
 {
   double sum=0;
   for (int ra = d1.get_min_ra(); ra <= d1.get_max_ra(); ++ra)
@@ -1121,7 +1693,40 @@ float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
         }
       sum += asum;
     }
-  return static_cast<float>(sum);
+  return static_cast<double>(sum);
 }
+
+/*double KL(const GeoData3D& d1, const GeoData3D& d2, const double threshold)
+{
+    const int num_axial_detectors = d1.get_num_rings();
+    const int num_transaxial_detectors = d1.get_num_detectors_per_ring();
+    const int num_axial_crystals_per_block = d1.get_num_axial_crystals_per_block();
+    const int num_transaxial_crystals_per_block = d1.get_half_num_transaxial_crystals_per_block()*2;
+
+     double sum=0;
+    
+    for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+	{
+       		double asum=0;
+      		 for (int a = 0; a <num_transaxial_crystals_per_block/2; ++a)
+		{
+                 double rbsum=0;
+	         for (int rb = max(ra,d1.get_min_rb(ra)); rb <= d1.get_max_rb(ra); ++rb)
+		{
+	              double bsum=0;
+              
+		  for (int b =d1.get_min_b(a); b <= d1.get_max_b(a); ++b)
+                
+                bsum += static_cast<double>(KL(d1(ra,a,rb,b), d2(ra,a,rb,b), threshold));
+              rbsum += bsum;
+            }
+          asum += rbsum;
+        }
+      sum += asum;
+    }
+  return static_cast<double>(sum);
+}
+*/
+                   
 
 END_NAMESPACE_STIR

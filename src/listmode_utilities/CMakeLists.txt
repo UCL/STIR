@@ -25,7 +25,9 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 set(${dir_EXE_SOURCES}
   lm_to_projdata
   lm_to_projdata_bootstrap
+  lm_to_projdata_with_random_rejection
   lm_fansums
+  list_lm_info
   list_lm_events
   list_lm_countrates
 )
@@ -40,6 +42,10 @@ if (HAVE_ECAT)
   )
 endif()
 
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND ${dir_EXE_SOURCES} conv_NiftyPET_stir)
+  list(APPEND ${dir_EXE_SOURCES} lm_to_projdata_NiftyPET)
+endif()
 
 
 include(stir_exe_targets)

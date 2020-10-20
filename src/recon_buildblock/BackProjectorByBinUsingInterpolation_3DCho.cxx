@@ -170,7 +170,7 @@ static const double epsilon = 1e-10;
    */
 
 // KT 25/09/2001 changed return value
-static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+static Succeeded find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                               const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad,
@@ -182,7 +182,7 @@ static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_da
 
 
 inline void 
-check_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+check_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
 	     const float delta, const double cphi, const double sphi, 
 	     const int s, const int ring0,
 	     const int X1, const int Y1, const int Z1,
@@ -191,9 +191,9 @@ check_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
 	     const float axial_pos_to_z_offset)
 {
 #ifdef BPINT_CHECK
-  const double d_xy = proj_data_info_ptr->get_tangential_sampling();
+  const double d_xy = proj_data_info_sptr->get_tangential_sampling();
     
-  const double R2 =square(proj_data_info_ptr->get_ring_radius());
+  const double R2 =square(proj_data_info_sptr->get_ring_radius());
   /* Radius of scanner squared in Pixel^2 */
   const double R2p = R2 / d_xy / d_xy;
   // TODO remove assumption
@@ -236,7 +236,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90
 #endif
 (Array<4, float > const &Projptr,
 			       VoxelsOnCartesianGrid<float>& image,                               
-                               const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+                               const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                float delta,
                                const double cphi, const double sphi, int s, int ring0,
                                const int num_planes_per_axial_pos,
@@ -267,7 +267,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 
 
 
-  if (delta * proj_data_info_ptr_info_cyl_ptr->get_tangential_sampling() / proj_data_info_ptr_info_cyl_ptr->get_ring_radius() > 1)
+  if (delta * proj_data_info_sptr_info_cyl_ptr->get_tangential_sampling() / proj_data_info_sptr_info_cyl_ptr->get_ring_radius() > 1)
   {
     error("This backprojector cannot handle such oblique segments: delta = %g. Sorry.\n",delta);
   }
@@ -287,7 +287,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   // in our current coordinate system, the following constant is always 2
   // TODO remove assumption
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
+  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_sptr->get_ring_spacing() -1) < 10E-4);
 
   /* FOV radius in voxel units */
   // KT 20/06/2001 change calculation of FOV such that even sized image will work
@@ -302,7 +302,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const int maxplane =  image.get_max_z(); 
    
 
-  if (find_start_values(proj_data_info_ptr, 
+  if (find_start_values(proj_data_info_sptr,
 			delta, cphi, sphi, s, ring0,
 			image_rad, image.get_voxel_size().z(),
 			X, Y, Z,
@@ -1018,7 +1018,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	P2na1+=DP2na1;
 #endif // PIECEWISE_INTERPOLATION
       }
-      check_values(proj_data_info_ptr, 
+      check_values(proj_data_info_sptr,
 		   delta, cphi, sphi, s, ring0,
 		   X, Y, Z,
 		   ds, dz, 
@@ -1050,7 +1050,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
 #endif
  (Array<4, float > const& Projptr,
 						     VoxelsOnCartesianGrid<float>& image,                                                     
-                                                     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+                                                     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                                       float delta,
                                                       const double cphi, const double sphi,
                                                       int s, int ring0,
@@ -1080,7 +1080,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   */
 
  
-  if (delta * proj_data_info_ptr_info_cyl_ptr->get_tangential_sampling() /proj_data_info_ptr_info_cyl_ptr->get_ring_radius() > 1)
+  if (delta * proj_data_info_sptr_info_cyl_ptr->get_tangential_sampling() /proj_data_info_sptr_info_cyl_ptr->get_ring_radius() > 1)
   {
     error("This backprojector cannot handle such oblique segments: delta = %g. Sorry.\n",delta);
   }
@@ -1095,7 +1095,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   // CL&KT 21/12/99 new
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
+  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_sptr->get_ring_spacing() -1) < 10E-4);
 
   double dzvert,dzhor,ds;
   double dsdiag,dzdiag,dz;
@@ -1113,7 +1113,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const int maxplane =  image.get_max_z(); 
    
 
-  if(find_start_values(proj_data_info_ptr, 
+  if(find_start_values(proj_data_info_sptr,
 		       delta, cphi, sphi, s, ring0,
 		       image_rad, image.get_voxel_size().z(),
 		       X, Y, Z,
@@ -2243,7 +2243,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #endif // PIECEWISE_INTERPOLATION       
                 
       }
-      check_values(proj_data_info_ptr, 
+      check_values(proj_data_info_sptr,
 		   delta, cphi, sphi, s, ring0,
 		   X, Y, Z,
 		   ds, dz, 
@@ -2260,7 +2260,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 
 
 static Succeeded
-find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                               const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad, const double d_sl,
@@ -2272,18 +2272,18 @@ find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
   // use notations from Egger's thesis
 
      
-  const double d_p = proj_data_info_ptr->get_tangential_sampling();
+  const double d_p = proj_data_info_sptr->get_tangential_sampling();
   // d_xy = image.get_voxel_size().x, but we can use the bin_size here as 
   // the routines.work only when these 2 are equal
-  const double d_xy = proj_data_info_ptr->get_tangential_sampling();
+  const double d_xy = proj_data_info_sptr->get_tangential_sampling();
     
-  const double R2 =square(proj_data_info_ptr->get_ring_radius());
+  const double R2 =square(proj_data_info_sptr->get_ring_radius());
   /* Radius of scanner squared in Pixel^2 */
   const double R2p = R2 / d_xy / d_xy;
   
   // TODO REMOVE ASSUMPTION
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(d_sl * num_planes_per_physical_ring/proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
+  assert(fabs(d_sl * num_planes_per_physical_ring/proj_data_info_sptr->get_ring_spacing() -1) < 10E-4);
   
   /* KT 16/06/98 
      This code should select a pixel inside the FOV.

@@ -111,6 +111,9 @@ main (int argc, char * argv[])
   ++argv; --argc;
   
   const std::string atten_image_filename(argv[2]);
+  // read it to get ExamInfo
+  shared_ptr <DiscretisedDensity<3,float> >
+    atten_image_sptr(read_from_file<DiscretisedDensity<3,float> >(atten_image_filename));
 
   shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
@@ -131,8 +134,8 @@ main (int argc, char * argv[])
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
-		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should possibly come from the image, or say it's an ACF File
-					    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+		      new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
+					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
 
@@ -145,7 +148,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");

@@ -9,6 +9,7 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, UCL
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,17 +32,9 @@
 #include "stir/Succeeded.h"
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/RegisteredObject.h"
-#include "stir/ParsingObject.h"
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TChain.h>
-#include <TDirectory.h>
-#include <TList.h>
-#include <TChainElement.h>
-#include <TTree.h>
-#include <TFile.h>
-#include <TVersionCheck.h>
+// forward declaration of ROOT's TChain
+class TChain;
 
 START_NAMESPACE_STIR
 
@@ -49,12 +42,34 @@ START_NAMESPACE_STIR
 /*! \ingroup IO
         \author Nikos Efthimiou
 
-        \details This class takes as input a root file, and returns the data stored in a meaningfull
-        way. The validation of the ROOT input was done with version 5.34.
+        \details This is an abstract base class for inputs from ROOT files.
+        Primarily, information not related to the scanner's geometry is held here.
+        * InputStreamFromROOTFileForCylindricalPET is for cylindrical PET scanners
+        (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> ) and
+        * InputStreamFromROOTFileForECAT is for ECAT PET scanners
+          (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ).
+
+       The follow bit of the header file refers to members stored here.
+       For appropriate values please check your simulation macro file.
+       For the singles_readout_depth from GATE's online documentation:
+       (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
+       > the readout depth depends upon how the electronic readout functions.
+
+       \verbatim
+        name of data file := ${INPUT_ROOT_FILE}
+        name of input TChain := Coincidences
+        Singles readout depth := 1
+        exclude scattered events := ${EXCLUDE_SCATTERED}
+        exclude random events := ${EXCLUDE_RANDOM}
+        offset (num of detectors) := 0
+        low energy window (keV) := 0
+        upper energy window (keV):= 10000
+       \endverbatim
+
+        \warning The initial validation of the ROOT input was done with version 5.34.
 */
 
-class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile > ,
-        public ParsingObject
+class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile >
 {
 public:
     typedef std::vector<long long int>::size_type SavedPosition;
@@ -65,24 +80,22 @@ public:
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
-                            bool exclude_scattered, bool exclude_randoms,
-                            float low_energy_window, float up_energy_window,
+                            int maximum_order_of_scatter, bool exclude_randoms,
+                            float low_energy_window_1, float up_energy_window_1,
+                            float low_energy_window_2, float up_energy_window_2,
                             int offset_dets);
 
 
     virtual ~InputStreamFromROOTFile() {}
-
-    //!
-    //! \brief get_next_record
-    //! \param record Reference to the Record
-    //! \return
     //!  \details Returns the next record in the ROOT file.
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
-    //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">GATE website</a>
+    //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">here</a>
     virtual
     Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
     inline Succeeded reset();
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string& header_path);
     //! Save current position in a vector
     inline
     SavedPosition save_get_position();
@@ -96,13 +109,13 @@ public:
     inline
     void set_saved_get_positions(const std::vector<unsigned long int>& );
     //! Returns the total number of events
-    inline virtual unsigned long int
+    inline unsigned long int
     get_total_number_of_events() const;
 
     inline std::string get_ROOT_filename() const;
 
     //! Get the number of rings as calculated from the number of repeaters
-    inline virtual int get_num_rings() const = 0;
+    virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
     virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules
@@ -117,10 +130,31 @@ public:
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+    //! Lower energy threshold
+    inline std::vector<float> get_low_energy_thres_in_keV() const;
+    //! Upper energy threshold
+    inline std::vector<float> get_up_energy_thres_in_keV() const;
+    //! Number of energy windows
+    inline int get_number_of_energy_windows() const;
 
-    inline virtual float get_low_energy_thres() const;
+    //! Set singles_readout_depth
+    inline void set_singles_readout_depth(int);
 
-    inline virtual float get_up_energy_thres() const;
+    inline void set_input_filename(const std::string&);
+
+    inline void set_chain_name(const std::string&);
+
+    inline void set_maximum_order_of_scatter(int);
+
+    inline void set_exclude_random_events(bool);
+
+    inline void set_detectors_offset(int);
+
+    inline void set_low_energy_window(const std::vector<float> &);
+
+    inline void set_upper_energy_window(const std::vector<float> &);
+    //! Set the read_optional_root_fields flag
+    inline void set_optional_ROOT_fields(bool);
 
 protected:
 
@@ -138,24 +172,50 @@ protected:
     unsigned long int current_position;
     //! A vector with saved position indices.
     std::vector<unsigned long int> saved_get_positions;
-
-    // ROOT chain
-    TChain *stream_ptr;
-
-    // Variables to store root information
+    //! The name of the ROOT chain to be read
     std::string chain_name;
-    Int_t           eventID1, eventID2;
-    Double_t        time1, time2;
-    Float_t         energy1, energy2;
-    Int_t           comptonphantom1, comptonphantom2;
+    //! This variable can be used to setBranchAddress to ROOT fields that currently
+    //! are not used by STIR. Because they might be related to medical image reconstruction
+    //! or because STIR does not support a relevant use. Of course, just activating this
+    //! flag does not mean that something meaningfull will happen. Please edit get_next_record()
+    //! function accordingly.
+    bool read_optional_root_fields;
 
-    bool exclude_scattered;
+    //! \name ROOT Variables, e.g. to hold data from each entry.
+    //@{
+    TChain *stream_ptr;
+    // note: should be ROOT's Int_t, Double_t and Float_t types, but those
+    // are only defined when including ROOT .h files, which we want to avoid
+    // here, as it creates a public dependency on the ROOT .h files
+    // checking https://github.com/root-project/root/blob/8695045aeff4b2e606a5febdcd58a0a7e7f6c7af/core/base/inc/RtypesCore.h
+    // we can use int32_t, float and double instead
+    std::int32_t eventID1, eventID2, runID, sourceID1, sourceID2;
+    double time1, time2;
+    float energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
+    int32_t comptonphantom1, comptonphantom2;
+    float globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
+    float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+     //@}
+
+    //! Skip scattered events (comptonphantom1 + comptonphantom2 > maximum_order_of_scatter);
+    int maximum_order_of_scatter;
+    //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
-
-    float low_energy_window;
-    float up_energy_window;
+    //! Lower energy threshold
+    float low_energy_window_1;
+    //! Upper energy threshold
+    float up_energy_window_1;
+    //! Lower energy threshold
+    float low_energy_window_2;
+    //! Upper energy threshold
+    float up_energy_window_2;
+    //! Number of energy windows
+    int num_en_windows;
+    //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
-
+    //!For the singles_readout_depth from GATE's online documentation:
+    //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
+    //! > the readout depth depends upon how the electronic readout functions.
     int singles_readout_depth;
 };
 

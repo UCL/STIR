@@ -1,5 +1,6 @@
 ROOT header := 
 
+; More information regarding .hroot files may be found in the UsersGuide
 originating system := User_defined_scanner
 Number of rings                          := 4
 Number of detectors per ring             := 504
@@ -8,7 +9,8 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
-
+Default number of arc-corrected bins 	 := 344
+View offset (degrees)					 := 0
 
 
 GATE scanner type := GATE_Cylindrical_PET
@@ -18,9 +20,7 @@ name of data file := ${INPUT_ROOT_FILE}
 
 name of input TChain := Coincidences
 
-; As the GATE repeaters. 
-; If you skip a level in GATE's hierarchy, 
-; use 1.
+; Gate scanner geometry terminology used to check scanner properties
 number of Rsectors := 504 
 number of modules_X := 1 
 number of modules_Y := 1
@@ -32,34 +32,21 @@ number of crystals_X := 1
 number of crystals_Y := 1
 number of crystals_Z := 4
 
-;; From GATE's online documentation: 
-;; (http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters)
-;; [...] the readout depth depends upon how the electronic readout functions.
-;; If one PMT reads the four modules in the axial direction, 
-;; the depth should be set with the command:
-;; /gate/digitizer/Singles/readout/setDepth 1 
-;
-; In STIR terminology this will be used to define the number of crystals
-; per singles unit. 
 Singles readout depth := 1
-
-;
-; If set the scattered events will be skipped
 exclude scattered events := ${EXCLUDE_SCATTERED}
 
 ;
-; If set the random events will be skipped
-exclude random events := ${EXCLUDE_RANDOM}
+; If set only a certain order of scatter will be kept
+exclude scattered events := ${MAXIMUM_ORDER_OF_SCATTER}
 
-; 
-; STIR will try to align the data. 
-; If you have used non standart GATE axes, 
-; rotate using: 
+;
+; If set the random events will be skipped
+
+exclude random events := ${EXCLUDE_RANDOM}
 offset (num of detectors) := 0 
 
-; If want to deactivate set to [0, 10000]
-low energy window (keV) := 0
-upper energy window (keV):= 10000
+low energy window (keV) := 0  		; Default 0
+upper energy window (keV):= 10000	; Default 10000
 
 End GATE_Cylindrical_PET Parameters :=
 

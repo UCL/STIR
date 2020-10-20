@@ -49,6 +49,19 @@ void
 ExamInfo::set_high_energy_thres(float new_val,int en_window)
 {
     up_energy_thres[en_window] = new_val;
+
+}
+
+void
+ExamInfo::set_low_energy_thres_vect(std::vector<float> new_val)
+{
+    low_energy_thres = new_val;
+}
+
+void
+ExamInfo::set_high_energy_thres_vect(std::vector<float> new_val)
+{
+    up_energy_thres = new_val;
 }
 
 void
@@ -60,13 +73,9 @@ ExamInfo::set_num_energy_windows(int n_win)
 
 
 void
-ExamInfo::set_energy_window_pair(std::vector<int> val,int n_win)
+ExamInfo::set_energy_window_pair(std::vector<int> val)
 {
-
-
-
    en_win_pair=val;
-
 }
 
 
@@ -90,6 +99,7 @@ ExamInfo::get_high_energy_thres(int en_window) const
     return up_energy_thres[en_window];
 
 }
+
 
 //Get the number of energy windows
 int

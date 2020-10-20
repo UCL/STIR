@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
+  Copyright (C) 2019, University College London
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
@@ -40,7 +41,7 @@ scale_sinograms(
 {	
   const ProjDataInfo &proj_data_info = 
     dynamic_cast<const ProjDataInfo&> 
-    (*scaled_scatter_proj_data.get_proj_data_info_ptr());
+    (*scaled_scatter_proj_data.get_proj_data_info_sptr());
 
   Bin bin;
 	
@@ -73,10 +74,13 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
 	
   const ProjDataInfo &proj_data_info = 
     dynamic_cast<const ProjDataInfo&> 
-    (*weights_proj_data.get_proj_data_info_ptr());
+    (*weights_proj_data.get_proj_data_info_sptr());
 
   Bin bin;
-	
+
+  // scale factor to use when the denominator is zero
+  const float default_scale = 1.F;
+
   IndexRange2D sinogram_range(proj_data_info.get_min_segment_num(),proj_data_info.get_max_segment_num(),0,0);
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();
@@ -109,7 +113,7 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
       
     if (denominator_sinogram.sum()==0.f)
 	  {  
-        scale_factors[bin.segment_num()][bin.axial_pos_num()] = 0.f;
+	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = default_scale;
 	  }
 	else
 	  {
@@ -118,17 +122,23 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
         (proj_data_info.get_num_views() * proj_data_info.get_num_tangential_poss()) * .001f
 		)
 	      {
-		error("Problem at segment %d, axial pos %d in finding sinogram scaling factor.\n"
-		      "Weighted data in denominator %g too small compared to total in sinogram %g.\n"
-		      "Adjust weights?",
-		      bin.segment_num(),bin.axial_pos_num(),
-		      total_in_denominator[bin.segment_num()][bin.axial_pos_num()],
-		      denominator_sinogram.sum()
+		warning("Problem at segment %d, axial pos %d in finding sinogram scaling factor.\n"
+                        "Weighted data in denominator %g is very small compared to total in sinogram %g.\n"
+                        "Adjust weights?.\n"
+                        "I will use scale factor %g",
+                        bin.segment_num(),bin.axial_pos_num(),
+                        total_in_denominator[bin.segment_num()][bin.axial_pos_num()],
+                        denominator_sinogram.sum(),
+                        default_scale
 		      );
+                scale_factors[bin.segment_num()][bin.axial_pos_num()] = default_scale;
 	      }
-	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = 
-	      total_in_numerator[bin.segment_num()][bin.axial_pos_num()]/
-	      total_in_denominator[bin.segment_num()][bin.axial_pos_num()];
+            else
+              {
+                scale_factors[bin.segment_num()][bin.axial_pos_num()] =
+                  total_in_numerator[bin.segment_num()][bin.axial_pos_num()]/
+                  total_in_denominator[bin.segment_num()][bin.axial_pos_num()];
+              }
 	  }
       }
   

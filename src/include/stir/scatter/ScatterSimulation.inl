@@ -1,7 +1,7 @@
 //
 //
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2004 - 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,9 +19,11 @@
 /*!
   \file
   \ingroup scatter
-  \brief inline functions of ScatterSimulation
+  \brief inline functions of stir::ScatterSimulation (cross sections)
 
-  \author Nikos Efthimiou
+  \author Nikolaos Dikaios
+  \author Charalampos Tsoumpas
+  \author Kris Thielemans
 
 */
 #include "stir/ProjDataInterfile.h"

@@ -29,6 +29,9 @@
 #define __stir_listmode_CListRecordECAT966_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListGatingInput.h"
+#include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListEnergy.h"
 #include "stir/listmode/CListEventCylindricalScannerWithViewTangRingRingEncoding.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/IO/stir_ecat_common.h" // for namespace macros
@@ -165,7 +168,7 @@ class CListTimeDataECAT966
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 966 scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT966 : public CListTime, public CListGatingInput
+class CListTimeECAT966 : public ListTime, public ListGatingInput
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)
@@ -198,6 +201,20 @@ class CListTimeECAT966 : public CListTime, public CListGatingInput
   };
 };
 
+//! A class for storing and using a energy'event' from a listmode file from the ECAT 966 scanner
+/*! \ingroup listmode
+ */
+class CListEnergyECAT966 : public ListEnergy
+{
+ public:
+  bool is_energy() const
+  {return true; }
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
+};
+
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 966 it's either a coincidence event, or a timing flag.*/
@@ -208,6 +225,8 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
 
   bool is_time() const
   { return this->time_data.is_time(); }
+  bool is_energy() const
+  { return true; }
   bool is_gating_input() const
   { return this->is_time(); }
   bool is_event() const
@@ -220,6 +239,10 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
     { return this->time_data; }
   virtual const CListTimeECAT966&   time() const
     { return this->time_data; }
+  virtual CListEnergyECAT966&   energy()
+    { return this->energy_data; }
+  virtual const CListEnergyECAT966&   energy() const
+    { return this->energy_data; }
   virtual CListTimeECAT966&  gating_input()
     { return this->time_data; }
   virtual const CListTimeECAT966&  gating_input() const
@@ -258,6 +281,7 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
  private:
   CListEventECAT966  event_data;
   CListTimeECAT966   time_data; 
+  CListEnergyECAT966 energy_data;
   boost::int32_t         raw;
 
 };

@@ -152,7 +152,9 @@ Scanner::get_num_detector_layers() const
 int
 Scanner::get_num_axial_blocks() const
 {
-  return num_rings/num_axial_crystals_per_block;
+  // when using virtual crystals between blocks, there won't be one at the end, so we
+  // need to take this into account.
+  return (num_rings+get_num_virtual_axial_crystals_per_block())/num_axial_crystals_per_block;
 }
 
 int
@@ -194,7 +196,7 @@ Scanner::get_num_axial_singles_units() const
   if ( num_axial_crystals_per_singles_unit == 0 ) {
     return 0;
   } else {
-    return num_rings / num_axial_crystals_per_singles_unit;
+    return (num_rings+get_num_virtual_axial_crystals_per_block()) / num_axial_crystals_per_singles_unit;
   }
 }
 
@@ -267,7 +269,11 @@ void Scanner::set_average_depth_of_interaction(const float & new_depth_of_intera
   average_depth_of_interaction = new_depth_of_interaction;
 }
 
-
+bool Scanner::has_energy_information() const
+{
+    return (energy_resolution <= 0.0 ||
+            reference_energy <= 0.0) ? false : true;
+}
 
 void Scanner::set_ring_spacing(const float&  new_spacing)
 {
