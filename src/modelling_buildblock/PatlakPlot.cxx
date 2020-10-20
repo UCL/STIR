@@ -110,7 +110,7 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
          sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
           patlak_array[1][sample_num]= static_cast<float>(sum_value);
           patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
-          if(plasma_data.get_if_decay_corrected())
+          if(plasma_data.get_is_decay_corrected())
             {
               const float dec_fact=
                  static_cast<float>(decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
@@ -120,15 +120,15 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
               time_vector[sample_num]= static_cast<float>(0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)));
             }
         }
-      if(plasma_data.get_if_decay_corrected())
+      if(plasma_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if(!plasma_data.get_if_decay_corrected())
+      else
         warning("plasma_data have not been corrected during the process, which might create wrong results!!!");
 
       assert(sample_num-1==plasma_data.size());
       this->_model_matrix.set_model_array(patlak_array);
       this->_model_matrix.set_time_vector(time_vector);
-      this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
+      this->_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
       this->_model_matrix.threshold_model_array(.0000001F);
       this->_matrix_is_stored=true;
     }
@@ -165,7 +165,7 @@ create_model_matrix()
          patlak_array[1][sample_num]= static_cast<float>(sum_value);
          patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 
-      if(this->_plasma_frame_data.get_if_decay_corrected())
+      if(this->_plasma_frame_data.get_is_decay_corrected())
         {
           const float dec_fact=
              static_cast<float>(decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
@@ -175,9 +175,9 @@ create_model_matrix()
           time_vector[sample_num]= static_cast<float>(0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)));
         }
     }
-  if(this->_plasma_frame_data.get_if_decay_corrected())
+  if(this->_plasma_frame_data.get_is_decay_corrected())
     warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-  else if(!this->_plasma_frame_data.get_if_decay_corrected())
+  else
     error("plasma_data have not been corrected during the process, which will create wrong results!!!");
   
       assert(sample_num-1==this->_plasma_frame_data.size());
@@ -188,7 +188,7 @@ create_model_matrix()
       this->_model_matrix.uncalibrate(this->_cal_factor);      
       if(this->_in_total_cnt)
         this->_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
-      this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
+      this->_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
       this->_model_matrix.threshold_model_array(.000000001F);
       this->_matrix_is_stored=true;
     }
