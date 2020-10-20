@@ -1576,14 +1576,14 @@ namespace stir {
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
-// tell SWIG to convert the return of get_prior_ptr etc to the appropriate object
 /* This currently fails, so is still commented out
-
 %newobject *::get_objective_function;
 %factory(
          stir::GeneralisedObjectiveFunction<TargetT >& stir::IterativeReconstruction<TargetT >::get_objective_function,
          %arg(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >));
-*/       
+*/
+
+// tell SWIG to convert the return of get_prior_ptr etc to the appropriate object
 %newobject *::get_prior_ptr;
 %factory(stir::GeneralisedPrior<TargetT> *stir::GeneralisedObjectiveFunction< TargetT >::get_prior_ptr,
          stir::QuadraticPrior<elemT>,
