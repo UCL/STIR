@@ -179,6 +179,9 @@ from the above):</H2>
     </li>
     <li><code>ProjData*::copy_to</code> and <code>fill_from</code> now return the updated iterator (as opposed to the size). This is like <code>std::copy</code>, and more convenient for reusing it.
     </li>
+    <li><code>ModelMatrix::set_if_uncalibrated</code> and <code>ModelMatrix::get_if_uncalibrated</code> renamed to <code>ModelMatrix::set_is_uncalibrated</code> and <code>ModelMatrix::get_is_uncalibrated</code></li>
+    <li><code>PlasmaData::set_if_decay_corrected</code> and <code>PlasmaData::get_if_decay_corrected</code> renamed to <code>PlasmaData::set_is_decay_corrected</code> and <code>PlasmaData::get_is_decay_corrected</code></li>
+    <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
 </ul>
 
 <h3>New functionality</h3>
