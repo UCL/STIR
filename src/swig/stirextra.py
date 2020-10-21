@@ -35,7 +35,6 @@ def get_bounding_box_indices(image):
         maxind=stir.Int3BasicCoordinate()
     else:
         raise exceptions.NotImplementedError('need to handle dimensions different from 2 and 3')
-    
     image.get_regular_range(minind, maxind);
     return [minind, maxind]
 
