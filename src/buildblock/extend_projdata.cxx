@@ -137,22 +137,18 @@ namespace detail
                            const float min_view_compression, const float max_view_compression)
   {
     //* Check if projdata are from 0 to pi-phi
-    //bool min_is_compressed=false;
-    //bool max_is_compressed=false;
+
     BasicCoordinate<2,int> min_in, max_in;
     if (!sino_segment.get_regular_range(min_in, max_in))
       {
         warning("input segment 0 should have a regular range");
       }
 
-    //const int org_min_view_num=min_in[1];
-   // const int org_max_view_num=max_in[1];
 
     min_in[1]+=min_view_compression;  //here the new min is bigger than the original
     max_in[1]-=max_view_compression; //here the new max is smaller than the original
 
     const float min_phi = proj_data_info.get_phi(Bin(0,0,0,0));
-    //const float max_phi = proj_data_info.get_phi(Bin(0,max_in[1],0,0));
 
     const float sampling_phi =
       proj_data_info.get_phi(Bin(0,1,0,0)) - min_phi;
