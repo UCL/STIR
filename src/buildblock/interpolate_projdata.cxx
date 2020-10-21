@@ -192,7 +192,7 @@ namespace detail_interpolate_projdata
     if (out_sinogram.get_num_views() != in_sinogram.get_num_views()/2)
       error("views need to be reduced of a factor 2");
 
-    const int in_num_views = in_sinogram.get_num_views();
+    //const int in_num_views = in_sinogram.get_num_views();
     const int out_num_views = out_sinogram.get_num_views();
 
     for (int view_num = in_sinogram.get_min_view_num()+1;
@@ -589,7 +589,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
 {
 
 
-    SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
+    //SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
 
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
