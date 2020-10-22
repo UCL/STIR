@@ -5,11 +5,13 @@ You first need to have Python and pip
 ## Install [pre-commit](https://pre-commit.com)
 See https://pre-commit.com/#install but the following might work.
 
-    sudo -H pip install pre-commit
+    pip install pre-commit
 
-If that fails with a message about `PyYAML` and `distutils, try
+If this fails with a permission error, try adding `--user` to the command.
 
-    sudo -H pip install --ignore-installed PyYAML
+If that fails with a message about `PyYAML` and `distutils`, try
+
+    pip install --ignore-installed PyYAML
 
 ## Install clang-format
 ### debian/Ubuntu
@@ -24,4 +26,3 @@ search the internet and tell us
 cd /whereever/STIR
 pre-commit install
 ```
-
