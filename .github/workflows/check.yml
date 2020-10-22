@@ -1,11 +1,11 @@
-name: Test
+name: Check
 on:
 - push
 - pull_request
 jobs:
   check:
     runs-on: ubuntu-latest
-    name: Lint
+    name: pre-commit
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
