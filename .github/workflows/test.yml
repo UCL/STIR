@@ -1,0 +1,15 @@
+name: Test
+on:
+- push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - run: sudo apt-get install -yqq clang-format
+    - run: pip install pre-commit
+    - run: pre-commit run --all-files
