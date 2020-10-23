@@ -1,5 +1,6 @@
 !INTERFILE  :=
 name of data file := ECAT_931_projdata_template.s
+!imaging modality := PT
 originating system := ECAT 931
 !GENERAL DATA :=
 !GENERAL IMAGE DATA :=
@@ -7,7 +8,7 @@ originating system := ECAT 931
 imagedata byte order := LITTLEENDIAN
 !PET STUDY (General) :=
 !PET data type := Emission
-applied corrections := {arc correction}
+;applied corrections := {arc correction}
 !number format := float
 !number of bytes per pixel := 4
 number of dimensions := 4

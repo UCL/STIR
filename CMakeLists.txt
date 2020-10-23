@@ -13,8 +13,8 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-cmake_minimum_required(VERSION 2.8.3)
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
+cmake_minimum_required(VERSION 3.1.0)
+
 
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
@@ -119,13 +119,6 @@ if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT)
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    # Find which major version this is
-    string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
-    list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
-    if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
-      message(WARNING "This ROOT version needs C++-11, so we will enable this.")
-      UseCXX(11)
-    endif()
   endif()
 endif()
 
@@ -146,11 +139,12 @@ if(NOT DISABLE_HDF5)
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0 QUIET)
+    find_package(nlohmann_json 3.2.0)# QUIET)
     if (nlohmann_json_FOUND)
-        message(STATUS "nlohmann JSON library found.")
-        message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
-        UseCXX(11)
+      message(STATUS "nlohmann JSON library found.")
+      set(HAVE_JSON ON)
+    else()
+      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
     endif()
 endif()
 

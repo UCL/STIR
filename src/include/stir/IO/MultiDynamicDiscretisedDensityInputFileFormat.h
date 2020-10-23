@@ -5,7 +5,7 @@
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
-    Copyight (C) 2018, University College London
+    Copyight (C) 2018,2020, University College London
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -89,7 +89,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
     DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
     ExamInfo exam_info;
-    for (int i=1; i<=header.get_num_data_sets(); ++i) {
+    for (std::size_t i=1U; i<=header.get_num_data_sets(); ++i) {
         unique_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i-1)));
 
         // Check that there is time frame information
@@ -100,7 +100,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
         // Set some info on the first frame
         if (i==1)
           {
-            exam_info = dyn_disc_den_ptr->get_exam_info();
+            exam_info = t->get_exam_info();
             exam_info.time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
             shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(exam_info.originating_system));
             dyn_disc_den_ptr->set_scanner(*scanner_sptr);

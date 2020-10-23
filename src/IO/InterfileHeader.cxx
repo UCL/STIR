@@ -179,6 +179,8 @@ InterfileHeader::InterfileHeader()
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+  add_key("study date", &study_date_time.date);
+  add_key("study_time", &study_date_time.time);
   add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeader::set_type_of_data,
@@ -255,6 +257,17 @@ bool InterfileHeader::post_processing()
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
       return true;
+    }
+
+  if (!study_date_time.date.empty() && !study_date_time.time.empty())
+    {
+      try
+        {
+          exam_info_sptr->start_time_in_secs_since_1970 =
+            Interfile_datetime_to_secs_since_Unix_epoch(study_date_time);
+        }
+      catch(...)
+        {}
     }
 
   if (patient_orientation_index<0 || patient_rotation_index<0)
@@ -511,12 +524,6 @@ bool InterfileImageHeader::post_processing()
       return true; 
     }
   std::vector<double>	first_pixel_offsets;
-  
-  if (num_time_frames > 1 && num_image_data_types > 1)
-    { 
-      warning("Interfile error: only supporting num_time_frames OR num_image_data_types > 1 for now\n"); 
-      return true; 
-    }
 
   return false;
 }

@@ -14,7 +14,11 @@ detailed below.
 <h2>Overall summary</h2>
 <p>
 <ul>
-  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</ul>
+  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</li>
+  <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
+    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL)
+  </li>
+
 </ul>  
 </p>
 
@@ -23,7 +27,7 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), and Robert Twyman (UCL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys) and Robert Twyman (UCL).
 </p>
 
     <h2>Patch release info</h2>
@@ -53,9 +57,35 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
-<li>
+  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well. See<br />
+    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
+    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
+</li>
+  <li>
       Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
   </li>
+</li>
+<li>Moved most code from the <tt>ctac_to_mu_values.cxx</tt> utility to a new
+  <code>HUToMuImageProcessor</code> class (derived from <code>DataProcessor</code>.
+  This allows combining it with filtering etc, also from in Python. It means that the
+  <tt>ctac_to_mu_values.cxx</tt> utility itself is now obsolete, but it still exists in
+  this version. (Note that this functionality depends on an external
+  <a href=https://github.com/nlohmann/json>JSON library</a>.)
+</li>
+<li>Addition of a new utility <tt>create_multi_header</tt> which can be used to create
+  a single header pointing to several files (e.g. one image per time frame). The header
+  uses the (STIR-specific) <tt>multi</tt> format.
+</li>
+<li>Addition of a new utility <tt>extract_single_images_from_parametric_image</tt> to
+  get each parametric image in a single file.
+</li>
+<li><tt>generate_image</tt> parameter files now support the <tt>originating system</tt>.
+</li>
+<li><tt>list_image_info</tt> now works for dynamic images, with a new <tt>--per-volume</tt> option to list min/max/sum for every volume.
+</li>
+<li><tt>SSRB</tt> now has the option of taking a template sinogram.
 </li>
 </ul>
 
@@ -64,16 +94,33 @@ improvements to the documentation.
 <ul>
 <li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
 </li>
+<li>
+  <code>ParametricDiscretisedDensity</code> objects can now have an <code>ExamInfo</code> object
+  with multiple time frames (corresponding to the time frames of the data where the parametric image is derived from).
+  In some cases, there could only be a single time frame (start to end of the study).
+  </li>
+<li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
 </ul>
 
 
 <h3>Build system</h3>
 <ul>
+  <li>We now require CMake at least version 3.1, although we highly recommended to use a very recent version
+    of CMake to avoid problems with libraries or compilers which are more recent than your CMake version.
+    </li>
 <li>
-At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. Change C++ version
-by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
-documentation</a> for supported values.
+  At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. When building,
+  you can change the C++ version
+  by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
+  documentation</a> for supported values.<br />
+  When importing STIR's <tt>STIRConfig.cmake</tt> via <code>find_package(STIR)</code>, your compiler will be set to use
+  at least C++-11 (via CMake's <code>target_compile_features</code>).<br />
+  Note that some external libraries that STIR depends on (such as ROOT) might increase the required C++ version,
+  depending on how they were built.
 </li>
+<li>CERN's <tt>ROOT</tt> library is now preferentially found by searching for
+  its own exported <tt>ROOTConfig.cmake</tt>. Set the CMake variable <tt>ROOT_DIR</tt> accordingly. Older behaviour relying on <tt>ROOTSYS</tt> and <tt>root-config</tt> will be deprecated in a future version.
+  </li>
 </ul>
 
 
@@ -98,7 +145,10 @@ documentation</a> for supported values.
 
 <h3>recon_test_pack changes</h3>
 <ul>
-<li>updated version number and added some clarification to the README.txt</li>
+  <li>updated version number and added some clarification to the README.txt</li>
+  <li>moved the <tt>src/recon_test/test_modelling.sh</tt> and associated input files to the <tt>recon_test_pack</tt>.
+    It is also modified to be independent of ECAT7 and now runs again.
+    </li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -130,6 +180,9 @@ from the above):</H2>
     </li>
     <li><code>ProjData*::copy_to</code> and <code>fill_from</code> now return the updated iterator (as opposed to the size). This is like <code>std::copy</code>, and more convenient for reusing it.
     </li>
+    <li><code>ModelMatrix::set_if_uncalibrated</code> and <code>ModelMatrix::get_if_uncalibrated</code> renamed to <code>ModelMatrix::set_is_uncalibrated</code> and <code>ModelMatrix::get_is_uncalibrated</code></li>
+    <li><code>PlasmaData::set_if_decay_corrected</code> and <code>PlasmaData::get_if_decay_corrected</code> renamed to <code>PlasmaData::set_is_decay_corrected</code> and <code>PlasmaData::get_is_decay_corrected</code></li>
+    <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -138,8 +191,15 @@ from the above):</H2>
     can be used to fill most STIR objects from an iterator range (or copy to).
     The functions normally use <code>stir_object.begin_all()</code> but resort to <code>stir_object::fill_from</code> or <code>copy_to</code> for a few cases where no iterators exist. We use some specialisations to try and find the fastest version.
   </li>
-  <li>Introduced <code>ProjData::standard_segment_sequence</code> function returning <tt>0,+1,-1,...</code>,
+  <li>Introduced <code>ProjData::standard_segment_sequence</code> function returning <tt>0,+1,-1,...</tt>,
 as used by <code>copy_to</code> and <code>fill_from</code>
+</li>
+<li><code>stir::read_from_file</code> can now be called with a "node", e.g.
+  <pre>
+    auto uptr = read_from_file&lt;VoxelsOnCartesianGrid&lt;float&gt; &gt;(filename);
+  </pre>
+  To do this, we now need a <code>typedef</code> <code>hierarchy_base_type</code> at the top level, as otherwise
+  we would need multiple registries. However, this was already required by <code>write_to_file</code> anyway.
 </li>
 </ul>
 

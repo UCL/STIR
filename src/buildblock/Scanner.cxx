@@ -345,21 +345,23 @@ Scanner::Scanner(Type scanner_type)
     break;
 
 
-case PETMR_Signa: 
+case PETMR_Signa:
 
-    set_params(PETMR_Signa, string_list("GE PET/MR Signa", "GE PET/MR Signa"), 
+  set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
 	       45, 
 	       357, 
 	       331, // TODO
 	       2 * 224,
-           311.9F,
-	       9.4F,  
+           311.8F,
+           8.5F,
            5.56F,
            2.01565F, // TO CHECK
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
-	       9, 4, 1, 1, 1);
+             9, 4, 1, 1, 1,
+             0.105F, // energy resolution from Levin et al. TMI 2016
+             511.F);
 break;
 
   case Discovery690:
@@ -388,6 +390,50 @@ break;
 
     break;
   
+
+  case DiscoveryMI3ring: // This is the 3-ring DMI
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI3ring, string_list("GE Discovery MI 3 rings", "Discovery MI3", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       27,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       3, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
+  case DiscoveryMI4ring: // This is the 4-ring DMI
+    // as above, but one extra block
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI4ring, string_list("GE Discovery MI 4 rings", "Discovery MI4", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       36,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       4, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
   case HZLR:
 
     set_params(HZLR, string_list("Positron HZL/R"), 
