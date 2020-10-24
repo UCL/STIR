@@ -119,6 +119,10 @@ initialise_keymap()
                          &this->recon_template_par_filename);
     this->parser.add_parsing_key("reconstruction type",
                                  &this->reconstruction_template_sptr);
+
+    this->parser.add_key("reconstruction parameter template file",
+                         &this->recon_template_par_filename);
+
     // END RECONSTRUCTION RELATED
 
     this->parser.add_key("number of scatter iterations",
@@ -208,6 +212,8 @@ post_processing()
                     %this->recon_template_par_filename);
             return true;
         }
+        //std::cerr << "print"<< local_parser.parameter_info()<< '\n';
+
     }
 
     info("ScatterEstimation: Loading attenuation image...");
@@ -537,6 +543,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         tmp_atten_projdata_sptr =
                 dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
     }
+
 
 #if 1
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
@@ -894,6 +901,7 @@ process_data()
                                           local_max_scale_value, this->half_filter_width,
                                           spline_type, true);
 
+
         if(this->run_debug_mode)
         {
             std::stringstream convert;   // stream used for the conversion
@@ -1024,7 +1032,6 @@ process_data()
             error("ScatterEstimation: You should not be here. This is not 2D.");
         }
         current_activity_image_sptr->fill(1.f);
-
         iterative_method ? reconstruct_iterative(i_scat_iter,
                                                  this->current_activity_image_sptr):
                            reconstruct_analytic(i_scat_iter, this->current_activity_image_sptr);
@@ -1032,6 +1039,7 @@ process_data()
         scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
 
     }
+
 
     info("ScatterEstimation: Scatter Estimation finished !!!");
 

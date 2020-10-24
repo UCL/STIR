@@ -538,7 +538,7 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 
 Bin
 ProjDataInfoCylindricalNoArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor,const std::pair<int,int> &energy_window_pair) const
 {
   Bin bin;
 #ifndef STIR_DEVEL
@@ -566,7 +566,7 @@ get_bin(const LOR<float>& lor) const
   if (ring1 >=0 && ring1<num_rings &&
       ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2) == Succeeded::yes &&
+               det1, ring1, det2, ring2, energy_window_pair) == Succeeded::yes &&
       bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
       bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {

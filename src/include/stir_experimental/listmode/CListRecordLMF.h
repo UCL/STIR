@@ -71,6 +71,14 @@ private:
   unsigned long time; // in millisecs TODO
 };
 
+//! A class for storing and using an energy 'event' from a listmode file
+/*! \ingroup ClearPET_utilities
+ */
+class CListEnergyDataLMF
+{
+ public:
+};
+
 
 //! A class for a general element of a listmode file
 /*! \ingroup ClearPET_utilities
@@ -80,7 +88,7 @@ I store both time and CListEvent info in one CListRecordLMF.
 That's obviously not necessary nor desirable.
 
  */
-class CListRecordLMF : public CListRecord, public ListTime, public CListEvent
+class CListRecordLMF : public CListRecord, public ListTime, public ListEnergy, public CListEvent
 {
 public:
 
@@ -93,6 +101,8 @@ public:
   { return is_time_flag == true; }
   bool is_event() const
   { return is_time_flag == false; }
+  bool is_energy() const
+  { return true; }
   virtual CListEvent&  event() 
     { return *this; }
   virtual const CListEvent&  event() const
@@ -101,7 +111,10 @@ public:
     { return *this; }
   virtual const ListTime&   time() const
     { return *this; }
-
+  virtual ListEnergy&   energy()
+    { return *this; }
+  virtual const ListEnergy&   energy() const
+    { return *this; }
   bool operator==(const CListRecord& e2) const;
 
   // time 
@@ -125,6 +138,7 @@ public:
 
   CListEventDataLMF  event_data;
   CListTimeDataLMF   time_data; 
+  CListEnergyDataLMF  energy_data;
 
   bool is_time_flag;
 };

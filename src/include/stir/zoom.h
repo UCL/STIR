@@ -240,6 +240,17 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 
 //@}
 
+void
+transpose_zoom_image(VoxelsOnCartesianGrid<float> &image_out,
+           const VoxelsOnCartesianGrid<float> &image_in,
+           const ZoomOptions = ZoomOptions::preserve_sum);
+
+void
+zoom_image_swig(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const int zoom_option);
+void
+transpose_zoom_image_swig(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const int zoom_option);
 END_NAMESPACE_STIR
 
 #endif

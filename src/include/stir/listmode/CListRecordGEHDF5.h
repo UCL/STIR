@@ -19,6 +19,7 @@
 #define __stir_listmode_CListRecordGEHDF5_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListEnergy.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
@@ -181,7 +182,13 @@ namespace RDF_HDF5 {
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGEHDF5.
   This class essentially just forwards the work to the "basic" classes.
 */
-class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGatingInput,
+
+ class CListEnergyDataGEHDF5
+  {
+   public:
+  };
+
+class CListRecordGEHDF5 : public CListRecord, public ListTime, public ListEnergy, // public CListGatingInput,
     public  CListEventCylindricalScannerWithDiscreteDetectors
 {
   typedef detail::CListEventDataGEHDF5 DataType;
@@ -213,6 +220,8 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
 
   bool is_event() const
   { return this->event_data.is_event(); }
+  bool is_energy() const
+  { return true; }
   virtual CListEvent&  event() 
     { return *this; }
   virtual const CListEvent&  event() const
@@ -220,6 +229,10 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
   virtual ListTime&   time()
     { return *this; }
   virtual const ListTime&   time() const
+    { return *this; }
+  virtual ListEnergy&   energy()
+    { return *this; }
+  virtual const ListEnergy&   energy() const
     { return *this; }
 #if 0
   virtual CListGatingInput&  gating_input()
@@ -237,6 +250,12 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
       (this->is_event() || (raw[1] == static_cast<CListRecordGEHDF5 const &>(e2).raw[1]));
 #endif
   }	    
+
+  // energy
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
 
   // time 
   inline unsigned long get_time_in_millisecs() const 

@@ -33,9 +33,11 @@
 */
 
 #include "stir/scatter/ScatterSimulation.h"
+#include "stir/scatter/SingleScatterLikelihoodAndGradient.h".h"
 #include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
+#include "stir/IO/read_from_file.h"
 
 using std::cerr;
 using std::cout;
@@ -46,16 +48,21 @@ static void print_usage_and_exit()
     std::cerr<<"This executable runs a Scatter simulation method based on the options "
                "in a parameter file";
     std::cerr<<"\nUsage:\n simulate_scatter scatter_simulation.par\n";
-    std::cerr<<"Example minimal parameter file:\n\n"
+    std::cerr<<"Example parameter file:\n\n"
+               "Scatter Simulation :=\n"
+               "Simulation method := Single Scatter Simulation\n"
                "Scatter Simulation Parameters :=\n"
-               "Simulation type := PET Single Scatter Simulation\n"
-               "PET Single Scatter Simulation Parameters :=\n"
-               "template projdata filename :=\n"
+               " template projdata filename :=\n"
                "attenuation image filename := \n"
+               "attenuation image for scatter points filename := \n"
                "activity image filename :=\n"
-               "output filename prefix := \n"
-               "End PET Single Scatter Simulation Parameters :=\n"
-               "End Scatter Simulation Parameters:="<< std::endl;
+               "output filename prefix := ${OUTPUT_PREFIX}\n"
+               " scatter level := 1\n"
+               "attenuation threshold := 0.01\n"
+               "random := 1\n"
+               "use cache := 1\n"
+               "End Scatter Simulation Parameters :=\n"
+               "End Scatter Simulation:="<< std::endl;
                exit(EXIT_FAILURE);
 }
 /***********************************************************/
@@ -70,28 +77,27 @@ int main(int argc, const char *argv[])
 
     if (argc!=2)
         print_usage_and_exit();
-    shared_ptr < ScatterSimulation >
+
+    shared_ptr < SingleScatterLikelihoodAndGradient >
             simulation_method_sptr;
+
     KeyParser parser;
-    parser.add_start_key("Scatter Simulation Parameters");
-    parser.add_stop_key("End Scatter Simulation Parameters");
-    parser.add_parsing_key("Scatter Simulation type", &simulation_method_sptr);
-    if (!parser.parse(argv[1]))
-      { t.stop(); return EXIT_FAILURE; }
+    parser.add_start_key("Scatter Simulation");
+    parser.add_stop_key("End Scatter Simulation");
+    parser.add_parsing_key("Simulation method", &simulation_method_sptr);
+    parser.parse(argv[1]);
 
-    if(simulation_method_sptr->set_up() == Succeeded::no)
-      { t.stop(); return EXIT_FAILURE; }
+    shared_ptr<ProjData> data = ProjData::read_from_file("simulated_scatter_sino.hs");
+   //const float rescale = 1;
+    shared_ptr<DiscretisedDensity<3,float> > a(read_from_file<DiscretisedDensity<3,float> >("true_atn_image.hv"));
+    VoxelsOnCartesianGrid<float>& gradient_image = dynamic_cast< VoxelsOnCartesianGrid<float>& > (*a);
+    gradient_image.fill(0);
 
-    if(simulation_method_sptr->process_data() == stir::Succeeded::yes)
-    {
-        t.stop();
-        cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
-        return EXIT_SUCCESS;
-      }
-    else
-      {
-        t.stop();
-        return EXIT_FAILURE;
-      }
+
+    double g= simulation_method_sptr->L_G_function(*data,gradient_image, false);
+
+    t.stop();
+    cout << "Total Wall clock timetime: " << t.value() << " seconds" << endl;
+    return EXIT_SUCCESS;
 }
 

@@ -3,6 +3,7 @@
     See STIR/LICENSE.txt for detail $, IRSL
     See STIR/LICENSE.txt for details
 */
+
 #include "stir_experimental/SeparableGaussianImageFilter.h"
 #ifdef SANIDA
 #include "stir_experimental/DAVImageFilter3D.h"

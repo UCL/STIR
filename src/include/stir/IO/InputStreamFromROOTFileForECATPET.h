@@ -94,8 +94,9 @@ public:
                                       std::string chain_name,
                                       int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                                       int blocks_repeater_y, int blocks_repeater_z,
-                                      bool exclude_scattered, bool exclude_randoms,
-                                      float low_energy_window, float up_energy_window,
+                                      int maximum_order_of_scatter, bool exclude_randoms,
+                                      float low_energy_window_1, float up_energy_window_1,
+                                      float low_energy_window_2, float up_energy_window_2,
                                       int offset_dets);
 
     virtual ~InputStreamFromROOTFileForECATPET() {}

@@ -138,6 +138,7 @@ private:
   virtual void set_version_specific_keys();
   virtual void read_matrix_info();
   virtual void read_num_energy_windows();
+  virtual void en_window_pair_set();
   void read_frames_info();
   //! \brief Get the number of datasets
   /*! To be overloaded by derived classes if multiple "dimensions" are supported.
@@ -185,6 +186,8 @@ public :
   //! \brief upper_en_window_thresholds
   //! \details High energy window limit
   std::vector<float> upper_en_window_thresholds;
+
+  std::vector<int> energy_window_pair;
   // end acquisition parameters
   
  protected:
@@ -245,7 +248,7 @@ public:
  
   std::vector<int> segment_sequence;
   std::vector<int> min_ring_difference; 
-  std::vector<int> max_ring_difference; 
+  std::vector<int> max_ring_difference;
   std::vector<int> num_rings_per_segment;
 
   std::vector<std::string> applied_corrections;

@@ -27,6 +27,8 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/Viewgram.h"
 #include "stir/inverse_SSRB.h"
 #include "stir/scale_sinograms.h"
 #include "stir/scatter/ScatterEstimation.h"
@@ -63,15 +65,17 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
-  info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
-  ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
-  interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
 
-  const TimeFrameDefinitions& time_frame_defs =
-    emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
+    interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
 
-  if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
+
+    const TimeFrameDefinitions& time_frame_defs = emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
+
+    if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
 					    emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
@@ -148,4 +152,155 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     }
 }
 
+
+void
+ScatterEstimation::
+upsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const bool remove_interleaving)
+{
+    stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+    // interpolate projdata
+    interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
+
+    // Perform Inverse Single Slice Rebinning
+    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+}
+
+
+
+void
+ScatterEstimation::
+pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const bool remove_interleaving)
+{
+
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0); //create the output template
+
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+    // interpolate projdata
+    interpolate_projdata_pull(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
+
+    // Perform Inverse Single Slice Rebinning
+    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+}
+
+void
+ScatterEstimation::
+push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const bool remove_interleaving)
+{
+
+    shared_ptr<ProjDataInfo> new_input_proj_data_info_sptr(scatter_proj_data.get_proj_data_info_sptr()->clone());
+    new_input_proj_data_info_sptr->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory new_input(scatter_proj_data.get_exam_info_sptr(),new_input_proj_data_info_sptr);
+    transpose_inverse_SSRB(new_input, scatter_proj_data);
+
+
+    interpolate_projdata_push(scaled_scatter_proj_data, new_input, remove_interleaving);
+
+
+}
+
+
+void
+ScatterEstimation::
+pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const ProjData& norm,
+                                  const bool remove_interleaving)
+{
+
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0); //create the output template
+
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+    // interpolate projdata
+    interpolate_projdata_pull(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
+
+    // Perform Inverse Single Slice Rebinning
+    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+    apply_norm(scaled_scatter_proj_data,norm);
+
+}
+
+void
+ScatterEstimation::
+push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                   const ProjData& norm,
+                                  const bool remove_interleaving)
+{
+
+    ProjDataInMemory scatter_proj_data_in_memory(scatter_proj_data);
+    apply_norm(scatter_proj_data_in_memory,norm);
+
+    shared_ptr<ProjDataInfo> new_input_proj_data_info_sptr(scatter_proj_data_in_memory.get_proj_data_info_sptr()->clone());
+    new_input_proj_data_info_sptr->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory new_input(scatter_proj_data_in_memory.get_exam_info_sptr(),new_input_proj_data_info_sptr);
+
+    transpose_inverse_SSRB(new_input, scatter_proj_data_in_memory);
+
+
+    interpolate_projdata_push(scaled_scatter_proj_data, new_input, remove_interleaving);
+
+
+}
+
+void
+ScatterEstimation::
+apply_norm(ProjData& projdata,const ProjData& norm)
+{
+
+if((projdata.get_num_views()!=norm.get_num_views())||(projdata.get_num_tangential_poss()!=norm.get_num_tangential_poss()))
+    error("sinograms have to have the same dimensions");
+ProjDataInMemory projdata_out(projdata);
+projdata_out.fill(0);
+
+ViewSegmentNumbers vs_num;
+
+for (vs_num.segment_num() = norm.get_min_segment_num(); vs_num.segment_num() <= norm.get_max_segment_num(); ++vs_num.segment_num())
+{
+    for (vs_num.view_num() = norm.get_min_view_num();vs_num.view_num() <= norm.get_max_view_num(); ++vs_num.view_num())
+    {
+
+        Viewgram<float> viewgram_n = norm.get_viewgram(vs_num.view_num(), vs_num.segment_num());
+        Viewgram<float> viewgram_in = projdata.get_viewgram(vs_num.view_num(), vs_num.segment_num());
+        viewgram_in *= viewgram_n;
+        projdata_out.set_viewgram(viewgram_in);
+    }
+}
+
+projdata.fill(projdata_out);
+
+}
 END_NAMESPACE_STIR

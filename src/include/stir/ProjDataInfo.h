@@ -307,7 +307,7 @@ public:
   */
   virtual 
     Bin
-    get_bin(const LOR<float>&) const = 0;
+    get_bin(const LOR<float>&, const std::pair<int,int> &energy_window_pair = std::pair<int,int>(1,1)) const = 0;
 
   //! \name Equality of ProjDataInfo objects
   //@{

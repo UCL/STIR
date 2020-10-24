@@ -1,17 +1,15 @@
 //
-//
 /*!
   \file
   \ingroup listmode
-  \brief Implementations of class stir::ListEvent.
-    
-  \author Daniel Deidda
-  \author Kris Thielemans
+  \brief Declarations of class stir::ListEnergy  which
+  is used for list mode data.
+
+  \author Ludovica Brusaferri
 
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,21 +25,32 @@
     See STIR/LICENSE.txt for details
 */
 
+#ifndef __stir_listmode_ListEnergy_H__
+#define __stir_listmode_ListEnergy_H__
 
-#include "stir/listmode/ListRecord.h"
-#include "stir/ProjDataInfo.h"
-#include "stir/Bin.h"
-#include "stir/LORCoordinates.h"
 #include "stir/Succeeded.h"
+#include "stir/round.h"
 
 START_NAMESPACE_STIR
+//class Succeeded;
 
-void 
-ListEvent::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info, const std::pair<int,int> &energy_window_pair) const
+//! A class for storing and using an energy record from a listmode file
+/*! \ingroup listmode
+    ListEnergy is used to provide an interface to the 'energy' events
+    in the list mode stream.
+
+    \todo this is still under development.
+*/
+class ListEnergy
 {
-  bin = proj_data_info.get_bin(get_LOR(),energy_window_pair);
-}
+public:
+  virtual ~ListEnergy() {}
+
+    virtual double get_energyA_in_keV() const = 0;
+    virtual double get_energyB_in_keV() const = 0;
+
+};
 
 END_NAMESPACE_STIR
 
+#endif

@@ -31,6 +31,7 @@
 */
 
 #include "stir/ParsingObject.h"
+#include "stir/DataProcessor.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -222,6 +223,18 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
+    float detection_efficiency(const float incoming_photon_energy, const int en_window = 0) const;
+    float detection_efficiency_numerical_formulation(const float energy, const int en_window = 0) const;
+    std::vector<double> detection_spectrum_numerical_formulation(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const;
+    float detection_model_with_fitted_parameters(const float x, const float energy) const;
+    float photoelectric(const float K, const float std_peak, const float x, const float energy) const;
+    float compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const;
+    float flat_continuum(const float K, const float std_peak, const float x, const float energy) const;
+    float exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const;
+    //! find scatter points
+    /*! This function sets scatt_points_vector and scatter_volume. It will also
+        remove any cached integrals as they would be incorrect otherwise.
+    */
     virtual Succeeded set_up();
 
     //! Output the log of the process.
@@ -238,7 +251,6 @@ protected:
     float
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
                                                   const CartesianCoordinate3D<float>& detector_coord);
-
 
 
     virtual void set_defaults();
@@ -281,7 +293,6 @@ protected:
      * @{
      */
 
-    float detection_efficiency(const float energy) const;
 
 
     //! maximum angle to consider above which detection after Compton scatter is considered too small
@@ -379,6 +390,7 @@ protected:
     std::string output_proj_data_filename;
     //! Shared ptr to hold the simulated data.
     shared_ptr<ProjData> output_proj_data_sptr;
+    shared_ptr<ProjData> HR_output_proj_data_sptr;
 
     //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
     float attenuation_threshold;

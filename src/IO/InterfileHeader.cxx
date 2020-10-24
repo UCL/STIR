@@ -102,6 +102,7 @@ void MinimalInterfileHeader::set_version_specific_keys()
 InterfileHeader::InterfileHeader()
   : MinimalInterfileHeader()
 {
+
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
   number_format_values.push_back("signed integer");
@@ -171,6 +172,7 @@ InterfileHeader::InterfileHeader()
 
 
 
+
   add_key("name of data file", &data_file_name);
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
@@ -221,8 +223,8 @@ InterfileHeader::InterfileHeader()
   // support for Louvain la Neuve's extension of 3.3
   add_key("quantification units", &lln_quantification_units);
 
-  add_key("number of energy windows",
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
+  add_key("energy window pair", KeyArgument::LIST_OF_INTS, (KeywordProcessor)&InterfileHeader::en_window_pair_set, &energy_window_pair);
+  add_key("number of energy windows", KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
   add_vectorised_key("energy window lower level", &lower_en_window_thresholds);
   add_vectorised_key("energy window upper level", &upper_en_window_thresholds);
 
@@ -230,6 +232,7 @@ InterfileHeader::InterfileHeader()
   add_key("start horizontal bed position (mm)", &bed_position_horizontal);
   bed_position_vertical = 0.F;
   add_key("start vertical bed position (mm)", &bed_position_vertical);
+
 }
 
 void InterfileHeader::set_version_specific_keys()
@@ -239,16 +242,17 @@ void InterfileHeader::set_version_specific_keys()
     {
       info("Setting energy window keys as in STIR3.0");
       // only a single energy window, and non-vectorised
-      remove_key("energy window lower level");
+      /*remove_key("energy window lower level");
       remove_key("energy window upper level");
       add_key("energy window lower level", &lower_en_window_thresholds[0]);
-      add_key("energy window upper level", &upper_en_window_thresholds[0]);
+      add_key("energy window upper level", &upper_en_window_thresholds[0]);*/
     }
 }
 
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
 {
+
   if(type_of_data_index<0)
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
@@ -365,19 +369,45 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-  if (num_energy_windows>0)
-    {
-      if (num_energy_windows>1)
-        warning("Currently only reading the first energy window.");
-      if (upper_en_window_thresholds[0] > 0 && lower_en_window_thresholds[0] > 0 )
-        {
-          exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
-          exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
-        }
-    }
+
+
+ //set the lower and the higher energy thresholds for all the energy windows available. Default: 1.
+
+  //set the number of energy windows
+
+  exam_info_sptr->set_num_energy_windows(num_energy_windows);
+
+   //set the number of energy window pair
+  if (energy_window_pair.size() > 0) {
+
+      if (energy_window_pair.size() != 2)
+          error("should have two.");
+      if (energy_window_pair[0] < 0)
+          error("first window should be >= 0.");
+      if (energy_window_pair[1] < 0)
+          error("second window should be >= 0.");
+      if (energy_window_pair[0] > num_energy_windows)
+          error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[0],num_energy_windows);
+      if (energy_window_pair[1] > num_energy_windows)
+          error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[1],num_energy_windows);
+
+      exam_info_sptr->set_energy_window_pair(energy_window_pair);
+  }
+
+    //set the high and low energy window threshold
+
+      for (int i = 0; i < num_energy_windows; ++i)
+      {
+
+          if (upper_en_window_thresholds[i] >0 && lower_en_window_thresholds[i] >0)
+            {
+              exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[i],i);
+              exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[i],i);
+             }
+       }
 
   exam_info_sptr->time_frame_definitions = 
-    TimeFrameDefinitions(image_relative_start_times, image_durations);
+  TimeFrameDefinitions(image_relative_start_times, image_durations);
 
   return false;
 
@@ -393,6 +423,14 @@ void InterfileHeader::read_matrix_info()
   
 }
 
+void InterfileHeader::en_window_pair_set()
+{
+
+    energy_window_pair.resize(2);
+    set_variable();
+
+
+}
 void InterfileHeader::read_num_energy_windows()
 {
   set_variable();
@@ -420,7 +458,7 @@ void InterfileHeader::set_type_of_data()
               &PET_data_type_values);
       ignore_key("process status");
       ignore_key("IMAGE DATA DESCRIPTION");
-      // TODO rename keyword 
+      // TODO rename keyword
       add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
     }
@@ -498,6 +536,7 @@ bool InterfileImageHeader::post_processing()
 
   if (InterfileHeader::post_processing() == true)
     return true;
+
 
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }
@@ -632,6 +671,9 @@ void InterfilePDFSHeader::resize_segments_and_set()
     set_variable();
   
 }
+
+
+
 
 int InterfilePDFSHeader::find_storage_order()
 {
@@ -1312,12 +1354,12 @@ bool InterfilePDFSHeader::post_processing()
 	      scanner_ptr_from_file->parameter_info().c_str());
     }
  
-  
+
   // float azimuthal_angle_sampling =_PI/num_views;
-  
-  
-   
-  
+
+
+
+
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)

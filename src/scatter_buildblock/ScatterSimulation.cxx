@@ -42,6 +42,7 @@
 #include <fstream>
 #include <algorithm>
 #include <boost/format.hpp>
+#include <ctime>
 
 #include "stir/zoom.h"
 #include "stir/SSRB.h"
@@ -73,9 +74,36 @@ process_data()
 {
     if (!this->_already_set_up)
         error("ScatterSimulation: need to call set_up() first");
-
     // this is useful in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
+    //show energy window information
+
+    std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
+
+    if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
+         this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
+    {
+        std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
+
+    }
+
+
+    for (int i = 1; i <= this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+    {
+        std::cerr << "energy window lower level"<<"["<<i<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i-1) << '\n';
+        std::cerr << "energy window upper level"<<"["<<i<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i-1) << '\n';
+
+        if (this->template_exam_info_sptr->get_low_energy_thres(i-1) == -1.F || this->template_exam_info_sptr->get_high_energy_thres(i-1) == -1.F)
+
+            {
+                std::cerr << "Not enough input arguments. The energy window thresholds have to be specified for all the energy windows.\n" << '\n';
+                return Succeeded::no;
+            }
+
+    }
+
+
+
     info("ScatterSimulator: Running Scatter Simulation ...");
     info("ScatterSimulator: Initialising ...");
 
@@ -207,7 +235,7 @@ void
 ScatterSimulation::set_defaults()
 {
     this->attenuation_threshold =  0.01f ;
-    this->randomly_place_scatter_points = true;
+    this->randomly_place_scatter_points = false;
     this->use_cache = true;
     this->zoom_xy = -1.f;
     this->zoom_z = -1.f;
@@ -230,7 +258,7 @@ ScatterSimulation::
 ask_parameters()
 {
     this->attenuation_threshold = ask_num("attenuation threshold(cm^-1)",0.0f, 5.0f, 0.01f);
-    this->randomly_place_scatter_points = ask_num("random place scatter points?",0, 1, 1);
+    this->randomly_place_scatter_points = ask_num("random place scatter points?",0, 1, 0);
     this->use_cache =  ask_num(" Use cache?",0, 1, 1);
     this->density_image_filename = ask_string("density image filename", "");
     this->activity_image_filename = ask_string("activity image filename", "");
@@ -314,7 +342,7 @@ set_up()
         error("ScatterSimulation: projection data info not set. Aborting.");
 
     if(!template_exam_info_sptr->has_energy_information())
-        error("ScatterSimulation: template energy window information not set. Aborting.");
+       error("ScatterSimulation: template energy window information not set. Aborting.");
 
     if(is_null_ptr(activity_image_sptr))
         error("ScatterSimulation: activity image not set. Aborting.");
@@ -658,12 +686,11 @@ void
 ScatterSimulation::
 set_output_proj_data(const std::string& filename)
 {
-
+    
     if(is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
     {
         error("ScatterSimulation: Template ProjData has not been set. Aborting.");
     }
-
     this->output_proj_data_filename = filename;
     shared_ptr<ProjData> tmp_sptr;
 
@@ -714,7 +741,6 @@ set_template_proj_data_info(const std::string& filename)
     shared_ptr<ProjData> template_proj_data_sptr(ProjData::read_from_file(this->template_proj_data_filename));
 
     this->set_exam_info(template_proj_data_sptr->get_exam_info());
-
     this->set_template_proj_data_info(*template_proj_data_sptr->get_proj_data_info_sptr());
 }
 
@@ -744,11 +770,19 @@ ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
     this->remove_cache_for_integrals_over_activity();
 }
 
+
+
 void
 ScatterSimulation::
 set_exam_info(const ExamInfo& arg)
 {
-  this->template_exam_info_sptr = arg.create_shared_clone();
+   this->template_exam_info_sptr = arg.create_shared_clone();
+
+    for (int i = 0; i < arg.get_num_energy_windows(); ++i)
+    {
+     this->template_exam_info_sptr->set_high_energy_thres(arg.get_high_energy_thres(i),i);
+     this->template_exam_info_sptr->set_low_energy_thres(arg.get_low_energy_thres(i),i);
+     }
 }
 
 Succeeded

@@ -43,6 +43,9 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display
 	test_interpolate
+        test_upsample
+        test_SSRB
+        test_ScatterGradient
 )
 
 set(buildblock_simple_tests
@@ -68,7 +71,8 @@ set(buildblock_simple_tests
 	test_proj_data_maths
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
-	test_multiple_proj_data
+        test_multiple_proj_data
+        test_zoom_image_adjoint
 )
 
 include(stir_test_exe_targets)

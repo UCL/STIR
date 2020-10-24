@@ -103,6 +103,41 @@ public:
                                       const bool remove_interleaving = true);
 
 
+    static void
+    upsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const bool remove_interleaving = true);
+
+    static void
+    pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const bool remove_interleaving = true);
+
+    static void
+    push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const bool remove_interleaving = true);
+
+    static void
+    pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const ProjData& norm,
+                                      const bool remove_interleaving=true);
+
+    static void
+    push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                        const ProjData& norm,
+                                      const bool remove_interleaving=true);
+
+    static void
+    apply_norm(ProjData& projdata,const ProjData& norm);
+
     //! Default constructor (calls set_defaults())
     ScatterEstimation();
     //! Overloaded constructor with parameter file and initialisation
@@ -154,9 +189,9 @@ public:
 
     inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
-    inline void set_zoom_xy(float);
+   // inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
-    inline void set_zoom_z(float);
+   // inline void set_zoom_z(float);
 
 
     // Get functions

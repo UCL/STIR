@@ -31,6 +31,7 @@
   
   */
 #include "stir/scatter/ScatterSimulation.h"
+#include "stir/scatter/SingleScatterLikelihoodAndGradient.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
@@ -141,6 +142,137 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
       }       
   }             
   return sum;   
-}                                                  
+}
+
+
+
+void
+SingleScatterLikelihoodAndGradient::
+line_contribution(VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,
+                          const CartesianCoordinate3D<float>& scatter_point,
+                          const CartesianCoordinate3D<float>& detector_coord,
+                          const float C)
+{
+
+
+	const DiscretisedDensity<3,float>& density=*density_image_sptr;
+  const VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>& >
+    (density);
+
+  const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
+
+  CartesianCoordinate3D<float>  origin =
+    image.get_origin();
+  const float z_to_middle =
+    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
+  origin.z() -= z_to_middle;
+  /* TODO replace with image.get_index_coordinates_for_physical_coordinates */
+  ProjMatrixElemsForOneBin lor;
+  RayTraceVoxelsOnCartesianGrid(lor,
+                                (scatter_point-origin)/voxel_size,  // should be in voxel units
+                                (detector_coord-origin)/voxel_size, // should be in voxel units
+                                voxel_size, //should be in mm
+#ifdef NEWSCALE
+                                1.F // normalise to mm
+#else
+                                1/voxel_size.x() // normalise to some kind of 'pixel units'
+#endif
+                                );
+  lor.sort();
+
+
+ //VoxelsOnCartesianGrid<float> gradient_image(image);
+ //gradient_image.fill(0.F);
+  {
+    ProjMatrixElemsForOneBin::iterator element_ptr =lor.begin() ;
+    bool we_have_been_within_the_image = false;
+    while (element_ptr != lor.end())
+      {
+        const BasicCoordinate<3,int> coords = element_ptr->get_coords();
+        if (coords[1] >= image.get_min_index() &&
+            coords[1] <= image.get_max_index() &&
+            coords[2] >= image[coords[1]].get_min_index() &&
+            coords[2] <= image[coords[1]].get_max_index() &&
+            coords[3] >= image[coords[1]][coords[2]].get_min_index() &&
+            coords[3] <= image[coords[1]][coords[2]].get_max_index())
+          {
+            we_have_been_within_the_image = true;
+            //gradient_image[coords] += -C*element_ptr->get_value()
+            gradient_image[coords] += -C*rescale*element_ptr->get_value();
+          }
+        else if (we_have_been_within_the_image)
+          {
+            // we jump out of the loop as we are now at the other side of
+            // the image
+            //                                  break;
+          }
+        ++element_ptr;
+      }
+  }
+
+}
+
+
+
+
+
+void
+SingleScatterLikelihoodAndGradient::
+s_contribution(VoxelsOnCartesianGrid<float>& gradient_image,
+const CartesianCoordinate3D<float>& scatter_point,
+						  const float D)
+
+{
+
+const DiscretisedDensity<3,float>& density=*density_image_sptr;
+const VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>& >
+    (density);
+
+const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
+
+CartesianCoordinate3D<float>  origin =
+    image.get_origin();
+
+const float z_to_middle =
+    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
+  origin.z() -= z_to_middle;
+
+CartesianCoordinate3D<float> coord  =
+    		(scatter_point-origin)/voxel_size;  //  voxel units
+
+
+const BasicCoordinate<3,int> coords=round(coord);
+
+
+gradient_image[coords] += D;
+
+
+
+}
+
+
+void
+SingleScatterLikelihoodAndGradient::
+line_contribution_act(VoxelsOnCartesianGrid<float>& gradient_image,
+                      const CartesianCoordinate3D<float>& scatter_point,
+                      const CartesianCoordinate3D<float>& detector_coord,
+                      const float C)
+{
+
+    const CartesianCoordinate3D<float> dist_vector = scatter_point - detector_coord ;
+    const float dist_sp1_det_squared = norm_squared(dist_vector);
+    const float solid_angle_factor =
+      std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_det_squared) ;
+
+    line_contribution(gradient_image,solid_angle_factor,
+                              scatter_point,
+                              detector_coord,
+                               -C);
+
+}
+
+
 END_NAMESPACE_STIR
 

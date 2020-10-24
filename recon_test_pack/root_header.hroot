@@ -34,6 +34,14 @@ number of crystals_Z := 4
 
 Singles readout depth := 1
 exclude scattered events := ${EXCLUDE_SCATTERED}
+
+;
+; If set only a certain order of scatter will be kept
+exclude scattered events := ${MAXIMUM_ORDER_OF_SCATTER}
+
+;
+; If set the random events will be skipped
+
 exclude random events := ${EXCLUDE_RANDOM}
 offset (num of detectors) := 0 
 

@@ -36,6 +36,7 @@
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 #include "stir/DetectionPositionPair.h"
+#include "stir/listmode/ListEnergy.h"
 
 START_NAMESPACE_STIR
 namespace ecat {
@@ -194,6 +195,20 @@ class CListTimeECAT8_32bit : public ListTime
   };
 };
 
+//! A class for storing and using an energy 'event' from a listmode file from the ECAT 8_32bit scanner
+/*! \ingroup listmode
+ */
+class CListEnergyECAT8_32bit : public ListEnergy
+{
+ public:
+  bool is_energy() const
+  { return true; }
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
+};
+
 //! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
    We currently only support coincidence events and  a timing flag.
@@ -210,6 +225,8 @@ class CListTimeECAT8_32bit : public ListTime
 
   bool is_time() const
   { return this->any_data.is_time(); }
+  bool is_energy() const
+  { return true; }
   /*
   bool is_gating_input() const
   { return this->is_time(); }
@@ -224,7 +241,10 @@ class CListTimeECAT8_32bit : public ListTime
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
-
+  virtual CListEnergyECAT8_32bit&   energy()
+    { return this->energy_data; }
+  virtual const CListEnergyECAT8_32bit&   energy() const
+    { return this->energy_data; }
   bool operator==(const CListRecord& e2) const
   {
     return dynamic_cast<CListRecordECAT8_32bit const *>(&e2) != 0 &&
@@ -264,6 +284,7 @@ class CListTimeECAT8_32bit : public ListTime
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
+  CListEnergyECAT8_32bit    energy_data;
   CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 

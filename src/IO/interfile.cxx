@@ -472,6 +472,11 @@ static void write_interfile_time_frame_definitions(std::ostream& output_header, 
 // Write energy window lower and upper thresholds, if they are not -1
 static void write_interfile_energy_windows(std::ostream& output_header, const ExamInfo& exam_info)
 {
+  //Write the number of energy windows
+  if (exam_info.get_num_energy_windows() > 0)
+   {
+     output_header <<"number of energy windows := " << exam_info.get_num_energy_windows() << '\n';
+/*
   if (exam_info.get_high_energy_thres() > 0 &&
       exam_info.get_low_energy_thres() >= 0)
     {
@@ -480,8 +485,35 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
         exam_info.get_low_energy_thres() << '\n';
       output_header << "energy window upper level[1] :=  " <<
         exam_info.get_high_energy_thres() << '\n';
+*/
     }
-}
+
+   else
+    { // need to write this anyway to allow vectored keys below
+      //output_header <<"number of energy windows := 1";
+     }
+
+  //Write energy window thresholds
+  for (unsigned int num_windows = 0; num_windows <  exam_info.get_num_energy_windows(); ++num_windows)
+   {
+      if (exam_info.get_high_energy_thres(num_windows) > 0 &&
+          exam_info.get_low_energy_thres(num_windows) >= 0)
+        {
+          output_header << "energy window lower level [" << num_windows +1  << "] := " <<
+            exam_info.get_low_energy_thres(num_windows) << '\n';
+          output_header << "energy window upper level [" << num_windows +1  << "] := " <<
+            exam_info.get_high_energy_thres(num_windows) << '\n';
+        }
+    }
+
+  if (exam_info.get_energy_window_pair().first> 0 &&
+      exam_info.get_energy_window_pair().second> 0)
+  {
+       output_header << "energy window pair :="<<" {"<<  exam_info.get_energy_window_pair().first  <<
+               ',' <<  exam_info.get_energy_window_pair().second <<"}\n";
+    }
+
+  }
 
 // Write data type descriptions (if there are any)
 static void write_interfile_image_data_descriptions(std::ostream& output_header, const std::vector<std::string>& data_type_descriptions)
@@ -1147,15 +1179,19 @@ read_interfile_PDFS(const string& filename,
 		    const ios::openmode open_mode)
 {
   ifstream image_stream(filename.c_str());
+
+
   if (!image_stream)
     { 
       error("read_interfile_PDFS: couldn't open file %s\n", filename.c_str());
     }
   
   char directory_name[max_filename_length];
+
   get_directory_name(directory_name, filename.c_str());
-  
+
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
+
 }
 
 Succeeded 
@@ -1423,6 +1459,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
    // write time frame info and energy windows
    write_interfile_time_frame_definitions(output_header, pdfs.get_exam_info());
    write_interfile_energy_windows(output_header, pdfs.get_exam_info());
+
 
   if (pdfs.get_scale_factor()!=1.F)
  output_header <<"image scaling factor[1] := "

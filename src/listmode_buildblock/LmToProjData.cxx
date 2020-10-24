@@ -388,12 +388,12 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const ListEvent& event) const
+get_bin_from_event(Bin& bin, const ListEvent& event, const std::pair<int,int> &energy_window_pair) const
 {  
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
-     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
+     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr, energy_window_pair);
      if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
@@ -427,7 +427,7 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
     const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr);
+    event.get_bin(bin, *template_proj_data_info_ptr, energy_window_pair);
    
     if (bin.get_bin_value()>0)
       {
@@ -437,7 +437,7 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr);
+      event.get_bin(bin, *template_proj_data_info_ptr, energy_window_pair);
     }
 
 } 
@@ -527,6 +527,8 @@ process_data()
   // we have to do this because the first time tag might occur only after a
   // few coincidence events (as happens with ECAT scanners)
   current_time = 0;
+  shared_ptr<ProjData> template_proj_data_ptr =
+    ProjData::read_from_file(template_proj_data_name);
 
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
@@ -565,7 +567,16 @@ process_data()
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
-      
+        this_frame_exam_info.set_num_energy_windows(template_proj_data_ptr->get_exam_info_sptr()->get_num_energy_windows());
+        std::vector<int> energy_window_pair(2);
+        energy_window_pair.at(0) = template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair().first;
+        energy_window_pair.at(1) = template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair().second;
+        this_frame_exam_info.set_energy_window_pair(energy_window_pair);
+        for (int i = 0; i < template_proj_data_ptr->get_exam_info_sptr()->get_num_energy_windows(); ++i )
+        {
+            this_frame_exam_info.set_high_energy_thres(template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(i),i);
+            this_frame_exam_info.set_low_energy_thres(template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(i),i);
+         }
         proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
       }
@@ -653,16 +664,22 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_event(bin, record.event());
+                     get_bin_from_event(bin, record.event(), template_proj_data_ptr->get_exam_info_sptr()->get_energy_window_pair());
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
 			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
 			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
-			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
-			 ) 
+             && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
+             && record.energy().get_energyA_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(bin.first_energy_window_num()-1)
+             && record.energy().get_energyA_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(bin.first_energy_window_num()-1)
+             && record.energy().get_energyB_in_keV() >= template_proj_data_ptr->get_exam_info_sptr()->get_low_energy_thres(bin.second_energy_window_num()-1)
+             && record.energy().get_energyB_in_keV() <= template_proj_data_ptr->get_exam_info_sptr()->get_high_energy_thres(bin.second_energy_window_num()-1))
 		       {
+
+             std::cout<< "energy A new: " << record.energy().get_energyA_in_keV()<< '\n';
+             std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
 			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_sptr->get_max_view_num());
             

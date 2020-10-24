@@ -536,6 +536,7 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
+
   add_in_keymap(keyword, map_element(t, function, variable, 0, list_of_values));
 }
 
@@ -557,6 +558,16 @@ void KeyParser::add_key(const string& keyword,
   add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, 0, list_of_values));
 }
 
+#if 0
+void KeyParser::add_vectored_key(const string& keyword,
+            KeyArgument::type t,
+            KeywordProcessor function,
+            void* variable,
+            const ASCIIlist_type * const list_of_values)
+{
+  add_in_keymap(keyword, map_element(t, function, variable, list_of_values, true));
+}
+#endif
 void KeyParser::add_key(const string& keyword, 
 			KeyArgument::type t, 
 			void* variable,
@@ -866,6 +877,12 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
   // maps keyword to appropriate map_element (sets current)
   if(map_keyword(keyword)==Succeeded::yes)
   {
+#if 0
+  if (current_index != 0 && current->is_vector.is_false())
+      error(boost::format("Error parsing keyword %1%: should not be vectored"), keyword);
+  if (current_index == 0 && current->is_vector.is_true())
+      error(boost::format("Error parsing keyword %1%: should be vectored"), keyword);
+#endif
     switch(current->type)	// depending on the par_type, gets the correct value from the line
     {				// and sets the right temporary variable
     case KeyArgument::NONE :

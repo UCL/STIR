@@ -27,9 +27,7 @@
 */
 #include "stir/scatter/SingleScatterSimulation.h"
 START_NAMESPACE_STIR
-static const float total_Compton_cross_section_511keV = 
-ScatterSimulation::
-  total_Compton_cross_section(511.F); 
+
 
 double
 SingleScatterSimulation::
@@ -68,20 +66,6 @@ actual_scatter_estimate(double& scatter_ratio_singles,
 							det_num_A, det_num_B);	
 
     }	
-
-  // we will divide by the effiency of the detector pair for unscattered photons
-  // (computed with the same detection model as used in the scatter code)
-  // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
-
-  // there is a scatter_volume factor for every scatter point, as the sum over scatter points
-  // is an approximation for the integral over the scatter point.
-
-  // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
-  const double common_factor =
-    1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
-    scatter_volume/total_Compton_cross_section_511keV;
-
-  scatter_ratio_singles *= common_factor;
 }
 
 END_NAMESPACE_STIR

@@ -100,6 +100,7 @@ public:
 
 protected:
   virtual void read_matrix_info();
+  virtual void read_energy_window_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
 

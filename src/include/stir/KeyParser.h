@@ -85,6 +85,10 @@ class map_element
 {
 public :
   KeyArgument::type type;
+#if 0
+  trilian is_vectored;
+#endif
+
   void (KeyParser::*p_object_member)();	// pointer to a member function
   //TODO void (*p_object_member)();
   void *p_object_variable;		// pointer to a variable 

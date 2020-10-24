@@ -41,6 +41,7 @@ namespace detail
      to find data in the negative segment if necessary.
      However, it needs testing if it would work for non-direct sinograms.
   */
+
   inline static
   Array<2,float>
   extend_sinogram_in_views(const  Array<2,float>& sino_positive_segment,
@@ -69,12 +70,12 @@ namespace detail
 
     if (fabs(min_phi)< .01)
       {
-        min_in[1]-=min_view_extension; 
+        min_in[1]-=min_view_extension;  //here the new min is lower than the original
         min_is_extended=true;                                   
       }
     if (fabs(max_phi-(_PI-sampling_phi))<.01) 
       {         
-        max_in[1]+=max_view_extension;
+        max_in[1]+=max_view_extension; //here the new max is bigger than the original
         max_is_extended=true;           
       }
 
@@ -91,13 +92,15 @@ namespace detail
       {
         bool use_extension=false;
         int symmetric_view_num=0;
-        if (view_num<org_min_view_num && min_is_extended==true)
+        if (view_num<org_min_view_num && min_is_extended==true)  //if view number is smaller than the old minimum (left hand side?) and  it's been extended
           {
+          //  std::cout << "view_num<org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num= view_num + num_views_for_180;
           }
-        else if (view_num>org_max_view_num && max_is_extended==true)
+        else if (view_num>org_max_view_num && max_is_extended==true) //if view number is bigger than the old maximum (right hand side?)  it's been extended
           {
+          // std::cout << "view_num>org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num = view_num - num_views_for_180;
           }
@@ -121,10 +124,50 @@ namespace detail
                 input_extended_view[view_num][symmetric_max];
           }             
       } // loop over views
+
     return input_extended_view;
   }
-} // end of namespace detail
 
+
+
+  inline static
+  Array<2,float>
+  transpose_extend_sinogram_in_views(const  Array<2,float>& sino_segment,
+                           const ProjDataInfo& proj_data_info,
+                           const float min_view_compression, const float max_view_compression)
+  {
+    //* Check if projdata are from 0 to pi-phi
+
+    BasicCoordinate<2,int> min_in, max_in;
+    if (!sino_segment.get_regular_range(min_in, max_in))
+      {
+        warning("input segment 0 should have a regular range");
+      }
+
+
+    min_in[1]+=min_view_compression;  //here the new min is bigger than the original
+    max_in[1]-=max_view_compression; //here the new max is smaller than the original
+
+    const float min_phi = proj_data_info.get_phi(Bin(0,0,0,0));
+
+    const float sampling_phi =
+      proj_data_info.get_phi(Bin(0,1,0,0)) - min_phi;
+    const int num_views_for_180 = round(_PI/sampling_phi);
+
+    IndexRange<2> compressed_range(min_in, max_in);
+    Array<2,float> input_compressed_view(compressed_range);
+
+    for (int view_num=min_in[1]; view_num<=max_in[1]; ++view_num)
+      {
+        input_compressed_view[view_num]=sino_segment[view_num]; //here we cut everything bigger than max_in and smaller than min_in
+
+      } // loop over views
+
+     input_compressed_view[min_in[1]]+=sino_segment[min_in[1]+num_views_for_180];//boundary condition
+    return input_compressed_view;
+  }
+
+}
 Array<3,float>
 extend_segment_in_views(const SegmentBySinogram<float>& sino, 
                         const int min_view_extension, const int max_view_extension)
@@ -165,6 +208,48 @@ extend_sinogram_in_views(const Sinogram<float>& sino,
     extend_sinogram_in_views(sino, sino,
                              *(sino.get_proj_data_info_sptr()),
                              min_view_extension, max_view_extension);
+}
+
+Array<3,float>
+transpose_extend_segment_in_views(const SegmentBySinogram<float>& sino,
+                        const float min_view_compression, const float max_view_compression)
+{
+  if (sino.get_segment_num()!=0)
+    error("extend_segment with single segment works only for segment 0");
+
+  BasicCoordinate<3,int> min, max;
+
+  min[1]=sino.get_min_axial_pos_num();
+  max[1]=sino.get_max_axial_pos_num();
+  min[2]=sino.get_min_view_num();
+  max[2]=sino.get_max_view_num();
+  min[3]=sino.get_min_tangential_pos_num();
+  max[3]=sino.get_max_tangential_pos_num();
+  const IndexRange<3> out_range(min,max);
+  Array<3,float> out(out_range);
+  for (int ax_pos_num=min[1]; ax_pos_num <=max[1] ; ++ax_pos_num)
+    {
+      out[ax_pos_num] =
+        detail::
+        transpose_extend_sinogram_in_views(sino[ax_pos_num],
+                                 *(sino.get_proj_data_info_sptr()),
+                                 min_view_compression, max_view_compression);
+    }
+  return out;
+}
+
+Array<2,float>
+transpose_extend_sinogram_in_views(const Sinogram<float>& sino,
+                         const float min_view_compression, const float max_view_compression)
+{
+  if (sino.get_segment_num()!=0)
+    error("extend_segment with single segment works only for segment 0");
+
+  return
+    detail::
+    transpose_extend_sinogram_in_views(sino,
+                             *(sino.get_proj_data_info_sptr()),
+                             min_view_compression, max_view_compression);
 }
 
 END_NAMESPACE_STIR
