@@ -32,7 +32,7 @@ to your current git clone) and work as usual.
 and even the [User's Guide](https://github.com/UCL/STIR/blob/master/documentation/STIR-UsersGuide.tex) or other documentation files.
 5. Use [well-formed commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 for each change (in particular with a single "subject" line
-followed by an empty line and then more details).
+followed by an empty line and then more details). If the change affects comments only, it is recommended to put `[ci skip]` in your subject line. This avoids unnecessary computation, and clogging our Travis/Appveyor queues.
 6. Push the commits to your fork and submit a [pull request (PR)](https://help.github.com/articles/creating-a-pull-request)
 (enable changes by project admins.) Give your pull request a descriptive name (i.e. don't call if *Fix #issuenumber*. Be prepared to add further commits to your branch after discussion.
 In the description of the PR, add a statement about which Issue this applies to
