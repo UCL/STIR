@@ -186,12 +186,6 @@ namespace RDF_HDF5 {
  class CListEnergyDataGEHDF5
   {
    public:
-    bool is_energy() const
-    {return true; }
-    inline double get_energyA_in_keV() const
-    { return 0.F;  }
-    inline double get_energyB_in_keV() const
-    { return 0.F;  }
   };
 
 class CListRecordGEHDF5 : public CListRecord, public ListTime, public ListEnergy, // public CListGatingInput,
@@ -256,6 +250,12 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
       (this->is_event() || (raw[1] == static_cast<CListRecordGEHDF5 const &>(e2).raw[1]));
 #endif
   }	    
+
+  // energy
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
 
   // time 
   inline unsigned long get_time_in_millisecs() const 
