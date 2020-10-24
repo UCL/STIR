@@ -116,7 +116,7 @@ public:
     get_output_proj_data_sptr() const;
 
     inline int get_num_scatter_points() const
-    { return this->scatt_points_vector.size();}
+    { return static_cast<int>(this->scatt_points_vector.size());}
     //! Get the template ProjDataInfo
     shared_ptr<const ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
     //! Get the ExamInfo
