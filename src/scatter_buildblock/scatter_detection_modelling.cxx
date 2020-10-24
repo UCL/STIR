@@ -241,7 +241,7 @@ float
 ScatterSimulation::
 exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const
 {
-    const float den1 = 1.4142f*M_PI*std_peak*beta;
+    const float den1 = 1.4142f*_PI*std_peak*beta;
     const float den2 = 1.4142f*std_peak;
     const float den3 = 2*beta;
     if (x > 210) //i am not sure of the behaviour of the function at too low energies
