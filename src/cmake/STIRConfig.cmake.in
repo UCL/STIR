@@ -104,6 +104,12 @@ if (@AVW_FOUND@)
   set(STIR_BUILT_WITH_AVW TRUE)
 endif()
 
+
+if (@nlohmann_json_FOUND@)
+  find_package(nlohmann_json 3.2.0 ${STIR_FIND_TYPE})
+  set(STIR_BUILD_WITH_nlohmann_json TRUE)
+endif()
+
 if (@STIR_MPI@)
   find_package(MPI ${STIR_FIND_TYPE})
   if(NOT MPI_FOUND)
