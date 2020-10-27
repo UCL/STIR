@@ -1,105 +1,72 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 4.0-alpha (dated 19/10/2019)</title>
+    <title>Summary of changes in STIR release 4.0</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 4.0-alpha (dated 19/10/2019)</h1>
-
-<p>This version is 95% backwards compatible with STIR 3.0 for the user (see below).
-Developers might need to make code changes as 
-detailed below.
-</p>
+    <h1>Summary of changes in STIR release 4.0</h1>
 <h2>Overall summary</h2>
-<p>This release considerably expands OpenMP support for multi-threaded 
-   execution. Previously, only FBP2D was multi-threaded and it underperformed.
-   Now, any reconstruction code using distributable_computation() (including
-   OSMAPOSL and OSSPS) and the scatter estimation code is multi-threaded. See
-  <ul>
-  <li>Kris Thielemans, Vesna Cuplov, Benjamin A. Thomas, <br />
-  <i><cite>Multi-threaded image reconstruction of 3D PET sinogram data with STIR,</cite></i> <br /> 
-  proc. Fully 3D Conference, Newport, RI, USA, Jun 2015.</li>
-  </ul>
-</p>
-<p>In addition, this version contains preliminary code for Maximum Likelihood estimation
-  of normalisation factors and randoms for PET, written mostly by Kris Thielemans, 
-  then at Hammersmith Imanet Ltd. This code is kindly contributed by GE Healthcare. See
-  <ul>
-   <li>Hogg, K. Thielemans, T. Spinks, N. Spyrou,  <br />
-     <i><cite>Maximum-Likelihood Estimation of Normalisation Factors for PET, </cite></i> <br /> 
-     proc. of IEEE Medical Imaging Conf. 2001, vol. 4 pp. 2065 - 2069.</li>
-  <li>D. Hogg, K. Thielemans, S. Mustafovic and T.J. Spinks,  <br />
-    <i><cite>A Study of Bias for various Iterative Reconstruction Methods in PET,</cite></i> <br /> 
-    Proc. of IEEE Medical Imaging Conf. 2002, vol. 3, pp. 1519 - 1523.</li>
-  </ul>
 
-</p>
-
-<p>Initial support for image-based PSF-modelling in PET.</p>
-<p>There is also initial support for the 32-bit list mode file format
-for Siemens scanners (warning: tested in Biograph mMR only at present).
-</p>
-
-<p>We now support additional list mode file formats (Siemens mMR, SAFIR and CERN ROOT files).
-</p>
-
-<p>Listmode reconstruction can be performed in this version.
-</p>
-
-<p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
-on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
-</p>
+    <p>This version is 95% backwards compatible with STIR 3.0 for the user (see below).
+      Developers might need to make code changes as detailed below. In addition, this release adds a lot of new functionality to STIR.
+      Of course, there is also the usual code-cleanup and 
+      improvements to the documentation.
+    </p>
     
-<p>We now support the parsing of SIEMENS Interfile files natively, except for images. You still have to use convertSiemensInterfileToSTIR.sh for those.</p>
+    <p>This release contains mainly code written by
+      <ul>
+        <li>Kris Thielemans (UCL) for general overview, fixes, help and maintenance</li>
+        <li>Nikos Efthimiou (UCL and Hull) for the scatter update, list mode reconstruction, ROOT support etc</li>
+        <li>Richard Brown (UCL) for improving code structure and safety (e.g. projectors, normalisation, <code>set_up</code> checks),
+          IO additions, handling of dynamic data</li>
+        <li>Daniel Deidda (Leeds and NPL) for the PLS prior, the HKEM algorithm, and list mode and projection functionalities for SPECT</li>
+      <li>Ashley Gillman (CSIRO AeHRC) for patient orientation and  geometrical support</li>
+      </ul>
+      but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
+      Elise Emond (UCL) for IO fixes, Yu-jung Tsai (UCL) for implementation of the PLS prior,
+      Edoardo Pasca (STFC) for Siemens interfile support, Benjamin Thomas (UCL) for CTAC to mu values and support on SPECT,
+      and some code clean-up by David Volgyes.</p>
+    <p>Various bits were tested by (in alphabetical order, all UCL except where indicated):
+      Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
+      Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov.
+    </p>
 
-<p>Finally, we now keep track of time frames and patient orientation for images, in particular
-   making sure that reconstructions initialise this information from the projection data (if it
-   was present there).
-</p>
-
-<p>Of course, there is also the usual code-cleanup and 
-improvements to the documentation.
-</p>
-
-<p>This release contains mainly code written by Kris Thielemans (UCL), Nikos Efthimiou (UCL and Hull)
-  and Richard Brown (UCL)
-  but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
-  Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
-  Daniel Deida (Leeds, NPL) for the PLS prior, the HKEM algorithm, and list mode and projection functionalities for SPECT, Ashley Gillman (CSIRO AeHRC) for patient orientation and
-  geometrical support, and some code clean-up by David Volgyes. Various bits
-were tested by (in alphabetical order, all UCL except where indicated):
-Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
-Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
-</p>
+    <h2>Patch release info</h2>
+    <ul>
+      <li> 4.0.0 released 22/04/2020</li>
+      <li> 4.0.1 released 28/04/2020
+        <ul>
+          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
+          <li><a href=https://github.com/UCL/STIR/issues/515>issue 515,  PR 516</a> (compilation problem with JSON present and <tt>BUILD_EXECUTABLES=OFF</tt>)</li>
+          <li><a href=https://github.com/UCL/STIR/issues/520>issue 520</a> (siemens mMR unlisting segfault)</li>
+          <li>typos in UsersGuide</li>
+          </ul>
+      <li> 4.0.2 released 22/05/2020
+        <ul>
+          <li><a href=https://github.com/UCL/STIR/pull/513>PR 540</a>  (KOSMAPOSL stability improvements and fixes in naming of class member function)</li>
+          </ul>
+      </li>
+    </ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
 <h3>Changes breaking backwards compatibility from a user-perspective</h3>
 <ul>
-  <li> minor changes when using Python/MATLAB</li>
+  <li> major changes in the scatter code, see <a href="#scatter_updates">the section on scatter updates</a>
+  <li>ECAT6 is no longer supported</li>
+  <li> minor changes when using Python/MATLAB (see below)</li>
   <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
-  <li> changed image orientation when reading/writing images via ITK</li>
-  <li> The resulting target must be set prior to using the forward and back projectors. 
-    For the forward projector this is done with <tt>set_input</tt>. 
-    For the back projector, this is done during the <tt>set_up</tt>, 
-    but then<tt>start_accumulating_in_new_target</tt> must be called each time the user
-    wishes to start back projecting into a zero-filled image. 
-    The result of the back projection is then returned via <tt>get_output</tt>. 
-    Backwards compatibility can be maintained with the CMake switch, 
-    <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice 
-    these changes unless they have developed their own projectors. 
-    These changes were made so that using data processors (such as motion or 
-    smoothing) prior to the forwards projection or following the back 
-    projection will be more efficient.</li>
-  <li> replaced Gaussian filters in <tt>experimental</tt>) with better, but incompatible,
+  <li> changed image orientation when reading/writing images via ITK. LPS coordinate info is now preserved.</li>
+  <li> replaced Gaussian filters in <tt>experimental</tt> with better, but incompatible,
     versions in <tt>buildblock</tt>. See below for more information.</li>
   <li> Compared to previous versions of STIR, the <b>SPECT reconstructed images are now inverted along the x axis</b> to match DICOM and nifti (and PET) orientation. </li>
+<li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
+  </li>
+  <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
+  </li>
+  <li>><code>fwdtest</code> and <code>bcktest</code> are now only installed when <tt>BUILD_TESTING</tt> is <tt>ON</tt>. Use <code>forward_project</code> and <code>backward_project</code> instead.</li>
 </ul>
-
-It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
-STIR will assume you know what you're doing and write a warning (but we might not cover all cases). For
-patient orientation, we will assume HFS.
 
 <h3>Bug fixes</h3>
 <ul>
@@ -128,52 +95,135 @@ segment symmetry is switched off.
 This bug did not affect command line utilities, but did affect
 python/matlab or use of the C++ library.
 </li>
-<li>When writing ECAT7 files, patient orientation and time frame info were not set.</li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
-<li><tt>KOSMAPOSL</tt> STIR now allows to use the hybrid kernel method described in the following paper: "<i>Hybrid PET-MR list-mode kernelized expectation maximization reconstruction</i>",
-  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f.</li>
-<li><tt>KOSMAPOSL</tt> also allows to use multiple anatomical images. The method is described in "<i>Multiplexing Kernelized Expectation Maximization
-Reconstruction for PET-MR</i>", NSS/MIC proceedings, 2018, DOI: https://doi.org/10.1109/NSSMIC.2018.8824312.
-  </li>
-<li><tt>generate_image</tt> now has optional keywords for modality, patient position and timing.</li>
-  <li><tt>create_projdata_template</tt> now allows even span. In particular,
-span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
-<li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
-By default, we use about 90% of your cores, but you can change that by setting the OMP_NUM_THREADS
-environment variable before you start your STIR work (see the wiki).
-Please note that you cannot enable both OPENMP and MPI.</li>
-<li>Image-based PSF-modelling in PET can be achieved by using projectors
-  that first smooth data image before forward projection or after back projection.
-  However, this is currently somewhat difficult to set-up and has a too high performance impact.
-  Note that the SPECT projector does allow sinogram-based PSF modelling.
-  </li>
-<li>Functions and executables for ML estimation of singles/randoms/normalisation factors.
-These are only minimally documented at the present stage unfortunately.
-</li>
-<li>We now include a shell script for easier scatter estimation.</li>
-<li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
-<li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
-<li>List-mode classes for Siemens ECAT8 (32-bit).</li>
-<li>add Verbosity level (currently only to be set from interactive languages)</li>
-<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. </li>
-<li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code> (based on old code in <tt>experimental</tt> which has now been removed). This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
-<li>New IO:
+<li>Major changes in the (PET) scatter code, see <a href="#scatter_updates">the section on scatter updates</a></li>
+<li>Extra reconstruction capabilities:
   <ul>
-    <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
-    <li>New header file, with .hroot extension is provided for ROOT files </li>
+    <li><tt>KOSMAPOSL</tt> STIR now allows to use the hybrid kernel method described in the following paper:<br />
+      Deidda D, et al., <cite>Hybrid PET-MR list-mode kernelized expectation maximization reconstruction</cite>,<br />
+      Inverse Problems, 2019, DOI: <a href=https://doi.org/10.1088/1361-6420/ab013f>10.1088/1361-6420/ab013f</a>.<br />
+      <tt>KOSMAPOSL</tt> also allows to use multiple anatomical images. The method is described in<br />
+      Deidda D, et al., <cite>Multiplexing Kernelized Expectation Maximization Reconstruction for PET-MR</cite><br />
+      NSS/MIC proceedings, 2018, DOI: <a href=https://doi.org/10.1109/NSSMIC.2018.8824312>10.1109/NSSMIC.2018.8824312</a>.
+      <tt>KOSMAPOSL</tt> allows to use openMP for the kernel calculation.
+      <tt>KOSMAPOSL</tt> allows reconstruction without any anatomical image
+    </li>
+    <li>Image-based PSF-modelling in PET can be achieved by using projectors
+      that first smooth data image before forward projection or after back projection.
+      However, this is currently somewhat difficult to set-up as it needs specifying the filter twice.
+      Note that the SPECT projector does allow sinogram-based PSF modelling.
+    </li>
+    <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. See<br />
+      Ehrhardt MJ, et al., <cite>PET Reconstruction With an Anatomical MRI Prior Using Parallel Level Sets</cite><br />
+      IEEE Trans Med Imaging. 2016 Sep;35(9):2189-2199. doi: <a href=https://doi.org/10.1109/TMI.2016.2549601>10.1109/TMI.2016.2549601</a>.
+      Epub 2016 Apr 14.
+    </li>
+    <li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only geometrical subsets are currently supported. 
+    </li>
+    <li>Reconstruction parameter files now can use a new optional keyword <code>z zoom</code> to allow
+      changing the spacing from the default.
+      It is currently only recommended for SPECT (where it should be set to <code>0.5</code> due
+      current work-arounds on how to read SPECT data into STIR). PET projectors are likely to fail when using the non-default <tt>z zoom</tt>.
+    </li>
+    <li>Indirect parametric reconstruction (Patlak) no longer requires you to pass a pre-existing template file. If one is supplied, it will be used; else the parametric image will be created based on the dynamic image.
+    </li>
+    <li>Normalisation for SPECT has been added. Can be used with <tt>lm_to_projdata</tt> and during reconstruction. Currently provides the option to apply uniformity and decay correction.
+    </li>
+  </ul>
+  </li>
+<li>Parallelisation:
+  <ul>
+    <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
+    <li>
+      This release considerably expands OpenMP support for multi-threaded 
+      execution. Previously, only FBP2D was multi-threaded and it underperformed.
+      Now, any reconstruction code using distributable_computation() (including
+      OSMAPOSL and OSSPS) and the scatter estimation code is multi-threaded. See<br />  
+      Kris Thielemans, Vesna Cuplov, Benjamin A. Thomas, 
+      <cite>Multi-threaded image reconstruction of 3D PET sinogram data with STIR,</cite><br /> 
+      proc. Fully 3D Conference, Newport, RI, USA, Jun 2015.<br />
+      By default, we use about 90% of your cores, but you can change that by setting the <tt>OMP_NUM_THREADS</tt>
+      environment variable before you start your STIR work (see the wiki).
+      Please note that you cannot enable both OPENMP and MPI.
+      </li>
+  </ul>
+</li>
+<li>Filters:
+  <ul>
+    <li>Added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code> (based on old code in <tt>experimental</tt> which has now been removed). This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
+  </ul>
+</li>
+<li>IO:
+  <ul>
+    <li>Meta-data:
+      <ul>
+        <li>we now keep track of time frames and patient orientation for images, in particular
+          making sure that reconstructions initialise this information from the projection data (if it
+          was present there). In the next version, providing this information will likely become a requirement.
+        </li>
+        <li>It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
+          STIR will assume you know what you're doing and write a warning (but we might not cover all cases). For
+          patient orientation, we will assume HFS.
+        </li>
+      </ul>
+    </li>
+
+    <li>
+      The orientation of images read/written via ITK has changed. It should now be correct if the patient
+      was in HFS position. Unfortunately, for most file formats (such as NifTI) this can't be verified due to lack of metadata in the format.
+      If the files are in DICOM format, as long as the file contains the correct metadata, other patient positions are supported (currently
+      HFS, FFS, HFP or FFP).
+    </li>
+    <li>Siemens file formats:
+      <ul>
+        <li>Support the parsing of SIEMENS Interfile files natively, except for images. You still have to use convertSiemensInterfileToSTIR.sh for those.</li>
+        <li>List-mode classes for Siemens ECAT8 (32-bit), tested on the mMR only though.</li>
+        <li>Normalisation class for Siemens ECAT8, allowing for the <i>virtual</i>, tested on the mMR only though. This needed 2 extra
+          functions in <code>Scanner</code> to know how many virtual crystals there are.</li>
+    </li>
+    </ul>
+    <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. A new header file (recommended extension <tt>.hroot</tt> is necessary for ROOT files. Check
+    the <tt>examples</tt>.</li>
     <li>Ability to read dynamic and parametric interfiles with <tt>InterfileDynamicDiscretisedDensityInputFileFormat</tt> and 
       <tt>InterfileParametricDiscretisedDensityInputFileFormat</tt>, respectively.
     <li>The creation of <tt>MultipleDataSetHeader</tt>. This enables the user to read a set of filenames from a text file, referred to as a <tt>multi</tt> file. See <tt>examples/samples/multi_file.txt</tt> for an example.
-  </li>
+    </li>
+    <li>List-Mode functionalities are now extended to SPECT. However, we currently cannot distribute any software for SPECT
+      scanners due to confidentiality clauses.
+    </li>
+    <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li>
+    <li>When writing ECAT7 files, patient orientation and time frame info were not set.</li>
+    <li> Support for Energy Resolution and energy windows in scanners and projection data has been added.
+      It is only required when running the scatter simulation or estimation, and should then be set in the input file.
+      For example, for a STIR-Interfile header, you should use the following keywords:
+      <pre>
+    number of energy windows:=1
+    energy window lower level[1]:=425
+    energy window upper level[1]:=650
+    Scanner parameters:=
+      Scanner type := ...
+      Energy resolution := 0.145
+      Reference energy (in keV) := 511
+      ...
+    End scanner parameters:=
+      </pre>
+      Only 1 energy window is currently supported (if there's more than one, only the first will be read).<br />
+      <strong>Warning:</strong> Unfortunately, GitHub versions between version 3.0 and 4.0 used
+      <pre>
+        energy window lower level:=425
+        energy window upper level:=650
+      </pre>
+      This will still be read ok, as long as these keywords are preceded by
+      <pre>
+        !version of keys := STIR3.0
+      </pre>
+      The new (vectored) version is compatible with the Interfile standard.
+    </li>
   </ul>
   </li>
-    <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
-<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only geometrical subsets are currently supported. 
-  </li>
-<li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
   <ul>
     <li>when <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>, we now use
@@ -183,44 +233,62 @@ These are only minimally documented at the present stage unfortunately.
     <li>added the <code>Shape</code> classes</li>
     <li>added the <code>GeneralisedPrior</code> classes</li>
   </ul>
+  see also the developer section below
 </li>
-<li>Projection- and normalisation-related classes have had changes to make them much safer to use in an interactive
-  environment such as Python. The methods will now check if <code>set_up()</code> has been called
-  and if the images/projection data have the same characteristics as those used when the object was set-up.
-  (Actually, projection data can be &quote;smaller&quote;, e.g. less segments).
-  </li>
-<li>Extract single images from dynamic image with executable <code>extract_dynamic_images</code>.
-</li>
-<li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>  
-<li>Reconstruction parameter files now can use a new optional keyword <code>z zoom</code> to allow
-  changing the spacing from the default. However, results of this have not been checked yet.
-  It is currently only recommended for SPECT (where it should be set to <code>0.5</code> due
-  current work-arounds on how to read SPECT dat into STIR).
-  </li>
-<li>Indirect parametric reconstruction (Patlak) no longer requires you to pass a pre-existing template file. If one is supplied, it will be used; else the parametric image will be created based on the dynamic image.
-  </li>
-  <li>Verbosity can be set in reconstructions with the "verbosity := " keyword
-    in the parameter file.
-  </li>
+<li>New or changed utilities:
+  <ul>
+    <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
+    <li><tt>list_image_values</tt> now has options to print coordinates in LPS as opposed to indices, print in CSV, or suppress the title row.</li>
+    <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
+    <li>Extract single images from dynamic image with executable <code>extract_dynamic_images</code>.
+    </li>
+    <li> <tt>list_ROI_values</tt> now has the option to save the image name , max and min as new columns, and they will appear in the same 
+    row as the roi name, mean value and so on. 
+    </li>
+    <li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: <code>preserve_values, preserve_projections, preserve_sum</code>.</li>  
+    <li><tt>generate_image</tt> now has optional keywords for modality, patient position and timing.</li>
+    <li><tt>create_projdata_template</tt> now allows even span. In particular,
+      span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
   <li><code>ctac_to_mu_values</code> is a new utility that converts a CT image to linear attenuation coefficients.
       This application depends on the <a href="https://github.com/nlohmann/json">nlohmann JSON library</a>.
   </li>
-  <li>New utility <code>invert_axis</code> to invert x, y or z axis of an image.
+    <li><tt>manip_image</tt> 
+      now has an extra option that allows to substitute nan with zero.
+    </li>
+    <li>New utility <code>invert_axis</code> to invert x, y or z axis of an image.
+    </li>
+    <li><code>lm_to_projdata_with_random_rejections</code> is a new addition that makes possible to randomly reduce the number of event in a list mode file. The events are binned into a sinogram.</li>
+    <li>Triple energy Window (TEW) for (SPECT) scatter correction is now available. Needs availability of different sinograms acquired at different energy windows.
+    </li>
+    <li>Functions and executables for ML estimation of singles/randoms/normalisation factors for PET,
+      written mostly by Kris Thielemans, then at Hammersmith Imanet Ltd. This code is kindly contributed by GE Healthcare..
+      These are only minimally documented at the present stage unfortunately.
+      <ul>
+        <li>Hogg, K. Thielemans, T. Spinks, N. Spyrou,  <br />
+          <cite>Maximum-Likelihood Estimation of Normalisation Factors for PET, </cite><br /> 
+          proc. of IEEE Medical Imaging Conf. 2001, vol. 4 pp. 2065 - 2069.
+        DOI: <a href=https://doi.org/10.1109/NSSMIC.2001.1009231>10.1109/NSSMIC.2001.1009231</a></li>
+        <li>D. Hogg, K. Thielemans, S. Mustafovic and T.J. Spinks,  
+          <cite>A Study of Bias for various Iterative Reconstruction Methods in PET,</cite><br /> 
+          Proc. of IEEE Medical Imaging Conf. 2002, vol. 3, pp. 1519 - 1523.
+        DOI: <a href=https://doi.org/10.1109/NSSMIC.2002.1239610>10.1109/NSSMIC.2002.1239610</a></li>
+      </ul>
+    </li>
+</li>
+</ul>
+<li>add Verbosity level. It can be set from interactive languages, and in reconstructions with the <tt>verbosity</tt> keyword
+    in the parameter file.
   </li>
-  <li>List-Mode functionalities are now extended for SPECT.
-  </li>
-  <li>Triple energy Window (TEW) for scatter correction is now available. Needs availability of different sinograms acquired at different energy windows.
-  </li>
-  <li>Normalisation for SPECT has been added. Can be used with <tt>lm_to_projdata</tt> and during reconstruction. Currently provides the option to apply uniformity and decay correction.
-  </li>
-  </ul>
+</ul>
 
 
 <h3>Changed functionality</h3>
 <ul>
-<li><tt>manip_image</tt> 
-    now has an extra option that allows to substitute nan with zero.
-</li>
+<li>Projection- and normalisation-related classes have had changes to make them much safer to use in an interactive
+  environment such as Python. The methods will now check if <code>set_up()</code> has been called
+  and if the images/projection data have the same characteristics as those used when the object was set-up.
+  (Actually, projection data can be &quot;smaller&quot;, e.g. less segments).
+  </li>
 <li><tt>create_projdata_template</tt> 
     now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
     This change was to accomodate how GE uses even span.
@@ -229,14 +297,8 @@ These are only minimally documented at the present stage unfortunately.
   The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
   allow processing of more events in list mode files.
 </li>
-<li>
-The orientation of images read/written via ITK has changed. It should now be correct if the patient
-was in HFS position. Unfortunately, for most file formats (such as NifTI) this can't be verified due to lack of metadata in the format.
-If the files are in DICOM format, as long as the file contains the correct metadata, other patient positions are supported (currently
-HFS, FFS, HFP or FFP).
-</li>
 <li><tt>calculate_attenuation_coefficients</tt> now defaults to using the ray-tracing matrix as
-  projector. Results should be identical though. This means it will not automatically handle
+  projector. Results should be identical though. This means it will now automatically handle
   cases where there are less symmetries in the data, e.g. for scanners with odd number of
   views.<br />
   It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
@@ -248,10 +310,6 @@ HFS, FFS, HFP or FFP).
   sinograms had zero counts (after weighting), while we were setting it 0 before. As this should never occur,
   and the scale factor should be irrelevant then, this should not affect any results.<br />
   (Actual change is in <code>get_scale_factors_per_sinogram</code>).
-  </li>
-<li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
-  </li>
-  <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
   </li>
   <li>Changed the return value of <tt>DynamicProjData::read_from_file</tt> from a raw ptr to a <tt>unique_ptr</tt>.
   </li>
@@ -282,6 +340,9 @@ HFS, FFS, HFP or FFP).
 
 
 <h3>Build system</h3>
+<p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
+on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
+</p>
 <ul>
   <li>MATLAB support now uses CMake's own <a href="https://cmake.org/cmake/help/latest/module/FindMatlab.html">FindMatlab</a> module, as opposed to our own
     code, which was out-of-date. Unfortunately, this uses different CMake variables.
@@ -314,12 +375,8 @@ You should normally not have to change these options.</li>
 </li>
 </ul>
 
-<p><strong>WARNING</strong>: <code>fwdtest</code> and <code>bcktest</code> are now only installed when BUILD_TESTING is ON. Use <code>forward_project</code> and <code>backward_project</code> instead.</p>
-
-<p>Using <a href="http://www.cmake.org">CMake</a> is the only option to build STIR (see the wiki).
-</p>
-
 <h3>Known problems</h3>
+<p>See the Github issues for more information.</p>
 <ul>
 <li>SPECT related
  <ul>
@@ -342,7 +399,6 @@ You should normally not have to change these options.</li>
 </li>
 <li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
-<li>ECAT6 is no longer supported</li>
 <li>The incremental interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
 matrix (with additional rays) instead.</li>
@@ -373,12 +429,38 @@ most cylindrical scanners).
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
-<li>Simple test script for GATE produced ROOT files has been added.</li>
+<li>Additional test scripts, e.g. for GATE produced ROOT files, listmode reconstruction and scatter simulation, have been added.</li>
  </ul>
 
 <h3>Other changes to tests</h3>
 <ul>
 <li>added tests for the ITK IO routines and Interfile reading of dynamic/parametric images/projection data</li>
+</ul>
+
+<H2><a id="scatter_updates"></a>Scatter updates</a></h2>
+This release contains major updates on the scatter code, mostly contributed by Nikos Efthimou,
+see the <a href="https://github.com/UCL/STIR/pull/44">pull request on GitHub</a>.
+
+<ul>
+  <li><code>estimate_scatter</code> is now renamed to <code>simulate_scatter</code>, as that is what it does.
+    Its parameter format changed as well. See an example in <tt>examples/PET_simulation</tt>. In particular:
+    <ul>
+      <li>start and end keywords are different</li>
+      <li>energy window and resolution information is now (only) taken from the template projection data.</li>
+      <li><tt>density_image_filename</tt> keywords are renamed to <tt>attenuation_image_filename</tt>.</li>
+      <li><tt>template_proj_data_filename</tt> is renamed to <tt>template_projdata_filename</tt> for consistency
+	with other parameter files.</li>
+      </ul>
+    Functionality and results are identical to the previous version.
+  </li>
+  <li>Somewhat confusingly, <code>estimate_scatter</code> is a new executable that actually estimates
+    scatter from measured data. It performs the iterative process first suggested by Watson et al. (similar
+    to Ollinger et al.). An example of this as in <tt>examples/Siemens-mMR/scatter</tt>.
+   </li>
+   <li>In the github version after STIR 3.0, we included a shell script for easier scatter estimation.
+    That script still exists for backwards compatibility, but is essentially obsolete. You should
+    use <code>estimate_scatter</code> instead.
+   </li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
@@ -395,9 +477,9 @@ from the above):</H2>
     SPECT and <tt>CListMode</tt> for PET are derived classes. All the classes and utilities for list mode now use the <tt>ListMode</tt> class 
     (<tt>ListModeData</tt>, <tt>ListRecord</tt>, <tt>ListEvent</tt> etc. accordingly)
     and new developments using list mode need to use the base class as well. </li>
-<li> <tt>list_ROI_values</tt> now has the option to save the image name , max and min as new columns, and they will appear in the same 
-    row as the roi name, mean value and so on. 
-</li>
+<li>The <code>ScatterEstimation</code> class has been renamed to <code>ScatterSimulation</code>.
+  <code>ScatterEstimation</code> is a new class that performs an iterative process to estimate scatter.
+  </li>
 <li>STIR now uses <code>std::unique_ptr</code> as opposed to <code>std::auto_ptr</code>, as recommended for C++-11 and 
     later (unless the CMake option <code>STIR_NO_UNIQUE_PTR</code> is set).
     This affects calls to
@@ -415,6 +497,18 @@ from the above):</H2>
   is used. Finally, use the preprocessor define <code>MAKE_SHARED</code> as opposed to
   <code>std::make_shared</code>.
 </li>
+  <li> The image must be set prior to using the forward and back projectors. 
+    For the forward projector this is done with <tt>set_input</tt>. 
+    For the back projector, this is done during the <tt>set_up</tt>, 
+    but then<tt>start_accumulating_in_new_target</tt> must be called each time the user
+    wishes to start back projecting into a zero-filled image. 
+    The result of the back projection is then returned via <tt>get_output</tt>. 
+    Backwards compatibility can be maintained with the CMake switch, 
+    <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice 
+    these changes unless they have developed their own projectors. 
+    These changes were made so that using data processors (such as motion or 
+    smoothing) prior to the forwards projection or following the back 
+    projection will be more efficient.</li>
 <li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
   class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
   </li>
@@ -438,25 +532,18 @@ from the above):</H2>
     	<code>RegisteredParsingObject</code> has been changed accordingly.</li>
     <li><code>Object</code> has been renamed as <code>RegisteredObjectBase</code>. 
         This is because the class only exists for the parser to get information about the class.</li>
-    <li>Classes that used<code>InterfilePDFSHeader</code> now contains a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer.</li>
-    <li>Changes improving safety of use of <code>shared_ptr</code>:<br />
-      In the previous version of STIR, the use of <code>shared_ptr</code> allowed unsafe access to
-      the objects (although this never happened in distributed STIR code). We now prevent this with changes to the class interface (although there is still work to do):
-      <ul>
-        <li>Where possible, classes that internally contained a <code>shared_ptr&lt;ProjDataInfo&gt;</code> now contain a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>, and similar for <code>DiscretisedDensity</code></li>
-        <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.</li>
-	<li>Corresponding constructors and some functions, including <code>set_up</code>, that accept <code>shared_ptr</code> now take a <code>shared_ptr</code> to a <code>const</code> object.</li>
-      </ul>
-      </li>
   </ul>
 </li>
+ <li><code>KeyParser</code> <a href="https://github.com/UCL/STIR/pull/490">has changed</a> to be safer for
+   parsing of vectorised keys. However, the &quot;simple&quot; <code>add_key</code>
+   functions now create non-vectorised keys. Use <code>add_vectorised_key</code> otherwise.
+   </li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
 using the default output file format.</li>
-<li><code>lm_to_projdata_with_random_rejections</code> is a new addition that makes possible to randomly reduce the number of event in a list mode file. The events are binned into a sinogram.</li>
 <li><code>FilePath</code> is a new addition that provides a thin cross-platform layer for file and folder operations. In addition to the features already found in utilities it can create new paths and perform checks on paths about accessibility and writting permissions.</li>
 <li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
 <li>extra functionality for <code>ProjData</code>:
@@ -466,9 +553,7 @@ using the default output file format.</li>
    <li><code>write_to_file</code> moved from <code>ProjDataInMemory</code> to <code>ProjData</code></li>
   </ul>
 </li>
-<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
-In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
-<li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
+<li> Information on a single energy window has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
 <code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
@@ -492,7 +577,7 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
   </li>
 <li><code>info()</code> and <code>warning()</code> really should no longer be used in the
   <code>printf</code> style, i.e. <code>warning("Some message %d", x)</code> .
-  In the next version, they will only accept 1 argument. Use <code>boost::format</code>.</li>
+  In the next version, they will only accept string-type argument (and optional verbosity). Use <code>boost::format</code>.</li>
 <li><code>get_proj_data_info_ptr()</code> and <code>get_scanner_ptr()</code> should no longer be used as they
 can create problems with the lifetime of objects. Use <code>get..._sptr</code> instead.</li>
 <li><code>ClistEvent::is_valid_template</code> is a new (pure) virtual function

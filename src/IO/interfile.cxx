@@ -55,6 +55,7 @@
 #include "stir/error.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/date_time_functions.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
@@ -474,9 +475,10 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
   if (exam_info.get_high_energy_thres() > 0 &&
       exam_info.get_low_energy_thres() >= 0)
     {
-      output_header << "energy window lower level := " <<
+      output_header << "number of energy windows := 1\n";
+      output_header << "energy window lower level[1] := " <<
         exam_info.get_low_energy_thres() << '\n';
-      output_header << "energy window upper level :=  " <<
+      output_header << "energy window upper level[1] :=  " <<
         exam_info.get_high_energy_thres() << '\n';
     }
 }
@@ -570,15 +572,22 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 #else
-  output_header << "!version of keys := STIR3.0\n";
+  output_header << "!version of keys := STIR4.0\n";
 #endif
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
   output_header << "!GENERAL DATA :=\n";
   write_interfile_patient_position(output_header, exam_info);
   output_header << "!GENERAL IMAGE DATA :=\n";
+  if (exam_info.start_time_in_secs_since_1970>0)
+    {
+      const DateTimeStrings dt =
+        secs_since_Unix_epoch_to_Interfile_datetime(exam_info.start_time_in_secs_since_1970);
+      output_header << "study date := " << dt.date << '\n';
+      output_header << "study time := " << dt.time << '\n';
+    }
   output_header << "!type of data := " << (is_spect ? "Tomographic" : "PET") << '\n';
   output_header << "imagedata byte order := " <<
     (byte_order == ByteOrder::little_endian 
@@ -1072,20 +1081,19 @@ read_interfile_PDFS(istream& input,
         warning("Interfile parsing failed");
         return 0;
       }
+    input.clear(); // clear EOF or other flags before we proceed
     input.seekg(offset);
     if (hdr.get_exam_info().imaging_modality.get_modality() ==
         ImagingModality::NM)
       {
         // spect data
-        input.seekg(offset);
         return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
       }
-	  if (!hdr.siemens_mi_version.empty())
+    if (!hdr.siemens_mi_version.empty())
       {
-		     input.seekg(offset);
          return read_interfile_PDFS_Siemens(input, directory_for_data, open_mode);
       }
-	}
+  }
     
   // if we get here, it's PET
 
@@ -1198,7 +1206,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
@@ -1269,7 +1277,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       else
         {
           output_header << "orbit := Non-circular\n";
-          output_header << "Radius := " << ring_radii << '\n';
+          output_header << "Radii := " << ring_radii << '\n';
         }
 
       output_header << "!matrix size [1] := "

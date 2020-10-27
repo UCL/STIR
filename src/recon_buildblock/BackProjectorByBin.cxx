@@ -90,6 +90,14 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
 #pragma omp single
       _local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
     }
+    for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
+      if(!is_null_ptr(_local_output_image_sptrs[i])) // already created in previous run
+        if (!_local_output_image_sptrs[i]->has_same_characteristics(*density_info_sptr))
+          {
+            // previous run was with different sizes, so reallocate
+            _local_output_image_sptrs[i].reset(density_info_sptr->get_empty_copy());
+          }
+
 #endif
 }
 
@@ -219,7 +227,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
           proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #endif
 
-        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
         back_project(viewgrams);
       }
   }
@@ -311,8 +319,12 @@ start_accumulating_in_new_target()
       error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");
 
   for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
-               if(!is_null_ptr(_local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-            _local_output_image_sptrs.at(i)->fill(0.F);
+    if(!is_null_ptr(_local_output_image_sptrs[i])) // only reset to zero if a thread filled something in
+      {
+        if (!_local_output_image_sptrs.at(i)->has_same_characteristics(*_density_sptr))
+          error("BackProjectorByBin implementation error: local images for openmp have wrong size");
+        _local_output_image_sptrs.at(i)->fill(0.F);
+      }
 
 #endif
     _density_sptr->fill(0.);

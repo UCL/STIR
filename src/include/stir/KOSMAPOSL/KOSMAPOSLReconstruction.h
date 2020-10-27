@@ -23,7 +23,7 @@
 */
 /*!
   \file
-  \ingroup OSMAPOSL
+  \ingroup KOSMAPOSL
   \brief Declaration of class stir::KOSMAPOSLReconstruction
 
   \author Daniel Deidda
@@ -50,10 +50,10 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   \brief A reconstructor class appropriate for emission data
 
   This class implements the iterative algorithm obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
-  This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  This implementation corresponds to the one presented by Deidda D et al, "Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
   Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
   also sinogram-based reconstruction. Furtermore, it is possible to use multiple side information images (they can be anatomical images or images from
-  different modalities). This extension is called multiplexing-HKEM and is described in Deidda et al. ``Multiplexing Kernelized Expectation Maximization
+  different modalities). This extension is called multiplexing-HKEM and is described in Deidda et al. "Multiplexing Kernelized Expectation Maximization
   Reconstruction for PET-MR." IEEE NSS/MIC Proceedings (NSS/MIC) 2018, DOI: https://doi.org/10.1109/NSSMIC.2018.8824312.
   Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
   linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
@@ -99,12 +99,12 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   KOSMAPOSL Parameters:=
 
   hybrid:=1
-  sigma m:= 1                                ;is the parameter $\f \sigma_{m} \f$;
-  sigma p:=1                                 ;is the parameter $\f \sigma_{p} \f$;
-  sigma dm:=1                                ;is the parameter $\f \sigma_{dm} \f$;
-  sigma dp:=1                                ;is the parameter $\f \sigma_{dp} \f$;
+  sigma m:= 1
+  sigma p:=1 
+  sigma dm:=1
+  sigma dp:=1
   number of neighbours:= 3                   ;is the cubic root of the number of voxels in the neighbourhood;
-  anatomical image filenames:={filename1,filename2}        ;are the filenames of the anatomical images, currently can only do one image;
+  anatomical image filenames:={filename1,filename2}        ;are the filenames of the anatomical images
   number of non-zero feature elements:=1     ;is the number of non zero elements in the feature vector. This makes you choose the size of your feature vector by default we only have one element;
   only_2D:=0                                 ;=1 if you want to reconstruct 2D images;
 
@@ -164,7 +164,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptr();
+  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptrs();
 //@}
 
     /*! \name Functions to set parameters
@@ -176,9 +176,9 @@ public:
   void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
   //! sets all elements of vector anatomical_prior to the same value
   void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
-  void set_anatomical_image_filenames(const std::string&, const int index);
-  void set_anatomical_image_filenames(const std::string&);
-
+  void set_anatomical_image_filename(const std::string&, const int index);
+  void set_anatomical_image_filename(const std::string&);
+  //@}
 
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
@@ -190,9 +190,6 @@ public:
   void set_sigma_dm(const double);
   void set_only_2D(const bool);
   void set_hybrid(const bool);
-
-  //! boolean value to determine if the update images have to be written to disk
-  void set_write_update_image(const int);
   //@}
 
   //! prompts the user to enter parameter values manually
@@ -207,7 +204,7 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  std::vector<shared_ptr<TargetT> > anatomical_prior_sptrs,kmnorm_sptrs;
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
@@ -218,9 +215,6 @@ public:
   double sigma_dp, sigma_dm;
   BasicCoordinate<3,int> min_ind, max_ind;
 
-  //! boolean value to determine if the update images have to be written to disk
-  int write_update_image;
-
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
@@ -230,7 +224,7 @@ private:
   friend void do_sensitivity(const char * const par_filename);
 
   //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_sptr);
  
   //! the principal operations for updating the image iterates at each iteration
   virtual void update_estimate (TargetT& current_image_estimate);
@@ -254,7 +248,7 @@ private:
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
     void estimate_stand_dev_for_anatomical_image(std::vector<double> &SD);
 
-  /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
+  /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$ */
   /*! The information is stored in the image, kImage */
 //    void full_compute_kernelised_image(TargetT& kernelised_image_out,
 //                                     const TargetT& image_to_kernelise,

@@ -132,18 +132,13 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
   private:
     void resize_segments_and_set();
     //void read_frames_info();
-    void read_num_energy_windows();
 
     //int find_storage_order();
-
-    std::vector<float> lower_en_window_thresholds;
-    std::vector<float> upper_en_window_thresholds;
 
   protected:
 
     int axial_compression;
     int maximum_ring_difference;
-    int num_energy_windows;
 
     std::vector<int> segment_table;
     int num_segments;

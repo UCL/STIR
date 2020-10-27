@@ -5,6 +5,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -101,6 +102,14 @@ class FBP2DReconstruction :
             Reconstruction < DiscretisedDensity < 3,float> >,
             AnalyticReconstruction
          > base_type;
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+ public:
+#else
+ private: 
+#endif  
+    typedef DiscretisedDensity < 3,float> TargetT;
 public:
     //! Name which will be used when parsing a ProjectorByBinPair object
     static const char * const registered_name;
@@ -124,6 +133,8 @@ public:
   virtual std::string method_info() const;
 
   virtual void ask_parameters();
+
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_sptr);
 
  protected: // make parameters protected such that doc shows always up in doxygen
   // parameters used for parsing
@@ -154,8 +165,6 @@ public:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing(); 
-  bool post_processing_only_FBP2D_parameters();
-
 };
 
 

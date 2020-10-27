@@ -45,6 +45,7 @@ ${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
+${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
 )
 
 SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL   iterative_KOSMAPOSL
@@ -102,3 +103,7 @@ SET( STIR_TEST_DIRS
      test/numerics
      test/modelling
 )
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND STIR_TEST_DIRS test/NiftyPET_projector)
+endif()

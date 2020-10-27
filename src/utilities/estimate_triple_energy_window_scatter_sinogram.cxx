@@ -201,11 +201,12 @@ main(int argc, char **argv)
 
 //     The following apply the the TEW method C_{scatter}=(C_{lower}/W_{lower}+C_{upper}/W_{upper})*W_{peak}/2
 
-      pow_times_add divide_by_small_width(add_scalar, 1/estimate.lower_width,power ,min_threshold ,max_threshold );
+      pow_times_add divide_by_lower_width(add_scalar, 1/estimate.lower_width,power ,min_threshold ,max_threshold );
+      pow_times_add divide_by_upper_width(add_scalar, 1/estimate.upper_width,power ,min_threshold ,max_threshold );
       pow_times_add mult_by_half_peak_width(add_scalar, estimate.peak_width/2,power ,min_threshold ,max_threshold );
 
-      in_place_apply_function(filter_lower_segment_by_view, divide_by_small_width);
-      in_place_apply_function(filter_upper_segment_by_view, divide_by_small_width);
+      in_place_apply_function(filter_lower_segment_by_view, divide_by_lower_width);
+      in_place_apply_function(filter_upper_segment_by_view, divide_by_upper_width);
 
        scatter_segment_by_view=filter_lower_segment_by_view;
        scatter_segment_by_view+=filter_upper_segment_by_view;

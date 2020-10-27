@@ -3,7 +3,8 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016, University College London
+    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,6 +31,8 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
+  \author Palak Wadhwa
+  \author Ottavia Bertolli
   \author PARAPET project
 */
 
@@ -67,8 +70,8 @@ static list<string>
    string_list(const string&, const string&, const string&);
 static list<string> 
    string_list(const string&, const string&, const string&, const string&);
-
-   
+static list<string>
+   string_list(const string&, const string&, const string&, const string&, const string&);
 
 
   
@@ -121,7 +124,8 @@ Scanner::Scanner(Type scanner_type)
     set_params(E931, string_list("ECAT 931"),  
                8, 192, 2 * 256, 
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F, 
-               2, 4, 4, 8, 4, 8 * 4, 1);
+               2, 4, 4, 8, 4, 8 * 4, 1,
+               0.37f, 511.f);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
     break;
@@ -188,9 +192,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
                41, 336, 2* 336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
-               1, 2, 41, 14, 41, 14, 1);
+               1, 2, 13+1, 13+1, 0, 0, 1);// TODO bucket/singles info?
     // Transaxial blocks have 13 physical crystals and a gap at the  
-    // 140th crystal where the counts are zero.
+    // 14th crystal where the counts are zero.
     // There are 39 rings with 13 axial crystals per block. Two virtual
     // rings are added, but contain counts after applying axial compression.
     break;
@@ -202,7 +206,18 @@ Scanner::Scanner(Type scanner_type)
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
                64, 344, 2* 252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
-               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               2, 1, 8, 9, 16, 9, 1,
+               0.145f, 511.f); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+    break;
+
+  case Siemens_mCT:
+    // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
+    set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
+               55, 400, (13+1)*48,
+               421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
+               4, 1, 13+1, 13+1, 0,0, 1 ); // TODO singles info incorrect
+    // energy: 435-650
+    // 13 TOF bins
     break;
 
   case RPT:
@@ -326,6 +341,26 @@ Scanner::Scanner(Type scanner_type)
 	       6, 8, 1, 1, 1);
     break;
 
+
+case PETMR_Signa:
+
+  set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
+	       45, 
+	       357, 
+	       331, // TODO
+	       2 * 224,
+           311.8F,
+           8.5F,
+           5.56F,
+           2.01565F, // TO CHECK
+	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
+	       5,
+	       4,
+             9, 4, 1, 1, 1,
+             0.105F, // energy resolution from Levin et al. TMI 2016
+             511.F);
+break;
+
   case Discovery690:
     // same as 710
     set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690",
@@ -349,8 +384,53 @@ Scanner::Scanner(Type scanner_type)
 			   (float)(550.0F)
 #endif
 );
+
     break;
   
+
+  case DiscoveryMI3ring: // This is the 3-ring DMI
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI3ring, string_list("GE Discovery MI 3 rings", "Discovery MI3", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       27,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       3, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
+  case DiscoveryMI4ring: // This is the 4-ring DMI
+    // as above, but one extra block
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI4ring, string_list("GE Discovery MI 4 rings", "Discovery MI4", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       36,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       4, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
   case HZLR:
 
     set_params(HZLR, string_list("Positron HZL/R"), 
@@ -589,11 +669,45 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   num_detector_layers = num_detector_layers_v;
 
   energy_resolution = energy_resolution_v;
-  reference_energy = reference_energy_v;
+  if (reference_energy_v <= 0)
+      reference_energy = 511.f;
+  else
+      reference_energy = reference_energy_v;
 
 }
 
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_axial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+      return 1;
+    default:
+      return 0;
+    }
+}
 
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_transaxial_crystals_per_block() const
+{
+  switch(get_type())
+    {
+    case E1080:
+    case Siemens_mCT:
+    case Siemens_mMR:
+      return 1;
+    default:
+      return 0;
+    }
+}
 
 Succeeded 
 Scanner::
@@ -649,10 +763,11 @@ check_consistency() const
 	const int dets_axial =
 	  get_num_axial_blocks() *
 	  get_num_axial_crystals_per_block();
-	if ( dets_axial != get_num_rings())
+	if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()))
 	  { 
-	    warning("Scanner %s: inconsistent axial block info",
-		    this->get_name().c_str()); 
+	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
+		    this->get_name().c_str(),
+                    dets_axial, get_num_rings() + get_num_virtual_axial_crystals_per_block()); 
 	    return Succeeded::no; 
 	  }
       }
@@ -746,7 +861,7 @@ Scanner::operator ==(const Scanner& scanner) const
 if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       !close_enough(reference_energy, scanner.reference_energy))
     warning("The energy resolution of the two scanners is different. \n"
-            " %d opposed to %d"
+            " %f opposed to %f"
             "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
 
   return
@@ -1073,6 +1188,18 @@ string_list(const string& s1, const string& s2, const string& s3, const string& 
   l.push_back(s2);
   l.push_back(s3);
   l.push_back(s4);
+  return l;
+}
+
+static list<string>
+string_list(const string& s1, const string& s2, const string& s3, const string& s4, const string& s5)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  l.push_back(s4);
+  l.push_back(s5);
   return l;
 }
 

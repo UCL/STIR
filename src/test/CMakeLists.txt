@@ -24,10 +24,12 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
+	test_DynamicDiscretisedDensity
+	test_ScatterSimulation
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
-
+        test_DateTime
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -54,6 +56,7 @@ set(buildblock_simple_tests
 	test_IndexRange
 	test_coordinates
 	test_filename_functions
+        test_KeyParser
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
 	test_ByteOrder
@@ -61,11 +64,11 @@ set(buildblock_simple_tests
 	test_ArcCorrection
 	test_find_fwhm_in_image
 	test_proj_data_info
-	test_proj_data_in_memory
+	test_proj_data
+	test_proj_data_maths
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
 	test_multiple_proj_data
-	test_DynamicDiscretisedDensity
 )
 
 include(stir_test_exe_targets)
@@ -134,6 +137,8 @@ ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Multi
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 # Dynamic tests
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 

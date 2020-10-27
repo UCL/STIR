@@ -18,7 +18,7 @@
  \file
  \ingroup utilities
 
- \brief This program inverts x y or z axis. It is also able to remove nan from the image.
+ \brief This program inverts x y or z axis.
  \author Daniel Deidda
  */
 #include "stir/DiscretisedDensity.h"
@@ -33,7 +33,8 @@ int main(int argc, char **argv)
   if(argc!=4) {
     std::cerr << "Usage: " << argv[0]
               << " <axis name>  <output filename> <input filename>\n"
-              << " if <axis name>= nan the utility will substitute every nan value with zero  ";
+              << " <axis name> has to be x, y, z\n"
+              << "\nWARNING: this will reorder the voxel values without adjusting the geometric information\n";
     exit(EXIT_FAILURE);
   }
   InvertAxis invert;

@@ -65,7 +65,7 @@ int main()
   back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-  write_to_file("output", *density_sptr);
+  write_to_file("demo2_density", *density_sptr);
 
   return EXIT_SUCCESS;
 }

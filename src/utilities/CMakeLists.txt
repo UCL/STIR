@@ -31,7 +31,8 @@ set(${dir_EXE_SOURCES}
 	postfilter 
 	compare_projdata 
 	compare_image 
-	extract_segments 
+	extract_segments
+	extract_single_images_from_dynamic_image
         estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
@@ -40,6 +41,7 @@ set(${dir_EXE_SOURCES}
 	list_image_values 
         list_detector_and_bin_info
 	find_maxima_in_image 
+        create_multi_header
 	create_projdata_template 
 	SSRB 
         invert_axis
@@ -75,6 +77,12 @@ set(${dir_EXE_SOURCES}
 
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
+endif()
+
+if (HDF5_FOUND)
+ list(APPEND ${dir_EXE_SOURCES}
+    construct_randoms_from_GEsingles
+ )
 endif()
 
 if (nlohmann_json_FOUND)

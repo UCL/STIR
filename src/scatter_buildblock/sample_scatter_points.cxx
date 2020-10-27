@@ -26,10 +26,11 @@
   \author Kris Thielemans
 */
 
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/info.h"
 #include <time.h>
-
+#include <boost/format.hpp>
 using namespace std;
 START_NAMESPACE_STIR
 
@@ -43,7 +44,7 @@ static inline float random_point(const float low, const float high)
 }
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 sample_scatter_points()
 { 
 
@@ -68,7 +69,7 @@ sample_scatter_points()
 
   this->scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
 
-  if(this->random)
+  if(this->randomly_place_scatter_points)
     { // Initialize Pseudo Random Number generator using time  
       srand((unsigned)time( NULL ));
     }
@@ -83,7 +84,7 @@ sample_scatter_points()
           {
             ScatterPoint scatter_point;                                 
             scatter_point.coord = convert_int_to_float(coord);
-            if (random)
+            if (randomly_place_scatter_points)
               scatter_point.coord +=
                 CartesianCoordinate3D<float>(random_point(-.5,.5),
                                              random_point(-.5,.5),
@@ -95,5 +96,6 @@ sample_scatter_points()
           }
   this->remove_cache_for_integrals_over_activity();
   this->remove_cache_for_integrals_over_attenuation();
+  info(boost::format("ScatterSimulation: using %1% scatter points") % this->scatt_points_vector.size(), 2);
 }
 END_NAMESPACE_STIR 
