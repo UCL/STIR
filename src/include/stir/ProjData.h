@@ -200,10 +200,23 @@ public:
  */
   void fill(const ProjData&);
 
+  //! Return a vector with segment numbers in a standard order
+  /*! This returns a vector filled as \f$ [0, 1, -1, 2, -2, ...] \f$.
+    In the (unlikely!) case that the segment range is not symmetric,
+    the sequence just continues with
+    <i>valid</i> segment numbers, e.g. \f$ [0, 1, -1, 2, 3 ] \f$.
+   */
+  static
+    std::vector<int>
+    standard_segment_sequence(const ProjDataInfo& pdi);
+
   //! set all bins from an array iterator
   /*!
     \return number of bins copied
   
+    Data are filled by `SegmentBySinogram`, with segment order given by
+    standard_segment_sequence().
+
     \warning there is no range-check on \a array_iter
   */
   template < typename iterT>
@@ -239,6 +252,9 @@ public:
   //! Copy all bins to a range specified by a (forward) iterator
   /*! 
     \return number of bins copied
+
+    Data are filled by `SegmentBySinogram`, with segment order given by
+    standard_segment_sequence().
 
     \warning there is no range-check on \a array_iter
   */

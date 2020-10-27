@@ -52,6 +52,10 @@
 #ifdef HAVE_IE
 #include "stir_experimental/IO/GE/ProjDataIE.h"
 #endif
+#ifdef HAVE_HDF5
+#include "stir/ProjDataGEHDF5.h"
+#include "stir/IO/GEHDF5Wrapper.h"
+#endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/is_null_ptr.h"
@@ -203,6 +207,17 @@ read_from_file(const string& filename,
   }
 #endif // RDF
       
+#ifdef HAVE_HDF5
+  if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))
+    {
+#ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
+#endif
+      shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
+      if (!is_null_ptr(ptr))
+	return ptr;
+  }
+#endif // GE HDF5
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
 	"Unsupported file format? Aborting.",
@@ -442,6 +457,30 @@ xapyb(const ProjData& x, const float a,
         seg.xapyb(sx, a, sy, b);
         set_segment(seg);
     }
+}
+
+std::vector<int>
+ProjData::
+standard_segment_sequence(const ProjDataInfo& pdi)
+{
+  std::vector<int> segment_sequence(pdi.get_num_segments());
+  if (pdi.get_num_segments()==0)
+    return segment_sequence;
+
+  const int max_segment_num = pdi.get_max_segment_num();
+  const int min_segment_num = pdi.get_min_segment_num();
+  segment_sequence[0] = 0;
+  unsigned idx = 1;
+  int segment_num = 1;
+  while (idx < segment_sequence.size())
+  {
+    if (segment_num<=max_segment_num)
+      segment_sequence[idx++] = segment_num;
+    if (-segment_num>=min_segment_num)
+      segment_sequence[idx++] = -segment_num;
+    ++segment_num;
+  }
+  return segment_sequence;
 }
 
 END_NAMESPACE_STIR

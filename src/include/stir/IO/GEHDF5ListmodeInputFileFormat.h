@@ -1,5 +1,5 @@
-#ifndef __stir_IO_GESignaListmodeInputFileFormat_h__
-#define __stir_IO_GESignaListmodeInputFileFormat_h__
+#ifndef __stir_IO_GEHDF5ListmodeInputFileFormat_h__
+#define __stir_IO_GEHDF5ListmodeInputFileFormat_h__
 /*
     Copyright (C) 2016-2019 University College London
     Copyright (C) 2017-2019 University of Leeds
@@ -23,7 +23,7 @@
   \file
   \ingroup IO
   \ingroup GE
-  \brief Declaration of class stir::GE::RDF_HDF5::IO::GESignaListmodeInputFileFormat
+  \brief Declaration of class stir::GE::RDF_HDF5::IO::GEHDF5ListmodeInputFileFormat
 
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -31,8 +31,8 @@
   \author Nikos Efthimiou
 */
 #include "stir/IO/InputFileFormat.h"
-#include "stir/listmode/CListModeDataGESigna.h"
-//#include "stir/listmode/CListRecordGESigna.h"
+#include "stir/listmode/CListModeDataGEHDF5.h"
+//#include "stir/listmode/CListRecordGEHDF5.h"
 
 #include <string>
 #include "H5Cpp.h"
@@ -47,13 +47,13 @@ namespace RDF_HDF5 {
   \ingroup listmode
   \ingroup GE
 */
-class GESignaListmodeInputFileFormat :
+class GEHDF5ListmodeInputFileFormat :
 public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string
     get_name() const
-  {  return "GESigna"; }
+  {  return "GEHDF5"; }
 
  protected:
 
@@ -101,7 +101,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
-    warning("read_from_file for GESigna listmode data with istream not implemented %s:%s. Sorry",
+    warning("read_from_file for GEHDF5 listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
       unique_ptr<data_type>();
@@ -109,7 +109,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return unique_ptr<data_type>(new CListModeDataGESigna(filename));
+    return unique_ptr<data_type>(new CListModeDataGEHDF5(filename));
   }
 };
 
