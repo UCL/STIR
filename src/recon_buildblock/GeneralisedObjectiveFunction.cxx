@@ -226,7 +226,7 @@ compute_objective_function(const TargetT& current_estimate)
     this->compute_penalty(current_estimate);
 }
 
-/////////////////////// Hessian
+/////////////////////// Approximate Hessian
 
 template <typename TargetT>
 Succeeded 
@@ -340,6 +340,99 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 	"actual_add_multiplication_with_approximate_sub_Hessian_without_penalty implementation is not overloaded by your objective function.");
   return Succeeded::no;
 }
+
+//////////////////// Hessian
+
+template <typename TargetT>
+Succeeded
+GeneralisedObjectiveFunction<TargetT>::
+accumulate_Hessian_times_input(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input) const
+{
+  for (int subset_num=0; subset_num<this->get_num_subsets(); ++subset_num)
+  {
+    if (this->accumulate_sub_Hessian_times_input(output,
+                                                 current_image_estimate,
+                                                 input,
+                                                 subset_num) ==
+        Succeeded::no)
+      return Succeeded::no;
+  }
+
+  return Succeeded::yes;
+}
+
+template <typename TargetT>
+Succeeded
+GeneralisedObjectiveFunction<TargetT>::
+accumulate_sub_Hessian_times_input(TargetT& output,
+                                   const TargetT& current_image_estimate,
+                                   const TargetT& input,
+                                   const int subset_num) const
+{
+  if (this->accumulate_sub_Hessian_times_input_without_penalty(output, current_image_estimate, input, subset_num) ==
+      Succeeded::no)
+    return Succeeded::no;
+
+  if (!this->prior_is_zero())
+  {
+    // TODO used boost:scoped_ptr
+    shared_ptr<TargetT>  prior_output_sptr(output.get_empty_copy());
+    if (this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, output) ==
+        Succeeded::no)
+      return Succeeded::no;
+
+    // (*prior_output_sptr)/= num_subsets;
+    // output -= *prior_output_sptr;
+    typename TargetT::const_full_iterator prior_output_iter = prior_output_sptr->begin_all_const();
+    const typename TargetT::const_full_iterator end_prior_output_iter = prior_output_sptr->end_all_const();
+    typename TargetT::full_iterator output_iter = output.begin_all();
+    while (prior_output_iter!=end_prior_output_iter)
+    {
+      *output_iter -= (*prior_output_iter)/this->get_num_subsets();
+      ++output_iter; ++prior_output_iter;
+    }
+  }
+  return Succeeded::yes;
+}
+
+template <typename TargetT>
+Succeeded
+GeneralisedObjectiveFunction<TargetT>::
+accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                   const TargetT& current_image_estimate,
+                                                   const TargetT& input,
+                                                   const int subset_num) const
+{
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("accumulate_sub_Hessian_times_input_without_penalty subset_num out-of-range error");
+
+  {
+    string explanation;
+    if (!output.has_same_characteristics(input,
+                                         explanation))
+    {
+      warning("GeneralisedObjectiveFunction:\n"
+              "input and output for accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+  // Wrong function called here for now as the actual_accumulate_sub_Hessian_times_input_without_penalty does not exist
+  return
+          this->actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
+                  current_image_estimate,
+                  subset_num);
+//  return
+//            this->actual_accumulate_sub_Hessian_times_input_without_penalty(output,
+//                    current_image_estimate,
+//                    input,
+//                    subset_num);
+}
+
+
 
 /////////////////////// other functions
 

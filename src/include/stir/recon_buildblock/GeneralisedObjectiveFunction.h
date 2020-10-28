@@ -197,8 +197,8 @@ public:
     fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const
   {}
 
-  //! \name multiplication with (sub)Hessian
-  /*! \brief Functions that multiply the (sub)Hessian with a \'vector\'.
+  //! \name multiplication with approximate (sub)Hessian
+  /*! \brief Functions that multiply the approximate (sub)Hessian with a \'vector\'.
       
       All these functions add their result to any existing data in \a output.
 
@@ -220,6 +220,34 @@ public:
     add_multiplication_with_approximate_Hessian(TargetT& output,
 						const TargetT& input) const;
   //@}
+
+    //! \name multiplication (sub)Hessian times input
+    /*! \brief Functions that multiply the True (sub)Hessian with a \'vector\'.
+
+        All these functions add their result to any existing data in \a output.
+
+        They all call actual_accumulate_sub_Hessian_times_input_without_penalty.
+    */
+    //@{
+    Succeeded
+      accumulate_Hessian_times_input(TargetT& output,
+              const TargetT& current_image_estimate,
+              const TargetT& input) const;
+
+    Succeeded
+      accumulate_sub_Hessian_times_input(TargetT& output,
+                                       const TargetT& current_image_estimate,
+                                       const TargetT& input,
+                                       const int subset_num) const;
+    Succeeded
+      accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+              const TargetT& current_image_estimate,
+              const TargetT& input,
+              const int subset_num) const;
+
+    //@}
+
+
 
   //! Construct a string with info on the value of objective function with and without penalty
   std::string
