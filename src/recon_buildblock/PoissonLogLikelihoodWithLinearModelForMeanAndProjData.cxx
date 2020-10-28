@@ -939,11 +939,6 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   {
     const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
-    // first compute data-term: y*norm^2
-    RelatedViewgrams<float> measured_viewgrams = this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
-    this->get_normalisation().apply(measured_viewgrams, start_time, end_time);  //applies to measured_viewgrams
-    this->get_normalisation().apply(measured_viewgrams, start_time, end_time);
-
     RelatedViewgrams<float> input_viewgrams;
     // set input_viewgrams to geometric forward projection of input
     {
@@ -951,20 +946,28 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
       this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams);
     }
 
-    // Forward project the current image estimate to get: ybar_sq = [ F(current_image_est) + a ]^2
-    {
+    // Compute: input_viewgrams * y/ybar^2
+    { // All output of block is input_viewgrams which will be modified.
       RelatedViewgrams<float> ybar_sq;
-      {
+      { // Compute ybar_sq = [ F(current_image_est) + a ]^2
         this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
         this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq);
         //add additive sinogram to forward projection and square to get ybar_sq (ybar^2)
         ybar_sq += this->get_additive_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
-        ybar_sq *= ybar_sq;
+        ybar_sq *= ybar_sq; // square ybar
       }
-    // Compute y * F(input) / (ybar^2)
-      input_viewgrams *= measured_viewgrams;
-      int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
-      divide_and_truncate(input_viewgrams, ybar_sq, 0, tmp1, tmp2);
+
+      // Compute: measured_viewgrams * F(input) / ybar_sq
+      RelatedViewgrams<float> measured_viewgrams = this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+      { // Compute data-term: y*norm^2
+        this->get_normalisation().apply(measured_viewgrams, start_time, end_time);  //applies to measured_viewgrams
+        this->get_normalisation().apply(measured_viewgrams, start_time, end_time);
+      }
+      {
+        input_viewgrams *= measured_viewgrams;
+        int tmp1 = 0, tmp2 = 0;// ignore counters returned by divide_and_truncate
+        divide_and_truncate(input_viewgrams, ybar_sq, 0, tmp1, tmp2);
+      }
     }
 
     // back-project
