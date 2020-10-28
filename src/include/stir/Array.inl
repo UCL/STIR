@@ -327,28 +327,50 @@ const elemT&
 Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) const
 { 
   return (*this).at(c[1]).at(cut_first_dimension(c)); 
-}				    
+}
 
 template <int num_dimensions, typename elemT>
 template <typename elemT2>
-void
-Array<num_dimensions,elemT>::
-xapyb(const Array& x, const elemT2 a,
-      const Array& y, const elemT2 b)
-{  
+void Array<num_dimensions, elemT>::
+    xapyb(const Array &x, const elemT2 a,
+          const Array &y, const elemT2 b)
+{
+  this->check_state();
+  if ((this->get_index_range() != x.get_index_range()) || (this->get_index_range() != y.get_index_range()))
+    error("Array::xapyb: index ranges don't match");
+
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all();
+  typename Array::const_full_iterator y_iter = y.begin_all();
+  while (this_iter != this->end_all())
+  {
+      *this_iter++ = (*x_iter++) * a + (*y_iter++) * b;
+  }
+}
+
+//using full iterators
+template <int num_dimensions, typename elemT>
+void Array<num_dimensions, elemT>::
+    xapyb_vec(const Array &x, const Array &a,
+              const Array &y, const Array &b)
+{
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())
-      || (this->get_index_range() != y.get_index_range()))
-       error("Array::xapyb: index ranges don't match");
+      || (this->get_index_range() != y.get_index_range())
+      || (this->get_index_range() != a.get_index_range())
+      || (this->get_index_range() != b.get_index_range()))
+    error("Array::xapyb: index ranges don't match");
 
-  typename Array::iterator this_iter = this->begin();
-  typename Array::const_iterator x_iter = x.begin();
-  typename Array::const_iterator y_iter = y.begin();
-  while (this_iter != this->end())
-    {
-      this_iter->xapyb(*x_iter++, a, *y_iter++, b);
-      ++this_iter;
-    }
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all();
+  typename Array::const_full_iterator y_iter = y.begin_all();
+  typename Array::const_full_iterator a_iter = a.begin_all();
+  typename Array::const_full_iterator b_iter = b.begin_all();
+
+  while (this_iter != this->end_all())
+  {
+      *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
+  }
 }
 
 /**********************************************

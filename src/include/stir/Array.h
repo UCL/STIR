@@ -244,6 +244,11 @@ public:
   template <typename elemT2>
     inline void xapyb(const Array& x, const elemT2 a,
                       const Array& y, const elemT2 b);
+
+   //! set values of the array to x*a+y*b, where a and b are arrays
+    inline void xapyb_vec(const Array& x, const Array& a,
+                          const Array& y, const Array& b); 
+
 };
 
 

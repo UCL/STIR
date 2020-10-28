@@ -300,4 +300,45 @@ xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
     }
 }
 
+template <class T, class NUMBER>
+inline void
+NumericVectorWithOffset<T, NUMBER>::
+xapyb_vec(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+          const NumericVectorWithOffset& y, const NumericVectorWithOffset& b)
+{  
+  this->check_state();
+  if ((this->get_min_index() != x.get_min_index())
+      || (this->get_min_index() != y.get_min_index())
+      || (this->get_min_index() != a.get_min_index())
+      || (this->get_min_index() != b.get_min_index())            
+      || (this->get_max_index() != x.get_max_index())
+      || (this->get_max_index() != y.get_max_index())
+      || (this->get_max_index() != a.get_max_index())
+      || (this->get_max_index() != b.get_max_index()))
+       error("NumericVectorWithOffset::xapyb: index ranges don't match");
+
+  typename NumericVectorWithOffset::iterator this_iter = this->begin();
+  typename NumericVectorWithOffset::const_iterator x_iter = x.begin();
+  typename NumericVectorWithOffset::const_iterator y_iter = y.begin();
+  typename NumericVectorWithOffset::const_iterator a_iter = a.begin();
+  typename NumericVectorWithOffset::const_iterator b_iter = b.begin();
+
+
+  while (this_iter != this->end())
+    {
+      auto temp1 = (*x_iter) * (*a_iter);
+      auto temp2 = (*y_iter) * (*b_iter);
+      auto temp3 = temp1 + temp2;
+      
+      *this_iter = temp3;
+      //*this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
+      x_iter++;
+      y_iter++;
+      a_iter++;
+      b_iter++;
+      this_iter++;
+
+    }
+}
+
 END_NAMESPACE_STIR

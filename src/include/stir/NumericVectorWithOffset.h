@@ -131,6 +131,10 @@ public:
     inline void xapyb(const NumericVectorWithOffset& x, const elemT2 a,
                       const NumericVectorWithOffset& y, const elemT2 b);
 
+  //! set the values of the array to x*a+y*b, where a and b are vectors
+    inline void xapyb_vec(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+                          const NumericVectorWithOffset& y, const NumericVectorWithOffset& b); 
+
 };
 
 END_NAMESPACE_STIR
