@@ -197,6 +197,10 @@ as used by <code>copy_to</code> and <code>fill_from</code>
   To do this, we now need a <code>typedef</code> <code>hierarchy_base_type</code> at the top level, as otherwise
   we would need multiple registries. However, this was already required by <code>write_to_file</code> anyway.
 </li>
+<li>
+  Generalised prior and Quadratic prior have a new method <code>accumulate_Hessian_times_input(output, current_estimate, input)</code>. This computes the hessian of the prior at the <code>current_image_estimate</code> and multiplies this by <code>input</code>.
+  Before this, the <code>add_multiplication_with_approximate_Hessian(output, input)</code> method was used that assumed a quadratic function and therefore <code>hessian = 1</code>.
+</li>
 </ul>
 
 
