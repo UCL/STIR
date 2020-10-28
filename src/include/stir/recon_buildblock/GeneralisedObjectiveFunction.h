@@ -235,10 +235,16 @@ public:
               const TargetT& input) const;
 
     Succeeded
+    accumulate_Hessian_times_input_without_penalty(TargetT& output,
+            const TargetT& current_image_estimate,
+            const TargetT& input) const;
+
+
+    Succeeded
       accumulate_sub_Hessian_times_input(TargetT& output,
-                                       const TargetT& current_image_estimate,
-                                       const TargetT& input,
-                                       const int subset_num) const;
+              const TargetT& current_image_estimate,
+              const TargetT& input,
+              const int subset_num) const;
     Succeeded
       accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
               const TargetT& current_image_estimate,
@@ -361,7 +367,7 @@ protected:
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						      const int subset_num) = 0;
 
-  //! Implementation of the function that multiplies the sub-Hessian with a vector.
+  //! Implementation of the function that multiplies the approximate sub-Hessian with a vector.
   /*!
      \see multiplication_with_approximate_sub_Hessian_without_penalty(TargetT&,const TargetT&, const int).
 
@@ -378,8 +384,26 @@ protected:
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								      const TargetT& input,
 								      const int subset_num) const;
-};
 
+    //! Implementation of the function computes the sub-Hessian and multiplies by a vector.
+    /*!
+       \see accumulate_sub_Hessian_times_input_without_penalty(TargetT&,const TargetT&, TargetT&, const int).
+
+       \warning The default implementation just calls error(). This behaviour has to be
+       overloaded by the derived classes.
+
+       \par Developer\'s note
+
+       The reason we have this function is that overloading a function
+       in a derived class, hides all functions of the
+       same name.
+    */
+    virtual Succeeded
+    actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                              const TargetT& current_image_estimate,
+                                                              const TargetT& input,
+                                                              const int subset_num) const;
+};
 END_NAMESPACE_STIR
 
 #endif

@@ -366,6 +366,25 @@ accumulate_Hessian_times_input(TargetT& output,
 template <typename TargetT>
 Succeeded
 GeneralisedObjectiveFunction<TargetT>::
+accumulate_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input) const
+{
+  for (int subset_num=0; subset_num<this->get_num_subsets(); ++subset_num)
+  {
+    if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
+                                                                              input,
+                                                                              subset_num) ==
+        Succeeded::no)
+      return Succeeded::no;
+  }
+
+  return Succeeded::yes;
+}
+
+template <typename TargetT>
+Succeeded
+GeneralisedObjectiveFunction<TargetT>::
 accumulate_sub_Hessian_times_input(TargetT& output,
                                    const TargetT& current_image_estimate,
                                    const TargetT& input,
@@ -420,16 +439,23 @@ accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
       return Succeeded::no;
     }
   }
-  // Wrong function called here for now as the actual_accumulate_sub_Hessian_times_input_without_penalty does not exist
-  return
-          this->actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
-                  current_image_estimate,
-                  subset_num);
-//  return
-//            this->actual_accumulate_sub_Hessian_times_input_without_penalty(output,
-//                    current_image_estimate,
-//                    input,
-//                    subset_num);
+  return this->actual_accumulate_sub_Hessian_times_input_without_penalty(output,
+          current_image_estimate,
+          input,
+          subset_num);
+}
+
+template <typename TargetT>
+Succeeded
+GeneralisedObjectiveFunction<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& input,
+        const TargetT& current_image_estimate,
+        const int subset_num) const
+{
+  error("GeneralisedObjectiveFunction:\n"
+        "actual_accumulate_sub_Hessian_times_input_without_penalty implementation is not overloaded by your objective function.");
+  return Succeeded::no;
 }
 
 
