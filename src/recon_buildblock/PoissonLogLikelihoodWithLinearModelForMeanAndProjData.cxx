@@ -892,6 +892,97 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   return Succeeded::yes;
 }
 
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  {
+    std::string explanation;
+    if (!input.has_same_characteristics(this->get_sensitivity(),
+                                        explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+          this->get_projector_pair().get_symmetries_used()->clone());
+
+  const double start_time =
+          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
+  const double end_time =
+          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
+
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
+  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
+          detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
+                                               *symmetries_sptr,
+                                               -this->get_max_segment_num_to_process(),
+                                               this->get_max_segment_num_to_process(),
+                                               subset_num, this->get_num_subsets());
+#ifdef STIR_OPENMP
+#pragma omp for schedule(runtime)
+#endif
+  // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {
+    const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
+
+    // first compute data-term: y*norm^2
+    RelatedViewgrams<float> measured_viewgrams = this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+    this->get_normalisation().apply(measured_viewgrams, start_time, end_time);  //applies to measured_viewgrams
+    this->get_normalisation().apply(measured_viewgrams, start_time, end_time);
+
+    RelatedViewgrams<float> input_viewgrams;
+    // set input_viewgrams to geometric forward projection of input
+    {
+      input_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+      this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams);
+    }
+
+    // Forward project the current image estimate to get: ybar_sq = [ F(current_image_est) + a ]^2
+    {
+      RelatedViewgrams<float> ybar_sq;
+      {
+        this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
+        this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq);
+        //add additive sinogram to forward projection and square to get ybar_sq (ybar^2)
+        ybar_sq += this->get_additive_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+        ybar_sq *= ybar_sq;
+      }
+    // Compute y * F(input) / (ybar^2)
+      input_viewgrams *= measured_viewgrams;
+      int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
+      divide_and_truncate(input_viewgrams, ybar_sq, 0, tmp1, tmp2);
+    }
+
+    // back-project
+    this->get_projector_pair().get_back_projector_sptr()->
+            back_project(input_viewgrams);
+
+  } // end of loop over view/segments
+
+  shared_ptr<TargetT> tmp(output.get_empty_copy());
+  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
+  // output += tmp;
+  std::transform(output.begin_all(), output.end_all(),
+                 tmp->begin_all(), output.begin_all(),
+                 std::plus<typename TargetT::full_value_type>());
+
+  return Succeeded::yes;
+}
+
 /*********************** distributable_* ***************************/
 // TODO all this stuff is specific to DiscretisedDensity, so wouldn't work for TargetT
 
