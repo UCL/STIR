@@ -901,13 +901,21 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
         const TargetT& input,
         const int subset_num) const
 {
-  {
+  { // check characteristics
     std::string explanation;
-    if (!input.has_same_characteristics(this->get_sensitivity(),
-                                        explanation))
+    if (!input.has_same_characteristics(this->get_sensitivity(),explanation))
     {
       error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
             "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and current_image_estimate for add_multiplication_with_approximate_Hessian_without_penalty\n"
             "should have the same characteristics.\n%s",
             explanation.c_str());
       return Succeeded::no;

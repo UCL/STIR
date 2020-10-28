@@ -353,13 +353,9 @@ accumulate_Hessian_times_input(TargetT& output,
   for (int subset_num=0; subset_num<this->get_num_subsets(); ++subset_num)
   {
     if (this->accumulate_sub_Hessian_times_input(output,
-                                                 current_image_estimate,
-                                                 input,
-                                                 subset_num) ==
-        Succeeded::no)
+            current_image_estimate, input, subset_num) == Succeeded::no)
       return Succeeded::no;
   }
-
   return Succeeded::yes;
 }
 
@@ -372,13 +368,10 @@ accumulate_Hessian_times_input_without_penalty(TargetT& output,
 {
   for (int subset_num=0; subset_num<this->get_num_subsets(); ++subset_num)
   {
-    if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
-                                                                              input,
-                                                                              subset_num) ==
-        Succeeded::no)
+    if (this->accumulate_sub_Hessian_times_input_without_penalty(output,
+            current_image_estimate, input, subset_num) ==  Succeeded::no)
       return Succeeded::no;
   }
-
   return Succeeded::yes;
 }
 
@@ -402,8 +395,6 @@ accumulate_sub_Hessian_times_input(TargetT& output,
         Succeeded::no)
       return Succeeded::no;
 
-    // (*prior_output_sptr)/= num_subsets;
-    // output -= *prior_output_sptr;
     typename TargetT::const_full_iterator prior_output_iter = prior_output_sptr->begin_all_const();
     const typename TargetT::const_full_iterator end_prior_output_iter = prior_output_sptr->end_all_const();
     typename TargetT::full_iterator output_iter = output.begin_all();
@@ -457,7 +448,6 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
         "actual_accumulate_sub_Hessian_times_input_without_penalty implementation is not overloaded by your objective function.");
   return Succeeded::no;
 }
-
 
 
 /////////////////////// other functions
