@@ -596,7 +596,7 @@ template <typename elemT>
 Succeeded
 QuadraticPrior<elemT>::
 accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
-                               const DiscretisedDensity<3,elemT>& current_estimate,
+                               const DiscretisedDensity<3,elemT>& /*current_estimate*/,
                                const DiscretisedDensity<3,elemT>& input) const
 {
   // TODO this function overlaps enormously with parabolic_surrogate_curvature
