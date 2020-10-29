@@ -70,6 +70,18 @@ add_multiplication_with_approximate_Hessian(TargetT& output,
   return Succeeded::no;
 }
 
+template <typename TargetT>
+Succeeded
+GeneralisedPrior<TargetT>::
+accumulate_Hessian_times_input(TargetT& output,
+        const TargetT& current_estimate,
+        const TargetT& input) const
+{
+  error("GeneralisedPrior:\n"
+        "accumulate_Hessian_times_input implementation is not overloaded by your prior.");
+  return Succeeded::no;
+}
+
 template <typename TargetT> 
 void GeneralisedPrior<TargetT>::check(TargetT const& current_estimate) const
 {
