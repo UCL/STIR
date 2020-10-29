@@ -23,20 +23,16 @@
 
   \par Usage
   \verbatim
-     calculate_attenuation_coefficients
-             [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>
+     compute_spatially_variant_penalty_strength template_proj_data
   \endverbatim
-  <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
-  the attenuation factor (i.e. the inverse of the ACFs).
 
-  The option <tt>--PMRT</tt> forces forward projection using the Probability Matrix Using Ray Tracing
-  (stir::ProjMatrixByBinUsingRayTracing).
+  Computes a spatially variant penalty strength, either using:
 
-  The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
-  to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
-
-  \warning attenuation image data are supposed to be in units cm^-1.
-  Reference: water has mu .096 cm^-1.
+  todo: add methods and documentation
+  See Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
+    & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
+    in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
+   for more details
 
   \author Robert Twyman
 */
@@ -59,12 +55,8 @@ using std::cerr;
 START_NAMESPACE_STIR
     static void print_usage_and_exit()
     {
-      std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>\n"
-               <<"\t--ACF  calculates the attenuation correction factors\n"
-               <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
-               <<"\t--PMRT uses the Ray Tracing Projection Matrix (default)\n"
-               <<"\t--NOPMRT uses the (old) Ray Tracing forward projector\n"
-               <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
+      //todo:update usage
+      std::cerr<<"\nUsage: compute_spatially_variant_penalty_strength template_proj_data\n";
       exit(EXIT_FAILURE);
     }
 END_NAMESPACE_STIR
@@ -105,7 +97,6 @@ void
 KappaComputation::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
-//  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void
@@ -177,6 +168,7 @@ Succeeded
 KappaComputation::compute_kappa_with_approximate()
 {
 
+  info("Computing the spatially variant penalty strength using approximate hessian.");
   shared_ptr<DiscretisedDensity<3,float>>
           output_image(read_from_file<DiscretisedDensity<3,float>>(input_image_filename));
   output_image->fill(0.);
@@ -193,29 +185,16 @@ KappaComputation::compute_kappa_with_approximate()
 int
 main (int argc, char * argv[])
 {
-  HighResWallClockTimer t;
-  t.reset();
-  t.start();
-
 
   KappaComputation kappa_computer;
+
   if (argc!=2)
     print_usage_and_exit();
   else
     kappa_computer.parse(argv[1]);
 
-  if (kappa_computer.run() == Succeeded::yes)
-  {
-    t.stop();
-    std::cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
-    return EXIT_SUCCESS;
-  }
-  else
-  {
-    t.stop();
+  if (kappa_computer.run() == Succeeded::no)
     return EXIT_FAILURE;
-  }
-
 
   return EXIT_SUCCESS;
 }

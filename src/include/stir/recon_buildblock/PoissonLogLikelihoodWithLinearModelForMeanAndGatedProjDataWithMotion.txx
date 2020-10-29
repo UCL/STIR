@@ -558,7 +558,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
     if (!input.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
     {
       warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
-              "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+              "sensitivity and input for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
               "should have the same characteristics.\n%s",
               explanation.c_str());
       return Succeeded::no;
@@ -567,7 +567,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
     if (!current_image_estimate.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
     {
       warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
-              "sensitivity and current_image_estimate for add_multiplication_with_approximate_Hessian_without_penalty\n"
+              "sensitivity and current_image_estimate for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
               "should have the same characteristics.\n%s",
               explanation.c_str());
       return Succeeded::no;
