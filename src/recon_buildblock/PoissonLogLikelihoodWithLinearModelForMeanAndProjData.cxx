@@ -958,6 +958,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
     { // All output of block is input_viewgrams which will be modified.
       RelatedViewgrams<float> ybar_sq;
       { // Compute ybar_sq = [ F(current_image_est) + a ]^2
+        ybar_sq = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
         this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
         this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq);
         //add additive sinogram to forward projection and square to get ybar_sq (ybar^2)
