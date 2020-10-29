@@ -76,7 +76,8 @@ BinNormalisation::
 check(const ExamInfo &exam_info) const
 {
   if (!(*this->exam_info_sptr==exam_info))
-      error("BinNormalisation set-up with different ExamInfo.");
+      error(boost::format("BinNormalisation set-up with different ExamInfo.\n Set_up was with\n%1%\nCalled with\n%2%")
+            % this->exam_info_sptr->parameter_info() % exam_info.parameter_info());
 }
   
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops

@@ -134,7 +134,7 @@ main (int argc, char * argv[])
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
-		      new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
+		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
 					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));

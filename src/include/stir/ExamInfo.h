@@ -58,7 +58,9 @@ public :
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
     low_energy_thres(-1),
-    up_energy_thres(-1)
+    up_energy_thres(-1),
+    calibration_factor(1.)
+  
     {
   }
 
@@ -116,10 +118,29 @@ public :
     }
 
   bool operator == (const ExamInfo &p1) const { 
-      return  this->get_high_energy_thres()==p1.get_high_energy_thres() &&
-              this->get_low_energy_thres()==p1.get_low_energy_thres() &&
-              this->get_radionuclide()==p1.get_radionuclide() &&
-              this->get_time_frame_definitions()==p1.get_time_frame_definitions() &&
+      if(this->imaging_modality!=p1.imaging_modality)
+          std::cout<<this->imaging_modality.get_name()<<" "<<p1.imaging_modality.get_name()<<std::endl;
+      if(this->originating_system!=p1.originating_system)
+          std::cout<<this->originating_system<<" "<<p1.originating_system<<std::endl;
+      if(!(this->patient_position.get_position()==p1.patient_position.get_position()))
+          std::cout<<this->patient_position.get_position_as_string()<<" "<<p1.patient_position.get_position_as_string()<<std::endl;
+      if(this->up_energy_thres!=p1.up_energy_thres)
+          std::cout<<this->up_energy_thres-p1.up_energy_thres<<std::endl;
+      if(this->low_energy_thres!=p1.low_energy_thres)
+          std::cout<<this->low_energy_thres-p1.low_energy_thres<<std::endl;
+      if(this->calibration_factor!=p1.calibration_factor)
+          std::cout<<this->calibration_factor-p1.calibration_factor<<std::endl;
+      if(this->start_time_in_secs_since_1970!=p1.start_time_in_secs_since_1970)
+          std::cout<<this->start_time_in_secs_since_1970<<" "<<p1.start_time_in_secs_since_1970<<std::endl;
+      if(this->get_radionuclide()!=p1.get_radionuclide())
+          std::cout<<this->get_radionuclide()<<" "<<p1.get_radionuclide()<<std::endl;
+      if(!(this->get_time_frame_definitions()==p1.get_time_frame_definitions()))
+          error("frames");
+      
+      return  this->up_energy_thres==p1.up_energy_thres &&
+              this->low_energy_thres==p1.low_energy_thres &&
+              this->radionuclide==p1.radionuclide &&
+              this->time_frame_definitions==p1.time_frame_definitions &&
 //              this->branching_ratio==p1.branching_ratio &&
               this->calibration_factor==p1.calibration_factor &&
               this->imaging_modality==p1.imaging_modality &&
