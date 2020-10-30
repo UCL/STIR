@@ -67,17 +67,15 @@ class KappaComputation: public ParsingObject
 public:
     KappaComputation();
     void set_defaults();
-    Succeeded run();
+    void run();
     typedef DiscretisedDensity<3,float> target_type;
 
 protected:
     shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
-
-    // This does something to do with saving, ill come back to it
     shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 
-    Succeeded compute_kappa_at_current_image_estimate();
-    Succeeded compute_kappa_with_approximate();
+    void compute_kappa_at_current_image_estimate();
+    void compute_kappa_with_approximate();
 
 private:
     std::string input_image_filename;
@@ -85,6 +83,8 @@ private:
     std::string kappa_filename;
     void initialise_keymap();
     bool post_processing();
+
+    void sqrt_image(DiscretisedDensity<3,float> &output_image);
 };
 
 KappaComputation::KappaComputation()
@@ -97,6 +97,7 @@ void
 KappaComputation::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void
@@ -127,22 +128,20 @@ KappaComputation::post_processing()
   return false;
 }
 
-Succeeded
+void
 KappaComputation::run()
 {
   if (!input_image_filename.empty())
-  {
     compute_kappa_at_current_image_estimate();
-  }
+
   else if (!template_image_filename.empty())
-  {
     compute_kappa_with_approximate();
-  }
-  return Succeeded::yes;
+
+  info("Spatially variant penalty strength (Kappa) has been computed and saved");
 }
 
 
-Succeeded
+void
 KappaComputation::compute_kappa_at_current_image_estimate()
 {
   info("Computing the spatially variant penalty strength at the current image estimate.");
@@ -151,20 +150,24 @@ KappaComputation::compute_kappa_at_current_image_estimate()
   current_image_estimate->get_data_ptr();
 
   shared_ptr<DiscretisedDensity<3, float>> output_image;
-  output_image = static_cast<const shared_ptr<DiscretisedDensity<3, float>>>(current_image_estimate->get_empty_copy());
-  output_image->fill(0.);
-
   shared_ptr<DiscretisedDensity<3, float>> ones_image;
-  ones_image = static_cast<const shared_ptr<DiscretisedDensity<3, float>>>(current_image_estimate->get_empty_copy());
-  ones_image->fill(1.);
+  { // Setup images as a copy of current_image_estimate
+    output_image = static_cast<const shared_ptr<DiscretisedDensity<3, float>>>(current_image_estimate->get_empty_copy());
+    output_image->fill(0.);
+    ones_image = static_cast<const shared_ptr<DiscretisedDensity<3, float>>>(current_image_estimate->get_empty_copy());
+    ones_image->fill(1.);
+  }
 
+  // Unfortunately we have to setup. This involves the computation of the sensitivity
   objective_function_sptr->set_up(current_image_estimate);
   objective_function_sptr->accumulate_Hessian_times_input(*output_image, *current_image_estimate, *ones_image);
+
+  // Kappa is defined as the sqrt of the output of accumulate_Hessian_times_input
+  sqrt_image(*output_image);
   output_file_format_sptr->write_to_file(kappa_filename, *output_image);
-  return Succeeded::yes;
 }
 
-Succeeded
+void
 KappaComputation::compute_kappa_with_approximate()
 {
 
@@ -177,10 +180,32 @@ KappaComputation::compute_kappa_with_approximate()
   ones_image = static_cast<const shared_ptr<DiscretisedDensity<3, float>>>(output_image->get_empty_copy());
   ones_image->fill(1.);
 
-  objective_function_sptr->add_multiplication_with_approximate_Hessian(*output_image, *ones_image);
+  // Unfortunately we have to setup. This involves the computation of the sensitivity
+  objective_function_sptr->set_up(ones_image);
+
+  // Approximate Hessian computation will error for a lot of priors so we ignore it!
+  info("Priors do not have an approximation of the Hessian. Therefore we will ignore the prior.");
+  objective_function_sptr->add_multiplication_with_approximate_Hessian_without_penalty(*output_image, *ones_image);
+
+  // Kappa is defined as the sqrt of the output of add_multiplication_with_approximate_Hessian_without_penalty
+  sqrt_image(*output_image);
   output_file_format_sptr->write_to_file(kappa_filename, *output_image);
-  return Succeeded::yes;
 }
+
+void
+KappaComputation::sqrt_image(DiscretisedDensity<3,float> &output_image)
+{
+  // Square root the output
+  typename DiscretisedDensity<3,float>::const_full_iterator output_iter = output_image.begin_all_const();
+  const typename DiscretisedDensity<3,float>::const_full_iterator end_prior_output_iter = output_image.end_all_const();
+  typename DiscretisedDensity<3,float>::full_iterator tmp_iter = output_image.begin_all();
+  while (output_iter!=end_prior_output_iter)
+  {
+    *tmp_iter = sqrt(*output_iter);
+    ++tmp_iter; ++output_iter;
+  }
+}
+
 
 int
 main (int argc, char * argv[])
@@ -193,8 +218,6 @@ main (int argc, char * argv[])
   else
     kappa_computer.parse(argv[1]);
 
-  if (kappa_computer.run() == Succeeded::no)
-    return EXIT_FAILURE;
-
-  return EXIT_SUCCESS;
+  kappa_computer.run();
+  return 0;
 }

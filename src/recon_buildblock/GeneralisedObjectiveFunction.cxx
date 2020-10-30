@@ -420,16 +420,24 @@ accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 
   {
     string explanation;
-    if (!output.has_same_characteristics(input,
-                                         explanation))
-    {
+    if (!output.has_same_characteristics(input, explanation)) {
       warning("GeneralisedObjectiveFunction:\n"
               "input and output for accumulate_sub_Hessian_times_input_without_penalty\n"
               "should have the same characteristics.\n%s",
               explanation.c_str());
       return Succeeded::no;
     }
+
+    if (!output.has_same_characteristics(current_image_estimate, explanation)) {
+      warning("GeneralisedObjectiveFunction:\n"
+              "current_image_estimate and output for accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
   }
+
+
   return this->actual_accumulate_sub_Hessian_times_input_without_penalty(output,
           current_image_estimate,
           input,
