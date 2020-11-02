@@ -33,11 +33,11 @@ public:
     PoissonLogLikelihoodWithLinearModelForMean<TargetT > const& get_objective_function();
     void set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT > > &obj_fun);
 
-    shared_ptr<TargetT> get_current_image_estimate();
-    void set_current_image_estimate(shared_ptr <TargetT > const& image);
+    bool get_use_approximate_hessian();
+    void set_use_approximate_hessian(bool use_approximate);
 
-    shared_ptr<TargetT> get_template_image();
-    void set_template_image(shared_ptr <TargetT > const& image);
+    shared_ptr<TargetT> get_input_image();
+    void set_input_image(shared_ptr <TargetT > const& image);
 
 protected:
 
@@ -48,12 +48,11 @@ protected:
     void compute_kappa_with_approximate();
 
 private:
-    std::string current_image_estimate_filename;
-    std::string template_image_filename;
+    std::string input_image_filename;
     std::string kappa_filename;
+    bool use_approximate_hessian;
 
-    shared_ptr<TargetT> current_image_estimate_sptr;
-    shared_ptr<TargetT> template_image_sptr;
+    shared_ptr<TargetT> input_image;
 
     void initialise_keymap();
     bool post_processing();

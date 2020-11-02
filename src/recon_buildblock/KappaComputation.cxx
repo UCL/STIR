@@ -29,6 +29,7 @@ set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>);
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
+  use_approximate_hessian = true;
 }
 
 template <typename TargetT>
@@ -37,8 +38,8 @@ KappaComputation<TargetT>::initialise_keymap()
 {
   parser.add_start_key("Kappa Computation Parameters");
   parser.add_key("kappa filename", &kappa_filename);
-  parser.add_key("current image estimate", &current_image_estimate_filename);
-  parser.add_key("template image", &template_image_filename);
+  parser.add_key("input image filename", &input_image_filename);
+  parser.add_key("use approximate hessian", &use_approximate_hessian);
   parser.add_parsing_key("objective function type", &objective_function_sptr);
   parser.add_stop_key("End");
 }
@@ -53,9 +54,9 @@ KappaComputation<TargetT>::post_processing()
     return true;
   }
 
-  if (current_image_estimate_filename.empty() && template_image_filename.empty())
+  if (input_image_filename.empty())
   {
-    error("Requires either current_image_estimate_filename or template_image_filename");
+    error("Please define input_image_filename.");
     return true;
   }
   return false;
@@ -78,35 +79,35 @@ set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModel
 }
 
 template <typename TargetT>
-shared_ptr <TargetT>
+bool
 KappaComputation<TargetT>::
-get_current_image_estimate()
+get_use_approximate_hessian()
 {
-  return current_image_estimate_sptr;
+  return use_approximate_hessian;
 }
 
 template <typename TargetT>
 void
 KappaComputation<TargetT>::
-set_current_image_estimate(shared_ptr <TargetT > const& image)
+set_use_approximate_hessian(bool use_approximate)
 {
-  current_image_estimate_sptr = image;
+  use_approximate_hessian = use_approximate;
 }
 
 template <typename TargetT>
 shared_ptr <TargetT>
 KappaComputation<TargetT>::
-get_template_image()
+get_input_image()
 {
-  return template_image_sptr;
+  return input_image;
 }
 
 template <typename TargetT>
 void
 KappaComputation<TargetT>::
-set_template_image(shared_ptr <TargetT > const& image)
+set_input_image(shared_ptr <TargetT > const& image)
 {
-  template_image_sptr = image;
+  input_image = image;
 }
 
 
@@ -115,31 +116,22 @@ void
 KappaComputation<TargetT>::
 process_data()
 {
+
+  input_image = read_from_file<TargetT>(input_image_filename);
   // Unfortunately we have to setup. Therefore we will cheat with regards to sensitivities that are unused in the kappa
   // computation.
   // To prevent sensitivity from being computed (which takes a lot of computation), the sensitivity filename is set to
   // a filename known to exist, one of the file inputs, and re-computation is turned off.
   objective_function_sptr->set_recompute_sensitivity(false);
   objective_function_sptr->set_use_subset_sensitivities(false);
+  objective_function_sptr->set_sensitivity_filename(input_image_filename);
+  objective_function_sptr->set_up(input_image);
 
-  if (!current_image_estimate_filename.empty())
-  {
-    current_image_estimate_sptr = read_from_file<TargetT>(current_image_estimate_filename);
-    objective_function_sptr->set_sensitivity_filename(current_image_estimate_filename);
-    objective_function_sptr->set_up(current_image_estimate_sptr);
-    compute_kappa_at_current_image_estimate();
-  }
-
-  else if (!template_image_filename.empty())
-  {
-    template_image_sptr = read_from_file<TargetT>(template_image_filename);
-    objective_function_sptr->set_sensitivity_filename(template_image_filename);
-    objective_function_sptr->set_up(template_image_sptr);
+  if (get_use_approximate_hessian())
     compute_kappa_with_approximate();
-  }
 
   else
-    error("process_data: Either both current_image_estimate_filename and template_image_filename are empty.");
+    compute_kappa_at_current_image_estimate();
 
   info("Spatially variant penalty strength (Kappa) has been computed and saved as " + kappa_filename + ".");
 }
@@ -152,12 +144,12 @@ compute_kappa_at_current_image_estimate()
 {
   info("Computing the spatially variant penalty strength at the current image estimate.");
   // Setup image
-  auto output_image_sptr = current_image_estimate_sptr->get_empty_copy();
+  auto output_image_sptr = input_image->get_empty_copy();
   output_image_sptr->fill(0);
-  auto ones_image_sptr = current_image_estimate_sptr->get_empty_copy();
+  auto ones_image_sptr = input_image->get_empty_copy();
   ones_image_sptr->fill(1);
 
-  objective_function_sptr->accumulate_Hessian_times_input(*output_image_sptr, *current_image_estimate_sptr, *ones_image_sptr);
+  objective_function_sptr->accumulate_Hessian_times_input(*output_image_sptr, *input_image, *ones_image_sptr);
 
   // Kappa is defined as the sqrt of the output of accumulate_Hessian_times_input
   sqrt_image(*output_image_sptr);
@@ -174,9 +166,9 @@ compute_kappa_with_approximate()
 
   info("Computing the spatially variant penalty strength using approximate hessian.");
   // Setup image
-  auto output_image_sptr = template_image_sptr->get_empty_copy();
+  auto output_image_sptr = input_image->get_empty_copy();
   output_image_sptr->fill(0.);
-  auto ones_image_sptr = template_image_sptr->get_empty_copy();
+  auto ones_image_sptr = input_image->get_empty_copy();
   ones_image_sptr->fill(1.);
 
   // Approximate Hessian computation will error for a lot of priors so we ignore it!
