@@ -34,7 +34,7 @@ protected:
     shared_ptr<TargetT> current_image_estimate_sptr;
     shared_ptr<TargetT> template_image_sptr;
 
-    shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
+    shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT> >  objective_function_sptr;
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
 
     void compute_kappa_at_current_image_estimate();

@@ -66,15 +66,27 @@ void
 KappaComputation<TargetT>::
 process_data()
 {
+
+  // Unfortunately we have to setup. Therefore we will cheat with regards to sensitivities that are unused in the kappa
+  // computation.
+  // To prevent sensitivity from being computed (which takes a lot of computation), the sensitivity filename is set to
+  // a filename known to exist, one of the file inputs, and re-computation is turned off.
+  objective_function_sptr->set_recompute_sensitivity(false);
+  objective_function_sptr->set_use_subset_sensitivities(false);
+
   if (!current_image_estimate_filename.empty())
   {
     current_image_estimate_sptr = read_from_file<TargetT>(current_image_estimate_filename);
+    objective_function_sptr->set_sensitivity_filename(current_image_estimate_filename);
+    objective_function_sptr->set_up(current_image_estimate_sptr);
     compute_kappa_at_current_image_estimate();
   }
 
   else if (!template_image_filename.empty())
   {
     template_image_sptr = read_from_file<TargetT>(template_image_filename);
+    objective_function_sptr->set_sensitivity_filename(template_image_filename);
+    objective_function_sptr->set_up(template_image_sptr);
     compute_kappa_with_approximate();
   }
 
@@ -91,18 +103,18 @@ KappaComputation<TargetT>::
 compute_kappa_at_current_image_estimate()
 {
   info("Computing the spatially variant penalty strength at the current image estimate.");
-
+  // Setup image
   auto output_image_sptr = current_image_estimate_sptr->get_empty_copy();
   output_image_sptr->fill(0);
   auto ones_image_sptr = current_image_estimate_sptr->get_empty_copy();
   ones_image_sptr->fill(1);
 
-  // Unfortunately we have to setup. This involves the computation of the sensitivity
-  objective_function_sptr->set_up(current_image_estimate_sptr);
   objective_function_sptr->accumulate_Hessian_times_input(*output_image_sptr, *current_image_estimate_sptr, *ones_image_sptr);
 
   // Kappa is defined as the sqrt of the output of accumulate_Hessian_times_input
   sqrt_image(*output_image_sptr);
+
+  // Save the output
   output_file_format_sptr->write_to_file(kappa_filename, *output_image_sptr);
 }
 
@@ -113,14 +125,11 @@ compute_kappa_with_approximate()
 {
 
   info("Computing the spatially variant penalty strength using approximate hessian.");
+  // Setup image
   auto output_image_sptr = template_image_sptr->get_empty_copy();
   output_image_sptr->fill(0.);
-
   auto ones_image_sptr = template_image_sptr->get_empty_copy();
   ones_image_sptr->fill(1.);
-
-  // Unfortunately we have to setup. This involves the computation of the sensitivity
-  objective_function_sptr->set_up(template_image_sptr);
 
   // Approximate Hessian computation will error for a lot of priors so we ignore it!
   info("Priors do not have an approximation of the Hessian. Therefore we will ignore the prior.");
@@ -128,6 +137,8 @@ compute_kappa_with_approximate()
 
   // Kappa is defined as the sqrt of the output of add_multiplication_with_approximate_Hessian_without_penalty
   sqrt_image(*output_image_sptr);
+
+  // Save the output
   output_file_format_sptr->write_to_file(kappa_filename, *output_image_sptr);
 }
 
