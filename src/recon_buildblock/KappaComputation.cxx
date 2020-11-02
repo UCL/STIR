@@ -62,11 +62,59 @@ KappaComputation<TargetT>::post_processing()
 }
 
 template <typename TargetT>
+PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
+KappaComputation<TargetT>::
+get_objective_function()
+{
+  return *objective_function_sptr;
+}
+
+template <typename TargetT>
+void
+KappaComputation<TargetT>::
+set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT > >& obj_fun)
+{
+  this->objective_function_sptr  = obj_fun;
+}
+
+template <typename TargetT>
+shared_ptr <TargetT>
+KappaComputation<TargetT>::
+get_current_image_estimate()
+{
+  return current_image_estimate_sptr;
+}
+
+template <typename TargetT>
+void
+KappaComputation<TargetT>::
+set_current_image_estimate(shared_ptr <TargetT > const& image)
+{
+  current_image_estimate_sptr = image;
+}
+
+template <typename TargetT>
+shared_ptr <TargetT>
+KappaComputation<TargetT>::
+get_template_image()
+{
+  return template_image_sptr;
+}
+
+template <typename TargetT>
+void
+KappaComputation<TargetT>::
+set_template_image(shared_ptr <TargetT > const& image)
+{
+  template_image_sptr = image;
+}
+
+
+template <typename TargetT>
 void
 KappaComputation<TargetT>::
 process_data()
 {
-
   // Unfortunately we have to setup. Therefore we will cheat with regards to sensitivities that are unused in the kappa
   // computation.
   // To prevent sensitivity from being computed (which takes a lot of computation), the sensitivity filename is set to
@@ -93,7 +141,7 @@ process_data()
   else
     error("process_data: Either both current_image_estimate_filename and template_image_filename are empty.");
 
-  info("Spatially variant penalty strength (Kappa) has been computed and saved.");
+  info("Spatially variant penalty strength (Kappa) has been computed and saved as " + kappa_filename + ".");
 }
 
 

@@ -30,11 +30,18 @@ public:
     void set_defaults();
     void process_data();
 
-protected:
-    shared_ptr<TargetT> current_image_estimate_sptr;
-    shared_ptr<TargetT> template_image_sptr;
+    PoissonLogLikelihoodWithLinearModelForMean<TargetT > const& get_objective_function();
+    void set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT > > &obj_fun);
 
-    shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT> >  objective_function_sptr;
+    shared_ptr<TargetT> get_current_image_estimate();
+    void set_current_image_estimate(shared_ptr <TargetT > const& image);
+
+    shared_ptr<TargetT> get_template_image();
+    void set_template_image(shared_ptr <TargetT > const& image);
+
+protected:
+
+    shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT> >  objective_function_sptr;
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
 
     void compute_kappa_at_current_image_estimate();
@@ -44,6 +51,10 @@ private:
     std::string current_image_estimate_filename;
     std::string template_image_filename;
     std::string kappa_filename;
+
+    shared_ptr<TargetT> current_image_estimate_sptr;
+    shared_ptr<TargetT> template_image_sptr;
+
     void initialise_keymap();
     bool post_processing();
 
