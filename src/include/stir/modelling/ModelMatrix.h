@@ -65,8 +65,8 @@ public:
    inline void set_model_array(const Array<2,float>& model_array);
    inline void set_time_vector(const VectorWithOffset<float>& time_vector);
   //! Function to set _is_calibrated boolean true or false
-   inline void set_if_uncalibrated(const bool is_uncalibrated);
-   inline void set_if_in_correct_scale(const bool in_correct_scale);
+   inline void set_is_uncalibrated(const bool is_uncalibrated);
+   inline void set_is_in_correct_scale(const bool in_correct_scale);
   //!@}
 
   //! Function to give the threshold_value to the all elements of the model_array which lower value than the threshold_value.  

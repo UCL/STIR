@@ -28,7 +28,7 @@ export pardir
 You can test the scripts by downloading the NEMA acquisitions from https://zenodo.org/record/1304454 and
 use the `process_NEMA_data.sh` script.
 ```sh
-curl -OL https://zenodo.org/record/1304454/files/
+curl -OL https://zenodo.org/record/1304454/files/NEMA_IQ.zip
 unzip NEMA_IQ.zip
 cd NEMA_IQ
 ${pardir}/process_NEMA_data.sh

@@ -57,10 +57,11 @@ public :
 
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
-    low_energy_thres(-1),
-    up_energy_thres(-1),
+
     calibration_factor(1.)
-  
+    low_energy_thres(-1.F),
+    up_energy_thres(-1.F)
+
     {
   }
 

@@ -87,13 +87,13 @@ class PlasmaData
 
    //! \name Functions to get parameters @{
   inline double get_time_shift();
-  inline bool get_if_decay_corrected() const ;
+  inline bool get_is_decay_corrected() const ;
   inline double get_isotope_halflife() const;  
   inline TimeFrameDefinitions get_time_frame_definitions() const;  //!@}
   //! \name Functions to set parameters 
   //!@{
   inline void set_time_frame_definitions(const TimeFrameDefinitions & plasma_fdef);   //!<\note The set_time_frame_definitions() is prefered than giving directly the Scan TimeFrameDefinitions since the sample may not be measured for all the frames \n For example at the beginning or at the end of the scan.
-  inline void set_if_decay_corrected(const bool is_decay_corrected);
+  inline void set_is_decay_corrected(const bool is_decay_corrected);
   inline void set_isotope_halflife(const double isotope_halflife);  
   inline void shift_time(const double time_shift);
   //!@}
