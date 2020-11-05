@@ -29,6 +29,7 @@ set(${dir_scripts}
   estimate_scatter.sh
   zoom_att_image.sh
   get_num_voxels.sh
+  create_fdef_from_listmode.sh
 )
 
 

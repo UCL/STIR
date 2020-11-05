@@ -47,6 +47,12 @@ matrix:
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
 
+   # osx, OpenMP using llvm clang
+ - os: osx
+   osx_image: xcode11.3
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang"
+
 env:
   global:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
@@ -90,13 +96,18 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
 
-      # seems to be needed on Travis due to conflicts with gcc otherwise
-      # see https://github.com/travis-ci/travis-ci/issues/8826
-      brew cask uninstall oclint
-
       brew update
       #now upgrade to avoid problems with outdated packages
       brew upgrade
+
+      # check if we're using LLVM
+      if [[ $EXTRA_BUILD_FLAGS == *"llvm"* ]]; then
+        brew install llvm
+        brew install libomp
+        export DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:"/usr/local/opt/llvm/lib"
+        export LDFLAGS="-L/usr/local/opt/llvm/lib"
+      fi
+
 
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
@@ -153,6 +164,7 @@ script:
   - ./run_tests.sh --nointbp
   - ./run_test_zoom_image.sh
   - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+  - ./run_tests_modelling.sh
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
   # Run examples to see if they work

@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2019-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,6 +32,9 @@
 #include "stir/display.h"
 #include "stir/CPUTimer.h"
 #include "stir/utilities.h"
+#include "stir/info.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>

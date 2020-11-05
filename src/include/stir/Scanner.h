@@ -126,8 +126,8 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690,
-	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype, User_defined_scanner,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690, DiscoveryMI3ring, DiscoveryMI4ring,
+	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, , SAFIRDualRingPrototype, User_defined_scanner,
 	     Unknown_scanner};
   
   //! constructor that takes scanner type as an input argument

@@ -63,7 +63,7 @@ start at subset:= 0
 number of subiterations:= ${ITER}
 save estimates at subiteration intervals:= ${SAVITER}
 
-initial estimate := indirect_Patlak.img 
+initial estimate := ${INIT}
 ; enable this when you read an initial estimate with negative data
 enforce initial positivity condition:=1
 

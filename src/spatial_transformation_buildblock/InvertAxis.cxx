@@ -86,6 +86,12 @@ InvertAxis::invert_axis_index(const int input_index,
 
     else if (axis_name=="z")
         return size -1 -input_index;
+    else
+      {
+        error("InvertAxis: invalid axis name: " + axis_name);
+        return 0; // to avoid compiler warning
+      }
+    
 
 }
 END_NAMESPACE_STIR

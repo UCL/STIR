@@ -3,31 +3,59 @@
 # @Author Nikos Efthimiou (nikos.efthimiou AT gmail.com)
 # @Author Kris Thielemans
 
-# Attempts to use root-config. If that fails, try and find TROOT.h and libCore*
-# Uses the ROOTSYS CMake variable, and then ROOTSYS environment variable
+# Attempts to find_package(ROOT), If that fails, use root-config.
+# If that fails, try and find TROOT.h and libCore*
+# Uses the ROOT_DIR CMake variable, then ROOTSYS, and then ROOTSYS environment variable
 #
-# Defines CERN_ROOT_LIBRARIES_DIRS, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
+# Defines CERN_ROOT_LIBRARIES, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
 #
+# when find_package(ROOT) worked, it will also set
+# ROOT_INCLUDE_DIRS - include directories for ROOT
+# ROOT_DEFINITIONS  - compile definitions needed to use ROOT
+# ROOT_LIBRARIES    - libraries to link against
+# ROOT_USE_FILE     - path to a CMake module which may be included to help
+
 # Set CERN_ROOT_DEBUG for some extra info
 
 # This file contains lines from FindROOT.cmake distributed in ROOT 6.08.
 # Therefore, this file is presumably licensed under the LGPL 2.1.
 # New parts Copyright 2016, 2020 University College London
 
-if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSION)
+if (NOT DEFINED ROOTSYS)
+  set(ROOTSYS "$ENV{ROOTSYS}")
+endif()
 
-    if (NOT DEFINED ROOTSYS)
-        set(ROOTSYS "$ENV{ROOTSYS}")
+if (NOT DEFINED ROOT_DIR AND DEFINED ROOTSYS)
+  set(ROOT_DIR:PATH ${ROOTSYS}/cmake)
+endif()
+
+find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)
+if (ROOT_FOUND)
+  if (CERN_ROOT_DEBUG)
+    message(STATUS "Found ROOTConfig.cmake, so translating to old CERN_ROOT variable names")
+  endif()
+  set(CERN_ROOT_VERSION ${ROOT_VERSION})
+  set(CERN_ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
+  set(CERN_ROOT_LIBRARIES ${ROOT_LIBRARIES})
+
+else()
+
+  ### Old work-arounds. Should be removed later really
+
+    if (CERN_ROOT_DEBUG)
+      message(STATUS "Did not find ROOTConfig.cmake, so trying via root-config")
     endif()
-    
     find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
 
     if (CERN_ROOT_CONFIG)
 
-        set (root_incl_arg "--incdir")
+        if (CERN_ROOT_DEBUG)
+          message(STATUS "Finding ROOT location etc via ${CERN_ROOT_CONFIG}")
+        endif()
 
-        execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_incl_arg} OUTPUT_VARIABLE
-            CERN_ROOT_INCLUDE_DIRS)
+        execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
+            CERN_ROOT_INCLUDE_DIRS
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         # Attempt fo find libraries from root-config. However, this doesn't work if
         # not all libraries are installed (as root-config lists them anyway).
@@ -51,6 +79,9 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
     else()
 
         # no root-config
+        if (CERN_ROOT_DEBUG)
+          message(STATUS "Did not find root-config, so trying via TRoot.h and the Core library")
+        endif()
         find_path(CERN_ROOT_INCLUDE_DIR TROOT.h HINTS "${ROOTSYS}"
             DOC "location of ROOT include files")
         set(CERN_ROOT_INCLUDE_DIRS "${CERN_ROOT_INCLUDE_DIR}")
@@ -72,7 +103,9 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
                 set(CERN_ROOT_VERSION "${CMAKE_MATCH_1}")
             endif()
         else()
-            message(WARNING "Could not find ${version_file}")
+            if (CERN_ROOT_INCLUDE_DIRS)
+              message(WARNING "Could not find ${version_file}")
+            endif()
         endif()
     endif()
 
@@ -97,8 +130,9 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
 endif()
 
 if (CERN_ROOT_DEBUG)
+  message(STATUS "CERN_ROOT_INCLUDE_DIRS: ${CERN_ROOT_INCLUDE_DIRS}")
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, set ROOTSYS or add root-config to your path" CERN_ROOT_VERSION CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, set ROOT_DIR (preferred), ROOTSYS or add root-config to your path" CERN_ROOT_VERSION CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
