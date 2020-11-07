@@ -16,6 +16,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#include <TChain.h>
 
 START_NAMESPACE_STIR
 
@@ -81,10 +82,11 @@ get_next_record(CListRecordROOT& record)
             continue;
         if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;
-        if (this->energy1 < this->low_energy_window ||
-                 this->energy1 > this->up_energy_window ||
-                 this->energy2 < this->low_energy_window ||
-                 this->energy2 > this->up_energy_window)
+      //multiply here by 1000 to convert the list mode energy from MeV to keV
+        if (this->energy1*1000 < this->low_energy_window ||
+                 this->energy1*1000 > this->up_energy_window ||
+                 this->energy2*1000 < this->low_energy_window ||
+                 this->energy2*1000 > this->up_energy_window)
             continue;
 
         break;
