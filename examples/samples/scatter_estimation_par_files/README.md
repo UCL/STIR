@@ -23,10 +23,12 @@ atnimg=myattenuationimage.hv
 NORM=normfactors.hs
 acf3d=acf.hs
 randoms3d=randoms.hs
+## scatter settings
+num_scat_iters=5 # this is the default value
 ## recon settings during scatter estimation
 # adjust for your scanner (needs to divide number of views/4 as usual)
 scatter_recon_num_subsets=7
-# keep this small
+# keep num_scatter_iters*scatter_recon_num_subiterations relatively small as everything is at low resolution
 scatter_recon_num_subiterations=7
 ## filenames for output
 mask_projdata_filename=mask.hs
@@ -44,4 +46,4 @@ estimate_scatter $scatter_pardir/scatter_estimation.par
 The last files written with `${total_additive_prefix}_#.hs` can be used as an
 `additive sinogram` in further reconstructions.
 
-See a full example in the `examples/Siemens-mMR` folder.
+See a full example in the `examples/Siemens-mMR` folder, and recon_test_pack/run_scatter_test.sh.
