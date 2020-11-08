@@ -70,6 +70,8 @@
     However, this means that <strong>you have to call <code>set_up()</code> also for analytic
     reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
   </li>
+  <li>copy energy information from the template in the <tt>forward_project</tt> utility.
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
@@ -160,6 +162,7 @@ from the above):</H2>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
   <li>added functions for date-time processing</li>
+  <li>added <code>ExamInfo.set_energy_information_from</code></li>
 </ul>
   
 <h3>Other code changes</h3>
