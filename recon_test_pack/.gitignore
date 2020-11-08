@@ -1,3 +1,5 @@
 # Output files
 my_*
 *.log
+# scatter output
+extras/
