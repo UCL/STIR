@@ -221,8 +221,8 @@ post_processing()
             read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
 
     if(is_null_ptr(multiplicative_binnorm_sptr))
-        warning("ScatterEstimation: No multiplicative coefficients have been set!!\n\
-                At least attenuation has to be set!");
+        error("ScatterEstimation: No multiplicative coefficients have been set!!\n"
+              "At least attenuation has to be set!");
 
     if (this->back_projdata_filename.size() > 0)
     {
@@ -566,88 +566,75 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 #endif
 
     info("ScatterEstimation: 4.Calculating the normalisation data...");
-    if(!do_chains)
     {
-        multiplicative_binnorm_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
-    }
-#if 1
-    else
-    {
-        if(!tmp_chain_multiplicative_binnorm_sptr->is_first_trivial()) // Check that we have actually something in here
+      if (run_in_2d_projdata)
         {
-
-            shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
-
-            if ( input_projdata_sptr->get_num_segments() > 1)
+          shared_ptr<BinNormalisation> norm3d_sptr;
+          
+          if(!do_chains)
             {
-                // Some BinNormalisation classes don't know about SSRB.
-                // we need to get norm2d=1/SSRB(1/norm3d))
-
-                info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
-
-                std::string out_filename = "tmp_inverted_normdata.hs";
-                shared_ptr<ProjData> inv_projdata_3d_sptr = create_new_proj_data(out_filename,
-                                                                                 this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                                 this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-                inv_projdata_3d_sptr->fill(1.f);
-
-                out_filename = "tmp_normdata_2d.hs";
-                shared_ptr<ProjData> norm_projdata_2d_sptr = create_new_proj_data(out_filename,
-                                                                                  this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                                  this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-                norm_projdata_2d_sptr->fill(0.f);
-
-                // Essentially since inv_projData_sptr is 1s then this is an inversion.
-                // inv_projdata_sptr = 1/norm3d
-                tmp_chain_multiplicative_binnorm_sptr->get_first_norm()->undo(*inv_projdata_3d_sptr, start_time, end_time);
-
-                info("ScatterEstimation: Performing SSRB on efficiency factors ...");
-
-                SSRB(*norm_projdata_2d_sptr,
-                     *inv_projdata_3d_sptr,false);
-
-                // Crucial: Avoid divisions by zero!!
-                // This should be resolved after https://github.com/UCL/STIR/issues/348
-                pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
-                apply_to_proj_data(*norm_projdata_2d_sptr, min_threshold);
-
-                pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
-                apply_to_proj_data(*norm_projdata_2d_sptr, invert);
-
-                norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
+              norm3d_sptr = MAKE_SHARED<TrivialBinNormalisation>();
             }
-            else
+          else
             {
-	      norm_coeff_2d_sptr = tmp_chain_multiplicative_binnorm_sptr->get_first_norm();
+              norm3d_sptr = tmp_chain_multiplicative_binnorm_sptr->get_first_norm();
             }
 
-            shared_ptr<BinNormalisationFromProjData>atten_coeff_2d_sptr(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
-            this->multiplicative_binnorm_2d_sptr.reset(
-                        new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
+          shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
+
+          if ( input_projdata_sptr->get_num_segments() > 1)
+            {
+              // Some BinNormalisation classes don't know about SSRB.
+              // we need to get norm2d=1/SSRB(1/norm3d))
+
+              info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
+
+              std::string out_filename = "tmp_inverted_normdata.hs";
+              shared_ptr<ProjData> inv_projdata_3d_sptr = create_new_proj_data(out_filename,
+                                                                               this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                               this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              inv_projdata_3d_sptr->fill(1.f);
+
+              out_filename = "tmp_normdata_2d.hs";
+              shared_ptr<ProjData> norm_projdata_2d_sptr = create_new_proj_data(out_filename,
+                                                                                this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                                this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              norm_projdata_2d_sptr->fill(0.f);
+
+              // Essentially since inv_projData_sptr is 1s then this is an inversion.
+              // inv_projdata_sptr = 1/norm3d
+              norm3d_sptr->undo(*inv_projdata_3d_sptr, start_time, end_time);
+
+              info("ScatterEstimation: Performing SSRB on efficiency factors ...");
+
+              SSRB(*norm_projdata_2d_sptr,
+                   *inv_projdata_3d_sptr,false);
+
+              // Crucial: Avoid divisions by zero!!
+              // This should be resolved after https://github.com/UCL/STIR/issues/348
+              pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
+              apply_to_proj_data(*norm_projdata_2d_sptr, min_threshold);
+
+              pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+              apply_to_proj_data(*norm_projdata_2d_sptr, invert);
+
+              norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
+            }
+          else
+            {
+              norm_coeff_2d_sptr = norm3d_sptr;
+            }
+
+          shared_ptr<BinNormalisationFromProjData>atten_coeff_2d_sptr(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
+          this->multiplicative_binnorm_2d_sptr.reset(
+                                                     new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
+
+          this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+          iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
         }
-
-    }
-#else
-    else
-    {
-        shared_ptr<BinNormalisationFromProjData>atten_coeff_2d_sptr(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
-
-        std::string in_filename = extras_path.get_path() + "tmp_projdata_2d.hs";
-        shared_ptr<ProjData>tmp_projdata_2d_sptr = ProjData::read_from_file(in_filename);
-        shared_ptr<BinNormalisationFromProjData>norm_coeff_2d_sptr(new BinNormalisationFromProjData(tmp_projdata_2d_sptr));
-
-        this->multiplicative_binnorm_2d_sptr.reset(
-                    new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
-    }
-#endif
-    if (run_in_2d_projdata)
-    {
-	this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-        iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
-    }
-    else
+      else // run_in_2d_projdata
         iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_sptr);
-
+    }
     info("ScatterEstimation: Done normalisation coefficients.");
 
     //

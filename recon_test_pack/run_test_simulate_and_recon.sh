@@ -70,8 +70,6 @@ if [ $# -eq 1 ]; then
   PATH=$1:$PATH
 fi
 
-command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
-echo "Using `command -v generate_image`"
 echo "Using `command -v OSMAPOSL`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
@@ -79,27 +77,7 @@ echo "Using `command -v OSMAPOSL`"
 LC_ALL=C
 export LC_ALL
 
-echo "===  make emission image"
-generate_image  generate_uniform_cylinder.par
-echo "===  make attenuation image"
-generate_image  generate_atten_cylinder.par
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
-cat > my_input.txt <<EOF
-Discovery STE
-1
-n
-
-0
-2
-EOF
-create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
-if [ $? -ne 0 ]; then 
-  echo "ERROR running create_projdata_template. Check my_create_${template_sino}.log"; exit 1; 
-fi
-
-# create sinograms
-./simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino}
+./simulate_PET_data_for_tests.sh
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1

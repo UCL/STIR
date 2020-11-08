@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, 2018, 202 University College London
+    Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -91,6 +91,8 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+  //! Copy energy information from another ExamInfo
+  inline void set_energy_information_from(const ExamInfo&);
   //@}
 
   inline bool has_energy_information() const
