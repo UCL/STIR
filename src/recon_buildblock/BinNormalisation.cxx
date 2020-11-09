@@ -50,6 +50,13 @@ BinNormalisation::
 ~BinNormalisation()
 {}
 
+void BinNormalisation::
+set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr)
+{
+    this->exam_info_sptr=_exam_info_sptr;
+}
+
+
 Succeeded
 BinNormalisation::
 set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr )

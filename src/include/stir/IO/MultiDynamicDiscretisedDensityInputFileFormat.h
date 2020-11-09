@@ -110,7 +110,6 @@ public InputFileFormat<DynamicDiscretisedDensity>
         dyn_disc_den_ptr->set_density(*t,i);
     }
     // Hard wire some stuff for now (TODO?)
-    dyn_disc_den_ptr->set_calibration_factor(1.);
     dyn_disc_den_ptr->set_if_decay_corrected(1.);
     dyn_disc_den_ptr->set_isotope_halflife(6586.2F);
     

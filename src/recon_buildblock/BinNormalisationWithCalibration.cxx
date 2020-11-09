@@ -45,6 +45,7 @@ void
 BinNormalisationWithCalibration::set_defaults()
 {
   base_type::set_defaults();
+  
   this->calibration_factor = 1;
  /* this->branching_ratio=1;*/
 }
@@ -72,6 +73,11 @@ BinNormalisationWithCalibration()
   set_defaults();
 }
 
+float
+BinNormalisationWithCalibration::
+get_calibration_factor() const {
+   return this->calibration_factor;
+}
 void
 BinNormalisationWithCalibration::
 set_calibration_factor(const float calib){

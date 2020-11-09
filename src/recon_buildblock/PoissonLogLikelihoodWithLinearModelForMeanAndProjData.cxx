@@ -55,6 +55,7 @@
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
 #include "stir/ProjDataInMemory.h"
 
@@ -805,6 +806,25 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
   
 }
 #endif
+
+template<typename TargetT>
+ std::unique_ptr<ExamInfo>
+ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+ get_exam_info_sptr_for_target()  const
+{
+     auto exam_info_uptr = this->get_exam_info_sptr_for_target();
+     if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
+     {
+       exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
+       // somehow tell the image that it's calibrated (do we have a way?)
+     }
+     else
+     {
+       exam_info_uptr->set_calibration_factor(1.F);
+       // somehow tell the image that it's not calibrated (do we have a way?)
+     }
+    return exam_info_uptr;
+}
 
 template<typename TargetT>
 Succeeded

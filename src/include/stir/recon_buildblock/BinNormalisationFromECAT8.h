@@ -113,7 +113,6 @@ private:
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
-  shared_ptr<const ExamInfo> exam_info_sptr;
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;

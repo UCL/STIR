@@ -29,6 +29,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup normalisation
+  When this class is called a normalisation factor is applied to the normalisation data. Therefore the reconstructed image will be calibrated as well.
 */
 class BinNormalisationWithCalibration : 
         public  BinNormalisation
@@ -39,21 +40,23 @@ public:
     
     
   BinNormalisationWithCalibration();
-
+  float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
+  float get_calibration_factor() const;
+  
+  void set_calibration_factor(const float);
+  void set_radionuclide(const std::string&);
  protected:
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
    // needs to be implemented by derived class
    virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
    float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time)
     { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
 
-   void set_calibration_factor(const float);
-   void set_radionuclide(const std::string&);
+
 private:
   // provide facility to switch off things?
   //  need to be added to the parsing keywords

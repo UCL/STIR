@@ -58,7 +58,7 @@ public :
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
 
-    calibration_factor(1.)
+    calibration_factor(1.F),
     low_energy_thres(-1.F),
     up_energy_thres(-1.F)
 
@@ -73,7 +73,6 @@ public :
 
   TimeFrameDefinitions time_frame_definitions;
   
-  double calibration_factor;
 //  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
@@ -89,6 +88,8 @@ public :
   inline float get_low_energy_thres() const;
   //! Get the high energy boundary
   inline float get_high_energy_thres() const;
+  //! Get the calibration factor
+  inline  float get_calibration_factor() const;
   //! Get the radionuclide name
   inline std::string get_radionuclide() const;
   //@}
@@ -99,6 +100,8 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+  //! Set the Calibration factor
+  inline void set_calibration_factor(const float cal_val);
   //! Set the radionuclide
   inline void set_radionuclide(const std::string& name);
   //@}
@@ -118,26 +121,7 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
-  bool operator == (const ExamInfo &p1) const { 
-      if(this->imaging_modality!=p1.imaging_modality)
-          std::cout<<this->imaging_modality.get_name()<<" "<<p1.imaging_modality.get_name()<<std::endl;
-      if(this->originating_system!=p1.originating_system)
-          std::cout<<this->originating_system<<" "<<p1.originating_system<<std::endl;
-      if(!(this->patient_position.get_position()==p1.patient_position.get_position()))
-          std::cout<<this->patient_position.get_position_as_string()<<" "<<p1.patient_position.get_position_as_string()<<std::endl;
-      if(this->up_energy_thres!=p1.up_energy_thres)
-          std::cout<<this->up_energy_thres-p1.up_energy_thres<<std::endl;
-      if(this->low_energy_thres!=p1.low_energy_thres)
-          std::cout<<this->low_energy_thres-p1.low_energy_thres<<std::endl;
-      if(this->calibration_factor!=p1.calibration_factor)
-          std::cout<<this->calibration_factor-p1.calibration_factor<<std::endl;
-      if(this->start_time_in_secs_since_1970!=p1.start_time_in_secs_since_1970)
-          std::cout<<this->start_time_in_secs_since_1970<<" "<<p1.start_time_in_secs_since_1970<<std::endl;
-      if(this->get_radionuclide()!=p1.get_radionuclide())
-          std::cout<<this->get_radionuclide()<<" "<<p1.get_radionuclide()<<std::endl;
-      if(!(this->get_time_frame_definitions()==p1.get_time_frame_definitions()))
-          error("frames");
-      
+  bool operator == (const ExamInfo &p1) const {      
       return  this->up_energy_thres==p1.up_energy_thres &&
               this->low_energy_thres==p1.low_energy_thres &&
               this->radionuclide==p1.radionuclide &&
@@ -159,6 +143,9 @@ public :
   /*! the returned string is not intended for parsing. */
   std::string parameter_info() const;
 
+protected:
+  
+  float calibration_factor;
   private:
      //!
   //! \brief low_energy_thres
