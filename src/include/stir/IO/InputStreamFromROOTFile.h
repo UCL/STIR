@@ -204,6 +204,12 @@ protected:
     //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
     //! > the readout depth depends upon how the electronic readout functions.
     int singles_readout_depth;
+
+    //! OpenGATE output ROOT energy information is given in MeV, these methods convert to keV
+    float get_energy1_in_keV() const
+    { return energy1 * 1e3; };
+    float get_energy2_in_keV() const
+    { return energy2 * 1e3; };
 };
 
 END_NAMESPACE_STIR
