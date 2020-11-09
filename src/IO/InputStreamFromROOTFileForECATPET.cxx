@@ -78,10 +78,10 @@ get_next_record(CListRecordROOT& record)
         if ( eventID1 != eventID2 && exclude_randoms )
             continue;
         //multiply here by 1000 to convert the list mode energy from MeV to keV
-        if (energy1*1000 < low_energy_window ||
-                 energy1*1000 > up_energy_window ||
-                 energy2*1000 < low_energy_window ||
-                 energy2*1000 > up_energy_window)
+        if (this->get_energy1_in_keV() < low_energy_window ||
+                this->get_energy1_in_keV() > up_energy_window ||
+                this->get_energy2_in_keV() < low_energy_window ||
+                this->get_energy2_in_keV() > up_energy_window)
             continue;
 
         break;
