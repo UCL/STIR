@@ -34,6 +34,7 @@
 #include "stir/DataProcessor.h"
 #include "stir/PostFiltering.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
+#include "stir/SeparableGaussianImageFilter.h"
 #include "stir/zoom.h"
 #include "stir/ZoomOptions.h"
 #include "stir/IO/write_to_file.h"
@@ -59,8 +60,14 @@ set_defaults()
 {
     this->recompute_atten_projdata = true;
     this->recompute_mask_image = true;
-    this->masking_parameters.min_threshold = .003F;
-    this->masking_parameters.filter_sptr.reset();
+    {
+      // image masking
+      this->masking_parameters.min_threshold = .003F;
+      shared_ptr<SeparableGaussianImageFilter<float> > filter_sptr(new SeparableGaussianImageFilter<float>);
+      filter_sptr->set_fwhms(make_coordinate(15.F, 20.F, 20.F));
+      this->masking_parameters.filter_sptr.reset(new PostFiltering<DiscretisedDensity < 3, float > >);
+      this->masking_parameters.filter_sptr->set_filter_sptr(filter_sptr);
+    }
     this->recompute_mask_projdata = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
@@ -305,11 +312,6 @@ post_processing()
                     read_from_file<DiscretisedDensity<3, float> >(this->mask_image_filename);
         }
 
-        if (this->tail_mask_par_filename.size() == 0)
-        {
-            warning("ScatterEstimation: Please define a filename for tails mask. Aborting.");
-            return true;
-        }
     }
 
     return false;
@@ -1243,15 +1245,18 @@ ScatterEstimation::project_mask_image()
 
     CreateTailMaskFromACFs create_tail_mask_from_acfs;
 
-    if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()))
+    if(this->tail_mask_par_filename.empty())
     {
-        warning(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs. Setting up to default.")
-                %this->tail_mask_par_filename);
-        //return Succeeded::no;
         create_tail_mask_from_acfs.ACF_threshold = 1.1;
         create_tail_mask_from_acfs.safety_margin = 4;
     }
-
+    else
+    {
+        if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()))
+            error(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs.")
+                 %this->tail_mask_par_filename);
+    }
+    
     create_tail_mask_from_acfs.set_input_projdata_sptr(mask_projdata);
     create_tail_mask_from_acfs.set_output_projdata_sptr(this->mask_projdata_sptr);
     return create_tail_mask_from_acfs.process_data();

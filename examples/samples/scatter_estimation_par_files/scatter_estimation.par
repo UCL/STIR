@@ -43,7 +43,10 @@ mask projdata filename := ${mask_projdata_filename}
 ; Input or output filename - depends on recompute  
 recompute mask image := 1
 mask image filename := ${mask_image}
+; threshold to be applied after filtering (in cm^-1). Default value is below
 mask attenuation image min threshold  := 0.003
+; optional filename to specify a filter before thresholding the attenuation image
+; By default a Gaussian filter with FWHM (15,20,20) will be used. Here we use an explicit file as an example.
 mask attenuation image filter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
 ;End of Mask
 
