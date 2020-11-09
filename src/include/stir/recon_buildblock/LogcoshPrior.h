@@ -26,7 +26,7 @@
  \author Sanida Mustafovic
  \author Yu-Jung Tsai
  \author Robert Twyman
-
+ \author Zeljko Kereta
  */
 
 
@@ -49,11 +49,11 @@ START_NAMESPACE_STIR
  \brief
  A class in the GeneralisedPrior hierarchy. This implements a logcosh Gibbs prior.
 
- The gradient of the prior is computed as follows:
-
- \f[
- g_r = \sum_dr w_{dr} tanh(\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+ The log-cosh function is given by:
+  \f[
+ f_r = \sum_{dr} w_{dr} log(cosh(\lambda_r - \lambda_{r+dr})) * \kappa_r * \kappa_{r+dr}
  \f]
+
  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
 
@@ -71,6 +71,8 @@ START_NAMESPACE_STIR
  Logcosh Prior Parameters:=
  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
  only 2D:= 0
+ ; scalar controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the function
+ ; scalar:=
  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
  ' value of only_2D is ignored
  ; following example uses 2D 'nearest neighbour' penalty
@@ -135,9 +137,10 @@ public:
                          const BasicCoordinate<3,int>& coords,
                          const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-    virtual Succeeded
-    add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
-                                                const DiscretisedDensity<3,elemT>& input) const;
+    //! Compute the multiplication of the hessian of the prior multiplied by the input.
+    virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                                                     const DiscretisedDensity<3,elemT>& current_estimate,
+                                                     const DiscretisedDensity<3,elemT>& input) const;
 
     //! get penalty weights for the neigbourhood
     Array<3,float> get_weights() const;
@@ -155,11 +158,19 @@ public:
     //! set kappa image
     void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
 
+    //! Get the scalar value
+    float get_scalar() const;
+
+    //! Set the scalar value
+    void set_scalar(float scalar_v);
+
 protected:
     //! can be set during parsing to restrict the weights to the 2D case
     bool only_2D;
-    //!
+
+    //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
     float scalar;
+
     //! filename prefix for outputing the gradient whenever compute_gradient() is called.
     /*! An internal counter is used to keep track of the number of times the
      gradient is computed. The filename will be constructed by concatenating
@@ -173,27 +184,30 @@ protected:
      That initialisation should be moved to a new set_up() function.
      */
     mutable Array<3,float> weights;
+
     //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
     std::string kappa_filename;
 
     virtual void set_defaults();
     virtual void initialise_keymap();
     virtual bool post_processing();
+
 private:
+    //! Spatially variant penalty penalty image ptr
     shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 
-    static inline float surrogate(float x)
-    {
-      const float eps = 0.1;
+    //! The surrogate is defined as tanh(x)/x
+    /*!
+     x is the should be the difference between the ith and jth voxel.
+     However, use the taylor expansion if the x is too small to prevent division by 0.
+    */
+    static inline float surrogate(float x){
+      const float eps = 0.01;
+      //  use Taylor of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3
       if (fabs(x)<eps)
-      {
-        //  use Taylor: tanh(x) = x - x^3/3
-        return 1- square(x)/3;
-      }
+      { return 1- square(x)/3; }
       else
-      {
-        return tanh(x)/x;
-      }
+      { return tanh(x)/x; }
     }
 };
 

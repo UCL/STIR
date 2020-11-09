@@ -26,7 +26,7 @@
  \author Sanida Mustafovic
  \author Yu-Jung Tsai
  \author Robert Twyman
-
+ \author Zeljko Kereta
  */
 
 #include "stir/recon_buildblock/LogcoshPrior.h"
@@ -185,6 +185,20 @@ LogcoshPrior<elemT>::
 set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
 { this->kappa_ptr = k; }
 
+//! Get the scalar value
+template <typename elemT>
+float
+LogcoshPrior<elemT>::
+get_scalar() const
+{ return this->scalar; }
+
+//! Set the scalar value
+template <typename elemT>
+void
+LogcoshPrior<elemT>::
+set_scalar(const float scalar_v)
+{ scalar = scalar_v; }
+
 
 // TODO move to set_up
 // initialise to 1/Euclidean distance
@@ -225,10 +239,7 @@ LogcoshPrior<elemT>::
 compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
   if (this->penalisation_factor==0)
-  {
-    return 0.;
-  }
-
+  {return 0.;}
 
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -242,7 +253,6 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
 
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
-
 
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
@@ -345,74 +355,18 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
         const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
         const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
 
-        /* formula:
-         sum_dx,dy,dz
-         weights[dz][dy][dx] *
-         tanh(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
-         (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-         */
-#if 1
         elemT gradient = 0;
         for (int dz=min_dz;dz<=max_dz;++dz)
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-
               elemT current = weights[dz][dy][dx] * (1/this->scalar) * tanh(this->scalar*temp);
 
               if (do_kappa)
-                current *=
-                        (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
               gradient += current;
             }
-#else
-            // attempt to speed up by precomputing the sum of weights.
-                // The current code gives identical results but is actually slower
-                // than the above, at least when kappas are present.
-
-
-                // precompute sum of weights
-                // TODO without kappas, this is just weights.sum() most of the time,
-                // but not near edges
-                float sum_of_weights = 0;
-                {
-                    if (do_kappa)
-                    {
-                        for (int dz=min_dz;dz<=max_dz;++dz)
-                            for (int dy=min_dy;dy<=max_dy;++dy)
-                                for (int dx=min_dx;dx<=max_dx;++dx)
-                                    sum_of_weights +=  weights[dz][dy][dx]*(*kappa_ptr)[z+dz][y+dy][x+dx];
-                    }
-                    else
-                    {
-                        for (int dz=min_dz;dz<=max_dz;++dz)
-                            for (int dy=min_dy;dy<=max_dy;++dy)
-                                for (int dx=min_dx;dx<=max_dx;++dx)
-                                    sum_of_weights +=  weights[dz][dy][dx];
-                    }
-                }
-                // now compute contribution of central term
-                elemT gradient = sum_of_weights * current_image_estimate[z][y][x] ;
-
-                // subtract the rest
-                for (int dz=min_dz;dz<=max_dz;++dz)
-                    for (int dy=min_dy;dy<=max_dy;++dy)
-                        for (int dx=min_dx;dx<=max_dx;++dx)
-                        {
-                            elemT current =
-                            weights[dz][dy][dx] * current_image_estimate[z+dz][y+dy][x+dx];
-
-                            if (do_kappa)
-                                current *= (*kappa_ptr)[z+dz][y+dy][x+dx];
-
-                            gradient -= current;
-                        }
-                // multiply with central kappa
-                if (do_kappa)
-                    gradient *= (*kappa_ptr)[z][y][x];
-#endif
         prior_gradient[z][y][x]= gradient * this->penalisation_factor;
       }
     }
@@ -445,8 +399,6 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   {
     return;
   }
-
-
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
 
@@ -555,9 +507,7 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
             {
               // psi'(t)/t = tanh/t
               elemT temp = fabs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]);
-
               elemT current  = weights[dz][dy][dx] * (1/(this->scalar))* surrogate(this->scalar*temp);
-//              current = weights[dz][dy][dx] * (1/(this->scalar))*tanh(this->scalar*(temp+0.01))/(temp+0.01);
 
               if (do_kappa)
                 current *=
@@ -577,8 +527,9 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
 template <typename elemT>
 Succeeded
 LogcoshPrior<elemT>::
-add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
-                                            const DiscretisedDensity<3,elemT>& input) const
+accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                               const DiscretisedDensity<3,elemT>& current_estimate,
+                               const DiscretisedDensity<3,elemT>& input) const
 {
   // TODO this function overlaps enormously with parabolic_surrogate_curvature
   // the only difference is that parabolic_surrogate_curvature uses input==1
@@ -630,15 +581,7 @@ add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-//              elemT temp = (fabs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) /
-//                      this->scalar);
-              elemT temp = (fabs(input[z][y][x] - input[z+dz][y+dy][x+dx]) /
-                            this->scalar);
-
-              //This method will lead to divide by 0 problems
-//              elemT current =
-//                      weights[dz][dy][dx]  * tanh(temp)/temp * input[z+dz][y+dy][x+dx];
-
+              elemT temp = input[z][y][x] - input[z+dz][y+dy][x+dx];
               elemT current = weights[dz][dy][dx] * surrogate(temp) * input[z+dz][y+dy][x+dx];
 
               if (do_kappa)
