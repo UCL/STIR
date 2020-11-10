@@ -1,3 +1,4 @@
+
 #ifndef __stir_scatter_ScatterEstimation_H__
 #define __stir_scatter_ScatterEstimation_H__
 
@@ -217,7 +218,8 @@ protected:
     std::string back_projdata_filename;
     //! Filename of normalisation factors
     std::string norm_coeff_filename;
-    //! Paraameter file for the tail fitting.
+    //! Optional parameter file for the tail fitting.
+    /*! If not provided, sensible defaults are used */
     std::string tail_mask_par_filename;
     //! Filename of the measured emission 3D data.
     std::string input_projdata_filename;
@@ -229,7 +231,18 @@ protected:
     //! If they are to be recalculated they will be stored here, if set.
     std::string atten_coeff_filename;
 
-    //! \details the set of parameters to mask the attenuation image
+    //! \details the set of parameters to obtain a mask from the attenuation image
+    /*! The attenuation image will be thresholded to find a plausible mask for where there
+        can be emission data. This mask will be then forward projected to find the tails in the projection data.
+
+        This is a simple strategy that can fail due to motion etc, so the attenuation image is first blurred,
+        and the default threshold is low.
+
+        Note that there is currently no attempt to eliminate the bed from the attenuation image first.
+        Tails are therefore going to be too small, which could create trouble.
+
+        By default, a Gaussian filter of FWHM (15,20,20) will be applied before thresholding with a value  0.003 cm^-1
+    */
     MaskingParameters masking_parameters;
     //! \details The number of iterations the scatter estimation will perform.
     //! Default = 5.
