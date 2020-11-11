@@ -87,7 +87,7 @@ public:
   get_normalisation_sptr() const
   { return this->normalisation_sptr; }
   
-  virtual unique_ptr<ExamInfo> get_exam_info_sptr_for_target() const;
+  virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
   
 protected:
   virtual double

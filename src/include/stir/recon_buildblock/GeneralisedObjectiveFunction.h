@@ -232,7 +232,7 @@ public:
 //  virtual const shared_ptr<BinNormalisation> &
 //  get_normalisation_sptr() const =0;
   
-  virtual std::unique_ptr<ExamInfo> get_exam_info_sptr_for_target() const
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const
   { auto exam_info_uptr=unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
       return exam_info_uptr;
   }

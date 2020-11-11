@@ -182,9 +182,9 @@ construct_target_ptr() const
 template<typename TargetT>
  std::unique_ptr<ExamInfo>
  PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
- get_exam_info_sptr_for_target()  const
+ get_exam_info_uptr_for_target()  const
 {
-     auto exam_info_uptr = this->get_exam_info_sptr_for_target();
+     auto exam_info_uptr = this->get_exam_info_uptr_for_target();
      if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
      {
        exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());

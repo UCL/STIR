@@ -84,7 +84,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
                                                           const int subset_num); 
 
   virtual std::unique_ptr<ExamInfo>
-  get_exam_info_sptr_for_target()  const;
+  get_exam_info_uptr_for_target()  const;
  protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,

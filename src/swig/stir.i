@@ -1532,6 +1532,7 @@ namespace stir {
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
 
+%ignore *::get_exam_info_uptr_for_target;
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
