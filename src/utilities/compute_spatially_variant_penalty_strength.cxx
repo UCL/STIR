@@ -37,7 +37,7 @@
   \author Robert Twyman
 */
 
-#include "stir/recon_buildblock/KappaComputation.h"
+#include "stir/recon_buildblock/Hessian_row_sum.h"
 
 using std::cerr;
 using std::cout;
@@ -59,7 +59,7 @@ main(int argc, char *argv[])
   if (argc!=2)
     print_usage_and_exit();
 
-  KappaComputation<DiscretisedDensity<3,float>> kappa_computer;
+  Hessian_row_sum<DiscretisedDensity<3,float>> kappa_computer;
   kappa_computer.parse(argv[1]);
   kappa_computer.process_data();
   return EXIT_SUCCESS;

@@ -18,14 +18,14 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::KappaComputation
+  \brief Declaration of class stir::Hessian_row_sum
 
   \author Robert Twyman
   \author Kris Thielemans
 */
 
-#ifndef STIR_KAPPACOMPUTATION_H
-#define STIR_KAPPACOMPUTATION_H
+#ifndef STIR_HESSIAN_ROW_SUM_H
+#define STIR_HESSIAN_ROW_SUM_H
 
 #include "stir/info.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -62,44 +62,53 @@ class Succeeded;
   https://doi.org/10.1109/TMI.2019.2913889
 */
 template <typename TargetT>
-class KappaComputation:
+class Hessian_row_sum:
         public ParsingObject
 {
-    //All methods need documenting
 public:
-    KappaComputation();
+    Hessian_row_sum();
 
-    //!The principle function used to load the input image from file, setup, compute the spatially variant penalty
-    //! strength, and save it.
+    //! The main function to call to compute spatially variant penalty strength images
+    //! Loads the input image from file, sets up, compute Hessian row sum (with input = ones), sqrts the result,
+    //! and saves it.
     void process_data();
 
     //! get and set methods for the objective function
+    //@{
     GeneralisedObjectiveFunction<TargetT > const& get_objective_function();
     void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > > &obj_fun);
+    //@}
 
     //! get and set methods for the input image
+    //@{
     shared_ptr<TargetT> get_input_image();
     void set_input_image(shared_ptr <TargetT > const& image);
+    //@}
 
     //! get method for returning the kappa_image
-    shared_ptr<TargetT> get_kappa_image_target_sptr();
-    //! This method resets
-    void reset_kappa_image_target_sptr(shared_ptr <TargetT > const& image);
+    shared_ptr<TargetT> get_output_target_sptr();
+
+    //! This method resets the output target to uniform 0s
+    void reset_output_target_sptr(shared_ptr <TargetT > const& image);
 
     //! get and set methods for use approximate hessian bool
+    //@{
     bool get_use_approximate_hessian();
     void set_use_approximate_hessian(bool use_approximate);
+    //@}
 
     //! get and set methods for the compute with penalty bool
+    //@{
     bool get_compute_with_penalty();
     void set_compute_with_penalty(bool with_penalty);
+    //@}
 
     //! Computes the objective function Hessian at the current image estimate. Can use the penalty's Hessian
     //! kappa_image_sptr is the
-    void compute_kappa_at_current_image_estimate();
+    void compute_Hessian_row_sum();
 
     //! Computes the approximate Hessian of the objective function. Cannot use penalty's Hessian
-    void compute_kappa_with_approximate();
+    void compute_approximate_Hessian_row_sum();
 
 protected:
 
@@ -108,7 +117,7 @@ private:
     shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
 
     //! The filename the for the output spatially variant penalty strength
-    std::string kappa_filename;
+    std::string output_filename;
 
     //! Used to load an image as a template or current image estimate to compute hessian at
     std::string input_image_filename;
@@ -117,7 +126,7 @@ private:
     shared_ptr<TargetT> input_image;
 
     //! The variable to which kappa computation methods will populate
-    shared_ptr<TargetT> kappa_image_target_sptr;
+    shared_ptr<TargetT> output_target_sptr;
 
     //! Used to toggle the approximate hessian or hessian at current image estimate should be computed
     //! This toggles the usage of input_image.
@@ -139,4 +148,4 @@ private:
 };
 
 END_NAMESPACE_STIR
-#endif //STIR_KAPPACOMPUTATION_H
+#endif //STIR_HESSIAN_ROW_SUM_H
