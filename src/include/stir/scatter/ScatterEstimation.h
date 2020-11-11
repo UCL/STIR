@@ -149,10 +149,13 @@ public:
     inline void set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >);
 
     inline void set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> >);
-    //!
+
     inline void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
 
     inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
+
+    inline void set_num_iterations(int);
+
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
@@ -160,10 +163,17 @@ public:
 
 
     // Get functions
-    //! Get the number of iteration for the scatter estimation
+    //! Get the number of iterations for the scatter estimation
+    /*! \deprecated Use get_num_iterations() */
     int get_iterations_num() const;
 
-protected:
+    //! Get the number of iterations for the scatter estimation
+    int get_num_iterations() const;
+
+    //! Get the (low resolution) estimate of the activity image
+    shared_ptr<const DiscretisedDensity<3,float> > get_estimated_activity_image_sptr() const;
+
+ protected:
     //! All recomputes_** will default true
     virtual void set_defaults();
     virtual void initialise_keymap();

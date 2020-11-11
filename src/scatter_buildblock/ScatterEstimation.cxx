@@ -69,6 +69,7 @@ set_defaults()
       this->masking_parameters.filter_sptr->set_filter_sptr(filter_sptr);
     }
     this->recompute_mask_projdata = true;
+    this->run_in_2d_projdata = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
     this->run_debug_mode = false;
@@ -323,6 +324,12 @@ ScatterEstimation::get_output() const
     return scatter_estimate_sptr;
 }
 
+shared_ptr<const DiscretisedDensity<3,float> >
+ScatterEstimation::get_estimated_activity_image_sptr() const
+{
+  return this->current_activity_image_sptr;
+}
+
 Succeeded
 ScatterEstimation::
 set_up()
@@ -347,7 +354,7 @@ set_up()
 
     if (!run_in_2d_projdata)
     {
-        error("ScatterEstimation: Currently, only runing the estimation in 2D is supported.");
+        error("ScatterEstimation: Currently, only running the estimation in 2D is supported.");
     }
 
 #if 1
@@ -1282,6 +1289,12 @@ apply_mask_in_place(DiscretisedDensity<3, float>& arg,
     }
 }
 
+int ScatterEstimation::get_num_iterations() const
+{
+    return num_scatter_iterations;
+}
+
+// deprecated version
 int ScatterEstimation::get_iterations_num() const
 {
     return num_scatter_iterations;

@@ -28,6 +28,7 @@ ScatterEstimation::
 set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
     //this->atten_projdata_sptr = arg;
+  error("Not implemented");
 }
 
 void
@@ -35,13 +36,14 @@ ScatterEstimation::
 set_normalisation_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
     //    this->norm_projdata_sptr = arg;
+  error("Not implemented");
 }
 
 void
 ScatterEstimation::
 set_background_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
-    //    this->back_projdata_sptr = arg;
+    this->back_projdata_sptr = arg;
 }
 
 void
@@ -70,6 +72,13 @@ ScatterEstimation::
 set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation > arg)
 {
     this->scatter_simulation_sptr = arg;
+}
+
+void
+ScatterEstimation::
+set_num_iterations(int arg)
+{
+  this->num_scatter_iterations = arg;
 }
 
 END_NAMESPACE_STIR
