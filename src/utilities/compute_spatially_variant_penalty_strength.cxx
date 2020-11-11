@@ -28,8 +28,8 @@
 
   Computes a spatially variant penalty strength, either using:
 
-  todo: add methods and documentation
-  See Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
+
+  See: Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
     & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
     in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
    for more details
@@ -42,9 +42,6 @@
 using std::cerr;
 using std::cout;
 using std::endl;
-
-
-
 
 START_NAMESPACE_STIR
 static void print_usage_and_exit()
@@ -67,6 +64,3 @@ main(int argc, char *argv[])
   kappa_computer.process_data();
   return EXIT_SUCCESS;
 }
-
-
-

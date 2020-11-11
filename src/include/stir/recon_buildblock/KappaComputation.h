@@ -34,6 +34,8 @@
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 
 START_NAMESPACE_STIR
 
@@ -72,8 +74,8 @@ public:
     void process_data();
 
     //! get and set methods for the objective function
-    PoissonLogLikelihoodWithLinearModelForMean<TargetT > const& get_objective_function();
-    void set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT > > &obj_fun);
+    GeneralisedObjectiveFunction<TargetT > const& get_objective_function();
+    void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > > &obj_fun);
 
     //! get and set methods for the input image
     shared_ptr<TargetT> get_input_image();
@@ -103,7 +105,7 @@ protected:
 
 private:
     //! Objective function object
-    shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT> >  objective_function_sptr;
+    shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
 
     //! The filename the for the output spatially variant penalty strength
     std::string kappa_filename;
@@ -132,10 +134,6 @@ private:
 
     //! used to check acceptable parameter ranges, etc...
     bool post_processing();
-
-    //! Method used to square root the image.
-    void sqrt_image(TargetT& image);
-
     void initialise_keymap();
     void set_defaults();
 };

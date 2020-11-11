@@ -30,9 +30,9 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
-//#include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
+#include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 //#include "stir/recon_buildblock/GeneralisedPrior.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/unique_ptr.h"
 
 
@@ -50,7 +50,6 @@ void
 KappaComputation<TargetT>::
 set_defaults()
 {
-  objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>);
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
   set_use_approximate_hessian(true);
   set_compute_with_penalty(false);
@@ -88,17 +87,17 @@ KappaComputation<TargetT>::post_processing()
 }
 
 template <typename TargetT>
-PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
+GeneralisedObjectiveFunction<TargetT > const&
 KappaComputation<TargetT>::
 get_objective_function()
 {
-  return static_cast<PoissonLogLikelihoodWithLinearModelForMean<TargetT >&> (*objective_function_sptr);
+  return static_cast<GeneralisedObjectiveFunction<TargetT >&> (*objective_function_sptr);
 }
 
 template <typename TargetT>
 void
 KappaComputation<TargetT>::
-set_objective_function_sptr(const shared_ptr<PoissonLogLikelihoodWithLinearModelForMean<TargetT > >& obj_fun)
+set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > >& obj_fun)
 {
   this->objective_function_sptr  = obj_fun;
 }
@@ -133,7 +132,7 @@ KappaComputation<TargetT>::
 reset_kappa_image_target_sptr(shared_ptr <TargetT > const& image)
 {
   kappa_image_target_sptr =  unique_ptr<TargetT>(image->get_empty_copy());
-  kappa_image_target_sptr->fill(0);
+  std::fill(kappa_image_target_sptr->begin_all(), kappa_image_target_sptr->end_all(), 0.F);
 }
 
 template <typename TargetT>
@@ -178,9 +177,6 @@ process_data()
   // computation.
   // To prevent sensitivity from being computed (which takes a lot of computation), the sensitivity filename is set to
   // a filename known to exist, one of the file inputs, and re-computation is turned off.
-  objective_function_sptr->set_recompute_sensitivity(false);
-  objective_function_sptr->set_use_subset_sensitivities(false);
-  objective_function_sptr->set_sensitivity_filename(input_image_filename);
   objective_function_sptr->set_up(input_image);
 
   if (get_use_approximate_hessian())
@@ -210,7 +206,7 @@ compute_kappa_at_current_image_estimate()
   reset_kappa_image_target_sptr(input_image);
   info("Computing the spatially variant penalty strength at the current image estimate, this may take a while.");
   auto ones_image_sptr = input_image->get_empty_copy();
-  ones_image_sptr->fill(1);
+  std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
   if (get_compute_with_penalty())
     objective_function_sptr->accumulate_Hessian_times_input(*kappa_image_target_sptr, *input_image, *ones_image_sptr);
@@ -218,7 +214,8 @@ compute_kappa_at_current_image_estimate()
     objective_function_sptr->accumulate_Hessian_times_input_without_penalty(*kappa_image_target_sptr, *input_image, *ones_image_sptr);
 
   // Kappa is defined as the sqrt of the output of accumulate_Hessian_times_input
-  sqrt_image(*kappa_image_target_sptr);
+  std::for_each( kappa_image_target_sptr->begin_all(), kappa_image_target_sptr->end_all(),
+                 [](float& a) { return a=sqrt(a); } );
 }
 
 template <typename TargetT>
@@ -230,7 +227,7 @@ compute_kappa_with_approximate()
   info("Computing the spatially variant penalty strength using approximate hessian, this may take a while.");
   // Setup image
   auto ones_image_sptr = input_image->get_empty_copy();
-  ones_image_sptr->fill(1.);
+  std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
   // Approximate Hessian computation will error for a lot of priors so we ignore it!
   if (get_compute_with_penalty())
@@ -239,26 +236,11 @@ compute_kappa_with_approximate()
                                                                                        *ones_image_sptr);
 
   // Kappa is defined as the sqrt of the output of add_multiplication_with_approximate_Hessian_without_penalty
-  sqrt_image(*kappa_image_target_sptr);
-}
-
-template <typename TargetT>
-void
-KappaComputation<TargetT>::
-sqrt_image(TargetT& image)
-{
-  // Square root the output
-  typename TargetT::const_full_iterator output_iter = image.begin_all_const();
-  const typename TargetT::const_full_iterator end_prior_output_iter = image.end_all_const();
-  typename TargetT::full_iterator tmp_iter = image.begin_all();
-  while (output_iter!=end_prior_output_iter)
-  {
-    *tmp_iter = sqrt(*output_iter);
-    ++tmp_iter; ++output_iter;
-  }
+  std::for_each( kappa_image_target_sptr->begin_all(), kappa_image_target_sptr->end_all(),
+                 [](float& a) { return a=sqrt(a); } );
 }
 
 template class KappaComputation<DiscretisedDensity<3,float> >;
-//template class KappaComputation<ParametricVoxelsOnCartesianGrid >;
-
+template class KappaComputation<ParametricVoxelsOnCartesianGrid >;
+//template class KappaComputation<GatedDiscretisedDensity>;
 END_NAMESPACE_STIR
