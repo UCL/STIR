@@ -24,6 +24,7 @@
   \author Kris Thielemans
 */
 #include "stir/scatter/ScatterEstimation.h"
+#include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/ExamInfo.h"
@@ -58,6 +59,7 @@ void
 ScatterEstimation::
 set_defaults()
 {
+    this->scatter_simulation_sptr.reset(new SingleScatterSimulation);
     this->recompute_atten_projdata = true;
     this->recompute_mask_image = true;
     {
@@ -186,17 +188,12 @@ bool
 ScatterEstimation::
 post_processing()
 {
-    // Check that the crucial parts have been set.
-    info("ScatterEstimation: Loading input projection data");
-    if (this->input_projdata_filename.size() == 0)
-    {
-        warning("ScatterEstimation: No input projdata filename is given. Aborting.");
-        return true;
-    }
-
-    this->input_projdata_sptr =
-            ProjData::read_from_file(this->input_projdata_filename);
-
+    if (!this->input_projdata_filename.empty())
+      {
+        info("ScatterEstimation: Loading input projdata...", 3);
+        this->input_projdata_sptr =
+          ProjData::read_from_file(this->input_projdata_filename);
+      }
     // If the reconstruction_template_sptr is null then, we need to parse it from another
     // file. I prefer this implementation since makes smaller modular files.
     if (this->recon_template_par_filename.size() == 0)
@@ -218,26 +215,19 @@ post_processing()
         }
     }
 
-    info("ScatterEstimation: Loading attenuation image...");
-    if (this->atten_image_filename.size() == 0)
-    {
-        warning("ScatterEstimation: Please define an attenuation image. Aborting.");
-        return true;
-    }
-    else
+    if (!this->atten_image_filename.empty())
+      {
+        info("ScatterEstimation: Loading attenuation image...", 3);
         this->atten_image_sptr =
-            read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
+          read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
+      }
 
-    if(is_null_ptr(multiplicative_binnorm_sptr))
-        error("ScatterEstimation: No multiplicative coefficients have been set!!\n"
-              "At least attenuation has to be set!");
-
-    if (this->back_projdata_filename.size() > 0)
-    {
-        info("ScatterEstimation: Loading background projdata...");
+    if (!this->back_projdata_filename.empty())
+      {
+        info("ScatterEstimation: Loading background projdata...", 3);
         this->back_projdata_sptr =
-                ProjData::read_from_file(this->back_projdata_filename);
-    }
+          ProjData::read_from_file(this->back_projdata_filename);
+      }
 
     //    if(!this->recompute_initial_activity_image ) // This image can be used as a template
     //    {
@@ -265,55 +255,41 @@ post_processing()
         }
     }
 
-    info ("ScatterEstimation: Initialising Scatter Simulation ... ");
-    if (this->scatter_sim_par_filename.size() == 0)
-    {
-      if (is_null_ptr(this->scatter_simulation_sptr))
-        error("ScatterEstimation: Please define a scatter simulation method. Aborting.");
-    }
-    else // Parse locally
-    {
-        KeyParser local_parser;
-        local_parser.add_start_key("Scatter Simulation Parameters");
-        local_parser.add_stop_key("End Scatter Simulation Parameters");
-        local_parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
-        if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
+    if (!this->scatter_sim_par_filename.empty())
+      {
+        info ("ScatterEstimation: Initialising Scatter Simulation ...", 3);
+        // Parse locally
         {
-            warning(boost::format("ScatterEstimation: Error parsing scatter simulation parameters file %1%. Aborting.")
-                    %this->recon_template_par_filename);
-            return true;
+          KeyParser local_parser;
+          local_parser.add_start_key("Scatter Simulation Parameters");
+          local_parser.add_stop_key("End Scatter Simulation Parameters");
+          local_parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
+          if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
+            error("ScatterEstimation: Error parsing scatter simulation parameters.");
         }
-    }
+      }
 
     // There is no output in this case
-    if (this->output_scatter_estimate_prefix.size() == 0 && this->output_additive_estimate_prefix.size() == 0)
-        return true;
+    if (this->output_scatter_estimate_prefix.empty() && this->output_additive_estimate_prefix.empty())
+      {
+        // This is ok when running from Python or so, but not when running from the command line.
+        // As we don't know, we just write a warning
+        warning("ScatterEstimation: no filename prefix set for either the scatter estimate or the additive.\n"
+                "This is probably not what you want.");
+      }
 
     if(!this->recompute_mask_projdata)
-    {
-        if (this->mask_projdata_filename.size() == 0)
-        {
-            warning("ScatterEstimation: Please define a filename for mask proj_data. Aborting.");
-            return true;
-        }
-        this->mask_projdata_sptr =
-                ProjData::read_from_file(this->mask_projdata_filename);
-    }
+      {
+        if (!this->mask_projdata_filename.empty())
+          this->mask_projdata_sptr =
+            ProjData::read_from_file(this->mask_projdata_filename);
+      }
     else
-    {
-        if (!this->recompute_mask_image)
-        {
-            if (this->mask_image_filename.size() == 0 )
-            {
-                warning("ScatterEstimation: Please define a filename for mask image. Aborting.");
-                return true;
-            }
-
-            this->mask_image_sptr =
-                    read_from_file<DiscretisedDensity<3, float> >(this->mask_image_filename);
-        }
-
-    }
+      {
+        if (!this->recompute_mask_image && !this->mask_image_filename.empty())
+          this->mask_image_sptr =
+            read_from_file<DiscretisedDensity<3, float> >(this->mask_image_filename);
+      }
 
     return false;
 }
@@ -329,6 +305,17 @@ ScatterEstimation::get_estimated_activity_image_sptr() const
 {
   return this->current_activity_image_sptr;
 }
+
+void ScatterEstimation::set_output_scatter_estimate_prefix(const std::string& arg)
+{
+  this->output_scatter_estimate_prefix = arg;
+}
+
+void ScatterEstimation::set_export_scatter_estimates_of_each_iteration(bool arg)
+{
+  this->export_scatter_estimates_of_each_iteration = arg;
+}
+
 
 Succeeded
 ScatterEstimation::
@@ -346,16 +333,34 @@ set_up()
 
     this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
+    if (is_null_ptr(this->atten_image_sptr))
+      error("ScatterEstimation: No attenuation image has been set. Aborting.");
+
     if (is_null_ptr(this->input_projdata_sptr))
-    {
-        warning("ScatterEstimation: No input proj_data have been set. Aborting.");
-        return Succeeded::no;
-    }
+      error("ScatterEstimation: No input proj_data have been set. Aborting.");
+
+    if (is_null_ptr(this->scatter_simulation_sptr))
+      error("ScatterEstimation: Please define a scatter simulation method. Aborting.");
 
     if (!run_in_2d_projdata)
-    {
-        error("ScatterEstimation: Currently, only running the estimation in 2D is supported.");
-    }
+      error("ScatterEstimation: Currently, only running the estimation in 2D is supported.");
+
+    if(is_null_ptr(multiplicative_binnorm_sptr))
+      error("ScatterEstimation: No multiplicative coefficients have been set!!\n"
+            "At least attenuation has to be set!");
+
+    if(!this->recompute_mask_projdata)
+      {
+        if (is_null_ptr(this->mask_projdata_sptr))
+          error("ScatterEstimation: Please set mask proj_data (or enable computing it)");
+      }
+    else if (!this->recompute_mask_image)
+      {
+        if (is_null_ptr(this->mask_image_sptr))
+          error("ScatterEstimation: Please set a mask image (or enable computing it)");
+      }
+
+
 
 #if 1
     // Calculate the SSRB

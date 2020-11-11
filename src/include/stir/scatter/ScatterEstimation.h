@@ -156,6 +156,9 @@ public:
 
     inline void set_num_iterations(int);
 
+    void set_output_scatter_estimate_prefix(const std::string&);
+    void set_export_scatter_estimates_of_each_iteration(bool);
+
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
