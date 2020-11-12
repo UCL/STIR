@@ -204,12 +204,7 @@ post_processing()
       }
     // If the reconstruction_template_sptr is null then, we need to parse it from another
     // file. I prefer this implementation since makes smaller modular files.
-    if (this->recon_template_par_filename.size() == 0)
-    {
-      if (is_null_ptr(reconstruction_template_sptr))
-        error("ScatterEstimation: Please define a reconstruction type.");
-    }
-    else
+    if (!this->recon_template_par_filename.empty())
     {
         KeyParser local_parser;
         local_parser.add_start_key("Reconstruction Parameters");
@@ -321,6 +316,28 @@ ScatterEstimation::get_output() const
     return scatter_estimate_sptr;
 }
 
+#if STIR_VERSION < 050000
+void ScatterEstimation::set_input_data(const shared_ptr<ProjData>& data)
+{
+  this->set_input_proj_data_sptr(data);
+}
+#else
+void ScatterEstimation::set_input_data(const shared_ptr<ExamData>& data)
+{
+  // C++-11
+  auto sptr = std::dynamic_pointer_cast<ProjData>(data);
+  if (!sptr)
+    error("ScatterEstimation can only accept ProjData at the moment");
+
+  this->set_input_proj_data_sptr(sptr);
+}
+#endif
+
+shared_ptr<const ProjData> ScatterEstimation::get_input_data() const
+{
+  return this->input_projdata_sptr;
+}
+
 shared_ptr<const DiscretisedDensity<3,float> >
 ScatterEstimation::get_estimated_activity_image_sptr() const
 {
@@ -356,12 +373,15 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation> arg)
   this->multiplicative_binnorm_sptr.reset();
 }
 
+bool ScatterEstimation::already_setup() const
+{
+  return this->_already_setup;
+}
 
 Succeeded
 ScatterEstimation::
 set_up()
 {
-    info("Scatter Estimation Parameters (objects set outside parsing will not be listed correctly)\n" + this->parameter_info() + "\n\n", 1);
     if (this->run_debug_mode)
     {
         info("ScatterEstimation: Debugging mode is activated.");
@@ -397,6 +417,8 @@ set_up()
 
    if (this->_already_setup)
       return Succeeded::yes;
+
+   info("Scatter Estimation Parameters (objects that are not set by parsing will not be listed correctly)\n" + this->parameter_info() + "\n\n", 1);
 
     this->create_multiplicative_binnorm_sptr();
     this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
@@ -479,12 +501,6 @@ set_up()
     //
 
     info("ScatterEstimation: Setting up Scatter Simulation method ...");
-    if(is_null_ptr(this->scatter_simulation_sptr))
-    {
-        warning("Scatter simulation method has not been initialised. Aborting.");
-        return Succeeded::no;
-    }
-
     // The images are passed to the simulation.
     // and it will override anything that the ScatterSimulation.par file has done.
     if(this->override_density_image)

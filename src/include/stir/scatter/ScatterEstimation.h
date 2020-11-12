@@ -141,6 +141,15 @@ public:
     // Set functions
     //! Set the input projdata.
     inline void set_input_proj_data_sptr(const shared_ptr<ProjData>);
+    //! Set the input projdata
+    /*! Using same name as Reconstruction */
+#if STIR_VERSION < 050000
+    void set_input_data(const shared_ptr<ProjData>& data);
+#else
+    void set_input_data(const shared_ptr<ExamData>& data);
+#endif
+    shared_ptr<const ProjData> get_input_data() const;
+
     //! Set the reconstruction method for the scatter estimation
     inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
     //! Set the full resolution attenuation image.
@@ -181,6 +190,9 @@ public:
 
     //! Get the (low resolution) estimate of the activity image
     shared_ptr<const DiscretisedDensity<3,float> > get_estimated_activity_image_sptr() const;
+
+    //! allows checking if we have called set_up()
+    virtual bool already_setup() const;
 
  protected:
     //! All recomputes_** will default true
@@ -264,6 +276,7 @@ public:
     std::string output_scatter_estimate_prefix;
 
     std::string output_additive_estimate_prefix;
+
 private:
     //! variable to check if we have called set_up()
     bool _already_setup;
