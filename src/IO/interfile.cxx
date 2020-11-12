@@ -594,6 +594,10 @@ write_basic_interfile_image_header(const string& header_file_name,
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
+  
+  
+  output_header << "calibration factor := "  
+                <<exam_info.get_calibration_factor() << endl;
 
   if (is_spect)
     {
