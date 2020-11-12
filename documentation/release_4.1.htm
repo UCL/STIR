@@ -72,6 +72,21 @@
   </li>
   <li>copy energy information from the template in the <tt>forward_project</tt> utility.
   </li>
+  <li>PET scatter improvements:
+    <ul>
+    <li>the scatter estimation parsing now prefers specifying normalisation and attenuation via two separate
+      keywords (as opposed to via a chained bin normalisation),
+      (keyword <tt>normalisation type</tt>) and
+      the attenuation factors. Check the updated sample file.
+      The old parsing keyword <tt>Bin normalisation type</tt> will still work but is deprecated
+      and will be removed in a future version.
+    </li>
+    <li>scatter estimation uses now more defaults such that you need to have less files around.</li>
+    <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
+      (all?) parameters can be set from C++/Python (i.e. without parsing).
+    </li>
+    </ul>
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none

@@ -25,6 +25,7 @@
 */
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/ExamInfo.h"
@@ -59,6 +60,7 @@ void
 ScatterEstimation::
 set_defaults()
 {
+    this->_already_setup = false;
     this->scatter_simulation_sptr.reset(new SingleScatterSimulation);
     this->recompute_atten_projdata = true;
     this->recompute_mask_image = true;
@@ -80,7 +82,9 @@ set_defaults()
     this->downsample_scanner_bool = true;
     this->remove_interleaving = true;
     this->atten_image_filename = "";
-    this->norm_coeff_filename = "";
+    this->atten_coeff_filename = "";
+    this->norm_3d_sptr.reset();
+    this->multiplicative_binnorm_sptr.reset();
     this->output_scatter_estimate_prefix = "";
     this->output_additive_estimate_prefix = "";
     this->num_scatter_iterations = 5;
@@ -121,6 +125,10 @@ initialise_keymap()
     // END MASK
     this->parser.add_key("background projdata filename",
                          &this->back_projdata_filename);
+    this->parser.add_parsing_key("Normalisation type",
+                         &this->norm_3d_sptr);
+    this->parser.add_key("attenuation correction factors filename",
+                         &this->atten_coeff_filename);
     this->parser.add_parsing_key("Bin Normalisation type",
                          &this->multiplicative_binnorm_sptr);
 
@@ -220,6 +228,19 @@ post_processing()
         info("ScatterEstimation: Loading attenuation image...", 3);
         this->atten_image_sptr =
           read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
+      }
+    if (!this->atten_coeff_filename.empty())
+      {
+        info("ScatterEstimation: Loading attenuation coefficients projdata...", 3);
+        shared_ptr<ProjData> atten_coef_sptr =
+          ProjData::read_from_file(this->atten_coeff_filename);
+        this->set_attenuation_correction_proj_data_sptr(atten_coef_sptr);
+      }
+    if(!is_null_ptr(multiplicative_binnorm_sptr))
+      {
+        warning("ScatterEstimation: looks like you set a combined norm via the 'bin normalisation type' keyword\n"
+                "This is deprecated and will be removed in a future version (5.0?).\n"
+                "Use 'normalisation type' (for the norm factors) and 'attenuation correction factors filename' instead.");
       }
 
     if (!this->back_projdata_filename.empty())
@@ -321,16 +342,18 @@ void
 ScatterEstimation::
 set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
-    //this->atten_projdata_sptr = arg;
-  error("Not implemented");
+  this->_already_setup = false;
+  this->atten_norm_3d_sptr.reset(new BinNormalisationFromProjData(arg));
+  this->multiplicative_binnorm_sptr.reset();
 }
 
 void
 ScatterEstimation::
 set_normalisation_sptr(const shared_ptr<BinNormalisation> arg)
 {
-    //    this->norm_projdata_sptr = arg;
-  error("Not implemented");
+  this->_already_setup = false;
+  this->norm_3d_sptr = arg;
+  this->multiplicative_binnorm_sptr.reset();
 }
 
 
@@ -338,6 +361,7 @@ Succeeded
 ScatterEstimation::
 set_up()
 {
+    info("Scatter Estimation Parameters (objects set outside parsing will not be listed correctly)\n" + this->parameter_info() + "\n\n", 1);
     if (this->run_debug_mode)
     {
         info("ScatterEstimation: Debugging mode is activated.");
@@ -347,8 +371,6 @@ set_up()
         FilePath current_full_path(FilePath::get_current_working_directory());
         extras_path = current_full_path.append("extras");
     }
-
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
     if (is_null_ptr(this->atten_image_sptr))
       error("ScatterEstimation: No attenuation image has been set. Aborting.");
@@ -362,10 +384,6 @@ set_up()
     if (!run_in_2d_projdata)
       error("ScatterEstimation: Currently, only running the estimation in 2D is supported.");
 
-    if(is_null_ptr(multiplicative_binnorm_sptr))
-      error("ScatterEstimation: No multiplicative coefficients have been set!!\n"
-            "At least attenuation has to be set!");
-
     if(!this->recompute_mask_projdata)
       {
         if (is_null_ptr(this->mask_projdata_sptr))
@@ -377,6 +395,11 @@ set_up()
           error("ScatterEstimation: Please set a mask image (or enable computing it)");
       }
 
+   if (this->_already_setup)
+      return Succeeded::yes;
+
+    this->create_multiplicative_binnorm_sptr();
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
 
 #if 1
@@ -520,6 +543,7 @@ set_up()
         }
     }
 
+    this->_already_setup = true;
     info("ScatterEstimation: >>>>Set up finished successfully!!<<<<");
     return Succeeded::yes;
 }
@@ -544,7 +568,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     //
     // Multiplicative projdata
     //
-
     shared_ptr<ProjData> tmp_atten_projdata_sptr =
       this->get_attenuation_correction_factors_sptr(this->multiplicative_binnorm_sptr);
     shared_ptr<ProjData> atten_projdata_2d_sptr;
@@ -738,7 +761,7 @@ ScatterEstimation::
 process_data()
 {
 
-    if (this->set_up() == Succeeded::no)
+  if (this->set_up() == Succeeded::no)
     {
         info("ScatterEstimation: Unsuccessful set up!");
        return Succeeded::no;
@@ -1284,6 +1307,34 @@ int ScatterEstimation::get_num_iterations() const
 int ScatterEstimation::get_iterations_num() const
 {
     return num_scatter_iterations;
+}
+
+void
+ScatterEstimation::create_multiplicative_binnorm_sptr()
+{
+  if (!is_null_ptr(this->multiplicative_binnorm_sptr))
+    {
+      if (!is_null_ptr(this->norm_3d_sptr))
+        error("ScatterEstimation: cannot handle having both norm and 'combined norm' initialised");
+      if (!is_null_ptr(this->atten_norm_3d_sptr))
+        error("ScatterEstimation: cannot handle having both attenuation and 'combined norm' initialised");
+    }
+  else
+    {
+      if (is_null_ptr(this->atten_norm_3d_sptr))
+        {
+          error("ScatterEstimation: need attenuation correction factors to be set (sorry)");
+        }
+      if (is_null_ptr(this->norm_3d_sptr))
+        {
+          warning("ScatterEstimation: no normalisation data set. This would only be appropriate for simple simulations.");
+          this->norm_3d_sptr = this->atten_norm_3d_sptr;
+        }
+      else
+        {
+          this->multiplicative_binnorm_sptr.reset(new ChainedBinNormalisation(norm_3d_sptr, atten_norm_3d_sptr));
+        }
+    }
 }
 
 shared_ptr<BinNormalisation>
