@@ -81,7 +81,7 @@
       The old parsing keyword <tt>Bin normalisation type</tt> will still work but is deprecated
       and will be removed in a future version.
     </li>
-    <li>scatter estimation uses now more defaults such that you need to have less files around.</li>
+    <li>scatter estimation uses now more defaults such that you need to have less files.</li>
     <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
       (all?) parameters can be set from C++/Python (i.e. without parsing).
     </li>
@@ -185,7 +185,11 @@ from the above):</H2>
 </ul>
   
 <h3>Other code changes</h3>
-<p>See the ChangeLog</p>
+<p>See the ChangeLog, specific items:</p>
+<ul>
+  <li><code>ScatterEstimation</code> now requires calling <code>set_up()</code> explicitly.</li>
+</ul>
+
 
 </body>
 
