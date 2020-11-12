@@ -317,6 +317,23 @@ void ScatterEstimation::set_export_scatter_estimates_of_each_iteration(bool arg)
 }
 
 
+void
+ScatterEstimation::
+set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
+{
+    //this->atten_projdata_sptr = arg;
+  error("Not implemented");
+}
+
+void
+ScatterEstimation::
+set_normalisation_sptr(const shared_ptr<BinNormalisation> arg)
+{
+    //    this->norm_projdata_sptr = arg;
+  error("Not implemented");
+}
+
+
 Succeeded
 ScatterEstimation::
 set_up()
@@ -520,8 +537,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
         iterative_object->set_input_data(this->input_projdata_sptr);
 
-    bool do_chains = false;
-
     const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
     const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
@@ -530,29 +545,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     // Multiplicative projdata
     //
 
-    shared_ptr<ProjData> tmp_atten_projdata_sptr;
+    shared_ptr<ProjData> tmp_atten_projdata_sptr =
+      this->get_attenuation_correction_factors_sptr(this->multiplicative_binnorm_sptr);
     shared_ptr<ProjData> atten_projdata_2d_sptr;
 
-    // Check if we have Chained Normalisation.
-    // // If it is not, then we assume that we have only attenuation.
-
-    const ChainedBinNormalisation* tmp_chain_multiplicative_binnorm_sptr =
-            dynamic_cast<const ChainedBinNormalisation*>(this->multiplicative_binnorm_sptr.get());
-
-    if (!is_null_ptr(tmp_chain_multiplicative_binnorm_sptr ))
-    {
-        do_chains = true;
-        tmp_atten_projdata_sptr =
-                dynamic_cast<BinNormalisationFromProjData*> (tmp_chain_multiplicative_binnorm_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
-    }
-    else
-    {
-        do_chains = false;
-        tmp_atten_projdata_sptr =
-                dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
-    }
-
-#if 1
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -572,28 +568,13 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         // TODO: this needs more work. -- Setting directly 2D proj_data is buggy right now.
         atten_projdata_2d_sptr = tmp_atten_projdata_sptr;
     }
-#else
-    {
-        std::string in_filename = extras_path.get_path() + "tmp_atten_sino_2d.hs";
-        atten_projdata_2d_sptr = ProjData::read_from_file(in_filename);
-    }
-#endif
 
     info("ScatterEstimation: 4.Calculating the normalisation data...");
     {
       if (run_in_2d_projdata)
         {
-          shared_ptr<BinNormalisation> norm3d_sptr;
-          
-          if(!do_chains)
-            {
-              norm3d_sptr = MAKE_SHARED<TrivialBinNormalisation>();
-            }
-          else
-            {
-              norm3d_sptr = tmp_chain_multiplicative_binnorm_sptr->get_first_norm();
-            }
-
+          shared_ptr<BinNormalisation> norm3d_sptr =
+            this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
           shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
 
           if ( input_projdata_sptr->get_num_segments() > 1)
@@ -1306,7 +1287,7 @@ int ScatterEstimation::get_iterations_num() const
 }
 
 shared_ptr<BinNormalisation>
-ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr)
+ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const
 {
     const ChainedBinNormalisation* tmp_chain_norm_sptr =
       dynamic_cast<const ChainedBinNormalisation*>(combined_norm_sptr.get());
@@ -1321,6 +1302,26 @@ ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisati
         normalisation_factors_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr());
 	return normalisation_factors_sptr;
     }
+}
+
+shared_ptr<ProjData>
+ScatterEstimation::get_attenuation_correction_factors_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const
+{
+  const ChainedBinNormalisation* tmp_chain_norm_sptr =
+    dynamic_cast<const ChainedBinNormalisation*>(combined_norm_sptr.get());
+  shared_ptr<BinNormalisation> atten_norm_sptr;
+  if (!is_null_ptr(tmp_chain_norm_sptr ))
+    {
+      atten_norm_sptr = tmp_chain_norm_sptr->get_second_norm();
+    }
+  else
+    {
+      atten_norm_sptr = combined_norm_sptr;
+    }
+
+  return
+    dynamic_cast<BinNormalisationFromProjData*> (atten_norm_sptr.get())->get_norm_proj_data_sptr();
+
 }
 
 shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string& filename,

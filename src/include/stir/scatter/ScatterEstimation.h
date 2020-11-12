@@ -141,8 +141,8 @@ public:
     inline void set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3, float > > );
     //!
     inline void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
-    //!
-    inline void set_normalisation_proj_data_sptr(const shared_ptr<ProjData>);
+    //! set normalisation object (excluding attenuation)
+    void set_normalisation_sptr(const shared_ptr<BinNormalisation>);
     //!
     inline void set_background_proj_data_sptr(const shared_ptr<ProjData>);
     //!
@@ -203,8 +203,7 @@ public:
     //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
     //! and second the atten.
     shared_ptr<BinNormalisation>  multiplicative_binnorm_2d_sptr;
-    //! (norm * atten) in 3D. Through out the code we set as first the norm
-    //! and second the atten.
+    //! (norm * atten) in 3D. Through out the code we set as first the norm and second the atten.
     shared_ptr<BinNormalisation>  multiplicative_binnorm_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
@@ -300,7 +299,11 @@ private:
 
     //! extract the normalisation component of a combined norm
     shared_ptr<BinNormalisation>
-      get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr);
+      get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const;
+
+    //! extract the attenuation factors from a combined norm
+    shared_ptr<ProjData>
+      get_attenuation_correction_factors_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const;
 
     //! Returns a shared pointer to a new ProjData. If we run in run_debug_mode and
     //! the extras_path has been set, then it will be a ProjDataInterfile, otherwise it will be a ProjDataInMemory.

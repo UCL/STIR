@@ -25,22 +25,6 @@ set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
 
 void
 ScatterEstimation::
-set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    //this->atten_projdata_sptr = arg;
-  error("Not implemented");
-}
-
-void
-ScatterEstimation::
-set_normalisation_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    //    this->norm_projdata_sptr = arg;
-  error("Not implemented");
-}
-
-void
-ScatterEstimation::
 set_background_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
     this->back_projdata_sptr = arg;
