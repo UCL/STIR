@@ -59,7 +59,7 @@ template <typename TargetT>
 void
 Hessian_row_sum<TargetT>::initialise_keymap()
 {
-  parser.add_start_key("Hessian_row_sum Computation Parameters");
+  parser.add_start_key("Hessian Row Sum Computation Parameters");
   parser.add_key("output filename", &output_filename);
   parser.add_key("input image filename", &input_image_filename);
   parser.add_key("use approximate hessian", &use_approximate_hessian);
@@ -183,7 +183,7 @@ process_data()
   }
   else
   {
-    //Compute the Hessian_row_sum image with the full hessian at the current image estimate.
+    // Compute the Hessian_row_sum image with the full hessian at the input image estimate.
     // The input image here is assumed to be the current_image_estimate at the point the hessian will be computed
     compute_Hessian_row_sum();
   }
@@ -205,7 +205,7 @@ compute_Hessian_row_sum()
   auto ones_image_sptr = input_image->get_empty_copy();
   std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
-  info("Computing the spatially variant penalty strength at the current image estimate, this may take a while.");
+  info("Computing Hessian row sum, this may take a while...");
   if (get_compute_with_penalty())
     objective_function_sptr->accumulate_Hessian_times_input(*output_target_sptr, *input_image, *ones_image_sptr);
   else
@@ -218,14 +218,15 @@ Hessian_row_sum<TargetT>::
 compute_approximate_Hessian_row_sum()
 {
   reset_output_target_sptr(input_image);
-  info("Computing the spatially variant penalty strength using approximate hessian, this may take a while.");
+  info("Computing the approximate Hessian row sum, this may take a while...");
   // Setup image
   auto ones_image_sptr = input_image->get_empty_copy();
   std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
   // Approximate Hessian computation will error for a lot of priors so we ignore it!
   if (get_compute_with_penalty())
-    info("Priors do not have an approximation of the Hessian. Ignoring the prior!");
+    info("approximate Hessian row sum: Priors do not have an approximation of the Hessian. Ignoring the prior!");
+
   objective_function_sptr->add_multiplication_with_approximate_Hessian_without_penalty(*output_target_sptr,
                                                                                        *ones_image_sptr);
 }
