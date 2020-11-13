@@ -52,7 +52,7 @@ class DetectorCoordinateMapFromFile
 {
 public:
 	//! Constructor calls read_detectormap_from_file( filename ).
-	DetectorCoordinateMapFromFile(const std::string& filename, double sigma = 1.0) :
+	DetectorCoordinateMapFromFile(const std::string& filename, double sigma = 0.0) :
 		sigma(sigma),
 		distribution(0.0, sigma)
 		{ read_detectormap_from_file( filename ); }
