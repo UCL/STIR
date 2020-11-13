@@ -142,9 +142,9 @@ if [ $? -ne 0 ]; then
 fi
 
 
-echo "===  compare result (up to 5%)"
+echo "===  compare result (up to 6%)"
 # threshold needs to be a bit high as scatter_cylinder.hs was generated without random sampling
-compare_projdata -t .05 my_estimated_scatter_3.hs my_upsampled_scatter_cylinder.hs > my_estimate_scatter_compare_projdata.log 2>&1
+compare_projdata -t .06 my_estimated_scatter_3.hs my_upsampled_scatter_cylinder.hs > my_estimate_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
   error_log_files="${error_log_files} my_estimate_scatter*.log"
