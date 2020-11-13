@@ -45,6 +45,7 @@ public:
 
     virtual ~PostFiltering(){}
 
+    void set_filter_sptr(shared_ptr<DataProcessor< DataT > > filter_sptr);
     Succeeded process_data(DataT& arg);
 
     //! Check if filter exists
