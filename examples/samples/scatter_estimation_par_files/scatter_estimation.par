@@ -12,26 +12,15 @@ input file := ${sino_input}
 attenuation image filename := ${atnimg}
 
 ; Normalisation coefficients & attenuation data
-; If only one normalisation input is set; 
-; it will be assumed that they are attenuation correction factors. 
-;; The algorithm will assume that the first is normalisation, i.e. the 
-;; efficiency factors and the second the attenuation. You should not 
-;; change this order. 
-Bin Normalisation type := Chained
-	Chained Bin Normalisation Parameters:=
-   Bin Normalisation to apply first:= from ProjData
-           Bin Normalisation From ProjData :=
+Normalisation type := from ProjData
+   Bin Normalisation From ProjData :=
             normalisation projdata filename:= ${NORM}
-       End Bin Normalisation From ProjData:=
+   End Bin Normalisation From ProjData:=
 
-	Bin Normalisation to apply second:= From ProjData
-		Bin Normalisation From ProjData :=
-           normalisation projdata filename:= ${acf3d}
-        End Bin Normalisation From ProjData:=
-		
-END Chained Bin Normalisation Parameters:=
+attenuation correction factors filename := ${acf3d}
 
-;; Background data (not  normalised)
+;; Background data (not  normalised).
+; Should be set to the randoms estimate (unless you precorrected, but we haven't tested that)
 background projdata filename := ${randoms3d}
 
 ; Mask for tail-fitting
