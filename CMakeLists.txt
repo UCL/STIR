@@ -245,5 +245,35 @@ install(
     FILES_MATCHING PATTERN "Find*"
 )
 
+# install examples
+install(
+  DIRECTORY
+    examples
+  COMPONENT DOC
+  DESTINATION "${STIR_DOC_DIR}"
+   FILES_MATCHING
+    PATTERN *
+    PATTERN my_* EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
+
+# install documentation
+install(
+  DIRECTORY
+    documentation
+  COMPONENT DOC
+    DESTINATION "${STIR_DOC_DIR}"
+  FILES_MATCHING
+    PATTERN *
+    PATTERN *.aux EXCLUDE
+    PATTERN *.dvi EXCLUDE
+    PATTERN *.out EXCLUDE
+    PATTERN *.toc EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
 #  COMPONENT
 #    Devel
