@@ -116,7 +116,7 @@ public:
     get_output_proj_data_sptr() const;
 
     inline int get_num_scatter_points() const
-    { return this->scatt_points_vector.size();}
+    { return static_cast<int>(this->scatt_points_vector.size());}
     //! Get the template ProjDataInfo
     shared_ptr<const ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
     //! Get the ExamInfo
@@ -142,6 +142,7 @@ public:
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
     void set_exam_info(const ExamInfo&);
+    void set_exam_info_sptr(const shared_ptr<const ExamInfo>);
 
     void set_output_proj_data_sptr(shared_ptr<ProjData>);
 

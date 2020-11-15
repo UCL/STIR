@@ -104,6 +104,15 @@ if (@AVW_FOUND@)
   set(STIR_BUILT_WITH_AVW TRUE)
 endif()
 
+# Following lines are currently not necessary but would need to be enabled
+# if nlohmann_json stops being a header-only library.
+# See buildblock/CMakeLists.xt
+#
+#if (@nlohmann_json_FOUND@)
+#  find_package(nlohmann_json 3.2.0 ${STIR_FIND_TYPE})
+#  set(STIR_BUILD_WITH_nlohmann_json TRUE)
+#endif()
+
 if (@STIR_MPI@)
   find_package(MPI ${STIR_FIND_TYPE})
   if(NOT MPI_FOUND)
