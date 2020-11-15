@@ -623,15 +623,15 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
           KeyArgument::ASCII, &scanner_geometry);
 
-  axial_distance_between_crystals_in_cm = -1;
+  axial_distance_between_crystals_in_cm = -0.1;
   add_key("distance between crystals in axial direction (cm)",
           &axial_distance_between_crystals_in_cm);
 
-  transaxial_distance_between_crystals_in_cm = -1;
+  transaxial_distance_between_crystals_in_cm = -0.1;
   add_key("distance between crystals in transaxial direction (cm)",
           &transaxial_distance_between_crystals_in_cm);
 
-  axial_distance_between_blocks_in_cm = -1;
+  axial_distance_between_blocks_in_cm = -0.1;
   add_key("distance between blocks in axial direction (cm)",
           &axial_distance_between_blocks_in_cm);
 
