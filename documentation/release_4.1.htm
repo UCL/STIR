@@ -40,7 +40,10 @@
     software version).
     We currently read listmode, sinograms and calibration files.
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
-    will be non-TOF.
+    will be non-TOF.<br />
+    <strong>Warning:</strong> currently images will be reconstructed flipped with respect to the standard
+    STIR orientation. This is particularly noticeable when output in Nifti/MetaIO etc. See
+    <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
   </li>
   <li>A new script <tt>create_fdef_from_listmode.sh</tt> that can be used to create a single-time
     frame definition file for a given listmode file.
@@ -52,7 +55,7 @@
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
   <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
-  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dynamic and parametric images as well. (An example
   file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
   <li>Interfile and ITK image IO now understand some date/time fields. This required a change to our Interfile
     version specification to be able to handle time-zones. These can now be added via the same suffix as used by DICOM, e.g.
@@ -121,6 +124,10 @@ none
    by the Interfile header).
   </li>
   </ul>
+</li>
+<li> data read from GE RDF9 uses wrong conventions, and images will be reconstructed flipped
+   with respect to the standard STIR orientation. See
+  <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
 </li>
 <li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
