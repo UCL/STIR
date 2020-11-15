@@ -635,7 +635,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("distance between blocks in axial direction (cm)",
           &axial_distance_between_blocks_in_cm);
 
-  transaxial_distance_between_blocks_in_cm = -1;
+  transaxial_distance_between_blocks_in_cm = -0.1;
   add_key("distance between blocks in transaxial direction (cm)",
         &transaxial_distance_between_blocks_in_cm);
   // end of new keys for block geometry
