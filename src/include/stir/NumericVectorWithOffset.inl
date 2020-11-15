@@ -325,18 +325,7 @@ xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
 
   while (this_iter != this->end())
     {
-      auto temp1 = (*x_iter) * (*a_iter);
-      auto temp2 = (*y_iter) * (*b_iter);
-      auto temp3 = temp1 + temp2;
-      
-      *this_iter = temp3;
-      //*this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
-      x_iter++;
-      y_iter++;
-      a_iter++;
-      b_iter++;
-      this_iter++;
-
+      *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
     }
 }
 
