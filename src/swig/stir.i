@@ -984,6 +984,7 @@ T * operator-> () const;
   }
 #endif
 
+%ignore stir::NumericVectorWithOffset::xapyb;
 %include "stir/NumericVectorWithOffset.h"
 
 #ifdef SWIGPYTHON
