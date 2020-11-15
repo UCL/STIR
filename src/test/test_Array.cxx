@@ -743,7 +743,7 @@ ArrayTests::run_tests()
 	  // test xapyb, a and b vector
     {
       Array<4,float> tmp(test4.get_index_range());
-      tmp.xapyb_vec(test4, test4+4, test4+2, test4+6);
+      tmp.xapyb(test4, test4+4, test4+2, test4+6);
 
       const Array<4, float> by_hand = test4 * (test4 + 4) + (test4 + 2) * (test4 + 6);
       check_if_equal(tmp, by_hand, "test xapyb vector (Array4D)");
@@ -810,7 +810,7 @@ ArrayTests::run_tests()
         iter_by_hand++;
       }
 
-      tmp.xapyb_vec(x, a, y, b);
+      tmp.xapyb(x, a, y, b);
       check_if_equal(tmp, by_hand, "test xapyb vector (NumericVectorWithOffset<Array4D>)");
     }
   }

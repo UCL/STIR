@@ -278,11 +278,10 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v)
 }
 
 template <class T, class NUMBER>
-template <class NUMBER2>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
-xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
-      const NumericVectorWithOffset& y, const NUMBER2 b)
+xapyb(const NumericVectorWithOffset& x, const NUMBER a,
+      const NumericVectorWithOffset& y, const NUMBER b)
 {  
   this->check_state();
   if ((this->get_min_index() != x.get_min_index())
@@ -303,8 +302,8 @@ xapyb(const NumericVectorWithOffset& x, const NUMBER2 a,
 template <class T, class NUMBER>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
-xapyb_vec(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
-          const NumericVectorWithOffset& y, const NumericVectorWithOffset& b)
+xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+      const NumericVectorWithOffset& y, const NumericVectorWithOffset& b)
 {  
   this->check_state();
   if ((this->get_min_index() != x.get_min_index())

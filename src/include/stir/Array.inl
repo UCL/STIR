@@ -330,10 +330,9 @@ Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) co
 }
 
 template <int num_dimensions, typename elemT>
-template <typename elemT2>
 void Array<num_dimensions, elemT>::
-    xapyb(const Array &x, const elemT2 a,
-          const Array &y, const elemT2 b)
+    xapyb(const Array &x, const elemT a,
+          const Array &y, const elemT b)
 {
   this->check_state();
   if ((this->get_index_range() != x.get_index_range()) || (this->get_index_range() != y.get_index_range()))
@@ -351,8 +350,8 @@ void Array<num_dimensions, elemT>::
 //using full iterators
 template <int num_dimensions, typename elemT>
 void Array<num_dimensions, elemT>::
-    xapyb_vec(const Array &x, const Array &a,
-              const Array &y, const Array &b)
+    xapyb(const Array &x, const Array &a,
+          const Array &y, const Array &b)
 {
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())
