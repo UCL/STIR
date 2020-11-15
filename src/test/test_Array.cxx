@@ -750,16 +750,18 @@ ArrayTests::run_tests()
     }
 
     {
-      NumericVectorWithOffset<Array<4, float>, float> tmp(-1, 2);
+      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
+      typedef typename NVecArr::iterator NVecArrIter;
+      NVecArr tmp(-1, 2);
 
-      NumericVectorWithOffset<Array<4, float>, float> x(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> y(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> by_hand(-1, 2);
+      NVecArr x(-1, 2);
+      NVecArr y(-1, 2);
+      NVecArr by_hand(-1, 2);
 
-      auto iter_tmp = tmp.begin();
-      auto iter_x = x.begin();
-      auto iter_y = y.begin();
-      auto iter_by_hand = by_hand.begin();
+      NVecArrIter iter_tmp = tmp.begin();
+      NVecArrIter iter_x = x.begin();
+      NVecArrIter iter_y = y.begin();
+      NVecArrIter iter_by_hand = by_hand.begin();
 
       int i = 0;
       while (iter_tmp != tmp.end())
@@ -778,20 +780,22 @@ ArrayTests::run_tests()
       check_if_equal(tmp, by_hand, "test xapyb scalar (NumericVectorWithOffset<Array4D>)");
     }
     {
-      NumericVectorWithOffset<Array<4, float>, float> tmp(-1, 2);
+      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
+      typedef typename NVecArr::iterator NVecArrIter;
+      NVecArr tmp(-1, 2);
 
-      NumericVectorWithOffset<Array<4, float>, float> x(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> y(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> a(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> b(-1, 2);
-      NumericVectorWithOffset<Array<4, float>, float> by_hand(-1, 2);
+      NVecArr x(-1, 2);
+      NVecArr y(-1, 2);
+      NVecArr a(-1, 2);
+      NVecArr b(-1, 2);
+      NVecArr by_hand(-1, 2);
 
-      auto iter_tmp = tmp.begin();
-      auto iter_x = x.begin();
-      auto iter_y = y.begin();
-      auto iter_a = a.begin();
-      auto iter_b = b.begin();
-      auto iter_by_hand = by_hand.begin();
+      NVecArrIter iter_tmp = tmp.begin();
+      NVecArrIter iter_x = x.begin();
+      NVecArrIter iter_y = y.begin();
+      NVecArrIter iter_a = a.begin();
+      NVecArrIter iter_b = b.begin();
+      NVecArrIter iter_by_hand = by_hand.begin();
 
       int i = 0;
       while (iter_tmp != tmp.end())
