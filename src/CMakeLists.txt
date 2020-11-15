@@ -330,7 +330,9 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
         DEPENDS doxygen.stamp)
 
     # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
-    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/html/
+            COMPONENT DOC
+            DESTINATION ${STIR_DOC_DIR}/doxygen)
 endif()
 
 #### SWIG settings
