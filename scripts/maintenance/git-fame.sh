@@ -10,4 +10,6 @@
 #  -C  Detect inter-file line moves and copies [default: False].
 #
 # These slow it down dramatically, but a lot of this has happened in STIR
-git fame -w -M -C
+git fame -wMC --format json \
+  | jq -c '{creators: [.data[] | {name: .[0]}]}' \
+  | sed -r -e 's/(\{"name")/\n    \1/g' -e 's/:/: /g'
