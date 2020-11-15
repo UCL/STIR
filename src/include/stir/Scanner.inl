@@ -465,7 +465,7 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
 
 // For retrieving the coordinates / detector, ring id from the scanner
 stir::DetectionPosition<>
-Scanner::get_detpos_given_id(const stir::DetectionPosition<> det_pos) const{
+Scanner::get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const{
     if (crystal_map_file_name == ""){
         stir::error("Crystal Map not defined!");
     }

@@ -291,17 +291,20 @@ private:
   //! Reference energy.
   float reference_energy;
   
-  //! new variables for block geometry
+  //! \name new variables for block geometry
+  //@{
   std::string scanner_orientation;
   std::string scanner_geometry;
   float axial_distance_between_crystals_in_cm;
   float transaxial_distance_between_crystals_in_cm;
   float axial_distance_between_blocks_in_cm;
   float transaxial_distance_between_blocks_in_cm;
+  //@}
   
-  //! new variables for generic geometry
+  //! \name new variables for generic geometry
+  //@{
   std::string crystal_map;
-
+  //@}
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

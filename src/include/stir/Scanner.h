@@ -423,7 +423,7 @@ class Scanner
   
   // Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
   // used in CListRecordSAFIR.inl for accessing the coordinates
-  inline stir::DetectionPosition<> get_detpos_given_id(const stir::DetectionPosition<> det_pos) const;
+  inline stir::DetectionPosition<> get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const;
   // Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
   // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
   inline stir::CartesianCoordinate3D<float> get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const;

@@ -1516,8 +1516,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
               output_header << "effective central bin size (cm) := "
               		     << proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 
-            }
-        }  // end generic scanner
+            } // end generic scanner
+            
+          else error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: Cylindrical/BlocksOnCylindrical/Genreic");
+        }  
     }
 
 
