@@ -32,6 +32,7 @@ InputStreamFromROOTFileForECATPET():
     set_defaults();
 }
 
+#if 0 // not used, so commented out (would need adapting since moving crystal_repeated_*)
 InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET(std::string _filename,
                                   std::string _chain_name,
@@ -45,6 +46,7 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
     block_repeater_y(block_repeater_y), block_repeater_z(block_repeater_z)
 {
     set_defaults();
+    error("This constructor is incorrect"); //TODO set_defaults() will override the above
 
     filename = _filename;
     chain_name = _chain_name;
@@ -58,6 +60,7 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
     if (half_block < 0 )
         half_block = 0;
 }
+#endif
 
 Succeeded
 InputStreamFromROOTFileForECATPET::
@@ -94,10 +97,10 @@ get_next_record(CListRecordROOT& record)
     int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
             + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
-    int crystal1 = (blockID1%block_repeater_y) * crystal_repeater_y
+    int crystal1 = (blockID1%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = (blockID2%block_repeater_y) * crystal_repeater_y
+    int crystal2 = (blockID2%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID2%crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
@@ -129,9 +132,6 @@ void
 InputStreamFromROOTFileForECATPET::set_defaults()
 {
     base_type::set_defaults();
-    crystal_repeater_x = -1;
-    crystal_repeater_y = -1;
-    crystal_repeater_z = -1;
     block_repeater_y = -1;
     block_repeater_z = -1;
 }
@@ -144,10 +144,6 @@ InputStreamFromROOTFileForECATPET::initialise_keymap()
     this->parser.add_stop_key("End GATE_ECAT_PET Parameters");
     this->parser.add_key("number of blocks Y", &this->block_repeater_y);
     this->parser.add_key("number of blocks Z", &this->block_repeater_z);
-
-    this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
-    this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
-    this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
 }
 
 bool InputStreamFromROOTFileForECATPET::
