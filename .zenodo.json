@@ -23,7 +23,6 @@
     {"identifier": "10.1088/1361-6420/ab013f", "relation": "documents"},
     {"identifier": "10.1109/TRPMS.2018.2884176", "relation": "documents"},
     {"identifier": "10.1109/nssmic.2018.8824312", "relation": "documents"},
-    {"identifier": "10.1109/TRPMS.2018.2884176", "relation": "documents"},
     {"identifier": "10.1109/NSS/MIC42101.2019.9059665", "relation": "documents"}],
   "communities": [{"identifier": "ccp-petmr"},{"identifier": "synerbi"}],
   "creators": [
