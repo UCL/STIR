@@ -26,13 +26,16 @@
      compute_spatially_variant_penalty_strength template_proj_data
   \endverbatim
 
-  Computes a spatially variant penalty strength, either using:
+  Computes a spatially variant penalty strength. This utility uses methods proposed by:
+  Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
+  & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
+  in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
 
-
-  See: Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
-    & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
-    in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
-   for more details
+  Based upon the value of "use approximate hessian" in the parameter file, either of two methods can be used to
+  compute the spatially variant penalty strength, a.k.a. kappa.
+  Both of the methods compute the Hessian row sum of the objective / likelihood function.
+  1. \f[ \hat\kappa = \sqrt{ P^T \bigg( \frac{y}{ (P\lambda+a)^2 }  \bigg) P1 } \f], or
+  2. \f[ \tilde\kappa = \sqrt{ P^T \bigg( \frac{1}{y} \bigg)P1 } \f]
 
   \author Robert Twyman
 */
@@ -47,7 +50,9 @@ START_NAMESPACE_STIR
 static void print_usage_and_exit()
 {
   //todo:update usage
-  std::cerr<<"\nUsage: compute_spatially_variant_penalty_strength template_proj_data\n";
+  std::cerr<<"\nThis executable runs computes a spatially variant penalty strength dependant on a parameter file."
+             "\n\nUsage: compute_spatially_variant_penalty_strength parameter_file.par"
+             "\n\nAn example parameter file can be found in the samples folder." << std::endl;
   exit(EXIT_FAILURE);
 }
 

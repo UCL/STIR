@@ -31,8 +31,6 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
-//#include "stir/recon_buildblock/GeneralisedPrior.h"
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/unique_ptr.h"
 
 

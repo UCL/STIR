@@ -244,8 +244,11 @@ public:
     The Hessian (without penalty) is approximately given by:
     \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
     where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2 \approx -1/y_i; \f]
-    and \f$P_{ij} \f$ is the probability matrix. 
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2; \f]
+    and \f$P_{ij} \f$ is the probability matrix.
+
+    This function uses the approximation of the hessian
+    \f[ h_i^{''}(y_i) \approx -1/y_i \f]
     Hence
     \f[ H_{jk} =  \sum_i P_{ij}(1/y_i) P_{ik} \f]
 
@@ -271,19 +274,19 @@ public:
                                                                              const TargetT& input,
                                                                              const int subset_num) const;
 
-        /*!
-        The Hessian (without penalty) is given by:
-        \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
-        where
-        \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2 ~= -1/y_i; \f]
-        and \f$P_{ij} \f$ is the probability matrix.
-        Hence
-        \f[ H_{jk} =  \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
+  /*!
+    The Hessian (without penalty) is approximately given by:
+    \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
+    where
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2; \f]
+    and \f$P_{ij} \f$ is the probability matrix.
 
-         This function is computationally expensive and can be simplified by the approximation:
-         \f[ y_i / ((P \lambda)_i + a_i)^2 ~= -1/y_i \f]
-         see add_multiplication_with_approximate_sub_Hessian_without_penalty()
-      */
+    Hence
+    \f[ H_{jk} =  \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
+
+    This function is computationally expensive and can be approximated, see
+    add_multiplication_with_approximate_sub_Hessian_without_penalty()
+  */
   virtual Succeeded
         actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
                 const TargetT& current_image_estimate,
