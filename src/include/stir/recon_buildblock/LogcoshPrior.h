@@ -51,7 +51,7 @@ START_NAMESPACE_STIR
 
  The log-cosh function is given by:
   \f[
- f_r = \sum_{dr} w_{dr} log(cosh(\lambda_r - \lambda_{r+dr})) * \kappa_r * \kappa_{r+dr}
+ f_r = \sum_{dr} w_{dr} 1/scalar^2 * log(cosh(\lambda_r - \lambda_{r+dr})) * \kappa_r * \kappa_{r+dr}))
  \f]
 
  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
@@ -90,9 +90,10 @@ START_NAMESPACE_STIR
  */
 template <typename elemT>
 class LogcoshPrior:  public
-                     RegisteredParsingObject< LogcoshPrior<elemT>,
-                             GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                             PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
+                     RegisteredParsingObject<
+                        LogcoshPrior<elemT>,
+                        GeneralisedPrior<DiscretisedDensity<3,elemT> >,
+                        PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
                      >
 {
 private:
@@ -196,18 +197,31 @@ private:
     //! Spatially variant penalty penalty image ptr
     shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 
-    //! The surrogate is defined as tanh(x)/x
+    //! The surrogate of the logcosh function is tanh(x)/x
     /*!
-     x is the should be the difference between the ith and jth voxel.
-     However, use the taylor expansion if the x is too small to prevent division by 0.
+     * @param x is the should be the difference between the ith and jth voxel.
+     However, it will use the taylor expansion if the x is too small (to prevent division by 0).
+     * @return the surrogate of the log-cosh function
     */
-    static inline float surrogate(float x){
+    static inline float surrogate(float x)
+    {
       const float eps = 0.01;
       //  use Taylor of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3
       if (fabs(x)<eps)
       { return 1- square(x)/3; }
       else
       { return tanh(x)/x; }
+    }
+
+    //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
+    /*!
+     This function returns the hessian of the logcosh function
+     * @param x the difference between the ith and jth voxel.
+     * @return the second derivative of the log-cosh function
+     */
+    static inline float Hessian(float x)
+    {
+      return square((1/ cosh(x)));
     }
 };
 

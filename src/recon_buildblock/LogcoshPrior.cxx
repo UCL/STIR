@@ -288,14 +288,13 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
+              // 1/scalar^2 * log(cosh(x * scalar))
               elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-
-              elemT current = weights[dz][dy][dx] *(1/(this->scalar*this->scalar))*log(cosh(this->scalar*temp));
+              elemT current = weights[dz][dy][dx] *
+                      (1/(this->scalar*this->scalar))*log(cosh(this->scalar*temp));
 
               if (do_kappa)
-                current *=
-                        (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
               result += static_cast<double>(current);
             }
       }
@@ -310,13 +309,12 @@ LogcoshPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-  assert(  prior_gradient.has_same_characteristics(current_image_estimate));
+  assert(prior_gradient.has_same_characteristics(current_image_estimate));
   if (this->penalisation_factor==0)
   {
     prior_gradient.fill(0);
     return;
   }
-
 
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -325,8 +323,6 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   {
     compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }
-
-
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
@@ -360,11 +356,13 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
+              // 1/scalar * tanh(x * scalar)
               elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
               elemT current = weights[dz][dy][dx] * (1/this->scalar) * tanh(this->scalar*temp);
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+
               gradient += current;
             }
         prior_gradient[z][y][x]= gradient * this->penalisation_factor;
@@ -410,7 +408,6 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }
 
-
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
   if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
@@ -433,16 +430,12 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     for (int dy=min_dy;dy<=max_dy;++dy)
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
-        // (temp sech^2(|temp|/scalar)) / (|temp|)
-        // sech(temp) = 1/cosh(temp)
+        // sech^2(x * scalar); sech(x) = 1/cosh(x)
         elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-        elemT current = weights[dz][dy][dx] * (temp / fabs(temp)) *
-                square((1/ cosh(fabs(temp) / this->scalar)));
-
+        elemT current = weights[dz][dy][dx] * Hessian(temp * this->scalar);
 
         if (do_kappa)
-          current *=
-                  (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+          current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
         diagonal += current;
         prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
@@ -463,7 +456,6 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
     parabolic_surrogate_curvature.fill(0);
     return;
   }
-
 
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -506,16 +498,14 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               // psi'(t)/t = tanh/t
-              elemT temp = fabs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]);
-              elemT current  = weights[dz][dy][dx] * (1/(this->scalar))* surrogate(this->scalar*temp);
+              elemT temp =current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] * (1/(this->scalar))* surrogate(this->scalar * temp);
 
               if (do_kappa)
-                current *=
-                        (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
               gradient += current;
             }
-
         parabolic_surrogate_curvature[z][y][x]= gradient * this->penalisation_factor;
       }
     }
@@ -581,12 +571,12 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT temp = input[z][y][x] - input[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * surrogate(temp) * input[z+dz][y+dy][x+dx];
+              elemT temp = current_estimate[z][y][x] - current_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] * Hessian(this->scalar * temp) * input[z+dz][y+dy][x+dx];
 
               if (do_kappa)
-                current *=
-                        (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+
               result += current;
             }
 
