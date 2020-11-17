@@ -3,6 +3,7 @@
  Class defining input file format for coincidence listmode data for SAFIR. 
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2020 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
