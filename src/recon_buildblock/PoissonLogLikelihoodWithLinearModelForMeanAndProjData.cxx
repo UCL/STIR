@@ -935,11 +935,6 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
           this->get_projector_pair().get_symmetries_used()->clone());
 
-  const double start_time =
-          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
-  const double end_time =
-          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
-
   this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
@@ -970,8 +965,8 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
     // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
-      const ViewSegmentNumbers view_segment_num = vs_nums_to_process[i];
-      input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+      info("input: " + std::to_string(i) + ", thread:" + std::to_string(omp_get_thread_num()));
+      input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
       this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
     }
   }
@@ -983,23 +978,22 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 #endif
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
   {
-    const ViewSegmentNumbers view_segment_num = vs_nums_to_process[i];
-
+    info("current estimate:" + std::to_string(i) + ", thread:" + std::to_string(omp_get_thread_num()));
     // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
     RelatedViewgrams<float> ybar_sq_viewgram;
     {
-      ybar_sq_viewgram = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+      ybar_sq_viewgram = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
       this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq_viewgram);
 
       //add additive sinogram to forward projection
-      ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+      ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
       // square ybar
       ybar_sq_viewgram *= ybar_sq_viewgram;
     }
 
     // Compute: final_viewgram * F(input) / ybar_sq_viewgram
     // final_viewgram starts as measured data
-    RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+    RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
     {
       // Mult input_viewgram
       final_viewgram *= input_viewgrams_vec[i];

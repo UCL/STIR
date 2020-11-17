@@ -51,6 +51,7 @@ Hessian_row_sum<TargetT>::
 set_defaults()
 {
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
+  output_filename = "SpatiallyVariantPenaltyStrength.hv";
   set_use_approximate_hessian(true);
   set_compute_with_penalty(false);
 }
