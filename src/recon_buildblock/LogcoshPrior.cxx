@@ -141,6 +141,7 @@ template <typename elemT>
 LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_factor_v)
         :  only_2D(only_2D_v)
 {
+  set_defaults();
   this->penalisation_factor = penalisation_factor_v;
 }
 
@@ -149,6 +150,7 @@ template <typename elemT>
 LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_factor_v, const float scalar_v)
         :  only_2D(only_2D_v), scalar(scalar_v)
 {
+  set_defaults();
   this->penalisation_factor = penalisation_factor_v;
   this->scalar = scalar_v;
 }
