@@ -62,7 +62,7 @@ START_NAMESPACE_STIR
  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
  use 1 for all \f$\kappa\f$'s.
 
- By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to
+ By default, a 3x3 or 3x3x3 neighbourhood is used where the weights are set to
  x-voxel_size divided by the Euclidean distance between the points.
 
  \par Parsing
@@ -129,7 +129,6 @@ public:
                           const DiscretisedDensity<3,elemT> &current_image_estimate);
 
     //! compute the parabolic surrogate for the prior
-    /*! in the case of logcosh priors this will just be the sum of weighting coefficients*/
     void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
                                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
@@ -151,7 +150,7 @@ public:
 
     //! get current kappa image
     /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-     modify the image by manipulating the image refered to by this pointer.
+     modify the image by manipulating the image referred to by this pointer.
      Unpredictable results will occur.
      */
     shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
@@ -172,7 +171,7 @@ protected:
     //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
     float scalar;
 
-    //! filename prefix for outputing the gradient whenever compute_gradient() is called.
+    //! filename prefix for outputting the gradient whenever compute_gradient() is called.
     /*! An internal counter is used to keep track of the number of times the
      gradient is computed. The filename will be constructed by concatenating
      gradient_filename_prefix and the counter.
@@ -199,14 +198,16 @@ private:
 
     //! The surrogate of the logcosh function is tanh(x)/x
     /*!
-     * @param x is the should be the difference between the ith and jth voxel.
+     * @param x is should be the difference between the ith and jth voxel.
      However, it will use the taylor expansion if the x is too small (to prevent division by 0).
      * @return the surrogate of the log-cosh function
     */
     static inline float surrogate(float x)
     {
       const float eps = 0.01;
-      //  use Taylor of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3
+      // If abs(x) is less than eps,
+      // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
+      // Prevents divide by zeros
       if (fabs(x)<eps)
       { return 1- square(x)/3; }
       else

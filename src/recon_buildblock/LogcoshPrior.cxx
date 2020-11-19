@@ -41,9 +41,6 @@
 using std::min;
 using std::max;
 
-/* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
- */
-
 START_NAMESPACE_STIR
 
 template <typename elemT>
@@ -108,7 +105,7 @@ LogcoshPrior<elemT>::post_processing()
   }
 
   if (warn_about_even_size)
-    warning("Parsing LogcoshPrior: even number of weights occured in either x,y or z dimension.\n"
+    warning("Parsing LogcoshPrior: even number of weights occurred in either x,y or z dimension.\n"
             "I'll (effectively) make this odd by appending a 0 at the end.");
   return false;
 
@@ -155,14 +152,14 @@ LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_facto
   this->scalar = scalar_v;
 }
 
-//! get penalty weights for the neigbourhood
+//! get penalty weights for the neighbourhood
 template <typename elemT>
 Array<3,float>
 LogcoshPrior<elemT>::
 get_weights() const
 { return this->weights; }
 
-//! set penalty weights for the neigbourhood
+//! set penalty weights for the neighbourhood
 template <typename elemT>
 void
 LogcoshPrior<elemT>::
@@ -171,7 +168,7 @@ set_weights(const Array<3,float>& w)
 
 //! get current kappa image
 /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
- modify the image by manipulating the image refered to by this pointer.
+ modify the image by manipulating the image referred to by this pointer.
  Unpredictable results will occur.
  */
 template <typename elemT>
@@ -241,7 +238,9 @@ LogcoshPrior<elemT>::
 compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
   if (this->penalisation_factor==0)
-  {return 0.;}
+  {
+    return 0.;
+  }
 
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -512,7 +511,6 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
       }
     }
   }
-
   info(boost::format("parabolic_surrogate_curvature max %1%, min %2%\n") % parabolic_surrogate_curvature.find_max() % parabolic_surrogate_curvature.find_min());
 }
 
@@ -594,7 +592,6 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
 // note that we get a linking error if we don't have the explicit instantiation below
 #  pragma warning(disable:4660)
 #  endif
-
 
     template class LogcoshPrior<float>;
 
