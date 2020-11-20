@@ -76,6 +76,9 @@ MinimalInterfileHeader::MinimalInterfileHeader()
   add_key("imaging modality",
     KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
+  
+  add_key("calibration factor", &calibration_factor); 
+  this->exam_info_sptr->set_calibration_factor(calibration_factor);
 
   add_key("version of keys",
           KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
