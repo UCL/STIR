@@ -290,9 +290,9 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               // 1/scalar^2 * log(cosh(x * scalar))
-              elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+              elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
               elemT current = weights[dz][dy][dx] *
-                      (1/(this->scalar*this->scalar))*log(cosh(this->scalar*temp));
+                      (1/(this->scalar*this->scalar))*log(cosh(this->scalar*voxel_diff));
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -358,8 +358,8 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               // 1/scalar * tanh(x * scalar)
-              elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * (1/this->scalar) * tanh(this->scalar*temp);
+              elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] * (1/this->scalar) * tanh(this->scalar*voxel_diff);
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -432,8 +432,8 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
         // sech^2(x * scalar); sech(x) = 1/cosh(x)
-        elemT temp = current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-        elemT current = weights[dz][dy][dx] * Hessian(temp * this->scalar);
+        elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+        elemT current = weights[dz][dy][dx] * Hessian(voxel_diff, this->scalar);
 
         if (do_kappa)
           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -499,8 +499,8 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
               // psi'(t)/t = tanh/t
-              elemT temp =current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * surrogate(this->scalar * temp);
+              elemT voxel_diff=current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] * surrogate(voxel_diff, this->scalar);
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -571,8 +571,8 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT temp = current_estimate[z][y][x] - current_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * Hessian(this->scalar * temp) * input[z+dz][y+dy][x+dx];
+              elemT voxel_diff= current_estimate[z][y][x] - current_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] * Hessian( voxel_diff, this->scalar) * input[z+dz][y+dy][x+dx];
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];

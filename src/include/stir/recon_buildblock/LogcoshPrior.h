@@ -198,13 +198,15 @@ private:
 
     //! The surrogate of the logcosh function is tanh(x)/x
     /*!
-     * @param x is should be the difference between the ith and jth voxel.
+     * @param d is should be the difference between the ith and jth voxel. The scalar factor may be included.
      However, it will use the taylor expansion if the x is too small (to prevent division by 0).
+     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
      * @return the surrogate of the log-cosh function
     */
-    static inline float surrogate(float x)
+    static inline float surrogate(const float d, const float scalar)
     {
       const float eps = 0.01;
+      const float x = d * scalar;
       // If abs(x) is less than eps,
       // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
       // Prevents divide by zeros
@@ -217,11 +219,13 @@ private:
     //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
     /*!
      This function returns the hessian of the logcosh function
-     * @param x the difference between the ith and jth voxel.
+     * @param d the difference between the ith and jth voxel.
+     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
      * @return the second derivative of the log-cosh function
      */
-    static inline float Hessian(float x)
+    static inline float Hessian(const float d, const float scalar)
     {
+      const float x = d * scalar;
       return square((1/ cosh(x)));
     }
 };
