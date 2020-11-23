@@ -708,6 +708,26 @@ get_num_virtual_transaxial_crystals_per_block() const
       return 0;
     }
 }
+/*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
+void
+Scanner::
+set_num_virtual_axial_crystals_per_block(int val)
+{
+  //num_virtual_axial_crystals_per_block = val;
+  if (this->get_num_virtual_axial_crystals_per_block() != val)
+    error("Scanner::set_num_virtual_axial_crystals_per_block not really implemented yet");
+}
+
+/*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
+void
+Scanner::
+set_num_virtual_transaxial_crystals_per_block(int val)
+{
+  //num_virtual_transaxial_crystals_per_block = val;
+  if (this->get_num_virtual_transaxial_crystals_per_block() != val)
+    error("Scanner::set_num_virtual_transaxial_crystals_per_block not really implemented yet");
+}
+
 
 Succeeded 
 Scanner::

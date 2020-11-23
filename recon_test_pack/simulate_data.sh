@@ -56,6 +56,11 @@ if [ $? -ne 0 ]; then
   echo "ERROR running stir_math"; exit 1; 
 fi
 
+echo "===  create norm factors"
+# currently just 1 as not used in rest of script yet.
+stir_math -s --including-first \
+          --times-scalar 0 --add-scalar 1 my_norm.hs my_line_integrals.hs
+
 echo "===  create prompts"
 correct_projdata uncorrect_projdata_simulation.par > my_create_prompts.log 2>&1
 if [ $? -ne 0 ]; then 

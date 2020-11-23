@@ -59,20 +59,6 @@ get_num_axial_blocks_per_bucket_v() const
 
 int
 InputStreamFromROOTFileForCylindricalPET::
-get_num_axial_crystals_per_block_v() const
-{
-    return this->crystal_repeater_z;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_transaxial_crystals_per_block_v() const
-{
-    return this->crystal_repeater_y;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
 get_num_axial_crystals_per_singles_unit() const
 {
     if (this->singles_readout_depth == 1) // One PMT per Rsector
@@ -111,24 +97,6 @@ get_num_trans_crystals_per_singles_unit() const
         error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
 
     return 0;
-}
-
-void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_x(int val)
-{
-    crystal_repeater_x = val;
-}
-
-void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_y(int val)
-{
-    crystal_repeater_y = val;
-}
-
-void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_z(int val)
-{
-    crystal_repeater_z = val;
 }
 
 void

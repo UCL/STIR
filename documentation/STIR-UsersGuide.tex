@@ -691,6 +691,11 @@ and OpenGATE as discrepancies can lead to crashes if the actual number of blocks
 larger than what is specified in the scanner info. However, this check requires the \texttt{.hroot}
 file to accurately correspond to your GATE macro.
 
+\textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
+``virtual crystals" to accomodate for gaps between blocks. If you use
+the \texttt{originating system} to specify the scanner, this will be automatically enabled.
+(If you do not want this, set it to \textt{User_defined_scanner} and specify all values).
+
 An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
 
@@ -778,6 +783,10 @@ end ROOT header :=
 \end{verbatim}
 
 See \texttt{examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
+
+OpenGATE energy information is recorded in MeV units into the ROOT file.
+For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
+STIR assumes this convention and will convert this automatically.
 
 There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,

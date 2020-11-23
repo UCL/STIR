@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016, University College London
+    Copyright (C) 2016, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -60,6 +60,13 @@ float
 ExamInfo::get_high_energy_thres() const
 {
     return up_energy_thres;
+}
+
+void
+ExamInfo::set_energy_information_from(const ExamInfo& other)
+{
+  this->up_energy_thres = other.up_energy_thres;
+  this->low_energy_thres = other.low_energy_thres;
 }
 
 END_NAMESPACE_STIR
