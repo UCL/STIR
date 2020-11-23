@@ -500,7 +500,7 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
             {
               // psi'(t)/t = tanh/t
               elemT temp =current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * (1/(this->scalar))* surrogate(this->scalar * temp);
+              elemT current = weights[dz][dy][dx] * surrogate(this->scalar * temp);
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
