@@ -100,6 +100,7 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#include "stir/recon_buildblock/LogcoshPrior.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
@@ -1554,6 +1555,10 @@ namespace stir {
          stir::GeneralisedPrior<TargetT >,
          stir::GeneralisedPrior<TargetT > >);
 %shared_ptr(stir::RelativeDifferencePrior<elemT>);
+%shared_ptr(stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >);
+%shared_ptr(stir::LogcoshPrior<elemT>);
 
 %shared_ptr(stir::Reconstruction<TargetT >);
 %shared_ptr(stir::IterativeReconstruction<TargetT >);
@@ -1589,6 +1594,7 @@ namespace stir {
 %include "stir/recon_buildblock/QuadraticPrior.h"
 %include "stir/recon_buildblock/PLSPrior.h"
 %include "stir/recon_buildblock/RelativeDifferencePrior.h"
+%include "stir/recon_buildblock/LogcoshPrior.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
  // there's a get_objective_function, so we'll ignore the sptr version
@@ -1644,6 +1650,11 @@ namespace stir {
        stir::GeneralisedPrior<TargetT >,
        stir::GeneralisedPrior<TargetT > >;
 %template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT>;
+%template (RPLogcoshPrior3DFloat)
+stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >;
+%template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
 
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
