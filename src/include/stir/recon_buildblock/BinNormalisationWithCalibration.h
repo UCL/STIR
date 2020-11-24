@@ -45,8 +45,10 @@ public:
   BinNormalisationWithCalibration();
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
   float get_calibration_factor() const;
+  float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
+  void set_branching_ratio(const float);
   void set_radionuclide(const std::string&);
  protected:
   // parsing stuff
@@ -67,6 +69,7 @@ private:
   bool use_calibration_factor; // default to true
 //  bool use_branching_ratio; // default to true
   float calibration_factor;
+  float branching_ratio;
   std::string radionuclide;
 };
 
