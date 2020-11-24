@@ -29,15 +29,6 @@
 
 
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
-//#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
-//#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
-//#include "stir/RelatedViewgrams.h"
-//#include "stir/Bin.h"
-//#include "stir/ProjData.h"
-//#include "stir/is_null_ptr.h"
-//#include "stir/Succeeded.h"
-//#include "stir/error.h"
-//#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -63,7 +54,7 @@ bool
 BinNormalisationWithCalibration::
 post_processing()
 {
-  return base_type::post_processing();;
+  return base_type::post_processing();
 }
 
 
@@ -73,6 +64,11 @@ BinNormalisationWithCalibration()
   set_defaults();
 }
 
+float 
+BinNormalisationWithCalibration::
+get_calib_decay_branching_ratio_factor(const Bin&) const{
+    return this->calibration_factor; //TODO: multiply by branching factor and decay
+}
 float
 BinNormalisationWithCalibration::
 get_calibration_factor() const {
@@ -89,7 +85,6 @@ BinNormalisationWithCalibration::
 set_radionuclide(const std::string& rnuclide){
     this->radionuclide=rnuclide;
 }
-// TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
 
 END_NAMESPACE_STIR

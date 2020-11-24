@@ -98,7 +98,7 @@ public:
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
     //! Get a shared_ptr to the normalisation proj_data.
   virtual shared_ptr<ProjData> get_norm_proj_data_sptr() const;
  

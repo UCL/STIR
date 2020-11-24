@@ -104,7 +104,7 @@ BinNormalisation::apply(RelatedViewgrams<float>& viewgrams,
 	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
         (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
-          std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin, start_time, end_time));
+          std::max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
   }
 }
 
@@ -123,7 +123,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
          (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= 
-	   this->get_uncalibrated_bin_efficiency(bin,start_time, end_time);
+	   this->get_bin_efficiency(bin,start_time, end_time);
   }
 
 }

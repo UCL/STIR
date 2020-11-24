@@ -29,8 +29,11 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup normalisation
-  When this class is called a normalisation factor is applied to the normalisation data. Therefore the reconstructed image will be calibrated as well.
-*/
+This class provides the facility to use a calibration factor and branching ratio when normalising data.
+  Therefore, if they are set correctly, the reconstructed image will be calibrated as well.
+  
+  Note that it is the responsibility of the derived classes to set these factors.
+  */
 class BinNormalisationWithCalibration : 
         public  BinNormalisation
 {
@@ -53,7 +56,8 @@ public:
 
    // needs to be implemented by derived class
    virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
-   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time)
+  
+   virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
     { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
 
 

@@ -408,7 +408,7 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 #endif
      
       const float bin_efficiency = 
-	normalisation_ptr->get_uncalibrated_bin_efficiency(uncompressed_bin,start_time,end_time);
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -464,7 +464,7 @@ do_post_normalisation(Bin& bin) const
 	  const double start_time = frame_defs.get_start_time(current_frame_num);
 	  const double end_time =frame_defs.get_end_time(current_frame_num);
 #endif
-	  const float bin_efficiency = post_normalisation_ptr->get_uncalibrated_bin_efficiency(bin,start_time,end_time);
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
 	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
 	  if (bin_efficiency < 1.E-10)
 	    {
