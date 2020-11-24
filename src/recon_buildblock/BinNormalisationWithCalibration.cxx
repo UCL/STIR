@@ -69,15 +69,30 @@ BinNormalisationWithCalibration::
 get_calib_decay_branching_ratio_factor(const Bin&) const{
     return this->calibration_factor* this->branching_ratio; //TODO: multiply by branching factor and decay
 }
+
 float
 BinNormalisationWithCalibration::
 get_calibration_factor() const {
    return this->calibration_factor;
 }
+
 void
 BinNormalisationWithCalibration::
 set_calibration_factor(const float calib){
     this->calibration_factor=calib;
+}
+
+
+float
+BinNormalisationWithCalibration::
+get_branching_ratio() const {
+   return this->branching_ratio;
+}
+
+void
+BinNormalisationWithCalibration::
+set_branching_ratio(const float br){
+    this->branching_ratio=br;
 }
 
 void
