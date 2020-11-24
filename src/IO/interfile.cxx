@@ -595,7 +595,7 @@ write_basic_interfile_image_header(const string& header_file_name,
      : "BIGENDIAN")
 		<< endl;
   
-  
+  if (exam_info.get_calibration_factor()>0.F)
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
 
