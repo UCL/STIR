@@ -66,7 +66,6 @@ class MinimalInterfileHeader : public KeyParser
 
   private:
     std::string imaging_modality_as_string;
-    float calibration_factor;
     void set_imaging_modality();
   
   public:
@@ -205,6 +204,8 @@ class InterfileImageHeader : public InterfileHeader
 {
  private:
   typedef InterfileHeader base_type;
+    
+    float calibration_factor;
 
 public:
   InterfileImageHeader();
