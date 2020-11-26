@@ -125,7 +125,7 @@ LogcoshPrior<elemT>::set_defaults()
 template <>
 const char * const
         LogcoshPrior<float>::registered_name =
-        "Logcosh Prior";
+        "Logcosh";
 
 template <typename elemT>
 LogcoshPrior<elemT>::LogcoshPrior()
