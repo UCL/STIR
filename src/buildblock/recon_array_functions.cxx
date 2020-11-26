@@ -382,12 +382,15 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
           //  std::cerr << "Zero at " << r << ", " << b <<'\n';
 	  const float new_estimate =
 	    max(estimated_projections[r][b], 
-		projection_data[r][b]/max_quotient);
-	  if (projection_data[r][b]<=small_value)
-	    sub_result += - double(new_estimate);
-	  else
-	    sub_result += projection_data[r][b]*log(double(new_estimate)) - double(new_estimate);
-	}
+			projection_data[r][b]/max_quotient);
+
+		if (projection_data[r][b] > 0.0)
+		{
+			sub_result += - (projection_data[r][b] * log(projection_data[r][b] / double(new_estimate)) + double(new_estimate) - projection_data[r][b]);
+		} else {
+			sub_result += - (double(new_estimate));
+		}
+  }
     result += sub_result;
   }
 
