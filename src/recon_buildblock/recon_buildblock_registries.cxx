@@ -96,6 +96,7 @@ static FilterRootPrior<DiscretisedDensity<3,float> >::RegisterIt dummy4;
 static QuadraticPrior<float>::RegisterIt dummy5;
 static PLSPrior<float>::RegisterIt dummyPLS;
 static RelativeDifferencePrior<float>::RegisterIt dummyRelativeDifference;
+static LogcoshPrior<float>::RegisterIt dummyLogcosh;
 
 static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
 static ProjMatrixByBinUsingInterpolation::RegisterIt dummy12;
