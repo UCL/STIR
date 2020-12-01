@@ -32,7 +32,7 @@
 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
-
+  \author Gemma Fardell
 
   Not all compilers support the full iterators, so you could disabled them by editing 
   the file and removing the define ARRAY_FULL. Lots of other things in the library 

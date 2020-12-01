@@ -29,6 +29,7 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Gemma Fardell
 
 */
 
