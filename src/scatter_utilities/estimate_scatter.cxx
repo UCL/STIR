@@ -59,7 +59,9 @@ int main(int argc, const char *argv[])
     else
         print_usage_and_exit();
 
-    return scatter_estimation.process_data() == stir::Succeeded::yes ?
+    return
+      (scatter_estimation.set_up() == stir::Succeeded::yes)
+      && (scatter_estimation.process_data() == stir::Succeeded::yes) ?
                 EXIT_SUCCESS : EXIT_FAILURE;
 }
 

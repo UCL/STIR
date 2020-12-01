@@ -41,7 +41,10 @@
     software version).
     We currently read listmode, sinograms and calibration files.
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
-    will be non-TOF.
+    will be non-TOF.<br />
+    <strong>Warning:</strong> currently images will be reconstructed flipped with respect to the standard
+    STIR orientation. This is particularly noticeable when output in Nifti/MetaIO etc. See
+    <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
   </li>
   <li>A new script <tt>create_fdef_from_listmode.sh</tt> that can be used to create a single-time
     frame definition file for a given listmode file.
@@ -53,7 +56,7 @@
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
   <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
-  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dynamic and parametric images as well. (An example
   file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
   <li>Interfile and ITK image IO now understand some date/time fields. This required a change to our Interfile
     version specification to be able to handle time-zones. These can now be added via the same suffix as used by DICOM, e.g.
@@ -72,13 +75,37 @@
     However, this means that <strong>you have to call <code>set_up()</code> also for analytic
     reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
   </li>
-  <li><tt>axpby</tt> has been deprecated and replaced with <tt>xapyb</tt>.</li>
+  <li>copy energy information from the template in the <tt>forward_project</tt> utility.
+  </li>
+  <li>PET scatter improvements:
+    <ul>
+    <li>the scatter estimation parsing now prefers specifying normalisation and attenuation via two separate
+      keywords (as opposed to via a chained bin normalisation),
+      (keyword <tt>normalisation type</tt>) and
+      the attenuation factors. Check the updated sample file.
+      The old parsing keyword <tt>Bin normalisation type</tt> will still work but is deprecated
+      and will be removed in a future version.
+    </li>
+    <li>scatter estimation uses now more defaults such that you need to have less files.</li>
+    <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
+      (all?) parameters can be set from C++/Python (i.e. without parsing).
+    </li>
+    <li><tt>axpby</tt> has been deprecated and replaced with <tt>xapyb</tt>.</li>      
+    </ul>
+  </li>
 
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
 
-
+<h4>Other</h4>
+<ul>
+  <li>moved <tt>examples/src</tt> to <tt>examples/C++/src</tt></li>
+  <li>
+    <tt>examples</tt> and <tt>documentation</tt> are now installed, together with doxygen files (if built)
+    into <tt>CMAKE_INSTALL_PREFIX/share/doc/stir-majorversion.minorversion</tt>.
+  </li>
+</ul>
 
 <h3>Known problems</h3>
 <p>See the Github issues for more information.</p>
@@ -102,6 +129,10 @@ none
   </li>
   </ul>
 </li>
+<li> data read from GE RDF9 uses wrong conventions, and images will be reconstructed flipped
+   with respect to the standard STIR orientation. See
+  <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
+</li>
 <li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>The incremental interpolating back-projector still gives problems in the centre of the images
@@ -121,6 +152,10 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
   Changes to GATE/root cylindrical PET geometry interpretation,
   see <a href="https://github.com/UCL/STIR/pull/569">PR 569</a>.</li>
 </li>
+<li>
+    OpenGATE energy information is MeV. Added a method to convert between MeV to (STIR convention) keV units when
+    reading root files.
+</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -129,7 +164,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
  </ul>
 
 <h3>recon_test_pack changes</h3>
-None
+<li>added a test for scatter estimation</li>
 
 <h3>Other changes to tests</h3>
 <ul>
@@ -164,10 +199,15 @@ from the above):</H2>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
   <li>added functions for date-time processing</li>
+  <li>added <code>ExamInfo.set_energy_information_from</code></li>
 </ul>
   
 <h3>Other code changes</h3>
-<p>See the ChangeLog</p>
+<p>See the ChangeLog, specific items:</p>
+<ul>
+  <li><code>ScatterEstimation</code> now requires calling <code>set_up()</code> explicitly.</li>
+</ul>
+
 
 </body>
 
