@@ -828,7 +828,7 @@ ArrayTests::run_tests()
       tmp.xapyb(x, a, y, b);
       check_if_equal(tmp, by_hand, "test xapyb vector (NumericVectorWithOffset<Array4D>)");
 
-      x.sapyb(2.0F, y, 3.3F);
+      x.sapyb(a, y, b);
       check_if_equal(x, by_hand, "test sapyb vector (NumericVectorWithOffset<Array4D>)");            
     }
   }
