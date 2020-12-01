@@ -984,6 +984,7 @@ T * operator-> () const;
   }
 #endif
 
+%include "stir/deprecated.h"
 %ignore stir::NumericVectorWithOffset::xapyb;
 %ignore stir::NumericVectorWithOffset::axpby;
 %include "stir/NumericVectorWithOffset.h"
