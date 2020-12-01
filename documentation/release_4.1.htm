@@ -26,6 +26,7 @@
         <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
+        <li>Gemma Fardell (UKRI) for implementing xapyb and sapyb array methods. </li>  
       </ul>
     </p>
 
@@ -59,7 +60,8 @@
     <tt>10:01:01.00+0130</tt>.<br />
     <strong>Warning:</strong> If the time-zone is not specified, we assume it's in the current time-zone without DST. This is dangerous,
     but allows us to subtract time-fields.</li>
-  <li>Added a utility <tt>list_lm_info</tt>.
+  <li>Added a utility <tt>list_lm_info</tt>.</li>
+  <li>Implementaion of <tt>a*x+b*y</tt> methods <tt>xapyb</tt> and <tt>sapyb</tt> where a and b can be scalar or vector types.</li>
 </ul>
 
 
@@ -70,6 +72,8 @@
     However, this means that <strong>you have to call <code>set_up()</code> also for analytic
     reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
   </li>
+  <li><tt>axpby</tt> has been deprecated and replaced with <tt>xapyb</tt>.</li>
+
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
