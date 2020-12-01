@@ -55,7 +55,6 @@ START_NAMESPACE_STIR
 
 ScatterSimulation::
 ScatterSimulation()
-  : _already_set_up(false)
 {
     this->set_defaults();
 }
@@ -73,9 +72,18 @@ process_data()
 {
     if (!this->_already_set_up)
         error("ScatterSimulation: need to call set_up() first");
+    if(is_null_ptr(output_proj_data_sptr))
+        error("ScatterSimulation: output projection data not set. Aborting.");
 
     // this is useful in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
+    // check if output has same info as templates
+    {
+      if ((*output_proj_data_sptr->get_proj_data_info_sptr()) !=
+          (*this->get_template_proj_data_info_sptr()))
+        error("ScatterSimulation: output projection data incompatible with what was used for set_up()");
+      // TODO enable check on exam_info but this has no operator== yet
+    }
     info("ScatterSimulator: Running Scatter Simulation ...");
     info("ScatterSimulator: Initialising ...");
 
@@ -223,6 +231,7 @@ ScatterSimulation::set_defaults()
     this->template_proj_data_filename = "";
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
+    this->_already_set_up = false;
 }
 
 void
@@ -323,15 +332,20 @@ set_up()
         error("ScatterSimulation: density image not set. Aborting.");
 
     if(downsample_scanner_bool)
+      {
+        if (this->_already_set_up)
+          error("ScatterSimulation: set_up() called twice. This is currently not supported.");
+
         downsample_scanner();
+      }
 
     if(is_null_ptr(density_image_for_scatter_points_sptr))
     {
+        if (this->_already_set_up)
+          error("ScatterSimulation: set_up() called twice. This is currently not supported.");
         downsample_density_image_for_scatter_points(zoom_xy, zoom_z, zoom_size_xy, zoom_size_z);
     }
 
-    if(is_null_ptr(output_proj_data_sptr))
-        error("ScatterSimulation: output projection data not set. Aborting.");
 //    {
 //        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
 //                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
@@ -387,7 +401,7 @@ void
 ScatterSimulation::
 check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const
 {
-  const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float>& >(_image);
+  const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float> const& >(_image);
   const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*image.get_voxel_size().z()/2.F;
 
@@ -397,7 +411,7 @@ check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::str
     (scanner.get_num_rings()-1) * scanner.get_ring_spacing()/2;
 #endif
   const VoxelsOnCartesianGrid<float> & act_image =
-    dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->activity_image_sptr);
+    dynamic_cast<VoxelsOnCartesianGrid<float> const& >(*this->activity_image_sptr);
   const float z_to_middle_standard =
     (act_image.get_max_index() + act_image.get_min_index())*act_image.get_voxel_size().z()/2.F;
 
@@ -458,7 +472,7 @@ set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float>
     if (is_null_ptr(arg) )
         error("ScatterSimulation: Unable to set the density image for scatter points.");
     this->density_image_for_scatter_points_sptr.reset(
-                new VoxelsOnCartesianGrid<float>(*dynamic_cast<VoxelsOnCartesianGrid<float> *>(arg.get())));
+                new VoxelsOnCartesianGrid<float>(*dynamic_cast<const VoxelsOnCartesianGrid<float> *>(arg.get())));
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
     this->_already_set_up = false;
@@ -499,6 +513,7 @@ set_density_image_for_scatter_points(const std::string& filename)
     this->density_image_for_scatter_points_filename=filename;
     shared_ptr<DiscretisedDensity<3,float> > sptr(read_from_file<DiscretisedDensity<3,float> >(filename));    
     this->set_density_image_for_scatter_points_sptr(sptr);
+    this->_already_set_up = false;
 }
 
 void
@@ -512,6 +527,7 @@ set_image_downsample_factors(float _zoom_xy, float _zoom_z,
     zoom_z = _zoom_z;
     zoom_size_xy = _size_zoom_xy;
     zoom_size_z = _size_zoom_z;
+    _already_set_up = false;
 }
 
 void
@@ -522,7 +538,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
     if (is_null_ptr(this->density_image_sptr))
         error("ScatterSimulation: downsampling function called before attenuation image is set");
 
-    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
+    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<const VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
 
     const int old_x = tmp_att.get_x_size();
     const int old_y = tmp_att.get_y_size();
@@ -622,6 +638,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
+    this->_already_set_up = false;
 }
 
 
@@ -721,6 +738,7 @@ set_template_proj_data_info(const std::string& filename)
 void
 ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
+    this->_already_set_up = false;
     this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
 
     if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
@@ -746,8 +764,17 @@ ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 
 void
 ScatterSimulation::
+set_exam_info(const ExamInfo& arg)
+{
+  this->_already_set_up = false;
+  this->template_exam_info_sptr = arg.create_shared_clone();
+}
+
+void
+ScatterSimulation::
 set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
 {
+    this->_already_set_up = false;
     this->template_exam_info_sptr = arg;
 }
 
@@ -823,7 +850,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
 
     if(!is_null_ptr(activity_image_sptr))
     {
-        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
+        const VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<const VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_projections);
@@ -831,11 +858,12 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
         activity_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_activity();
+        this->_already_set_up = false;
     }
 
     if(!is_null_ptr(density_image_sptr))
     {
-        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
+        const VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<const VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_values);
@@ -843,6 +871,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
         density_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_attenuation();
+        this->_already_set_up = false;
     }
 
     // zooming of density_image_for_scatter_points_sptr will happen in set_up
@@ -855,6 +884,7 @@ ScatterSimulation::
 set_attenuation_threshold(const float arg)
 {
     attenuation_threshold = arg;
+    this->_already_set_up = false;
 }
 
 void
@@ -862,6 +892,7 @@ ScatterSimulation::
 set_randomly_place_scatter_points(const bool arg)
 {
     randomly_place_scatter_points = arg;
+    this->_already_set_up = false;
 }
 
 void

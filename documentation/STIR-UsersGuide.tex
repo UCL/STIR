@@ -774,6 +774,10 @@ end ROOT header :=
 
 See \texttt{examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
 
+OpenGATE energy information is recorded in MeV units into the ROOT file.
+For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
+STIR assumes this convention and will convert this automatically.
+
 There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete

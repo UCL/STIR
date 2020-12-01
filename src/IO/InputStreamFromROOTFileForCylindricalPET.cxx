@@ -81,10 +81,11 @@ get_next_record(CListRecordROOT& record)
             continue;
         if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;
-        if (this->energy1 < this->low_energy_window ||
-                 this->energy1 > this->up_energy_window ||
-                 this->energy2 < this->low_energy_window ||
-                 this->energy2 > this->up_energy_window)
+      //multiply here by 1000 to convert the list mode energy from MeV to keV
+        if (this->get_energy1_in_keV() < this->low_energy_window ||
+                this->get_energy1_in_keV() > this->up_energy_window ||
+                this->get_energy2_in_keV() < this->low_energy_window ||
+                this->get_energy2_in_keV() > this->up_energy_window)
             continue;
 
         break;

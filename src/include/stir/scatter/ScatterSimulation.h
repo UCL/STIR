@@ -141,6 +141,8 @@ public:
     void set_activity_image(const std::string& filename);
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
+    void set_exam_info(const ExamInfo&);
+
     void set_exam_info_sptr(const shared_ptr<ExamInfo>&);
 
     void set_output_proj_data_sptr(shared_ptr<ProjData>);
