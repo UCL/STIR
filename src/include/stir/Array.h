@@ -248,6 +248,11 @@ inline void xapyb(const Array& x, const elemT a,
 inline void xapyb(const Array& x, const Array& a,
                   const Array& y, const Array& b); 
 
+  //! set values of the array to self*a+y*b where a and b are scalar or arrays
+template <class T>
+inline void sapyb(const T &a,
+                  const Array& y, const T &b);
+
 };
 
 

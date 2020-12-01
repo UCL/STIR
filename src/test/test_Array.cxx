@@ -738,6 +738,10 @@ ArrayTests::run_tests()
 
       const Array<4,float> by_hand = test4*2.F + (test4+2)*3.3F;
       check_if_equal(tmp, by_hand, "test xapyb scalar (Array4D)");
+
+      tmp = test4;
+      tmp.sapyb(2.F, test4+2, 3.3F);
+      check_if_equal(tmp, by_hand, "test sapyb scalar (Array4D)");      
     }
 
 	  // test xapyb, a and b vector
@@ -747,6 +751,10 @@ ArrayTests::run_tests()
 
       const Array<4, float> by_hand = test4 * (test4 + 4) + (test4 + 2) * (test4 + 6);
       check_if_equal(tmp, by_hand, "test xapyb vector (Array4D)");
+
+      tmp = test4;
+      tmp.sapyb(test4+4, test4+2, test4+6);
+      check_if_equal(tmp, by_hand, "test sapyb vector (Array4D)");           
     }
 
     {
@@ -778,6 +786,9 @@ ArrayTests::run_tests()
 
       tmp.xapyb(x, 2.0F, y, 3.3F);
       check_if_equal(tmp, by_hand, "test xapyb scalar (NumericVectorWithOffset<Array4D>)");
+
+      x.sapyb(2.0F, y, 3.3F);
+      check_if_equal(x, by_hand, "test sapyb scalar (NumericVectorWithOffset<Array4D>)");      
     }
     {
       typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
@@ -816,6 +827,9 @@ ArrayTests::run_tests()
 
       tmp.xapyb(x, a, y, b);
       check_if_equal(tmp, by_hand, "test xapyb vector (NumericVectorWithOffset<Array4D>)");
+
+      x.sapyb(2.0F, y, 3.3F);
+      check_if_equal(x, by_hand, "test sapyb vector (NumericVectorWithOffset<Array4D>)");            
     }
   }
 

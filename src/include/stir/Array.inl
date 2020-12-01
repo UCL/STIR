@@ -347,7 +347,6 @@ void Array<num_dimensions, elemT>::
   }
 }
 
-//using full iterators
 template <int num_dimensions, typename elemT>
 void Array<num_dimensions, elemT>::
     xapyb(const Array &x, const Array &a,
@@ -370,6 +369,15 @@ void Array<num_dimensions, elemT>::
   {
       *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
   }
+}
+
+template <int num_dimensions, typename elemT>
+template <class T>
+void Array<num_dimensions, elemT>::
+    sapyb(const T &a,
+          const Array &y, const T &b)
+{
+  this->xapyb(((const Array)*this), a, y, b);
 }
 
 /**********************************************

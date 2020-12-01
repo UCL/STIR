@@ -322,11 +322,20 @@ xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
   typename NumericVectorWithOffset::const_iterator a_iter = a.begin();
   typename NumericVectorWithOffset::const_iterator b_iter = b.begin();
 
-
   while (this_iter != this->end())
     {
       *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
     }
+}
+
+template <class T, class NUMBER>
+template <class T2>
+inline void
+NumericVectorWithOffset<T, NUMBER>::
+sapyb(const T2& a,
+      const NumericVectorWithOffset& y, const T2& b)
+{  
+  this->xapyb(((const NumericVectorWithOffset)*this),a,y,b);
 }
 
 END_NAMESPACE_STIR

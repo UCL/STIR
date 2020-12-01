@@ -134,6 +134,10 @@ public:
   inline void xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
                     const NumericVectorWithOffset& y, const NumericVectorWithOffset& b); 
 
+  //! set the values of the array to self*a+y*b, where a and b are scalar or vectors
+  template <class T2>
+  inline void sapyb(const T2& a,
+                    const NumericVectorWithOffset& y, const T2& b); 
 };
 
 END_NAMESPACE_STIR
