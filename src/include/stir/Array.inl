@@ -330,6 +330,16 @@ Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) co
 }
 
 template <int num_dimensions, typename elemT>
+template <typename elemT2>
+void
+Array<num_dimensions,elemT>::
+axpby(const elemT2 a, const Array& x,
+      const elemT2 b, const Array& y)
+{  
+  Array<num_dimensions,elemT>::xapyb(x,a,y,b);
+}
+
+template <int num_dimensions, typename elemT>
 void Array<num_dimensions, elemT>::
     xapyb(const Array &x, const elemT a,
           const Array &y, const elemT b)

@@ -278,6 +278,16 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v)
 }
 
 template <class T, class NUMBER>
+template <class NUMBER2>
+inline void
+NumericVectorWithOffset<T, NUMBER>::
+axpby(const NUMBER2 a, const NumericVectorWithOffset& x,
+      const NUMBER2 b, const NumericVectorWithOffset& y)
+{  
+  NumericVectorWithOffset<T, NUMBER>::xapyb(x,a,y,b);
+}
+
+template <class T, class NUMBER>
 inline void
 NumericVectorWithOffset<T, NUMBER>::
 xapyb(const NumericVectorWithOffset& x, const NUMBER a,

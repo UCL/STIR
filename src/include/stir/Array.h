@@ -41,6 +41,7 @@
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"   
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 class NumericType;
@@ -240,6 +241,11 @@ public:
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
 
+  //! DEPRECATED a*x+b*y
+  template <typename elemT2>
+    DEPRECATED inline void axpby(const elemT2 a, const Array& x,
+                      const elemT2 b, const Array& y);
+                      
   //! set values of the array to x*a+y*b, where a and b are scalar
 inline void xapyb(const Array& x, const elemT a,
                   const Array& y, const elemT b);
