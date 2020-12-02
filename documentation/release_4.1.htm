@@ -26,6 +26,7 @@
         <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
+        <li>Gemma Fardell (UKRI) for implementing <code>xapyb</code> and <code>sapyb</code> array methods. </li>  
       </ul>
     </p>
 
@@ -62,7 +63,8 @@
     <tt>10:01:01.00+0130</tt>.<br />
     <strong>Warning:</strong> If the time-zone is not specified, we assume it's in the current time-zone without DST. This is dangerous,
     but allows us to subtract time-fields.</li>
-  <li>Added a utility <tt>list_lm_info</tt>.
+  <li>Added a utility <tt>list_lm_info</tt>.</li>
+  <li>Implementation of <tt>a*x+b*y</tt> methods <code>xapyb</code> and <code>sapyb</code> where <tt>a</tt> and <tt>b</tt> can be scalar or vector types.</li>
 </ul>
 
 
@@ -90,6 +92,7 @@
     </li>
     </ul>
   </li>
+
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
@@ -191,7 +194,8 @@ from the above):</H2>
 
 <h3>New functionality</h3>
 <ul>
-  <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
+  <li>Addition of <code>xapyb</code> and <code>sapyb</code> methods for <code>Array</code> and all inherited classes.
+      (code>axpby</code> was introduced on the release_4 branch after STIR 4.0 but is now deprecated).</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
   <li>added functions for date-time processing</li>

@@ -315,9 +315,9 @@ public:
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
-  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData
-  virtual void axpby(const float a, const ProjData& x,
-                     const float b, const ProjData& y);
+  //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData
+  virtual void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b);
 
 protected:
 

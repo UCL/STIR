@@ -731,13 +731,114 @@ ArrayTests::run_tests()
                      "test operator+(float)");
     }
 
-    // test apxby
+    // test axpby
     {
       Array<4,float> tmp(test4.get_index_range());
       Array<4,float> tmp2(test4+2);
       tmp.axpby(2.F, test4, 3.3F, tmp2);
       const Array<4,float> by_hand = test4*2.F + (test4+2)*3.3F;
-      check_if_equal(tmp, by_hand, "test apxby (Array4D)");
+      check_if_equal(tmp, by_hand, "test axpby (Array4D)");
+    }
+    
+    // test xapyb, a and b scalar
+    {
+      Array<4,float> tmp(test4.get_index_range());
+      tmp.xapyb(test4, 2.F, test4+2, 3.3F);
+
+      const Array<4,float> by_hand = test4*2.F + (test4+2)*3.3F;
+      check_if_equal(tmp, by_hand, "test xapyb scalar (Array4D)");
+
+      tmp = test4;
+      tmp.sapyb(2.F, test4+2, 3.3F);
+      check_if_equal(tmp, by_hand, "test sapyb scalar (Array4D)");      
+    }
+
+	  // test xapyb, a and b vector
+    {
+      Array<4,float> tmp(test4.get_index_range());
+      tmp.xapyb(test4, test4+4, test4+2, test4+6);
+
+      const Array<4, float> by_hand = test4 * (test4 + 4) + (test4 + 2) * (test4 + 6);
+      check_if_equal(tmp, by_hand, "test xapyb vector (Array4D)");
+
+      tmp = test4;
+      tmp.sapyb(test4+4, test4+2, test4+6);
+      check_if_equal(tmp, by_hand, "test sapyb vector (Array4D)");           
+    }
+
+    {
+      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
+      typedef NVecArr::iterator NVecArrIter;
+      NVecArr tmp(-1, 2);
+
+      NVecArr x(-1, 2);
+      NVecArr y(-1, 2);
+      NVecArr by_hand(-1, 2);
+
+      NVecArrIter iter_tmp = tmp.begin();
+      NVecArrIter iter_x = x.begin();
+      NVecArrIter iter_y = y.begin();
+      NVecArrIter iter_by_hand = by_hand.begin();
+
+      int i = 0;
+      while (iter_tmp != tmp.end())
+      {
+        *iter_x = test4+i;
+        *iter_y = (test4 +i+ 2);
+        *iter_by_hand = ((test4 +i)* 2.0F + (test4+i + 2) * 3.3F);
+
+        iter_tmp++;
+        iter_x++;
+        iter_y++;
+        iter_by_hand++;
+      }
+
+      tmp.xapyb(x, 2.0F, y, 3.3F);
+      check_if_equal(tmp, by_hand, "test xapyb scalar (NumericVectorWithOffset<Array4D>)");
+
+      x.sapyb(2.0F, y, 3.3F);
+      check_if_equal(x, by_hand, "test sapyb scalar (NumericVectorWithOffset<Array4D>)");      
+    }
+    {
+      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
+      typedef NVecArr::iterator NVecArrIter;
+      NVecArr tmp(-1, 2);
+
+      NVecArr x(-1, 2);
+      NVecArr y(-1, 2);
+      NVecArr a(-1, 2);
+      NVecArr b(-1, 2);
+      NVecArr by_hand(-1, 2);
+
+      NVecArrIter iter_tmp = tmp.begin();
+      NVecArrIter iter_x = x.begin();
+      NVecArrIter iter_y = y.begin();
+      NVecArrIter iter_a = a.begin();
+      NVecArrIter iter_b = b.begin();
+      NVecArrIter iter_by_hand = by_hand.begin();
+
+      int i = 0;
+      while (iter_tmp != tmp.end())
+      {
+        *iter_x = test4+i;
+        *iter_y = (test4+i + 2);
+        *iter_a = (test4+i + 4);
+        *iter_b = (test4+i + 6);
+        *iter_by_hand = ((test4+i) * (test4+i + 4) + (test4+i + 2) * (test4+i + 6));
+
+        iter_tmp++;
+        iter_x++;
+        iter_y++;
+        iter_a++;
+        iter_b++;
+        iter_by_hand++;
+      }
+
+      tmp.xapyb(x, a, y, b);
+      check_if_equal(tmp, by_hand, "test xapyb vector (NumericVectorWithOffset<Array4D>)");
+
+      x.sapyb(a, y, b);
+      check_if_equal(x, by_hand, "test sapyb vector (NumericVectorWithOffset<Array4D>)");            
     }
   }
 
