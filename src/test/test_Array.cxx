@@ -768,7 +768,7 @@ ArrayTests::run_tests()
 
     {
       typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
-      typedef typename NVecArr::iterator NVecArrIter;
+      typedef NVecArr::iterator NVecArrIter;
       NVecArr tmp(-1, 2);
 
       NVecArr x(-1, 2);
@@ -801,7 +801,7 @@ ArrayTests::run_tests()
     }
     {
       typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
-      typedef typename NVecArr::iterator NVecArrIter;
+      typedef NVecArr::iterator NVecArrIter;
       NVecArr tmp(-1, 2);
 
       NVecArr x(-1, 2);

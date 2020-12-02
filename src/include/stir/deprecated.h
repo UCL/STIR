@@ -1,7 +1,6 @@
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2018-2019, University College London
+    Copyright (C) 2020, UCL
+    Copyright (C) 2020, UKRI    
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -18,19 +17,19 @@
 /*!
   \file 
   \ingroup buildblock
-  \brief This file declares a deprecation function.
+  \brief This file declares a deprecation macro.
   \author PARAPET project
 */
 START_NAMESPACE_STIR
 
-// Deprecation function. With C++14, could use [[deprecated("some message")]]
+//! Deprecation macro
 #if defined(__GNUC__) || defined(__clang__)
-#define DEPRECATED __attribute__((deprecated))
+#define STIR_DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
-#define DEPRECATED __declspec(deprecated)
+#define STIR_DEPRECATED __declspec(deprecated)
 #else
 #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define DEPRECATED
+#define STIR_DEPRECATED
 #endif
 
 END_NAMESPACE_STIR
