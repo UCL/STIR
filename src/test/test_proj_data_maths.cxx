@@ -55,7 +55,7 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     const size_t n = x.size_all();
     const size_t ny = y.size_all();
     if (n!=ny)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Create arrays
     std::vector<float> arr1(n), arr2(n);
@@ -65,11 +65,11 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     // Check for mismatch
     for (unsigned i=0; i<n; ++i)
         if (std::abs(arr1[i]-arr2[i]) > 1e-4f)
-            error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+            error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Check for non-zero
     if (std::abs(*std::max_element(arr1.begin(),arr1.end())) < 1e-4f)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 }
 
 void
@@ -100,11 +100,11 @@ run_tests()
     y1.fill(1000.f);
     ProjDataInMemory y2(y1);
 
-    // Check axpby with general and ProjDataInMemory methods
+    // Check xapby with general and ProjDataInMemory methods
     const float a = 2.f;
     const float b = 3.f;
-    pd1.axpby(a,x1,b,y1);
-    pd2.ProjData::axpby(a,x2,b,y2);
+    pd1.xapyb(x1,a,y1,b);
+    pd2.ProjData::xapyb(x2,a,y2,b);
 
     check_proj_data_are_equal_and_non_zero(pd1,pd2);
 

@@ -72,7 +72,7 @@ set -e
 #fi
 
 
-read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, .zenodo.json?"
 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}

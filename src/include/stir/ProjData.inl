@@ -3,6 +3,7 @@
   \ingroup projdata
   \brief Implementations for inline functions of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -11,6 +12,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -48,6 +50,9 @@ int ProjData::get_num_views() const
 int ProjData::get_num_tangential_poss() const
 { return proj_data_info_sptr->get_num_tangential_poss(); }
 
+int ProjData::get_num_tof_poss() const
+{ return proj_data_info_sptr->get_num_tof_poss(); }
+
 int ProjData::get_min_segment_num() const
 { return proj_data_info_sptr->get_min_segment_num(); }
 
@@ -71,6 +76,9 @@ int ProjData::get_min_tangential_pos_num() const
 
 int ProjData::get_max_tangential_pos_num() const
 { return proj_data_info_sptr->get_max_tangential_pos_num(); }
+
+int ProjData::get_num_non_tof_sinograms() const
+{ return proj_data_info_sptr->get_num_non_tof_sinograms(); }
 
 int ProjData::get_num_sinograms() const
 { return proj_data_info_sptr->get_num_sinograms(); }
