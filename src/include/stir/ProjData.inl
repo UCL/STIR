@@ -93,12 +93,10 @@ int ProjData::get_max_tof_pos_num() const
 { return proj_data_info_ptr->get_max_tof_pos_num(); }
 
 int ProjData::get_num_non_tof_sinograms() const
-{ return proj_data_info_ptr->get_num_sinograms(); }
+{ return proj_data_info_ptr->get_num_non_tof_sinograms(); }
 
 int ProjData::get_num_sinograms() const
-{
-    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
-}
+{ return proj_data_info_ptr->get_num_sinograms(); }
 
 std::size_t ProjData::size_all() const
 { return proj_data_info_ptr->size_all(); }
