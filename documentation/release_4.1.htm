@@ -26,7 +26,7 @@
         <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
-        <li>Gemma Fardell (UKRI) for implementing xapyb and sapyb array methods. </li>  
+        <li>Gemma Fardell (UKRI) for implementing <code>xapyb</code> and <code>sapyb</code> array methods. </li>  
       </ul>
     </p>
 
@@ -64,7 +64,7 @@
     <strong>Warning:</strong> If the time-zone is not specified, we assume it's in the current time-zone without DST. This is dangerous,
     but allows us to subtract time-fields.</li>
   <li>Added a utility <tt>list_lm_info</tt>.</li>
-  <li>Implementaion of <tt>a*x+b*y</tt> methods <tt>xapyb</tt> and <tt>sapyb</tt> where a and b can be scalar or vector types.</li>
+  <li>Implementation of <tt>a*x+b*y</tt> methods <code>xapyb</code> and <code>sapyb</code> where <tt>a</tt> and <tt>b</tt> can be scalar or vector types.</li>
 </ul>
 
 
@@ -90,7 +90,7 @@
     <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
       (all?) parameters can be set from C++/Python (i.e. without parsing).
     </li>
-    <li><tt>axpby</tt> has been deprecated and replaced with <tt>xapyb</tt>.</li>      
+    <li><code>axpby</code> was introduced on the release_4 branch after STIR 4.0 but is now deprecated</li>      
     </ul>
   </li>
 

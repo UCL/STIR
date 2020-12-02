@@ -18,7 +18,6 @@
   \file 
   \ingroup buildblock
   \brief This file declares a deprecation macro.
-  \author PARAPET project
 */
 START_NAMESPACE_STIR
 
