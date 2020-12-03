@@ -495,7 +495,8 @@ void distributable_computation(
                                         back_projector_ptr,
                                         y.get(), count, count2, log_likelihood_ptr,
                                         additive_binwise_correction_viewgrams.get(),
-                                        mult_viewgrams_sptr.get());
+                                        mult_viewgrams_sptr.get(),
+                                        use_KL_divergence);
 #endif // OPENMP                                    
 #endif // MPI
       } // end of for-loop 
