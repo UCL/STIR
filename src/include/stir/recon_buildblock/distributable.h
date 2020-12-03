@@ -99,7 +99,8 @@ typedef  void RPC_process_related_viewgrams_type (
                                                   RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                   int& count, int& count2, double* log_likelihood_ptr,
                                                   const RelatedViewgrams<float>* additive_binwise_correction_ptr,
-                                                  const RelatedViewgrams<float>* mult_viewgrams_ptr);
+                                                  const RelatedViewgrams<float>* mult_viewgrams_ptr,
+                                                  const bool use_KL_divergence);
 
 /*!
   \brief This function essentially implements a loop over segments and all views in the current subset.
@@ -179,7 +180,8 @@ void distributable_computation(
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
-                               DistributedCachingInformation* caching_info_ptr);
+                               DistributedCachingInformation* caching_info_ptr,
+                               const bool use_KL_divergence);
 
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0

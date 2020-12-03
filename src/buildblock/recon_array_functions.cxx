@@ -184,7 +184,8 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
 void divide_and_truncate(Viewgram<float>& numerator, 
 			 const Viewgram<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, double* log_likelihood_ptr /* = NULL */)
+			 int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
+			 const bool use_KL_divergence)
 {
   
   const int rs=numerator.get_min_axial_pos_num();
@@ -197,9 +198,12 @@ void divide_and_truncate(Viewgram<float>& numerator,
     max(numerator.find_max()*SMALL_NUM, 0.F);
   
   double result=0; // use this for total result for this viewgram, reducing numerical error
+
+  // Loop over axial positions
   for(int r=rs;r<=re;r++)
   {
     double sub_result=0; // use this for total result for this r, reducing numerical error
+    // Loop over tangential positions
     for(int b=bs;b<=be;b++){      
  
       // KT&SM&MJ 21/05/2001 changed truncation strategy
@@ -237,35 +241,41 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	      // we think num was really 0 
 	      // (we compare with small_value due to rounding errors)
 	      // this case includes 0/0, but also num<0	     
-	      num = 0;
-	      if (num<0) count2++;
-	    }
-	  else
-	    {
-	      const float max_quotient = 10000.F;
-	      const float denom = denominator[r][b];
+          numerator[r][b] = 0;
+          if (numerator[r][b]<0)
+            count2++;
+        }
+        else
+        {
+          const float max_quotient = 10000.F;
 	      // set quotient to min(numerator/denominator, max_quotient)
 	      // a bit tricky to avoid division by 0	  
 	      // we do this by effectively using
 	      // new_denom = max(denominator[r][b], max_quotient/num)
 	      // Note that this includes the case if a negative denominator
 	      // (in case somebody forward projects an image with negatives)
-	      if (num > max_quotient*denom)
-		{
-		  // cancel singularity
-		  count++;
-		  if (log_likelihood_ptr != NULL) 
-		    sub_result -= double(num*log(num/max_quotient));
-		  num = max_quotient;
-		}
+          if (numerator[r][b] > max_quotient*denominator[r][b])
+          {
+            // cancel singularity
+            count++;
+            if (log_likelihood_ptr != NULL)
+            {
+              // Substitute denominator[r][b] (i.e. ybar) for num / max_quotient (i.e. y/ max_quotient)
+              sub_result += compute_data_fit_term(numerator[r][b], numerator[r][b] / max_quotient, use_KL_divergence, small_value);
+            }
+            // Compute Division (WITH divide by zero correction)
+            numerator[r][b] = max_quotient;
+          }
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-		    sub_result -= double(num*log(denom));
-		  num = num/denom;
-		}
-	    }
-	}
+              sub_result += compute_data_fit_term(numerator[r][b], denominator[r][b], use_KL_divergence, small_value);
+
+            // Compute Division (WITHOUT divide by zero correction)
+            numerator[r][b] = numerator[r][b]/denominator[r][b];
+          }
+        }
+	  }
 #endif
     }
     if (log_likelihood_ptr != NULL) 
@@ -280,7 +290,8 @@ void divide_and_truncate(Viewgram<float>& numerator,
 
 void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, double* log_likelihood_ptr )
+			 int& count, int& count2, double* log_likelihood_ptr,
+			 const bool use_KL_divergence)
 {
   assert(numerator.get_num_viewgrams() == denominator.get_num_viewgrams());
   assert(*(numerator.get_proj_data_info_sptr()) == (*denominator.get_proj_data_info_sptr()));
@@ -291,7 +302,8 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
    divide_and_truncate(*numerator_iter,
                         *denominator_iter,
                         rim_truncation_sino,
-                        count, count2, log_likelihood_ptr);
+                        count, count2, log_likelihood_ptr,
+                       use_KL_divergence);
   ++numerator_iter;
   ++denominator_iter;
   }
@@ -349,7 +361,8 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
-			 double* accum)
+			 double* accum,
+			 const bool use_KL_divergence)
 {
   
   const int rs=projection_data.get_min_axial_pos_num();
@@ -370,30 +383,42 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
     max(projection_data.find_max()*SMALL_NUM, 0.F);
   const float max_quotient = 10000.F;
 
+  // Loop over axial positions
   for(int r=rs;r<=re;r++)
   {
     double sub_result=0; // use this for total result for this r, reducing numerical error
+    // Loop over tangential positions
     for(int b=bs;b<=be;b++)  
       if(!(
 	   b<bs+rim_truncation_sino ||
 	   b>be-rim_truncation_sino ))
 	{
-          // if (estimated_projections[r][b] == 0)
-          //  std::cerr << "Zero at " << r << ", " << b <<'\n';
-	  const float new_estimate =
-	    max(estimated_projections[r][b], 
-		projection_data[r][b]/max_quotient);
-	  if (projection_data[r][b]<=small_value)
-	    sub_result += - double(new_estimate);
-	  else
-	    sub_result += projection_data[r][b]*log(double(new_estimate)) - double(new_estimate);
-	}
+        const float new_estimate = max(estimated_projections[r][b], projection_data[r][b]/max_quotient);
+        sub_result += compute_data_fit_term(projection_data[r][b], new_estimate, use_KL_divergence, small_value);
+      }
     result += sub_result;
   }
 
   *accum += result;
 }
 
+float compute_data_fit_term(float y, const float ybar, bool use_KL_divergence, const float small_value)
+{
+
+  if (y <= small_value)
+    return -double(ybar);
+
+  if ( !use_KL_divergence )
+  {
+    //Compute the Log-Likelihood
+    return y * log(double(ybar)) - double(ybar);
+  }
+  else
+  {
+    // Compute the KL divergence
+    return - (y * log(y / double(ybar)) + double(ybar) - y);
+  }
+}
 
 
 void multiply_and_add(DiscretisedDensity<3,float> &image_res, const DiscretisedDensity<3,float> &image_scaled, float scalar)

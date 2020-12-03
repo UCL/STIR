@@ -294,7 +294,8 @@ void distributable_computation(
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
-                               DistributedCachingInformation* caching_info_ptr)
+                               DistributedCachingInformation* caching_info_ptr,
+                               const bool use_KL_divergence)
 
 {
 #ifdef STIR_MPI 
@@ -486,7 +487,8 @@ void distributable_computation(
                                         local_counts[thread_num], local_count2s[thread_num], 
                                         is_null_ptr(log_likelihood_ptr)? NULL : &local_log_likelihoods[thread_num], 
                                         additive_binwise_correction_viewgrams.get(),
-                                        mult_viewgrams_sptr.get());
+                                        mult_viewgrams_sptr.get(),
+                                        use_KL_divergence);
             
 #else
           RPC_process_related_viewgrams(forward_projector_ptr,

@@ -237,12 +237,17 @@ public  GeneralisedObjectiveFunction<TargetT>
   void 
     fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
 
+  bool get_use_KL_divergence();
+
+  void set_use_KL_divergence(const bool KL);
+
  private:
 
   std::string sensitivity_filename;
   std::string subsensitivity_filenames;
   bool recompute_sensitivity;
   bool use_subset_sensitivities;
+  bool use_KL_divergence;
 
   VectorWithOffset<shared_ptr<TargetT> > subsensitivity_sptrs;
   shared_ptr<TargetT> sensitivity_sptr;

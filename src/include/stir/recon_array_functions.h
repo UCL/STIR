@@ -76,12 +76,14 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 //! divide viewgrams and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(Viewgram<float>& numerator, const Viewgram<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, double* f = NULL);
+			 int& count, int& count2, double* f = NULL,
+			 const bool use_KL_divergence= false);
 
 //! divide related viewgrams and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, double* f = NULL);
+			 int& count, int& count2, double* f = NULL,
+			 const bool use_KL_divergence = false);
 
 //! sets to zero voxels within rim_truncation_image of the FOV rim
 void truncate_rim(DiscretisedDensity<3,float>& image_input, 
@@ -111,8 +113,10 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
-			 double* accum);
+			 double* accum,
+			 const bool use_KL_divergence);
 
+float compute_data_fit_term(float y, float ybar, bool use_KL_divergence, float small_value);
 
 END_NAMESPACE_STIR
 #endif // __recon_array_functions_h_
