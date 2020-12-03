@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014, 2019 University College London
+  Copyright (C) 2013-2014, 2019, 2020 University College London
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -45,6 +45,7 @@
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>
@@ -165,7 +166,8 @@ BinNormalisationFromECAT8::set_defaults()
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
   this->_use_geometric_factors = true;
-  this->_use_crystal_interference_factors = true;  
+  this->_use_crystal_interference_factors = true;
+  this->_use_axial_effects_factors = true;
 }
 
 void 
@@ -182,6 +184,7 @@ initialise_keymap()
   //this->parser.add_key("use_dead_time", &this->_use_dead_time);
   this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
   this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
+  this->parser.add_key("use_axial_effects_factors", &this->_use_axial_effects_factors);
   this->parser.add_stop_key("End Bin Normalisation From ECAT8");
 }
 
@@ -257,8 +260,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
 #endif
 #if 0
-  InterfileHeader interfile_parser;
- ignore_key("data format");
+  InterfileRawDataHeaderSiemens interfile_parser;
+//  interfile_parser.ignore_key("data format");
   interfile_parser.parse(filename.c_str());
 
 #else
@@ -345,7 +348,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), //XXXnrm_subheader_ptr->num_r_elements, 
                   /*arc_corrected =*/false)
 						     ));
-  
+
+  this->construct_sino_lookup_table();
   /*
     Extract geometrical & crystal interference, and crystal efficiencies from the
     normalisation data.    
@@ -374,7 +378,9 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   efficiency_factors =
     Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
 		   0, scanner_ptr->get_num_detectors_per_ring()-1));
-  
+
+  axial_effects =
+    Array<1,float>(num_Siemens_sinograms);
 
 #if 0
   int geom_test = nrm_subheader_ptr->num_geo_corr_planes * (max_tang_pos_num-min_tang_pos_num +1);
@@ -389,6 +395,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
     error("failed reading crystal_interference_factors from '%s'", full_data_file_name);
   if (read_data(binary_data, efficiency_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading efficiency_factors from '%s'", full_data_file_name);
+  if (read_data(binary_data, axial_effects, ByteOrder::little_endian) != Succeeded::yes)
+    error("failed reading axial_effects_factors from '%s'", full_data_file_name);
 
   if (scanner_ptr->get_type() == Scanner::Siemens_mMR)
   {
@@ -467,12 +475,13 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   
 #if 1
    // to test pipe the obtained values into file
-    ofstream out_geom;
+    ofstream out_geom, out_axial;
     ofstream out_inter;
     ofstream out_eff;
     out_geom.open("geom_out.txt",ios::out);
     out_inter.open("inter_out.txt",ios::out);
     out_eff.open("eff_out.txt",ios::out);
+    out_axial.open("axial_out.txt",ios::out);
 
     for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
     {
@@ -500,6 +509,11 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 	 out_eff << efficiency_factors[i][j] << "   " ;
       }
       out_eff << std::endl<< std::endl;
+   }
+   
+   for ( int i = axial_effects.get_min_index(); i<=axial_effects.get_max_index();i++)
+   {
+       out_axial << axial_effects[i] << "   " << std::endl;
    }
 
 #endif
@@ -534,6 +548,13 @@ use_geometric_factors() const
 
 bool 
 BinNormalisationFromECAT8::
+use_axial_effects_factors() const
+{
+  return this->_use_axial_effects_factors;
+}
+
+bool 
+BinNormalisationFromECAT8::
 use_crystal_interference_factors() const
 {
   return this->_use_crystal_interference_factors;
@@ -543,22 +564,6 @@ use_crystal_interference_factors() const
 float 
 BinNormalisationFromECAT8::
 get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
-
-
-  // TODO disable when not HR+ or HR++
-  /*
-  Additional correction for HR+ and HR++
-  ======================================
-  Modification of the normalisation based on segment number
-  Due to the difference in efficiency for the trues and scatter as the axial
-  angle increases
-  Scatter has a higher efficiency than trues when the axial angle is 0 (direct
-  planes)
-  As the axial angle increase the difference in efficiencies between trues and
-  scatter become closer
-    */
-  const float geo_Z_corr = 1;
-
   
   float	total_efficiency = 0 ;
   
@@ -597,7 +602,8 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 					      uncompressed_bin, detection_position_pair);
 
       
-        
+      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+     const DetectionPosition<>& pos2 = detection_position_pair.pos2();
       float lor_efficiency= 0.;   
       
       /*
@@ -657,11 +663,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	if (this->use_geometric_factors())
 	  {
 	    lor_efficiency_this_pair *=
-#ifdef SAME_AS_PETER
-              1.F;
-#else	    // this is 3dbkproj (at the moment)
 	    geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
-#endif
 	  }
 	lor_efficiency += lor_efficiency_this_pair;
       }
@@ -675,32 +677,81 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	{
 	  view_efficiency += lor_efficiency;
 	}
-    }
     
-    if (this->use_geometric_factors())
+    
+    if (this->use_axial_effects_factors())
       {
-	/* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-	// for oblique plaanes use the single radial profile from segment 0 
-	
-#ifdef SAME_AS_PETER	
-	const int geo_plane_num = 0;
-	
-	total_efficiency += view_efficiency * 
-	  geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
-	  geo_Z_corr;
-#else
-	total_efficiency += view_efficiency * geo_Z_corr;
-#endif
+        const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());	
+	total_efficiency += view_efficiency * axial_effect_factor;
       }
     else
       {
 	total_efficiency += view_efficiency;
       }
+    }
   }
   return total_efficiency;
 }
 #endif
 
+void
+BinNormalisationFromECAT8::
+construct_sino_lookup_table()
+{
+  const int num_rings = this->scanner_ptr->get_num_rings();
+  this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
+                                               0, num_rings-1));
+  // construct proj_data_info in "native" Siemens space for the norm (span=11 usually?)
+  // TODO will have to get "native" span from somewhere. is it in the norm header?  49
+ unique_ptr<ProjDataInfo> proj_data_info_uptr=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, num_rings -1,
+                                         this->scanner_ptr->get_max_num_views(),
+                                         this->scanner_ptr->get_max_num_non_arccorrected_bins(),
+                                         false);
+ 
+ shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
+             dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_uptr->clone()));
+              
+  this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
+  
+  auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_sptr);
+  Bin bin;
+  bin.tangential_pos_num()=0;
+  bin.view_num()=0;
+  std::vector<DetectionPositionPair<> > det_pos_pairs;
+  for (int Siemens_sino_index=0; Siemens_sino_index< this->num_Siemens_sinograms; ++Siemens_sino_index)
+    {
+      int z=Siemens_sino_index;
+             
+      for (std::size_t i=0; i<segment_sequence.size();++i)
+        { 
+          bin.segment_num() = segment_sequence[i];
+          const int num_ax_poss = proj_data_info_sptr->get_num_axial_poss(bin.segment_num());
+          if (z< num_ax_poss)
+            {
+              bin.axial_pos_num() = z;
+              proj_data_info_sptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+              for (auto iter=det_pos_pairs.begin();iter!=det_pos_pairs.end(); ++iter)
+                {
+                  sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = z;
+                  sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = z;
+                }
+              break;
+            }
+          else
+            {
+              z -= num_ax_poss;
+            }
+        }
+    }
+}
+
+float
+BinNormalisationFromECAT8::
+find_axial_effects(int ring1, int ring2) const
+{
+  return axial_effects[sino_index[ring1][ring2]];
+}
+  
 
 float 
 BinNormalisationFromECAT8::get_dead_time_efficiency (const DetectionPosition<>& det_pos,
