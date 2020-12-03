@@ -327,7 +327,7 @@ const elemT&
 Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) const
 { 
   return (*this).at(c[1]).at(cut_first_dimension(c)); 
-}				    
+}
 
 template <int num_dimensions, typename elemT>
 template <typename elemT2>
@@ -336,19 +336,58 @@ Array<num_dimensions,elemT>::
 axpby(const elemT2 a, const Array& x,
       const elemT2 b, const Array& y)
 {  
+  Array<num_dimensions,elemT>::xapyb(x,a,y,b);
+}
+
+template <int num_dimensions, typename elemT>
+void Array<num_dimensions, elemT>::
+    xapyb(const Array &x, const elemT a,
+          const Array &y, const elemT b)
+{
+  this->check_state();
+  if ((this->get_index_range() != x.get_index_range()) || (this->get_index_range() != y.get_index_range()))
+    error("Array::xapyb: index ranges don't match");
+
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all();
+  typename Array::const_full_iterator y_iter = y.begin_all();
+  while (this_iter != this->end_all())
+  {
+      *this_iter++ = (*x_iter++) * a + (*y_iter++) * b;
+  }
+}
+
+template <int num_dimensions, typename elemT>
+void Array<num_dimensions, elemT>::
+    xapyb(const Array &x, const Array &a,
+          const Array &y, const Array &b)
+{
   this->check_state();
   if ((this->get_index_range() != x.get_index_range())
-      || (this->get_index_range() != y.get_index_range()))
-       error("Array::axpby: index ranges don't match");
+      || (this->get_index_range() != y.get_index_range())
+      || (this->get_index_range() != a.get_index_range())
+      || (this->get_index_range() != b.get_index_range()))
+    error("Array::xapyb: index ranges don't match");
 
-  typename Array::iterator this_iter = this->begin();
-  typename Array::const_iterator x_iter = x.begin();
-  typename Array::const_iterator y_iter = y.begin();
-  while (this_iter != this->end())
-    {
-      this_iter->axpby(a,*x_iter++, b, *y_iter++);
-      ++this_iter;
-    }
+  typename Array::full_iterator this_iter = this->begin_all();
+  typename Array::const_full_iterator x_iter = x.begin_all();
+  typename Array::const_full_iterator y_iter = y.begin_all();
+  typename Array::const_full_iterator a_iter = a.begin_all();
+  typename Array::const_full_iterator b_iter = b.begin_all();
+
+  while (this_iter != this->end_all())
+  {
+      *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
+  }
+}
+
+template <int num_dimensions, typename elemT>
+template <class T>
+void Array<num_dimensions, elemT>::
+    sapyb(const T &a,
+          const Array &y, const T &b)
+{
+  this->xapyb(((const Array)*this), a, y, b);
 }
 
 /**********************************************

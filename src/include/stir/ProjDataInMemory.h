@@ -97,11 +97,11 @@ public:
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
     
-  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData.
   /// This implementation requires that x and y are ProjDataInMemory
   /// (else falls back on general method)
-  virtual void axpby(const float a, const ProjData& x,
-                     const float b, const ProjData& y);
+  virtual void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b);
 
   /** @name iterator typedefs
    *  iterator typedefs
