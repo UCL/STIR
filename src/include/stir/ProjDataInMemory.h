@@ -96,6 +96,12 @@ public:
   virtual void xapyb(const ProjData& x, const float a,
                      const ProjData& y, const float b);
 
+  //! set values of the array to x*a+y*b, where a, b, x and y are ProjData.
+  /// This implementation requires that a, b, x and y are ProjDataInMemory
+  /// (else falls back on general method)
+  virtual void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b);
+
   /** @name iterator typedefs
    *  iterator typedefs
    */
