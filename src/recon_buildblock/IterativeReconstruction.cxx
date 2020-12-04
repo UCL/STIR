@@ -38,7 +38,6 @@
 #include <sstream>
 
 #include "stir/recon_buildblock/IterativeReconstruction.h"
-#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"

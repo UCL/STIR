@@ -31,7 +31,6 @@
 #include "stir/VoxelsOnCartesianGrid.h" 
 #include "stir/Succeeded.h" 
 #include "stir/IO/read_from_file.h"
-#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
 using std::vector;
 using std::pair;

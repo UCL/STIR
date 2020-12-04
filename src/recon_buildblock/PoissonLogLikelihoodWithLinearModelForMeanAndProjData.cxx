@@ -816,12 +816,12 @@ template<typename TargetT>
      if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
      {
        exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
-       // somehow tell the image that it's calibrated (do we have a way?)
+       // somehow tell the image that it's calibrated 
      }
      else
      {
-       exam_info_uptr->set_calibration_factor(1.F);
-       // somehow tell the image that it's not calibrated (do we have a way?)
+       exam_info_uptr->set_calibration_factor(-1.F);
+       // somehow tell the image that it's not calibrated 
      }
     return exam_info_uptr;
 }
