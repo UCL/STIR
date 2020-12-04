@@ -439,6 +439,14 @@ write_to_file(const string& output_filename) const
 
 void
 ProjData::
+axpby( const float a, const ProjData& x,
+       const float b, const ProjData& y)
+{
+  xapyb(x,a,y,b);
+}
+
+void
+ProjData::
 xapyb(const ProjData& x, const float a,
       const ProjData& y, const float b)
 {

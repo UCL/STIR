@@ -160,6 +160,14 @@ ProjDataInMemory::get_bin_value(Bin& bin)
 
 void
 ProjDataInMemory::
+axpby( const float a, const ProjData& x,
+       const float b, const ProjData& y)
+{
+  xapyb(x,a,y,b);
+}
+
+void
+ProjDataInMemory::
 xapyb(const ProjData& x, const float a,
       const ProjData& y, const float b)
 {

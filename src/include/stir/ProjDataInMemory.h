@@ -86,6 +86,10 @@ public:
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
     
+  //! \deprecated a*x+b*y (\see xapyb)
+  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y);
+
   //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData.
   /// This implementation requires that x and y are ProjDataInMemory
   /// (else falls back on general method)
