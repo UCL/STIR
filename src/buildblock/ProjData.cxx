@@ -494,6 +494,21 @@ xapyb(const ProjData& x, const ProjData& a,
     }
 }
 
+void
+ProjData::
+sapyb(const float a, const ProjData& y, const float b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+void
+ProjData::
+sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+
 std::vector<int>
 ProjData::
 standard_segment_sequence(const ProjDataInfo& pdi)

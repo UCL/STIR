@@ -249,4 +249,18 @@ xapyb(const ProjData& x, const ProjData& a,
 #endif
 }
 
+void
+ProjDataInMemory::
+sapyb(const float a, const ProjData& y, const float b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+void
+ProjDataInMemory::
+sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
 END_NAMESPACE_STIR

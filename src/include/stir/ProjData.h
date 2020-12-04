@@ -327,6 +327,12 @@ public:
   virtual void xapyb(const ProjData& x, const ProjData& a,
                      const ProjData& y, const ProjData& b);
 
+  //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
+  virtual void sapyb(const float a, const ProjData& y, const float b);
+
+  //! set values of the array to self*a+y*b where a, b and y are ProjData
+  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
+
 protected:
 
    shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
