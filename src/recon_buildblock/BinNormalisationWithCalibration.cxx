@@ -82,7 +82,6 @@ set_calibration_factor(const float calib){
     this->calibration_factor=calib;
 }
 
-
 float
 BinNormalisationWithCalibration::
 get_branching_ratio() const {
