@@ -62,6 +62,7 @@ public:
   BinNormalisation();
 
   virtual ~BinNormalisation();
+  virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)
   /*! This function can be used to check if the operations are guaranteed to do nothing

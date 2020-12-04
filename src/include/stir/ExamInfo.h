@@ -58,7 +58,7 @@ public :
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
 
-    calibration_factor(1.F),
+    calibration_factor(-1.F),
     low_energy_thres(-1.F),
     up_energy_thres(-1.F)
 

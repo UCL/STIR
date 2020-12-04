@@ -19,6 +19,7 @@
 #define __stir_recon_buildblock_BinNormalisationSPECT_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/decay_correction_factor.h"
@@ -29,7 +30,7 @@
 START_NAMESPACE_STIR
 
 class BinNormalisationSPECT :
-  public RegisteredParsingObject<BinNormalisationSPECT, BinNormalisation>
+  public RegisteredParsingObject<BinNormalisationSPECT,  BinNormalisation, BinNormalisationWithCalibration>
 {
 public:
 
@@ -65,7 +66,7 @@ public:
 
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
   void read_linearity_table(Array<3,float>& linearity) const;
   void read_uniformity_table(Array<3,float>& uniformity) const;
