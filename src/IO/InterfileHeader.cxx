@@ -469,6 +469,7 @@ InterfileImageHeader::InterfileImageHeader()
   add_vectorised_key("image data type description", &image_data_type_description);
   
   add_key("calibration factor", &calibration_factor); 
+  add_key("isotope name", &isotope_name); 
   
 }
 
@@ -503,6 +504,7 @@ bool InterfileImageHeader::post_processing()
     return true;
   
   this->exam_info_sptr->set_calibration_factor(calibration_factor);
+  this->exam_info_sptr->set_radionuclide(isotope_name);
   
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }
