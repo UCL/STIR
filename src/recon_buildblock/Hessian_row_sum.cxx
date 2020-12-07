@@ -130,6 +130,7 @@ void
 Hessian_row_sum<TargetT>::
 reset_output_target_sptr(shared_ptr <TargetT > const& image)
 {
+  // We could simply use image->get_empty_copy() but to be sure all voxels are 0, we set it
   output_target_sptr =  unique_ptr<TargetT>(image->get_empty_copy());
   std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
 }
@@ -190,6 +191,13 @@ process_data()
   // Spatially variant penalty strength is defined as the sqrt of the output of Hessian_row_sum methods
   std::for_each(output_target_sptr->begin_all(), output_target_sptr->end_all(),
                 [](float& a) { return a=sqrt(a); } );
+}
+
+template <typename TargetT>
+void
+Hessian_row_sum<TargetT>::
+save_output()
+{
   // Save the output
   output_file_format_sptr->write_to_file(output_filename, *output_target_sptr);
   info("Spatially variant penalty strength has been computed and saved as " + output_filename + ".");

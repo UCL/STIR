@@ -73,6 +73,9 @@ public:
     //! and saves it.
     void process_data();
 
+    //! Saves the output image as output_filename
+    void save_output();
+
     //! get and set methods for the objective function
     //@{
     GeneralisedObjectiveFunction<TargetT > const& get_objective_function();

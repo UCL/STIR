@@ -67,5 +67,6 @@ main(int argc, char *argv[])
   Hessian_row_sum<DiscretisedDensity<3,float>> kappa_computer;
   kappa_computer.parse(argv[1]);
   kappa_computer.process_data();
+  kappa_computer.save_output();
   return EXIT_SUCCESS;
 }
