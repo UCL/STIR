@@ -439,6 +439,14 @@ write_to_file(const string& output_filename) const
 
 void
 ProjData::
+axpby( const float a, const ProjData& x,
+       const float b, const ProjData& y)
+{
+  xapyb(x,a,y,b);
+}
+
+void
+ProjData::
 xapyb(const ProjData& x, const float a,
       const ProjData& y, const float b)
 {
@@ -458,6 +466,48 @@ xapyb(const ProjData& x, const float a,
         set_segment(seg);
     }
 }
+
+void
+ProjData::
+xapyb(const ProjData& x, const ProjData& a,
+      const ProjData& y, const ProjData& b)
+{
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
+        error("ProjData::xapyb: ProjDataInfo don't match");
+
+    const int n_min = get_min_segment_num();
+    const int n_max = get_max_segment_num();
+
+    for (int s=n_min; s<=n_max; ++s)
+    {
+        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sa = a.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sb = b.get_segment_by_sinogram(s);
+
+        seg.xapyb(sx, sa, sy, sb);
+        set_segment(seg);
+    }
+}
+
+void
+ProjData::
+sapyb(const float a, const ProjData& y, const float b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+void
+ProjData::
+sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
 
 std::vector<int>
 ProjData::

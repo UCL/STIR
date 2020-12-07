@@ -117,14 +117,23 @@ run_tests()
     ProjDataInMemory y1(pd1);
     fill(y1,1000.f);
     ProjDataInMemory y2(y1);
+  
 
     // Check xapby with general and ProjDataInMemory methods
     const float a = 2.f;
     const float b = 3.f;
     pd1.xapyb(x1,a,y1,b);
     pd2.ProjData::xapyb(x2,a,y2,b);
-
     check_proj_data_are_equal_and_non_zero(pd1,pd2);
+
+    // Check sapby with general and ProjDataInMemory methods
+    ProjDataInMemory out1(x1);
+    out1.sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out1);
+    
+    ProjDataInMemory out2(x1);
+    out2.ProjData::sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out2);
 
     // Check using iterators
     ProjDataInMemory pd3(pd1);

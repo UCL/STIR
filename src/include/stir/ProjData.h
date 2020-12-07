@@ -315,9 +315,23 @@ public:
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
+  //! \deprecated a*x+b*y (\see xapyb)
+  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y);
+
   //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData
   virtual void xapyb(const ProjData& x, const float a,
                      const ProjData& y, const float b);
+
+  //! set values of the array to x*a+y*b, where a, b, x and y are ProjData
+  virtual void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b);
+
+  //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
+  virtual void sapyb(const float a, const ProjData& y, const float b);
+
+  //! set values of the array to self*a+y*b where a, b and y are ProjData
+  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
 
 protected:
 

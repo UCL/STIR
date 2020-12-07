@@ -387,7 +387,7 @@ void Array<num_dimensions, elemT>::
     sapyb(const T &a,
           const Array &y, const T &b)
 {
-  this->xapyb(((const Array)*this), a, y, b);
+  this->xapyb(*this, a, y, b);
 }
 
 /**********************************************
