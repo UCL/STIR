@@ -843,12 +843,23 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 					 -this->get_max_segment_num_to_process(),
 					 this->get_max_segment_num_to_process(),
                                          subset_num, this->get_num_subsets());
+
+  info("Forward projecting input image.", 2);
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp parallel for schedule(runtime)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
+#ifdef STIR_OPENMP
+          const int thread_num = omp_get_thread_num();
+          info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+               % thread_num % omp_get_num_threads()
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+          info(boost::format("calculating segment_num: %d, view_num: %d")
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
           const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
           // first compute data-term: y*norm^2
@@ -958,25 +969,45 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
     input_viewgrams_vec.push_back(this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr));
   }
 
-  {
-#ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
-#endif
-    // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
-    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
-    {
-      input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
-      this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
-    }
-  }
 
-  this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
-//  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();  // is this needed again?
+  // Forward project input image
+  info("Forward projecting input image.",2);
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp parallel for schedule(runtime)
 #endif
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {  // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
+    input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+    this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
+  }
+
+
+
+  info("Forward projecting current image estimate and back projecting to output.", 2);
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(runtime)
+#endif
+  for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
   {
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
     // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
     RelatedViewgrams<float> ybar_sq_viewgram;
     {
