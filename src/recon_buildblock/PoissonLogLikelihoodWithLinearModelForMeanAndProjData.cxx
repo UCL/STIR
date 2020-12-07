@@ -1015,7 +1015,8 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
       this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq_viewgram);
 
       //add additive sinogram to forward projection
-      ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+      if (!(is_null_ptr(this->get_additive_proj_data_sptr())))
+        ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
       // square ybar
       ybar_sq_viewgram *= ybar_sq_viewgram;
     }
