@@ -345,7 +345,7 @@ NumericVectorWithOffset<T, NUMBER>::
 sapyb(const T2& a,
       const NumericVectorWithOffset& y, const T2& b)
 {  
-  this->xapyb(((const NumericVectorWithOffset)*this),a,y,b);
+  this->xapyb(*this,a,y,b);
 }
 
 END_NAMESPACE_STIR
