@@ -599,6 +599,7 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
   
+  if (!exam_info.get_radionuclide().empty())
   output_header << "isotope name := "  
                 <<exam_info.get_radionuclide()  << endl;
 
