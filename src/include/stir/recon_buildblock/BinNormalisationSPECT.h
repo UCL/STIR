@@ -93,6 +93,7 @@ protected:
   mutable RelatedViewgrams<float> NCOR_viewgrams;
   std::string uniformity_filename, folder_prefix, projdata_filename;
   float bin_efficiency;
+  float measured_calibration_factor;
 
   bool _use_detector_efficiencies;
   bool _use_decay_correction;

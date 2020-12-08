@@ -71,6 +71,7 @@ BinNormalisationSPECT::set_defaults()
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
   this->resampled=0;
+  this->measured_calibration_factor=-1.F;
 
 }
 
@@ -84,11 +85,12 @@ initialise_keymap()
   this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
   this->parser.add_key("folder_prefix", &this->folder_prefix);
   this->parser.add_key("rel_angle", &this->rel_angle);
-  this->parser.add_key("half_life", &this->half_life);
+  this->parser.add_key("half_life", &this->half_life); //TODO read this from the database according to isotope name
   this->parser.add_key("view_time_interval", &this->view_time_interval);
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("projdata filename", &this->projdata_filename);
   this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
+  this->parser.add_key("measured calibration factor", &this->measured_calibration_factor);
 
   this->parser.add_stop_key("End Bin Normalisation SPECT");
 }
@@ -103,6 +105,11 @@ post_processing()
 
   norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
   max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+  
+//  allow to set your own calibration factor
+  if(measured_calibration_factor>0) 
+      set_calibration_factor(measured_calibration_factor);
+  
 //  read_norm_data(normalisation_spect_filename);
   return false;
 }
