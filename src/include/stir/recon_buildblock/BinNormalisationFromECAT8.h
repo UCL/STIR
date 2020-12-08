@@ -119,6 +119,7 @@ private:
   int span;
   int mash;
   int num_blocks_per_singles_unit;
+  float calib_factor, cross_calib_factor;
 
   bool _use_gaps;
   bool _use_detector_efficiencies;

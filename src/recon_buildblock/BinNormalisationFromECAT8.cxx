@@ -190,6 +190,8 @@ BinNormalisationFromECAT8::
 post_processing()
 {
   read_norm_data(normalisation_ECAT8_filename);
+//  this->set_calibration_factor(cross_calib_factor*calib_factor);   TODO understand if we need to use cross calib factor. Let's set 1 for now
+  this->set_calibration_factor(1);
   return false;
 }
 
@@ -273,6 +275,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
     parser.add_key("originating_system", &originating_system);
     parser.add_key("name_of_data_file", &data_file_name);
     parser.add_key("%number of buckets", &num_buckets);
+    parser.add_key("%scanner quantification factor (Bq*s/ECAT counts)",& calib_factor);
+    parser.add_key("%cross calibration factor",& cross_calib_factor);
     parser.parse(filename.c_str());
   }
 #endif
