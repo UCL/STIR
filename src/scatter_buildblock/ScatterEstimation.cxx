@@ -779,9 +779,6 @@ process_data()
   if (!this->_already_setup)
     error("ScatterEstimation: set_up needs to be called before process_data()");
 
-    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
-
     float local_min_scale_value = 0.5f;
     float local_max_scale_value = 0.5f;
 
