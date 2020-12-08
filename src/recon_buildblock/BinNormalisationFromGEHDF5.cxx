@@ -238,6 +238,7 @@ BinNormalisationFromGEHDF5::
 post_processing()
 {
   read_norm_data(normalisation_GEHDF5_filename);
+  this->set_calibration_factor(1); //TODO: read actual factor somewhere
   return false;
 }
 
