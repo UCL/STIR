@@ -69,16 +69,17 @@ set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 ####### Installation directories
-# Use locations as in
+# Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
-# TODO append version numbers
+# However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "documentation/doc/stir")
-elseif(CYGWIN)
-  set(STIR_DOC_DIR "share/doc/stir")
-else()
-  set(STIR_DOC_DIR "doc/stir")
+  set(STIR_DOC_DIR "documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+else() #if(CYGWIN)
+  set(STIR_DOC_DIR "share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+#else()
+#  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
+# TODO append version numbers
 set(STIR_DATA_DIR "share/stir")
 set(ConfigPackageLocation lib/cmake/)
 
@@ -242,5 +243,35 @@ install(
     FILES_MATCHING PATTERN "Find*"
 )
 
+# install examples
+install(
+  DIRECTORY
+    examples
+  COMPONENT DOC
+  DESTINATION "${STIR_DOC_DIR}"
+   FILES_MATCHING
+    PATTERN *
+    PATTERN my_* EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
+
+# install documentation
+install(
+  DIRECTORY
+    documentation
+  COMPONENT DOC
+    DESTINATION "${STIR_DOC_DIR}"
+  FILES_MATCHING
+    PATTERN *
+    PATTERN *.aux EXCLUDE
+    PATTERN *.dvi EXCLUDE
+    PATTERN *.out EXCLUDE
+    PATTERN *.toc EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
 #  COMPONENT
 #    Devel

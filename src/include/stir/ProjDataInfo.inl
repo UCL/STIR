@@ -57,6 +57,10 @@ int
 ProjDataInfo::get_num_tangential_poss() const
 { return  max_tangential_pos_num - min_tangential_pos_num + 1; }
 
+int
+ProjDataInfo::get_num_tof_poss() const
+{ return 1; /* always 1 at the moment */ }
+
 int 
 ProjDataInfo::get_min_segment_num() const
 { return (max_axial_pos_per_seg.get_min_index()); }
@@ -121,13 +125,19 @@ ProjDataInfo::get_scanner_sptr() const
 
 
 int
-ProjDataInfo::get_num_sinograms() const
+ProjDataInfo::get_num_non_tof_sinograms() const
 {
   int num_sinos = 0;
   for (int s=this->get_min_segment_num(); s<= this->get_max_segment_num(); ++s)
     num_sinos += this->get_num_axial_poss(s);
 
   return num_sinos;
+}
+
+int
+ProjDataInfo::get_num_sinograms() const
+{
+    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
 }
 
 std::size_t
