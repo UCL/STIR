@@ -196,9 +196,25 @@ private:
     //! Spatially variant penalty penalty image ptr
     shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 
+    //! The Log(cosh()) function and its approximation
+    /*!
+     Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
+     Make the approximation:
+     log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
+    */
+    static inline float logcosh(const float d)
+    {
+      const float x = fabs(d);
+      if ( x < 30.f ){
+        return log(cosh(x));
+      } else {
+        return x + log(0.5f);
+      }
+    }
+
     //! The surrogate of the logcosh function is tanh(x)/x
     /*!
-     * @param d is should be the difference between the ith and jth voxel. The scalar factor may be included.
+     * @param d should be the difference between the ith and jth voxel.
      However, it will use the taylor expansion if the x is too small (to prevent division by 0).
      * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
      * @return the surrogate of the log-cosh function

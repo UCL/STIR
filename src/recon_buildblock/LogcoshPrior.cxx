@@ -291,9 +291,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
             {
               // 1/scalar^2 * log(cosh(x * scalar))
               elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] *
-                      (1/(this->scalar*this->scalar))*log(cosh(this->scalar*voxel_diff));
-
+              elemT current = weights[dz][dy][dx] * 1/(this->scalar*this->scalar) * logcosh(this->scalar*voxel_diff);
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
               result += static_cast<double>(current);
