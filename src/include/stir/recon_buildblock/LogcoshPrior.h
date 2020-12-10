@@ -204,16 +204,16 @@ private:
     static inline float logcosh(const float d)
     {
       const float x = fabs(d);
-      if ( x < 30 ){
+      if ( x < 30.f ){
         return log(cosh(x));
       } else {
-        return x + log(0.5);
+        return x + log(0.5f);
       }
     }
 
     //! The surrogate of the logcosh function is tanh(x)/x
     /*!
-     * @param d is should be the difference between the ith and jth voxel.
+     * @param d should be the difference between the ith and jth voxel.
      However, it will use the taylor expansion if the x is too small (to prevent division by 0).
      * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
      * @return the surrogate of the log-cosh function
