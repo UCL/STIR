@@ -723,7 +723,6 @@ parabolic_surrogate_curvature_times_input(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
               // The parabolic surrogate curvature of the QP is 1
               elemT current = weights[dz][dy][dx] * input_image[z+dz][y+dy][x+dx];
 
