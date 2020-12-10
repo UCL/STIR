@@ -198,8 +198,9 @@ private:
 
     //! The Log(cosh()) function and its approximation
     /*!
-     Cosh(x) = 0.5(e^x + e^-x) is an exponential function.
-     Makes the approximation that when |x| > 30, e^-|x| << e^|x| and therefore log(cosh(x)) ~= |x| + log(0.5)
+     Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
+     Make the approximation:
+     log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
     */
     static inline float logcosh(const float d)
     {
