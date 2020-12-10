@@ -129,7 +129,13 @@ class QuadraticPrior:  public
                 const BasicCoordinate<3,int>& coords,
                 const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! Call accumulate_Hessian_times_input
+  //! compute the parabolic surrogate curvature for the prior of the current image estimate and multiply by input image
+  void parabolic_surrogate_curvature_times_input(DiscretisedDensity<3,elemT>& output,
+                                                 const DiscretisedDensity<3,elemT> &current_image_estimate,
+                                                 const DiscretisedDensity<3,elemT> &input_image);
+
+
+    //! Call accumulate_Hessian_times_input
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;

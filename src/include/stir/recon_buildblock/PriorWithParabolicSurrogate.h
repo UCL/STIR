@@ -55,7 +55,19 @@ public:
     parabolic_surrogate_curvature(TargetT& parabolic_surrogate_curvature, 
 				  const TargetT &current_estimate) = 0;
 
-  //! A function that allows skipping some computations if the curvature is independent of the \c current_estimate
+  //! This will calculate the parabolic surrogate curvature of the current image estimate multiplied by the input image
+  /*!
+    Function is comparable to that of accumulate_Hessian_times_input() but instead of the Hessian, we use the parabolic
+    surrogate curvature.
+    For each voxel (f_{j}) of the image, this method computes
+    \beta \sum_{i\in J} d_{i,j} f_{i}
+    where J is the neighbourhood about voxel j and d_{i,j} is the surrogate function between j and i.
+   */
+  virtual void parabolic_surrogate_curvature_times_input(TargetT& output,
+                                                         const TargetT& current_image_estimate,
+                                                         const TargetT& input_image) = 0;
+
+    //! A function that allows skipping some computations if the curvature is independent of the \c current_estimate
   /*! Defaults to return \c true, but can be overloaded by the derived class.
    */
   virtual bool

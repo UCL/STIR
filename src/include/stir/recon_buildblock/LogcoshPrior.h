@@ -137,6 +137,11 @@ public:
                          const BasicCoordinate<3,int>& coords,
                          const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+    //! compute the parabolic surrogate curvature for the prior of the current image estimate and multiply by input image
+    void parabolic_surrogate_curvature_times_input(DiscretisedDensity<3,elemT>& output,
+                                                   const DiscretisedDensity<3,elemT> &current_image_estimate,
+                                                   const DiscretisedDensity<3,elemT> &input_image);
+
     //! Compute the multiplication of the hessian of the prior multiplied by the input.
     virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                      const DiscretisedDensity<3,elemT>& current_estimate,
