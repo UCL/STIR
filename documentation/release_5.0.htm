@@ -17,6 +17,7 @@ detailed below.
   <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
     This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL)
+  <li>Calibration factor can be applied in the normalisation with a new BinNormalisation derived class "BinNormalisationWithCalibration"; Exam_info, TimeFrameDeifinition and PatientPosition have now a == operator; Interfile now reads/write isotope name and calibration factor. This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL).
   </li>
 
 </ul>  
@@ -27,7 +28,7 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys) and Robert Twyman (UCL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys), Robert Twyman (UCL) and Daniel Deidda (NPL).
 </p>
 
     <h2>Patch release info</h2>
@@ -87,6 +88,9 @@ improvements to the documentation.
 </li>
 <li><tt>SSRB</tt> now has the option of taking a template sinogram.
 </li>
+<li><tt>BinNormalisationWithCalibration</tt> is a new class derived from BinNormalisation. This class allows to apply calibration factor from the scanner and save the information into the interfile header. To use this, a specific BinNormalisation class should be derived from BinNormalisationWithCalibration, the information about the calibration factor read, and the function get_uncalibrated_bin_efficiencies() needs to be overwritten. Note that also the isotope name and branching ratio can be set here (the latter will need to be set according to the isotope by reading into a radionuclide database). BinNormalisationSPECT already reads Calibration factor and isotope name and apply the calibration factor read from interfile. Since not all SPECT scanner do quantitative reconstruction an option of setting the calibration factor from the parameter file is added. Factors for BinNormalisationECA8/ECAT7 and GEHDF5 are set to one at the moment as we need to double check on the meaning of cross calibration factor for ECAT and find out hoe to read them for GEHDF5.
+</li>
+<li><tt>Exam_info, TimeFrameDeifinition and PatientPosition have now a == operator </li>
 </ul>
 
 
@@ -183,6 +187,8 @@ from the above):</H2>
     <li><code>ModelMatrix::set_if_uncalibrated</code> and <code>ModelMatrix::get_if_uncalibrated</code> renamed to <code>ModelMatrix::set_is_uncalibrated</code> and <code>ModelMatrix::get_is_uncalibrated</code></li>
     <li><code>PlasmaData::set_if_decay_corrected</code> and <code>PlasmaData::get_if_decay_corrected</code> renamed to <code>PlasmaData::set_is_decay_corrected</code> and <code>PlasmaData::get_is_decay_corrected</code></li>
     <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
+    <li><code>BinNormalisation::set_up()</code> now need exam_info_sptr as input.</li>
+    <li><code>BinNormalisation::apply()</code> now does not need start_time and end_time as they are taken from exam_info. The same will be done with <code>undo()</code></li>
 </ul>
 
 <h3>New functionality</h3>
