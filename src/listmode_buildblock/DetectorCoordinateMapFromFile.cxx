@@ -1,8 +1,6 @@
 /* DetectorCoordinateMapFromFile.cxx
 
  Read List-Mode Event Data using map from file:  Implementation
- Jannis Fischer
- jannis.fischer@cern.ch
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 

@@ -1,10 +1,9 @@
 /* SAFIRCListmodeInputFileFormat.h
 
  Class defining input file format for coincidence listmode data for SAFIR. 
- Jannis Fischer
- jannis.fischer@cern.ch
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2020 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -119,7 +118,7 @@ public:
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
-		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
 	}
 
 protected:
@@ -127,6 +126,7 @@ protected:
 	mutable std::string listmode_filename;
 	mutable std::string crystal_map_filename;
 	mutable std::string template_proj_data_filename;
+	mutable double lor_randomization_sigma;
 
 	virtual bool actual_can_read(const FileSignature &signature, std::istream &input) const {
 		return false; // cannot read from istream
@@ -138,6 +138,7 @@ protected:
 		this->parser.add_key("listmode data filename", &listmode_filename);
 		this->parser.add_key("crystal map filename", &crystal_map_filename);
 		this->parser.add_key("template projection data filename", &template_proj_data_filename);
+		this->parser.add_key("LOR randomization (Gaussian) sigma", &lor_randomization_sigma);
 		this->parser.add_stop_key("END CListModeDataSAFIR Parameters");
 	}
 
@@ -145,6 +146,7 @@ protected:
 		base_type::set_defaults();
 		crystal_map_filename = "crystal_map_front.txt";
 		template_proj_data_filename = "safir_20.hs";
+		lor_randomization_sigma = 0.0;
 	}
 
 	bool actual_do_parsing( const std::string& filename) const {

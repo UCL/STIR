@@ -691,6 +691,11 @@ and OpenGATE as discrepancies can lead to crashes if the actual number of blocks
 larger than what is specified in the scanner info. However, this check requires the \texttt{.hroot}
 file to accurately correspond to your GATE macro.
 
+\textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
+``virtual crystals" to accomodate for gaps between blocks. If you use
+the \texttt{originating system} to specify the scanner, this will be automatically enabled.
+(If you do not want this, set it to \textt{User_defined_scanner} and specify all values).
+
 An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
 
@@ -4195,7 +4200,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   \end{verbatim}
 
 
-{ \subsubsubsection{Relative Difference}
+{ \subsubsubsection{Relative Difference} \label{sec:priors:Relative_Difference}
 }
 This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The gradient of the prior is computed as follows:
   \[g_r = \sum_{dr} w_{dr} *
@@ -4239,6 +4244,45 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   \end{verbatim}
 
 
+{ \subsubsubsection{Logcosh} \label{sec:priors:Logcosh}
+}
+This implements a Logcosh. The gradient of the prior is computed as follows:
+  \[g_r = \sum_{dr} w_{dr} * \frac{1}{s} * \tanh(s*(\lambda_{r} - \lambda_{dr})) *
+  \kappa_r * \kappa_{r+dr}\]
+
+  \noindent where $\lambda$ is the image where the gradient is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+  $s$ (a.k.a. scalar) controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior.
+
+  The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  x-voxel\_size divided by the Euclidean distance between the points.
+ 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := Logcosh
+  Logcosh Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  ; scalar is a parameter used to control edge preservation
+  ; scalar value := 1
+  END Logcosh Prior Parameters:=
+  \end{verbatim}
+
+
 { \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
   PLS becomes smoothed TV when an uniform anatomical image is provided.  
@@ -4275,6 +4319,7 @@ The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
   only_2D:=0
   END PLS Prior Parameters:=
   \end{verbatim}
+
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}

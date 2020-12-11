@@ -32,7 +32,7 @@
 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
-
+  \author Gemma Fardell
 
   Not all compilers support the full iterators, so you could disabled them by editing 
   the file and removing the define ARRAY_FULL. Lots of other things in the library 
@@ -41,6 +41,7 @@
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"   
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 class NumericType;
@@ -240,10 +241,24 @@ public:
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
 
-  //! a*x+b*y, where a and b are scalar, and x and y are arrays
+  //! \deprecated a*x+b*y (\see xapyb)
   template <typename elemT2>
-    inline void axpby(const elemT2 a, const Array& x,
+    STIR_DEPRECATED inline void axpby(const elemT2 a, const Array& x,
                       const elemT2 b, const Array& y);
+                      
+  //! set values of the array to x*a+y*b, where a and b are scalar
+inline void xapyb(const Array& x, const elemT a,
+                  const Array& y, const elemT b);
+
+   //! set values of the array to x*a+y*b, where a and b are arrays
+inline void xapyb(const Array& x, const Array& a,
+                  const Array& y, const Array& b); 
+
+  //! set values of the array to self*a+y*b where a and b are scalar or arrays
+template <class T>
+inline void sapyb(const T &a,
+                  const Array& y, const T &b);
+
 };
 
 
