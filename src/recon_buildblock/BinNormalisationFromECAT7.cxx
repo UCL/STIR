@@ -198,6 +198,7 @@ BinNormalisationFromECAT7::
 post_processing()
 {
   read_norm_data(normalisation_ECAT7_filename);
+  this->set_calibration_factor(1);
   return false;
 }
 

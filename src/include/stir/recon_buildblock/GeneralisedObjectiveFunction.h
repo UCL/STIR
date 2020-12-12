@@ -227,6 +227,15 @@ public:
 
   //! Return the number of subsets in-use
   int get_num_subsets() const;
+  
+//  //! Virtual get normalisation, it will be defined by the derived class
+//  virtual const shared_ptr<BinNormalisation> &
+//  get_normalisation_sptr() const =0;
+  
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const
+  { auto exam_info_uptr=unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
+      return exam_info_uptr;
+  }
 
 
   //! Attempts to change the number of subsets. 

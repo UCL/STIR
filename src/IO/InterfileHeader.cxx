@@ -76,7 +76,7 @@ MinimalInterfileHeader::MinimalInterfileHeader()
   add_key("imaging modality",
     KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
-
+  
   add_key("version of keys",
           KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
           &version_of_keys);
@@ -467,6 +467,10 @@ InterfileImageHeader::InterfileImageHeader()
     KeyArgument::INT,	(KeywordProcessor)&InterfileImageHeader::read_image_data_types,&num_image_data_types);
   add_key("index nesting level", &index_nesting_level);
   add_vectorised_key("image data type description", &image_data_type_description);
+  
+  add_key("calibration factor", &calibration_factor); 
+  add_key("isotope name", &isotope_name); 
+  
 }
 
 void InterfileImageHeader::read_image_data_types()
@@ -498,7 +502,10 @@ bool InterfileImageHeader::post_processing()
 
   if (InterfileHeader::post_processing() == true)
     return true;
-
+  
+  this->exam_info_sptr->set_calibration_factor(calibration_factor);
+  this->exam_info_sptr->set_radionuclide(isotope_name);
+  
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }
   

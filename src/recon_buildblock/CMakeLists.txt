@@ -59,6 +59,7 @@ set(${dir_LIB_SOURCES}
 	ProjectorByBinPairUsingProjMatrixByBin 
 	ProjectorByBinPairUsingSeparateProjectors 
 	BinNormalisation 
+	BinNormalisationWithCalibration
 	ChainedBinNormalisation 
 	BinNormalisationFromProjData 
 	TrivialBinNormalisation 

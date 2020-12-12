@@ -85,7 +85,6 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr=_exam_info_sptr;
-      _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     }
@@ -104,7 +103,6 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr = _exam_info_sptr;
-      _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     
@@ -169,7 +167,7 @@ class DynamicDiscretisedDensity: public ExamData
 
   const float get_isotope_halflife() const;
 
-  const float get_calibration_factor() const;
+   float get_calibration_factor() const;
 
   //! at method
   const singleDiscDensT & at(const unsigned int frame_num) const
@@ -233,7 +231,6 @@ class DynamicDiscretisedDensity: public ExamData
   //TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
-  float _calibration_factor;
   float _isotope_halflife;
   bool _is_decay_corrected; 
   //double _start_time_in_secs_since_1970;
