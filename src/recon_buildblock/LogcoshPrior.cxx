@@ -523,6 +523,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
   // the only difference is that parabolic_surrogate_curvature uses input==1
 
   assert( output.has_same_characteristics(input));
+  output.fill(0.f);
   if (this->penalisation_factor==0)
   {
     return Succeeded::yes;
@@ -583,6 +584,79 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
     }
   }
   return Succeeded::yes;
+}
+
+template <typename elemT>
+void
+LogcoshPrior<elemT>::
+parabolic_surrogate_curvature_times_input(DiscretisedDensity<3,elemT>& output,
+                                          const DiscretisedDensity<3,elemT> &current_image_estimate,
+                                          const DiscretisedDensity<3,elemT> &input_image)
+{
+  assert( output.has_same_characteristics(input));
+  assert( output.has_same_characteristics(current_image_estimate));
+  output.fill(0.f);
+  if (this->penalisation_factor==0)
+  {
+    return;
+  }
+
+  DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
+          dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(output);
+
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, output_cast.get_grid_spacing(), this->only_2D);
+  }
+
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
+
+  if (do_kappa && !kappa_ptr->has_same_characteristics(input_image))
+    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
+
+  const int min_z = output.get_min_index();
+  const int max_z = output.get_max_index();
+  for (int z=min_z; z<=max_z; z++)
+  {
+    const int min_dz = max(weights.get_min_index(), min_z-z);
+    const int max_dz = min(weights.get_max_index(), max_z-z);
+
+    const int min_y = output[z].get_min_index();
+    const int max_y = output[z].get_max_index();
+
+    for (int y=min_y;y<= max_y;y++)
+    {
+      const int min_dy = max(weights[0].get_min_index(), min_y-y);
+      const int max_dy = min(weights[0].get_max_index(), max_y-y);
+
+      const int min_x = output[z][y].get_min_index();
+      const int max_x = output[z][y].get_max_index();
+
+      for (int x=min_x;x<= max_x;x++)
+      {
+        const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
+        const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
+
+        elemT result = 0;
+        for (int dz=min_dz;dz<=max_dz;++dz)
+          for (int dy=min_dy;dy<=max_dy;++dy)
+            for (int dx=min_dx;dx<=max_dx;++dx)
+            {
+              elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx] *
+                      surrogate(voxel_diff, this->scalar) * input_image[z+dz][y+dy][x+dx];
+
+              if (do_kappa)
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+
+              result += current;
+            }
+
+        output[z][y][x] += result * this->penalisation_factor;
+      }
+    }
+  }
+  return;
 }
 
 #  ifdef _MSC_VER
