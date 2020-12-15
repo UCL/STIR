@@ -876,11 +876,11 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
             this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
           // TODO add 1 for 1/(y+1) approximation
 
-          this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams);
 
           // smooth TODO
 
-          this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams);
 
           RelatedViewgrams<float> tmp_viewgrams;
           // set tmp_viewgrams to geometric forward projection of input

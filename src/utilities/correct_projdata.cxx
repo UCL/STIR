@@ -317,11 +317,11 @@ run() const
         const double end_frame = frame_defs.get_end_time(frame_num);
         if (apply_or_undo_correction)
         {
-          normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+          normalisation_ptr->apply(viewgrams);
         }
         else
         {
-          normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+          normalisation_ptr->undo(viewgrams);
         }    
       }
       if (do_scatter && apply_or_undo_correction)

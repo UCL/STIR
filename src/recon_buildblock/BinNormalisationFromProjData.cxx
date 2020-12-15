@@ -141,8 +141,10 @@ is_trivial() const
 }
 
 void 
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
   {
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
@@ -152,8 +154,11 @@ BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const dou
 
 void 
 BinNormalisationFromProjData::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
   {
+    
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
@@ -163,7 +168,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
   }
 
 float 
-BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
 {
   //TODO
   error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");

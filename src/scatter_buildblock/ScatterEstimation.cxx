@@ -576,8 +576,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
         iterative_object->set_input_data(this->input_projdata_sptr);
 
-    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+//    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+//    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
 
     //
@@ -636,7 +636,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
               // Essentially since inv_projData_sptr is 1s then this is an inversion.
               // inv_projdata_sptr = 1/norm3d
-              norm3d_sptr->undo(*inv_projdata_3d_sptr, start_time, end_time);
+              norm3d_sptr->undo(*inv_projdata_3d_sptr);
 
               info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 

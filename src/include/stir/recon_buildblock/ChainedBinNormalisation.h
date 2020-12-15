@@ -101,35 +101,35 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
   /*! 
     This calls apply() of the 2 BinNormalisation members
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
 
   virtual void apply(ProjData&) const;
 
-virtual void apply_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void apply_only_first(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void apply_only_first(ProjData&,const double start_time, const double end_time) const;
+virtual void apply_only_first(ProjData&) const;
 
-virtual void apply_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void apply_only_second(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void apply_only_second(ProjData&,const double start_time, const double end_time) const;
+virtual void apply_only_second(ProjData&) const;
 
   //! Undo the normalisation of some data
   /*! 
     This calls undo() of the 2 BinNormalisation members. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
-  virtual void undo(ProjData&,const double start_time, const double end_time) const;
+  virtual void undo(ProjData&) const;
 
-virtual void undo_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void undo_only_first(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void undo_only_first(ProjData&,const double start_time, const double end_time) const;
+virtual void undo_only_first(ProjData&) const;
 
-virtual void undo_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void undo_only_second(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void undo_only_second(ProjData&,const double start_time, const double end_time) const;
+virtual void undo_only_second(ProjData&) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_bin_efficiency(const Bin& bin) const;
  //! Returns the is_trivial() status of the first normalisation object.
  //! \warning Currently, if the object has not been set the function throws an error.
   virtual bool is_first_trivial() const;

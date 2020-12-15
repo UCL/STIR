@@ -62,11 +62,11 @@ public:
                               const double start_time,
                               const double end_time) const;
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
-  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin) const;
 
   void read_linearity_table(Array<3,float>& linearity) const;
   void read_uniformity_table(Array<3,float>& uniformity) const;

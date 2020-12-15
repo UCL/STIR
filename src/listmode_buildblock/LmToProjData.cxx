@@ -399,16 +399,16 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 
 
     // do_normalisation
-#ifndef FRAME_BASED_DT_CORR
-     const double start_time = current_time;
-     const double end_time = current_time;
-#else
-     const double start_time = frame_defs.get_start_time(current_frame_num);
-     const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
+//#ifndef FRAME_BASED_DT_CORR
+//     const double start_time = current_time;
+//     const double end_time = current_time;
+//#else
+//     const double start_time = frame_defs.get_start_time(current_frame_num);
+//     const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
      
       const float bin_efficiency = 
-	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -457,14 +457,14 @@ do_post_normalisation(Bin& bin) const
 	}
       else
 	{
-#ifndef FRAME_BASED_DT_CORR
-	  const double start_time = current_time;
-	  const double end_time = current_time;
-#else
-	  const double start_time = frame_defs.get_start_time(current_frame_num);
-	  const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
-	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+//#ifndef FRAME_BASED_DT_CORR
+//	  const double start_time = current_time;
+//	  const double end_time = current_time;
+//#else
+//	  const double start_time = frame_defs.get_start_time(current_frame_num);
+//	  const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin);
 	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
 	  if (bin_efficiency < 1.E-10)
 	    {

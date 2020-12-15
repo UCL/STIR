@@ -52,10 +52,10 @@ public:
   void set_radionuclide(const std::string&);
   
   // needs to be implemented by derived class
-  virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
+  virtual float get_uncalibrated_bin_efficiency(const Bin&) const  = 0;
  
-  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
-   { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
+  virtual float get_bin_efficiency(const Bin& bin) const
+   { return this->get_uncalibrated_bin_efficiency(bin)/get_calib_decay_branching_ratio_factor(bin); }
   
  protected:
   // parsing stuff

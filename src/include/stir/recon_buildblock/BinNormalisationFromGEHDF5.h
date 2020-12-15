@@ -98,7 +98,7 @@ public:
   BinNormalisationFromGEHDF5(const string& filename);
 
   virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>&);
-  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  float get_uncalibrated_bin_efficiency(const Bin& bin) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;

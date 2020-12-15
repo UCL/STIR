@@ -165,7 +165,7 @@ main (int argc, char * argv[])
     }
   else
     {
-      normalisation_ptr->undo(*out_proj_data_ptr,start_frame,end_frame, symmetries_sptr);
+      normalisation_ptr->undo(*out_proj_data_ptr, symmetries_sptr);
     }    
 
   return EXIT_SUCCESS;

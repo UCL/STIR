@@ -92,12 +92,12 @@ set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const 
 
 
 void 
-ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
 {
   if (!is_null_ptr(apply_first))
-    apply_first->apply(viewgrams,start_time,end_time);
+    apply_first->apply(viewgrams);
   if (!is_null_ptr(apply_second))
-    apply_second->apply(viewgrams,start_time,end_time);
+    apply_second->apply(viewgrams);
 }
 
 void
@@ -110,28 +110,28 @@ ChainedBinNormalisation::apply(ProjData& proj_data) const
 }
 
 void
-ChainedBinNormalisation::apply_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const
+ChainedBinNormalisation::apply_only_first(RelatedViewgrams<float>& viewgrams) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->apply(viewgrams,start_time,end_time);
+    apply_first->apply(viewgrams);
 }
 
 void
-ChainedBinNormalisation::apply_only_first(ProjData& proj_data,const double start_time, const double end_time) const
+ChainedBinNormalisation::apply_only_first(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_first))
     apply_first->apply(proj_data);
 }
 
 void
-ChainedBinNormalisation::apply_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const
+ChainedBinNormalisation::apply_only_second(RelatedViewgrams<float>& viewgrams) const
 {
   if (!is_null_ptr(apply_second))
-    apply_second->apply(viewgrams,start_time,end_time);
+    apply_second->apply(viewgrams);
 }
 
 void
-ChainedBinNormalisation::apply_only_second(ProjData& proj_data,const double start_time, const double end_time) const
+ChainedBinNormalisation::apply_only_second(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_second))
     apply_second->apply(proj_data);
@@ -139,66 +139,66 @@ ChainedBinNormalisation::apply_only_second(ProjData& proj_data,const double star
 
 void 
 ChainedBinNormalisation::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
 {
   if (!is_null_ptr(apply_first))
-    apply_first->undo(viewgrams,start_time,end_time);
+    apply_first->undo(viewgrams);
   if (!is_null_ptr(apply_second))
-    apply_second->undo(viewgrams,start_time,end_time);
+    apply_second->undo(viewgrams);
 }
 
 void
 ChainedBinNormalisation::
-undo(ProjData& proj_data,const double start_time, const double end_time) const
+undo(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->undo(proj_data,start_time,end_time);
+    apply_first->undo(proj_data);
   if (!is_null_ptr(apply_second))
-    apply_second->undo(proj_data,start_time,end_time);
+    apply_second->undo(proj_data);
 }
 
 void
 ChainedBinNormalisation::
-undo_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const
+undo_only_first(RelatedViewgrams<float>& viewgrams) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->undo(viewgrams,start_time,end_time);
+    apply_first->undo(viewgrams);
 }
 
 void
 ChainedBinNormalisation::
-undo_only_first(ProjData& proj_data,const double start_time, const double end_time) const
+undo_only_first(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_first))
-    apply_first->undo(proj_data,start_time,end_time);
+    apply_first->undo(proj_data);
 }
 
 void
 ChainedBinNormalisation::
-undo_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const
+undo_only_second(RelatedViewgrams<float>& viewgrams) const
 {
   if (!is_null_ptr(apply_second))
-    apply_second->undo(viewgrams,start_time,end_time);
+    apply_second->undo(viewgrams);
 }
 
 void
 ChainedBinNormalisation::
-undo_only_second(ProjData& proj_data,const double start_time, const double end_time) const
+undo_only_second(ProjData& proj_data) const
 {
   if (!is_null_ptr(apply_second))
-    apply_second->undo(proj_data,start_time,end_time);
+    apply_second->undo(proj_data);
 }
 
 float
-ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin) const
 {
   return 
     (!is_null_ptr(apply_first) 
-     ? apply_first->get_bin_efficiency(bin,start_time,end_time)
+     ? apply_first->get_bin_efficiency(bin)
      : 1)
     *
     (!is_null_ptr(apply_second) 
-     ? apply_second->get_bin_efficiency(bin,start_time,end_time)
+     ? apply_second->get_bin_efficiency(bin)
      : 1);
 }
  

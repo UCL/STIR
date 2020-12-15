@@ -452,9 +452,12 @@ use_geometric_factors() const
 
 float 
 BinNormalisationFromGEHDF5::
-get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+get_uncalibrated_bin_efficiency(const Bin& bin) const
 {  
-  float	total_efficiency = 0 ;
+    
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+    float	total_efficiency = 0 ;
 
   /* TODO
      this loop does some complicated stuff with rings etc

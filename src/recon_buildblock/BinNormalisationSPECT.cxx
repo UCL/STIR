@@ -140,7 +140,10 @@ read_norm_data(const std::string& filename)
 {// to think about this
   }
 
-float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
+float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) const {
+    
+//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+//    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
 
@@ -184,8 +187,11 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,cons
 return normalisation;
 }
 
-void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
 
+    
+//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+//    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
@@ -239,15 +245,18 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
                             normalisation/decay_correction_factor(half_life, rel_time);
                         }
           (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
-            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin, start_time, end_time))*
+            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin))*
              normalisation);
            normalisation=1;
         }
     }
 }
 
-void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams) const{
 
+    
+//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+//    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
@@ -303,7 +312,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 
 
             (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()]*=
-        (this->get_uncalibrated_bin_efficiency(bin,start_time, end_time)*normalisation);
+        (this->get_uncalibrated_bin_efficiency(bin)*normalisation);
             normalisation=1;
 
         }
