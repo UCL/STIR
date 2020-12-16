@@ -56,11 +56,6 @@ set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr)
     this->exam_info_sptr=_exam_info_sptr;
 }
 
-shared_ptr<const ExamInfo> BinNormalisation::
-get_exam_info_sptr() const 
-{
-    return this->exam_info_sptr;
-}
 
 Succeeded
 BinNormalisation::
