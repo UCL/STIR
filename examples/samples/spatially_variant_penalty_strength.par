@@ -1,11 +1,11 @@
 Hessian Row Sum Computation Parameters :=
   
   ; The script requires an input image to be used as:
-  ; - image estiamte at which the hessian should be computed, or
-  ; - an image template for a backprojection into
+  ; - image estimate at which the Hessian should be computed, or
+  ; - an image template to specify the geometry of the approximate Hessian
   input image filename := 
 
-  ; The output filename of the spatially variant penalty strength image
+  ; The output filename of the row-sum
   output filename := 
 
   ; bool to indicate if an approximate hessian should be used or the true hessian. 
@@ -32,16 +32,7 @@ Hessian Row Sum Computation Parameters :=
     projector pair using matrix parameters :=
       matrix type := Ray Tracing
       ray tracing matrix parameters :=
-        disable caching := 0
-        store only basic bins in cache := 1
-        restrict to cylindrical fov := 1
         number of rays in tangential direction to trace for each bin := 50
-        use actual detector boundaries := 1
-        do symmetry 90degrees min phi := 1
-        do symmetry 180degrees min phi := 1
-        do symmetry swap segment := 1
-        do symmetry swap s := 1
-        do symmetry shift z := 1
       end ray tracing matrix parameters :=
     end projector pair using matrix parameters :=
 
