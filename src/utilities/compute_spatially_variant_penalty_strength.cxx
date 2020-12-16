@@ -23,10 +23,10 @@
 
   \par Usage
   \verbatim
-     compute_spatially_variant_penalty_strength template_proj_data
+     compute_spatially_variant_penalty_strength spatially_variant_penalty_strength.par
   \endverbatim
 
-  Computes a spatially variant penalty strength. This utility uses methods proposed by:
+  Computes a spatially variant penalty strength (kappa) image. This utility uses methods proposed by:
   Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
   & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
   in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
@@ -40,7 +40,7 @@
   \author Robert Twyman
 */
 
-#include "stir/recon_buildblock/Hessian_row_sum.h"
+#include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 using std::cerr;
 using std::cout;
@@ -50,8 +50,8 @@ START_NAMESPACE_STIR
 static void print_usage_and_exit()
 {
   //todo:update usage
-  std::cerr<<"\nThis executable runs computes a spatially variant penalty strength dependant on a parameter file."
-             "\n\nUsage: compute_spatially_variant_penalty_strength parameter_file.par"
+  std::cerr<<"\nThis executable computes a spatially variant penalty strength dependant on a parameter file."
+             "\n\nUsage: compute_spatially_variant_penalty_strength spatially_variant_penalty_strength.par"
              "\n\nAn example parameter file can be found in the samples folder." << std::endl;
   exit(EXIT_FAILURE);
 }
@@ -64,9 +64,8 @@ main(int argc, char *argv[])
   if (argc!=2)
     print_usage_and_exit();
 
-  Hessian_row_sum<DiscretisedDensity<3,float>> kappa_computer;
+  SqrtHessianRowSum<DiscretisedDensity<3,float>> kappa_computer;
   kappa_computer.parse(argv[1]);
   kappa_computer.process_data();
-  kappa_computer.save_output();
   return EXIT_SUCCESS;
 }

@@ -78,7 +78,7 @@ set(${dir_LIB_SOURCES}
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
         PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
-	Hessian_row_sum
+	SqrtHessianRowSum
 )
 
 if (HAVE_ECAT)

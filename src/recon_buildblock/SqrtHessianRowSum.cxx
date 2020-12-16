@@ -18,13 +18,13 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::Hessian_row_sum
+  \brief Declaration of class stir::SqrtHessianRowSum
 
   \author Robert Twyman
   \author Kris Thielemans
 */
 
-#include "stir/recon_buildblock/Hessian_row_sum.h"
+#include "stir/recon_buildblock/SqrtHessianRowSum.h"
 #include "stir/info.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -37,15 +37,15 @@
 START_NAMESPACE_STIR
 
 template <typename TargetT>
-Hessian_row_sum<TargetT>::
-Hessian_row_sum()
+SqrtHessianRowSum<TargetT>::
+SqrtHessianRowSum()
 {
   this->set_defaults();
 }
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 set_defaults()
 {
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
@@ -56,12 +56,12 @@ set_defaults()
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::initialise_keymap()
+SqrtHessianRowSum<TargetT>::initialise_keymap()
 {
   parser.add_start_key("Hessian Row Sum Computation Parameters");
   parser.add_key("output filename", &output_filename);
   parser.add_key("input image filename", &input_image_filename);
-  parser.add_key("use approximate hessian", &use_approximate_hessian);
+  parser.add_key("use approximate Hessian", &use_approximate_hessian);
   parser.add_key("compute with penalty", &compute_with_penalty);
   parser.add_parsing_key("objective function type", &objective_function_sptr);
   parser.add_stop_key("End");
@@ -69,7 +69,7 @@ Hessian_row_sum<TargetT>::initialise_keymap()
 
 template <typename TargetT>
 bool
-Hessian_row_sum<TargetT>::post_processing()
+SqrtHessianRowSum<TargetT>::post_processing()
 {
   if (is_null_ptr(this->objective_function_sptr))
   {
@@ -82,12 +82,13 @@ Hessian_row_sum<TargetT>::post_processing()
     error("Please define input_image_filename.");
     return true;
   }
+  set_up();
   return false;
 }
 
 template <typename TargetT>
 GeneralisedObjectiveFunction<TargetT > const&
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 get_objective_function()
 {
   return static_cast<GeneralisedObjectiveFunction<TargetT >&> (*objective_function_sptr);
@@ -95,7 +96,7 @@ get_objective_function()
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > >& obj_fun)
 {
   this->objective_function_sptr  = obj_fun;
@@ -103,7 +104,7 @@ set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<Target
 
 template <typename TargetT>
 shared_ptr <TargetT>
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 get_input_image()
 {
   return input_image;
@@ -111,7 +112,7 @@ get_input_image()
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 set_input_image(shared_ptr <TargetT > const& image)
 {
   input_image = image;
@@ -119,33 +120,23 @@ set_input_image(shared_ptr <TargetT > const& image)
 
 template <typename TargetT>
 shared_ptr <TargetT>
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 get_output_target_sptr()
 {
   return output_target_sptr;
 }
 
 template <typename TargetT>
-void
-Hessian_row_sum<TargetT>::
-reset_output_target_sptr(shared_ptr <TargetT > const& image)
-{
-  // We could simply use image->get_empty_copy() but to be sure all voxels are 0, we set it
-  output_target_sptr =  unique_ptr<TargetT>(image->get_empty_copy());
-  std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
-}
-
-template <typename TargetT>
 bool
-Hessian_row_sum<TargetT>::
-get_use_approximate_hessian()
+SqrtHessianRowSum<TargetT>::
+get_use_approximate_hessian() const
 {
   return use_approximate_hessian;
 }
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 set_use_approximate_hessian(bool use_approximate)
 {
   use_approximate_hessian = use_approximate;
@@ -153,15 +144,15 @@ set_use_approximate_hessian(bool use_approximate)
 
 template <typename TargetT>
 bool
-Hessian_row_sum<TargetT>::
-get_compute_with_penalty()
+SqrtHessianRowSum<TargetT>::
+get_compute_with_penalty() const
 {
   return compute_with_penalty;
 }
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 set_compute_with_penalty(bool with_penalty)
 {
   compute_with_penalty = with_penalty;
@@ -169,21 +160,29 @@ set_compute_with_penalty(bool with_penalty)
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
-process_data()
+SqrtHessianRowSum<TargetT>::
+set_up()
 {
   input_image = read_from_file<TargetT>(input_image_filename);
   objective_function_sptr->set_up(input_image);
+  output_target_sptr =  unique_ptr<TargetT>(input_image->get_empty_copy());
+  std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
+}
 
+template <typename TargetT>
+void
+SqrtHessianRowSum<TargetT>::
+process_data()
+{
   if (get_use_approximate_hessian())
   {
-    // Compute the Hessian_row_sum image using the approximate hessian
+    // Compute the SqrtHessianRowSum image using the approximate hessian
     // The input image is used as a template for this method
     compute_approximate_Hessian_row_sum();
   }
   else
   {
-    // Compute the Hessian_row_sum image with the full hessian at the input image estimate.
+    // Compute the SqrtHessianRowSum image with the full hessian at the input image estimate.
     // The input image here is assumed to be the current_image_estimate at the point the hessian will be computed
     compute_Hessian_row_sum();
   }
@@ -191,13 +190,7 @@ process_data()
   // Spatially variant penalty strength is defined as the sqrt of the output of Hessian_row_sum methods
   std::for_each(output_target_sptr->begin_all(), output_target_sptr->end_all(),
                 [](float& a) { return a=sqrt(a); } );
-}
 
-template <typename TargetT>
-void
-Hessian_row_sum<TargetT>::
-save_output()
-{
   // Save the output
   output_file_format_sptr->write_to_file(output_filename, *output_target_sptr);
   info("Spatially variant penalty strength has been computed and saved as " + output_filename + ".");
@@ -205,10 +198,9 @@ save_output()
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 compute_Hessian_row_sum()
 {
-  reset_output_target_sptr(input_image);
   auto ones_image_sptr = input_image->get_empty_copy();
   std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
@@ -221,10 +213,11 @@ compute_Hessian_row_sum()
 
 template <typename TargetT>
 void
-Hessian_row_sum<TargetT>::
+SqrtHessianRowSum<TargetT>::
 compute_approximate_Hessian_row_sum()
 {
-  reset_output_target_sptr(input_image);
+  output_target_sptr =  unique_ptr<TargetT>(input_image->get_empty_copy());
+  std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
   info("Computing the approximate Hessian row sum, this may take a while...");
   // Setup image
   auto ones_image_sptr = input_image->get_empty_copy();
@@ -238,7 +231,7 @@ compute_approximate_Hessian_row_sum()
                                                                                        *ones_image_sptr);
 }
 
-template class Hessian_row_sum<DiscretisedDensity<3,float> >;
-template class Hessian_row_sum<ParametricVoxelsOnCartesianGrid >;
-//template class Hessian_row_sum<GatedDiscretisedDensity>;
+template class SqrtHessianRowSum<DiscretisedDensity<3,float> >;
+template class SqrtHessianRowSum<ParametricVoxelsOnCartesianGrid >;
+//template class SqrtHessianRowSum<GatedDiscretisedDensity>;
 END_NAMESPACE_STIR

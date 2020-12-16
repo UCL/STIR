@@ -18,14 +18,14 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \brief Declaration of class stir::Hessian_row_sum
+  \brief Declaration of class stir::SqrtHessianRowSum
 
   \author Robert Twyman
   \author Kris Thielemans
 */
 
-#ifndef STIR_HESSIAN_ROW_SUM_H
-#define STIR_HESSIAN_ROW_SUM_H
+#ifndef STIR_SQRTHESSIANROWSUM_H
+#define STIR_SQRTHESSIANROWSUM_H
 
 #include "stir/info.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -42,19 +42,19 @@ START_NAMESPACE_STIR
 class Succeeded;
 
 /*! \ingroup recon_buildblock
-  \brief Implementations of the two spatially variant penalty strength (kappa) computation methods propose by Tsai et.al (2020).
+  \brief Implementations of two square root Hessian row sum computation methods, as propose by Tsai et.al (2020).
 
-  Two methods of computing the kappa images:
-    - use an approximation of the Hessian of the log-likelihood
+  Two methods of computing the sqrt Hessian row sum images:
+    - use an approximation of the Hessian of the log-likelihood from only the measured data
       \code
-        kappa = sqrt[ backproj( forwproj(ones) / y) ]
+        sqrt[ backproj( forwproj(ones) / y) ]
       \endcode
-    - use a current image estimate to compute the hessian of the objective function
+    - use a current image estimate to compute the Hessian of the objective function (and optionally Hessian of the prior)
     \code
-      kappa = sqrt[ backproj( (y / (forwproj(lambda) + b)^2 ) * forwproj(ones)) +
+      sqrt[ backproj( (y / (forwproj(lambda) + b)^2 ) * forwproj(ones)) +
                 beta * prior.Hessian_times_input(lambda, ones)]
     \endcode
-  where y is the measured data, lambda the current image estimate, ones an image of ones.
+  where y is the measured (input) data, b is the corrections (additive sinogram), lambda is the current image estimate, and ones is an uniform array of ones.
 
   For more details, see: Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F.,
   Stearns, C. W., &  Thielemans, K. (2020). <i>Benefits of Using a Spatially-Variant Penalty Strength With Anatomical
@@ -62,19 +62,16 @@ class Succeeded;
   https://doi.org/10.1109/TMI.2019.2913889
 */
 template <typename TargetT>
-class Hessian_row_sum:
+class SqrtHessianRowSum:
         public ParsingObject
 {
 public:
-    Hessian_row_sum();
+    SqrtHessianRowSum();
 
-    //! The main function to call to compute spatially variant penalty strength images
-    //! Loads the input image from file, sets up, compute Hessian row sum (with input = ones), sqrts the result,
-    //! and saves it.
+    //! The main function to compute and save the sqrt Hessian row sum volume
+    //! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
+    //! compute_approximate_Hessian_row_sum().
     void process_data();
-
-    //! Saves the output image as output_filename
-    void save_output();
 
     //! get and set methods for the objective function
     //@{
@@ -88,29 +85,29 @@ public:
     void set_input_image(shared_ptr <TargetT > const& image);
     //@}
 
-    //! get method for returning the kappa_image
+    //! get method for returning the sqrt row sum image
     shared_ptr<TargetT> get_output_target_sptr();
 
-    //! This method resets the output target to uniform 0s
-    void reset_output_target_sptr(shared_ptr <TargetT > const& image);
+    void set_up();
 
     //! get and set methods for use approximate hessian bool
     //@{
-    bool get_use_approximate_hessian();
+    bool get_use_approximate_hessian() const;
     void set_use_approximate_hessian(bool use_approximate);
     //@}
 
     //! get and set methods for the compute with penalty bool
     //@{
-    bool get_compute_with_penalty();
+    bool get_compute_with_penalty() const;
     void set_compute_with_penalty(bool with_penalty);
     //@}
 
-    //! Computes the objective function Hessian at the current image estimate. Can use the penalty's Hessian
-    //! kappa_image_sptr is the
+    //! Computes the objective function Hessian row sum at the current image estimate.
+    //! Can compute the penalty's Hessian if it exists for the selected prior.
     void compute_Hessian_row_sum();
 
-    //! Computes the approximate Hessian of the objective function. Cannot use penalty's Hessian
+    //! Computes the approximate Hessian of the objective function.
+    //! Cannot use penalty's approximate Hessian, see compute_with_penalty
     void compute_approximate_Hessian_row_sum();
 
 protected:
@@ -119,26 +116,26 @@ private:
     //! Objective function object
     shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
 
-    //! The filename the for the output spatially variant penalty strength
+    //! The filename the for the output sqrt row sum image
     std::string output_filename;
 
-    //! Used to load an image as a template or current image estimate to compute hessian at
+    //! Used to load an image as a template or current image estimate to compute sqrt row sum
     std::string input_image_filename;
 
-    //! The input image, can be template or current_image_estimate, dependant on use_approximate_hessian
+    //! The input image, can be template or current_image_estimate, dependant on which sqrt row sum method used
     shared_ptr<TargetT> input_image;
 
-    //! The variable to which kappa computation methods will populate
+    //! The output image that the row sum computation methods will populate
     shared_ptr<TargetT> output_target_sptr;
 
-    //! Used to toggle the approximate hessian or hessian at current image estimate should be computed
+    //! Used to toggle which of the two row sum methods will be utilised.
     //! This toggles the usage of input_image.
-    //! If true, input_image is used as template image for the back-projection,
+    //! If true, input_image is only used as a template for the output back-projection,
     //! else, input_image is used as the current_image_estimate
     bool use_approximate_hessian;
 
-    //! When computing the hessian of the objective function, include the penalty term or not.
-    //! Does not work with use_approximate_hessian as priors do not have an approximate method
+    //! When computing the hessian row sum of the objective function, include the penalty term or not.
+    //! Does not work with use_approximate_hessian as priors do not have an approximate method.
     bool compute_with_penalty;
 
     //! Method to save images
@@ -151,4 +148,4 @@ private:
 };
 
 END_NAMESPACE_STIR
-#endif //STIR_HESSIAN_ROW_SUM_H
+#endif //STIR_SQRTHESSIANROWSUM_H

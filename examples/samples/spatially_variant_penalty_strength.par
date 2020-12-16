@@ -1,16 +1,16 @@
 Hessian Row Sum Computation Parameters :=
   
   ; The script requires an input image to be used as:
-  ; - image estimate at which the Hessian should be computed, or
+  ; - image estimate at which the square root of the Hessian row sum should be computed, or
   ; - an image template to specify the geometry of the approximate Hessian
   input image filename := 
 
-  ; The output filename of the row-sum
+  ; The output filename of the sqrt Hessian row-sum computation
   output filename := 
 
-  ; bool to indicate if an approximate hessian should be used or the true hessian. 
+  ; bool to indicate if an approximate Hessian should be used or the true Hessian.
   ; This changes the usage of the `input image filename :=` key.
-  use approximate hessian := 0
+  use approximate Hessian := 0
 
   ; Define the objective function. 
   ; This should be the same objective function as used for reconstructions
@@ -37,7 +37,8 @@ Hessian Row Sum Computation Parameters :=
     end projector pair using matrix parameters :=
 
 
-    ; The use of a prior is optional
+    ; The use of a prior in the computation of the sqrt Hessian row sum is optional
+    ; but will not work with an approximate Hessian row sum computation as priors do not have an approximate Hessian
     compute with penalty := 0
 
     prior type := Quadratic Prior
