@@ -558,8 +558,8 @@ get_bin(const LOR<float>& lor) const
   Bin bin;
 #ifndef STIR_DEVEL
   // find nearest bin by going to nearest detectors first
-  LORInCylinderCoordinates<float> cyl_in_ring_coords;
-  if (lor.change_representation(cyl_in_ring_coords, get_ring_radius()) == Succeeded::no)
+  LORInCylinderCoordinates<float> cyl_in_gantry_coords;
+  if (lor.change_representation(cyl_in_gantry_coords, get_ring_radius()) == Succeeded::no)
     {
       bin.set_bin_value(-1);
       return bin;
@@ -569,11 +569,11 @@ get_bin(const LOR<float>& lor) const
   const int num_rings = 
     get_scanner_ptr()->get_num_rings();
 
-  const int det1 = modulo(round(cyl_in_ring_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
-  const int det2 = modulo(round(cyl_in_ring_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det1 = modulo(round(cyl_in_gantry_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det2 = modulo(round(cyl_in_gantry_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
-  const int ring1 = round(cyl_in_ring_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
-  const int ring2 = round(cyl_in_ring_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
+  const int ring1 = round(cyl_in_gantry_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
+  const int ring2 = round(cyl_in_gantry_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
 
   assert(det1 >=0 && det1<num_detectors_per_ring);
   assert(det2 >=0 && det2<num_detectors_per_ring);
