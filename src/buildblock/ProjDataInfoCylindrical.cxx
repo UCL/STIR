@@ -107,6 +107,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
 void
 ProjDataInfoCylindrical::
 initialise_ring_diff_arrays() const
+// ORIGINTODO
 {
 
   // check min,max ring diff

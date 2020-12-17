@@ -106,6 +106,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
     const float segment_offset_in_z_gantry_coords = 
       proj_data_info_cyl_ptr->get_m(first_bin) - ring_spacing*delta/2;
+                                              // ^ ORIGINTODO
 
     axial_pos_to_z_offset[segment_num] = 
       cartesian_grid_info_ptr->get_index_coordinates_for_physical_coordinates(

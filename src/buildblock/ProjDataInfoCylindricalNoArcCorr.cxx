@@ -572,6 +572,7 @@ get_bin(const LOR<float>& lor) const
   const int det1 = modulo(round(cyl_in_gantry_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   const int det2 = modulo(round(cyl_in_gantry_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
+  // ORIGINTODO
   const int ring1 = round(cyl_in_gantry_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
   const int ring2 = round(cyl_in_gantry_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
 
