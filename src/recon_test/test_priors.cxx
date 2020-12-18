@@ -20,7 +20,7 @@
   \file
   \ingroup recon_test
   
-  \brief Test program for stir::QuadraticPrior
+  \brief Test program for stir::QuadraticPrior, RelativeDifferencePrior, and LogcoshPrior
 
   \par Usage
 
@@ -30,12 +30,14 @@
   where the argument is optional. See the class documentation for more info.
 
   \author Kris Thielemans
+  \author Robert Twyman
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
-#include "stir/recon_buildblock/PLSPrior.h"
+#include "stir/recon_buildblock/LogcoshPrior.h"
+//#include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
@@ -49,13 +51,12 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "stir/IO/OutputFileFormat.h"
 START_NAMESPACE_STIR
 
 
 /*!
   \ingroup test
-  \brief Test class for QuadraticPrior
+  \brief Test class for QuadraticPrior, RelativeDifferencePrior, and LogcoshPrior
 
   This test compares the result of GeneralisedPrior::compute_gradient()
   with a numerical gradient computed by using the 
@@ -193,17 +194,24 @@ run_tests()
   }
   std::cerr << "Tests for Relative Difference Prior\n";
   {
-    // gamma and epsilon are default
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.0001);
+    // gamma is default and epsilon is off
+    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
     this->run_tests_for_objective_function("RDP_no_kappa", objective_function, density_sptr);
   }
-  std::cerr << "Tests for PLSPrior\n";
+  // Disabled PLS due to known issue
+//  std::cerr << "Tests for PLSPrior\n";
+//  {
+//    PLSPrior<float> objective_function(false, 1.F);
+//    shared_ptr<DiscretisedDensity<3,float> > anatomical_image_sptr(density_sptr->get_empty_copy());
+//    anatomical_image_sptr->fill(1.F);
+//    objective_function.set_anatomical_image_sptr(anatomical_image_sptr);
+//    this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
+//  }
+  std::cerr << "Tests for Logcosh Prior\n";
   {
-    PLSPrior<float> objective_function(false, 1.F);
-    shared_ptr<DiscretisedDensity<3,float> > anatomical_image_sptr(density_sptr->get_empty_copy());
-    anatomical_image_sptr->fill(1.F);
-    objective_function.set_anatomical_image_sptr(anatomical_image_sptr);
-    this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
+    // scalar is off
+    LogcoshPrior<float> objective_function(false, 1.F, 1.F);
+    this->run_tests_for_objective_function("Logcosh_no_kappa", objective_function, density_sptr);
   }
 } 
 
