@@ -321,13 +321,13 @@ post_processing()
     {
       shared_ptr<Scanner> scanner_sptr(new Scanner(*scanner_ptr));
       // TODO this won't work for the HiDAC or so
-//      proj_data_info_cyl_uncompressed_ptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-//							       ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-//											     1, scanner_ptr->get_num_rings()-1,
-//											     scanner_ptr->get_num_detectors_per_ring()/2,
-//											     scanner_ptr->get_default_num_arccorrected_bins(),
-//											     false,
-//											     1)));
+      // N.E: The following command used to do a dynamic cast which now I removed.
+      proj_data_info_cyl_uncompressed_ptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                                 1, scanner_ptr->get_num_rings()-1,
+                                                 scanner_ptr->get_num_detectors_per_ring()/2,
+                                                 scanner_ptr->get_default_num_arccorrected_bins(),
+                                                 false,
+                                                 1));
       
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
