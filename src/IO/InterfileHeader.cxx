@@ -53,16 +53,16 @@ const double
 MinimalInterfileHeader::
 double_value_not_set = -12345.60789;
 
-const ExamInfo*
-MinimalInterfileHeader::get_exam_info_ptr() const
-{
-  return exam_info_sptr.get();
-}
-
-shared_ptr<ExamInfo>
+shared_ptr<const ExamInfo>
 MinimalInterfileHeader::get_exam_info_sptr() const
 {
   return exam_info_sptr;
+}
+
+const ExamInfo&
+MinimalInterfileHeader::get_exam_info() const
+{
+  return *exam_info_sptr;
 }
 
 MinimalInterfileHeader::MinimalInterfileHeader()
@@ -175,6 +175,8 @@ InterfileHeader::InterfileHeader()
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+  add_key("study date", &study_date_time.date);
+  add_key("study_time", &study_date_time.time);
   add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeader::set_type_of_data,
@@ -251,6 +253,17 @@ bool InterfileHeader::post_processing()
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
       return true;
+    }
+
+  if (!study_date_time.date.empty() && !study_date_time.time.empty())
+    {
+      try
+        {
+          exam_info_sptr->start_time_in_secs_since_1970 =
+            Interfile_datetime_to_secs_since_Unix_epoch(study_date_time);
+        }
+      catch(...)
+        {}
     }
 
   if (patient_orientation_index<0 || patient_rotation_index<0)
@@ -507,12 +520,6 @@ bool InterfileImageHeader::post_processing()
       return true; 
     }
   std::vector<double>	first_pixel_offsets;
-  
-  if (num_time_frames > 1 && num_image_data_types > 1)
-    { 
-      warning("Interfile error: only supporting num_time_frames OR num_image_data_types > 1 for now\n"); 
-      return true; 
-    }
 
   return false;
 }
@@ -1016,7 +1023,7 @@ bool InterfilePDFSHeader::post_processing()
   
   // handle scanner
 
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   bool originating_system_was_recognised = 
     guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
@@ -1332,7 +1339,7 @@ bool InterfilePDFSHeader::post_processing()
 
   scanner_sptr_from_file.reset(
               new Scanner(guessed_scanner_ptr->get_type(),
-                          get_exam_info_ptr()->originating_system,
+                          get_exam_info_sptr()->originating_system,
                           num_detectors_per_ring,
                           num_rings,
                           max_num_non_arccorrected_bins,
@@ -1382,40 +1389,40 @@ bool InterfilePDFSHeader::post_processing()
         effective_central_bin_size_in_cm,
         scanner_sptr_from_file->get_default_bin_size()/10);
       
-      data_info_ptr =
-    new ProjDataInfoCylindricalArcCorr (
+      data_info_sptr.reset(
+	new ProjDataInfoCylindricalArcCorr (
                         scanner_sptr_from_file,
-                        float(effective_central_bin_size_in_cm*10.),
-                        sorted_num_rings_per_segment,
-                        sorted_min_ring_diff,
-                        sorted_max_ring_diff,
-                        num_views,num_bins, tof_mash_factor);
+					    float(effective_central_bin_size_in_cm*10.),
+					    sorted_num_rings_per_segment,
+					    sorted_min_ring_diff,
+					    sorted_max_ring_diff,
+					    num_views,num_bins, tof_mash_factor));
     }
   else
     {
-      data_info_ptr =
-    new ProjDataInfoCylindricalNoArcCorr (
+      data_info_sptr.reset(
+	new ProjDataInfoCylindricalNoArcCorr (
                           scanner_sptr_from_file,
-                          sorted_num_rings_per_segment,
-                          sorted_min_ring_diff,
-                          sorted_max_ring_diff,
-                          num_views,num_bins, tof_mash_factor);
+					      sorted_num_rings_per_segment,
+					      sorted_min_ring_diff,
+					      sorted_max_ring_diff,
+					      num_views,num_bins, tof_mash_factor));
       if (effective_central_bin_size_in_cm>0 &&
-      fabs(effective_central_bin_size_in_cm -
-           data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
-    {
-      warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-          "Value in header is %g while I expect %g from the inner ring radius etc\n"
-          "Ignoring value in header",
-          effective_central_bin_size_in_cm,
-          data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
-    }
+	  fabs(effective_central_bin_size_in_cm - 
+	       data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+	{
+	  warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+		  "Value in header is %g while I expect %g from the inner ring radius etc\n"
+		  "Ignoring value in header",
+		  effective_central_bin_size_in_cm,
+		  data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
   
   // Set the bed position
-  data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
-  data_info_ptr->set_bed_position_vertical(bed_position_vertical);
+  data_info_sptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_sptr->set_bed_position_vertical(bed_position_vertical);
 
   return false;
 }

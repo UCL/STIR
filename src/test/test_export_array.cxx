@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016, 2020 University College London
 
     This file is part of STIR.
 
@@ -21,22 +21,27 @@
   as arrays.
   \ingroup test
   \author Nikos Efthimiou
+  \author Kris Thielemans
 */
 
 #include "stir/utilities.h"
 #include "stir/RunTests.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/Scanner.h"
 #include "stir/ExamInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/Array.h"
+#include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
 #include "stir/info.h"
+#include "stir/copy_fill.h"
 
 #include <boost/format.hpp>
 
 #include "stir/ProjData.h"
 #include "stir/DynamicProjData.h"
-
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -48,6 +53,12 @@ public:
 protected:
     void test_static_data();
     void test_dynamic_data();
+    void run_static_test(ProjData& test_proj_data,
+                         ProjData& check_proj_data,
+                         const std::string& test_name);
+    void check_if_equal_projdata(const ProjData& test_proj_data,
+                                 const ProjData& check_proj_data,
+                                 const std::string& test_name);
 };
 
 void ExportArrayTests :: run_tests()
@@ -56,6 +67,42 @@ void ExportArrayTests :: run_tests()
     test_dynamic_data();
 }
 
+void ExportArrayTests :: check_if_equal_projdata(const ProjData& test_proj_data,
+                                                 const ProjData& check_proj_data,
+                                                 const std::string& test_name)
+{
+    for (int segment_num = test_proj_data.get_min_segment_num();
+         segment_num <= test_proj_data.get_max_segment_num();
+         ++segment_num)
+    {
+        const SegmentByView<float> test_segment_by_view_data =
+                test_proj_data.get_segment_by_view(segment_num);
+
+        const SegmentByView<float> check_segment_by_view_data =
+                check_proj_data.get_segment_by_view(segment_num);
+
+        for (int view_num = test_segment_by_view_data.get_min_view_num();
+             view_num<=test_segment_by_view_data.get_max_view_num();
+             ++view_num)
+        {
+            Viewgram<float> test_view = test_segment_by_view_data.get_viewgram(view_num);
+            Viewgram<float> check_view = check_segment_by_view_data.get_viewgram(view_num);
+
+            for (int axial = test_view.get_min_axial_pos_num();
+                 axial <= test_view.get_max_axial_pos_num();
+                 ++axial)
+            {
+                for (int s = test_view.get_min_tangential_pos_num();
+                     s <= test_view.get_max_tangential_pos_num();
+                     ++s)
+                {
+                    check_if_equal(test_view[axial][s], check_view[axial][s], test_name + ": test ProjData different from check ProjData.");
+                    check_if_equal(check_view[axial][s], (float)segment_num, test_name + ": check ProjData different from segment number.");
+                }
+            }
+        }
+    }
+}
 
 //!
 //! \brief ExportArrayTests::test_dynamic_data
@@ -133,7 +180,7 @@ void ExportArrayTests::test_dynamic_data()
 
     // Copy data to array.
     info("Copying test dynamic projdata to array ...");
-    test_dynamic_projData_sptr->copy_to< Array<2,float>::full_iterator >( test_array_iter);
+    copy_to(*test_dynamic_projData_sptr, test_array_iter);
 
     // Convert it to ProjData
     info("Copying data from array to check dynamic projdata ...");
@@ -153,7 +200,7 @@ void ExportArrayTests::test_dynamic_data()
         check_dynamic_projData_sptr->set_proj_data_sptr(test_proj_data_gate_ptr, (i_gate+1));
     }
 
-    check_dynamic_projData_sptr->fill_from<Array<2,float>::full_iterator>(test_array_iter);
+    fill_from(*check_dynamic_projData_sptr, test_array.begin_all_const(), test_array.end_all_const());
 
     info ("Checking if data are the same...");
     for(int i_gate = 1; i_gate <= num_of_gates; i_gate++)
@@ -196,6 +243,71 @@ void ExportArrayTests::test_dynamic_data()
 
 }
 
+void ExportArrayTests :: run_static_test(ProjData& test_proj_data,
+                                         ProjData& check_proj_data,
+                                         const std::string& test_name)
+{
+    std::cerr << "Running " << test_name << '\n';
+
+    //. Fill ProjData with the number of the segment
+    info("Filling test ProjData with the segment number ... ");
+
+    for (int segment_num = test_proj_data.get_min_segment_num();
+         segment_num <= test_proj_data.get_max_segment_num();
+         ++segment_num)
+    {
+        info(boost::format("Segment: %1% ") % segment_num);
+        SegmentByView<float> segment_by_view_data =
+                test_proj_data.get_empty_segment_by_view(segment_num);
+
+        segment_by_view_data.fill(static_cast<float>(segment_num));
+
+        if (!(test_proj_data.set_segment(segment_by_view_data) == Succeeded::yes))
+            error("Error set_segment %d\n", segment_num);
+    }
+
+    //- Get the total size of the ProjData
+
+    const unsigned int total_size = test_proj_data.size_all();
+
+    //- Allocate 1D array and get iterator
+
+    info("Allocating array ...");
+    Array<3,float> test_array(IndexRange3D(test_proj_data.get_num_sinograms(), test_proj_data.get_num_views(), test_proj_data.get_num_tangential_poss()));
+    check (test_array.size_all() == total_size, "check on size of array");
+    Array<3,float>::full_iterator test_array_iter = test_array.begin_all();
+
+    //-
+    info("Copying from ProjData to array ...");
+    copy_to(test_proj_data, test_array_iter);
+
+    //- Check if segment order is as expected
+    {
+      const std::vector<int> segment_sequence = ProjData::standard_segment_sequence(*test_proj_data.get_proj_data_info_sptr());
+      test_array_iter = test_array.begin_all();
+      for (std::vector<int>::const_iterator iter = segment_sequence.begin(); iter != segment_sequence.end(); ++iter)
+        {
+          const int seg = *iter;
+          const SegmentBySinogram<float> segment = test_proj_data.get_segment_by_sinogram(seg);
+          for (SegmentBySinogram<float>::const_full_iterator seg_iter = segment.begin_all(); seg_iter != segment.end_all(); ++seg_iter, ++test_array_iter)
+            {
+              if (!check_if_equal(*seg_iter, *test_array_iter, "check if array in correct order"))
+                {
+                  // one failed, so many others will as well. we just stop checking.
+                  // make sure we get out of the outer loop as well
+                  iter = segment_sequence.end() - 1;
+                  break;
+                }
+            }
+        }
+    }
+
+    // Convert it back to ProjData
+    info("Copying from array to a new ProjData ...");
+    fill_from(check_proj_data, test_array.begin_all_const(), test_array.end_all_const());
+    this->check_if_equal_projdata(test_proj_data, check_proj_data, test_name);
+}
+
 //!
 //! \brief ExportArrayTests::test_static_data
 //! \details This test will chech if projection data copied to arrays are the
@@ -224,82 +336,33 @@ void ExportArrayTests :: test_static_data()
                                               test_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                               false));
 
-    shared_ptr<ProjData> test_proj_data_sptr(
-                new ProjDataInMemory(test_exam_info_sptr,
-                                     tmp_proj_data_info_sptr));
-
-
-    shared_ptr<ProjData> check_proj_data_sptr(
-                new ProjDataInMemory(test_exam_info_sptr,
-                                     tmp_proj_data_info_sptr));
-
-    //. Fill ProjData with the number of the segment
-    info("Filling test ProjData with the segment number ... ");
-
-    for (int segment_num = test_proj_data_sptr->get_min_segment_num();
-         segment_num <= test_proj_data_sptr->get_max_segment_num();
-         ++segment_num)
     {
-        info(boost::format("Segment: %1% ") % segment_num);
-        SegmentByView<float> segment_by_view_data =
-                test_proj_data_sptr->get_segment_by_view(segment_num);
-
-        segment_by_view_data.fill(static_cast<float>(segment_num));
-
-        if (!(test_proj_data_sptr->set_segment(segment_by_view_data) == Succeeded::yes))
-            warning("Error set_segment %d\n", segment_num);
+      ProjDataInMemory test_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr);
+      {
+        ProjDataInMemory check_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr);
+        run_static_test(test_proj_data, check_proj_data, "static test in-memory");
+      }
+      {
+        ProjDataInterfile check_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr,
+                                          "test_proj_data_export_check.hs", std::ios::out | std::ios::trunc | std::ios::in);
+        run_static_test(test_proj_data, check_proj_data, "static test in-memory/interfile");
+      }      
+    }
+    {
+      ProjDataInterfile test_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr,
+                                       "test_proj_data_export.hs", std::ios::out | std::ios::trunc | std::ios::in);
+      {
+        ProjDataInMemory check_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr);
+        run_static_test(test_proj_data, check_proj_data, "static test in-memory");
+      }
+      {
+        ProjDataInterfile check_proj_data(test_exam_info_sptr, tmp_proj_data_info_sptr,
+                                          "test_proj_data_export_check.hs",  std::ios::out | std::ios::trunc | std::ios::in);
+        run_static_test(test_proj_data, check_proj_data, "static test in-memory/interfile");
+      }      
     }
 
-    //- Get the total size of the ProjData
 
-    int total_size = static_cast<int>(test_proj_data_sptr->size_all());
-
-    //- Allocate 1D array and get iterator
-
-    info("Allocating array ...");
-    Array<1,float> test_array(0, total_size);
-    Array<1,float>::full_iterator test_array_iter = test_array.begin_all();
-
-    //-
-    info("Copying from ProjData to array ...");
-    test_proj_data_sptr->copy_to< Array<1,float>::full_iterator >( test_array_iter);
-
-    // Convert it back to ProjData
-    info("Copying from array to a new ProjData ...");
-    check_proj_data_sptr->fill_from<Array<1,float>::full_iterator>(test_array_iter);
-
-    info ("Checking if new and old ProjData are the same...");
-    for (int segment_num = test_proj_data_sptr->get_min_segment_num();
-         segment_num <= test_proj_data_sptr->get_max_segment_num();
-         ++segment_num)
-    {
-        SegmentByView<float> test_segment_by_view_data =
-                test_proj_data_sptr->get_segment_by_view(segment_num);
-
-        SegmentByView<float> check_segment_by_view_data =
-                check_proj_data_sptr->get_segment_by_view(segment_num);
-
-        for (int view_num = test_segment_by_view_data.get_min_view_num();
-             view_num<=test_segment_by_view_data.get_max_view_num();
-             ++view_num)
-        {
-            Viewgram<float> test_view = test_segment_by_view_data.get_viewgram(view_num);
-            Viewgram<float> check_view = check_segment_by_view_data.get_viewgram(view_num);
-
-            for (int axial = test_view.get_min_axial_pos_num();
-                 axial <= test_view.get_max_axial_pos_num();
-                 ++axial)
-            {
-                for (int s = test_view.get_min_tangential_pos_num();
-                     s <= test_view.get_max_tangential_pos_num();
-                     ++s)
-                {
-                    check_if_equal(test_view[axial][s], check_view[axial][s], "Test ProjData different from check ProjData.");
-                    check_if_equal(check_view[axial][s], (float)segment_num, "Check ProjData different from segment number.");
-                }
-            }
-        }
-    }
 }
 
 END_NAMESPACE_STIR

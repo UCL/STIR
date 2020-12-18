@@ -78,7 +78,7 @@ public:
   BinNormalisationFromML2D();
 
   //! Checks if we can handle certain projection data.
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
 
   //! Normalise some data
   /*! 

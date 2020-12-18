@@ -105,26 +105,26 @@ ForwardProjectorByBinUsingRayTracing::
 
 ForwardProjectorByBinUsingRayTracing::
   ForwardProjectorByBinUsingRayTracing(
-				   const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                                   const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+				   const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                   const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr)
 {
   set_defaults();
-  set_up(proj_data_info_ptr, image_info_ptr);
+  set_up(proj_data_info_sptr, image_info_ptr);
 }
 
 void
 ForwardProjectorByBinUsingRayTracing::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr)
 {
-  ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
+  ForwardProjectorByBin::set_up(proj_data_info_sptr, image_info_ptr);
   
-  if (proj_data_info_ptr->get_num_views()%2 != 0)
+  if (proj_data_info_sptr->get_num_views()%2 != 0)
     {
       error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. Sorry.");
     }
 
-  symmetries_ptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr));
+  symmetries_ptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, image_info_ptr));
 
   // check if data are according to what we can handle
 
@@ -137,7 +137,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
   const CartesianCoordinate3D<float> voxel_size = vox_image_info_ptr->get_voxel_size();
 
   const float sampling_distance_of_adjacent_LORs_xy =
-    proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+    proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0));
 
 
   // z_origin_in_planes should be an integer
@@ -150,8 +150,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
           image_info_ptr->get_origin().z(), voxel_size.z());
 
   // num_planes_per_axial_pos should currently be an integer
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
+  for (int segment_num = proj_data_info_sptr->get_min_segment_num();
+       segment_num <= proj_data_info_sptr->get_max_segment_num();
        ++segment_num)
   {
 		const float num_planes_per_axial_pos =
@@ -193,7 +193,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
   const VoxelsOnCartesianGrid<float>& image = 
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
-  const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
+  const int num_views = viewgrams.get_proj_data_info_sptr()->get_num_views();
 
   if (viewgrams.get_basic_segment_num() == 0)
   {    
@@ -416,17 +416,17 @@ forward_project_all_symmetries(
 {
 
   // KT 20/06/2001 should now work for non-arccorrected data as well
-  const ProjDataInfoCylindrical * proj_data_info_ptr =
-    dynamic_cast<const ProjDataInfoCylindrical *>
-    (pos_view.get_proj_data_info_ptr());
-  if (proj_data_info_ptr == NULL)
+  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindrical>
+    (pos_view.get_proj_data_info_sptr());
+  if (is_null_ptr(proj_data_info_sptr))
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
-  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
+  const int nviews = pos_view.get_proj_data_info_sptr()->get_num_views(); 
   
   const int segment_num = pos_view.get_segment_num();
   //const int timing_pos_num = pos_view.get_timing_pos_num();
-  const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
+  const float delta = proj_data_info_sptr->get_average_ring_difference(segment_num);
   const int view = pos_view.get_view_num();
 
   assert(delta > 0);
@@ -447,7 +447,7 @@ forward_project_all_symmetries(
    //assert(image.get_min_z() == 0);
 
   assert(delta ==
-    -proj_data_info_ptr->get_average_ring_difference(neg_view.get_segment_num()));
+    -proj_data_info_sptr->get_average_ring_difference(neg_view.get_segment_num()));
   
   // KT 21/05/98 added const where possible
   // TODO C value depends whether you are in Double or not,
@@ -456,14 +456,14 @@ forward_project_all_symmetries(
   
   int  D, tang_pos_num;
   int ax_pos0, my_ax_pos0;
-  const float R = proj_data_info_ptr->get_ring_radius();
+  const float R = proj_data_info_sptr->get_ring_radius();
   
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
   Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_ax_pos_num,0,pos_view.get_timing_pos_num());    
 
   // KT 20/06/2001 rewrote using get_phi  
-  const float cphi = cos(proj_data_info_ptr->get_phi(bin));
-  const float sphi = sin(proj_data_info_ptr->get_phi(bin));
+  const float cphi = cos(proj_data_info_sptr->get_phi(bin));
+  const float sphi = sin(proj_data_info_sptr->get_phi(bin));
 
   // KT 20/06/2001 write using symmetries member
   // find correspondence between ring coordinates and image coordinates:
@@ -526,7 +526,7 @@ forward_project_all_symmetries(
 #else
 			   (2,
 #endif
-			   Projall, image, proj_data_info_ptr, cphi, sphi,
+			   Projall, image, proj_data_info_sptr, cphi, sphi,
 				      delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
 				      offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
 				      1.F / num_lors_per_virtual_ring,
@@ -544,14 +544,14 @@ forward_project_all_symmetries(
                 for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) 
 		  {
 		    bin.tangential_pos_num() = tang_pos_num;
-		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
+		    const float s_in_mm = proj_data_info_sptr->get_s(bin);
                     if (proj_Siddon
 #ifndef STIR_SIDDON_NO_TEMPLATE
 			<1>(
 #else
 			    (1,
 #endif
-			    Projall, image, proj_data_info_ptr, cphi, sphi,
+			    Projall, image, proj_data_info_sptr, cphi, sphi,
 				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
 				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
 				       1.F/num_lors_per_virtual_ring,
@@ -588,7 +588,7 @@ forward_project_all_symmetries(
 #else
 			  (4,
 #endif
-			  Projall, image, proj_data_info_ptr, cphi, sphi, 
+			  Projall, image, proj_data_info_sptr, cphi, sphi,
 				     delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
 				     offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				     1.F/num_lors_per_virtual_ring,
@@ -610,7 +610,7 @@ forward_project_all_symmetries(
                     /* Here tang_pos_num!=0 and phi!=k*45. */
 	      for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
 		    bin.tangential_pos_num() = tang_pos_num;
-		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
+		    const float s_in_mm = proj_data_info_sptr->get_s(bin);
 
                     if (proj_Siddon
 #ifndef STIR_SIDDON_NO_TEMPLATE
@@ -618,7 +618,7 @@ forward_project_all_symmetries(
 #else
 			    (3,
 #endif
-			    Projall, image, proj_data_info_ptr, cphi, sphi,
+			    Projall, image, proj_data_info_sptr, cphi, sphi,
 				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
 				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				       1.F/num_lors_per_virtual_ring,
@@ -675,7 +675,7 @@ ForwardProjectorByBinUsingRayTracing::
 {
   assert(pos_view.get_segment_num() > 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views());
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views());
 
   Viewgram<float> dummy = pos_view;
 
@@ -712,7 +712,7 @@ ForwardProjectorByBinUsingRayTracing::
 {
   assert(pos_view.get_segment_num() > 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
@@ -744,7 +744,7 @@ ForwardProjectorByBinUsingRayTracing::
 {
   assert(pos_view.get_segment_num() > 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
@@ -773,7 +773,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Segment<float> &si
   int segment_num =sinos.get_segment_num();
 
   const ProjDataInfoCylindricalArcCorr* proj_data_cyl_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(sinos.get_proj_data_info_ptr());
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(sinos.get_proj_data_info_sptr());
 
   if ( proj_data_cyl_ptr==NULL)
   {
@@ -784,7 +784,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Segment<float> &si
 
   // CL&KT 05/11/98 use scan_info
   const float planes_per_virtual_ring = 
-    sinos.get_proj_data_info_ptr()->get_scanner_ptr()->ring_spacing / image.get_voxel_size().z();
+    sinos.get_proj_data_info_sptr()->get_scanner_ptr()->ring_spacing / image.get_voxel_size().z();
     
   int num_planes_per_axial_pos = (int)(planes_per_virtual_ring + 0.5);
   assert(planes_per_virtual_ring > 0);
@@ -846,7 +846,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 							      const int plane_num, const int view)
 {
   const ProjDataInfoCylindricalArcCorr* proj_data_cyl_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(sino.get_proj_data_info_ptr());
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(sino.get_proj_data_info_sptr());
   
   if ( proj_data_cyl_ptr==NULL)
   {
@@ -859,7 +859,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     
     // KT&CL 21/12/99 changed name from planes_per_ring to planes_per_virtual_ring
     const float planes_per_virtual_ring = 
-      sino.get_proj_data_info_ptr()->get_scanner_ptr()->ring_spacing / image.get_voxel_size().z();
+      sino.get_proj_data_info_sptr()->get_scanner_ptr()->ring_spacing / image.get_voxel_size().z();
     
     int num_planes_per_axial_pos = (int)(planes_per_virtual_ring + 0.5);
     assert(planes_per_virtual_ring > 0);
@@ -877,7 +877,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     assert(num_planes_per_axial_pos == 1 || num_planes_per_axial_pos == 2);
     
     // CL&KT 05/11/98 use scan_info
-    const int nviews = sino.get_proj_data_info_ptr()->get_num_views();
+    const int nviews = sino.get_proj_data_info_sptr()->get_num_views();
     const int view90 = nviews / 2;
     const int view45 = view90 / 2;
     const int plus90 = view90+view;
@@ -888,7 +888,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     assert(sino.get_num_tangential_poss()  == image.get_x_size());
     assert(image.get_min_x() == -image.get_max_x());
     // CL&KT 05/11/98 use scan_info, enable assert
-    assert(image.get_voxel_size().x == sino.get_proj_data_info_ptr()->get_num_tangential_poss()); 
+    assert(image.get_voxel_size().x == sino.get_proj_data_info_sptr()->get_num_tangential_poss()); 
     assert(sino.get_max_tangential_pos_num() == -sino.get_min_tangential_pos_num());
     
     
@@ -898,7 +898,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     
     int  D, tang_pos_num;
     // CL&KT 05/11/98 use scan_info
-    const float R = sino.get_proj_data_info_ptr()->get_scanner_ptr()->ring_radius;
+    const float R = sino.get_proj_data_info_sptr()->get_scanner_ptr()->ring_radius;
     
 
     const float itophi = _PI / nviews;
@@ -1041,7 +1041,7 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 {
   assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views());
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views());
 
   Viewgram<float> dummy = pos_view;
 
@@ -1066,7 +1066,7 @@ forward_project_view_plus_90_2D(Viewgram<float> & pos_view,
 {
   assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
@@ -1091,7 +1091,7 @@ forward_project_view_min_180_2D(Viewgram<float> & pos_view,
 {
   assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_sptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
@@ -1120,17 +1120,17 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   start_timers();
 
   // KT 20/06/2001 should now work for non-arccorrected data as well
-  const ProjDataInfoCylindrical * proj_data_info_ptr =
-    dynamic_cast<const ProjDataInfoCylindrical *>
-    (pos_view.get_proj_data_info_ptr());
-  if (proj_data_info_ptr == NULL)
+  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindrical>
+    (pos_view.get_proj_data_info_sptr());
+  if (is_null_ptr(proj_data_info_sptr))
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
-  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
+  const int nviews = pos_view.get_proj_data_info_sptr()->get_num_views(); 
   
   const int segment_num = pos_view.get_segment_num();
   //const int timing_pos_num = pos_view.get_timing_pos_num();
-  const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
+  const float delta = proj_data_info_sptr->get_average_ring_difference(segment_num);
   const int view = pos_view.get_view_num();
 
   assert(delta == 0);
@@ -1155,14 +1155,14 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   
   int  D, tang_pos_num;
   int my_ax_pos0;
-  const float R = proj_data_info_ptr->get_ring_radius();
+  const float R = proj_data_info_sptr->get_ring_radius();
 
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
   Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0,pos_view.get_timing_pos_num());    
   
   // KT 20/06/2001 rewrote using get_phi  
-  const float cphi = cos(proj_data_info_ptr->get_phi(bin));
-  const float sphi = sin(proj_data_info_ptr->get_phi(bin));
+  const float cphi = cos(proj_data_info_sptr->get_phi(bin));
+  const float sphi = sin(proj_data_info_sptr->get_phi(bin));
 
   // find correspondence between ring coordinates and image coordinates:
   // z = num_planes_per_axial_pos * ax_pos_num + axial_pos_to_z_offset
@@ -1218,7 +1218,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		    (2,
 #endif
-		    Projall, image, proj_data_info_ptr, cphi, sphi,
+		    Projall, image, proj_data_info_sptr, cphi, sphi,
 			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 			       0.F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			       1.F/num_lors_per_virtual_ring,
@@ -1240,7 +1240,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		      (2,
 #endif
-		      Projall2, image, proj_data_info_ptr, cphi, sphi,
+		      Projall2, image, proj_data_info_sptr, cphi, sphi,
 				 delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
 				 -0.5F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				 1.F/4,
@@ -1258,7 +1258,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
       for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) 
       {
 	bin.tangential_pos_num() = tang_pos_num;
-	const float s_in_mm = proj_data_info_ptr->get_s(bin);
+	const float s_in_mm = proj_data_info_sptr->get_s(bin);
 	
 
         {                              
@@ -1268,7 +1268,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		  (1,
 #endif
-		  Projall, image, proj_data_info_ptr, cphi, sphi,
+		  Projall, image, proj_data_info_sptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
 			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset,
 			     1.F/num_lors_per_virtual_ring,
@@ -1296,7 +1296,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		  (1,
 #endif
-		  Projall2, image, proj_data_info_ptr, cphi, sphi,
+		  Projall2, image, proj_data_info_sptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
 			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset,
 			     1.F/4,
@@ -1334,7 +1334,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		    (4,
 #endif
-		    Projall, image, proj_data_info_ptr, cphi, sphi, 
+		    Projall, image, proj_data_info_sptr, cphi, sphi,
 			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 			       0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			       1.F/num_lors_per_virtual_ring,
@@ -1357,7 +1357,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		      (4,
 #endif
-		      Projall2, image, proj_data_info_ptr, cphi, sphi, 
+		      Projall2, image, proj_data_info_sptr, cphi, sphi,
 				 delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 				 -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				 1.F/4,
@@ -1377,7 +1377,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
       for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++)         
       {
 	bin.tangential_pos_num() = tang_pos_num;
-	const float s_in_mm = proj_data_info_ptr->get_s(bin);
+	const float s_in_mm = proj_data_info_sptr->get_s(bin);
 
         {          
           if (proj_Siddon
@@ -1386,7 +1386,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		  (3,
 #endif
-		  Projall, image, proj_data_info_ptr, cphi, sphi,
+		  Projall, image, proj_data_info_sptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
 			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			     1.F/num_lors_per_virtual_ring,
@@ -1418,7 +1418,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 #else
 		  (3,
 #endif
-		  Projall2, image, proj_data_info_ptr, cphi, sphi,
+		  Projall2, image, proj_data_info_sptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
 			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			     1.F/4,

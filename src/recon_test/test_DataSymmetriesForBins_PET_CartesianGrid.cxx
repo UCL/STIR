@@ -738,7 +738,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
       shared_ptr<ProjData> proj_data_sptr =
 	ProjData::read_from_file(template_proj_data_filename);
       proj_data_info_sptr = 
-	proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
+	proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
       run_tests_for_1_projdata(proj_data_info_sptr);
     }
 }

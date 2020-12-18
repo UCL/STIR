@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2014, University College London
+    Copyright (C) 2014, 2019, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,8 +27,9 @@
   \verbatim
   forward_project output-filename image_to_forward_project template_proj_data_file [forwardprojector-parfile ]\n"
   \endverbatim
-  The template_proj_data_file will be used to get the scanner, mashing etc. details
-  (its data will \e not be used, nor will it be overwritten).
+  The template_proj_data_file will be used to get the scanner, mashing, ring difference etc. details,
+  including energy information (its data will \e not be used, nor will it be overwritten).
+  Time frame information is copied from the image.
 
   Output is currently always in STIR-Interfile format.
 
@@ -88,16 +89,26 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_sptr = 
     ProjData::read_from_file(argv[3]);
 
+  // create exam_info. Use most things from the image, as often people will
+  // just have a standard template
+  shared_ptr<ExamInfo> exam_info_sptr(image_density_sptr->get_exam_info().create_shared_clone());
+
   if (image_density_sptr->get_exam_info().imaging_modality.is_unknown() &&
       template_proj_data_sptr->get_exam_info().imaging_modality.is_known())
     {
-      ExamInfo exam_info(image_density_sptr->get_exam_info());
-      exam_info.imaging_modality = template_proj_data_sptr->get_exam_info().imaging_modality;
-      image_density_sptr->set_exam_info(exam_info);
+      exam_info_sptr->imaging_modality = template_proj_data_sptr->get_exam_info().imaging_modality;
     }
   else if (image_density_sptr->get_exam_info().imaging_modality !=
       template_proj_data_sptr->get_exam_info().imaging_modality)
     error("forward_project: Imaging modality should be the same for the image and the projection data");
+
+  if (template_proj_data_sptr->get_exam_info().has_energy_information())
+    {
+      if (image_density_sptr->get_exam_info().has_energy_information())
+        warning("Both image and template have energy information. Using the latter.");
+
+      exam_info_sptr->set_energy_information_from(template_proj_data_sptr->get_exam_info());
+    }
 
   shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
   if (argc>=5)
@@ -114,11 +125,11 @@ main (int argc, char * argv[])
       forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
     }
 
-  forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+  forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                              image_density_sptr );
 
-  ProjDataInterfile output_projdata(image_density_sptr->get_exam_info_sptr(),
-                                    template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+  ProjDataInterfile output_projdata(exam_info_sptr,
+                                    template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                                     output_filename);
 
   forw_projector_sptr->forward_project(output_projdata, *image_density_sptr);

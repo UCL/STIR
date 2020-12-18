@@ -157,7 +157,7 @@ static void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(y->get_symmetries_ptr()->clone());
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
-    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->create_shared_clone(), 
+    distributed::test_related_viewgrams_master(y->get_proj_data_info_sptr()->create_shared_clone(), 
                                                symmetries_sptr, y.get(), next_receiver);
 #endif
 
@@ -213,17 +213,17 @@ void distributable_computation_cache_enabled(
   if (distributed::test && distributed::first_iteration) 
     {
       distributed::test_image_estimate_master(input_image_ptr, 1);
-      distributed::test_parameter_info_master(proj_dat_ptr->get_proj_data_info_ptr()->parameter_info(), 1, "proj_data_info");
+      distributed::test_parameter_info_master(proj_dat_ptr->get_proj_data_info_sptr()->parameter_info(), 1, "proj_data_info");
       distributed::test_bool_value_master(true, 1);
       distributed::test_int_value_master(444, 1);
       distributed::test_int_values_master(1);
                 
-      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone(), 44, 0);
+      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_sptr()->create_shared_clone(), 44, 0);
       for ( int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos  <= viewgram.get_max_tangential_pos_num() ;++tang_pos)  
         for ( int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num() ;++ax_pos)
           viewgram[ax_pos][tang_pos]= rand();
                                 
-      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone());
+      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_sptr()->create_shared_clone());
     }
 #endif
         
@@ -257,7 +257,7 @@ void distributable_computation_cache_enabled(
   int count=0, count2=0;
         
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
+    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_sptr(), *symmetries_ptr,
                                          min_segment_num, max_segment_num,
                                          subset_num, num_subsets);
   

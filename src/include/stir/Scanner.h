@@ -123,9 +123,10 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
+
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
-             Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoverySTE_nonTOF, DiscoveryRX, Discovery600,Discovery690,PETMR_Signa, PETMR_Signa_nonTOF,
-             HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50,
+         Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoverySTE_nonTOF, DiscoveryRX, Discovery600, Discovery690, PETMR_Signa, PETMR_Signa_nonTOF, DiscoveryMI3ring, DiscoveryMI4ring,
+	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50, 
 	     Unknown_scanner};
   
   //! constructor that takes scanner type as an input argument
@@ -293,11 +294,13 @@ class Scanner
   //! \name number of "fake" crystals per block, inserted by the scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
     The other members of the class return the size of the "virtual" block. With these
-    functions you can find its true size.
+    functions you can find its true size (or set it).
   */
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
   int get_num_virtual_transaxial_crystals_per_block() const;
+  void set_num_virtual_axial_crystals_per_block(int);
+  void set_num_virtual_transaxial_crystals_per_block(int);
   //@}
 
   //@} (end of block/bucket info)

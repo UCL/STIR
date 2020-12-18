@@ -90,14 +90,14 @@ public:
   //! Constructor
   /*! \warning Obsolete */
   ForwardProjectorByBinUsingRayTracing(
-                       const shared_ptr<ProjDataInfo>&,
-                       const shared_ptr<DiscretisedDensity<3,float> >&);
+                       const shared_ptr<const ProjDataInfo>&,
+                       const shared_ptr<const DiscretisedDensity<3,float> >&);
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
   virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
   virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
@@ -227,7 +227,7 @@ forward_project_view_2D(Viewgram<float> & pos_view,
   template <int symmetry_type> 
   static bool 
     proj_Siddon(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
+			  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
@@ -239,7 +239,7 @@ forward_project_view_2D(Viewgram<float> & pos_view,
   static bool
     proj_Siddon(int symmetry_type,
                 Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
+			  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_ptr,
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 

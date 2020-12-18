@@ -365,8 +365,7 @@ run() const
 			  warning("CorrectProjData: Error set_related_viewgrams\n");
 			  return Succeeded::no;
 			}
-		  }
-      
+		  }     
 		}
         
 	  }
@@ -475,11 +474,12 @@ set_up()
 {
   const int max_segment_num_available =
     input_projdata_ptr->get_max_segment_num();
+  // Set default or upper bound of data to process (if out of bounds)
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
   shared_ptr<ProjDataInfo>  
-    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_ptr()->clone());
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr()->clone());
   shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
 
   if (!do_arc_correction)
@@ -490,65 +490,64 @@ set_up()
 	shared_ptr<ArcCorrection>(new ArcCorrection);
       arc_correction_sptr->set_up(input_proj_data_info_sptr);
       output_proj_data_info_sptr =
-	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
     }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
-					  max_segment_num_to_process);
+                                                   max_segment_num_to_process);
 
   // construct output_projdata
   {
 #if 0
     // attempt to do mult-frame data, but then we should have different input data anyway
     if (frame_definition_filename.size()!=0 && frame_num==-1)
-      {
-	const int num_frames = frame_defs.get_num_frames();
-	for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", current_frame);
-	    const string output_filename_with_ext = output_filename + ext;	
-	    output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext);
-	  }
-      }
+    {
+      const int num_frames = frame_defs.get_num_frames();
+      for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", current_frame);
+          const string output_filename_with_ext = output_filename + ext;	
+          output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                  output_proj_data_info_sptr,output_filename_with_ext);
+        }
+    }
     else
 #endif
-      {
-	string output_filename_with_ext = output_filename;
+    {
+	    string output_filename_with_ext = output_filename;
 #if 0
-	if (frame_definition_filename.size()!=0)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", frame_num);
-	    output_filename_with_ext += ext;
-	  }
+      if (frame_definition_filename.size()!=0)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", frame_num);
+          output_filename_with_ext += ext;
+        }
 #endif
-	output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext));
-      }
+      output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                                                      output_proj_data_info_sptr,output_filename_with_ext));
+      }// output_projdata block
 
-  }
+  }// output_projdata block
  
   // read attenuation image and add it to the normalisation object
   if(atten_image_filename!="0" && atten_image_filename!="")
-    {
+  {
       
-      shared_ptr<BinNormalisation> atten_sptr
-	(new BinNormalisationFromAttenuationImage(atten_image_filename,
-						  forward_projector_ptr));
+    shared_ptr<BinNormalisation> atten_sptr
+	            (new BinNormalisationFromAttenuationImage(atten_image_filename,
+						                                            forward_projector_ptr));
       
-      normalisation_ptr = 
-	shared_ptr<BinNormalisation>
-	( new ChainedBinNormalisation(normalisation_ptr,
-				      atten_sptr));
-    }
+    normalisation_ptr = 
+        shared_ptr<BinNormalisation>
+        ( new ChainedBinNormalisation(normalisation_ptr, atten_sptr));
+  }
   else
-    {
-      // get rid of this object for now
-      // this is currently checked to find the symmetries: bad
-      // TODO
-      forward_projector_ptr.reset();
-    }
+  {
+    // get rid of this object for now
+    // this is currently checked to find the symmetries: bad
+    // TODO
+    forward_projector_ptr.reset();
+  }
 
   // set up normalisation object
   if (

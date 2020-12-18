@@ -153,7 +153,7 @@ TimeFrameDefinitions(const string& filename)
       {
 	error(boost::format("Parsing of Interfile header failed for file '%s'") % filename);
       }
-    *this = hdr.get_exam_info_ptr()->time_frame_definitions;
+    *this = hdr.get_exam_info().time_frame_definitions;
   }
   else
     read_fdef_file(filename);

@@ -53,7 +53,7 @@ DiscretisedDensity(const IndexRange<num_dimensions>& range_v,
 
 template<int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::
-DiscretisedDensity(const shared_ptr < ExamInfo > & exam_info_sptr,
+DiscretisedDensity(const shared_ptr < const ExamInfo > & exam_info_sptr,
                    const IndexRange<num_dimensions>& range_v,
                    const CartesianCoordinate3D<float>& origin_v)
   : ExamData(exam_info_sptr),

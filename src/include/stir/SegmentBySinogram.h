@@ -65,11 +65,11 @@ public:
 
   //! Constructor that sets the data to a given 3d Array
   SegmentBySinogram(const Array<3,elemT>& v, 
-		    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
+            const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
 		    const int segment_num, const int timing_pos_num = 0);
   
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  SegmentBySinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
+  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
 		    const int segment_num, const int timing_pos_num = 0);
 
   

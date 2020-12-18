@@ -1,0 +1,46 @@
+correct_projdata Parameters := 
+
+  input file := ${INPUT}
+
+  ; Current way of specifying time frames, pending modifications to
+  ; STIR to read time info from the headers
+  ; see class documentation for TimeFrameDefinitions for the format of this file
+  ; time frame definition filename :=  frames.fdef
+
+  ; if a frame definition file is specified, you can say that the input data
+  ; corresponds to a specific time frame
+  ; the number should be between 1 and num_frames and defaults to 1
+  ; this is currently only used to pass the relevant time to the normalisation
+  ; time frame number := 1
+  
+  ; output file
+  ; for future compatibility, do not use an extension in the name of the
+  ; output file. It will be added automatically
+  output filename := ${OUTPUT}
+
+  ; default value for next is -1, meaning 'all segments'
+  ; maximum absolute segment number to process := 
+ 
+
+  ; use data in the input file, or substitute data with all 1's
+  ; (useful to get correction factors only)
+  ; default is '1'
+  use data (1) or set to one (0) := 0
+
+  ; precorrect data, or undo precorrection
+  ; default is '1'
+  ; apply (1) or undo (0) correction := 
+
+  ; parameters specifying correction factors
+  ; if no value is given, the corresponding correction will not be performed
+
+  ; random coincidences estimate, subtracted before anything else is done
+  ;randoms projdata filename := random.hs
+  ; normalisation (or binwise multiplication, so can contain attenuation factors as well)
+  Bin Normalisation type := From GE HDF5
+  Bin Normalisation From GE HDF5 :=
+  normalisation filename:= ${RDFNORM}
+  End Bin Normalisation From GE HDF5:=
+
+
+END:= 

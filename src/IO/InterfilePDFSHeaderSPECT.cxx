@@ -169,10 +169,10 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   const float size_timing_pos = -1.f;
   const float timing_resolution = -1.f;
 	
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   shared_ptr<Scanner> scanner_ptr_from_file(
               new Scanner(guessed_scanner_ptr->get_type(),
-                          get_exam_info_ptr()->originating_system,
+                          get_exam_info_sptr()->originating_system,
                           num_detectors_per_ring,
                           num_rings,
                           max_num_non_arccorrected_bins,

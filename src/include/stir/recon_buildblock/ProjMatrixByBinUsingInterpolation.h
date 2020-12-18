@@ -74,8 +74,8 @@ public :
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
   virtual void set_up(		 
-		      const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+		      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
   virtual ProjMatrixByBinUsingInterpolation* clone() const;
@@ -93,7 +93,7 @@ private:
   IndexRange<3> densel_range;
 
 
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   // for Jacobian
   const ProjDataInfoCylindrical&

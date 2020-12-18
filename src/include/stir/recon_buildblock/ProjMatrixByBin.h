@@ -104,8 +104,8 @@ public:
       call ProjMatrixByBin::set_up first.
   */
   virtual void set_up(
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
   ) = 0;
 
   virtual ProjMatrixByBin* clone() const = 0;
@@ -216,7 +216,7 @@ protected:
   shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
 
   //! We need a local copy of the proj_data_info to get the integration boundaries and RayTracing
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 
   //! The method to store data in the cache.
   void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
@@ -250,7 +250,7 @@ private:
   //! Activates the application of the timing kernel to the LOR
   //! and performs initial set_up().
   //! \warning Must be called after set_up()
-  void enable_tof(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,const bool v = true);
+  void enable_tof(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,const bool v = true);
 
   //! A local copy of the scanner's time resolution in mm.
   float gauss_sigma_in_mm;

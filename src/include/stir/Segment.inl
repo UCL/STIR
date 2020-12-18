@@ -33,9 +33,9 @@ START_NAMESPACE_STIR
 
 template <typename elemT>
 Segment<elemT>::
-Segment( const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,const int s_num, const int t_num)
+Segment( const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,const int s_num, const int t_num)
  :
- proj_data_info_ptr(proj_data_info_ptr_v),
+ proj_data_info_sptr(proj_data_info_ptr_v),
  segment_num(s_num),
  timing_pos_num(t_num)
     {}
@@ -51,17 +51,10 @@ Segment<elemT>:: get_timing_pos_num() const
 { return timing_pos_num; }
 
 template <typename elemT>
-const ProjDataInfo*
-Segment<elemT>::get_proj_data_info_ptr() const
-{
-  return proj_data_info_ptr.get();
-}
-
-template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 Segment<elemT>::get_proj_data_info_sptr() const
 {
-  return proj_data_info_ptr;
+  return proj_data_info_sptr;
 }
 
 END_NAMESPACE_STIR

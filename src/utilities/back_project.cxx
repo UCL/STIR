@@ -87,7 +87,7 @@ main (int argc, char * argv[])
   shared_ptr <DiscretisedDensity<3,float> > 
     image_density_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[3]));
 
-  image_density_sptr->set_exam_info(*proj_data_sptr->get_exam_info_sptr());
+  image_density_sptr->set_exam_info(proj_data_sptr->get_exam_info());
 
   shared_ptr<BackProjectorByBin> back_projector_sptr;
   if (argc>=5)
@@ -105,7 +105,7 @@ main (int argc, char * argv[])
     }
 
   image_density_sptr->fill(0.F);
-  back_projector_sptr->set_up(proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+  back_projector_sptr->set_up(proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
 			      image_density_sptr );
 
 #if 0

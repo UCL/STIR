@@ -72,8 +72,8 @@ public:
     \param initialise_with_0 specifies if the data should be set to 0. 
         If \c false, the data is undefined until you set it yourself.
   */
-  ProjDataInMemory (shared_ptr<ExamInfo> const& exam_info_sptr,
-		    shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataInMemory (shared_ptr<const ExamInfo> const& exam_info_sptr,
+		    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                     const bool initialise_with_0 = true);
 
   //! constructor that copies data from another ProjData
@@ -81,6 +81,17 @@ public:
 
   //! Copy constructor
   ProjDataInMemory (const ProjDataInMemory& proj_data);
+
+  //! set all bins to the same value
+  /*! will call error() if setting failed */
+  virtual void fill(const float value);
+
+  //! set all bins from another ProjData object
+  /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
+    The current check requires at least the same segment numbers (but the source can have more),
+    all other geometric parameters have to be the same.
+ */
+  virtual void fill(const ProjData&);
 
   //! destructor deallocates all memory the object owns
   virtual ~ProjDataInMemory();

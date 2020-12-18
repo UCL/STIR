@@ -143,7 +143,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
     { warning("You need to specify an input filename"); return true; }
   
-  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
+  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
   
   // image stuff
   this->target_parameter_parser.check_values();
@@ -151,14 +151,14 @@ post_processing()
   if (this->_additive_gated_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_gated_proj_data_filename);
-      this->_additive_gated_proj_data_sptr.reset(
-                                                 GatedProjData::read_from_file(this->_additive_gated_proj_data_filename));
+      this->_additive_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_additive_gated_proj_data_filename);
     }
   if (this->_normalisation_gated_proj_data_filename != "1")
     {
       info(boost::format("Reading normalisation projdata data %1%") % this->_normalisation_gated_proj_data_filename);
-      this->_normalisation_gated_proj_data_sptr.reset(
-                                                      GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename));
+      this->_normalisation_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename);
     }
 
   this->_time_gate_definitions.read_gdef_file(this->_gate_definitions_filename);
@@ -343,7 +343,7 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   /*!todo define in the PoissonLogLikelihoodWithLinearModelForMean class to return Succeeded::yes 
     if (base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)
@@ -361,7 +361,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
 			 +this->_max_segment_num_to_process);

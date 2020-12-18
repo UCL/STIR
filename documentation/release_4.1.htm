@@ -23,6 +23,7 @@
           Methods 2020,
           DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
         </li>
+        <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
       </ul>
@@ -35,9 +36,14 @@
 
 <h3>New functionality</h3>
 <ul>
-  <li>Reading of GE HDF5 data (GE fileformat RDF 10) for the GE Signa PET/MR, including listmode, sinograms and calibration files.
+  <li>Reading of GE HDF5 data (GE fileformat RDF 9) for the GE Signa PET/MR and recent GE PET/CT scanners (but depending on their
+    software version).
+    We currently read listmode, sinograms and calibration files.
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
     will be non-TOF.
+  </li>
+  <li>A new script <tt>create_fdef_from_listmode.sh</tt> that can be used to create a single-time
+    frame definition file for a given listmode file.
   <li>
     Addition of the Relative Difference Prior [J. Nuyts, et al., 2002].
   </li>
@@ -45,7 +51,15 @@
     on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_NiftyPET.par</tt>.
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
-<li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
+  <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
+  <li>Interfile and ITK image IO now understand some date/time fields. This required a change to our Interfile
+    version specification to be able to handle time-zones. These can now be added via the same suffix as used by DICOM, e.g.
+    <tt>10:01:01.00+0130</tt>.<br />
+    <strong>Warning:</strong> If the time-zone is not specified, we assume it's in the current time-zone without DST. This is dangerous,
+    but allows us to subtract time-fields.</li>
+  <li>Added a utility <tt>list_lm_info</tt>.
 </ul>
 
 
@@ -55,6 +69,23 @@
   <li>Reconstruction algorithms perform now more checks during <code>set_up()</code> etc.
     However, this means that <strong>you have to call <code>set_up()</code> also for analytic
     reconstruction algorithms</strong>. (This was already documented, but not yet enforced).
+  </li>
+  <li>copy energy information from the template in the <tt>forward_project</tt> utility.
+  </li>
+  <li>PET scatter improvements:
+    <ul>
+    <li>the scatter estimation parsing now prefers specifying normalisation and attenuation via two separate
+      keywords (as opposed to via a chained bin normalisation),
+      (keyword <tt>normalisation type</tt>) and
+      the attenuation factors. Check the updated sample file.
+      The old parsing keyword <tt>Bin normalisation type</tt> will still work but is deprecated
+      and will be removed in a future version.
+    </li>
+    <li>scatter estimation uses now more defaults such that you need to have less files.</li>
+    <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
+      (all?) parameters can be set from C++/Python (i.e. without parsing).
+    </li>
+    </ul>
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
@@ -103,6 +134,10 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
   Changes to GATE/root cylindrical PET geometry interpretation,
   see <a href="https://github.com/UCL/STIR/pull/569">PR 569</a>.</li>
 </li>
+<li>
+    OpenGATE energy information is MeV. Added a method to convert between MeV to (STIR convention) keV units when
+    reading root files.
+</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -111,10 +146,12 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
  </ul>
 
 <h3>recon_test_pack changes</h3>
-None
+<li>added a test for scatter estimation</li>
 
 <h3>Other changes to tests</h3>
 <ul>
+    <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
+    </li>
   <li>C++ tests for consistency of forward projection and reconstruction, executed via <tt>ctest</tt>.
     This is on top of the <tt>recon_test_pack</tt>.
   </li>
@@ -143,10 +180,16 @@ from the above):</H2>
   <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
+  <li>added functions for date-time processing</li>
+  <li>added <code>ExamInfo.set_energy_information_from</code></li>
 </ul>
   
 <h3>Other code changes</h3>
-<p>See the ChangeLog</p>
+<p>See the ChangeLog, specific items:</p>
+<ul>
+  <li><code>ScatterEstimation</code> now requires calling <code>set_up()</code> explicitly.</li>
+</ul>
+
 
 </body>
 

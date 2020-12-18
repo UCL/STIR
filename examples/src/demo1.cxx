@@ -44,7 +44,7 @@ int main()
   shared_ptr<ProjData> 
     proj_data_sptr(ProjData::read_from_file(input_filename));
   shared_ptr<ProjDataInfo> 
-    proj_data_info_sptr(proj_data_sptr->get_proj_data_info_ptr()->clone());
+    proj_data_info_sptr(proj_data_sptr->get_proj_data_info_sptr()->clone());
 
   /////////////// template image (for sizes etc)
   const std::string template_filename =
@@ -63,7 +63,7 @@ int main()
   back_projector.back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-  write_to_file("output", *density_sptr);
+  write_to_file("demo1_density", *density_sptr);
 
   return EXIT_SUCCESS;
 }

@@ -54,7 +54,7 @@ public:
   //! Constructor that reads the scale factors from a file
   BinNormalisationSinogramRescaling(const std::string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
 
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
   //! Normalise some data
@@ -72,7 +72,7 @@ public:
 private:
   // the proj data info used for obtaining axial position num, segment num
   // will be set by set_up()
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   Array<3,float> rescaling_factors;
 
   // parsing stuff

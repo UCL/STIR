@@ -60,14 +60,14 @@ get_arc_corrected_proj_data_info() const
     static_cast<const ProjDataInfoCylindricalArcCorr&>(*_arc_corr_proj_data_info_sptr); 
 }
 
-shared_ptr<ProjDataInfo> 
+shared_ptr<const ProjDataInfo> 
 ArcCorrection::
 get_arc_corrected_proj_data_info_sptr() const
 {
   return _arc_corr_proj_data_info_sptr;
 }
 
-shared_ptr<ProjDataInfo> 
+shared_ptr<const ProjDataInfo> 
 ArcCorrection::
 get_not_arc_corrected_proj_data_info_sptr() const
 {
@@ -77,7 +77,7 @@ get_not_arc_corrected_proj_data_info_sptr() const
 
 Succeeded
 ArcCorrection::
-set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr, 
+set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr, 
        const int num_arccorrected_tangential_poss, 
        const float bin_size)
 {
@@ -171,7 +171,7 @@ set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
     
 Succeeded
 ArcCorrection::
-  set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
+  set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr,
 	 const int num_arccorrected_tangential_poss)
 {
   float tangential_sampling = 
@@ -195,7 +195,7 @@ ArcCorrection::
 
 Succeeded
 ArcCorrection::
-set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr)
 {
   float tangential_sampling = 
     noarc_corr_proj_data_info_sptr->get_scanner_ptr()->get_default_bin_size();
@@ -247,8 +247,8 @@ void
 ArcCorrection::
 do_arc_correction(Sinogram<float>& out, const Sinogram<float>& in) const
 {
-  assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
-  assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
+  assert(*in.get_proj_data_info_sptr() == *_noarc_corr_proj_data_info_sptr);
+  assert(*out.get_proj_data_info_sptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_axial_pos_num() == in.get_axial_pos_num());
   assert(out.get_segment_num() == in.get_segment_num());
   assert(out.get_timing_pos_num() == in.get_timing_pos_num());
@@ -272,8 +272,8 @@ void
 ArcCorrection::
 do_arc_correction(Viewgram<float>& out, const Viewgram<float>& in) const
 {
-  assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
-  assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
+  assert(*in.get_proj_data_info_sptr() == *_noarc_corr_proj_data_info_sptr);
+  assert(*out.get_proj_data_info_sptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_view_num() == in.get_view_num());
   assert(out.get_segment_num() == in.get_segment_num());
   assert(out.get_timing_pos_num() == in.get_timing_pos_num());
@@ -318,8 +318,8 @@ void
 ArcCorrection::
 do_arc_correction(SegmentBySinogram<float>& out, const SegmentBySinogram<float>& in) const
 {
-  assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
-  assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
+  assert(*in.get_proj_data_info_sptr() == *_noarc_corr_proj_data_info_sptr);
+  assert(*out.get_proj_data_info_sptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_segment_num() == in.get_segment_num());
   assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int axial_pos_num=in.get_min_axial_pos_num(); axial_pos_num<=in.get_max_axial_pos_num(); ++axial_pos_num)
@@ -342,8 +342,8 @@ void
 ArcCorrection::
 do_arc_correction(SegmentByView<float>& out, const SegmentByView<float>& in) const
 {
-  assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
-  assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
+  assert(*in.get_proj_data_info_sptr() == *_noarc_corr_proj_data_info_sptr);
+  assert(*out.get_proj_data_info_sptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_segment_num() == in.get_segment_num());
   assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
@@ -357,7 +357,7 @@ ArcCorrection::
 do_arc_correction(const SegmentByView<float>& in) const
 {
   SegmentByView<float> out(_arc_corr_proj_data_info_sptr,
-			     in.get_segment_num(), in.get_timing_pos_num());
+                 in.get_segment_num(), in.get_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -367,8 +367,8 @@ Succeeded
 ArcCorrection::
 do_arc_correction(ProjData& out, const ProjData& in) const
 {
-  assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
-  assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
+  assert(*in.get_proj_data_info_sptr() == *_noarc_corr_proj_data_info_sptr);
+  assert(*out.get_proj_data_info_sptr() == *_arc_corr_proj_data_info_sptr);
   // Declare temporary viewgram out of the loop to avoid reallocation
   // There is no default constructor, so we need to set it to some junk first.
   Viewgram<float> viewgram = 

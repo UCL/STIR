@@ -200,7 +200,7 @@ int main(int argc, char **argv)
     ProjData::read_from_file(argv[2]);
   ProjDataInterfile 
     new_proj_data(org_proj_data_ptr->get_exam_info_sptr(),
-		  org_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+		  org_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
                   argv[1]);  
 
   
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
   const int min_view_num = org_proj_data_ptr->get_min_view_num();
 
   const int mash =
-    org_proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring() /
+    org_proj_data_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_detectors_per_ring() /
     org_proj_data_ptr->get_num_views() / 2;
   cerr << "Mash factor determined from data is " << mash << endl;
     

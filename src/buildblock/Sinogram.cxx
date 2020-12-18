@@ -51,13 +51,13 @@ has_same_characteristics(self_type const& other,
   using boost::format;
   using boost::str;
 
-  if (*this->get_proj_data_info_ptr() !=
-      *other.get_proj_data_info_ptr())
+  if (*this->get_proj_data_info_sptr() !=
+      *other.get_proj_data_info_sptr())
     {
       explanation = 
 	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-	    % this->get_proj_data_info_ptr()->parameter_info()
-	    % other.get_proj_data_info_ptr()->parameter_info()
+	    % this->get_proj_data_info_sptr()->parameter_info()
+	    % other.get_proj_data_info_sptr()->parameter_info()
 	    );
       return false;
     }

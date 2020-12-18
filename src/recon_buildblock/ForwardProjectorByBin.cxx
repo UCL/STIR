@@ -78,12 +78,12 @@ initialise_keymap()
 
 void
 ForwardProjectorByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
-       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
+       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
-  _density_sptr = density_info_sptr;
+  _density_sptr.reset(density_info_sptr->clone());
 }
 
 void
@@ -191,7 +191,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
             % subset_num % num_subsets);
     if (zero && num_subsets > 1)
       proj_data.fill(0.0);
- // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+ // this->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
 //			     image_sptr);
 
   check(*proj_data.get_proj_data_info_sptr(), *_density_sptr);
@@ -199,7 +199,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     symmetries_sptr(this->get_symmetries_used()->clone());
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 #ifdef STIR_OPENMP
@@ -209,11 +209,11 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
-      for (int k=proj_data.get_proj_data_info_ptr()->get_min_tof_pos_num();
-    		  k<=proj_data.get_proj_data_info_ptr()->get_max_tof_pos_num();
+      for (int k=proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
+              k<=proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num();
     		  ++k)
         {
-    	  if (proj_data.get_proj_data_info_ptr()->is_tof_data())
+          if (proj_data.get_proj_data_info_sptr()->is_tof_data())
             info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k);
     	  else
             info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());

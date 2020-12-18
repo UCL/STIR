@@ -6,6 +6,8 @@ generate_image Parameters :=
 
 ; optional: values: PET|nucmed *defaults to PET for backwards compatibility)
 imaging modality:=PET
+; optional (but recommended). Needs to be a STIR supported name
+originating system := ECAT 931
 ; optional patient position keywords (defaulting to "unknown")
 ; orientation: allowed values: head_in|feet_in|other|unknown
 patient orientation := head_in

@@ -236,7 +236,7 @@ public:
 
  protected:
   virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr);
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
 
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,

@@ -270,7 +270,7 @@ protected:
 
   //! Internal variable that will be used for pre-normalisation
   /*! Will be removed when we have EventNormalisation (or similar) hierarchy */
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
 
 
   /*! \brief variable that will be set according to if we are using 

@@ -651,7 +651,7 @@ namespace distributed
       }
     projector_info_ptr_stream.seekg(offset);
     exam_info_sptr = hdr.get_exam_info_sptr();
-    if (hdr.get_exam_info_ptr()->imaging_modality.get_modality() ==
+    if (hdr.get_exam_info().imaging_modality.get_modality() ==
         stir::ImagingModality::NM)
       {
 	stir::InterfilePDFSHeaderSPECT hdr;  

@@ -63,10 +63,13 @@ ProjDataInMemory::
 }
 
 ProjDataInMemory::
-ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
-		 shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
+ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
+		 shared_ptr<const ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
-  ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
+  ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), // trick: first initialise sino_stream_ptr to 0
+                     std::streamoff(0),
+                     ProjData::standard_segment_sequence(*proj_data_info_ptr),
+                     Segment_AxialPos_View_TangPos)
 {
   this->create_buffer(initialise_with_0);
   this->create_stream();
@@ -108,10 +111,35 @@ create_stream()
   this->sino_stream = output_stream_sptr;
 }
 
+
+void
+ProjDataInMemory::fill(const float value)
+{
+  std::fill(begin_all(), end_all(), value);
+}
+
+void
+ProjDataInMemory::fill(const ProjData& proj_data)
+{
+  auto pdm_ptr = dynamic_cast<ProjDataInMemory const *>(&proj_data);
+  if (!is_null_ptr(pdm_ptr) &&
+      (*this->get_proj_data_info_sptr()) == (*proj_data.get_proj_data_info_sptr()))
+    {
+      std::copy(pdm_ptr->begin_all(), pdm_ptr->end_all(), begin_all());
+    }
+  else
+    {
+      return ProjData::fill(proj_data);
+    }
+}
+
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+		       proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
+                       std::streamoff(0),
+                       ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
+                       Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
@@ -123,13 +151,17 @@ ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::
 ProjDataInMemory (const ProjDataInMemory& proj_data)
     : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+                         proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>(),
+                         std::streamoff(0),
+                         ProjData::standard_segment_sequence(*proj_data.get_proj_data_info_sptr()),
+                         Segment_AxialPos_View_TangPos)
 {
   this->create_buffer();
   this->create_stream();
 
   // copy data
-  this->fill(proj_data);
+  std::copy(proj_data.begin_all(), proj_data.end_all(), begin_all());
+  //this->fill(proj_data);
 }
 
 size_t

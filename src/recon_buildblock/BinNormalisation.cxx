@@ -52,7 +52,7 @@ BinNormalisation::
 
 Succeeded
 BinNormalisation::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
@@ -118,10 +118,10 @@ apply(ProjData& proj_data,const double start_time, const double end_time,
 {
   this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
-    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          0, 1/*subset_num, num_subsets*/);
 
@@ -133,8 +133,8 @@ apply(ProjData& proj_data,const double start_time, const double end_time,
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
       
-      for (int k=proj_data.get_proj_data_info_ptr()->get_min_tof_pos_num();
-    		  k<=proj_data.get_proj_data_info_ptr()->get_max_tof_pos_num();
+      for (int k=proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
+              k<=proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num();
     		  ++k)
       {
 
@@ -170,10 +170,10 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
 {
   this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
-    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          0, 1/*subset_num, num_subsets*/);
 
@@ -185,8 +185,8 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
       
-      for (int k=proj_data.get_proj_data_info_ptr()->get_min_tof_pos_num();
-    		  k<=proj_data.get_proj_data_info_ptr()->get_max_tof_pos_num();
+      for (int k=proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
+              k<=proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num();
     		  ++k)
       {
 		  RelatedViewgrams<float> viewgrams;

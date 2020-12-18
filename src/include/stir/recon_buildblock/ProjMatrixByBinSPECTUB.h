@@ -103,8 +103,8 @@ class ProjMatrixByBinSPECTUB :
 
   //! Checks all necessary geometric info
   virtual void set_up(		 
-		      const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                      const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
                       );
 
   bool get_keep_all_views_in_cache() const;
@@ -143,7 +143,7 @@ class ProjMatrixByBinSPECTUB :
 
     \verbatim
      sigma_at_depth = collimator_slope * depth_in_mm + collimator sigma 0
-    \end_verbatim
+    \endverbatim
 
     Set slope and sigma_0 to zero for "geometrical" modelling.
 
@@ -180,7 +180,7 @@ class ProjMatrixByBinSPECTUB :
   CartesianCoordinate3D<float> origin;  
   IndexRange<3> densel_range;
 
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   bool already_setup;
 

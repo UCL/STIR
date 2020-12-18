@@ -63,12 +63,8 @@ public:
   enum StorageOrder{ StorageByView, StorageBySino };
   
   virtual ~Segment() {}
-  //! Get the proj data info pointer
-  inline const ProjDataInfo* get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ProjDataInfo>
+  inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
 
   virtual StorageOrder get_storage_order() const = 0;
@@ -127,11 +123,12 @@ public:
   //@}
 
 protected:
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   int segment_num;
   int timing_pos_num;
   
-  inline Segment(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,const int s_num, const int t_num = 0);
+  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,const int s_num, const int t_num = 0);
+
 };
 
 END_NAMESPACE_STIR

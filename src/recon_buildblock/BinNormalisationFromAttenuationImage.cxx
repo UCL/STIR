@@ -94,13 +94,15 @@ post_processing()
   // projectors work in pixel units, so convert attenuation data 
   // from cm^-1 to pixel_units^-1
   const float rescale = 
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> *>(attenuation_image_ptr.get())->
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const &>(*attenuation_image_ptr).
     get_grid_spacing()[3]/10;
 #else
   const float rescale = 
     0.1F;
 #endif
-  *attenuation_image_ptr *= rescale;
+  shared_ptr<DiscretisedDensity<3,float> > new_sptr(attenuation_image_ptr->clone());
+  *new_sptr *= rescale;
+  attenuation_image_ptr = new_sptr;
 
   return false;
 }
@@ -123,7 +125,7 @@ BinNormalisationFromAttenuationImage(const std::string& filename,
 }
 
 BinNormalisationFromAttenuationImage::
-BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr_v,
+BinNormalisationFromAttenuationImage(shared_ptr<const DiscretisedDensity<3,float> > const& attenuation_image_ptr_v,
                                      shared_ptr<ForwardProjectorByBin> const& forward_projector_ptr)
   : attenuation_image_ptr(attenuation_image_ptr_v->clone()), // need a clone as it guarantees we won't be affected by the caller, and vice versa
     forward_projector_ptr(forward_projector_ptr)
@@ -133,7 +135,7 @@ BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > co
 
 Succeeded 
 BinNormalisationFromAttenuationImage::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   BinNormalisation::set_up(proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);

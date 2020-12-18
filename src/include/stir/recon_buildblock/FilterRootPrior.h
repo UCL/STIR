@@ -107,7 +107,7 @@ public:
 			const DataT &current_estimate);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<DataT> const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const DataT> const& target_sptr);
   
 protected:
 

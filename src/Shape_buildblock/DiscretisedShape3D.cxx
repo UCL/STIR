@@ -35,9 +35,9 @@ void
 DiscretisedShape3D::
 set_origin(const CartesianCoordinate3D<float>& new_origin)
 { 
-  assert(this->get_origin() == density_ptr->get_origin());
+  assert(this->get_origin() == density_sptr->get_origin());
   Shape3D::set_origin(new_origin);
-  density_ptr->set_origin(new_origin);
+  density_sptr->set_origin(new_origin);
 }
 
 // TODO check code
@@ -48,11 +48,11 @@ get_voxel_weight(
                  const CartesianCoordinate3D<float>& voxel_size, 
                  const CartesianCoordinate3D<int>& num_samples) const
 {
-  assert(this->get_origin() == density_ptr->get_origin());
+  assert(this->get_origin() == density_sptr->get_origin());
 
   assert(voxel_size == image().get_voxel_size());
   const CartesianCoordinate3D<float> r = 
-    this->density_ptr->get_index_coordinates_for_physical_coordinates(voxel_centre);
+    this->density_sptr->get_index_coordinates_for_physical_coordinates(voxel_centre);
 
   const int x = round(r.x());
   const int y = round(r.y());
@@ -73,7 +73,7 @@ bool
 DiscretisedShape3D::
 is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 {
-  assert(this->get_origin() == density_ptr->get_origin());
+  assert(this->get_origin() == density_sptr->get_origin());
   return 
     get_voxel_weight(coord, 
                      image().get_voxel_size(), 
@@ -91,7 +91,7 @@ Shape3D*
 DiscretisedShape3D::
 clone() const
 {
-  assert(this->get_origin() == density_ptr->get_origin());
+  assert(this->get_origin() == density_sptr->get_origin());
 
   return new DiscretisedShape3D(*this);
 }
@@ -100,14 +100,14 @@ DiscretisedDensity<3,float>&
 DiscretisedShape3D::
 get_discretised_density()
 {
-  return *density_ptr;
+  return *density_sptr;
 }
 
 const DiscretisedDensity<3,float>& 
 DiscretisedShape3D::
 get_discretised_density() const
 {
-  return *density_ptr;
+  return *density_sptr;
 }
 
 DiscretisedShape3D::
@@ -118,7 +118,7 @@ DiscretisedShape3D()
 
 DiscretisedShape3D::
 DiscretisedShape3D(const VoxelsOnCartesianGrid<float>& image_v)
-   : density_ptr(image_v.clone())
+   : density_sptr(image_v.clone())
 {
   this->set_origin(image_v.get_origin());
   this->filename = "FROM MEMORY";
@@ -127,14 +127,14 @@ DiscretisedShape3D(const VoxelsOnCartesianGrid<float>& image_v)
 
 
 DiscretisedShape3D::
-DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr_v)
-   : density_ptr(density_ptr_v)
+DiscretisedShape3D(const shared_ptr<const DiscretisedDensity<3,float> >& density_sptr_v)
+  : density_sptr(density_sptr_v->clone())
 {
-  if(dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_ptr.get()) == NULL)
+  if(dynamic_cast<const VoxelsOnCartesianGrid<float> *>(density_sptr.get()) == NULL)
   {
     error("DiscretisedShape3D can currently only handle images of type VoxelsOnCartesianGrid.\n"); 
   }
-  this->set_origin(density_ptr_v->get_origin());
+  this->set_origin(density_sptr_v->get_origin());
   this->filename = "FROM MEMORY";
 }
 
@@ -163,16 +163,16 @@ post_processing()
   if (Shape3D::post_processing()==true)
     return true;
 
-  density_ptr = read_from_file<DiscretisedDensity<3,float> >(filename);
-  if (!is_null_ptr(density_ptr))
+  density_sptr = read_from_file<DiscretisedDensity<3,float> >(filename);
+  if (!is_null_ptr(density_sptr))
     {
-      if (this->get_origin() != density_ptr->get_origin())
+      if (this->get_origin() != density_sptr->get_origin())
 	{
 	  warning("DiscretisedShape3D: Shape3D::origin and image origin are inconsistent. Using origin from image\n");
-	  this->set_origin(density_ptr->get_origin());
+	  this->set_origin(density_sptr->get_origin());
 	}
     }
-  return is_null_ptr(density_ptr);
+  return is_null_ptr(density_sptr);
 }
 
 const char * const 

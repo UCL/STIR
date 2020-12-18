@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2013-2014, University College London
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2020, University College London
     Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
                         Australian eHealth Research Centre
 
@@ -30,6 +30,7 @@
 */
 
 #include "stir/IO/ITKImageInputFileFormat.h"
+#include "stir/date_time_functions.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
@@ -43,7 +44,7 @@
 #include "itkOrientImageFilter.h"
 #include "stir/info.h"
 #include "boost/format.hpp"
-
+#include "boost/lexical_cast.hpp"
 START_NAMESPACE_STIR
 
 //! Class for reading images in ITK file-format.
@@ -56,7 +57,8 @@ typedef itk::Image<float, 3>                                 ITKImageSingle;
 typedef itk::VectorImage<float, 3>                           ITKImageMulti;
 typedef DiscretisedDensity<3, float>                         STIRImageSingle;
 typedef VoxelsOnCartesianGrid<float>                         STIRImageSingleConcrete;
-typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
+typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
+typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 typedef itk::MetaDataObject< std::string >                   MetaDataStringType;
 
 template<typename STIRImageType>
@@ -174,9 +176,9 @@ ITK_pixel_to_STIR_pixel(ITKPixelType itk_pixel,
 /* Specialisation if the pixel is a vector and we want a multi-image */
 template<>
 inline
-typename STIRImageMulti::full_value_type
+typename STIRImageMultiConcrete::full_value_type
 ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
-                        const STIRImageMulti &stir_image,
+                        const STIRImageMultiConcrete &stir_image,
                         bool is_displacement_field)
 {
   // ITK VariableLengthVector to ITK FixedArray
@@ -230,29 +232,85 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
 /* Constructs an exam info object from an ITK meta data dictionary.
    Uses fields:
    - (0018, 5100) Patient Position
+   - SeriesDate and SeriesTime
+   - AcquisitionDateTime, or AcquisitionDate and AcquisitionTime
+   - (0018, 1242) ActualFrameDuration
+   - (0008, 0201) TimezoneOffsetFromUTC
+   - (0008, 0060) Modality
+
+   \todo This will only work for DICOM meta-data. Other fileformats store meta-data
+   with different names.
  */
-static inline
+static
 shared_ptr<ExamInfo>
 construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
 {
   shared_ptr<ExamInfo> exam_info_sptr (new ExamInfo());
 
+#if 0
+  //example data to read
+    (0018,0031) LO [FDG -- fluorodeoxyglucose]              #  26, 1 Radiopharmaceutical
+    (0018,1071) DS [0.5]                                    #   4, 1 RadiopharmaceuticalVolume
+    (0018,1072) TM [131300.00]                              #  10, 1 RadiopharmaceuticalStartTime
+    (0018,1074) DS [176929738.163953]                       #  16, 1 RadionuclideTotalDose
+    (0018,1075) DS [6588]                                   #   4, 1 RadionuclideHalfLife
+    (0018,1076) DS [0.97000002861023]                       #  16, 1 RadionuclidePositronFraction
+    (0018,1078) DT [20130320131300.00]                      #  18, 1 RadiopharmaceuticalStartDateTime
+#endif
+
+  {
+    std::string modality;
+    itk::ExposeMetaData<std::string>(dictionary, "0008|0060", modality);
+    exam_info_sptr->imaging_modality = ImagingModality(modality);
+  }
+  {
+    // Timezone, see http://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.12.html#sect_C.12.1.1.8
+    std::string TimezoneOffsetFromUTC;
+    itk::ExposeMetaData<std::string>(dictionary, "0008|0201", TimezoneOffsetFromUTC);
+
+    std::string acq_datetime, series_datetime, actual_frame_duration;
+    {
+      // there's no Series_DateTime, so read it from its components
+      std::string series_date, series_time;
+      itk::ExposeMetaData<std::string>(dictionary, "0008|0021", series_date);
+      itk::ExposeMetaData<std::string>(dictionary, "0008|0031", series_time);
+      if (!series_date.empty() && !series_time.empty())
+        series_datetime = DICOM_date_time_to_DT(series_date, series_time, TimezoneOffsetFromUTC);
+    }
+    itk::ExposeMetaData<std::string>(dictionary, "0008|002a", acq_datetime);
+    if (acq_datetime.empty())
+      {
+        std::string acq_date, acq_time;
+        itk::ExposeMetaData<std::string>(dictionary, "0008|0022", acq_date);
+        itk::ExposeMetaData<std::string>(dictionary, "0008|0032", acq_time);
+        if (!acq_date.empty() && !acq_time.empty())
+          acq_datetime = DICOM_date_time_to_DT(acq_date, acq_time, TimezoneOffsetFromUTC);
+      }
+    itk::ExposeMetaData<std::string>(dictionary, "0018|1242", actual_frame_duration);
+    if (!series_datetime.empty() && !acq_datetime.empty() && !actual_frame_duration.empty())
+      {
+        std::vector<double > start_times(1), durations(1);
+        start_times[0] = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime, false) - DICOM_datetime_to_secs_since_Unix_epoch(acq_datetime, false);
+        durations[0] = boost::lexical_cast<double>(actual_frame_duration)/1000.;
+        exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(start_times, durations));
+      }
+    if (!series_datetime.empty())
+      {
+        exam_info_sptr->start_time_in_secs_since_1970 = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime);
+      }
+  }
+
+#if 0
+  itk::ExposeMetaData<std::string>(dictionary, "0010|1030", weight);
+  itk::ExposeMetaData<std::string>(dictionary, "0011,100d", radionuclidename);
+  itk::ExposeMetaData<std::string>(dictionary, "0018,1071", radionuclide_volume);
+  itk::ExposeMetaData<std::string>(dictionary, "0011,1074", radionuclide_dose);
+#endif
+
   // Patient Position
   PatientPosition patient_position(PatientPosition::unknown_position);
-  std::string patient_position_str = "";
-  const std::string patient_position_tag = "0018|5100";
-  const itk::MetaDataDictionary::ConstIterator maybe_patient_position_iter
-    = dictionary.Find(patient_position_tag);
-  // Did we actually find it?
-  if (maybe_patient_position_iter != dictionary.End()) {
-    const MetaDataStringType::ConstPointer maybe_patient_position_data
-      = dynamic_cast<const MetaDataStringType*>
-      (maybe_patient_position_iter->second.GetPointer());
-    // Is it actually a string value?
-    if(maybe_patient_position_data) {
-      patient_position_str = maybe_patient_position_data->GetMetaDataObjectValue();
-    }
-  }
+  std::string patient_position_str;
+  itk::ExposeMetaData<std::string>(dictionary, "0018|5100", patient_position_str);
   // Now patient_positon_str is empty or the value, but is it a valid value?
   // If so, update patient_position
   for (unsigned int position_idx = 0;
@@ -409,6 +467,7 @@ read_file_itk(const std::string &filename)
     {
       if (!dicomIO->CanReadFile(filename.c_str()))
         {
+          info("Reading " + filename + " via ITK non-DICOM IO",2);
           // Not a DICOM file, so we just read a single image
           typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
           ReaderType::Pointer reader = ReaderType::New();
@@ -424,6 +483,7 @@ read_file_itk(const std::string &filename)
       else
         {
           // It's a DICOM file (I hope).
+          info("Reading " + filename + " via ITK DICOM IO",2);
 
           // For this, we need to read all slices in a series.
           // We use code from ITK's Examples/IO/DicomSeriesReadImageWrite2.cxx
@@ -521,7 +581,7 @@ read_file_itk(const std::string &filename)
 
       ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
-      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti>
+      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMultiConcrete>
         (itk_image, true);
 
     }

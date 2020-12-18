@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2018 University College London
+    Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -58,6 +58,7 @@
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
+ #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
 
 #include "stir/CartesianCoordinate2D.h"
@@ -87,6 +88,9 @@
 
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+#include "stir/HUToMuImageProcessor.h"
+#endif
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -644,6 +648,7 @@ namespace std {
   // a function for  converting ProjData to a 4D array as that's what is easy to use
   static Array<4,float> projdata_to_4D(const ProjData& proj_data)
   {
+
       Array<4,float> array = create_array_for_proj_data(proj_data);
       Array<4,float>::full_iterator array_iter = array.begin_all();
       //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
@@ -700,7 +705,28 @@ namespace std {
       //      }
       proj_data.fill_from(array_iter);
   }
-  
+
+  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+      //    int num_sinos=proj_data.get_num_axial_poss(0);
+      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      //      }
+      int num_sinos = proj_data.get_num_sinograms();
+
+      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      return array;
+  }
+
+  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+  {
+      Array<3,float> array = create_array_for_proj_data(proj_data);
+      Array<3,float>::full_iterator array_iter = array.begin_all();
+      copy_to(proj_data, array_iter);
+      return array;
+  }
+
   
  } // end of namespace
 
@@ -1266,9 +1292,7 @@ namespace stir {
 
 %ignore *::get_scanner_sptr;
 %rename (get_scanner) *::get_scanner_ptr;
-%ignore *::get_proj_data_info_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
-%ignore *::get_exam_info_ptr;
 %ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 
 %rename (set_objective_function) *::set_objective_function_sptr;
@@ -1404,7 +1428,7 @@ namespace stir {
 %include "stir/ProjData.h"
 
 namespace stir {
-%extend ProjData 
+%extend ProjData
   {
 #ifdef SWIGPYTHON
     %feature("autodoc", "create a stir 4D Array from the projection data (internal)") to_array;
@@ -1420,9 +1444,15 @@ namespace stir {
     {
       if (PyIter_Check(arg))
       {
-        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
+		// From TOF branch
+        //Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
+		//swigstir::fill_Array_from_Python_iterator(&array, arg);
+        //swigstir::fill_proj_data_from_4D(*$self, array);        
+
+        // TODO avoid need for copy to Array
+        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        swigstir::fill_proj_data_from_4D(*$self, array);        
+        fill_from(*$self, array.begin_all(), array.end_all());
       }
       else
       {
@@ -1445,11 +1475,47 @@ namespace stir {
     { 
       Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_4D(*$self, array);
+
+      //swigstir::fill_proj_data_from_4D(*$self, array);
+      fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
- }
+
+  // horrible repetition of above. should be solved with a macro or otherwise
+  // we need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
+%extend ProjDataInMemory
+  {
+#ifdef SWIGPYTHON
+    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    void fill(PyObject* const arg)
+    {
+      if (PyIter_Check(arg))
+      {
+        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+	swigstir::fill_Array_from_Python_iterator(&array, arg);
+        fill_from(*$self, array.begin_all(), array.end_all());
+      }
+      else
+      {
+	char str[1000];
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+		arg->ob_type->tp_name);
+	throw std::invalid_argument(str);
+      } 
+    }
+
+#elif defined(SWIGMATLAB)
+    void fill(const mxArray *pm)
+    { 
+      Array<3,float> array;
+      swigstir::fill_Array_from_matlab(array, pm, true);
+      fill_from(*$self, array.begin_all(), array.end_all());
+    }
+#endif
+  }
+
+}
 
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
@@ -1500,12 +1566,21 @@ namespace stir {
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+#ifdef HAVE_JSON
+%shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
+#endif
 #undef elemT
 #endif
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+%include "stir/HUToMuImageProcessor.h"
+#endif
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -1518,8 +1593,15 @@ namespace stir {
              stir::SeparableCartesianMetzImageFilter<elemT>,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+#ifdef HAVE_JSON
+%template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
+             stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+
+%template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
+#endif
 #undef elemT
 
 %include "stir/GeneralisedPoissonNoiseGenerator.h"
@@ -1703,8 +1785,3 @@ namespace stir {
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-
-%include "stir/recon_buildblock/RelativeDifferencePrior.h"
-#define elemT float
-%template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT >;
-

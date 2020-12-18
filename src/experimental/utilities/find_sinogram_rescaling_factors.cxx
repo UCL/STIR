@@ -49,8 +49,8 @@ main( int argc, char* argv[])
   shared_ptr<ProjData> numerator_sptr = ProjData::read_from_file(argv[2]);
   shared_ptr<ProjData> denominator_sptr = ProjData::read_from_file(argv[3]);
 
-  if (*numerator_sptr->get_proj_data_info_ptr() != 
-      *denominator_sptr->get_proj_data_info_ptr())
+  if (*numerator_sptr->get_proj_data_info_sptr() != 
+      *denominator_sptr->get_proj_data_info_sptr())
     {
       warning("Input files should have same characteristics (such as sizes etc).\n");
       return EXIT_FAILURE;
@@ -58,7 +58,7 @@ main( int argc, char* argv[])
 
 #if 0
   shared_ptr<ProjData> rescaling_factors_sptr = 
-    new ProjDataInterfile(numerator_sptr->get_proj_data_info_ptr()->clone(),
+    new ProjDataInterfile(numerator_sptr->get_proj_data_info_sptr()->clone(),
 			  scaling_factors_filename);
 #endif
 

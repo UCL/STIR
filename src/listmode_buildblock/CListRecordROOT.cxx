@@ -32,7 +32,7 @@ START_NAMESPACE_STIR
 
 
 CListEventROOT::
-CListEventROOT(const shared_ptr<ProjDataInfo> &proj_data_info) :
+CListEventROOT(const shared_ptr<const ProjDataInfo> &proj_data_info) :
     CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
 {
     quarter_of_detectors = static_cast<int>(proj_data_info->get_scanner_ptr()->get_num_detectors_per_ring()/4.f);

@@ -77,7 +77,7 @@ private:
   const bool use_exact_Jacobian_now;
 
 public:
-   explicit JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact);
+   explicit JacobianForIntBP(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr, bool exact);
 
    float operator()(const float delta, const float s) const
    {
@@ -147,16 +147,16 @@ public:
   //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
   /*! \deprecated Use set_up() instead */
   BackProjectorByBinUsingInterpolation(
-    shared_ptr<ProjDataInfo>const&,
-    shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
+    shared_ptr<const ProjDataInfo>const&,
+    shared_ptr<const DiscretisedDensity<3,float> > const& image_info_ptr,
     const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
   virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
   /*! \brief Gets the symmetries used by this backprojector
@@ -282,7 +282,7 @@ struct ProjDataForIntBP
 
  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
                                      VoxelsOnCartesianGrid<float>& image,				     
-				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
+				     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                      float delta,
                                      const double cphi, const double sphi, int s, int ax_pos0, 
 				     const int num_planes_per_axial_pos,
@@ -290,7 +290,7 @@ struct ProjDataForIntBP
 
  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
                                                          VoxelsOnCartesianGrid<float>& image,							 
-							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
+							 const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                                          float delta,
                                                           const double cphi, const double sphi, int s, int ax_pos0,
                                                           const int num_planes_per_axial_pos,
@@ -298,7 +298,7 @@ struct ProjDataForIntBP
 
   static void linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
                                      VoxelsOnCartesianGrid<float>& image,				     
-				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
+				     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                      float delta,
                                      const double cphi, const double sphi, int s, int ax_pos0, 
 				     const int num_planes_per_axial_pos,
@@ -306,7 +306,7 @@ struct ProjDataForIntBP
 
  static void linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
                                                          VoxelsOnCartesianGrid<float>& image,							 
-							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
+							 const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
                                                          float delta,
                                                           const double cphi, const double sphi, int s, int ax_pos0,
                                                           const int num_planes_per_axial_pos,

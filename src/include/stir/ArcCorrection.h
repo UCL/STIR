@@ -75,7 +75,7 @@ public:
   //@{
   //! Most general version
   Succeeded 
-    set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
+    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
 	   const int num_arccorrected_tangential_poss, const float bin_size);
 
   //! Using default bin-size of the scanner
@@ -84,7 +84,7 @@ public:
       non-arccorrected data will be used.
   */
   Succeeded 
-    set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
+    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
 	   const int num_arccorrected_tangential_poss);
   //! Using default bin-size of the scanner and covering the FOV
   /*! If the default bin-size is 0, the tangential size of the central bin
@@ -95,7 +95,7 @@ public:
       is slightly larger than the one covered by the original data.      
   */
   Succeeded
-    set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
+    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
   //@}
 
   /*! \name functions returning a ProjDataInfoCylindricalArcCorr
@@ -105,12 +105,10 @@ public:
   const ProjDataInfoCylindricalArcCorr& 
     get_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
-  /*! \warning It is dangerous to change the object pointed to. Use
-      this function only if you are sure that this will never happen.
-      \todo return a shared_ptr<ProjDataInfoCylindricalArcCorr>
+  /*! \todo return a shared_ptr<ProjDataInfoCylindricalArcCorr>
       after switching to boost::shared_ptr.
   */
-  shared_ptr<ProjDataInfo> 
+  shared_ptr<const ProjDataInfo> 
     get_arc_corrected_proj_data_info_sptr() const;
   //@}
 
@@ -121,12 +119,10 @@ public:
   const ProjDataInfoCylindricalNoArcCorr& 
     get_not_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
-  /*! \warning It is dangerous to change the object pointed to. Use
-      this function only if you are sure that this will never happen.
-      \todo return a shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+  /*! \todo return a shared_ptr<ProjDataInfoCylindricalNoArcCorr>
       after switching to boost::shared_ptr.
   */
-  shared_ptr<ProjDataInfo> 
+  shared_ptr<const ProjDataInfo> 
     get_not_arc_corrected_proj_data_info_sptr() const;
   //@}
 
@@ -156,8 +152,8 @@ public:
   //@}
 
 private:
-  shared_ptr<ProjDataInfo> _noarc_corr_proj_data_info_sptr;
-  shared_ptr<ProjDataInfo> _arc_corr_proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> _noarc_corr_proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> _arc_corr_proj_data_info_sptr;
   Array<1,float> _arccorr_coords;
   Array<1,float> _noarccorr_coords;
   Array<1,float> _noarccorr_bin_sizes;

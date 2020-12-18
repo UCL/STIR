@@ -51,7 +51,7 @@ int main(int argc, char **argv)
  
   // construct new proj_data_info_ptr for output data
   ProjDataInfo * proj_data_info_ptr =
-    in_projdata_ptr->get_proj_data_info_ptr()->clone();
+    in_projdata_ptr->get_proj_data_info_sptr()->clone();
   {
     // first check that max_segment_num_to_process is such that in the new
     // number of axial positions is positive. If not, decrease it

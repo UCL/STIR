@@ -51,13 +51,13 @@ has_same_characteristics(self_type const& other,
   using boost::format;
   using boost::str;
 
-  if (*this->get_proj_data_info_ptr() !=
-      *other.get_proj_data_info_ptr())
+  if (*this->get_proj_data_info_sptr() !=
+      *other.get_proj_data_info_sptr())
     {
       explanation = 
 	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-	    % this->get_proj_data_info_ptr()->parameter_info()
-	    % other.get_proj_data_info_ptr()->parameter_info()
+	    % this->get_proj_data_info_sptr()->parameter_info()
+	    % other.get_proj_data_info_sptr()->parameter_info()
 	    );
       return false;
     }
@@ -138,14 +138,14 @@ resize(const IndexRange<2>& range)
   const int ax_min = range.get_min_index();
   const int ax_max = range.get_max_index();
   
-  shared_ptr<ProjDataInfo> pdi_ptr(proj_data_info_ptr->clone());
+  shared_ptr<ProjDataInfo> pdi_sptr(proj_data_info_sptr->clone());
 
-  pdi_ptr->set_min_axial_pos_num(ax_min, get_segment_num());
-  pdi_ptr->set_max_axial_pos_num(ax_max, get_segment_num());
-  pdi_ptr->set_min_tangential_pos_num(range[ax_min].get_min_index());
-  pdi_ptr->set_max_tangential_pos_num(range[ax_min].get_max_index());
+  pdi_sptr->set_min_axial_pos_num(ax_min, get_segment_num());
+  pdi_sptr->set_max_axial_pos_num(ax_max, get_segment_num());
+  pdi_sptr->set_min_tangential_pos_num(range[ax_min].get_min_index());
+  pdi_sptr->set_max_tangential_pos_num(range[ax_min].get_max_index());
 
-  proj_data_info_ptr = pdi_ptr;
+  proj_data_info_sptr = pdi_sptr;
 
   Array<2,elemT>::resize(range);
 	

@@ -1,5 +1,9 @@
 generate_image Parameters :=
 output filename:= p5
+
+!imaging modality := PT
+originating system := ECAT 931
+
 X output image size (in pixels):=21
 Y output image size (in pixels):=21
 Z output image size (in pixels):=17

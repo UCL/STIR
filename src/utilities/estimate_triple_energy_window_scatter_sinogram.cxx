@@ -151,7 +151,7 @@ main(int argc, char **argv)
 
 
 	  shared_ptr<ProjDataInfo> 
-        output_proj_data_info_sptr((*lower_sptr).get_proj_data_info_ptr()->clone());
+        output_proj_data_info_sptr((*lower_sptr).get_proj_data_info_sptr()->clone());
 
       out_scatter_proj_data_ptr.reset(new ProjDataInterfile((*lower_sptr).get_exam_info_sptr(),
 							output_proj_data_info_sptr, 
@@ -160,7 +160,7 @@ main(int argc, char **argv)
 //      if (num_files>1)
 //	{
 //	  // reset time-frames as we don't really know what's happening with all this
-//      ExamInfo new_exam_info(*out_scatter_proj_data_ptr->get_exam_info_ptr());
+//      ExamInfo new_exam_info(out_scatter_proj_data_ptr->get_exam_info());
 //	  new_exam_info.set_time_frame_definitions(TimeFrameDefinitions());
 //      out_scatter_proj_data_ptr->set_exam_info(new_exam_info);
 //	}

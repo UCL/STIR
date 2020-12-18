@@ -70,8 +70,8 @@ void RelatedViewgrams<elemT>::debug_check_state() const
 
   for (unsigned int i=1; i<viewgrams.size(); i++)
   {
-    assert(*(viewgrams[i].get_proj_data_info_ptr()) ==
-           *(viewgrams[0].get_proj_data_info_ptr()));
+    assert(*(viewgrams[i].get_proj_data_info_sptr()) ==
+           *(viewgrams[0].get_proj_data_info_sptr()));
   }
 
 }
@@ -101,13 +101,13 @@ has_same_characteristics(self_type const& other,
   using boost::format;
   using boost::str;
 
-  if (*this->get_proj_data_info_ptr() !=
-      *other.get_proj_data_info_ptr())
+  if (*this->get_proj_data_info_sptr() !=
+      *other.get_proj_data_info_sptr())
     {
       explanation = 
 	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-	    % this->get_proj_data_info_ptr()->parameter_info()
-	    % other.get_proj_data_info_ptr()->parameter_info()
+	    % this->get_proj_data_info_sptr()->parameter_info()
+	    % other.get_proj_data_info_sptr()->parameter_info()
 	    );
       return false;
     }
@@ -351,7 +351,7 @@ grow(const IndexRange<2>& range)
   const int ax_min = range.get_min_index();
   const int ax_max = range.get_max_index();
   
-  shared_ptr<ProjDataInfo> pdi_ptr(get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjDataInfo> pdi_ptr(get_proj_data_info_sptr()->clone());
 
   // set axial_pos range for all segments
   for (const_iterator iter= begin();

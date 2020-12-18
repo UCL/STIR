@@ -81,7 +81,7 @@ private:
   typedef DataSymmetriesForBins self_type;
 
 public:
-  DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
   virtual ~DataSymmetriesForBins();
 
@@ -179,7 +179,7 @@ public:
 
 protected:
   //! Member storing the info needed by get_related_bins() et al
-  const shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
   virtual bool blindly_equals(const root_type * const) const = 0;

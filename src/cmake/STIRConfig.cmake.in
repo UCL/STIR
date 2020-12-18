@@ -2,7 +2,7 @@
 #
 # Author: Kris Thielemans
 # Author Richard Brown
-# Copyright 2016, 2019 University College London
+# Copyright 2016, 2019, 2020 University College London
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -86,14 +86,8 @@ endif()
 
 if (@CERN_ROOT_FOUND@)
   set(CERN_ROOT_CONFIG @CERN_ROOT_CONFIG@)
-  find_package(CERN_ROOT ${STIR_FIND_TYPE})
-  if(NOT CERN_ROOT_FOUND)
-    SET(STIR_FOUND OFF)
-  endif()
+  find_package(CERN_ROOT @CERN_ROOT_VERSION@ REQUIRED ${STIR_FIND_TYPE})
   message(STATUS "CERN ROOT support in STIR enabled.")
-  # need to add this as registries rely on it
-  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
-  include_directories(${CERN_ROOT_INCLUDE_DIRS})
   set(STIR_BUILT_WITH_CERN_ROOT TRUE)
 endif()
 
@@ -109,6 +103,15 @@ if (@AVW_FOUND@)
   include_directories(${AVW_INCLUDE_DIRS})
   set(STIR_BUILT_WITH_AVW TRUE)
 endif()
+
+# Following lines are currently not necessary but would need to be enabled
+# if nlohmann_json stops being a header-only library.
+# See buildblock/CMakeLists.xt
+#
+#if (@nlohmann_json_FOUND@)
+#  find_package(nlohmann_json 3.2.0 ${STIR_FIND_TYPE})
+#  set(STIR_BUILD_WITH_nlohmann_json TRUE)
+#endif()
 
 if (@STIR_MPI@)
   find_package(MPI ${STIR_FIND_TYPE})

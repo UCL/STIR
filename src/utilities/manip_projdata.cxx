@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
 	      shared_ptr<fstream> new_sino_ptr(new fstream);
 	      open_write_binary(*new_sino_ptr, output_buffer_filename);
 	      shared_ptr<ProjDataInfo> pdi_ptr =
-		first_operand->get_proj_data_info_ptr()->create_shared_clone();
+		first_operand->get_proj_data_info_sptr()->create_shared_clone();
 	      pdi_ptr->reduce_segment_range(-limit_segments, limit_segments);
 	      output_proj_data = new ProjDataFromStream(first_operand->get_exam_info_sptr(),
 							pdi_ptr, new_sino_ptr);
@@ -396,13 +396,13 @@ int main(int argc, char *argv[])
        
                 if(operation==_trim) {
                     need_int=true;
-                    upper_bound=(float) (first_operand->get_proj_data_info_ptr()->get_num_tangential_poss()/2 +1);
+                    upper_bound=(float) (first_operand->get_proj_data_info_sptr()->get_num_tangential_poss()/2 +1);
                     lower_bound=deflt=0.0;
                 }
 
                 if(operation==_zero_ends) {
                     need_int=true;
-                    upper_bound=(float) (first_operand->get_proj_data_info_ptr()->get_num_axial_poss(0)/2+1);
+                    upper_bound=(float) (first_operand->get_proj_data_info_sptr()->get_num_axial_poss(0)/2+1);
                     lower_bound=deflt=1.0;
                 }
 
@@ -423,18 +423,18 @@ int main(int argc, char *argv[])
 
 		    // TODO this is wrong, as other scanners could have merged segment 0 as well
 		    // find out from min_ring_difference etc.
-		    bool merges_seg0=(first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->type==
+		    bool merges_seg0=(first_operand->get_proj_data_info_sptr()->get_scanner_ptr()->type==
 		             Scanner::Advance || 
-			     seg1.get_proj_data_info_ptr()->get_scanner_ptr()->type==Scanner::HZLR )? true:false;
+			     seg1.get_proj_data_info_sptr()->get_scanner_ptr()->type==Scanner::HZLR )? true:false;
 
 		    if((merges_seg0 &&
 		        seg1.get_num_axial_poss() == 
-			2*(first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->num_rings)-3
+			2*(first_operand->get_proj_data_info_sptr()->get_scanner_ptr()->num_rings)-3
 			) 
 			|| // TODO something wrong here says MJ
 			(!merges_seg0 
 			 && seg1.get_num_axial_poss() == 
-			 first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->num_rings))
+			 first_operand->get_proj_data_info_sptr()->get_scanner_ptr()->num_rings))
 		      {
 			//seg1.grow_height(seg1.get_min_axial_pos_num()-1,seg1.get_max_axial_pos_num()+1);
 		          seg1.grow(seg1.get_min_axial_pos_num()-1,seg1.get_max_axial_pos_num()+1);

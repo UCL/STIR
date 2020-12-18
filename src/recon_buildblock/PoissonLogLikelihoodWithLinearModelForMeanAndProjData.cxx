@@ -547,7 +547,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (is_null_ptr(this->proj_data_sptr))
 	error("you need to set the input data before calling set_up");
@@ -566,7 +566,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     this->max_timing_pos_num_to_process =
       this->proj_data_sptr->get_max_tof_pos_num();
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
+
 #if 0
   // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
@@ -580,7 +581,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   setup_distributable_computation(this->projector_pair_ptr,
                                   this->proj_data_sptr->get_exam_info_sptr(),
-                                  this->proj_data_sptr->get_proj_data_info_ptr(),
+                                  this->proj_data_sptr->get_proj_data_info_sptr(),
                                   target_sptr,
                                   zero_seg0_end_planes,
                                   distributed_cache_enabled);
@@ -875,7 +876,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_ptr(),
+    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
 					 *symmetries_sptr,
 					 -this->get_max_segment_num_to_process(),
 					 this->get_max_segment_num_to_process(),

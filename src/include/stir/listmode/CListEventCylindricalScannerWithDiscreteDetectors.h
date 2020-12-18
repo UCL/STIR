@@ -44,7 +44,7 @@ class CListEventCylindricalScannerWithDiscreteDetectors : public CListEvent
 {
 public:
   inline explicit 
-    CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<ProjDataInfo>& proj_data_info);
+    CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
   const Scanner * get_scanner_ptr() const
     { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
@@ -79,15 +79,15 @@ public:
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
 
  protected:
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
      {
        return uncompressed_proj_data_info_sptr;
      }
 
-//   shared_ptr<Scanner> scanner_sptr;
+   //shared_ptr<Scanner> scanner_sptr;
 
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
      uncompressed_proj_data_info_sptr;
 
 };

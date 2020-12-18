@@ -49,71 +49,46 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                                   const std::string& input_filename) :
-    ProjData()
+ProjDataGEHDF5::ProjDataGEHDF5(const std::string& input_filename) :
+  ProjData()
 {
-    m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
-    exam_info_sptr = m_input_hdf5_sptr->get_exam_info_sptr();
-    proj_data_info_ptr = input_proj_data_info_sptr;
-
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
+    this->initialise_from_wrapper();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
-    ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr) :
+  ProjData(),
+  m_input_hdf5_sptr(input_hdf5_sptr)
 {
-    m_input_hdf5_sptr = input_hdf5;
-
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->initialise_from_wrapper();
 }
 
-ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
-                                   shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
-    ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
+void ProjDataGEHDF5::initialise_from_wrapper()
 {
-    m_input_hdf5_sptr = input_hdf5;
-
-    initialise_segment_sequence();
-    initialise_ax_pos_offset();
-    initialise_viewgram_buffer();
+    this->exam_info_sptr = this->m_input_hdf5_sptr->get_exam_info_sptr();
+    this->proj_data_info_sptr = this->m_input_hdf5_sptr->get_proj_data_info_sptr()->create_shared_clone();
+    this->initialise_segment_sequence();
+    this->initialise_ax_pos_offset();
+    this->initialise_viewgram_buffer();
 }
 
 void ProjDataGEHDF5::initialise_viewgram_buffer()
 {
-//! \todo NE: Get the number of tof positions from the proj_data_info_ptr
-const unsigned int num_tof_poss = 27;
-const unsigned int max_num_axial_poss = 1981;
-const unsigned int get_num_viewgrams = 224;
-unsigned int total_size = get_num_tangential_poss() * num_tof_poss * max_num_axial_poss;
 
-//stir::Array<1, unsigned char> tmp(0, total_size-1);
-this->tof_data.resize(IndexRange4D(get_num_viewgrams, get_num_tangential_poss(), num_tof_poss, max_num_axial_poss));
+  if (!this->tof_data.empty())
+    error("there is already data loaded. Aborting");
 
-Array<1,unsigned char> buffer(total_size);
+  tof_data.reserve(get_num_views());
+  Array<3,unsigned char> buffer;
 
- for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
-{
-    m_input_hdf5_sptr->initialise_proj_data_data("", view_num + 1);
+  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
+  {
+      // view numbering for initialise_proj_data starts from 1
+      m_input_hdf5_sptr->initialise_proj_data(view_num - get_min_view_num() + 1);
 
-    std::array<unsigned long long int, 3> stride = {1, 1, 1};
-    const std::array<unsigned long long int, 3> count  = {max_num_axial_poss, num_tof_poss,static_cast<unsigned long long int>(get_num_tangential_poss())};
-//    {static_cast<unsigned long long int>(get_num_axial_poss(segment_num)), num_tof_poss,
-//     static_cast<unsigned long long int>(get_num_tangential_poss())};
-
-    std::array<unsigned long long int, 3> offset = {0,0,0};
-//    {seg_ax_offset[find_segment_index_in_sequence(segment_num)], 0, 0};
-    std::array<unsigned long long int, 3> block = {1, 1, 1};
-
-m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, buffer);
-std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
-}
+      m_input_hdf5_sptr->read_sinogram(buffer);
+      this->tof_data.push_back(buffer);
+  }
 
 }
 
@@ -137,9 +112,9 @@ void ProjDataGEHDF5::initialise_ax_pos_offset()
 
   unsigned int previous_value = 0;
 
-  for (unsigned int i_seg = 1; i_seg < get_num_segments(); ++i_seg)
+  for (int i_seg = 1; i_seg < get_num_segments(); ++i_seg)
   {
-      int segment_num = segment_sequence[i_seg-1];
+      const int segment_num = segment_sequence[i_seg-1];
 
       seg_ax_offset[i_seg] = static_cast<unsigned int>(get_num_axial_poss(segment_num)) +
                                                        previous_value;
@@ -155,18 +130,33 @@ get_viewgram(const int view_num, const int segment_num,
     if (make_num_tangential_poss_odd)
         error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
     Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
-    ret_viewgram.fill(0.0);
-    //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
-    const unsigned int num_tof_poss = 27;
-   // const unsigned int max_num_axial_poss = 1981;
-    //! \todo Hard-wired numbers to be changed.
-    // PW Attempt to flip the tangential and view numbers. The TOF bins are added below to return non TOF viewgram.
-   for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
-      for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
+    // not necessary
+    // ret_viewgram.fill(0.0);
+
+    // find num TOF bins
+    BasicCoordinate<3, int> min_index, max_index;
+    tof_data[0].get_regular_range(min_index,max_index);
+    const int num_tof_poss = max_index[2] - min_index[2] + 1;
+    if (num_tof_poss <= 0)
+      error("ProjDataGEHDF5: internal error on TOF data dimension");
+    if (proj_data_info_sptr->get_scanner_ptr()->get_type() == Scanner::PETMR_Signa)
+      if (num_tof_poss != 27)
+      error("ProjDataGEHDF5: internal error on TOF data dimension for GE Signa");
+      
+    // PW flip the tangential and view numbers. The TOF bins are added below to return non TOF viewgram.
+    if (get_min_view_num() != 0)
+      error("ProjDataGEHDF5: internal error on views");
+    if (get_max_tangential_pos_num()+get_min_tangential_pos_num() != 0)
+      error("ProjDataGEHDF5: internal error on tangential positions");
+   for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0;
+        tang_pos <= ret_viewgram.get_max_tangential_pos_num();
+        ++tang_pos, ++i_tang)
+     for(int i_axial=get_min_axial_pos_num(segment_num), axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)];
+         i_axial<=get_max_axial_pos_num(segment_num);
+         i_axial++, axial_pos++)
         for (int tof_poss = 0; tof_poss <= num_tof_poss-1; tof_poss++)
           {
-            // TODO 223 -> get_num_views()-1
-                ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[223-view_num][i_tang][tof_poss][axial_pos]);
+            ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[get_max_view_num()-view_num][i_tang][tof_poss][axial_pos]);
             }
 
 #if 0

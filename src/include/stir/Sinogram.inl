@@ -91,16 +91,8 @@ Sinogram<elemT>::get_empty_copy(void) const
     return copy;
 }
 
-
 template <typename elemT>
-const ProjDataInfo*
-Sinogram<elemT>:: get_proj_data_info_ptr() const
-{
-  return proj_data_info_ptr.get();
-}
-
-template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 Sinogram<elemT>::get_proj_data_info_sptr() const
 {
   return proj_data_info_ptr;
@@ -109,7 +101,7 @@ Sinogram<elemT>::get_proj_data_info_sptr() const
 template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const Array<2,elemT>& p, 
-         const shared_ptr<ProjDataInfo >& pdi_ptr, 
+         const shared_ptr<const ProjDataInfo >& pdi_ptr, 
          const int ax_pos_num, const int s_num, const int t_num) 
   :
   Array<2,elemT>(p), 
@@ -132,7 +124,7 @@ Sinogram(const Array<2,elemT>& p,
 
 template <typename elemT>
 Sinogram<elemT>::
-Sinogram(const shared_ptr<ProjDataInfo >& pdi_ptr, 
+Sinogram(const shared_ptr<const ProjDataInfo >& pdi_ptr, 
          const int ax_pos_num, const int s_num, const int t_num) 
   :
   Array<2,elemT>(IndexRange2D (pdi_ptr->get_min_view_num(),
