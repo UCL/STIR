@@ -110,7 +110,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 
 	proj_matrix_row.back_project(image, bin);	
       }
-      ++r_viewgrams_iter;
+    ++r_viewgrams_iter;
   }
 }
 

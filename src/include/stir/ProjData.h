@@ -1,8 +1,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015, University College London
     Copyright (C) 2016, 2017, University of Hull
+    Copyright (C) 2013, 2015-2017, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -132,18 +132,6 @@ public:
     shared pointer will be affected. */
   inline shared_ptr<ProjDataInfo>
     get_proj_data_info_sptr() const;
-//  //! Get pointer to exam info
-//  inline const ExamInfo*
-//    get_exam_info_ptr() const;
-//  //! Get shared pointer to exam info
-//  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-//    shared pointer will be affected. */
-//  inline shared_ptr<ExamInfo>
-//    get_exam_info_sptr() const;
-//  //! change exam info
-//  /*! This will allocate a new ExamInfo object and copy the data in there. */
-//  void
-//    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,
@@ -332,12 +320,12 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
-  //! Get the number of sinograms
+  //! Get the total number of sinograms
   /*! Note that this will count TOF sinograms as well.
       \see get_num_non_tof_sinograms()
   */
   inline int get_num_sinograms() const;
-  //! Get the number of sinograms
+  //! Get the number of non-tof sinograms
   /*! Note that this is the sum of the number of axial poss over all segments.
       \see get_num_sinograms()
   */
@@ -347,8 +335,11 @@ public:
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
+  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData
+  virtual void axpby(const float a, const ProjData& x,
+                     const float b, const ProjData& y);
+
 protected:
-//   shared_ptr<ExamInfo> exam_info_sptr;
 
    shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
 };

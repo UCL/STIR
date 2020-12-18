@@ -28,7 +28,7 @@ generate_input_data.sh
 # note: names and directory are hard-wired in the script above (but not in the simulate_data.sh script)
 cd output
 template_sino=my_DSTE_3D_rd1_template.hs
-simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} ../scatter.par ../scatter_template.hs
+simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} ../scatter_simulation.par ../scatter_template.hs
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1

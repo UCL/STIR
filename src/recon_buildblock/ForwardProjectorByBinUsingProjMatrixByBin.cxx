@@ -150,7 +150,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
           proj_matrix_row.forward_project(bin,image);
           viewgram[ax_pos][tang_pos] = bin.get_bin_value();
         }
-        ++r_viewgrams_iter; 
+      ++r_viewgrams_iter; 
     }	   
   }
   else

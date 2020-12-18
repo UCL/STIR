@@ -49,7 +49,7 @@ START_NAMESPACE_ECAT7
   \ingroup listmode
 */
 class ECAT962ListmodeInputFileFormat :
-public InputFileFormat<CListModeData >
+public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string

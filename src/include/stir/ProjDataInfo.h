@@ -5,7 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016-17, University of Hull
-    Copyright (C) 2017, University College London
+    Copyright (C) 2017-2018, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -253,6 +253,18 @@ public:
   inline float get_coincidence_window_in_pico_sec() const;
   //! Get the total width of the coincide window in mm
   inline float get_coincidence_window_width() const;
+  //! Get the total number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
+  inline int get_num_sinograms() const;
+  //! Get the number of non-tof sinograms
+  /*! Note that this is the sum of the number of axial poss over all segments.
+      \see get_num_sinograms()
+  */
+  inline int get_num_non_tof_sinograms() const;
+  //! Get the total size of the data
+  inline std::size_t size_all() const;
   //@}
 
   //! Determine if TOF data from tof_mash_factor and num_tof_bins
@@ -443,6 +455,11 @@ public:
   //! Get vertical bed position
   float get_bed_position_vertical() const { return bed_position_vertical; }
   
+  inline bool has_energy_information() const
+  {
+      return scanner_ptr->has_energy_information();
+  }
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 

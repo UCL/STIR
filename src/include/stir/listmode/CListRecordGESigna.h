@@ -1,16 +1,17 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd (CListRecordECAT.h)
-    Copyright (C) 2013 University College London (major mods for GE Dimension data)
+    Copyright (C) 2013, 2016, 2020 University College London
+    Copyright (C) 2017-2018 University of Leeds
 */
 /*!
   \file
   \ingroup listmode
-  \brief Classes for listmode records of GE Dimension console data
+  \ingroup GE
+  \brief Classes for listmode records of GE Signa PET/MR data
 
-  This file is based on GE proprietary information and can therefore not be distributed outside UCL
-  without approval from GE.
-
-  \author Kris Thielemans
+  \author Kris Thielemans (major mods for GE Dimension data)
+  \author Ottavia Bertolli (major mods for GE Signa (i.e. RDF 10) data)
+  \author Palak Wadhwa (fix to STIR conventions and checks)
 */
 
 #ifndef __stir_listmode_CListRecordGESigna_H__
@@ -26,6 +27,9 @@
 #include <iostream>
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
 
 /***********************************
  * Supported Event Types
@@ -52,9 +56,10 @@ enum ExtendedEvtType
 };
 
 
-//! Class for storing and using a coincidence event from a GE Dimension listmode file
+//! Class for storing and using a coincidence event from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 4 bytes for CListRecordGESigna to work.
+  \ingroup GE
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
 */
 class CListEventDataGESigna
 {
@@ -67,19 +72,20 @@ class CListEventDataGESigna
   }
   inline void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
+    // TODO 447->get_num_detectors_per_ring()-1
     if (deltaTime<0)
     {
-      det_pos.pos1().tangential_coord() = hiXtalTransAxID;
+      det_pos.pos1().tangential_coord() = 447 - hiXtalTransAxID;
       det_pos.pos1().axial_coord() = hiXtalAxialID;
-      det_pos.pos2().tangential_coord() = loXtalTransAxID;
+      det_pos.pos2().tangential_coord() = 447 - loXtalTransAxID;
       det_pos.pos2().axial_coord() = loXtalAxialID;
       det_pos.timing_pos() = -get_tof_bin();
     }
     else
     {
-      det_pos.pos1().tangential_coord() = loXtalTransAxID;
+      det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
       det_pos.pos1().axial_coord() = loXtalAxialID;
-      det_pos.pos2().tangential_coord() = hiXtalTransAxID;
+      det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
       det_pos.pos2().axial_coord() = hiXtalAxialID;
       det_pos.timing_pos() = get_tof_bin();
     }
@@ -115,9 +121,10 @@ class CListEventDataGESigna
 
 //! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 8 bytes for CListRecordGESigna to work.
+  \ingroup GE
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
-class CListTimeDataGESigna
+class ListTimeDataGESigna
 {
  public:
   inline unsigned long get_time_in_millisecs() const
@@ -162,9 +169,10 @@ private:
 };
 
 #if 0
-//! A class for storing and using a trigger 'event' from a GE Dimension listmode file
+//! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 8 bytes for CListRecordGESigna to work.
+  \ingroup GE
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
 class CListGatingDataGESigna
 {
@@ -207,21 +215,17 @@ private:
 
 #endif
 
-//! A class for a general element (or "record") of a GE Dimension listmode file
+//! A class for a general element (or "record") of a GE Signa PET/MR listmode file
 /*! \ingroup listmode
+  \ingroup GE
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
   This class essentially just forwards the work to the "basic" classes.
-
-  A complication for GE Dimension data is that not all events are the same size:
-  coincidence events are 4 bytes, and others are 8 bytes.
-
-  \todo Currently we always assume the data is from a DSTE. We should really read this from the RDF header.
 */
-class CListRecordGESigna : public CListRecord, public CListTime, // public CListGatingInput,
+class CListRecordGESigna : public CListRecord, public ListTime, // public CListGatingInput,
     public  CListEventCylindricalScannerWithDiscreteDetectors
 {
   typedef CListEventDataGESigna DataType;
-  typedef CListTimeDataGESigna TimeType;
+  typedef ListTimeDataGESigna TimeType;
   //typedef CListGatingDataGESigna GatingType;
 
  public:
@@ -246,9 +250,9 @@ class CListRecordGESigna : public CListRecord, public CListTime, // public CList
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
-  virtual CListTime&   time()
+  virtual ListTime&   time()
     { return *this; }
-  virtual const CListTime&   time() const
+  virtual const ListTime&   time() const
     { return *this; }
 #if 0
   virtual CListGatingInput&  gating_input()
@@ -356,6 +360,9 @@ private:
 
 };
 
+
+} // namespace
+} // namespace
 
 END_NAMESPACE_STIR
 

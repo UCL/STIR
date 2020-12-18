@@ -44,18 +44,6 @@ ProjData::get_proj_data_info_sptr() const
   return proj_data_info_ptr;
 }
 
-//const ExamInfo*
-//ProjData::get_exam_info_ptr() const
-//{
-//  return exam_info_sptr.get();
-//}
-
-//shared_ptr<ExamInfo>
-//ProjData::get_exam_info_sptr() const
-//{
-//  return exam_info_sptr;
-//}
-
 int ProjData::get_num_segments() const
 { return proj_data_info_ptr->get_num_segments(); }
 
@@ -105,20 +93,12 @@ int ProjData::get_max_tof_pos_num() const
 { return proj_data_info_ptr->get_max_tof_pos_num(); }
 
 int ProjData::get_num_non_tof_sinograms() const
-{
-    int num_sinos = proj_data_info_ptr->get_num_axial_poss(0);
-    for (int s=1; s<= this->get_max_segment_num(); ++s)
-        num_sinos += 2* this->get_num_axial_poss(s);
-
-    return num_sinos;
-}
+{ return proj_data_info_ptr->get_num_non_tof_sinograms(); }
 
 int ProjData::get_num_sinograms() const
-{
-    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
-}
+{ return proj_data_info_ptr->get_num_sinograms(); }
 
 std::size_t ProjData::size_all() const
-{ return this->get_num_sinograms() * this->get_num_views() * this->get_num_tangential_poss(); }
+{ return proj_data_info_ptr->size_all(); }
 
 END_NAMESPACE_STIR

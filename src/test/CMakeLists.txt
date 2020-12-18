@@ -25,6 +25,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
 	test_DynamicDiscretisedDensity
+	test_ScatterSimulation
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -56,6 +57,7 @@ set(buildblock_simple_tests
 	test_IndexRange
 	test_coordinates
 	test_filename_functions
+        test_KeyParser
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
 	test_ByteOrder
@@ -64,6 +66,7 @@ set(buildblock_simple_tests
 	test_find_fwhm_in_image
 	test_proj_data_info
 	test_proj_data_in_memory
+	test_proj_data_maths
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
 	test_multiple_proj_data

@@ -80,7 +80,7 @@ private:
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeROOT : public CListTime
+class CListTimeROOT : public ListTime
 {
 public:
     void init_from_data(double time1)

@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
+  Copyright (C) 2013-2018 University College London
+  Copyright (C) 2017-2019 University of Leeds
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -23,13 +23,14 @@
   \ingroup recon_buildblock
   \ingroup GE
 
-  \brief Implementation for class stir::ecat::BinNormalisationFromGEHDF5
+  \brief Implementation for class stir::GE:RDF_HDF5::BinNormalisationFromGEHDF5
 
-  This file is largely a copy of the ECAT7 version, but reading data via the Interfile-like header of GEHDF5.
-  \todo merge ECAT7 and 8 code
+  This file is largely a copy of the ECAT7 version, but with important changes for GEHDF5.
+  \todo remove duplication
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Palak Wadhwa
 */
 
 
@@ -57,6 +58,8 @@ using std::ios;
 #endif
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 	   
 
@@ -159,7 +162,7 @@ void
 BinNormalisationFromGEHDF5::set_defaults()
 {
   this->normalisation_GEHDF5_filename = "";
-  this->_use_gaps = false;
+  //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
   this->_use_geometric_factors =false;
@@ -206,6 +209,7 @@ Succeeded
 BinNormalisationFromGEHDF5::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 {
+  BinNormalisation::set_up(proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
@@ -235,36 +239,35 @@ void
 BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
 {
-  
-  this->h5data.open(filename);
-  this->scanner_ptr = this->h5data.get_scanner_sptr();
+  m_input_hdf5_sptr.reset(new GEHDF5Wrapper(filename));
+  this->scanner_ptr = m_input_hdf5_sptr->get_scanner_sptr();
 
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
-  // Calculate the number of axial blocks per singles unit and 
+  // Calculate the number of axial blocks per singles unit and
   // total number of blocks per singles unit.
-  int axial_crystals_per_singles_unit = 
+  int axial_crystals_per_singles_unit =
     scanner_ptr->get_num_axial_crystals_per_singles_unit();
-  
+
   int transaxial_crystals_per_singles_unit =
     scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
-  
-  int axial_crystals_per_block = 
+
+  int axial_crystals_per_block =
     scanner_ptr->get_num_axial_crystals_per_block();
 
   int transaxial_crystals_per_block =
     scanner_ptr->get_num_transaxial_crystals_per_block();
-  
+
   // Axial blocks.
-  num_axial_blocks_per_singles_unit = 
+  num_axial_blocks_per_singles_unit =
     axial_crystals_per_singles_unit / axial_crystals_per_block;
-  
-  int transaxial_blocks_per_singles_unit = 
+
+  int transaxial_blocks_per_singles_unit =
     transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
-  
+
   // Total blocks.
-  num_blocks_per_singles_unit = 
+  num_blocks_per_singles_unit =
     num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
-  
+
 
 #if 0
   if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
@@ -278,81 +281,46 @@ read_norm_data(const string& filename)
 #endif
   proj_data_info_cyl_uncompressed_ptr.reset(
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
                   /*span=*/1, scanner_ptr->get_num_rings()-1,
                   /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
-				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), 
+                  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
                   /*arc_corrected =*/false)
-						     ));
-  
-  /*
-    Extract geometrical & crystal interference, and crystal efficiencies from the
-    normalisation data.    
-  */
+                             ));
+
+//  /*
+//    Extract geometrical & crystal interference, and crystal efficiencies from the
+//    normalisation data.
+//  */
 
    //const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
    //const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
-   //geometric_factors = 
-   //  Array<2,float>(IndexRange2D(0,127-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
-   //                             min_tang_pos_num, max_tang_pos_num));
-  efficiency_factors =
+//    geometric_factors =
+//    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
+//                                 min_tang_pos_num, max_tang_pos_num));
+
+    efficiency_factors =
     Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
-		   0, scanner_ptr->get_num_detectors_per_ring()-1));
-  
+           0, scanner_ptr->get_num_detectors_per_ring()-1));
+
 
   {
-    using namespace H5;
-    using namespace std;
+    const int num_rings = scanner_ptr->get_num_rings();
+    const int num_detectors_per_ring = scanner_ptr->get_num_detectors_per_ring();
 
-    DataSet dataset = this->h5data.get_file().openDataSet("/3DCrystalEfficiency/crystalEfficiency");
-     /*
-       * Get dataspace of the dataset.
-       */
-      DataSpace dataspace = dataset.getSpace();
-      /*
-       * Get the number of dimensions in the dataspace.
-       */
-      int rank = dataspace.getSimpleExtentNdims();
-      /*
-       * Get the dimension size of each dimension in the dataspace and
-       * display them.
-       */
-      hsize_t dims_out[2];
-      dataspace.getSimpleExtentDims( dims_out, NULL);
-      cout << "rank " << rank << ", dimensions " <<
-          (unsigned long)(dims_out[0]) << " x " <<
-          (unsigned long)(dims_out[1]) << endl;
-      /*
-       * Define hyperslab in the dataset; implicitly giving strike and
-       * block NULL.
-       */
-      hsize_t      offset[2];   // hyperslab offset in the file
-      hsize_t      count[2];    // size of the hyperslab in the file
-      offset[0] = 0;
-      offset[1] = 0;
-      count[0]  = dims_out[0];
-      count[1]  = dims_out[1]/2;
-      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+    m_input_hdf5_sptr->initialise_efficiency_factors("");
+    std::array<unsigned long long int, 2> stride = {1, 1};
+    const std::array<unsigned long long int, 2> count  = {45, 448};
+    std::array<unsigned long long int, 2> offset = {0,0};
+    std::array<unsigned long long int, 2> block = {1, 1};
+    unsigned int total_size = num_rings*num_detectors_per_ring;
+    stir::Array<1, float> buffer(0, total_size-1);
+    m_input_hdf5_sptr->get_from_2d_dataset(offset, count, stride, block, buffer);
+    std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
+    }
 
-      /*
-       * Define the memory dataspace.
-       */
-      hsize_t     dimsm[2];              /* memory space dimensions */
-      dimsm[0] = dims_out[0];
-      dimsm[1] = dims_out[1]/2;
-      DataSpace memspace( 2, dimsm );
-      /*
-       * Read data from hyperslab in the file into the hyperslab in
-       * memory and display the data.
-       */
-      Array<1,float> data(dimsm[0]*dimsm[1]);
-      dataset.read( data.get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
-      data.release_data_ptr();
-      std::copy(data.begin(), data.end(), efficiency_factors.begin_all());
-  }
 
-  
 #if 1
    // to test pipe the obtained values into file
     ofstream out_geom;
@@ -366,7 +334,7 @@ read_norm_data(const string& filename)
     {
       for ( int j =geometric_factors[i].get_min_index(); j <=geometric_factors[i].get_max_index(); j++)
       {
-	 out_geom << geometric_factors[i][j] << "   " ;
+     out_geom << geometric_factors[i][j] << "   " ;
       }
       out_geom << std::endl;
     }
@@ -376,7 +344,7 @@ read_norm_data(const string& filename)
    {
       for ( int j =crystal_interference_factors[i].get_min_index(); j <=crystal_interference_factors[i].get_max_index(); j++)
       {
-	 out_inter << crystal_interference_factors[i][j] << "   " ;
+     out_inter << crystal_interference_factors[i][j] << "   " ;
       }
       out_inter << std::endl;
    }
@@ -385,10 +353,10 @@ read_norm_data(const string& filename)
    {
       for ( int j =efficiency_factors[i].get_min_index(); j <=efficiency_factors[i].get_max_index(); j++)
       {
-	 out_eff << efficiency_factors[i][j] << "   " ;
+     out_eff << efficiency_factors[i][j] << "   " ;
       }
       out_eff << std::endl<< std::endl;
-   }
+  }
 
 #endif
 
@@ -532,9 +500,9 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	float lor_efficiency_this_pair = 1.F;
 	if (this->use_detector_efficiencies())
 	  {
-	    lor_efficiency_this_pair =
-	      efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
-	      efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()];
+        lor_efficiency_this_pair =1/
+          (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
+          efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
 	  }
 	if (this->use_dead_time())
 	  {
@@ -602,7 +570,7 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
   return 1;  
 }
 
-
-
+} // namespace
+}
 END_NAMESPACE_STIR
 

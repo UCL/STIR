@@ -3,13 +3,20 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InputStreamWithRecordsFromHDF5
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
+  \author Palak Wadhwa
+  \author Ottavia Bertolli
+  \author Nikos Efthimiou
       
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016-2018, University College London
+    Copyright (C) 2016-2018, University of Leeds
+    Copyright (C) 2016-2018, University of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,16 +37,21 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
-
-#include "H5Cpp.h"
+#include "stir/IO/GEHDF5Wrapper.h"
+#include "boost/shared_array.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 //! A helper class to read data from a hdf5 file
 /*! \ingroup IO
+    \ingroup GE
+
     This class is really a helper class for reading different records from a stream.
     It is useful when all types of records have some kind of signature to allow
     the function to find out what the size of the record is. In that case, all IO
@@ -72,8 +84,13 @@ public:
   //! Constructor taking a stream
   /*! Data will be assumed to start at the start of the DataSet.
       If reset() is used, it will go back to this starting position.*/ 
-  inline
-    InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& ,
+//  explicit
+//    InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& ,
+//                           const std::size_t size_of_record_signature,
+//                           const std::size_t max_size_of_record);
+
+  explicit
+    InputStreamWithRecordsFromHDF5(const std::string& filename,
                            const std::size_t size_of_record_signature,
                            const std::size_t max_size_of_record);
 
@@ -82,7 +99,9 @@ public:
 
   inline
   virtual 
-    Succeeded get_next_record(RecordT& record) const;
+    Succeeded get_next_record(RecordT& record);
+
+  virtual Succeeded set_up();
 
   //! go back to starting position
   inline
@@ -117,16 +136,24 @@ public:
 
 private:
 
-  shared_ptr<H5::DataSet> dataset_sptr;
+  shared_ptr<GEHDF5Wrapper> input_sptr;
+
+  boost::shared_array<char> data_sptr;
+
+  uint64_t m_list_size = 0 ;
+
   std::streampos starting_stream_position;
   mutable std::streampos current_offset;
   std::vector<std::streampos> saved_get_positions;
 
+  const std::string m_filename;
   const std::size_t size_of_record_signature;
   const std::size_t max_size_of_record;
 
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #include "stir/IO/InputStreamWithRecordsFromHDF5.inl"

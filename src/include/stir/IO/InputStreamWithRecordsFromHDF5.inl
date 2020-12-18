@@ -1,9 +1,11 @@
 /*!
   \file
   \ingroup IO
-  \brief Implementation of class stir::InputStreamWithRecordsFromHDF5
+  \ingroup GE
+  \brief Implementation of class stir::GE::RDF_HDF5::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
 */
 /*
     Copyright (C) 2003-2011, Hammersmith Imanet Ltd
@@ -28,80 +30,83 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/shared_ptr.h"
-#include "boost/shared_array.hpp"
+
 #include <fstream>
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
+
+//template <class RecordT>
+//InputStreamWithRecordsFromHDF5<RecordT>::
+//InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
+//                       const std::size_t size_of_record_signature,
+//                       const std::size_t max_size_of_record)
+//  : dataset_sptr(dataset_sptr_v),
+//    size_of_record_signature(size_of_record_signature),
+//    max_size_of_record(max_size_of_record)
+//{
+//  assert(size_of_record_signature<=max_size_of_record);
+//  if (is_null_ptr(dataset_sptr))
+//    return;
+//  starting_stream_position = 0;
+//  current_offset = 0;
+//  //if (!dataset_sptr->good())
+//  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
+//}
+
 template <class RecordT>
-InputStreamWithRecordsFromHDF5<RecordT>::
-InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
-                       const std::size_t size_of_record_signature,
-                       const std::size_t max_size_of_record)
-  : dataset_sptr(dataset_sptr_v),
+        InputStreamWithRecordsFromHDF5<RecordT>::
+        InputStreamWithRecordsFromHDF5(const std::string& filename,
+                                       const std::size_t size_of_record_signature,
+                                       const std::size_t max_size_of_record):
+    m_filename(filename),
     size_of_record_signature(size_of_record_signature),
     max_size_of_record(max_size_of_record)
 {
-  assert(size_of_record_signature<=max_size_of_record);
-  if (is_null_ptr(dataset_sptr))
-    return;
-  starting_stream_position = 0;
-  current_offset = 0;
-  //if (!dataset_sptr->good())
-  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
-}
+    assert(size_of_record_signature<=max_size_of_record);
+    starting_stream_position = 0;
+    current_offset = 0;
 
+    set_up();
+}
 
 template <class RecordT>
 Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
-get_next_record(RecordT& record) const
+set_up()
 {
-  if (is_null_ptr(dataset_sptr))
-    return Succeeded::no;
+    input_sptr.reset(new GEHDF5Wrapper(m_filename));
+    data_sptr.reset(new char[this->max_size_of_record]);
 
-  // rely on file caching by the C++ library or the OS
-  assert(this->size_of_record_signature <= this->max_size_of_record);
-  boost::shared_array<char> data_sptr(new char[this->max_size_of_record]);
-  char * data_ptr = data_sptr.get();
+    input_sptr->initialise_listmode_data();
+    //! \todo edit
+    m_list_size = input_sptr->get_dataset_size() - this->size_of_record_signature;
 
+    return Succeeded::yes;
+}
 
-  H5::DataSpace dataspace = dataset_sptr->getSpace();
-  int rank = dataspace.getSimpleExtentNdims();
+template <class RecordT>
+Succeeded
+InputStreamWithRecordsFromHDF5<RecordT>::
+get_next_record(RecordT& record)
+{
 
-  std::vector<hsize_t> dims_out(rank); // VS needs a vector
-  dataspace.getSimpleExtentDims(&dims_out[0],NULL);
-  uint64_t list_size = dims_out[0]; // should be equal to /HeaderData/ListHeader/sizeOfList
+  if (current_offset > m_list_size)
+      return Succeeded::no;
+char* data_ptr = data_sptr.get();
+  input_sptr->get_from_dataspace(current_offset, data_ptr);
 
-  if (current_offset > (list_size - this->size_of_record_signature))
-    return Succeeded::no; 
+    // NE: Is this really meaningful?
 
-  hsize_t      offset[1];   // hyperslab offset in the file
-  hsize_t      count[1];    // size of the hyperslab in the file
-  offset[0] = current_offset;
-  count[0]  = this->size_of_record_signature;
+  const std::size_t size_of_record =
+    record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
 
-  H5::DataSpace memspace( rank, &count[0] );
-  dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-  dataset_sptr->read( data_ptr, H5::PredType::STD_U8LE, memspace, dataspace );
-  current_offset += count[0];
-
-//  if (dataset_sptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
-//    return Succeeded::no; 
-  const std::size_t size_of_record = 
-	record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
   assert(size_of_record <= this->max_size_of_record);
-  if (size_of_record > this->size_of_record_signature)
-  {
-    offset[0] = current_offset;
-    count[0]= size_of_record - this->size_of_record_signature;
-    H5::DataSpace memspace( rank, &count[0] );
-    dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-    dataset_sptr->read( data_ptr + this->size_of_record_signature,
-                        H5::PredType::STD_U8LE, memspace, dataspace );
-    current_offset += count[0];
-  }
-  // TODO error checking
-  return 
+
+
+  return
     record.init_from_data_ptr(data_ptr, size_of_record,false);
 }
 
@@ -112,7 +117,7 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 reset()
 {
-  if (is_null_ptr(dataset_sptr))
+  if (is_null_ptr(input_sptr))
     return Succeeded::no;
 
   current_offset = 0;
@@ -125,7 +130,7 @@ typename InputStreamWithRecordsFromHDF5<RecordT>::SavedPosition
 InputStreamWithRecordsFromHDF5<RecordT>::
 save_get_position() 
 {
-  assert(!is_null_ptr(dataset_sptr));
+  assert(!is_null_ptr(input_sptr));
   // TODO should somehow check if tellg() worked and return an error if it didn't
 
   saved_get_positions.push_back(current_offset);
@@ -137,7 +142,7 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 set_get_position(const typename InputStreamWithRecordsFromHDF5<RecordT>::SavedPosition& pos)
 {
-  if (is_null_ptr(dataset_sptr))
+  if (is_null_ptr(input_sptr))
     return Succeeded::no;
 
   assert(pos < saved_get_positions.size());
@@ -162,4 +167,6 @@ set_saved_get_positions(const std::vector<std::streampos>& poss)
   saved_get_positions = poss;
 }
 
+} // namespace
+}
 END_NAMESPACE_STIR

@@ -39,7 +39,7 @@ public:
   LmToProjDataWithMC(const char * const par_filename);
 
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
-  virtual void process_new_time_event(const CListTime& time_event);
+  virtual void process_new_time_event(const ListTime& time_event);
 
 protected: 
   //! motion information

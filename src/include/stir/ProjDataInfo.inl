@@ -5,7 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016, University of Hull
-    Copyright (C) 2017, University College London
+    Copyright (C) 2016, 2017, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Elise Emond
+  \author Nikos Efthimiou
   \author PARAPET project
 
 */
@@ -232,6 +233,27 @@ ProjDataInfo::get_scanner_sptr() const
   return scanner_ptr;
 }
 
+
+int
+ProjDataInfo::get_num_non_tof_sinograms() const
+{
+  int num_sinos = 0;
+  for (int s=this->get_min_segment_num(); s<= this->get_max_segment_num(); ++s)
+    num_sinos += this->get_num_axial_poss(s);
+
+  return num_sinos;
+}
+
+int
+ProjDataInfo::get_num_sinograms() const
+{
+    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
+}
+
+std::size_t
+ProjDataInfo::size_all() const
+{ return static_cast<std::size_t>(this->get_num_sinograms()) *
+    static_cast<std::size_t>(this->get_num_views() * this->get_num_tangential_poss()); }
 
 END_NAMESPACE_STIR
 
