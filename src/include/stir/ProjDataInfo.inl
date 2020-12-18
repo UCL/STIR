@@ -99,7 +99,7 @@ ProjDataInfo::get_tof_bin(const double delta) const
   }
   // TODO handle differently
   warning(boost::format("TOF delta time %g out of range") % delta);
-  return 0;
+  return min_tof_pos_num;
 }
 
 int
@@ -116,7 +116,7 @@ ProjDataInfo::get_unmashed_tof_bin(const double delta) const
   }
   // TODO handle differently
   warning(boost::format("TOF delta time %g out of range") % delta);
-  return 0;
+  return min_tof_pos_num;
 
 }
 
