@@ -109,6 +109,8 @@ post_processing()
 //  allow to set your own calibration factor
   if(measured_calibration_factor>0) 
       set_calibration_factor(measured_calibration_factor);
+  else 
+      set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
   
 //  read_norm_data(normalisation_spect_filename);
   return false;
