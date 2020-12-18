@@ -95,7 +95,7 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
 
   //! Checks if we can handle certain projection data.
   /*! Calls set_up for the BinNormalisation members. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& );
 
   //! Normalise some data
   /*! 
@@ -103,7 +103,7 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
   */
   virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual void apply(ProjData&,const double start_time, const double end_time) const;
+  virtual void apply(ProjData&) const;
 
 virtual void apply_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 

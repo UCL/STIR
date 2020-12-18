@@ -59,6 +59,7 @@ public:
     /*! This will allocate a new ExamInfo object and copy the data in there. */
     virtual void
       set_exam_info(ExamInfo const&);
+    void set_exam_info_sptr(shared_ptr<const ExamInfo>  new_exam_info_sptr);
 
 protected:
 

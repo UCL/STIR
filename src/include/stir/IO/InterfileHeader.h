@@ -204,6 +204,9 @@ class InterfileImageHeader : public InterfileHeader
 {
  private:
   typedef InterfileHeader base_type;
+    
+    float calibration_factor;
+    std::string isotope_name;
 
 public:
   InterfileImageHeader();

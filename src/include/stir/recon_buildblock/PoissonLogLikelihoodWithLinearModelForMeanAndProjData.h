@@ -227,6 +227,8 @@ public:
                                                           const TargetT &current_estimate, 
                                                           const int subset_num); 
 
+  virtual std::unique_ptr<ExamInfo>
+  get_exam_info_uptr_for_target()  const;
 #if 0
   // currently not used
   float sum_projection_data() const;

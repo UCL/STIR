@@ -53,6 +53,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
 #include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
@@ -235,7 +236,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     }
 
     if (this->normalisation_sptr->set_up(
-                proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
+                this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
         return Succeeded::no;
 
     if (this->current_frame_num<=0)
@@ -351,7 +352,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           }
       }
 
-  if( this->normalisation_sptr->set_up(proj_data_info_sptr)
+  if( this->normalisation_sptr->set_up(this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr)
    == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
@@ -429,6 +430,26 @@ add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 	}
 
 }
+
+template<typename TargetT>
+ std::unique_ptr<ExamInfo>
+ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+ get_exam_info_uptr_for_target()  const
+{
+     auto exam_info_uptr = this->get_exam_info_uptr_for_target();
+     if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
+     {
+       exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
+       // somehow tell the image that it's calibrated (do we have a way?)
+     }
+     else
+     {
+       exam_info_uptr->set_calibration_factor(1.F);
+       // somehow tell the image that it's not calibrated (do we have a way?)
+     }
+    return exam_info_uptr;
+}
+
 
 template <typename TargetT> 
 TargetT * 

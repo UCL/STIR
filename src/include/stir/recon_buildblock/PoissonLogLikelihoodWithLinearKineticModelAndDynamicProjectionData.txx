@@ -47,6 +47,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
 #include <algorithm>
 #include <string> 
@@ -177,6 +178,26 @@ construct_target_ptr() const
   return
     this->target_parameter_parser.create(this->get_input_data());
 }
+
+template<typename TargetT>
+ std::unique_ptr<ExamInfo>
+ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+ get_exam_info_uptr_for_target()  const
+{
+     auto exam_info_uptr = this->get_exam_info_uptr_for_target();
+     if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
+     {
+       exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
+       // somehow tell the image that it's calibrated (do we have a way?)
+     }
+     else
+     {
+       exam_info_uptr->set_calibration_factor(1.F);
+       // somehow tell the image that it's not calibrated (do we have a way?)
+     }
+    return exam_info_uptr;
+}
+
 /***************************************************************
   subset balancing
 ***************************************************************/
@@ -326,7 +347,7 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  if (this->_normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
+  if (this->_normalisation_sptr->set_up(this->_dyn_proj_data_sptr->get_exam_info_sptr(), proj_data_info_sptr) == Succeeded::no)
     return Succeeded::no;
 
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
