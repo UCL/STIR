@@ -17,15 +17,16 @@
         <li>Palak Wadhwa (Leeds) addition of support for GE Signa PET/MR, with help from many others, including
           coding by Ottavia Bertolli (UCL), Nikos Efthimiou (Hull), Elise Emond (UCL) and Kris Thielemans (UCL),
           and supervision by Ch. Tsoumpas (Leeds). This work received help from GE Healthcare with particular thanks to
-          Gaspar Delso, Kristen Wangerin and Floris Jansen. See the publication for more details<br />
+          Gaspar Delso, Kristen Wangerin and Floris Jansen. See the following publication for more details<br />
           Palak Wadwha et al.<br />
           <cite>PET Image Reconstruction Using Physical and Mathematical Modelling For Time of Flight PET-MR Scanners in the STIR Library</cite><br />
           Methods 2020,
           DOI: <a href=https://doi.org/10.1016/j.ymeth.2020.01.005>10.1016/j.ymeth.2020.01.005</a>
         </li>
-        <li>Ander Biguri (UCL) for extending the Signa support to other GE scanners using RDF9</li>
+        <li>Ander Biguri (UCL) for extending the Signa support to GE PET/CT scanners using RDF9</li>
         <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Robert Twyman (UCL) for Relative Difference Prior, computation of the log-likelihood modification, and GATE geometry check fixes. </li>  
+        <li>Gemma Fardell (UKRI) for implementing <code>xapyb</code> and <code>sapyb</code> array methods. </li>  
       </ul>
     </p>
 
@@ -40,7 +41,10 @@
     software version).
     We currently read listmode, sinograms and calibration files.
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
-    will be non-TOF.
+    will be non-TOF.<br />
+    <strong>Warning:</strong> currently images will be reconstructed flipped with respect to the standard
+    STIR orientation. This is particularly noticeable when output in Nifti/MetaIO etc. See
+    <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
   </li>
   <li>A new script <tt>create_fdef_from_listmode.sh</tt> that can be used to create a single-time
     frame definition file for a given listmode file.
@@ -52,14 +56,15 @@
     NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
   <li><tt>estimate_triple_energy_window_scatter_sinogram</tt> can use different width for the upper and lower energy windows</li>
-  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dyanmic and parametric images as well. (An example
+  <li><tt>stir_math</tt> now supports the <tt>--output-format</tt> option for dynamic and parametric images as well. (An example
   file using the <tt>Multi</tt> format is given in the <tt>examples/samples</tt> folder).</li>
   <li>Interfile and ITK image IO now understand some date/time fields. This required a change to our Interfile
     version specification to be able to handle time-zones. These can now be added via the same suffix as used by DICOM, e.g.
     <tt>10:01:01.00+0130</tt>.<br />
     <strong>Warning:</strong> If the time-zone is not specified, we assume it's in the current time-zone without DST. This is dangerous,
     but allows us to subtract time-fields.</li>
-  <li>Added a utility <tt>list_lm_info</tt>.
+  <li>Added a utility <tt>list_lm_info</tt>.</li>
+  <li>Implementation of <tt>a*x+b*y</tt> methods <code>xapyb</code> and <code>sapyb</code> where <tt>a</tt> and <tt>b</tt> can be scalar or vector types.</li>
 </ul>
 
 
@@ -87,11 +92,19 @@
     </li>
     </ul>
   </li>
+
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 none
 
-
+<h4>Other</h4>
+<ul>
+  <li>moved <tt>examples/src</tt> to <tt>examples/C++/src</tt></li>
+  <li>
+    <tt>examples</tt> and <tt>documentation</tt> are now installed, together with doxygen files (if built)
+    into <tt>CMAKE_INSTALL_PREFIX/share/doc/stir-majorversion.minorversion</tt>.
+  </li>
+</ul>
 
 <h3>Known problems</h3>
 <p>See the Github issues for more information.</p>
@@ -114,6 +127,10 @@ none
    by the Interfile header).
   </li>
   </ul>
+</li>
+<li> data read from GE RDF9 uses wrong conventions, and images will be reconstructed flipped
+   with respect to the standard STIR orientation. See
+  <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
 </li>
 <li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
@@ -146,7 +163,9 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
  </ul>
 
 <h3>recon_test_pack changes</h3>
+<ul>
 <li>added a test for scatter estimation</li>
+</ul>
 
 <h3>Other changes to tests</h3>
 <ul>
@@ -177,7 +196,8 @@ from the above):</H2>
 
 <h3>New functionality</h3>
 <ul>
-  <li>Addition of <code>axpby</code> method for <code>Array</code> and all inherited classes.</li>
+  <li>Addition of <code>xapyb</code> and <code>sapyb</code> methods for <code>Array</code> and all inherited classes.
+      (code>axpby</code> was introduced on the release_4 branch after STIR 4.0 but is now deprecated).</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>
   <li>added <code>get_sinograms()</code> and <code>size_all()</code> to <code>ProjDataInfo</code></li>
   <li>added functions for date-time processing</li>

@@ -329,13 +329,13 @@ post_processing()
                                                  false,
                                                  1));
       
-      if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+      if ( normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(), proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of pre-normalisation failed\n");
     }
   else
     {
-      if ( post_normalisation_ptr->set_up(template_proj_data_info_ptr)
+      if ( post_normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(),template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of post-normalisation failed\n");
     }
