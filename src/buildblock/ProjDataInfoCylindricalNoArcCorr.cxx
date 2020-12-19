@@ -602,7 +602,7 @@ get_bin(const LOR<float>& lor) const
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
   //PW Accurate bin view number = phi - intrinsic_tilt.
-  bin.view_num() = round((lor_coords.phi() - scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
+  bin.view_num() = round(to_0_2pi(lor_coords.phi() - scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   assert(bin.view_num()<=get_num_views());
   const bool swap_direction =
