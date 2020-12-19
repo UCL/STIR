@@ -74,7 +74,7 @@ class DistributedWorker : public TimedObject //, public ParsingObject
   bool zero_seg0_end_planes;
   shared_ptr<ProjectorByBinPair> proj_pair_sptr;
   shared_ptr<ExamInfo> exam_info_sptr;
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   shared_ptr<TargetT> target_sptr;
                 
   int image_buffer_size; //to save the image_size

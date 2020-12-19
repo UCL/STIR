@@ -29,6 +29,8 @@
 #define __stir_listmode_CListRecordECAT966_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListGatingInput.h"
+#include "stir/listmode/ListTime.h"
 #include "stir/listmode/CListEventCylindricalScannerWithViewTangRingRingEncoding.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/IO/stir_ecat_common.h" // for namespace macros
@@ -165,7 +167,7 @@ class CListTimeDataECAT966
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 966 scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT966 : public CListTime, public CListGatingInput
+class CListTimeECAT966 : public ListTime, public ListGatingInput
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)

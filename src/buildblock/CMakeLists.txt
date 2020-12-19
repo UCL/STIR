@@ -6,14 +6,16 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamInfo
+  ExamData
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
   ProjDataInfoCylindricalArcCorr 
   ProjDataInfoCylindricalNoArcCorr 
   ArcCorrection 
-  ProjDataFromStream 
-  ProjDataGEAdvance 
+  ProjDataFromStream  
+  ProjDataGEAdvance
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 
@@ -29,6 +31,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 
@@ -45,6 +48,8 @@ set(${dir_LIB_SOURCES}
 	ArrayFilterUsingRealDFTWithPadding 
 	SeparableArrayFunctionObject 
 	SeparableMetzArrayFilter 
+        SeparableGaussianImageFilter
+        SeparableGaussianArrayFilter
 	MedianArrayFilter3D 
 	MedianImageFilter3D 
 	MinimalArrayFilter3D 
@@ -62,6 +67,7 @@ set(${dir_LIB_SOURCES}
 	DynamicDiscretisedDensity 
 	DynamicProjData 
 	MultipleProjData 
+  MultipleDataSetHeader
 	GatedProjData 
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 
@@ -74,14 +80,41 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        date_time_functions
 )
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    ProjDataGEHDF5
+    )
+endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
+if (HAVE_JSON)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
+endif()
+
 include(stir_lib_target)
+
+
+if (HAVE_JSON)
+  # Add the header-only nlohman_json header-only library
+  # Unfortunately, the simple line below exports the dependency while this is really not
+  # necessary.
+  #
+  # target_link_libraries(buildblock PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+
+  # So, we currently use an ugly work-around from
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
+  # Warning: this will fail once nlohman_json stops being header-only!
+  # In that case, we will need to add it in STIRConfig.cmake.in
+  #
+  get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(buildblock PRIVATE "${TMP}")
+endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

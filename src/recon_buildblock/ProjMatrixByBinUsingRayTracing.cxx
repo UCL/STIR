@@ -267,8 +267,8 @@ static bool is_multiple(const float a, const float b)
 void
 ProjMatrixByBinUsingRayTracing::
 set_up(          
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
@@ -282,9 +282,11 @@ set_up(
  
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
+  if (abs(origin.x())>.05F || abs(origin.y())>.05F)
+    error("ProjMatrixByBinUsingRayTracing sadly doesn't support shifted x/y origin yet");
   image_info_ptr->get_regular_range(min_index, max_index);
 
-  symmetries_ptr.reset(
+  symmetries_sptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,

@@ -58,7 +58,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   this->proj_matrix_ptr.reset();
-  //ForwardProjectorByBin::set_defaults();
+  ForwardProjectorByBin::set_defaults();
 }
 
 void
@@ -68,7 +68,7 @@ initialise_keymap()
   parser.add_start_key("Forward Projector Using Matrix Parameters");
   parser.add_stop_key("End Forward Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
-  //ForwardProjectorByBin::initialise_keymap();
+  ForwardProjectorByBin::initialise_keymap();
 }
 
 bool
@@ -102,8 +102,8 @@ ForwardProjectorByBinUsingProjMatrixByBin(
 
 void
 ForwardProjectorByBinUsingProjMatrixByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr)
 {    	   
   ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);

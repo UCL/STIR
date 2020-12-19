@@ -141,7 +141,7 @@ ProjMatrixByBinFromFile::post_processing()
   {
     shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(template_proj_data_filename);
-    this->proj_data_info_ptr.reset(proj_data_sptr->get_proj_data_info_ptr()->clone());
+    this->proj_data_info_ptr.reset(proj_data_sptr->get_proj_data_info_sptr()->clone());
   }
   shared_ptr<DiscretisedDensity<3,float> > 
     density_info_sptr(read_from_file<DiscretisedDensity<3,float> >(template_density_filename));
@@ -161,7 +161,7 @@ ProjMatrixByBinFromFile::post_processing()
 
   if (this->symmetries_type == standardise_interfile_keyword("PET_CartesianGrid"))
     {
-      symmetries_ptr.reset( 
+      symmetries_sptr.reset(
                            new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                                        density_info_sptr,
                                                                        do_symmetry_90degrees_min_phi,
@@ -172,7 +172,7 @@ ProjMatrixByBinFromFile::post_processing()
     }
   else if (this->symmetries_type == "none")
     {
-      symmetries_ptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
+      symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
     }
   else
     {
@@ -186,8 +186,8 @@ ProjMatrixByBinFromFile::post_processing()
 void
 ProjMatrixByBinFromFile::
 set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
 
@@ -334,7 +334,7 @@ Succeeded
 ProjMatrixByBinFromFile::
 write_to_file(const std::string& output_filename_prefix, 
 	      const ProjMatrixByBin& proj_matrix,
-	      const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+	      const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
 	      const DiscretisedDensity<3,float>& template_density)
 {
 

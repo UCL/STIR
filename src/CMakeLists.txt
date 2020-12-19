@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017 University College London
+# Copyright 2013, 2014, 2016, 2017, 2018 University College London
 
 # This file is part of STIR.
 #
@@ -46,7 +46,6 @@ endif()
 if (CERN_ROOT_FOUND)
         set(HAVE_CERN_ROOT ON)
         message(STATUS "CERN ROOT support enabled.")
-        include_directories(${CERN_ROOT_INCLUDE_DIRS})
 else()
     message(STATUS "CERN ROOT support disabled.")
 endif()
@@ -66,6 +65,14 @@ if (RDF_FOUND)
 
 else()
   message(STATUS "RDF support disabled.")
+endif()
+
+if (HDF5_FOUND)
+  set(HAVE_HDF5 ON)
+  message(STATUS "HDF5 support enabled.")
+  include_directories(${HDF5_INCLUDE_DIRS})
+else()
+  message(STATUS "HDF5 support disabled.")
 endif()
 
 
@@ -91,12 +98,14 @@ option(BUILD_SWIG_MATLAB
 mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
+  # require 3.3 for descent FindMatlab.cmake
+  cmake_minimum_required(VERSION 3.3.0)
   set(CMAKE_POSITION_INDEPENDENT_CODE True)
-  FIND_PACKAGE(MATLAB REQUIRED)
-  # Add matlab compiler flags to everything
-  # TODO this is probably not necessary anymore with CMAKE_POSITION_INDEPENDENT_CODE set to true
-  add_definitions(${MATLAB_CXXFLAGS})
-
+  message(STATUS "Trying to find Matlab. This might take a while. If this fails, set Matlab_ROOT_DIR.")
+  FIND_PACKAGE(Matlab COMPONENTS MX_LIBRARY REQUIRED)
+  matlab_get_mex_suffix("${Matlab_ROOT_DIR}" Matlab_MEX_EXT)
+  message(STATUS "Found Matlab_LIBRARIES: ${Matlab_LIBRARIES}")
+  message(STATUS "Found Matlab_INCLUDE_DIRS: ${Matlab_INCLUDE_DIRS}")
 endif()
 
 if (BUILD_SWIG_PYTHON)
@@ -142,11 +151,18 @@ if (STIR_MPI)
 endif()
 
 if(STIR_OPENMP)
+
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
-  # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
-  # See https://gitlab.kitware.com/cmake/cmake/issues/15392
-  set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.9.0") 
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  else()
+    message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
+    # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
+    # See https://gitlab.kitware.com/cmake/cmake/issues/15392
+    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+  endif()
 endif()
 
 #### Flags for compatibility between different systems
@@ -159,7 +175,6 @@ check_function_exists(getopt HAVE_SYSTEM_GETOPT)
 # Check for CXX11 smart pointer support.
 # This is far more complicated than it should be, largely because we want to support
 # older compilers (some claim to be C++-11 but are do not have std::unique_ptr for instance).
-# So, we will check BOOST_NO_CXX11_SMART_PTR using check_cxx_symbol_exists.
 # However, we need to do that with the same compilers flags as used for STIR.
 #
 # Sadly, older versions of CMake failed to take CMAKE_CXX_STANDARD into account, so
@@ -175,27 +190,48 @@ else()
   # Note: need to set this before including CheckCXXSymbolExists
   cmake_policy(SET CMP0067 NEW)
 endif()
-set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
+#set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
 #set(CMAKE_REQUIRED_QUIET FALSE)
-include(CheckCXXSymbolExists)
-# Finally, do the check!
-check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
+# Finally, do the checks!
 
-# Now we introduce 2 options such that the user can override the default behaviour
-# (not recommended! unless the above failed of course)
-option(STIR_NO_UNIQUE_PTR
-       "Disable use of std::unique_ptr" ${HAVE_NO_CXX11_SMART_PTR})
-option(STIR_USE_BOOST_SHARED_PTR
-       "Use of boost::shared_ptr as opposed to std::shared_ptr" ${HAVE_NO_CXX11_SMART_PTR})
-mark_as_advanced(STIR_NO_UNIQUE_PTR STIR_USE_BOOST_SHARED_PTR)
+include(CheckCXXSourceCompiles)
+# Perform test to see if std::unique_ptr exists
+check_cxx_source_compiles("
+   #include <memory>
+   std::unique_ptr<int> f(){int *ptr = new int;return std::unique_ptr<int>(ptr);}
+   int main(){auto p = f(); return 0;}
+   "
+        HAVE_STD_UNIQUE_PTR)
+
+if(NOT HAVE_STD_UNIQUE_PTR)
+    message(FATAL_ERROR "Problems compiling with std::unique_ptr. Giving up.")
+    set(STIR_NO_UNIQUE_PTR ON)
+endif()
+
+# Perform test to see if std::shared_ptr exists
+check_cxx_source_compiles("
+        #include <memory>
+        std::shared_ptr<int> f(){int *ptr = new int; return std::shared_ptr<int>(ptr);}
+        int main(){auto p = f(); return 0;}
+    "
+       HAVE_STD_SHARED_PTR
+        )
+
+if(HAVE_STD_SHARED_PTR)
+    option(STIR_USE_BOOST_SHARED_PTR "Use boost::shared_ptr as opposed to std::shared_ptr (not recommended)" OFF)
+    mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
+else()
+    set(STIR_USE_BOOST_SHARED_PTR ON)
+endif()
+
 
 #### Create stir/config.h
 
 # This has to be written where we build somewhere. We will put it somewhere "natural"
 # (even though there are no other include files there).
 set(CONF_INCLUDE_DIR "${CMAKE_BINARY_DIR}/src/include")
-# add it to the include path
-include_directories("${CONF_INCLUDE_DIR}")
+# add it to the include path. Make sure we prepend it.
+include_directories(BEFORE "${CONF_INCLUDE_DIR}")
 # create file
 configure_file(
   cmake/STIRConfig.h.in
@@ -205,7 +241,12 @@ configure_file(
 install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
 
 #### install include files
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
+set (INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/include")
+install(DIRECTORY "${INCLUDE_DIR}/" DESTINATION include)
+
+#### find header files for re-use in stir_exe_targets.cmake and doxygen target
+include(FindAllHeaderFiles)
+find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${INCLUDE_DIR}/stir")
 
 #### STIR library
 include(stir_dirs)
@@ -214,11 +255,20 @@ include(stir_dirs)
 if(NOT DISABLE_STIR_LOCAL)
   find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/src/local/" NO_DEFAULT_PATH)
   if (STIR_LOCAL)
+    # append any headers there
+    find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${STIR_LOCAL}")
+    # include user file
     include(${STIR_LOCAL}/extra_stir_dirs.cmake)
   endif()
 endif()
 
-
+# Include the experimental code
+if (STIR_ENABLE_EXPERIMENTAL)
+  # append any headers there
+  find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${INCLUDE_DIR}/stir_experimental")
+  # add the sub-dir
+  ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
+endif()
 
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
@@ -226,22 +276,23 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 #        INCLUDE(${STIR_DIR}/lib.cmake)
 endforeach(STIR_DIR)
 
-
-#### SWIG settings
-ADD_SUBDIRECTORY(swig)
-
-## CMake variables to build doxygen documentation
-## Create html documentation using Doxygen
-## Has to be at the end such that all variables are filled
+## Build doxygen documentation
+# Has to be after previous things such that all variables are filled
 find_package(Doxygen)
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
+endif()
 
-    if(NOT DOXYGEN_DOT_FOUND)
-    	message(FATAL_ERROR "Dot is needed for the Doxygen documentation to be generated.")
+if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
+    if(DOXYGEN_DOT_FOUND)
+        set(HAVE_DOT 1)
+        message(STATUS "Graphviz dot found. It will be used for the Doxygen documentation.")
+    else()
+        set(HAVE_DOT 0)
+    	message(WARNING "Graphviz dot is not found. It is recommended to install Graphviz for nicer Doxygen documentation")
     endif()
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
@@ -252,13 +303,37 @@ if(BUILD_DOCUMENTATION)
 
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
-    add_custom_target(doc
+    # The following lines are modifications of Jannis Fischer's original. The modifications were inspired by
+    # https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
+
+    # Add a custom command that does everything, but also generates a doxygen.stamp file.
+    # This should prevent doxygen being re-run when not needed.
+    add_custom_command(
+        OUTPUT doxygen.stamp
+        DEPENDS ${doxyfile} ${ALL_HEADERS}
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        COMMAND ${CMAKE_COMMAND} -E touch doxygen.stamp
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
+    # Now add a custom target that depends on the doxygen.stamp.
+    # If BUILD_DOCUMENTATION, we add this target to the dependency list of "ALL"
+    # to make sure it always gets run.
+    # Otheriwse, the user has to build the target manually.
+    set(DOXY_ALL ALL)
+      
+    add_custom_target(
+        RUN_DOXYGEN ${DOXY_ALL}
+        DEPENDS doxygen.stamp)
 
-#    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
+    # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/html/
+            COMPONENT DOC
+            DESTINATION ${STIR_DOC_DIR}/doxygen)
 endif()
+
+#### SWIG settings
+# Needs to be added after running doxygen as we use its xml output for swig
+ADD_SUBDIRECTORY(swig)
 
 

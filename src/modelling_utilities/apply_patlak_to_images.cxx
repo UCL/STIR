@@ -79,31 +79,28 @@ USING_NAMESPACE_STIR
     return EXIT_FAILURE ;
   else
     {  
-      shared_ptr<DynamicDiscretisedDensity> 
-	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
+      // Create dynamic images object from input file
+      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
-#if 1
-      shared_ptr<ParametricVoxelsOnCartesianGrid> 
-	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
-      ParametricVoxelsOnCartesianGrid par_image = *par_image_sptr;
-#else
-      ParametricVoxelsOnCartesianGrid par_image(dyn_image[1]);
-#endif
+      // Create parametric images from input file
+      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr;
+      par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);
+
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
       assert(indirect_patlak.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
-      indirect_patlak.apply_linear_regression(par_image,dyn_image);
+      indirect_patlak.apply_linear_regression(*par_image_sptr,dyn_image);
 
       // Writing image
       std::cerr << "Writing parametric-image in '"<< argv[1] << "'\n";
       const Succeeded writing_succeeded=OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->  
-	write_to_file(argv[1], par_image); 
+	write_to_file(argv[1], *par_image_sptr);
       std::cerr << "Total time for Image-Based Patlak in sec: " << timer.value() <<"\n";
       timer.stop();  
       
       if(writing_succeeded==Succeeded::yes)
-	return EXIT_SUCCESS ;
+	      return EXIT_SUCCESS ;
       else 
-	return EXIT_FAILURE ;
+	      return EXIT_FAILURE ;
     }
 }
 

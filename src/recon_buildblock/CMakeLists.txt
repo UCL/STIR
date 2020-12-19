@@ -59,15 +59,19 @@ set(${dir_LIB_SOURCES}
 	ProjectorByBinPairUsingProjMatrixByBin 
 	ProjectorByBinPairUsingSeparateProjectors 
 	BinNormalisation 
+	BinNormalisationWithCalibration
 	ChainedBinNormalisation 
 	BinNormalisationFromProjData 
 	TrivialBinNormalisation 
 	BinNormalisationFromAttenuationImage 
+	BinNormalisationSPECT
 	GeneralisedPrior 
 	ProjDataRebinning 
 	FourierRebinning
 	PLSPrior
-	QuadraticPrior 
+        QuadraticPrior
+        RelativeDifferencePrior
+		LogcoshPrior
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
 	PoissonLogLikelihoodWithLinearModelForMean 
@@ -89,6 +93,12 @@ list(APPEND ${dir_LIB_SOURCES}
 	BinNormalisationFromECAT8
 )
 
+if (HAVE_HDF5)
+list(APPEND ${dir_LIB_SOURCES}
+         BinNormalisationFromGEHDF5
+ )
+endif()
+
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}
      ${${dir_LIB_SOURCES}}
@@ -98,6 +108,15 @@ set(${dir_LIB_SOURCES}
 	DistributedCachingInformation 
 	distributed_test_functions
 )
+endif()
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    NiftyPET_projector/NiftyPETHelper
+    NiftyPET_projector/ForwardProjectorByBinNiftyPET
+    NiftyPET_projector/BackProjectorByBinNiftyPET
+    NiftyPET_projector/ProjectorByBinPairUsingNiftyPET
+  )
 endif()
 
 include(stir_lib_target)
@@ -115,5 +134,9 @@ endif()
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
 target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
-
-
+if (STIR_WITH_NiftyPET_PROJECTOR)
+	target_link_libraries(recon_buildblock NiftyPET::petprj)
+	target_link_libraries(recon_buildblock NiftyPET::mmr_auxe)
+	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
+	target_link_libraries(recon_buildblock CUDA::cudart)
+endif()

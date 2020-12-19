@@ -135,7 +135,7 @@ rebin()
   for ( num_tang_poss_pow2 = 1; num_tang_poss_pow2 < proj_data_sptr->get_num_tangential_poss() && num_tang_poss_pow2 < (1<<15); num_tang_poss_pow2*=2);
   
   //CL Initialise the 2D Fourier transform of all rebinned sinograms P(w,k)=0
-   const int num_planes = proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()*2-1;
+   const int num_planes = proj_data_sptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()*2-1;
 
   Array<3,std::complex<float> > FT_rebinned_data(IndexRange3D(0, num_planes-1, 0, num_views_pow2-1, 0, num_tang_poss_pow2-1));
   Array<3,float> Weights_for_FT_rebinned_data(IndexRange3D(0, num_planes-1, 0,num_views_pow2-1, 0,num_tang_poss_pow2-1));
@@ -146,14 +146,14 @@ rebin()
   shared_ptr<ProjData> rebinned_proj_data_sptr;
   //CON initialise the new projection data properties by copying the properties from the input projection data.
   shared_ptr<ProjDataInfo> rebinned_proj_data_info_sptr
-    ( proj_data_sptr->get_proj_data_info_ptr()->clone());
+    ( proj_data_sptr->get_proj_data_info_sptr()->clone());
   //CON Adapt the properties that will be modified by the rebinning.
   rebinned_proj_data_info_sptr->set_num_views(num_views_pow2/2);
   //CON After rebinning we have of course only "direct" sinograms left e.q only segment 0 exists 
   rebinned_proj_data_info_sptr->reduce_segment_range(0,0);
   //CON maximal ring difference a LOR in the largest segment that is going to be rebinned 
   const int max_delta = dynamic_cast<ProjDataInfoCylindrical const&>
-  (*proj_data_sptr->get_proj_data_info_ptr()).get_max_ring_difference(max_segment_num_to_process);
+  (*proj_data_sptr->get_proj_data_info_sptr()).get_max_ring_difference(max_segment_num_to_process);
   //CON The maximum/minimum ring difference covered by LORs written to the rebinned sinogram changed to the maximum ring 
   //CON difference covered by the largest segment that has been rebinned.         
   dynamic_cast<ProjDataInfoCylindrical&>(*rebinned_proj_data_info_sptr).set_min_ring_difference(-max_delta, 0);
@@ -166,7 +166,7 @@ rebin()
 						       rebinned_proj_data_info_sptr,output_filename_prefix));
   //CON get scanner related parameters needed for the rebinning kernel.
   //CON create a scanner object. The scanner type is identified from the projection data info. 
-  const Scanner* scanner = rebinned_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr();
+  const Scanner* scanner = rebinned_proj_data_sptr->get_proj_data_info_sptr()->get_scanner_ptr();
   const float half_distance_between_rings = scanner->get_ring_spacing()/2.F; 
   const float sampling_distance_in_s = rebinned_proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0));
   const float radial_sampling_freq_w = float(2.*_PI)/sampling_distance_in_s/num_tang_poss_pow2;
@@ -197,7 +197,7 @@ rebin()
      SegmentBySinogram<float> segment = proj_data_sptr->get_segment_by_sinogram(seg_num);
 
      //CON Retrieve some segment dependent properties needed for the rebinning kernel
-     const ProjDataInfoCylindrical& proj_data_info_cylindrical = dynamic_cast<const ProjDataInfoCylindrical&>(*segment.get_proj_data_info_ptr());
+     const ProjDataInfoCylindrical& proj_data_info_cylindrical = dynamic_cast<const ProjDataInfoCylindrical&>(*segment.get_proj_data_info_sptr());
      const float average_ring_difference_in_segment = proj_data_info_cylindrical.get_average_ring_difference(segment.get_segment_num());
    
     
@@ -379,7 +379,7 @@ do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &We
    const Array<2,std::complex<float> > FT_current_sinogram = fourier_for_real_data(current_sinogram);
 
   //CON determine the axial position of the middle of the LOR in mm relative to Bin(segment=0,view=0,axial_pos=0,tang_pos=0)  
-    const ProjDataInfo& proj_data_info = *segment.get_proj_data_info_ptr();
+    const ProjDataInfo& proj_data_info = *segment.get_proj_data_info_sptr();
     const float z_in_mm = proj_data_info.get_m(Bin(segment.get_segment_num(),0,axial_pos_num,0)) - proj_data_info.get_m(Bin(0,0,0,0));
 
   //CON Call the rebinning kernel.                                                             
@@ -609,7 +609,7 @@ do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment)
         return; 
 
     //CON Create the projection data info ptr for the resized segment
-    shared_ptr<ProjDataInfo> out_proj_data_info_sptr(segment.get_proj_data_info_ptr()->clone());
+    shared_ptr<ProjDataInfo> out_proj_data_info_sptr(segment.get_proj_data_info_sptr()->clone());
     out_proj_data_info_sptr->set_num_views(num_views_pow2);
     //CON the re-dimensioned segment      
     SegmentBySinogram<float> out_segment = 

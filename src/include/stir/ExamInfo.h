@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
   \ingroup buildblock
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
+  \author Nikos Efthimiou
 */
 
 
@@ -28,6 +29,9 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/shared_ptr.h"
+
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -37,7 +41,7 @@ START_NAMESPACE_STIR
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
 
-  \todo This should be an abtract registered object, in oreder to serve as a complete
+  \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
   */
 class ExamInfo
@@ -46,25 +50,35 @@ class ExamInfo
 public :
 
   //! Default constructor
-  /*! Most fields take there default values (much might be invalid).
-     \a start_time_in_secs_since_1970 is set to zero to 
+  /*! Most fields take their default values (which might be invalid).
+     \a start_time_in_secs_since_1970 is set to zero, energy window info to -1, to
      indicate that it is not initialised.
   */
 
   ExamInfo()
-    : start_time_in_secs_since_1970(0.)
+    : start_time_in_secs_since_1970(0.),
+
+    calibration_factor(-1.F),
+    low_energy_thres(-1.F),
+    up_energy_thres(-1.F)
+
     {
-      low_energy_thres = -1.f;
-      up_energy_thres = -1.f;
   }
 
   std::string originating_system;
-  
+    
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+//  double branching_ratio;
+
+  const TimeFrameDefinitions& get_time_frame_definitions() const
+  { return time_frame_definitions; }
+  TimeFrameDefinitions& get_time_frame_definitions()
+  { return time_frame_definitions; }
 
   double start_time_in_secs_since_1970;
 
@@ -74,6 +88,10 @@ public :
   inline float get_low_energy_thres() const;
   //! Get the high energy boundary
   inline float get_high_energy_thres() const;
+  //! Get the calibration factor
+  inline  float get_calibration_factor() const;
+  //! Get the radionuclide name
+  inline std::string get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -82,12 +100,55 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+
+  //! Set the Calibration factor
+  inline void set_calibration_factor(const float cal_val);
+  //! Set the radionuclide
+  inline void set_radionuclide(const std::string& name);
+  //! Copy energy information from another ExamInfo
+  inline void set_energy_information_from(const ExamInfo&);
   //@}
+
+  inline bool has_energy_information() const
+  {
+    return (low_energy_thres > 0.f)&&(up_energy_thres > 0.f);
+  }
+
+  //! Standard trick for a 'virtual copy-constructor'
+  inline ExamInfo* clone() const;
+  //! Like clone() but return a shared_ptr
+  inline shared_ptr<ExamInfo> create_shared_clone() const;
 
   void set_time_frame_definitions(const TimeFrameDefinitions& new_time_frame_definitions)
     {
       time_frame_definitions = new_time_frame_definitions;
     }
+
+  bool operator == (const ExamInfo &p1) const {      
+      return  this->up_energy_thres==p1.up_energy_thres &&
+              this->low_energy_thres==p1.low_energy_thres &&
+              this->radionuclide==p1.radionuclide &&
+              this->time_frame_definitions==p1.time_frame_definitions &&
+//              this->branching_ratio==p1.branching_ratio &&
+              this->calibration_factor==p1.calibration_factor &&
+              this->imaging_modality==p1.imaging_modality &&
+              this->originating_system==p1.originating_system &&
+              this->patient_position==p1.patient_position &&
+              this->start_time_in_secs_since_1970==p1.start_time_in_secs_since_1970; }
+  
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
+  //! Return a string with info on parameters
+  /*! the returned string is not intended for parsing. */
+  std::string parameter_info() const;
+
+protected:
+  
+  float calibration_factor;
   private:
      //!
   //! \brief low_energy_thres
@@ -97,6 +158,8 @@ public :
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
+  
+  std::string radionuclide;
 
   //!
   //! \brief up_energy_thres

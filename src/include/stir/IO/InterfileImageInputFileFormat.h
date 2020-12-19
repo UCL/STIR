@@ -1,7 +1,7 @@
 //
 //
-#ifndef __stir_IO_InterfileInputFileFormat_h__
-#define __stir_IO_InterfileInputFileFormat_h__
+#ifndef __stir_IO_InterfileImageInputFileFormat_h__
+#define __stir_IO_InterfileImageInputFileFormat_h__
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
@@ -21,7 +21,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InterfileInputFileFormat
+  \brief Declaration of class stir::InterfileImageInputFileFormat
 
   \author Kris Thielemans
 

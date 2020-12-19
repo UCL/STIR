@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2017-2018, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -57,6 +58,8 @@ class PMessage;
   \brief An (abstract base) class that contains information on the 
   projection data.
 
+  This class supports a fixed horizontal and vertical bed position. Both are set to zero
+  by default. Continuous bed motion is not supported.
 */
 class ProjDataInfo
 {
@@ -185,6 +188,8 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of TOF bins
+  inline int get_num_tof_poss() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number
@@ -201,6 +206,15 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get the total number of sinograms
+  inline int get_num_sinograms() const;
+  //! Get the number of non-tof sinograms
+  /*! Note that this is the sum of the number of axial poss over all segments.
+      \see get_num_sinograms()
+  */
+  inline int get_num_non_tof_sinograms() const;
+  //! Get the total size of the data
+  inline std::size_t size_all() const;
   //@}
 
   //| \name Functions that return geometrical info for a Bin
@@ -342,10 +356,32 @@ public:
 
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
+
+  //! Get scanner shared pointer
+  inline shared_ptr<Scanner> get_scanner_sptr() const;
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
   
+  //! Set horizontal bed position
+  void set_bed_position_horizontal(const float bed_position_horizontal_arg)
+  { bed_position_horizontal = bed_position_horizontal_arg; }
+
+  //! Get horizontal bed position
+  float get_bed_position_horizontal() const { return bed_position_horizontal; }
+
+  //! Set vertical bed position
+  void set_bed_position_vertical(const float bed_position_vertical_arg)
+  { bed_position_vertical = bed_position_vertical_arg; }
+
+  //! Get vertical bed position
+  float get_bed_position_vertical() const { return bed_position_vertical; }
+  
+  inline bool has_energy_information() const
+  {
+      return scanner_ptr->has_energy_information();
+  }
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
@@ -357,6 +393,8 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
+  float bed_position_horizontal;
+  float bed_position_vertical;
   
 };
 

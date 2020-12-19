@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,11 +29,13 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Gemma Fardell
 
 */
 
 
 #include "stir/VectorWithOffset.h"
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 /*! 
@@ -125,6 +128,23 @@ public:
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
+  //! \deprecated a*x+b*y (\see xapyb)
+  template <typename elemT2>
+    STIR_DEPRECATED inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
+                      const elemT2 b, const NumericVectorWithOffset& y);
+                      
+  //! set values of the array to x*a+y*b, where a and b are scalar
+  inline void xapyb(const NumericVectorWithOffset& x, const elemT a,
+                    const NumericVectorWithOffset& y, const elemT b);
+
+  //! set the values of the array to x*a+y*b, where a and b are vectors
+  inline void xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+                    const NumericVectorWithOffset& y, const NumericVectorWithOffset& b); 
+
+  //! set the values of the array to self*a+y*b, where a and b are scalar or vectors
+  template <class T2>
+  inline void sapyb(const T2& a,
+                    const NumericVectorWithOffset& y, const T2& b); 
 };
 
 END_NAMESPACE_STIR

@@ -30,6 +30,7 @@
 #define __stir_recon_buildblock_BinNormalisationFromECAT8_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -75,7 +76,7 @@ START_NAMESPACE_ECAT
  
 */
 class BinNormalisationFromECAT8 :
-   public RegisteredParsingObject<BinNormalisationFromECAT8, BinNormalisation>
+   public RegisteredParsingObject<BinNormalisationFromECAT8, BinNormalisation, BinNormalisationWithCalibration>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
@@ -92,8 +93,8 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT8(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& );
+  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -112,12 +113,13 @@ private:
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
   int num_blocks_per_singles_unit;
+  float calib_factor, cross_calib_factor;
 
   bool _use_gaps;
   bool _use_detector_efficiencies;

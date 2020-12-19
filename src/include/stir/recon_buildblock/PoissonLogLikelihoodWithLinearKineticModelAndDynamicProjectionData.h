@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -35,6 +36,7 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/DynamicProjData.h"
 #include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParseAndCreateParametricDiscretisedDensityFrom.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 #include "stir/modelling/PatlakPlot.h"
@@ -81,12 +83,14 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
                                                           const TargetT &current_estimate, 
                                                           const int subset_num); 
 
+  virtual std::unique_ptr<ExamInfo>
+  get_exam_info_uptr_for_target()  const;
  protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                       const int subset_num);
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <TargetT> const& target_sptr);
+  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
@@ -131,6 +135,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
   virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual const DynamicProjData& get_input_data() const;
   //@}
  protected:
   //! Filename with input projection data
@@ -144,30 +149,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   int _max_segment_num_to_process;
 
   /**********************/
-  // image stuff
-  // TODO to be replaced with single class or so (TargetT obviously)
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int _output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int _output_image_size_z; // KT 10122001 new
-
-  //! the zoom factor
-  double _zoom;
-
-  //! offset in the x-direction
-  double _Xoffset;
-
-  //! offset in the y-direction
-  double _Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double _Zoffset;
+  ParseAndCreateFrom<TargetT, DynamicProjData> target_parameter_parser;
 
   /********************************/
   //! name of file in which additive projection data are stored

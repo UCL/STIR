@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
 	output_filename+=boost::str(boost::format("%d") % segment_num);
 
 	Bin central_bin(segment_num,0,0,0);
-	const float m_spacing = s3d->get_proj_data_info_ptr()->get_sampling_in_m(central_bin);
-	const float s_spacing = s3d->get_proj_data_info_ptr()->get_sampling_in_s(central_bin);
-	const float m = s3d->get_proj_data_info_ptr()->get_m(central_bin);
-	const float s = s3d->get_proj_data_info_ptr()->get_s(central_bin);
+	const float m_spacing = s3d->get_proj_data_info_sptr()->get_sampling_in_m(central_bin);
+	const float s_spacing = s3d->get_proj_data_info_sptr()->get_sampling_in_s(central_bin);
+	const float m = s3d->get_proj_data_info_sptr()->get_m(central_bin);
+	const float s = s3d->get_proj_data_info_sptr()->get_s(central_bin);
 
         if (extract_by_view)
         {

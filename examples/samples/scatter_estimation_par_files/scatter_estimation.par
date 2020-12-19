@@ -1,0 +1,86 @@
+Scatter Estimation Parameters :=
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored 
+run in debug mode := 1
+
+; Measured data
+input file := ${sino_input}
+
+; Attenuation Image
+attenuation image filename := ${atnimg}
+
+; Normalisation coefficients & attenuation data
+Normalisation type := from ProjData
+   Bin Normalisation From ProjData :=
+            normalisation projdata filename:= ${NORM}
+   End Bin Normalisation From ProjData:=
+
+attenuation correction factors filename := ${acf3d}
+
+;; Background data (not  normalised).
+; Should be set to the randoms estimate (unless you precorrected, but we haven't tested that)
+background projdata filename := ${randoms3d}
+
+; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
+; If !recompute mask projdata then the filename must be set.
+recompute mask projdata := 1
+mask projdata filename := ${mask_projdata_filename}
+
+; Input or output filename - depends on recompute  
+recompute mask image := 1
+mask image filename := ${mask_image}
+; threshold to be applied after filtering (in cm^-1). Default value is below
+mask attenuation image min threshold  := 0.003
+; optional filename to specify a filter before thresholding the attenuation image
+; By default a Gaussian filter with FWHM (15,20,20) will be used. Here we use an explicit file as an example.
+mask attenuation image filter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
+;End of Mask
+
+;Parameter file for the tail fitting of the scatter data (within the mask)
+tail fitting parameter filename := ${scatter_pardir}/tail_fitting.par
+
+; Run simulation and reconstruction in 2D and export SSRB sinograms (currently required)
+run in 2d projdata := 1
+
+; ScatterSimulation parameters 
+; could read from a file, but instead we have them below
+; scatter simulation parameter filename := ${scatter_pardir}/scatter_simulation.par
+Scatter Simulation type := PET Single Scatter Simulation
+  PET Single Scatter Simulation Parameters :=
+    ; could change some parameters here if you need to (not recommended)
+  End PET Single Scatter Simulation Parameters:=
+
+; next option is the default
+use scanner downsampling in scatter simulation := 1
+
+; could add parameters below, but reading it from file
+; reconstruction type := ...
+reconstruction parameter filename := ${scatter_pardir}/run_reconstruction.par 
+
+;
+; This is the number of times which the Scatter Estimation will
+; iterate. Default is 5
+
+number of scatter iterations := ${num_scat_iters}
+
+; Average the first two activity images
+do average at 2 := 1
+
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 1
+
+output scatter estimate name prefix := ${scatter_prefix}
+output additive estimate name prefix:= ${total_additive_prefix}
+
+maximum scatter scaling factor := 2 ;10
+minimum scatter scaling factor := 0.4 ;0.1
+
+;Upsample and fit 
+; defaults to 3.
+upsampling half filter width := 3
+remove interleaving before upsampling := 1
+
+End Scatter Estimation Parameters :=

@@ -105,9 +105,7 @@ class PETCount_rebinned
   (the integer Fourier index corresponding to the azimuthal angle f), and by applying in each region 
   a different method to estimated the rebinned sinogram.
 
-  KTTODO ^A in the next sentence?
-
-  The rebinned data are represented by  in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
+  The rebinned data are represented in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
   where L is the length of the axial FOV and R the ring radius.
   In the high frequencies (region 1), the rebinned data are estimated using Fourier rebinning.
   In the second high frequency region (region 2), the consistency condition is not satisfied 

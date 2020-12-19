@@ -31,7 +31,7 @@
 #define __stir_FBP2D_RampFilter_H__
 
 #ifdef NRFFT
-#include "local/stir/Filter.h"
+#include "stir_experimental/Filter.h"
 #else
 #include "stir/ArrayFilterUsingRealDFTWithPadding.h"
 #include "stir/TimedObject.h"

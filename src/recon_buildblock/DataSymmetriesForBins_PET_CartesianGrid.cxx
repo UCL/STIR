@@ -35,6 +35,7 @@
 #include "stir/round.h"
 #include <typeinfo>
 #include <algorithm>
+#include <boost/format.hpp>
 using std::min;
 using std::max;
 
@@ -70,8 +71,9 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     num_planes_per_scanner_ring = round(num_planes_per_scanner_ring_float);
     
     if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-2)
-      error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
-	    "equal to the ring spacing of the scanner divided by an integer. Sorry\n");
+        error(boost::format("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+                            "equal to the ring spacing of the scanner divided by an integer. Sorry. "
+                            "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_cyl_ptr->get_ring_spacing());
   }
   
   /* disabled as we support this now
@@ -92,9 +94,11 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
       
       num_planes_per_axial_pos[segment_num] = round(num_planes_per_axial_pos_float);
       
-      if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-5)
-        error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
-	      "equal to the axial sampling in the projection data divided by an integer. Sorry\n");
+      if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-2)
+          error(boost::format("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+                              "equal to the sinogram spacing of the scanner divided by an integer. Sorry. "
+                              "(Image z-spacing is %1% and axial sinogram spacing is %2% at segment %3%")
+                % image_plane_spacing % proj_data_info_cyl_ptr->get_axial_sampling(segment_num) % segment_num);
       
     }  
     
@@ -121,8 +125,8 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
 DataSymmetriesForBins_PET_CartesianGrid::
 DataSymmetriesForBins_PET_CartesianGrid
 (
- const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
- const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+ const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+ const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr,
  const bool do_symmetry_90degrees_min_phi_v,
  const bool do_symmetry_180degrees_min_phi_v,
  const bool do_symmetry_swap_segment_v,
@@ -136,7 +140,7 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_swap_s(do_symmetry_swap_s_v),
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
-  if(dynamic_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
+  if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get())))
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
           "(can only handle projection data corresponding to a cylinder)\n",
       typeid(*proj_data_info_ptr).name());
@@ -146,7 +150,7 @@ DataSymmetriesForBins_PET_CartesianGrid
      dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
       (image_info_ptr.get());
   
-  if (cartesian_grid_info_ptr == NULL)
+  if (is_null_ptr(cartesian_grid_info_ptr))
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
       typeid(*image_info_ptr).name());
 

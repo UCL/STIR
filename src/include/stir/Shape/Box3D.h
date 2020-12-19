@@ -79,7 +79,7 @@ public RegisteredParsingObject<Box3D, Shape3D, Shape3DWithOrientation>
 	 const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
 
   float get_geometric_volume() const;
-  float get_geometric_area() const;
+  // float get_geometric_area() const;
   
   bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
   

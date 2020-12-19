@@ -59,18 +59,14 @@ double
 TimeFrameDefinitions::
 get_start_time(unsigned int frame_num) const
 {
-  assert(frame_num>=1);
-  assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].first;
+  return frame_times.at(frame_num-1).first;
 }
 
 double
 TimeFrameDefinitions::
 get_end_time(unsigned int frame_num) const
 {
-  assert(frame_num>=1);
-  assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].second;
+  return frame_times.at(frame_num-1).second;
 }
 
 double
@@ -157,7 +153,7 @@ TimeFrameDefinitions(const string& filename)
       {
 	error(boost::format("Parsing of Interfile header failed for file '%s'") % filename);
       }
-    *this = hdr.get_exam_info_ptr()->time_frame_definitions;
+    *this = hdr.get_exam_info().time_frame_definitions;
   }
   else
     read_fdef_file(filename);
@@ -269,6 +265,25 @@ TimeFrameDefinitions::
 TimeFrameDefinitions(const TimeFrameDefinitions& org_frame_defs, unsigned int frame_num)
 {
   this->frame_times.push_back(make_pair(org_frame_defs.get_start_time(frame_num), org_frame_defs.get_end_time(frame_num)));
+}
+
+void
+TimeFrameDefinitions::
+set_time_frame(const int frame_num, const double start, const double end)
+{
+    frame_times.at(frame_num-1).first = start;
+    frame_times.at(frame_num-1).second = end;
+}
+
+bool TimeFrameDefinitions::operator == (const TimeFrameDefinitions &t) const {
+    for (int frame=0;frame<frame_times.size(); frame++){
+        
+        const bool is_identical=(abs(frame_times.at(frame).first - t.frame_times.at(frame).first) <= 10e-5) &&
+                      (abs(frame_times.at(frame).second - t.frame_times.at(frame).second) <= 10e-5);
+        if (!is_identical)
+          return false;
+    }
+    return true;
 }
 
 END_NAMESPACE_STIR

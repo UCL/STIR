@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,7 +36,7 @@
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
 
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/ProjData.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 
@@ -87,8 +88,7 @@ class Succeeded;
 */
 template <typename TargetT>
 class GeneralisedObjectiveFunction: 
-   public RegisteredObject<GeneralisedObjectiveFunction<TargetT> >,
-   public ParsingObject
+   public RegisteredObject<GeneralisedObjectiveFunction<TargetT> >
 {
 public:
   
@@ -227,6 +227,15 @@ public:
 
   //! Return the number of subsets in-use
   int get_num_subsets() const;
+  
+//  //! Virtual get normalisation, it will be defined by the derived class
+//  virtual const shared_ptr<BinNormalisation> &
+//  get_normalisation_sptr() const =0;
+  
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const
+  { auto exam_info_uptr=unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
+      return exam_info_uptr;
+  }
 
 
   //! Attempts to change the number of subsets. 
@@ -270,14 +279,16 @@ public:
    */
   void set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT> >&);
 
-  //!
   //! \brief set_input_data
   //! \author Nikos Efthimiou
-  //! \details It can be used to set the data to be reconstucted in
-  //! real-time ( withint some other code ).
+  //! \details It can be used to set the data to be reconstructed
+  //!  within some other code, as opposed to via parsing.
   virtual void set_input_data(const shared_ptr< ExamData > &) = 0;
 
-  //!
+  //! \brief get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual const ExamData& get_input_data() const = 0;
+
   //! \brief set_additive_proj_data_sptr
   //! \author Nikos Efthimiou
   //! \details In the case the reconstruction process is called from another
@@ -285,7 +296,6 @@ public:
   //!
    virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) = 0;
 
-  //!
   //! \brief set_normalisation_sptr
   //! \author Nikos Efthimiou
   //! \details In the case the reconstruction process is called from another

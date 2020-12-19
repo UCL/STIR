@@ -129,14 +129,22 @@ class QuadraticPrior:  public
                 const BasicCoordinate<3,int>& coords,
                 const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  //! Call accumulate_Hessian_times_input
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
-  //! get penalty weights for the neigbourhood
+  //! Compute the multiplication of the hessian of the prior multiplied by the input.
+  //! For the quadratic function, the hessian of the prior is 1.
+  //! Therefore this will return the weights multiplied by the input.
+  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                                                   const DiscretisedDensity<3,elemT>& current_estimate,
+                                                   const DiscretisedDensity<3,elemT>& input) const;
+
+  //! get penalty weights for the neighbourhood
   Array<3,float> get_weights() const;
 
-  //! set penalty weights for the neigbourhood
+  //! set penalty weights for the neighbourhood
   void set_weights(const Array<3,float>&);
 
   //! get current kappa image
@@ -144,13 +152,13 @@ class QuadraticPrior:  public
       modify the image by manipulating the image refered to by this pointer.
       Unpredictable results will occur.
   */
-  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
 
   //! set kappa image
-  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -178,7 +186,7 @@ protected:
   virtual void initialise_keymap();
   virtual bool post_processing();
  private:
-  shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
 };
 
 

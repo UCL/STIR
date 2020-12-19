@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 Verbosity* Verbosity::_instance = NULL; 
 
 Verbosity::Verbosity(){
-  _verbosity_level = 1;
+  _verbosity_level = 2;
 };
 
 int Verbosity::get() 
