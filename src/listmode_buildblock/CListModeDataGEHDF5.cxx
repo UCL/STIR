@@ -65,7 +65,7 @@ get_empty_record_sptr() const
   if (is_null_ptr(this->get_proj_data_info_sptr()))
     error("listmode file needs to be opened before calling get_empty_record_sptr()");
 
-  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr(),
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr(),
                                                 this->first_time_stamp));
   return sptr;
 }

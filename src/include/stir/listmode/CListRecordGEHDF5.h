@@ -32,77 +32,6 @@ START_NAMESPACE_STIR
 namespace GE {
 namespace RDF_HDF5 {
 
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-/***********************************
- * Supported Event Types
- ***********************************/
-enum EventType
-{
-    EXTENDED_EVT    = 0x0,
-    COINC_EVT       = 0x1
-};
-
-/***********************************
- * Supported Extended Event Types
- ***********************************/
-enum ExtendedEvtType
-{
-    TIME_MARKER_EVT = 0x0,
-    COINC_COUNT_EVT = 0x1,
-    EXTERN_TRIG_EVT = 0x2,
-    TABLE_POS_EVT   = 0x3,
-    /* RESERVED     = 0x4 to 0xE */
-    /* 0xE is temporary taken here to mark end of it. */
-    END_LIST_EVT = 0xE,
-    SINGLE_EVT      = 0xF
-};
-
-
-//! Class for storing and using a coincidence event from a GE Signa PET/MR listmode file
-/*! \ingroup listmode
-  \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
-*/
-class CListEventDataGESigna
-{
- public:
-  inline bool is_prompt() const { return true; } // TODO
-  inline Succeeded set_prompt(const bool prompt = true)
-  {
-    //if (prompt) random=1; else random=0; return Succeeded::yes;
-    return Succeeded::no;
-  }
-  inline void get_detection_position(DetectionPositionPair<>& det_pos) const
-  {
-    // TODO 447->get_num_detectors_per_ring()-1
-    if (deltaTime<0)
-    {
-      det_pos.pos1().tangential_coord() = 447 - hiXtalTransAxID;
-      det_pos.pos1().axial_coord() = hiXtalAxialID;
-      det_pos.pos2().tangential_coord() = 447 - loXtalTransAxID;
-      det_pos.pos2().axial_coord() = loXtalAxialID;
-      det_pos.timing_pos() = -get_tof_bin();
-    }
-    else
-    {
-      det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
-      det_pos.pos1().axial_coord() = loXtalAxialID;
-      det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
-      det_pos.pos2().axial_coord() = hiXtalAxialID;
-      det_pos.timing_pos() = get_tof_bin();
-    }
-  }
-  inline bool is_event() const
-    {
-      return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/;
-     } // TODO need to find out how to see if it's a coincidence event
-  inline int get_tof_bin() const
-     {
-         return static_cast<int>(deltaTime);
-     }
- private:
-
-=======
   namespace detail {
     /***********************************
      * Supported Event Length Modes
@@ -146,7 +75,6 @@ class CListEventDataGESigna
     class CListAnyRecordDataGEHDF5
     {
     public:
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
       TODO;
@@ -172,39 +100,24 @@ class CListEventDataGESigna
         //if (prompt) random=1; else random=0; return Succeeded::yes; 
         return Succeeded::no;
       }
+ inline void get_detection_position(DetectionPositionPair<>& det_pos) const
+  {
+    // TODO 447->get_num_detectors_per_ring()-1
+    det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
+    det_pos.pos1().axial_coord() = loXtalAxialID;
+    det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
+//    std::cout << hiXtalTransAxID << " "  << loXtalTransAxID << std::endl;
+    det_pos.pos2().axial_coord() = hiXtalAxialID;
+  }
       inline bool is_event() const
       { 
         return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
       } // TODO need to find out how to see if it's a coincidence event
 
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-//! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
-/*! \ingroup listmode
-  \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
- */
-class ListTimeDataGESigna
-{
- public:
-  inline unsigned long get_time_in_millisecs() const
-    { return (time_hi()<<16) | time_lo(); }
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-    {
-      data.timeMarkerLS = ((1UL<<16)-1) & (time_in_millisecs);
-      data.timeMarkerMS = (time_in_millisecs) >> 16;
-      // TODO return more useful value
-      return Succeeded::yes;
-    }
-  inline bool is_time() const
-    { // TODO need to find out how to see if it's a timing event
-    return (data.eventType==EXTENDED_EVT) && (data.eventTypeExt==TIME_MARKER_EVT);
-    }// TODO
-
-private:
-  typedef union{
-    struct {
-=======
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
+      inline int get_tof_bin() const
+         {
+             return static_cast<int>(deltaTime);
+         }
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
       TODO
@@ -221,16 +134,8 @@ private:
       boost::uint16_t loXtalAxialID:6;     /* Low Crystal Axial Id */
       boost::uint16_t loXtalTransAxID:10;  /* Low Crystal Trans-Axial Id */
 #endif
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-    };
-  } data_t;
-  data_t data;
+    }; /*-coincidence event*/
 
-  unsigned long time_lo() const
-  { return data.timeMarkerLS; }
-  unsigned long time_hi() const
-  { return data.timeMarkerMS; }
-};
 
 #if 0
 //! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
@@ -262,9 +167,22 @@ class CListGatingDataGESigna
 private:
   typedef union{
     struct {
-=======
-    }; /*-coincidence event*/
+#if STIRIsNativeByteOrderBigEndian
+      boost::uint32_t signature : 5;
+      boost::uint32_t reserved : 3;
+      boost::uint32_t value : 24; // timing info here in the first word, but we're ignoring it
+#else
+      boost::uint32_t value : 24;
+      boost::uint32_t reserved : 3;
+      boost::uint32_t signature : 5;
+#endif
+    };      
+    boost::uint32_t raw;
+  } oneword_t;
+  oneword_t words[2];
+};
 
+#endif
 
     //! A class for storing and using a timing 'event' from a GE RDF9 listmode file
     /*! \ingroup listmode
@@ -291,7 +209,6 @@ private:
     private:
       typedef union{
         struct {
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
 #if STIRIsNativeByteOrderBigEndian
           TODO
 #else
@@ -306,17 +223,9 @@ private:
           boost::uint16_t timeMarkerLS:16;   /* Least Significant 16 bits of 32-bit Time Marker */
           boost::uint16_t timeMarkerMS:16;   /* Most Significant 16 bits of 32-bitTime Marker */
 #endif
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-    };
-    boost::uint32_t raw;
-  } oneword_t;
-  oneword_t words[2];
-};
-=======
         };      
       } data_t;
       data_t data;
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
 
       unsigned long time_lo() const
       { return data.timeMarkerLS; }
@@ -340,30 +249,20 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
   //typedef CListGatingDataGEHDF5 GatingType;
 
  public:
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-  CListRecordGESigna(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr)
-    {}
-
-  bool is_time() const
-  {
-   return this->time_data.is_time();
-=======
   //! constructor
   /*! Takes the scanner and first_time stamp. The former will be used for checking and swapping,
     the latter for adjusting the time of each event, as GE listmode files do not start with time-stamp 0.
 
     get_time_in_millisecs() should therefore be zero at the first time stamp.
   */
- CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr, const unsigned long first_time_stamp) :
-  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr),
+ CListRecordGEHDF5(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const unsigned long first_time_stamp) :
+  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr),
     first_time_stamp(first_time_stamp)
     {}
 
   bool is_time() const
   { 
     return this->time_data.is_time();
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
   }
 #if 0
   bool is_gating_input() const
@@ -399,15 +298,10 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 #endif
   }
 
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-  // time
-  inline unsigned long get_time_in_millisecs() const
-    { return time_data.get_time_in_millisecs(); }
-=======
   // time 
   inline unsigned long get_time_in_millisecs() const 
     { return time_data.get_time_in_millisecs() - first_time_stamp; }
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
+
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
@@ -423,9 +317,9 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
-    det_pos.pos1().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
+    det_pos.pos1().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
-    det_pos.pos2().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
   }
 
@@ -435,22 +329,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     error("TODO");
   }
 
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-  virtual std::size_t size_of_record_at_ptr(const char * const data_ptr, const std::size_t /*size*/,
-                                            const bool do_byte_swap) const
-  {
-    // TODO: get size of record from the file, whereas here I have hard-coded as being 6bytes (I know it's the case for the Orsay data) OtB 15/09
-
-    return std::size_t(6); // std::size_t(data_ptr[0]&0x80);
-  }
-
-  virtual Succeeded init_from_data_ptr(const char * const data_ptr,
-                                       const std::size_t
-#ifndef NDEBUG
-                                       size // only used within assert, so don't define otherwise to avoid compiler warning
-#endif
-                                       , const bool do_byte_swap)
-=======
   virtual std::size_t size_of_record_at_ptr(const char * const data_ptr, const std::size_t, 
                                             const bool do_byte_swap) const
   { 
@@ -478,7 +356,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
                                        const std::size_t size,
                                        const bool do_byte_swap)
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
   {
     assert(size >= 6);
     assert(size <= 16);
@@ -486,7 +363,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
     if (do_byte_swap)
       {
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
         ByteOrder::swap_order(this->raw[0]);
       }
     if (this->is_event() || this->is_time())
@@ -501,10 +377,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
       {
     error("don't know how to byteswap");
         ByteOrder::swap_order(this->raw[1]);
-=======
-        error("ClistRecordGEHDF5: byte-swapping not supported yet. sorry");
-        //ByteOrder::swap_order(this->raw[0]);
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
       }
 
       if (this->is_event())
@@ -512,9 +384,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
         // set TOF info in ps
        this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_pos();
       }
-
-
-
     return Succeeded::yes;
   }
 
@@ -528,13 +397,8 @@ private:
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
   BOOST_STATIC_ASSERT(sizeof(DataType)==6);
-<<<<<<< HEAD:src/include/stir/listmode/CListRecordGESigna.h
-  BOOST_STATIC_ASSERT(sizeof(TimeType)==6);
-  //BOOST_STATIC_ASSERT(sizeof(GatingType)==8);
-=======
   BOOST_STATIC_ASSERT(sizeof(TimeType)==6); 
   //BOOST_STATIC_ASSERT(sizeof(GatingType)==8); 
->>>>>>> master:src/include/stir/listmode/CListRecordGEHDF5.h
 
 };
 

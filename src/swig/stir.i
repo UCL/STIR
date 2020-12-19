@@ -707,26 +707,26 @@ namespace std {
       proj_data.fill_from(array_iter);
   }
 
-  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
-  {
-      //    int num_sinos=proj_data.get_num_axial_poss(0);
-      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      //      }
-      int num_sinos = proj_data.get_num_sinograms();
+//  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+//  {
+//      //    int num_sinos=proj_data.get_num_axial_poss(0);
+//      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+//      //      {
+//      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+//      //      }
+//      int num_sinos = proj_data.get_num_sinograms();
 
-      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-      return array;
-  }
+//      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+//      return array;
+//  }
 
-  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
-  {
-      Array<3,float> array = create_array_for_proj_data(proj_data);
-      Array<3,float>::full_iterator array_iter = array.begin_all();
-      copy_to(proj_data, array_iter);
-      return array;
-  }
+//  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+//  {
+//      Array<3,float> array = create_array_for_proj_data(proj_data);
+//      Array<3,float>::full_iterator array_iter = array.begin_all();
+//      copy_to(proj_data, array_iter);
+//      return array;
+//  }
 
   
  } // end of namespace
@@ -1448,14 +1448,14 @@ namespace stir {
       if (PyIter_Check(arg))
       {
 		// From TOF branch
-        //Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
-		//swigstir::fill_Array_from_Python_iterator(&array, arg);
-        //swigstir::fill_proj_data_from_4D(*$self, array);        
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
+        swigstir::fill_Array_from_Python_iterator(&array, arg);
+        swigstir::fill_proj_data_from_4D(*$self, array);
 
         // TODO avoid need for copy to Array
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
-	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        fill_from(*$self, array.begin_all(), array.end_all());
+//        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+//	swigstir::fill_Array_from_Python_iterator(&array, arg);
+//        fill_from(*$self, array.begin_all(), array.end_all());
       }
       else
       {
@@ -1495,9 +1495,12 @@ namespace stir {
     {
       if (PyIter_Check(arg))
       {
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
-	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        fill_from(*$self, array.begin_all(), array.end_all());
+          Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
+          swigstir::fill_Array_from_Python_iterator(&array, arg);
+          swigstir::fill_proj_data_from_4D(*$self, array);
+//        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+//	swigstir::fill_Array_from_Python_iterator(&array, arg);
+//        fill_from(*$self, array.begin_all(), array.end_all());
       }
       else
       {
