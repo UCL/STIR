@@ -42,11 +42,30 @@ public:
   {}
   virtual ~TestFBP2D() {}
 
+  virtual std::unique_ptr<ProjDataInfo>
+    construct_default_proj_data_info_uptr() const;
   
   virtual void construct_reconstructor();
   void run_tests();
 };
 
+std::unique_ptr<ProjDataInfo>
+TestFBP2D::
+construct_default_proj_data_info_uptr() const
+{
+  // construct a small scanner and sinogram
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+  // currently need this for limitation in the backprojector
+  scanner_sptr->set_default_intrinsic_tilt(0.F);
+  scanner_sptr->set_num_rings(5);
+  std::unique_ptr<ProjDataInfo> proj_data_info_uptr(
+        ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                      /*span=*/3,
+                                      /*max_delta=*/4,
+                                      /*num_views=*/128,
+                                      /*num_tang_poss=*/128));
+  return proj_data_info_uptr;
+}
 
 void
 TestFBP2D::
