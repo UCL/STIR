@@ -48,6 +48,7 @@ template_sino=my_DSTE_3D_rd2_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
 1
+0
 n
 
 0

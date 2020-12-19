@@ -41,7 +41,7 @@
 #include "stir/MultipleProjData.h"
 #include "stir/ProjDataInMemory.h"
 #include <fstream>
-
+#include <iomanip>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;

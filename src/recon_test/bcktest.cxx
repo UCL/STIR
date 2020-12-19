@@ -280,10 +280,10 @@ main(int argc, char **argv)
   do
   {    
 	int min_timing_num = ask_num("Minimum timing position index to backproject",
-		proj_data_info_ptr->get_min_tof_pos_num(), proj_data_info_ptr->get_max_tof_pos_num(), 
-		proj_data_info_ptr->get_min_tof_pos_num());
+        proj_data_info_sptr->get_min_tof_pos_num(), proj_data_info_sptr->get_max_tof_pos_num(),
+        proj_data_info_sptr->get_min_tof_pos_num());
 	int max_timing_num = ask_num("Maximum timing position index to backproject",
-		min_timing_num, proj_data_info_ptr->get_max_tof_pos_num(),
+        min_timing_num, proj_data_info_sptr->get_max_tof_pos_num(),
 		min_timing_num);
     int min_segment_num = ask_num("Minimum segment number to backproject",
       proj_data_info_sptr->get_min_segment_num(), proj_data_info_sptr->get_max_segment_num(), 0);

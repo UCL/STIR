@@ -221,7 +221,7 @@ public:
       list mode data that is being read.
       \warning This member is obsolete and might be removed soon.
   */
-  virtual const Scanner* get_scanner_ptr() const ;
+  virtual shared_ptr<const Scanner> get_scanner_ptr() const ;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
