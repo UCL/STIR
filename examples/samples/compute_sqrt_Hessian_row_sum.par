@@ -1,4 +1,4 @@
-Hessian Row Sum Computation Parameters :=
+Square Root Hessian Row Sum Computation Parameters :=
   
   ; The script requires an input image to be used as:
   ; - image estimate at which the square root of the Hessian row sum should be computed, or

@@ -19,23 +19,25 @@
   \file
   \ingroup utilities
 
-  \brief Computes the spatially variant penalty strength
+  \brief Computes the Square Root of the Hessian Row Sum of the objective function
 
   \par Usage
   \verbatim
-     compute_spatially_variant_penalty_strength spatially_variant_penalty_strength.par
+     compute_sqrt_Hessian_row_sum compute_sqrt_Hessian_row_sum.par
   \endverbatim
 
-  Computes a spatially variant penalty strength (kappa) image. This utility uses methods proposed by:
+  This can be used to compute a spatially variant penalty strength (kappa) image. This utility uses methods proposed by:
   Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
   & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
   in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
 
   Based upon the value of "use approximate hessian" in the parameter file, either of two methods can be used to
   compute the spatially variant penalty strength, a.k.a. kappa.
-  Both of the methods compute the Hessian row sum of the objective / likelihood function.
+  Both of the methods compute the square root of the Hessian row sum of the objective / likelihood function.
   1. \f[ \hat\kappa = \sqrt{ P^T \bigg( \frac{y}{ (P\lambda+a)^2 }  \bigg) P1 } \f], or
   2. \f[ \tilde\kappa = \sqrt{ P^T \bigg( \frac{1}{y} \bigg)P1 } \f]
+
+  This utility may be used to generate the spatially variant penalty strength (kappa) images.
 
   \author Robert Twyman
 */
@@ -50,9 +52,9 @@ START_NAMESPACE_STIR
 static void print_usage_and_exit()
 {
   //todo:update usage
-  std::cerr<<"\nThis executable computes a spatially variant penalty strength dependant on a parameter file."
-             "\n\nUsage: compute_spatially_variant_penalty_strength spatially_variant_penalty_strength.par"
-             "\n\nAn example parameter file can be found in the samples folder." << std::endl;
+  std::cerr<<"\nThis executable computes the square root of the Hessian row sum of the objective function."
+             "\n\nUsage: compute_sqrt_Hessian_row_sum compute_sqrt_Hessian_row_sum.par"
+             "\n\n       (The example parameter file can be found in the samples folder.)" << std::endl;
   exit(EXIT_FAILURE);
 }
 
@@ -64,8 +66,8 @@ main(int argc, char *argv[])
   if (argc!=2)
     print_usage_and_exit();
 
-  SqrtHessianRowSum<DiscretisedDensity<3,float>> kappa_computer;
-  kappa_computer.parse(argv[1]);
-  kappa_computer.process_data();
+  SqrtHessianRowSum<DiscretisedDensity<3,float>> SqrtHessianRowSumObject;
+  SqrtHessianRowSumObject.parse(argv[1]);
+  SqrtHessianRowSumObject.process_data();
   return EXIT_SUCCESS;
 }

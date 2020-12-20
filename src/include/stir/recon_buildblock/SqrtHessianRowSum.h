@@ -54,7 +54,8 @@ class Succeeded;
       sqrt[ backproj( (y / (forwproj(lambda) + b)^2 ) * forwproj(ones)) +
                 beta * prior.Hessian_times_input(lambda, ones)]
     \endcode
-  where y is the measured (input) data, b is the corrections (additive sinogram), lambda is the current image estimate, and ones is an uniform array of ones.
+  where y is the measured (input) data, b is the corrections (additive sinogram), lambda is the current image estimate,
+  and ones is an uniform array of ones.
 
   For more details, see: Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F.,
   Stearns, C. W., &  Thielemans, K. (2020). <i>Benefits of Using a Spatially-Variant Penalty Strength With Anatomical

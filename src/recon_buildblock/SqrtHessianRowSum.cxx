@@ -49,7 +49,7 @@ SqrtHessianRowSum<TargetT>::
 set_defaults()
 {
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
-  output_filename = "SpatiallyVariantPenaltyStrength.hv";
+  output_filename = "SqrtHessianRowSum.hv";
   set_use_approximate_hessian(true);
   set_compute_with_penalty(false);
 }
@@ -58,7 +58,7 @@ template <typename TargetT>
 void
 SqrtHessianRowSum<TargetT>::initialise_keymap()
 {
-  parser.add_start_key("Hessian Row Sum Computation Parameters");
+  parser.add_start_key("Square Root Hessian Row Sum Computation Parameters");
   parser.add_key("output filename", &output_filename);
   parser.add_key("input image filename", &input_image_filename);
   parser.add_key("use approximate Hessian", &use_approximate_hessian);
@@ -182,18 +182,18 @@ process_data()
   }
   else
   {
-    // Compute the SqrtHessianRowSum image with the full hessian at the input image estimate.
-    // The input image here is assumed to be the current_image_estimate at the point the hessian will be computed
+    // Compute the SqrtHessianRowSum image with the full Hessian at the input image estimate.
+    // The input image here is assumed to be the current_image_estimate at the point the Hessian will be computed
     compute_Hessian_row_sum();
   }
 
-  // Spatially variant penalty strength is defined as the sqrt of the output of Hessian_row_sum methods
+  // Square Root the output of the Hessian_row_sum methods
   std::for_each(output_target_sptr->begin_all(), output_target_sptr->end_all(),
                 [](float& a) { return a=sqrt(a); } );
 
   // Save the output
   output_file_format_sptr->write_to_file(output_filename, *output_target_sptr);
-  info("Spatially variant penalty strength has been computed and saved as " + output_filename + ".");
+  info("Output image of sqrt Hessian row sum has been computed and saved as " + output_filename + ".");
 }
 
 template <typename TargetT>
