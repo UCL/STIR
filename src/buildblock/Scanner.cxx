@@ -436,7 +436,7 @@ case PETMR_Signa:
            311.8F,
            8.5F,
            5.56F,
-           2.1306F, // TO CHECK
+           2.01565F, // TO CHECK
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
