@@ -600,6 +600,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   num_transaxial_crystals_per_block = 0;
   add_key("number of crystals_per_block in transaxial direction",
 	  &num_transaxial_crystals_per_block);
+  num_virtual_axial_crystals_per_block = 0;
+  add_key("number of virtual crystals_per_block in axial direction",
+      &num_virtual_axial_crystals_per_block);
+  num_virtual_transaxial_crystals_per_block = 0;
+  add_key("number of virtual crystals_per_block in transaxial direction",
+      &num_virtual_transaxial_crystals_per_block);
   num_axial_crystals_per_singles_unit = -1;
   add_key("number of crystals_per_singles_unit in axial direction",
 	  &num_axial_crystals_per_singles_unit);
@@ -1095,6 +1101,10 @@ bool InterfilePDFSHeader::post_processing()
       num_axial_crystals_per_block = guessed_scanner_ptr->get_num_axial_crystals_per_block();
     if (num_transaxial_crystals_per_block<=0)
       num_transaxial_crystals_per_block = guessed_scanner_ptr->get_num_transaxial_crystals_per_block();
+    if (num_virtual_axial_crystals_per_block<=0)
+      num_virtual_axial_crystals_per_block = guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block();
+    if (num_virtual_transaxial_crystals_per_block<=0)
+      num_virtual_transaxial_crystals_per_block = guessed_scanner_ptr->get_num_virtual_transaxial_crystals_per_block();
     if (num_axial_crystals_per_singles_unit < 0) 
       num_axial_crystals_per_singles_unit = 
         guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit();
@@ -1191,6 +1201,22 @@ bool InterfilePDFSHeader::post_processing()
 	warning("Interfile warning: num_transaxial_crystals_per_block (%d) is expected to be %d.\n",
 		num_transaxial_crystals_per_block, guessed_scanner_ptr->get_num_transaxial_crystals_per_block());
 	mismatch_between_header_and_guess = true;
+      }
+    if (
+    guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block()>0 &&
+    num_virtual_axial_crystals_per_block!= guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block())
+      {
+    warning("Interfile warning: num_virtual_axial_crystals_per_block (%d) is expected to be %d.\n",
+        num_virtual_axial_crystals_per_block, guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block());
+        mismatch_between_header_and_guess = true;
+      }
+    if (
+    guessed_scanner_ptr->get_num_virtual_transaxial_crystals_per_block()>0 &&
+    num_virtual_transaxial_crystals_per_block!= guessed_scanner_ptr->get_num_virtual_transaxial_crystals_per_block())
+      {
+    warning("Interfile warning: num_transaxial_crystals_per_block (%d) is expected to be %d.\n",
+        num_transaxial_crystals_per_block, guessed_scanner_ptr->get_num_transaxial_crystals_per_block());
+    mismatch_between_header_and_guess = true;
       }
     if ( guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit() > 0 &&
          num_axial_crystals_per_singles_unit != 
@@ -1302,6 +1328,8 @@ bool InterfilePDFSHeader::post_processing()
 		num_transaxial_blocks_per_bucket,
 		num_axial_crystals_per_block,
 		num_transaxial_crystals_per_block,
+                num_virtual_axial_crystals_per_block,
+                num_virtual_transaxial_crystals_per_block,
 		num_axial_crystals_per_singles_unit,
                 num_transaxial_crystals_per_singles_unit,
                 num_detector_layers,

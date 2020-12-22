@@ -138,6 +138,7 @@ class Scanner
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -157,6 +158,7 @@ class Scanner
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -383,6 +385,10 @@ private:
   int num_axial_blocks_per_bucket;      /* axial blocks per bucket */
   int num_axial_crystals_per_block;     /* number of crystals in the axial direction */
   int num_transaxial_crystals_per_block;/* number of transaxial crystals */
+  //! Number of axial virtual crystals per block
+  int num_virtual_axial_crystals_per_block;
+  //! Number of transaxial virtual crystals per block
+  int num_virtual_transaxial_crystals_per_block;
   int num_detector_layers;
 
   int num_axial_crystals_per_singles_unit;
@@ -415,6 +421,7 @@ private:
                   float bin_size_v, float intrinsic_tilt_v,
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
@@ -433,6 +440,7 @@ private:
                   float bin_size_v, float intrinsic_tilt_v,
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,

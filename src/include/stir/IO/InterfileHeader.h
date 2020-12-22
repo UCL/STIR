@@ -284,6 +284,8 @@ private:
   int num_transaxial_blocks_per_bucket;
   int num_axial_crystals_per_block;
   int num_transaxial_crystals_per_block;
+  int num_virtual_axial_crystals_per_block;
+  int num_virtual_transaxial_crystals_per_block;
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
   int num_detector_layers;

@@ -145,17 +145,15 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              this->root_file_sptr->get_num_axial_crystals_per_block_v(),
                                              /*num_transaxial_crystals_per_block_v*/
                                              this->root_file_sptr->get_num_transaxial_crystals_per_block_v(),
+                                             num_virtual_axial_crystals_per_block,
+                                             num_virtual_transaxial_crystals_per_block,
                                              /*num_axial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_axial_crystals_per_singles_unit(),
                                              /*num_transaxial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_trans_crystals_per_singles_unit(),
                                              /*num_detector_layers_v*/ 1 ));
     }
-    // have to do this here currently as these variables cannot be set via the constructor
-    if (num_virtual_axial_crystals_per_block>=0)
-      this_scanner_sptr->set_num_virtual_axial_crystals_per_block(num_virtual_axial_crystals_per_block);
-    if (num_virtual_transaxial_crystals_per_block>=0)
-      this_scanner_sptr->set_num_virtual_transaxial_crystals_per_block(num_virtual_transaxial_crystals_per_block);
+
     // put virtual block info in root_file_sptr
     this->root_file_sptr->set_num_virtual_axial_crystals_per_block(this_scanner_sptr->get_num_virtual_axial_crystals_per_block());
     this->root_file_sptr->set_num_virtual_transaxial_crystals_per_block(this_scanner_sptr->get_num_virtual_transaxial_crystals_per_block());
@@ -263,7 +261,8 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
 
     if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
     {
-        stream << "the number of rings, ";
+        stream << "the number of rings ("<< scanner_sptr->get_num_rings() << ", " <<
+                  root_file_sptr->get_num_rings() << "), ";
         ok = false;
     }
 
@@ -275,23 +274,28 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
 
     if (scanner_sptr->get_num_axial_blocks_per_bucket() != root_file_sptr->get_num_axial_blocks_per_bucket_v())
     {
-        stream << "the number of axial blocks per bucket, ";
+        stream << "the number of axial blocks per bucket ("<< scanner_sptr->get_num_axial_blocks_per_bucket() << ", " <<
+                  root_file_sptr->get_num_axial_blocks_per_bucket_v() << "), ";
         ok = false;
     }
 
     if(scanner_sptr->get_num_transaxial_blocks_per_bucket() != root_file_sptr->get_num_transaxial_blocks_per_bucket_v())
     {
-        stream << "the number of transaxial blocks per bucket, ";
+        stream << "the number of transaxial blocks per bucket ("<< scanner_sptr->get_num_transaxial_blocks_per_bucket() << ", " <<
+                  root_file_sptr->get_num_transaxial_blocks_per_bucket_v() << "), ";
         ok = false;
     }
 
-    if(scanner_sptr->get_num_axial_crystals_per_block() != root_file_sptr->get_num_axial_crystals_per_block_v())
+    if((scanner_sptr->get_num_axial_crystals_per_block() +
+        scanner_sptr->get_num_virtual_axial_crystals_per_block()) != root_file_sptr->get_num_axial_crystals_per_block_v())
     {
-        stream << "the number of axial crystals per block, ";
+        stream << "the number of axial crystals per block ("<< scanner_sptr->get_num_axial_crystals_per_block() << ", " <<
+                  root_file_sptr->get_num_axial_crystals_per_block_v() << "), ";
         ok = false;
     }
 
-    if(scanner_sptr->get_num_transaxial_crystals_per_block() != root_file_sptr->get_num_transaxial_crystals_per_block_v())
+    if((scanner_sptr->get_num_transaxial_crystals_per_block() +
+        scanner_sptr->get_num_virtual_transaxial_crystals_per_block())!= root_file_sptr->get_num_transaxial_crystals_per_block_v())
     {
         stream << "the number of transaxial crystals per block, ";
         ok = false;
@@ -305,7 +309,8 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
 
     if(scanner_sptr->get_num_transaxial_crystals_per_singles_unit() != root_file_sptr->get_num_trans_crystals_per_singles_unit())
     {
-        stream << "the number of transaxial crystals per singles unit, ";
+        stream << "the number of transaxial crystals per singles unit ("<< scanner_sptr->get_num_transaxial_crystals_per_singles_unit() << ", " <<
+                  root_file_sptr->get_num_trans_crystals_per_singles_unit() << "), ";
         ok = false;
     }
 

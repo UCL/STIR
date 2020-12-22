@@ -159,7 +159,9 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   const int num_axial_blocks_per_bucket = -1;
   const int num_transaxial_blocks_per_bucket = -1;
   const int num_axial_crystals_per_block = -1;
+  const int num_virtual_axial_crystals_per_block=0;
   const int num_transaxial_crystals_per_block = -1;
+  const int num_virtual_transaxial_crystals_per_block = 0;
   const int num_axial_crystals_per_singles_unit = -1;
   const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
@@ -181,6 +183,8 @@ bool InterfilePDFSHeaderSPECT::post_processing()
                                                         num_transaxial_blocks_per_bucket,
                                                         num_axial_crystals_per_block,
                                                         num_transaxial_crystals_per_block,
+                                                        num_virtual_axial_crystals_per_block,
+                                                        num_virtual_transaxial_crystals_per_block,
                                                         num_axial_crystals_per_singles_unit,
                                                         num_transaxial_crystals_per_singles_unit,
                                                         num_detector_layers));
