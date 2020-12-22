@@ -723,6 +723,39 @@ get_num_virtual_transaxial_crystals_per_block() const
 //    }
     return num_virtual_transaxial_crystals_per_block;
 }
+
+int
+Scanner::
+get_num_virtual_axial_crystals() const
+{
+//  switch(get_type())
+//    {
+//    case E1080:
+//    case Siemens_mCT:
+//      return 1;
+//    default:
+//      return 0;
+//    }
+    return num_virtual_axial_crystals_per_block * get_num_axial_blocks();
+}
+
+/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
+ */
+int
+Scanner::
+get_num_virtual_transaxial_crystals() const
+{
+//  switch(get_type())
+//    {
+//    case E1080:
+//    case Siemens_mCT:
+//    case Siemens_mMR:
+//      return 1;
+//    default:
+//      return 0;
+//    }
+    return num_virtual_transaxial_crystals_per_block * get_num_transaxial_blocks();
+}
 /*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
 void
 Scanner::
@@ -757,12 +790,12 @@ check_consistency() const
       {
 	const int dets_per_ring =
 	  get_num_transaxial_blocks() *
-	  get_num_transaxial_crystals_per_block();
+      (get_num_transaxial_crystals_per_block() + get_num_virtual_transaxial_crystals_per_block());
 	if ( dets_per_ring != get_num_detectors_per_ring())
-	  { 
+      {
 	    warning("Scanner %s: inconsistent transaxial block info",
 		    this->get_name().c_str()); 
-	    return Succeeded::no; 
+        return Succeeded::no;
 	  }
       }
   }

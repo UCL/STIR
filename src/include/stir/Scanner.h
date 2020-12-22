@@ -280,6 +280,8 @@ class Scanner
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
   int get_num_virtual_transaxial_crystals_per_block() const;
+  int get_num_virtual_axial_crystals() const;
+  int get_num_virtual_transaxial_crystals() const;
   void set_num_virtual_axial_crystals_per_block(int);
   void set_num_virtual_transaxial_crystals_per_block(int);
   //@}

@@ -266,9 +266,10 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
         ok = false;
     }
 
-    if (scanner_sptr->get_num_detectors_per_ring() != root_file_sptr->get_num_dets_per_ring())
+    if ((scanner_sptr->get_num_detectors_per_ring() - scanner_sptr->get_num_virtual_transaxial_crystals()) != root_file_sptr->get_num_dets_per_ring())
     {
-        stream << "the number of detector per ring, ";
+        stream << "the number of detector per ring ("<< (scanner_sptr->get_num_detectors_per_ring() - scanner_sptr->get_num_virtual_transaxial_crystals()) << ", " <<
+                  root_file_sptr->get_num_dets_per_ring() << "), ";
         ok = false;
     }
 
@@ -297,7 +298,8 @@ check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanne
     if((scanner_sptr->get_num_transaxial_crystals_per_block() +
         scanner_sptr->get_num_virtual_transaxial_crystals_per_block())!= root_file_sptr->get_num_transaxial_crystals_per_block_v())
     {
-        stream << "the number of transaxial crystals per block, ";
+        stream << "the number of transaxial crystals per block ("<< scanner_sptr->get_num_transaxial_crystals_per_block() << ", " <<
+                  root_file_sptr->get_num_transaxial_crystals_per_block_v() << "), ";
         ok = false;
     }
 

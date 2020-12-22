@@ -160,7 +160,7 @@ Scanner::get_num_axial_blocks() const
 int
 Scanner::get_num_transaxial_blocks() const
 {
-  return num_detectors_per_ring/num_transaxial_crystals_per_block;
+  return num_detectors_per_ring/(num_transaxial_crystals_per_block+num_virtual_transaxial_crystals_per_block);
 }
 
 int
