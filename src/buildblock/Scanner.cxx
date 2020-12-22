@@ -861,12 +861,12 @@ check_consistency() const
 	      this->get_name().c_str());
     else
       {
-	if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
+    if ( get_num_detectors_per_ring() % (get_num_transaxial_crystals_per_singles_unit() + get_num_virtual_transaxial_crystals_per_block()) != 0)
 	  { 
 	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
-		    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+            "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit + virtual %d",
 		    this->get_name().c_str(),
-		    get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit()); 
+            get_num_detectors_per_ring(), (get_num_transaxial_crystals_per_singles_unit() + get_num_virtual_transaxial_crystals_per_block()));
 	    return Succeeded::no; 
 	  }
 	if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
