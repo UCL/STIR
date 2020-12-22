@@ -826,7 +826,7 @@ check_consistency() const
       {
 	const int dets_axial =
 	  get_num_axial_blocks() *
-	  get_num_axial_crystals_per_block();
+      (get_num_axial_crystals_per_block() + get_num_virtual_axial_crystals_per_block());
 	if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()))
 	  { 
 	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
