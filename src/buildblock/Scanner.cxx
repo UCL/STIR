@@ -739,8 +739,6 @@ get_num_virtual_axial_crystals() const
     return num_virtual_axial_crystals_per_block * get_num_axial_blocks();
 }
 
-/*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
- */
 int
 Scanner::
 get_num_virtual_transaxial_crystals() const
