@@ -52,6 +52,16 @@ Scanner::get_num_detectors_per_ring() const
 {
   return num_detectors_per_ring;}
 int
+Scanner::get_num_logical_rings() const
+{  return num_rings + get_num_virtual_axial_crystals_per_bucket() * get_num_axial_buckets() +
+            get_num_virtual_axial_crystals_per_block() * get_num_axial_blocks();
+}
+int
+Scanner::get_num_logical_detectors_per_ring() const
+{
+  return num_detectors_per_ring+ get_num_virtual_transaxial_crystals_per_bucket() * get_num_transaxial_buckets() +
+          get_num_virtual_transaxial_crystals_per_block() * get_num_transaxial_blocks();}
+int
 Scanner::get_max_num_non_arccorrected_bins() const
 { return max_num_non_arccorrected_bins;}
 

@@ -139,6 +139,7 @@ class Scanner
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -159,6 +160,7 @@ class Scanner
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -192,8 +194,12 @@ class Scanner
 
   //! get number of rings
   inline int get_num_rings() const;
+  //! get number of rings + axial gaps
+  inline int get_num_logical_rings() const;
   //! get the number of detectors per ring
   inline int get_num_detectors_per_ring() const;
+  //! get the number of detectors and gaps per ring
+  inline int get_num_logical_detectors_per_ring() const;
   //! get the  maximum number of arccorrected tangential positions
   /*! \warning name is not in standard STIR terminology. Should be
       \c get_max_num_non_arccorrected_tangential_poss() or so.
@@ -280,8 +286,10 @@ class Scanner
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
   int get_num_virtual_transaxial_crystals_per_block() const;
-  int get_num_virtual_axial_crystals() const;
-  int get_num_virtual_transaxial_crystals() const;
+
+  int get_num_virtual_axial_crystals_per_bucket() const;
+  int get_num_virtual_transaxial_crystals_per_bucket() const;
+
   void set_num_virtual_axial_crystals_per_block(int);
   void set_num_virtual_transaxial_crystals_per_block(int);
   //@}
@@ -396,6 +404,10 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
+  int num_virtual_axial_crystals_per_bucket;
+
+  int num_virtual_transaxial_crystals_per_bucket;
+
    //!
   //! \brief energy_resolution
   //! \author Nikos Efthimiou
@@ -424,6 +436,7 @@ private:
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
@@ -443,6 +456,7 @@ private:
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,

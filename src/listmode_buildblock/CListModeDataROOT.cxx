@@ -46,6 +46,8 @@ CListModeDataROOT(const std::string& hroot_filename)
     std::string error_str;
     int num_virtual_axial_crystals_per_block = -1; // -1 means: use scanner default
     int num_virtual_transaxial_crystals_per_block = -1; // -1 means: use scanner default
+    int num_virtual_axial_crystals_per_bucket = -1; // -1 means: use scanner default
+    int num_virtual_transaxial_crystals_per_bucket = -1; // -1 means: use scanner default
 
     this->parser.add_start_key("ROOT header");
     this->parser.add_stop_key("End ROOT header");
@@ -64,6 +66,8 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("Default number of arc-corrected bins", &this->default_num_arccorrected_bins);
     this->parser.add_key("Number of virtual axial crystals per block", &num_virtual_axial_crystals_per_block);
     this->parser.add_key("Number of virtual transaxial crystals per block", &num_virtual_transaxial_crystals_per_block);
+    this->parser.add_key("Number of virtual axial crystals per bucket", &num_virtual_axial_crystals_per_bucket);
+    this->parser.add_key("Number of virtual transaxial crystals per bucket", &num_virtual_transaxial_crystals_per_bucket);
     // end Scanner and physical dimensions.
 
     // ROOT related
@@ -147,6 +151,8 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              this->root_file_sptr->get_num_transaxial_crystals_per_block_v(),
                                              num_virtual_axial_crystals_per_block,
                                              num_virtual_transaxial_crystals_per_block,
+                                             num_virtual_axial_crystals_per_bucket,
+                                             num_virtual_transaxial_crystals_per_bucket,
                                              /*num_axial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_axial_crystals_per_singles_unit(),
                                              /*num_transaxial_crystals_per_singles_unit_v*/
