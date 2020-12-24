@@ -116,7 +116,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+  enum Type {E931, Siemens_mCT, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690, DiscoveryMI3ring, DiscoveryMI4ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
@@ -192,14 +192,11 @@ class Scanner
   //! \name Functions returning geometrical info
   //@{
 
-  //! get number of rings
+  //! get number of rings. This function returns the total number of rings + gaps
   inline int get_num_rings() const;
-  //! get number of rings + axial gaps
-  inline int get_num_logical_rings() const;
-  //! get the number of detectors per ring
+  //! get the number of detectors per ring. This function returns the total
+  //! number of detectors + gasp in the ring.
   inline int get_num_detectors_per_ring() const;
-  //! get the number of detectors and gaps per ring
-  inline int get_num_logical_detectors_per_ring() const;
   //! get the  maximum number of arccorrected tangential positions
   /*! \warning name is not in standard STIR terminology. Should be
       \c get_max_num_non_arccorrected_tangential_poss() or so.
@@ -314,9 +311,11 @@ class Scanner
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
   inline void set_type(const Type & new_type);
-  //! set number of rings
+  //! set number of rings. This function will set the total number of rings
+  //! reseting the virtual crystals to the axial direction to 0.
   inline void set_num_rings(const int & new_num);
-  //! set the namber of detectors per ring
+  //! set the namber of detectors per ring. This function will set the total number
+  //! of detectors per ring, reseting the number of virtual crystals to 0.
   inline void set_num_detectors_per_ring(const int & new_num) ;
   //! set the  maximum number of arccorrected bins
   inline void set_max_num_non_arccorrected_bins(const int & new_num) ;

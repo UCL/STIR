@@ -124,7 +124,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(E931, string_list("ECAT 931"),  
                8, 192, 2 * 256, 
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F, 
-               2, 4, 4, 8, 0, 0, 4, 0, 0, 8 * 4, 1,
+               2, 4, 4, 8, 0, 0, 0, 0, 4, 8 * 4, 1,
                0.37f, 511.f);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
@@ -190,7 +190,7 @@ Scanner::Scanner(Type scanner_type)
   case E1080:
     // data added by Robert Barnett, Westmead Hospital, Sydney
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
-               41, 336, 2* 336,
+               39, 336, 13*48,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
                1, 2, 13, 13, 1, 1, 0, 0, 0, 0, 1);// TODO bucket/singles info?
     // Transaxial blocks have 13 physical crystals and a gap at the  
@@ -213,9 +213,9 @@ Scanner::Scanner(Type scanner_type)
   case Siemens_mCT:
     // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
     set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
-               55, 400, (13+1)*48,
+               52, 400, 13*48,
                421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
-               4, 1, 13, 13, 1, 1, 0, 0, 0,0, 1 ); // TODO singles info incorrect
+               4, 1, 13, 13, 1, 1, 0, 0, 0, 0, 1 ); // TODO singles info incorrect
     // energy: 435-650
     // 13 TOF bins
     break;
@@ -761,13 +761,14 @@ check_consistency() const
 	      this->get_name().c_str());
     else
       {
-	const int dets_per_ring =
-	  get_num_transaxial_blocks() *
-      (get_num_transaxial_crystals_per_block() + get_num_virtual_transaxial_crystals_per_block());
-	if ( dets_per_ring != get_num_detectors_per_ring())
+    const int dets_per_ring =
+            get_num_transaxial_buckets() * get_num_transaxial_blocks_per_bucket() *
+            get_num_transaxial_crystals_per_block()+
+            get_num_transaxial_buckets()*get_num_virtual_transaxial_crystals_per_bucket();
+    if ( dets_per_ring != get_num_detectors_per_ring())
       {
-	    warning("Scanner %s: inconsistent transaxial block info",
-		    this->get_name().c_str()); 
+        warning("Scanner %s: inconsistent transaxial block info %d instead of %d",
+            this->get_name().c_str(), dets_per_ring, get_num_detectors_per_ring());
         return Succeeded::no;
 	  }
       }
@@ -798,13 +799,13 @@ check_consistency() const
     else
       {
 	const int dets_axial =
-	  get_num_axial_blocks() *
-      (get_num_axial_crystals_per_block() + get_num_virtual_axial_crystals_per_block());
-	if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()))
+            get_num_axial_buckets() * get_num_axial_blocks_per_bucket() *
+      get_num_axial_crystals_per_block() + get_num_axial_buckets()*get_num_virtual_axial_crystals_per_bucket();
+    if ( dets_axial != get_num_rings())
 	  { 
 	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
 		    this->get_name().c_str(),
-                    dets_axial, get_num_rings() + get_num_virtual_axial_crystals_per_block()); 
+                    dets_axial, get_num_rings());
 	    return Succeeded::no; 
 	  }
       }
@@ -955,7 +956,7 @@ Scanner::parameter_info() const
   s << "Scanner type := " << get_name() <<'\n';     
 
   s << "Number of rings                          := " << num_rings << '\n';
-  s << "Number of detectors per ring             := " << get_num_detectors_per_ring() << '\n';
+  s << "Number of detectors per ring             := " << num_detectors_per_ring << '\n';
 
   s << "Inner ring diameter (cm)                 := " << get_inner_ring_radius()*2./10 << '\n'
     << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
@@ -978,9 +979,9 @@ Scanner::parameter_info() const
     << "Number of blocks per bucket in axial direction              := "
     << get_num_axial_blocks_per_bucket() << '\n'
     << "Number of crystals per block in axial direction             := "
-    << get_num_axial_crystals_per_block() << '\n'
+    << num_axial_crystals_per_block << '\n'
     << "Number of crystals per block in transaxial direction        := "
-    << get_num_transaxial_crystals_per_block() << '\n'
+    << num_transaxial_crystals_per_block << '\n'
     << "Number of Virtual crystals per block in axial direction             := "
     << get_num_virtual_axial_crystals_per_block() << '\n'
     << "Number of Virtual crystals per block in transaxial direction        := "
