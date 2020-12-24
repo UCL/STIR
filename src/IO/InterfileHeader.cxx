@@ -1203,7 +1203,7 @@ bool InterfilePDFSHeader::post_processing()
 	mismatch_between_header_and_guess = true;
       }
     if (
-    guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block()>0 &&
+    guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block()>=0 &&
     num_virtual_axial_crystals_per_block!= guessed_scanner_ptr->get_num_virtual_axial_crystals_per_block())
       {
     warning("Interfile warning: num_virtual_axial_crystals_per_block (%d) is expected to be %d.\n",
