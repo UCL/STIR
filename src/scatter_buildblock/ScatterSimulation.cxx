@@ -376,7 +376,7 @@ check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const st
 {
   const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float> const& >(_image);
   const float z_to_middle =
-    (image.get_max_index() + image.get_min_index())*image.get_voxel_size().z()/2.F;
+    image.get_image_centre_in_physical_coordinates().z();
 
 # if 0
   const Scanner& scanner = *this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
@@ -386,8 +386,8 @@ check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const st
   const VoxelsOnCartesianGrid<float> & act_image =
     dynamic_cast<VoxelsOnCartesianGrid<float> const& >(*this->activity_image_sptr);
   const float z_to_middle_standard =
-    (act_image.get_max_index() + act_image.get_min_index())*act_image.get_voxel_size().z()/2.F;
-    // ORIGINTODO
+    act_image.get_image_centre_in_physical_coordinates().z();
+
 
   if (abs(z_to_middle - z_to_middle_standard) > .1)
     error(boost::format("ScatterSimulation: limitation in #planes and voxel-size for the %1% image.\n"
