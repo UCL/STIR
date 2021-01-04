@@ -428,7 +428,6 @@ calculate_proj_matrix_elems_for_one_bin(
 	  found_nonzero3 = false;
 	  for (c[3]=min3; c[3]<=max3; ++c[3])
 	    {
-	      // TODO call a virtual function of DiscretisedDensity?
 	      const CartesianCoordinate3D<float> coords = 
           proj_data_info_sptr->get_gantry_coordinates_for_physical_coordinates(
             density_info_sptr->get_physical_coordinates_for_indices(c));

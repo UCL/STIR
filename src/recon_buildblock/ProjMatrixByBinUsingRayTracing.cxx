@@ -350,10 +350,10 @@ set_up(
 #ifdef STIR_PMRT_LARGER_FOV
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
-  CartesianCoordinate3D<float> max_pos =
+  max_pos =
     density_info_sptr
       ->get_relative_coordinates_for_indices(max_index + 0.45F);
-  CartesianCoordinate3D<float> min_pos =
+  min_pos =
     density_info_sptr
       ->get_relative_coordinates_for_indices(min_index - 0.45F);
 #else
