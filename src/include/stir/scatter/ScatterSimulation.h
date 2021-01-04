@@ -262,6 +262,7 @@ protected:
     act_image_type,
     att_image_type
   };
+  //! Scatter emission point in physical coordinates
   struct ScatterPoint
   {
     CartesianCoordinate3D<float> coord;
@@ -275,6 +276,7 @@ protected:
   //! find scatter points
   /*! This function sets scatt_points_vector and scatter_volume. It will also
       remove any cached integrals as they would be incorrect otherwise.
+      Scatter points are defined in physical coordinates.
   */
   void sample_scatter_points();
 
@@ -301,7 +303,7 @@ protected:
 
   virtual void find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const;
 
-  unsigned find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
+  unsigned find_in_detection_points_vector(const CartesianCoordinate3D<float>& gantry_coord) const;
 
   CartesianCoordinate3D<float> shift_detector_coordinates_to_origin;
 
@@ -309,7 +311,7 @@ protected:
   double detection_efficiency_no_scatter(const unsigned det_num_A, const unsigned det_num_B) const;
 
   // next needs to be mutable because find_in_detection_points_vector is const
-  mutable std::vector<CartesianCoordinate3D<float>> detection_points_vector;
+  mutable std::vector<CartesianCoordinate3D<float>> detection_points_in_gantry_coords_vector;
 
   //!@}
 
@@ -319,14 +321,15 @@ protected:
   //! \name integrating functions
   //@{
   static float integral_between_2_points(const DiscretisedDensity<3, float>& density,
-                                         const CartesianCoordinate3D<float>& point1,
-                                         const CartesianCoordinate3D<float>& point2);
+                                         const CartesianCoordinate3D<float>& point1_physical_coord,
+                                         const CartesianCoordinate3D<float>& point2_physical_coord);
 
-  float exp_integral_over_attenuation_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point,
-                                                                   const CartesianCoordinate3D<float>& detector_coord);
+  float
+  exp_integral_over_attenuation_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point_physical_coord,
+                                                             const CartesianCoordinate3D<float>& detector_physical_coord);
 
-  float integral_over_activity_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point,
-                                                            const CartesianCoordinate3D<float>& detector_coord);
+  float integral_over_activity_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point_physical_coord,
+                                                            const CartesianCoordinate3D<float>& detector_physical_coord);
 
   float cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, const unsigned det_num);
 
