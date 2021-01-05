@@ -269,7 +269,6 @@ bool InterfileHeader::post_processing()
   
   if (!isotope_name.empty()){
       this->exam_info_sptr->set_radionuclide(isotope_name);
-      info("isotope name is " + isotope_name);
   }
   
   if (patient_orientation_index<0 || patient_rotation_index<0)
