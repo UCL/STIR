@@ -781,11 +781,11 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
 
     // preserve the length of the scanner
-    float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
+    float scanner_length = (new_scanner_sptr->get_num_rings() - 1) * new_scanner_sptr->get_ring_spacing();
 
     new_scanner_sptr->set_num_rings(new_num_rings);
     new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
-    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
+    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length / (new_num_rings - 1)));
     const float approx_num_non_arccorrected_bins =
       old_scanner_ptr->get_max_num_non_arccorrected_bins() * 
       (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring())
