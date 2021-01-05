@@ -127,6 +127,8 @@ protected:
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
   int bytes_per_pixel;
+  
+  std::string isotope_name;
 private:
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -206,7 +208,6 @@ class InterfileImageHeader : public InterfileHeader
   typedef InterfileHeader base_type;
     
     float calibration_factor;
-    std::string isotope_name;
 
 public:
   InterfileImageHeader();
