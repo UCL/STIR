@@ -39,9 +39,9 @@
       {
         unsigned det_num_A, det_num_B;
         find_detectors(det_num_A, det_num_B,  Bin(0,0,this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0),0));
-        const float first = detection_points_vector[det_num_A].z();
+        const float first = detection_points_in_gantry_coords_vector[det_num_A].z();
         find_detectors(det_num_A, det_num_B,  Bin(0,0,this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0),0));
-        const float last = detection_points_vector[det_num_A].z();
+        const float last = detection_points_in_gantry_coords_vector[det_num_A].z();
         info(boost::format("first/last z for detectors after shift: %1%/%2%")
              % first % last);
       }

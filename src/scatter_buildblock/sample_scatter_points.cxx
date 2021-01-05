@@ -75,17 +75,18 @@ sample_scatter_points()
       for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
         if(attenuation_map[coord] >= this->attenuation_threshold)
           {
-            ScatterPoint scatter_point;                                 
-            scatter_point.coord = convert_int_to_float(coord);
+            CartesianCoordinate3D<float> scatter_point_index_coords
+              = convert_int_to_float(coord);       
             if (randomly_place_scatter_points)
-              scatter_point.coord +=
+              scatter_point_index_coords +=
                 CartesianCoordinate3D<float>(random_point(-.5,.5),
                                              random_point(-.5,.5),
                                              random_point(-.5,.5));
             // AG: ^ Should this not be in range (0, 1) not (-0.5, 0.5)?
-            scatter_point.coord =
-              image.get_physical_coordinates_for_indices(scatter_point.coord);
-            scatter_point.mu_value = attenuation_map[coord];
+            ScatterPoint scatter_point;                                 
+            scatter_point.physical_coord
+              = image.get_physical_coordinates_for_indices(scatter_point_index_coords);
+            scatter_point.mu_value = attenuation_map[coord];  // is this right? in phys coords?
             this->scatt_points_vector.push_back(scatter_point);
           }
   this->remove_cache_for_integrals_over_activity();

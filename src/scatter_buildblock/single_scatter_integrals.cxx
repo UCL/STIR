@@ -85,7 +85,7 @@ integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D
 float 
 ScatterSimulation::
 integral_between_2_points(const DiscretisedDensity<3,float>& density,
-                          const CartesianCoordinate3D<float>& scatter_point, 
+                          const CartesianCoordinate3D<float>& scatter_point,
                           const CartesianCoordinate3D<float>& detector_coord)
 {       
 
@@ -96,7 +96,6 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
   
   const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
         
-  /* TODO replace with image.get_index_coordinates_for_physical_coordinates */
   ProjMatrixElemsForOneBin lor;
   RayTraceVoxelsOnCartesianGrid(
     lor,
