@@ -87,14 +87,14 @@ SqrtHessianRowSum<TargetT>::post_processing()
     error("Please define input_image_filename.");
     return true;
   }
-  input_image = read_from_file<TargetT>(input_image_filename);  
+  input_image_sptr = read_from_file<TargetT>(input_image_filename);
   return false;
 }
 
 template <typename TargetT>
 GeneralisedObjectiveFunction<TargetT > const&
 SqrtHessianRowSum<TargetT>::
-get_objective_function()
+get_objective_function_sptr()
 {
   return static_cast<GeneralisedObjectiveFunction<TargetT >&> (*objective_function_sptr);
 }
@@ -112,19 +112,19 @@ set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<Target
 template <typename TargetT>
 shared_ptr <TargetT>
 SqrtHessianRowSum<TargetT>::
-get_input_image()
+get_input_image_sptr()
 {
-  return input_image;
+  return input_image_sptr;
 }
 
 template <typename TargetT>
 void
 SqrtHessianRowSum<TargetT>::
-set_input_image(shared_ptr <TargetT > const& image)
+set_input_image_sptr(shared_ptr <TargetT > const& image_sptr)
 {
   if (_already_setup)
-    _already_setup = input_image.has_same_characteristics(image);
-  input_image = image;
+    _already_setup = input_image_sptr->has_same_characteristics(*image_sptr);
+  input_image_sptr = image_sptr;
 }
 
 template <typename TargetT>
@@ -176,12 +176,12 @@ set_up()
   {
     error("objective_function_sptr is null");
   }
-  if (is_null_ptr(this->input_image))
+  if (is_null_ptr(this->input_image_sptr))
   {
-    error("input_image is null");
+    error("input_image_sptr is null");
   }
-  objective_function_sptr->set_up(input_image);
-  output_target_sptr =  unique_ptr<TargetT>(input_image->get_empty_copy());
+  objective_function_sptr->set_up(input_image_sptr);
+  output_target_sptr =  unique_ptr<TargetT>(input_image_sptr->get_empty_copy());
   std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
 
   _already_setup = true;
@@ -225,14 +225,14 @@ compute_Hessian_row_sum()
   if (!_already_setup)
     error("set_up() needs to be called first");
 
-  auto ones_image_sptr = input_image->get_empty_copy();
+  auto ones_image_sptr = input_image_sptr->get_empty_copy();
   std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
   info("Computing Hessian row sum, this may take a while...");
   if (get_compute_with_penalty())
-    objective_function_sptr->accumulate_Hessian_times_input(*output_target_sptr, *input_image, *ones_image_sptr);
+    objective_function_sptr->accumulate_Hessian_times_input(*output_target_sptr, *input_image_sptr, *ones_image_sptr);
   else
-    objective_function_sptr->accumulate_Hessian_times_input_without_penalty(*output_target_sptr, *input_image, *ones_image_sptr);
+    objective_function_sptr->accumulate_Hessian_times_input_without_penalty(*output_target_sptr, *input_image_sptr, *ones_image_sptr);
 }
 
 template <typename TargetT>
@@ -243,11 +243,11 @@ compute_approximate_Hessian_row_sum()
   if (!_already_setup)
     error("set_up() needs to be called first");
 
-  output_target_sptr =  unique_ptr<TargetT>(input_image->get_empty_copy());
+  output_target_sptr =  unique_ptr<TargetT>(input_image_sptr->get_empty_copy());
   std::fill(output_target_sptr->begin_all(), output_target_sptr->end_all(), 0.F);
   info("Computing the approximate Hessian row sum, this may take a while...");
   // Setup image
-  auto ones_image_sptr = input_image->get_empty_copy();
+  auto ones_image_sptr = input_image_sptr->get_empty_copy();
   std::fill(ones_image_sptr->begin_all(), ones_image_sptr->end_all(), 1.F);
 
   // Approximate Hessian computation will error for a lot of priors so we ignore it!

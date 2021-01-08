@@ -82,16 +82,16 @@ public:
           compute_approximate_Hessian_row_sum().*/
     void process_data();
 
-    //! \name get and set methods for the objective function
+    //! \name get and set methods for the objective function sptr
     //@{
-    GeneralisedObjectiveFunction<TargetT > const& get_objective_function();
+    GeneralisedObjectiveFunction<TargetT > const& get_objective_function_sptr();
     void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > > &obj_fun);
     //@}
 
     //! \name get and set methods for the input image
     //@{
-    shared_ptr<TargetT> get_input_image();
-    void set_input_image(shared_ptr <TargetT > const& image);
+    shared_ptr<TargetT> get_input_image_sptr();
+    void set_input_image_sptr(shared_ptr <TargetT > const& image);
     //@}
 
     //! get method for returning the sqrt row sum image
@@ -134,15 +134,15 @@ private:
     std::string input_image_filename;
 
     //! The input image, can be template or current_image_estimate, dependant on which sqrt row sum method used
-    shared_ptr<TargetT> input_image;
+    shared_ptr<TargetT> input_image_sptr;
 
     //! The output image that the row sum computation methods will populate
     shared_ptr<TargetT> output_target_sptr;
 
     //! Used to toggle which of the two row sum methods will be utilised.
-    //! This toggles the usage of input_image.
-    //! If true, input_image is only used as a template for the output back-projection,
-    //! else, input_image is used as the current_image_estimate
+    //! This toggles the usage of input_image_sptr.
+    //! If true, input_image_sptr is only used as a template for the output back-projection,
+    //! else, input_image_sptr is used as the current_image_estimate
     bool use_approximate_hessian;
 
     //! When computing the hessian row sum of the objective function, include the penalty term or not.
