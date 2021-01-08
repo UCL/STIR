@@ -43,15 +43,11 @@
 */
 
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
-
-using std::cerr;
-using std::cout;
-using std::endl;
+#include <iostream>
 
 START_NAMESPACE_STIR
 static void print_usage_and_exit()
 {
-  //todo:update usage
   std::cerr<<"\nThis executable computes the square root of the Hessian row sum of the objective function."
              "\n\nUsage: compute_sqrt_Hessian_row_sum compute_sqrt_Hessian_row_sum.par"
              "\n\n       (The example parameter file can be found in the samples folder.)" << std::endl;
@@ -66,8 +62,8 @@ main(int argc, char *argv[])
   if (argc!=2)
     print_usage_and_exit();
 
-  SqrtHessianRowSum<DiscretisedDensity<3,float>> SqrtHessianRowSumObject;
-  SqrtHessianRowSumObject.parse(argv[1]);
+  SqrtHessianRowSum<DiscretisedDensity<3,float>> SqrtHessianRowSumObject(argv[1]);
+  SqrtHessianRowSumObject.set_up();
   SqrtHessianRowSumObject.process_data();
   return EXIT_SUCCESS;
 }

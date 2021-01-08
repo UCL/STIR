@@ -122,6 +122,8 @@ public:
 protected:
 
 private:
+    bool _already_setup = false;
+
     //! Objective function object
     shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
 
