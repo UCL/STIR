@@ -44,6 +44,14 @@ SqrtHessianRowSum()
 }
 
 template <typename TargetT>
+SqrtHessianRowSum<TargetT>::
+SqrtHessianRowSum(const std::string& filename)
+{
+  this->set_defaults();
+  this->parse(filename.c_str());
+}
+
+template <typename TargetT>
 void
 SqrtHessianRowSum<TargetT>::
 set_defaults()

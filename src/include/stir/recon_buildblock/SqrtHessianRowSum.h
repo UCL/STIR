@@ -70,6 +70,7 @@ public:
     //! Default constructor
     /*! calls set_defaults().*/
     SqrtHessianRowSum();
+    explicit SqrtHessianRowSum(const std::string&);
     
     //! sets default values
     /*! Sets \c use_approximate_hessian to \c true and \c compute_with_penalty to \c false
