@@ -1,4 +1,4 @@
-Square Root Hessian Row Sum Computation Parameters :=
+SqrtHessianRowSum Parameters :=
   
   ; The script requires an input image to be used as:
   ; - image estimate at which the square root of the Hessian row sum should be computed, or
@@ -10,7 +10,8 @@ Square Root Hessian Row Sum Computation Parameters :=
 
   ; bool to indicate if an approximate Hessian should be used or the true Hessian.
   ; This changes the usage of the `input image filename :=` key.
-  use approximate Hessian := 0
+  ; Default value is 1
+  use approximate Hessian := 1
 
   ; Define the objective function. 
   ; This should be the same objective function as used for reconstructions
@@ -39,6 +40,7 @@ Square Root Hessian Row Sum Computation Parameters :=
 
     ; The use of a prior in the computation of the sqrt Hessian row sum is optional
     ; but will not work with an approximate Hessian row sum computation as priors do not have an approximate Hessian
+    ; Default value is 0
     compute with penalty := 0
 
     prior type := Quadratic Prior

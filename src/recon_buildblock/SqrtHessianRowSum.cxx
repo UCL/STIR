@@ -49,7 +49,7 @@ SqrtHessianRowSum<TargetT>::
 set_defaults()
 {
   output_file_format_sptr = OutputFileFormat<TargetT>::default_sptr();
-  output_filename = "SqrtHessianRowSum.hv";
+  output_filename = "";
   set_use_approximate_hessian(true);
   set_compute_with_penalty(false);
 }
@@ -58,7 +58,7 @@ template <typename TargetT>
 void
 SqrtHessianRowSum<TargetT>::initialise_keymap()
 {
-  parser.add_start_key("Square Root Hessian Row Sum Computation Parameters");
+  parser.add_start_key("SqrtHessianRowSum Parameters");
   parser.add_key("output filename", &output_filename);
   parser.add_key("input image filename", &input_image_filename);
   parser.add_key("use approximate Hessian", &use_approximate_hessian);
@@ -192,8 +192,11 @@ process_data()
                 [](float& a) { return a=sqrt(a); } );
 
   // Save the output
-  output_file_format_sptr->write_to_file(output_filename, *output_target_sptr);
-  info("Output image of sqrt Hessian row sum has been computed and saved as " + output_filename + ".");
+  if (!output_filename.empty())
+    {
+      output_file_format_sptr->write_to_file(output_filename, *output_target_sptr);
+      info("Output image of sqrt Hessian row sum has been computed and saved as " + output_filename + ".");
+    }
 }
 
 template <typename TargetT>

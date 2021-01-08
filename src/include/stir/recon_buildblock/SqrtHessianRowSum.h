@@ -42,9 +42,9 @@ START_NAMESPACE_STIR
 class Succeeded;
 
 /*! \ingroup recon_buildblock
-  \brief Implementations of two square root Hessian row sum computation methods, as propose by Tsai et.al (2020).
+  \brief Implementations of two square root Hessian row sum computation methods, as proposed by Tsai et al. (2020).
 
-  Two methods of computing the sqrt Hessian row sum images:
+  Two methods of computing the sqrt of the Hessian row sum images:
     - use an approximation of the Hessian of the log-likelihood from only the measured data
       \code
         sqrt[ backproj( forwproj(ones) / y) ]
@@ -67,20 +67,27 @@ class SqrtHessianRowSum:
         public ParsingObject
 {
 public:
+    //! Default constructor
+    /*! calls set_defaults().*/
     SqrtHessianRowSum();
+    
+    //! sets default values
+    /*! Sets \c use_approximate_hessian to \c true and \c compute_with_penalty to \c false
+    */
+    void set_defaults();
 
-    //! The main function to compute and save the sqrt Hessian row sum volume
-    //! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
-    //! compute_approximate_Hessian_row_sum().
+    //! The main function to compute and save the sqrt of the Hessian row sum volume
+    /*! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
+          compute_approximate_Hessian_row_sum().*/
     void process_data();
 
-    //! get and set methods for the objective function
+    //! \name get and set methods for the objective function
     //@{
     GeneralisedObjectiveFunction<TargetT > const& get_objective_function();
     void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > > &obj_fun);
     //@}
 
-    //! get and set methods for the input image
+    //! \name get and set methods for the input image
     //@{
     shared_ptr<TargetT> get_input_image();
     void set_input_image(shared_ptr <TargetT > const& image);
@@ -91,13 +98,13 @@ public:
 
     void set_up();
 
-    //! get and set methods for use approximate hessian bool
+    //! \name get and set methods for use approximate hessian bool
     //@{
     bool get_use_approximate_hessian() const;
     void set_use_approximate_hessian(bool use_approximate);
     //@}
 
-    //! get and set methods for the compute with penalty bool
+    //! \name get and set methods for the compute with penalty bool
     //@{
     bool get_compute_with_penalty() const;
     void set_compute_with_penalty(bool with_penalty);
@@ -139,13 +146,12 @@ private:
     //! Does not work with use_approximate_hessian as priors do not have an approximate method.
     bool compute_with_penalty;
 
-    //! Method to save images
+    //! File-format to save images
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
 
     //! used to check acceptable parameter ranges, etc...
     bool post_processing();
     void initialise_keymap();
-    void set_defaults();
 };
 
 END_NAMESPACE_STIR
