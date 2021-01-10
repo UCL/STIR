@@ -569,7 +569,13 @@ read_file_itk(const std::string &filename)
                 __FILE__, __LINE__);
           return NULL; }
 
-      if (reader->GetImageIO()->GetPixelType() != itk::ImageIOBase::VECTOR) {
+      if (reader->GetImageIO()->GetPixelType() != 
+#if ITK_VERSION_MAJOR<5 || (ITK_VERSION_MAJOR==5 && ITK_VERSION_MINOR==0)
+          itk::ImageIOBase::VECTOR
+#else
+          itk::IOPixelEnum::VECTOR
+#endif
+         ) {
           error("read_file_itk: Image type should be vector %s:%d.",
                 __FILE__, __LINE__);
           return NULL; }
