@@ -214,7 +214,7 @@ private:
     hsize_t m_NY_SUB = 0;
     hsize_t m_NZ_SUB = 0;
 
-    const int m_max_dataset_dims =5;
+    static const int m_max_dataset_dims =5;
 #if 0
     // AB: todo these are never used. 
     hsize_t m_NX = 0;        // output buffer dimensions
