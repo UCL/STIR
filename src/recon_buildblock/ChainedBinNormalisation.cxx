@@ -55,7 +55,7 @@ bool
 ChainedBinNormalisation::
 post_processing()
 {
-    if ((apply_first->get_calibration_factor()>0.F) && (apply_first->get_calibration_factor()>0.F))
+    if ((apply_first->get_calibration_factor()>0.F) && (apply_second->get_calibration_factor()>0.F))
     error("ChainedBinNormalisation: both first and second have a calibration factor. The factor would be applied twice");
   return false;
 }
