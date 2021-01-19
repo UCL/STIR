@@ -101,7 +101,7 @@ protected:
   bool _use_dead_time;
   bool _use_cor_factors;
   double half_life, view_time_interval;
-  int num_detector_heads,rel_angle;
+  int num_detector_heads;
   mutable int num_views;
   mutable bool resampled;
 };

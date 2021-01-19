@@ -84,7 +84,6 @@ initialise_keymap()
   this->parser.add_key("use detector efficiencies", &this->_use_detector_efficiencies);
   this->parser.add_key("use uniformity factors", &this->_use_uniformity_factors);
   this->parser.add_key("folder prefix", &this->folder_prefix);
-  this->parser.add_key("rel angle", &this->rel_angle);
   this->parser.add_key("half life", &this->half_life); //TODO read this from the database according to isotope name
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("projdata filename", &this->projdata_filename);
