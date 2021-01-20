@@ -35,7 +35,8 @@ Radionuclide::Radionuclide()
 Radionuclide::Radionuclide(std::string rname, float renergy, float rbranching_ratio, float rhalf_life,
                            ImagingModality rmodality)
 	 :name(rname),energy(renergy),
-	 branching_ratio(rbranching_ratio),half_life(rhalf_life),modality(rmodality)
+      branching_ratio(rbranching_ratio),
+      half_life(rhalf_life),modality(rmodality)
      {}
 
      
