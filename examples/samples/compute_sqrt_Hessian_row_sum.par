@@ -43,7 +43,7 @@ SqrtHessianRowSum Parameters :=
     ; Default value is 0
     compute with penalty := 0
 
-    prior type := Quadratic Prior
+    prior type := Quadratic
     Quadratic Prior Parameters:=
       penalisation factor := 0.0
       only 2D:= 0
