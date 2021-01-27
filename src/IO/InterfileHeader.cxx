@@ -175,6 +175,7 @@ InterfileHeader::InterfileHeader()
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+  add_key("isotope name", &isotope_name); 
   add_key("study date", &study_date_time.date);
   add_key("study_time", &study_date_time.time);
   add_key("type of data", 
@@ -265,7 +266,11 @@ bool InterfileHeader::post_processing()
       catch(...)
         {}
     }
-
+  
+  if (!isotope_name.empty()){
+      this->exam_info_sptr->set_radionuclide(isotope_name);
+  }
+  
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
   // warning: relies on index taking same values as enums in PatientPosition
@@ -469,7 +474,6 @@ InterfileImageHeader::InterfileImageHeader()
   add_vectorised_key("image data type description", &image_data_type_description);
   
   add_key("calibration factor", &calibration_factor); 
-  add_key("isotope name", &isotope_name); 
   
 }
 
@@ -504,7 +508,6 @@ bool InterfileImageHeader::post_processing()
     return true;
   
   this->exam_info_sptr->set_calibration_factor(calibration_factor);
-  this->exam_info_sptr->set_radionuclide(isotope_name);
   
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }

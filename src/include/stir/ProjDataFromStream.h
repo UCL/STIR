@@ -157,10 +157,10 @@ public:
   float get_scale_factor() const;  
 
   //! Get the value of bin.
-  float get_bin_value(const Bin& this_bin) const;
+  virtual float get_bin_value(const Bin& this_bin) const;
   
   //! Set the value of the bin
-  void set_bin_value(const Bin &bin);
+  virtual void set_bin_value(const Bin &bin);
     
 protected:
   //! the stream with the data

@@ -1,0 +1,54 @@
+SqrtHessianRowSum Parameters :=
+  
+  ; The script requires an input image to be used as:
+  ; - image estimate at which the square root of the Hessian row sum should be computed, or
+  ; - an image template to specify the geometry of the approximate Hessian
+  input image filename := 
+
+  ; The output filename of the sqrt Hessian row-sum computation
+  output filename := 
+
+  ; bool to indicate if an approximate Hessian should be used or the true Hessian.
+  ; This changes the usage of the `input image filename :=` key.
+  ; Default value is 1
+  use approximate Hessian := 1
+
+  ; Define the objective function. 
+  ; This should be the same objective function as used for reconstructions
+  objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+    ; Measured data and additive sinograms
+    input file := 
+    additive sinogram := 
+
+    Bin Normalisation type := From ProjData
+    Bin Normalisation From ProjData :=
+    ; normalistion sinogram
+      normalisation projdata filename:= 
+    End Bin Normalisation From ProjData:=
+
+    ; Optional definition of a projector
+    projector pair type := Matrix
+    projector pair using matrix parameters :=
+      matrix type := Ray Tracing
+      ray tracing matrix parameters :=
+        number of rays in tangential direction to trace for each bin := 50
+      end ray tracing matrix parameters :=
+    end projector pair using matrix parameters :=
+
+
+    ; The use of a prior in the computation of the sqrt Hessian row sum is optional
+    ; but will not work with an approximate Hessian row sum computation as priors do not have an approximate Hessian
+    ; Default value is 0
+    compute with penalty := 0
+
+    prior type := Quadratic
+    Quadratic Prior Parameters:=
+      penalisation factor := 0.0
+      only 2D:= 0
+    END Quadratic Prior Parameters:=
+
+  end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+END :=

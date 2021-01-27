@@ -614,6 +614,92 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   return Succeeded::yes;
 }
 
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check argument characteristics
+    std::string explanation;
+    if (!input.has_same_characteristics(this->get_sensitivity(), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
+              "sensitivity and input for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_sensitivity(), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
+              "sensitivity and current_image_estimate for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+
+  }
+#ifndef NDEBUG
+  info(boost::format("INPUT max: (%1% , %2%)") % input.construct_single_density(1).find_max() % input.construct_single_density(2).find_max());
+#endif //NDEBUG
+  DynamicDiscretisedDensity dyn_input=this->_dyn_image_template;
+  DynamicDiscretisedDensity dyn_current_image_estimate=this->_dyn_image_template;
+  DynamicDiscretisedDensity dyn_output=this->_dyn_image_template;
+  this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_input, input);
+  this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_current_image_estimate, current_image_estimate);
+
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
+      frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+      ++frame_num)
+  {
+    assert(dyn_input[frame_num].find_max()==dyn_input[frame_num].find_min());
+    this->_single_frame_obj_funcs[frame_num].
+            accumulate_sub_Hessian_times_input_without_penalty(dyn_output[frame_num],
+                    dyn_current_image_estimate[frame_num],
+                    dyn_input[frame_num],
+                    subset_num);
+  } // end of loop over frames
+  shared_ptr<TargetT> unnormalised_temp(output.get_empty_copy());
+  shared_ptr<TargetT> temp(output.get_empty_copy());
+  this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(*unnormalised_temp,
+                                                                      dyn_output) ;
+  // Trick to use a better step size for the two parameters.
+  (this->_patlak_plot_sptr->get_model_matrix()).normalise_parametric_image_with_model_sum(*temp,*unnormalised_temp) ;
+#ifndef NDEBUG
+  info(boost::format("TEMP max: (%1% , %2%)") % temp->construct_single_density(1).find_max() % temp->construct_single_density(2).find_max());
+// Writing images
+write_to_file("all_params_one_input.img", input);
+write_to_file("temp_denominator.img", *temp);
+dyn_input.write_to_ecat7("dynamic_input_from_all_params_one.img");
+dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
+DynamicProjData temp_projdata = this->get_dyn_proj_data();
+for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
+  frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+  ++frame_num)
+temp_projdata.set_proj_data_sptr(this->_single_frame_obj_funcs[frame_num].get_proj_data_sptr(),frame_num);
+
+temp_projdata.write_to_ecat7("DynamicProjections.S");
+#endif // NDEBUG
+  // output += temp
+  typename TargetT::full_iterator out_iter = output.begin_all();
+  typename TargetT::full_iterator out_end = output.end_all();
+  typename TargetT::const_full_iterator temp_iter = temp->begin_all_const();
+  while (out_iter != out_end)
+  {
+    *out_iter += *temp_iter;
+    ++out_iter; ++temp_iter;
+  }
+#ifndef NDEBUG
+  info(boost::format("OUTPUT max: (%1% , %2%)") % output.construct_single_density(1).find_max() % output.construct_single_density(2).find_max());
+#endif // NDEBUG
+
+
+  return Succeeded::yes;
+}
 
 END_NAMESPACE_STIR
 

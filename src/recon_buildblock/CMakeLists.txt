@@ -80,6 +80,7 @@ set(${dir_LIB_SOURCES}
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
         PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+	SqrtHessianRowSum
 )
 
 if (HAVE_ECAT)

@@ -155,7 +155,7 @@ public:
     //! Set the full resolution attenuation image.
     inline void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float > > );
     //! set projection data that contains the attenuation correction factors
-    inline void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
+    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
     //! set normalisation object (excluding attenuation)
     void set_normalisation_sptr(const shared_ptr<BinNormalisation>);
     //!

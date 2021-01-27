@@ -133,6 +133,7 @@ public:
             shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
   
   void set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr);
+  shared_ptr<const ExamInfo> get_exam_info_sptr() const ;
 
  protected:
   //! check if the argument is the same as what was used for set_up()

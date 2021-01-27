@@ -98,6 +98,8 @@ public:
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
+  
+  void set_bin_value(const Bin &bin);
     
   //! \deprecated a*x+b*y (\see xapyb)
   STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,

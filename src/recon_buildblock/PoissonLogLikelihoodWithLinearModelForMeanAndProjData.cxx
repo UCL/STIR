@@ -901,12 +901,23 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 					 -this->get_max_segment_num_to_process(),
 					 this->get_max_segment_num_to_process(),
                                          subset_num, this->get_num_subsets());
+
+  info("Forward projecting input image.", 2);
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp parallel for schedule(runtime)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
+#ifdef STIR_OPENMP
+          const int thread_num = omp_get_thread_num();
+          info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+               % thread_num % omp_get_num_threads()
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+          info(boost::format("calculating segment_num: %d, view_num: %d")
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
           const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
 			  // first compute data-term: y*norm^2
@@ -944,6 +955,151 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
 		 std::plus<typename TargetT::full_value_type>());
+
+  return Succeeded::yes;
+}
+
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check characteristics
+
+    std::string explanation;
+    if (!output.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and output for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!input.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and current_image_estimate for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+          this->get_projector_pair().get_symmetries_used()->clone());
+
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
+  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
+          detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
+                                               *symmetries_sptr,
+                                               -this->get_max_segment_num_to_process(),
+                                               this->get_max_segment_num_to_process(),
+                                               subset_num, this->get_num_subsets());
+
+
+
+  // Create and populate the input_viewgrams_vec with empty values.
+  // This is needed to make the order of the vector correct w.r.t vs_nums_to_process.
+  //OMP may mess this up
+  // Try:  std::vector<RelatedViewgrams<float>> input_viewgrams_vec(vs_nums_to_process.size());
+  std::vector<RelatedViewgrams<float>> input_viewgrams_vec;
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {
+    const ViewSegmentNumbers view_segment_num = vs_nums_to_process[i];
+    input_viewgrams_vec.push_back(this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr));
+  }
+
+
+  // Forward project input image
+  info("Forward projecting input image.",2);
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(runtime)
+#endif
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {  // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
+    input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+    this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
+  }
+
+
+
+  info("Forward projecting current image estimate and back projecting to output.", 2);
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(runtime)
+#endif
+  for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
+  {
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
+    // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
+    RelatedViewgrams<float> ybar_sq_viewgram;
+    {
+      ybar_sq_viewgram = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+      this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq_viewgram);
+
+      //add additive sinogram to forward projection
+      if (!(is_null_ptr(this->get_additive_proj_data_sptr())))
+        ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+      // square ybar
+      ybar_sq_viewgram *= ybar_sq_viewgram;
+    }
+
+    // Compute: final_viewgram * F(input) / ybar_sq_viewgram
+    // final_viewgram starts as measured data
+    RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+    {
+      // Mult input_viewgram
+      final_viewgram *= input_viewgrams_vec[i];
+      int tmp1 = 0, tmp2 = 0;// ignore counters returned by divide_and_truncate
+      // Divide final_viewgeam by ybar_sq_viewgram
+      divide_and_truncate(final_viewgram, ybar_sq_viewgram, 0, tmp1, tmp2);
+    }
+
+    // back-project final_viewgram
+    this->get_projector_pair().get_back_projector_sptr()->
+            back_project(final_viewgram);
+
+  } // end of loop over view/segments
+
+  shared_ptr<TargetT> tmp(output.get_empty_copy());
+  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
+  // output += tmp;
+  std::transform(output.begin_all(), output.end_all(),
+                 tmp->begin_all(), output.begin_all(),
+                 std::plus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
