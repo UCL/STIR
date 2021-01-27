@@ -51,9 +51,13 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine,
      const int num_tang_poss_to_trim,
-     const int max_in_segment_num_to_process_argument
+     const int max_in_segment_num_to_process_argument,
+     const int num_tof_bins_to_combine
      )
 {
+  if (num_tof_bins_to_combine!=1)
+    error("SSRB: num_tof_bins_to_combine (%d) currently needs to be 1",
+          num_tof_bins_to_combine);
   if (num_segments_to_combine%2==0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
 	  num_segments_to_combine);
@@ -170,7 +174,8 @@ SSRB(const string& output_filename,
      const int num_views_to_combine,
      const int num_tang_poss_to_trim,
      const bool do_norm,
-     const int max_in_segment_num_to_process
+     const int max_in_segment_num_to_process,
+     const int num_tof_bins_to_combine
      )
 {
   shared_ptr<ProjDataInfo> out_proj_data_info_ptr(
@@ -178,7 +183,8 @@ SSRB(const string& output_filename,
          num_segments_to_combine,
 	 num_views_to_combine,
 	 num_tang_poss_to_trim,
-         max_in_segment_num_to_process
+         max_in_segment_num_to_process,
+         num_tof_bins_to_combine
 	 ));
   ProjDataInterfile out_proj_data(in_proj_data.get_exam_info_sptr(), 
 				  out_proj_data_info_ptr, output_filename, std::ios::out); 
