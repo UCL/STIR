@@ -62,23 +62,20 @@ GEHDF5Wrapper::read_dataset_int32(const std::string& dataset_name)
 
 bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 {
-    H5::H5File file;
-    file.openFile( filename, H5F_ACC_RDONLY );
-    if(!file.isHdf5(filename))
-        return false;
-
     try
     {
-        return (check_GE_signature(file));
+      if(!H5::H5File::isHdf5(filename))
+        return false;
+
+      H5::H5File file;
+      file.openFile( filename, H5F_ACC_RDONLY );
+
+      return (check_GE_signature(file));
     }
     catch(...)
     {
         return false;
-    }
-    
-    // should never get here
-    return false;
-    
+    }   
 }
 
 bool GEHDF5Wrapper::check_GE_signature(H5::H5File& file)

@@ -11,6 +11,7 @@
 */
 /*
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -48,6 +49,7 @@ class ProjDataInfo;
     away some bins. Half of the bins will be thrown away at each 'side' of a sinogram (see below).
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
   Default value -1 means 'do all segments'.
+  \param num_tof_bins_to_combine currently has to be 1.
 
   The original SSRB algorithm was developed in M.E. Daube-Witherspoon and 
   G. Muehllehner, (1987) <i>Treatment of axial data in three-dimensional PET</i>,
@@ -77,13 +79,15 @@ class ProjDataInfo;
       identical 'num_segments_to_combine'. So it cannot handle standard 
       GE Advance data.
   \todo get rid of both restrictions flagged as warnings in the documentation for this function.
+  \todo rename to something much more general than \c SSRB
 */
 ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,
      const int num_tangential_poss_to_trim = 0,
-     const int max_in_segment_num_to_process=-1
+     const int max_in_segment_num_to_process=-1,
+     const int num_tof_bins_to_combine=1
      );
 
 //! Perform Single Slice Rebinning and write output to file
@@ -102,7 +106,8 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine,
      const int num_tang_poss_to_trim,
-     const int max_in_segment_num_to_process
+     const int max_in_segment_num_to_process,
+     const int num_tof_bins_to_combine
      ) for restrictions
   */
 void 
@@ -112,7 +117,8 @@ SSRB(const std::string& output_filename,
      const int num_views_to_combine = 1,
      const int num_tangential_poss_to_trim = 0,
      const bool do_normalisation = true,
-     const int max_in_segment_num_to_process = -1
+     const int max_in_segment_num_to_process = -1,
+     const int num_tof_bins_to_combine = 1
      );
 
 //! Perform Single Slice Rebinning and write output to ProjData
