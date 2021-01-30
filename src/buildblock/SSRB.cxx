@@ -164,6 +164,14 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 				out_segment_num);
       }
     }
+
+  if (num_tof_bins_to_combine!=1)
+    {
+      if (num_tof_bins_to_combine<1)
+        error("SSRB: num_tof_bins_to_combine needs to be at least 1");
+      const int new_tof_mash_factor = in_proj_data_info_sptr->get_tof_mash_factor() * num_tof_bins_to_combine;
+      out_proj_data_info_sptr->set_tof_mash_factor(new_tof_mash_factor);
+    }
   return out_proj_data_info_sptr;
 }
 
