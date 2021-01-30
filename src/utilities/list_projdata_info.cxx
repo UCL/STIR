@@ -137,11 +137,10 @@ int main(int argc, char *argv[])
       const int max_segment_num = proj_data_sptr->get_max_segment_num();
       const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
       const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
-      std::cout << "\nTotal number of TOF positions: " << proj_data_sptr->get_num_tof_poss();
 
       for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
       {
-          std::cout << "\nTiming location: " << timing_num;
+          std::cout << "\nTOF bin: " << timing_num;
           bool accumulators_initialized = false;
           float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
           float accum_max=std::numeric_limits<float>::min();

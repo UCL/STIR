@@ -327,6 +327,7 @@ ProjDataInfo::parameter_info()  const
     << get_bed_position_vertical() << endl;
   s << "start horizontal bed position (mm) := "
     << get_bed_position_horizontal() << endl;
+  s << "\nNumber of TOF positions in data: " << get_num_tof_poss() << '\n';
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
