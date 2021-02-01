@@ -5,7 +5,7 @@
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2018-2019 University of Leeds
     Copyright (C) 2019 University College of London
-    Copyright (C) 2019 National Physical Laboratory
+    Copyright (C) 2019-2021 National Physical Laboratory
 
     This file is part of STIR.
 
@@ -163,6 +163,7 @@ public:
   const double get_sigma_dm()const;
   const bool get_only_2D() const;
   const bool get_hybrid()const;
+  const int get_stop_iterative_kernel_at_iter_num()const;
 
   std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptrs();
 //@}
@@ -190,6 +191,8 @@ public:
   void set_sigma_dm(const double);
   void set_only_2D(const bool);
   void set_hybrid(const bool);
+  void set_stop_iterative_kernel_at_iter_num(const int);
+  
   //@}
 
   //! prompts the user to enter parameter values manually
@@ -208,12 +211,14 @@ public:
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
+  int stop_iterative_kernel_at_iter_num;
   std::vector<double> sigma_m;
   bool only_2D;
   bool hybrid;
   double sigma_p;
   double sigma_dp, sigma_dm;
   BasicCoordinate<3,int> min_ind, max_ind;
+  shared_ptr<TargetT> iterative_kernel_image_fixed_sptr;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
