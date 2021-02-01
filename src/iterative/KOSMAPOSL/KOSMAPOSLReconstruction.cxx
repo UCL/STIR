@@ -781,7 +781,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
       int dimf_row = this->num_voxels;
       int dimf_col = this->num_non_zero_feat-1;
       
-      if(this->iterative_kernel_image_fixed_sptr->empty()) 
+      if(!this->iterative_kernel_image_fixed_sptr) 
       calculate_norm_matrix(*this->kpnorm_sptr, dimf_row, dimf_col,
                           current_alpha_estimate);
     }
