@@ -167,7 +167,7 @@ set_defaults()
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
   this->hybrid=0;
-  this->freeze_iterative_kernel_at_iter_num=0;
+  this->freeze_iterative_kernel_at_subiter_num=-1;
 }
 
 template <typename TargetT>
@@ -190,7 +190,7 @@ initialise_keymap()
   this->parser.add_key("hybrid",&this->hybrid);
   this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
   this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
-  this->parser.add_key("stop iterative kernel at iter num",&this->freeze_iterative_kernel_at_iter_num);
+  this->parser.add_key("freeze iterative kernel at subiteration number",&this->freeze_iterative_kernel_at_subiter_num);
 }
 
 
@@ -403,8 +403,8 @@ std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomic
 template <typename TargetT>
 const int
 KOSMAPOSLReconstruction<TargetT>::
-get_freeze_iterative_kernel_at_iter_num() const
-{ return this->freeze_iterative_kernel_at_iter_num; }
+get_freeze_iterative_kernel_at_subiter_num() const
+{ return this->freeze_iterative_kernel_at_subiter_num; }
 
 
 /***************************************************************
@@ -544,9 +544,9 @@ set_hybrid(const bool arg)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_freeze_iterative_kernel_at_iter_num(const int arg)
+set_freeze_iterative_kernel_at_subiter_num(const int arg)
 {
-  this->freeze_iterative_kernel_at_iter_num = arg;
+  this->freeze_iterative_kernel_at_subiter_num = arg;
 }
 
 /***************************************************************/
@@ -993,20 +993,22 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 
   const int subset_num=this->get_subset_num();  
   info(boost::format("Now processing subset #: %1%") % subset_num);
-
+  
+  if(this->freeze_iterative_kernel_at_subiter_num==0)
+      error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
+  
 //  the following condition sets the "iterative_kernel_image_frozen_sptr" member to the image ptr
-//  we have at the iteration select by "freeze_iterative_kernel_at_iter_num"
-  if (this->freeze_iterative_kernel_at_iter_num>0 &&
-      this->subiteration_num%this->get_num_subsets()==0 &&
-      this->subiteration_num/this->get_num_subsets()==this->freeze_iterative_kernel_at_iter_num)
+//  we have at the iteration select by "freeze_iterative_kernel_at_subiter_num"
+  if (this->freeze_iterative_kernel_at_subiter_num>0 &&
+      this->subiteration_num==this->freeze_iterative_kernel_at_subiter_num)
           
       this->iterative_kernel_image_frozen_sptr=shared_ptr<TargetT>(current_alpha_coefficent_image.clone());
   
 //  the following condition decides whether the "iterative_kernel_image" to use for the kernel calculation
-//  should be equal to the current update (if we did not set freeze_iterative_kernel_at_iter_num or if the current subiteration 
-// is smaller than the one chosen trhough freeze_iterative_kernel_at_iter_num) or the frozen image
-  if (this->freeze_iterative_kernel_at_iter_num>0 &&
-      this->subiteration_num/this->get_num_subsets()>=this->freeze_iterative_kernel_at_iter_num)
+//  should be equal to the current update (if we did not set freeze_iterative_kernel_at_subiter_num or if the current subiteration 
+// is smaller than the one chosen trhough freeze_iterative_kernel_at_subiter_num) or the frozen image
+  if (this->freeze_iterative_kernel_at_subiter_num>0 &&
+      this->subiteration_num>=this->freeze_iterative_kernel_at_subiter_num)
       
       iterative_kernel_image_sptr=this->iterative_kernel_image_frozen_sptr;
   else

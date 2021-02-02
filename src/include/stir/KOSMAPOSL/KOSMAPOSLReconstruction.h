@@ -163,7 +163,7 @@ public:
   const double get_sigma_dm()const;
   const bool get_only_2D() const;
   const bool get_hybrid()const;
-  const int get_freeze_iterative_kernel_at_iter_num()const;
+  const int get_freeze_iterative_kernel_at_subiter_num()const;
 
   std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptrs();
 //@}
@@ -191,7 +191,7 @@ public:
   void set_sigma_dm(const double);
   void set_only_2D(const bool);
   void set_hybrid(const bool);
-  void set_freeze_iterative_kernel_at_iter_num(const int);
+  void set_freeze_iterative_kernel_at_subiter_num(const int);
   
   //@}
 
@@ -211,7 +211,7 @@ public:
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
-  int freeze_iterative_kernel_at_iter_num;
+  int freeze_iterative_kernel_at_subiter_num;
   std::vector<double> sigma_m;
   bool only_2D;
   bool hybrid;
