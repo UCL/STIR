@@ -227,6 +227,9 @@ post_processing()
           return false;
         }
     }
+  
+  if(this->freeze_iterative_kernel_at_subiter_num==0)
+      error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
   return false;
 }
 
@@ -993,9 +996,6 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 
   const int subset_num=this->get_subset_num();  
   info(boost::format("Now processing subset #: %1%") % subset_num);
-  
-  if(this->freeze_iterative_kernel_at_subiter_num==0)
-      error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
   
 //  the following condition sets the "iterative_kernel_image_frozen_sptr" member to the image ptr
 //  we have at the iteration select by "freeze_iterative_kernel_at_subiter_num"
