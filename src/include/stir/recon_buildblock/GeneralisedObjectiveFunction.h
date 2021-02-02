@@ -197,8 +197,8 @@ public:
     fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const
   {}
 
-  //! \name multiplication with (sub)Hessian
-  /*! \brief Functions that multiply the (sub)Hessian with a \'vector\'.
+  //! \name multiplication with approximate (sub)Hessian
+  /*! \brief Functions that multiply the approximate (sub)Hessian with a \'vector\'.
       
       All these functions add their result to any existing data in \a output.
 
@@ -221,12 +221,55 @@ public:
 						const TargetT& input) const;
   //@}
 
+    //! \name multiplication (sub)Hessian times input
+    /*! \brief Functions that multiply the True (sub)Hessian with a \'vector\'.
+
+        All these functions add their result to any existing data in \a output.
+
+        They all call actual_accumulate_sub_Hessian_times_input_without_penalty.
+    */
+    //@{
+    Succeeded
+      accumulate_Hessian_times_input(TargetT& output,
+              const TargetT& current_image_estimate,
+              const TargetT& input) const;
+
+    Succeeded
+    accumulate_Hessian_times_input_without_penalty(TargetT& output,
+            const TargetT& current_image_estimate,
+            const TargetT& input) const;
+
+
+    Succeeded
+      accumulate_sub_Hessian_times_input(TargetT& output,
+              const TargetT& current_image_estimate,
+              const TargetT& input,
+              const int subset_num) const;
+    Succeeded
+      accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+              const TargetT& current_image_estimate,
+              const TargetT& input,
+              const int subset_num) const;
+
+    //@}
+
+
+
   //! Construct a string with info on the value of objective function with and without penalty
   std::string
     get_objective_function_values_report(const TargetT& current_estimate);
 
   //! Return the number of subsets in-use
   int get_num_subsets() const;
+  
+//  //! Virtual get normalisation, it will be defined by the derived class
+//  virtual const shared_ptr<BinNormalisation> &
+//  get_normalisation_sptr() const =0;
+  
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const
+  { auto exam_info_uptr=unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
+      return exam_info_uptr;
+  }
 
 
   //! Attempts to change the number of subsets. 
@@ -333,7 +376,7 @@ protected:
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						      const int subset_num) = 0;
 
-  //! Implementation of the function that multiplies the sub-Hessian with a vector.
+  //! Implementation of the function that multiplies the approximate sub-Hessian with a vector.
   /*!
      \see multiplication_with_approximate_sub_Hessian_without_penalty(TargetT&,const TargetT&, const int).
 
@@ -350,8 +393,26 @@ protected:
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								      const TargetT& input,
 								      const int subset_num) const;
-};
 
+    //! Implementation of the function computes the sub-Hessian and multiplies by a vector.
+    /*!
+       \see accumulate_sub_Hessian_times_input_without_penalty(TargetT&,const TargetT&, TargetT&, const int).
+
+       \warning The default implementation just calls error(). This behaviour has to be
+       overloaded by the derived classes.
+
+       \par Developer\'s note
+
+       The reason we have this function is that overloading a function
+       in a derived class, hides all functions of the
+       same name.
+    */
+    virtual Succeeded
+    actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                              const TargetT& current_image_estimate,
+                                                              const TargetT& input,
+                                                              const int subset_num) const;
+};
 END_NAMESPACE_STIR
 
 #endif

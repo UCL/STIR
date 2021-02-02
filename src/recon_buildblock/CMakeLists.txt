@@ -59,6 +59,7 @@ set(${dir_LIB_SOURCES}
 	ProjectorByBinPairUsingProjMatrixByBin 
 	ProjectorByBinPairUsingSeparateProjectors 
 	BinNormalisation 
+	BinNormalisationWithCalibration
 	ChainedBinNormalisation 
 	BinNormalisationFromProjData 
 	TrivialBinNormalisation 
@@ -79,6 +80,7 @@ set(${dir_LIB_SOURCES}
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
         PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+	SqrtHessianRowSum
 )
 
 if (HAVE_ECAT)

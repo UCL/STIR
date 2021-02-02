@@ -79,6 +79,12 @@ class PatientPosition
     }
 
   explicit PatientPosition(PositionValue position);
+ 
+ bool operator == (const PatientPosition &p1) const { 
+     return  this->get_orientation()==p1.get_orientation() &&
+             this->get_position()==p1.get_position() &&
+             this->get_position_as_string()==p1.get_position_as_string() &&
+             this->get_rotation()==p1.get_rotation(); }
 
   void
     set_rotation(const RotationValue rotation_v)
