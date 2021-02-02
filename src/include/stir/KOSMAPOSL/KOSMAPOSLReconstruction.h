@@ -233,8 +233,10 @@ private:
  
   //! the principal operations for updating the image iterates at each iteration
   virtual void update_estimate (TargetT& current_image_estimate);
+  
+  //!  check whether the iterative kernel still needs to be updated
+  bool still_updating_iterative_kernel();
 
-  int subiteration_counter;
   std::vector<double> anatomical_sd;
   mutable Array<3,float> distance;
   /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */

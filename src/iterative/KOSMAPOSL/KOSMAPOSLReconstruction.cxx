@@ -339,6 +339,14 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
   return Succeeded::yes;
 }
 
+template <typename TargetT>
+bool 
+KOSMAPOSLReconstruction<TargetT>::
+still_updating_iterative_kernel() {
+ return this->freeze_iterative_kernel_at_subiter_num<0 ||
+        this->subiteration_num<this->freeze_iterative_kernel_at_subiter_num;
+}
+
 /***************************************************************
   get_ functions
 ***************************************************************/
@@ -781,7 +789,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
       int dimf_row = this->num_voxels;
       int dimf_col = this->num_non_zero_feat-1;
       
-      if(!this->iterative_kernel_image_frozen_sptr) 
+      if(still_updating_iterative_kernel()) 
       calculate_norm_matrix(*this->kpnorm_sptr, dimf_row, dimf_col,
                           current_alpha_estimate);
     }
@@ -1005,12 +1013,10 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 //  the following condition decides whether the "iterative_kernel_image" to use for the kernel calculation
 //  should be equal to the current update (if we did not set freeze_iterative_kernel_at_subiter_num or if the current subiteration 
 // is smaller than the one chosen trhough freeze_iterative_kernel_at_subiter_num) or the frozen image
-  if (this->freeze_iterative_kernel_at_subiter_num>0 &&
-      this->subiteration_num>=this->freeze_iterative_kernel_at_subiter_num)
-      
-      iterative_kernel_image_sptr=this->iterative_kernel_image_frozen_sptr;
-  else
+  if (still_updating_iterative_kernel())
       iterative_kernel_image_sptr=shared_ptr<TargetT>(current_alpha_coefficent_image.clone());
+  else
+      iterative_kernel_image_sptr=this->iterative_kernel_image_frozen_sptr;
   
   unique_ptr< TargetT > current_update_image_ptr(current_alpha_coefficent_image.get_empty_copy());
   compute_kernelised_image(*current_update_image_ptr, current_alpha_coefficent_image, *iterative_kernel_image_sptr);
