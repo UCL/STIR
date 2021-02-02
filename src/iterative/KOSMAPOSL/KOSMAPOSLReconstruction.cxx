@@ -227,9 +227,6 @@ post_processing()
           return false;
         }
     }
-  
-  if(this->freeze_iterative_kernel_at_subiter_num==0)
-      error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
   return false;
 }
 
@@ -266,7 +263,8 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
      (this->hybrid==0))
      error("KOSMAPOSL::set_up(): anatomical image has not been set");
  
- this->subiteration_counter=0;
+ if(this->freeze_iterative_kernel_at_subiter_num==0)
+     error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
 
  if (this->anatomical_prior_sptrs.size()!=sigma_m.size()){
      error("The number of sigma_m parameters must be the same as the number of anatomical images");
