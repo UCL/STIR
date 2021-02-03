@@ -13,6 +13,8 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
+cmake_minimum_required(VERSION 3.1.0)
+
 
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
@@ -27,6 +29,7 @@ endif()
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
 cmake_minimum_required(VERSION 2.8.3)
 if (POLICY CMP0025)
@@ -37,41 +40,46 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX("${CMAKE_CXX_STANDARD}")
+UseCXX(11)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
-   (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
-    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  # Ignore undefined template var warning
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+if (CMAKE_CXX_COMPILER_ID)
+   if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+      # Ignore undefined template var warning (see https://github.com/UCL/STIR/issues/126)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+      if (APPLE)
+          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+      endif()
+   endif()
+else()
+   message(WARNING "CMAKE_CXX_COMPILER_ID is not set. We are therefore not able to set some options.")
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   4)
+set(VERSION_MAJOR   5)
 set(VERSION_MINOR   0)
-set(VERSION_PATCH   2)
-set(VERSION   040002) # only used in STIRConfig.h.in
+set(VERSION_PATCH   0-prealpha)
+set(VERSION   050000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 ####### Installation directories
-# Use locations as in
+# Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
-# TODO append version numbers
+# However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "documentation/doc/stir")
-elseif(CYGWIN)
-  set(STIR_DOC_DIR "share/doc/stir")
-else()
-  set(STIR_DOC_DIR "doc/stir")
+  set(STIR_DOC_DIR "documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+else() #if(CYGWIN)
+  set(STIR_DOC_DIR "share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+#else()
+#  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
+# TODO append version numbers
 set(STIR_DATA_DIR "share/stir")
 set(ConfigPackageLocation lib/cmake/)
 
@@ -112,13 +120,6 @@ if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT)
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    # Find which major version this is
-    string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
-    list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
-    if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
-      message(WARNING "This ROOT version needs C++-11, so we will enable this.")
-      UseCXX(11)
-    endif()
   endif()
 endif()
 
@@ -139,11 +140,12 @@ if(NOT DISABLE_HDF5)
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0 QUIET)
+    find_package(nlohmann_json 3.2.0)# QUIET)
     if (nlohmann_json_FOUND)
-        message(STATUS "nlohmann JSON library found.")
-        message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
-        UseCXX(11)
+      message(STATUS "nlohmann JSON library found.")
+      set(HAVE_JSON ON)
+    else()
+      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
     endif()
 endif()
 
@@ -241,5 +243,35 @@ install(
     FILES_MATCHING PATTERN "Find*"
 )
 
+# install examples
+install(
+  DIRECTORY
+    examples
+  COMPONENT DOC
+  DESTINATION "${STIR_DOC_DIR}"
+   FILES_MATCHING
+    PATTERN *
+    PATTERN my_* EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
+
+# install documentation
+install(
+  DIRECTORY
+    documentation
+  COMPONENT DOC
+    DESTINATION "${STIR_DOC_DIR}"
+  FILES_MATCHING
+    PATTERN *
+    PATTERN *.aux EXCLUDE
+    PATTERN *.dvi EXCLUDE
+    PATTERN *.out EXCLUDE
+    PATTERN *.toc EXCLUDE
+    PATTERN *~  EXCLUDE
+    PATTERN *.bak EXCLUDE
+    PATTERN  *.log EXCLUDE
+)
 #  COMPONENT
 #    Devel

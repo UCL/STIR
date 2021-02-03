@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2019-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,6 +32,9 @@
 #include "stir/display.h"
 #include "stir/CPUTimer.h"
 #include "stir/utilities.h"
+#include "stir/info.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -161,15 +165,15 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const std::string out_filename_prefix = argv[1];
   /*  const int num_rings = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings();
   */
   const int num_detectors = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_detectors_per_ring();
   const int num_crystals_per_block = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_transaxial_crystals_per_block();
   const int num_blocks = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    measured_data->get_proj_data_info_sptr()->get_scanner_ptr()->
     get_num_transaxial_blocks();
 
   CPUTimer timer;

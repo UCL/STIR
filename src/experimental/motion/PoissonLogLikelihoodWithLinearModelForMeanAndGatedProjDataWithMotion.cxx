@@ -219,7 +219,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
   { warning("You need to specify an input file"); return true; }
  
-  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
+  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
 
  // image stuff
   if (this->zoom <= 0)
@@ -233,8 +233,8 @@ post_processing()
 
   if (this->_additive_projection_data_filename != "0")
   {
-    this->_gated_additive_proj_data_sptr
-      .reset(GatedProjData::read_from_file(this->_additive_projection_data_filename));
+    this->_gated_additive_proj_data_sptr =
+              GatedProjData::read_from_file(this->_additive_projection_data_filename);
   };
 
   // read time frame def 
@@ -263,7 +263,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 construct_target_ptr() const
 {
   return
-      new VoxelsOnCartesianGrid<float> (*this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
+      new VoxelsOnCartesianGrid<float> (*this->_gated_proj_data_sptr->get_proj_data_info_sptr(),
                                         static_cast<float>(this->zoom),
                                         CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
                                                                      static_cast<float>(this->Yoffset),
@@ -346,7 +346,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
   shared_ptr<ProjDataInfo> 
-    proj_data_info_sptr(this->_gated_proj_data_sptr->get_proj_data_info_ptr()->clone());
+    proj_data_info_sptr(this->_gated_proj_data_sptr->get_proj_data_info_sptr()->clone());
 
   if (this->max_segment_num_to_process==-1)
     this->max_segment_num_to_process =

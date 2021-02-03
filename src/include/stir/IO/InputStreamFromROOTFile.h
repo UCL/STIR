@@ -5,10 +5,11 @@
 
   \author Nikos Efthimiou
   \author Harry Tsoumpas
+  \author Kris Thielemans
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -33,9 +34,8 @@
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/RegisteredObject.h"
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TChain.h>
+// forward declaration of ROOT's TChain
+class TChain;
 
 START_NAMESPACE_STIR
 
@@ -78,13 +78,14 @@ public:
     //! Default constructor
     InputStreamFromROOTFile();
 
+#if 0 // disabled as not used
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
                             bool exclude_scattered, bool exclude_randoms,
                             float low_energy_window, float up_energy_window,
                             int offset_dets);
-
+#endif
 
     virtual ~InputStreamFromROOTFile() {}
     //!  \details Returns the next record in the ROOT file.
@@ -123,13 +124,25 @@ public:
     //! Get the number of transaxial modules
     virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
     //! Get the axial number of crystals per module
-    virtual int get_num_axial_crystals_per_block_v() const = 0;
+    inline int get_num_axial_crystals_per_block_v() const;
     //! Get the transaxial number of crystals per module
-    virtual int get_num_transaxial_crystals_per_block_v() const = 0;
+    inline int get_num_transaxial_crystals_per_block_v() const;
 
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+    //! \name number of "fake" crystals per block, inserted by the scanner
+    /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
+      The other members of the class return the size of the "virtual" block. With these
+      functions you can find its true size (or set it).
+    */
+    //@{!
+    inline int get_num_virtual_axial_crystals_per_block() const;
+    inline int get_num_virtual_transaxial_crystals_per_block() const;
+    void set_num_virtual_axial_crystals_per_block(int);
+    void set_num_virtual_transaxial_crystals_per_block(int);
+    //@}
+
     //! Lower energy threshold
     inline float get_low_energy_thres() const;
     //! Upper energy threshold
@@ -154,7 +167,11 @@ public:
     //! Set the read_optional_root_fields flag
     inline void set_optional_ROOT_fields(bool);
 
-protected:
+    void set_crystal_repeater_x(int);
+    void set_crystal_repeater_y(int);
+    void set_crystal_repeater_z(int);
+
+ protected:
 
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -179,17 +196,34 @@ protected:
     //! function accordingly.
     bool read_optional_root_fields;
 
-    //! \name Variables to hold data from each entry.
+    //! \name repeaters
+    //@{
+    int crystal_repeater_x;
+    int crystal_repeater_y;
+    int crystal_repeater_z;
+    //}
+
+    //! \name ROOT Variables, e.g. to hold data from each entry.
     //@{
     TChain *stream_ptr;
-    Int_t eventID1, eventID2, runID, sourceID1, sourceID2;
-    Double_t time1, time2;
-    Float_t energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
-    Int_t comptonphantom1, comptonphantom2;
-    Float_t globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
-    Float_t sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+    // note: should be ROOT's Int_t, Double_t and Float_t types, but those
+    // are only defined when including ROOT .h files, which we want to avoid
+    // here, as it creates a public dependency on the ROOT .h files
+    // checking https://github.com/root-project/root/blob/8695045aeff4b2e606a5febdcd58a0a7e7f6c7af/core/base/inc/RtypesCore.h
+    // we can use int32_t, float and double instead
+    std::int32_t eventID1, eventID2, runID, sourceID1, sourceID2;
+    double time1, time2;
+    float energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
+    int32_t comptonphantom1, comptonphantom2;
+    float globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
+    float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
+    //! \name number of "fake" crystals per block, inserted by the scanner
+    //@{!
+    int num_virtual_axial_crystals_per_block;
+    int num_virtual_transaxial_crystals_per_block;
+    //@}
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
     //! Skip random events (eventID1 != eventID2)
@@ -204,6 +238,12 @@ protected:
     //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
     //! > the readout depth depends upon how the electronic readout functions.
     int singles_readout_depth;
+
+    //! OpenGATE output ROOT energy information is given in MeV, these methods convert to keV
+    float get_energy1_in_keV() const
+    { return energy1 * 1e3; };
+    float get_energy2_in_keV() const
+    { return energy2 * 1e3; };
 };
 
 END_NAMESPACE_STIR

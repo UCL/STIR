@@ -31,7 +31,8 @@ set(${dir_EXE_SOURCES}
 	postfilter 
 	compare_projdata 
 	compare_image 
-	extract_segments 
+	extract_segments
+	extract_single_images_from_dynamic_image
         estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
@@ -40,6 +41,7 @@ set(${dir_EXE_SOURCES}
 	list_image_values 
         list_detector_and_bin_info
 	find_maxima_in_image 
+        create_multi_header
 	create_projdata_template 
 	SSRB 
         invert_axis
@@ -55,7 +57,8 @@ set(${dir_EXE_SOURCES}
 	write_proj_matrix_by_bin 
         forward_project
         back_project
-	calculate_attenuation_coefficients 
+	calculate_attenuation_coefficients
+		compute_sqrt_Hessian_row_sum
 	attenuation_coefficients_to_projections 
         conv_GATE_raw_ECAT_projdata_to_interfile
         conv_gipl_to_interfile
@@ -86,12 +89,8 @@ endif()
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
 
-  install(DIRECTORY share/ DESTINATION share
+  install(DIRECTORY share/ DESTINATION ${STIR_DATA_DIR}
 		  FILES_MATCHING PATTERN "*.json")
 endif()
 
 include(stir_exe_targets)
-
-if (BUILD_EXECUTABLES AND nlohmann_json_FOUND)
-  target_link_libraries(ctac_to_mu_values nlohmann_json::nlohmann_json)
-endif()

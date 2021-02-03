@@ -55,6 +55,7 @@
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
 #include "stir/ProjDataInMemory.h"
 
@@ -531,7 +532,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (is_null_ptr(this->proj_data_sptr))
 	error("you need to set the input data before calling set_up");
@@ -547,7 +548,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
 #if 0
   // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
@@ -561,7 +562,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   setup_distributable_computation(this->projector_pair_ptr,
                                   this->proj_data_sptr->get_exam_info_sptr(),
-                                  this->proj_data_sptr->get_proj_data_info_ptr(),
+                                  this->proj_data_sptr->get_proj_data_info_sptr(),
                                   target_sptr,
                                   zero_seg0_end_planes,
                                   distributed_cache_enabled);
@@ -591,7 +592,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     return Succeeded::no;
   }
 
-  if (this->normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
+  if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), proj_data_info_sptr) == Succeeded::no)
     return Succeeded::no;
 
   if (frame_num<=0)
@@ -723,7 +724,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
 
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
-     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
+     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(
+                                                  this->proj_data_sptr->get_exam_info_sptr(),
+                                                  this->proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
      sens_proj_data_sptr->fill(1.0F);
 
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
@@ -805,6 +808,25 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 #endif
 
 template<typename TargetT>
+ std::unique_ptr<ExamInfo>
+ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+ get_exam_info_uptr_for_target()  const
+{
+     auto exam_info_uptr = this->get_exam_info_uptr_for_target();
+     if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const * const>(get_normalisation_sptr().get()))
+     {
+       exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
+       // somehow tell the image that it's calibrated 
+     }
+     else
+     {
+       exam_info_uptr->set_calibration_factor(-1.F);
+       // somehow tell the image that it's not calibrated 
+     }
+    return exam_info_uptr;
+}
+
+template<typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
@@ -836,17 +858,28 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_ptr(),
+    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
 					 *symmetries_sptr,
 					 -this->get_max_segment_num_to_process(),
 					 this->get_max_segment_num_to_process(),
                                          subset_num, this->get_num_subsets());
+
+  info("Forward projecting input image.", 2);
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp parallel for schedule(runtime)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
+#ifdef STIR_OPENMP
+          const int thread_num = omp_get_thread_num();
+          info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+               % thread_num % omp_get_num_threads()
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+          info(boost::format("calculating segment_num: %d, view_num: %d")
+               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
           const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
           // first compute data-term: y*norm^2
@@ -886,6 +919,151 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
 		 std::plus<typename TargetT::full_value_type>());
+
+  return Succeeded::yes;
+}
+
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check characteristics
+
+    std::string explanation;
+    if (!output.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and output for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!input.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_sensitivity(),explanation))
+    {
+      error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+            "sensitivity and current_image_estimate for add_multiplication_with_approximate_Hessian_without_penalty\n"
+            "should have the same characteristics.\n%s",
+            explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+          this->get_projector_pair().get_symmetries_used()->clone());
+
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
+  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
+          detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_sptr(),
+                                               *symmetries_sptr,
+                                               -this->get_max_segment_num_to_process(),
+                                               this->get_max_segment_num_to_process(),
+                                               subset_num, this->get_num_subsets());
+
+
+
+  // Create and populate the input_viewgrams_vec with empty values.
+  // This is needed to make the order of the vector correct w.r.t vs_nums_to_process.
+  //OMP may mess this up
+  // Try:  std::vector<RelatedViewgrams<float>> input_viewgrams_vec(vs_nums_to_process.size());
+  std::vector<RelatedViewgrams<float>> input_viewgrams_vec;
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {
+    const ViewSegmentNumbers view_segment_num = vs_nums_to_process[i];
+    input_viewgrams_vec.push_back(this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr));
+  }
+
+
+  // Forward project input image
+  info("Forward projecting input image.",2);
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(runtime)
+#endif
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  {  // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
+    input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+    this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
+  }
+
+
+
+  info("Forward projecting current image estimate and back projecting to output.", 2);
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(runtime)
+#endif
+  for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
+  {
+#ifdef STIR_OPENMP
+    const int thread_num = omp_get_thread_num();
+    info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+         % thread_num % omp_get_num_threads()
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#else
+    info(boost::format("calculating segment_num: %d, view_num: %d")
+         % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+#endif
+    // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
+    RelatedViewgrams<float> ybar_sq_viewgram;
+    {
+      ybar_sq_viewgram = this->get_proj_data().get_empty_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+      this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq_viewgram);
+
+      //add additive sinogram to forward projection
+      if (!(is_null_ptr(this->get_additive_proj_data_sptr())))
+        ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+      // square ybar
+      ybar_sq_viewgram *= ybar_sq_viewgram;
+    }
+
+    // Compute: final_viewgram * F(input) / ybar_sq_viewgram
+    // final_viewgram starts as measured data
+    RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vs_nums_to_process[i], symmetries_sptr);
+    {
+      // Mult input_viewgram
+      final_viewgram *= input_viewgrams_vec[i];
+      int tmp1 = 0, tmp2 = 0;// ignore counters returned by divide_and_truncate
+      // Divide final_viewgeam by ybar_sq_viewgram
+      divide_and_truncate(final_viewgram, ybar_sq_viewgram, 0, tmp1, tmp2);
+    }
+
+    // back-project final_viewgram
+    this->get_projector_pair().get_back_projector_sptr()->
+            back_project(final_viewgram);
+
+  } // end of loop over view/segments
+
+  shared_ptr<TargetT> tmp(output.get_empty_copy());
+  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
+  // output += tmp;
+  std::transform(output.begin_all(), output.end_all(),
+                 tmp->begin_all(), output.begin_all(),
+                 std::plus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }

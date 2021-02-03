@@ -1,6 +1,14 @@
+/*!
+  \file
+  \ingroup IO
+  \brief Implementation of class stir::InputStreamFromROOTFile
+
+  \author Nikos Efthimiou
+  \author Kris Thielemans
+*/
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -22,6 +30,11 @@
 #include "stir/error.h"
 #include "stir/FilePath.h"
 
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TChain.h>
+#include <type_traits>
+
 START_NAMESPACE_STIR
 
 InputStreamFromROOTFile::
@@ -31,7 +44,7 @@ InputStreamFromROOTFile()
     reset();
 }
 
-
+#if 0 // disabled as unused and incorrect
 InputStreamFromROOTFile::
 InputStreamFromROOTFile(std::string filename,
                         std::string chain_name,
@@ -43,8 +56,10 @@ InputStreamFromROOTFile(std::string filename,
       low_energy_window(low_energy_window), up_energy_window(up_energy_window), offset_dets(offset_dets)
 {
     set_defaults();
+    error("This constructor is incorrect"); //TODO set_defaults() will override the above
     reset();
 }
+#endif
 
 void
 InputStreamFromROOTFile::set_defaults()
@@ -56,6 +71,11 @@ InputStreamFromROOTFile::set_defaults()
     low_energy_window = 0.f;
     up_energy_window = 1000.f;
     read_optional_root_fields=false;
+    crystal_repeater_x = -1;
+    crystal_repeater_y = -1;
+    crystal_repeater_z = -1;
+    num_virtual_axial_crystals_per_block = 0;
+    num_virtual_transaxial_crystals_per_block = 0;
 }
 
 void
@@ -70,6 +90,10 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
     this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
     this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
+
+    this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
+    this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
+    this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
 }
 
 bool
@@ -81,6 +105,11 @@ InputStreamFromROOTFile::post_processing()
 Succeeded
 InputStreamFromROOTFile::set_up(const std::string & header_path)
 {
+    // check types, really should be compile time assert
+    if (!std::is_same<Int_t, std::int32_t>::value ||
+        !std::is_same<Float_t, float>::value ||
+        !std::is_same<Double_t, double>::value)
+      error("Internal error: ROOT types are not what we think they are.");
 
     FilePath f(filename,false);
     f.prepend_directory_name(header_path);
@@ -129,6 +158,36 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
     }
 
     return Succeeded::yes;
+}
+
+void
+InputStreamFromROOTFile::set_crystal_repeater_x(int val)
+{
+    crystal_repeater_x = val;
+}
+
+void
+InputStreamFromROOTFile::set_crystal_repeater_y(int val)
+{
+    crystal_repeater_y = val;
+}
+
+void
+InputStreamFromROOTFile::set_crystal_repeater_z(int val)
+{
+    crystal_repeater_z = val;
+}
+
+void
+InputStreamFromROOTFile::set_num_virtual_axial_crystals_per_block(int val)
+{
+  num_virtual_axial_crystals_per_block = val;
+}
+
+void
+InputStreamFromROOTFile::set_num_virtual_transaxial_crystals_per_block(int val)
+{
+  num_virtual_transaxial_crystals_per_block = val;
 }
 
 END_NAMESPACE_STIR

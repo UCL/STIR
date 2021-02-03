@@ -35,7 +35,7 @@
 #include "stir/Succeeded.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
-
+#include "stir/copy_fill.h"
 START_NAMESPACE_STIR
 
 
@@ -55,39 +55,21 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     const size_t n = x.size_all();
     const size_t ny = y.size_all();
     if (n!=ny)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Create arrays
     std::vector<float> arr1(n), arr2(n);
-    x.copy_to(arr1.begin());
-    y.copy_to(arr2.begin());
+    copy_to(x, arr1.begin());
+    copy_to(y, arr2.begin());
 
     // Check for mismatch
     for (unsigned i=0; i<n; ++i)
         if (std::abs(arr1[i]-arr2[i]) > 1e-4f)
-            error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+            error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Check for non-zero
     if (std::abs(*std::max_element(arr1.begin(),arr1.end())) < 1e-4f)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
-}
-
-static void fill(ProjData &pd, const float start_val)
-{
-    float val = start_val;
-    const int n_min = pd.get_min_segment_num();
-    const int n_max = pd.get_max_segment_num();
-    for (int s=n_min; s<=n_max; ++s) {
-        SegmentBySinogram<float> seg = pd.get_empty_segment_by_sinogram(s);
-        SegmentBySinogram<float>::full_iterator seg_iter;
-        for (seg_iter = seg.begin_all();
-             seg_iter != seg.end_all();
-             ++seg_iter, ++val)
-        {
-            *seg_iter = val;
-        }
-        pd.set_segment(seg);
-    }
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 }
 
 void
@@ -110,21 +92,30 @@ run_tests()
 
     // Create x1 and x2
     ProjDataInMemory x1(pd1);
-    fill(x1,100.f);
+    x1.fill(100.f);
     ProjDataInMemory x2(x1);
 
     // Create y1 and y2
     ProjDataInMemory y1(pd1);
-    fill(y1,1000.f);
+    y1.fill(1000.f);
     ProjDataInMemory y2(y1);
+  
 
-    // Check axpby with general and ProjDataInMemory methods
+    // Check xapby with general and ProjDataInMemory methods
     const float a = 2.f;
     const float b = 3.f;
-    pd1.axpby(a,x1,b,y1);
-    pd2.ProjData::axpby(a,x2,b,y2);
-
+    pd1.xapyb(x1,a,y1,b);
+    pd2.ProjData::xapyb(x2,a,y2,b);
     check_proj_data_are_equal_and_non_zero(pd1,pd2);
+
+    // Check sapby with general and ProjDataInMemory methods
+    ProjDataInMemory out1(x1);
+    out1.sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out1);
+    
+    ProjDataInMemory out2(x1);
+    out2.ProjData::sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out2);
 
     // Check using iterators
     ProjDataInMemory pd3(pd1);

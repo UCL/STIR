@@ -39,6 +39,7 @@
 #include "stir/KeyParser.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ExamInfo.h"
+#include "stir/date_time_functions.h"
 
 START_NAMESPACE_STIR
 
@@ -68,13 +69,12 @@ class MinimalInterfileHeader : public KeyParser
     void set_imaging_modality();
   
   public:
-    //! Get a pointer to the exam information
-    const ExamInfo*
-      get_exam_info_ptr() const;
-
     //! Get a shared pointer to the exam information
-    shared_ptr<ExamInfo>
+    shared_ptr<const ExamInfo>
       get_exam_info_sptr() const;
+    //! Get the exam information
+    const ExamInfo&
+      get_exam_info() const;
 
     std::string version_of_keys;
 
@@ -127,6 +127,8 @@ protected:
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
   int bytes_per_pixel;
+  
+  std::string isotope_name;
 private:
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -159,6 +161,8 @@ public :
   // 'Final' variables
 
   std::string data_file_name;
+
+  DateTimeStrings study_date_time;
 
   //! This will be determined from number_format_index and bytes_per_pixel
   NumericType		type_of_numbers;
@@ -202,6 +206,8 @@ class InterfileImageHeader : public InterfileHeader
 {
  private:
   typedef InterfileHeader base_type;
+    
+    float calibration_factor;
 
 public:
   InterfileImageHeader();
@@ -253,7 +259,7 @@ public:
   int num_views;
   int num_bins;
   ProjDataFromStream::StorageOrder storage_order;
-  ProjDataInfo* data_info_ptr;
+  shared_ptr<ProjDataInfo> data_info_sptr;
 
 private:
   void resize_segments_and_set();

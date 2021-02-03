@@ -112,7 +112,7 @@ QuadraticPrior<elemT>::post_processing()
 
 template <typename elemT>
 Succeeded
-QuadraticPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr)
+QuadraticPrior<elemT>::set_up (shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr)
 {
   base_type::set_up(target_sptr);
 
@@ -176,7 +176,7 @@ set_weights(const Array<3,float>& w)
       Unpredictable results will occur.
   */
 template <typename elemT>
-shared_ptr<DiscretisedDensity<3,elemT> >  
+shared_ptr<const DiscretisedDensity<3,elemT> >  
 QuadraticPrior<elemT>::
 get_kappa_sptr() const
 { return this->kappa_ptr; }
@@ -185,7 +185,7 @@ get_kappa_sptr() const
 template <typename elemT>
 void 
 QuadraticPrior<elemT>::
-set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
+set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >& k)
 { this->kappa_ptr = k; }
 
 
@@ -588,6 +588,16 @@ Succeeded
 QuadraticPrior<elemT>::
 add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                             const DiscretisedDensity<3,elemT>& input) const
+{
+  return accumulate_Hessian_times_input(output, input, input);
+}
+
+template <typename elemT>
+Succeeded
+QuadraticPrior<elemT>::
+accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                               const DiscretisedDensity<3,elemT>& /*current_estimate*/,
+                               const DiscretisedDensity<3,elemT>& input) const
 {
   // TODO this function overlaps enormously with parabolic_surrogate_curvature
   // the only difference is that parabolic_surrogate_curvature uses input==1

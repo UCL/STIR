@@ -66,8 +66,8 @@ public :
       Currently, the proj_data_info_ptr argument is not used.
   */
   virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
   //! this member computes a single element of the projection matrix
@@ -89,7 +89,7 @@ public :
      get_element(const Bin& bin,
                  const CartesianCoordinate3D<float>& densel_ctr) const = 0;
 protected:
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   // explicitly list necessary members for image details (should use an Info object instead)
   CartesianCoordinate3D<float> grid_spacing;

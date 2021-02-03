@@ -19,6 +19,7 @@
 #define __stir_recon_buildblock_BinNormalisationSPECT_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/decay_correction_factor.h"
@@ -29,7 +30,7 @@
 START_NAMESPACE_STIR
 
 class BinNormalisationSPECT :
-  public RegisteredParsingObject<BinNormalisationSPECT, BinNormalisation>
+  public RegisteredParsingObject<BinNormalisationSPECT,  BinNormalisation, BinNormalisationWithCalibration>
 {
 public:
 
@@ -42,7 +43,7 @@ public:
   BinNormalisationSPECT(const std::string& filename);
 
   void read_norm_data(const std::string& filename);
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& );
   void set_num_views(int num_views) const { this->num_views=num_views;}
 
   void set_uniformity(Array<3,float>& uniformity){
@@ -65,7 +66,7 @@ public:
 
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
   void read_linearity_table(Array<3,float>& linearity) const;
   void read_uniformity_table(Array<3,float>& uniformity) const;
@@ -92,6 +93,7 @@ protected:
   mutable RelatedViewgrams<float> NCOR_viewgrams;
   std::string uniformity_filename, folder_prefix, projdata_filename;
   float bin_efficiency;
+  float measured_calibration_factor;
 
   bool _use_detector_efficiencies;
   bool _use_decay_correction;

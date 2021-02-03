@@ -103,7 +103,7 @@ test_downsampling_ProjDataInfo()
     sss->set_template_proj_data_info(*original_projdata);
 
     {
-        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
+        auto sss_projdata(sss->get_template_proj_data_info_sptr());
         check(*original_projdata == *sss_projdata, "Check the ProjDataInfo has been set correctly.");
     }
 
@@ -113,7 +113,7 @@ test_downsampling_ProjDataInfo()
         int down_dets = static_cast<int>(test_scanner->get_num_detectors_per_ring() * 0.5);
 
         sss->downsample_scanner(down_rings, down_dets);
-        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
+        auto sss_projdata(sss->get_template_proj_data_info_sptr());
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_rings(), 2*sss_projdata->get_scanner_ptr()->get_num_rings(), "Check the number of rings is correct");
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_detectors_per_ring(),
               2*sss_projdata->get_scanner_ptr()->get_num_detectors_per_ring(), "Check number of detectors per ring.");
@@ -193,7 +193,7 @@ test_downsampling_DiscretisedDensity()
 
     sss->downsample_density_image_for_scatter_points(0.5f, 0.5f, 1);
     
-    shared_ptr<DiscretisedDensity<3,float> > downed_image = sss->get_density_image_for_scatter_points_sptr();
+    auto downed_image = sss->get_density_image_for_scatter_points_sptr();
 
 
     float mean_value_atten = 0.0f;
@@ -236,7 +236,7 @@ test_downsampling_DiscretisedDensity()
     set_tolerance(0.01);
 
     CartesianCoordinate3D<float> cog_atten = find_centre_of_gravity_in_mm(*atten_density);
-    CartesianCoordinate3D<float> cog_downed = find_centre_of_gravity_in_mm(*dynamic_cast<VoxelsOnCartesianGrid<float>*>(downed_image.get()));
+    CartesianCoordinate3D<float> cog_downed = find_centre_of_gravity_in_mm(*dynamic_cast<const VoxelsOnCartesianGrid<float>*>(downed_image.get()));
 
 
     check_if_equal(cog_atten, cog_downed, "Check centre of gravity of the original image is the same as the downsampled.");
@@ -251,7 +251,7 @@ test_downsampling_DiscretisedDensity()
 void
 ScatterSimulationTests::test_symmetric(ScatterSimulation& ss, const std::string& name)
 {
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(ss.get_template_proj_data_info_sptr());
+  auto output_projdata_info(ss.get_template_proj_data_info_sptr());
   shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(ss.get_exam_info_sptr(), output_projdata_info));
   ss.set_output_proj_data_sptr(sss_output);
 
@@ -360,7 +360,7 @@ ScatterSimulationTests::test_scatter_simulation()
 
     check(exam->has_energy_information() == true, "Check the ExamInfo has energy information.");
 
-    sss->set_exam_info_sptr(exam);
+    sss->set_exam_info(*exam);
 
     // Create the original projdata
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> original_projdata_info( dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(

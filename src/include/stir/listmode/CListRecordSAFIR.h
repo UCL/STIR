@@ -1,10 +1,9 @@
 /* CListRecordSAFIR.h
 
  Coincidence Event Class for SAFIR: Header File
- Jannis Fischer
- jannis.fischer@cern.ch
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2020 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -31,6 +30,8 @@
 
 #ifndef __stir_listmode_CListRecordSAFIR_H__
 #define __stir_listmode_CListRecordSAFIR_H__
+
+#include<random>
 
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
@@ -69,6 +70,7 @@ public:
 	/*! Constructor which initializes map upon construction.
 	*/
 	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMapFromFile> map ) : map(map) {}
+	
 	//! Returns LOR corresponding to the given event.
 	inline virtual LORAs2Points<float> get_LOR() const;
   //! This method checks if the template is valid for LmToProjData
@@ -83,7 +85,6 @@ public:
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
 	inline void set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) { map = new_map; }
-
 private:
 	friend class CListRecordSAFIR;
 	/*! Default constructor will not work as it does not initialize a map to relate

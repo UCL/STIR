@@ -50,12 +50,25 @@ BinNormalisation::
 ~BinNormalisation()
 {}
 
+void BinNormalisation::
+set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr)
+{
+    this->exam_info_sptr=_exam_info_sptr;
+}
+
+shared_ptr<const ExamInfo> BinNormalisation::
+get_exam_info_sptr() const 
+{
+    return this->exam_info_sptr;
+}
+
 Succeeded
 BinNormalisation::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
+set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr )
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
+  this->exam_info_sptr=exam_info_sptr;
   return Succeeded::yes;  
 }
 
@@ -68,6 +81,15 @@ check(const ProjDataInfo& proj_data_info) const
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
     error(boost::format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+}
+
+void
+BinNormalisation::
+check(const ExamInfo &exam_info) const
+{
+  if (!(*this->exam_info_sptr==exam_info))
+      error(boost::format("BinNormalisation set-up with different ExamInfo.\n Set_up was with\n%1%\nCalled with\n%2%")
+            % this->exam_info_sptr->parameter_info() % exam_info.parameter_info());
 }
   
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
@@ -113,15 +135,18 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 
 void 
 BinNormalisation::
-apply(ProjData& proj_data,const double start_time, const double end_time, 
+apply(ProjData& proj_data,
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
+  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
+  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
+  this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
-    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          0, 1/*subset_num, num_subsets*/);
 
@@ -164,10 +189,10 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
 {
   this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
-    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          0, 1/*subset_num, num_subsets*/);
 

@@ -110,16 +110,17 @@ main(int argc, char *argv[])
   const std::string output_file_name = argv[1];
 
   shared_ptr<ProjDataInfo> new_data_info_ptr;
-  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
+  shared_ptr<ExamInfo> exam_info_sptr;
   if(argc>=3)
   {
     shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(argv[2]);
-    exam_info_sptr = proj_data_sptr->get_exam_info_sptr();
-    new_data_info_ptr= proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
+    exam_info_sptr = proj_data_sptr->get_exam_info().create_shared_clone();
+    new_data_info_ptr= proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
   }
   else
   {
+    exam_info_sptr.reset(new ExamInfo);
     new_data_info_ptr.reset(ProjDataInfo::ask_parameters());
   }
   int limit_segments=
@@ -157,10 +158,10 @@ main(int argc, char *argv[])
 	    xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
 	    const float zoom_z = ask_num("Zoom factor in z", 0.F, 10.F, 1.F);
 	    int z_size = 
-	      stir::round((2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1)*zoom_z);
+	      stir::round((2*proj_data_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1)*zoom_z);
 	    z_size = ask_num("Number of z pixels",1,1000,z_size);
 	    vox_image_ptr =
-	      new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+	      new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_sptr()),
 					       zoom,
 					       CartesianCoordinate3D<float>(0,0,0),
 					       Coordinate3D<int>(z_size,xy_size,xy_size));
@@ -219,7 +220,7 @@ main(int argc, char *argv[])
       forw_projector_ptr.reset(ForwardProjectorByBin::ask_type_and_parameters());
     }
 
-  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 			     image_sptr);
   cerr << forw_projector_ptr->parameter_info();
 

@@ -46,7 +46,6 @@ endif()
 if (CERN_ROOT_FOUND)
         set(HAVE_CERN_ROOT ON)
         message(STATUS "CERN ROOT support enabled.")
-        include_directories(${CERN_ROOT_INCLUDE_DIRS})
 else()
     message(STATUS "CERN ROOT support disabled.")
 endif()
@@ -204,10 +203,8 @@ check_cxx_source_compiles("
    "
         HAVE_STD_UNIQUE_PTR)
 
-if(HAVE_STD_UNIQUE_PTR)
-    option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr (not recommended)" OFF)
-    mark_as_advanced(STIR_NO_UNIQUE_PTR)
-else()
+if(NOT HAVE_STD_UNIQUE_PTR)
+    message(FATAL_ERROR "Problems compiling with std::unique_ptr. Giving up.")
     set(STIR_NO_UNIQUE_PTR ON)
 endif()
 
@@ -330,7 +327,9 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
         DEPENDS doxygen.stamp)
 
     # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
-    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/html/
+            COMPONENT DOC
+            DESTINATION ${STIR_DOC_DIR}/doxygen)
 endif()
 
 #### SWIG settings

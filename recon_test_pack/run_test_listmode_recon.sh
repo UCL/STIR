@@ -73,6 +73,8 @@ fi
 # first delete any files remaining from a previous run
 rm -f my_*v my_*s my_*S
 
+ThereWereErrors=0
+
 echo "=== Simulate normalisation data"
 # For normalisation data we are going to use a cylinder in the center,
 # with water attenuation values

@@ -82,15 +82,15 @@ BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
 
 Succeeded 
 BinNormalisationFromProjData::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(proj_data_info_ptr);
+  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr);
 
-  if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
+  if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
   else
   {
-    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_ptr());
+    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
     const ProjDataInfo& proj = *proj_data_info_ptr;
     bool ok = 
       (norm_proj >= proj) &&

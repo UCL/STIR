@@ -12,7 +12,7 @@
 /*
     Copyright (C) 2005 - 2011-01-12, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018-2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
 #include "stir/NestedIterator.h"
+#include "stir/is_null_ptr.h"
 #include <vector>
 #include <string>
 
@@ -80,9 +81,10 @@ class DynamicDiscretisedDensity: public ExamData
                             const shared_ptr<Scanner>& scanner_sptr)
     {
       _densities.resize(time_frame_definitions.get_num_frames());
-      exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
-      exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
-      _calibration_factor=-1.F;
+      shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+      _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+      _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
+      this->exam_info_sptr=_exam_info_sptr;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     }
@@ -93,9 +95,14 @@ class DynamicDiscretisedDensity: public ExamData
                             const shared_ptr<singleDiscDensT >& density_sptr)
     {  
       _densities.resize(time_frame_definitions.get_num_frames());
-      exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
-      exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
-      _calibration_factor=-1.F;
+      shared_ptr<ExamInfo> _exam_info_sptr;
+      if (is_null_ptr(density_sptr->get_exam_info_sptr()))
+        _exam_info_sptr.reset(new ExamInfo);
+      else
+        _exam_info_sptr = density_sptr->get_exam_info_sptr()->create_shared_clone();
+      _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+      _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
+      this->exam_info_sptr = _exam_info_sptr;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     
@@ -160,7 +167,7 @@ class DynamicDiscretisedDensity: public ExamData
 
   const float get_isotope_halflife() const;
 
-  const float get_calibration_factor() const;
+   float get_calibration_factor() const;
 
   //! at method
   const singleDiscDensT & at(const unsigned int frame_num) const
@@ -185,7 +192,11 @@ class DynamicDiscretisedDensity: public ExamData
   const float get_scanner_default_bin_size() const;
 
   void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
-  {this->exam_info_sptr->set_time_frame_definitions(time_frame_definitions);}
+  {
+    shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
+    sptr->set_time_frame_definitions(time_frame_definitions);
+    this->exam_info_sptr = sptr;
+  }
 
   void set_scanner(const Scanner& scanner)
   { this->_scanner_sptr.reset(new Scanner(scanner)); }
@@ -220,7 +231,6 @@ class DynamicDiscretisedDensity: public ExamData
   //TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
-  float _calibration_factor;
   float _isotope_halflife;
   bool _is_decay_corrected; 
   //double _start_time_in_secs_since_1970;

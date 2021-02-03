@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016, University College London
+    Copyright (C) 2016, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -50,6 +50,18 @@ ExamInfo::set_high_energy_thres(float new_val)
     up_energy_thres = new_val;
 }
 
+void
+ExamInfo::set_calibration_factor( const float cal_val)
+{
+    calibration_factor = cal_val;
+}
+
+void
+ExamInfo::set_radionuclide(const std::string& name)
+{
+    radionuclide = name;
+}
+
 float
 ExamInfo::get_low_energy_thres() const
 {
@@ -60,6 +72,25 @@ float
 ExamInfo::get_high_energy_thres() const
 {
     return up_energy_thres;
+}
+
+float
+ExamInfo::get_calibration_factor() const
+{
+    return this->calibration_factor;
+}
+
+std::string
+ExamInfo::get_radionuclide() const
+{
+    return radionuclide;
+}
+
+void
+ExamInfo::set_energy_information_from(const ExamInfo& other)
+{
+  this->up_energy_thres = other.up_energy_thres;
+  this->low_energy_thres = other.low_energy_thres;
 }
 
 END_NAMESPACE_STIR

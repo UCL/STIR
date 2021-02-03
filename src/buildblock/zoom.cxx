@@ -113,19 +113,19 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_viewgrams.get_proj_data_info_ptr()->clone();
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_viewgrams.get_proj_data_info_sptr()->clone());
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_ptr==0)
+  if ( new_proj_data_info_arccorr_sptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
-  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
-  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_max_tangential_pos_num(max_tang_pos_num);
   
-  new_proj_data_info_arccorr_ptr->
-    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+  new_proj_data_info_arccorr_sptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_sptr->
 			      get_tangential_sampling() / zoom);
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
@@ -133,7 +133,7 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
 
   RelatedViewgrams<float> 
     out_viewgrams = 
-    new_proj_data_info_arccorr_ptr->
+    new_proj_data_info_arccorr_sptr->
       get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(),
 				  symmetries_sptr);
 
@@ -159,23 +159,23 @@ zoom_viewgram (Viewgram<float>& in_view,
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  ProjDataInfo * new_proj_data_info_ptr =
-    in_view.get_proj_data_info_ptr()->clone();
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
-    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+  shared_ptr<ProjDataInfo>
+    new_proj_data_info_sptr(in_view.get_proj_data_info_sptr()->clone());
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_ptr==0)
+  if ( new_proj_data_info_arccorr_sptr==0)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
-  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
-  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_sptr->set_max_tangential_pos_num(max_tang_pos_num);
   
-  new_proj_data_info_arccorr_ptr->
-    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+  new_proj_data_info_arccorr_sptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_sptr->
 			      get_tangential_sampling() / zoom);
 
   Viewgram<float> 
-    out_view = new_proj_data_info_arccorr_ptr->
+    out_view = new_proj_data_info_arccorr_sptr->
                      get_empty_viewgram(
 					in_view.get_view_num(),
 					in_view.get_segment_num());
@@ -192,30 +192,30 @@ zoom_viewgram (Viewgram<float>& out_view,
 	       const float x_offset_in_mm, const float y_offset_in_mm)
 {   
   // minimal checks on compatibility
-  assert(in_view.get_proj_data_info_ptr()->get_num_views() == 
-	 out_view.get_proj_data_info_ptr()->get_num_views());
+  assert(in_view.get_proj_data_info_sptr()->get_num_views() == 
+	 out_view.get_proj_data_info_sptr()->get_num_views());
   assert(in_view.get_view_num() == out_view.get_view_num());
-  assert(in_view.get_proj_data_info_ptr()->get_num_segments() == 
-	 out_view.get_proj_data_info_ptr()->get_num_segments());
+  assert(in_view.get_proj_data_info_sptr()->get_num_segments() == 
+	 out_view.get_proj_data_info_sptr()->get_num_segments());
   assert(in_view.get_segment_num() == out_view.get_segment_num());
   assert(in_view.get_min_axial_pos_num() == out_view.get_min_axial_pos_num());
   assert(in_view.get_max_axial_pos_num() == out_view.get_max_axial_pos_num());
 
   // get the pointers to the arc-corrected ProjDataInfo
-  const ProjDataInfoCylindricalArcCorr* in_proj_data_info_arccorr_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(in_view.get_proj_data_info_ptr());
-  const ProjDataInfoCylindricalArcCorr* out_proj_data_info_arccorr_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(out_view.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> in_proj_data_info_arccorr_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(in_view.get_proj_data_info_sptr());
+  const shared_ptr<const ProjDataInfoCylindricalArcCorr> out_proj_data_info_arccorr_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(out_view.get_proj_data_info_sptr());
 
-  if (in_proj_data_info_arccorr_ptr==0 ||
-      out_proj_data_info_arccorr_ptr==0)
+  if (is_null_ptr(in_proj_data_info_arccorr_sptr) ||
+      is_null_ptr(out_proj_data_info_arccorr_sptr))
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
 
   
   const float in_bin_size = 
-    in_proj_data_info_arccorr_ptr->get_tangential_sampling();
+    in_proj_data_info_arccorr_sptr->get_tangential_sampling();
   const float out_bin_size = 
-    out_proj_data_info_arccorr_ptr->get_tangential_sampling();
+    out_proj_data_info_arccorr_sptr->get_tangential_sampling();
 
   const float zoom = in_bin_size / out_bin_size;
 
@@ -225,7 +225,7 @@ zoom_viewgram (Viewgram<float>& out_view,
     return;
     
   const float phi =
-     in_proj_data_info_arccorr_ptr->
+     in_proj_data_info_arccorr_sptr->
       get_phi(Bin(in_view.get_segment_num(), in_view.get_view_num(), 0,0));
 
   // compute offset in tangential_sampling_in units

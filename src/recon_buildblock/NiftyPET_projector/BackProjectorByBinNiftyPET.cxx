@@ -64,8 +64,8 @@ initialise_keymap()
 
 void
 BackProjectorByBinNiftyPET::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
     BackProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*proj_data_info_sptr, *_density_sptr);
@@ -88,6 +88,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_att(0);
     _helper.set_verbose(_cuda_verbosity);
     _helper.set_up();
+
+    // Create sinogram
+    _np_sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
 }
 
 const DataSymmetriesForViewSegmentNumbers *

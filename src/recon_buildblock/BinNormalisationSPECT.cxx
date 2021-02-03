@@ -19,7 +19,6 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \ingroup
 
   \brief Implementation for class stir::BinNormalisationSPECT
 
@@ -72,6 +71,7 @@ BinNormalisationSPECT::set_defaults()
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
   this->resampled=0;
+  this->measured_calibration_factor=-1.F;
 
 }
 
@@ -85,11 +85,12 @@ initialise_keymap()
   this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
   this->parser.add_key("folder_prefix", &this->folder_prefix);
   this->parser.add_key("rel_angle", &this->rel_angle);
-  this->parser.add_key("half_life", &this->half_life);
+  this->parser.add_key("half_life", &this->half_life); //TODO read this from the database according to isotope name
   this->parser.add_key("view_time_interval", &this->view_time_interval);
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("projdata filename", &this->projdata_filename);
   this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
+  this->parser.add_key("measured calibration factor", &this->measured_calibration_factor);
 
   this->parser.add_stop_key("End Bin Normalisation SPECT");
 }
@@ -104,6 +105,13 @@ post_processing()
 
   norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
   max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+  
+//  allow to set your own calibration factor
+  if(measured_calibration_factor>0) 
+      set_calibration_factor(measured_calibration_factor);
+  else 
+      set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
+  
 //  read_norm_data(normalisation_spect_filename);
   return false;
 }
@@ -117,9 +125,9 @@ BinNormalisationSPECT()
 
 Succeeded
 BinNormalisationSPECT::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  return BinNormalisation::set_up(proj_data_info_ptr_v);
+  return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
 BinNormalisationSPECT::
@@ -134,7 +142,7 @@ read_norm_data(const std::string& filename)
 {// to think about this
   }
 
-float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
+float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
 
@@ -233,7 +241,7 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
                             normalisation/decay_correction_factor(half_life, rel_time);
                         }
           (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
-            (std::max(1.E-20F, get_bin_efficiency(bin, start_time, end_time))*
+            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin, start_time, end_time))*
              normalisation);
            normalisation=1;
         }
@@ -297,7 +305,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 
 
             (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()]*=
-        (this->get_bin_efficiency(bin,start_time, end_time)*normalisation);
+        (this->get_uncalibrated_bin_efficiency(bin,start_time, end_time)*normalisation);
             normalisation=1;
 
         }

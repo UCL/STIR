@@ -44,6 +44,8 @@ CListModeDataROOT(const std::string& hroot_filename)
 {
     set_defaults();
     std::string error_str;
+    int num_virtual_axial_crystals_per_block = -1; // -1 means: use scanner default
+    int num_virtual_transaxial_crystals_per_block = -1; // -1 means: use scanner default
 
     this->parser.add_start_key("ROOT header");
     this->parser.add_stop_key("End ROOT header");
@@ -60,6 +62,8 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("View offset (degrees)", &this->view_offset);
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     this->parser.add_key("Default number of arc-corrected bins", &this->default_num_arccorrected_bins);
+    this->parser.add_key("Number of virtual axial crystals per block", &num_virtual_axial_crystals_per_block);
+    this->parser.add_key("Number of virtual transaxial crystals per block", &num_virtual_transaxial_crystals_per_block);
     // end Scanner and physical dimensions.
 
     // ROOT related
@@ -72,13 +76,15 @@ CListModeDataROOT(const std::string& hroot_filename)
         error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
     // ExamInfo initialisation
-    this->exam_info_sptr.reset(new ExamInfo);
+    shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
 
     // Only PET scanners supported
-    this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-    this->exam_info_sptr->originating_system = this->originating_system;
-    this->exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
-    this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+    _exam_info_sptr->imaging_modality = ImagingModality::PT;
+    _exam_info_sptr->originating_system = this->originating_system;
+    _exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
+    _exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+
+    this->exam_info_sptr = _exam_info_sptr;
 
     shared_ptr<Scanner> this_scanner_sptr;
 
@@ -145,6 +151,14 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              this->root_file_sptr->get_num_trans_crystals_per_singles_unit(),
                                              /*num_detector_layers_v*/ 1 ));
     }
+    // have to do this here currently as these variables cannot be set via the constructor
+    if (num_virtual_axial_crystals_per_block>=0)
+      this_scanner_sptr->set_num_virtual_axial_crystals_per_block(num_virtual_axial_crystals_per_block);
+    if (num_virtual_transaxial_crystals_per_block>=0)
+      this_scanner_sptr->set_num_virtual_transaxial_crystals_per_block(num_virtual_transaxial_crystals_per_block);
+    // put virtual block info in root_file_sptr
+    this->root_file_sptr->set_num_virtual_axial_crystals_per_block(this_scanner_sptr->get_num_virtual_axial_crystals_per_block());
+    this->root_file_sptr->set_num_virtual_transaxial_crystals_per_block(this_scanner_sptr->get_num_virtual_transaxial_crystals_per_block());
 
     // Compare with InputStreamFromROOTFile scanner generated geometry and throw error if wrong.
     if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)

@@ -74,14 +74,14 @@ VoxelsOnCartesianGrid(const IndexRange<3>& range,
 		      const BasicCoordinate<3,float>& grid_spacing);
 
  //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
-VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr,
                       const Array<3,elemT>& v,
 		      const CartesianCoordinate3D<float>& origin,
 		      const BasicCoordinate<3,float>& grid_spacing);
 
 //! Construct a VoxelsOnCartesianGrid from an index range
 /*! All elements are set 0. */
-VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr,
                       const IndexRange<3>& range,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const BasicCoordinate<3,float>& grid_spacing);
@@ -122,7 +122,7 @@ VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const CartesianCoordinate3D<float>&, 
 		      const CartesianCoordinate3D<int>& );
 */
-VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr,
                       const ProjDataInfo& proj_data_info,
 		      const float zoom = 1.F,
 		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
@@ -134,7 +134,7 @@ VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
 		      const CartesianCoordinate3D<float>&,
 		      const CartesianCoordinate3D<int>& );
 */
-VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr_v,
                       const ProjDataInfo& proj_data_info,
                       const CartesianCoordinate3D<float>& zooms,
 		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
@@ -203,7 +203,7 @@ void grow_z_range(const int min_z, const int max_z);
 
 private:
   void
-    construct_from_projdata_info(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+    construct_from_projdata_info(const shared_ptr < const ExamInfo > & exam_info_sptr_v,
                                  const ProjDataInfo& proj_data_info,
                                  const CartesianCoordinate3D<float>& zooms,
                                  const CartesianCoordinate3D<float>& origin,

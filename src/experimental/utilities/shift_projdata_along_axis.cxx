@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   const int max_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[4]);
 
   ProjDataInfo * proj_data_info_ptr =
-    in_projdata_ptr->get_proj_data_info_ptr()->clone();
+    in_projdata_ptr->get_proj_data_info_sptr()->clone();
   proj_data_info_ptr->reduce_segment_range(-max_segment_num_to_process,max_segment_num_to_process);
 
   ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 

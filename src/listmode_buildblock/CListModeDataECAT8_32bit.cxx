@@ -42,9 +42,9 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
 {
   this->interfile_parser.parse(listmode_filename.c_str());// , false /* no warnings about unrecognised keywords */);
 
-  this->exam_info_sptr.reset(new ExamInfo(*interfile_parser.get_exam_info_ptr()));
+  this->exam_info_sptr.reset(new ExamInfo(interfile_parser.get_exam_info()));
 
-  const std::string originating_system(this->interfile_parser.get_exam_info_ptr()->originating_system);
+  const std::string originating_system(this->interfile_parser.get_exam_info().originating_system);
   shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );

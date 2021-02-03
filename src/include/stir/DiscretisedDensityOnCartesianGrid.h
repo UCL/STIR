@@ -65,7 +65,7 @@ public:
 		  const BasicCoordinate<num_dimensions,float>& grid_spacing);
 
     //! Constructor given exam_info, range, grid spacing and origin
-  inline DiscretisedDensityOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+  inline DiscretisedDensityOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr,
                                            const IndexRange<num_dimensions>& range,
                                            const CartesianCoordinate3D<float>& origin,
                                            const BasicCoordinate<num_dimensions,float>& grid_spacing);

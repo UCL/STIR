@@ -115,7 +115,9 @@ void IOTests_ParametricDiscretisedDensity::create_image()
     _image_to_write_sptr->update_parametric_image(*param_2_sptr,2);
 
     // Set the time definitions
-    _image_to_write_sptr->get_exam_info_sptr()->time_frame_definitions = dummy_im_sptr->get_exam_info_sptr()->time_frame_definitions;
+    ExamInfo exam_info = _image_to_write_sptr->get_exam_info();
+    exam_info.set_time_frame_definitions(dummy_im_sptr->get_exam_info().get_time_frame_definitions());
+    _image_to_write_sptr->set_exam_info(exam_info);
 }
 
 void IOTests_ParametricDiscretisedDensity::check_result()

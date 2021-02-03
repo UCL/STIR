@@ -60,7 +60,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const bool remove_interleaving)
 {
   shared_ptr<ProjDataInfo> 
-    interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
@@ -74,10 +74,10 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
-					    emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
+					    emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
-      scatter_normalisation.set_up(emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
+      scatter_normalisation.set_up(emission_proj_data.get_exam_info_sptr(), emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
       scatter_normalisation.undo(interpolated_scatter, 
                                  time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
       Array<2,float> scale_factors;

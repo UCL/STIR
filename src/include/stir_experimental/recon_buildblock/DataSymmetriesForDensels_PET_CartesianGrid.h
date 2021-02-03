@@ -58,8 +58,8 @@ private:
   typedef DataSymmetriesForDensels_PET_CartesianGrid self_type;
 public:
 
-  DataSymmetriesForDensels_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                                            const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr);
+  DataSymmetriesForDensels_PET_CartesianGrid(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+					     const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr);
 
 
   virtual 
@@ -108,7 +108,7 @@ public:
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
   
 private:
-  const shared_ptr<ProjDataInfo>& proj_data_info_ptr;
+  const shared_ptr<const ProjDataInfo>& proj_data_info_ptr;
   int num_planes;
   int num_independent_planes;
   int num_views;
@@ -122,7 +122,7 @@ private:
   // at the moment, we don't need the following 2 members
 
   // TODO somehow store only the info
-  shared_ptr<DiscretisedDensity<3,float> > image_info_ptr;
+  shared_ptr<const DiscretisedDensity<3,float> > image_info_ptr;
 
   // a convenience function that does the dynamic_cast from the above
   inline const DiscretisedDensityOnCartesianGrid<3,float> *

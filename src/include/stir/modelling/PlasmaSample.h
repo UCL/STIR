@@ -33,6 +33,15 @@
 
 START_NAMESPACE_STIR
 
+/*!
+ \ingroup modelling
+
+ A class for storing radiotracer concentration in a blood sample. Concentrations in plasma and the (overall) blood-concentration
+ are stored.
+
+ \todo This currently assumes sampling, while in practice we often have data accumulated over time, but this can
+ currently not be encoded.
+*/
 class PlasmaSample
 { 
 public:

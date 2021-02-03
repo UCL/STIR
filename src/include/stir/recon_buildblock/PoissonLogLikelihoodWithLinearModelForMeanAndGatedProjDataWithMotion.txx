@@ -143,7 +143,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
     { warning("You need to specify an input filename"); return true; }
   
-  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
+  this->_gated_proj_data_sptr = GatedProjData::read_from_file(this->_input_filename);
   
   // image stuff
   this->target_parameter_parser.check_values();
@@ -151,14 +151,14 @@ post_processing()
   if (this->_additive_gated_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_gated_proj_data_filename);
-      this->_additive_gated_proj_data_sptr.reset(
-                                                 GatedProjData::read_from_file(this->_additive_gated_proj_data_filename));
+      this->_additive_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_additive_gated_proj_data_filename);
     }
   if (this->_normalisation_gated_proj_data_filename != "1")
     {
       info(boost::format("Reading normalisation projdata data %1%") % this->_normalisation_gated_proj_data_filename);
-      this->_normalisation_gated_proj_data_sptr.reset(
-                                                      GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename));
+      this->_normalisation_gated_proj_data_sptr =
+              GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename);
     }
 
   this->_time_gate_definitions.read_gdef_file(this->_gate_definitions_filename);
@@ -343,7 +343,7 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   /*!todo define in the PoissonLogLikelihoodWithLinearModelForMean class to return Succeeded::yes 
     if (base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)
@@ -361,7 +361,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
 			 +this->_max_segment_num_to_process);
@@ -544,5 +544,56 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
   return Succeeded::yes;
 }
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check argument characteristics
+    std::string explanation;
+    if (!input.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and input for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and current_image_estimate for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  GatedDiscretisedDensity gated_input=this->_gated_image_template;
+  GatedDiscretisedDensity gated_current_image_estimate=this->_gated_image_template;
+  GatedDiscretisedDensity gated_output=this->_gated_image_template;
+  this->_motion_vectors.warp_image(gated_input,input);
+  this->_motion_vectors.warp_image(gated_current_image_estimate, current_image_estimate);
+
+  for(unsigned int gate_num=1;
+      gate_num<=this->get_time_gate_definitions().get_num_gates();
+      ++gate_num)
+  {
+    this->_single_gate_obj_funcs[gate_num].
+    accumulate_sub_Hessian_times_input_without_penalty(gated_output[gate_num],
+            gated_current_image_estimate[gate_num],
+            gated_input[gate_num],
+            subset_num);
+  } // end of loop over gates
+  this->_reverse_motion_vectors.warp_image(output, gated_output);
+  output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
+  return Succeeded::yes;
+}
+
 
 END_NAMESPACE_STIR

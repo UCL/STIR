@@ -104,8 +104,8 @@ BackProjectorByBinUsingProjMatrixByBin(
 
 void
 BackProjectorByBinUsingProjMatrixByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr)
 
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);

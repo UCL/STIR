@@ -12,26 +12,15 @@ input file := ${sino_input}
 attenuation image filename := ${atnimg}
 
 ; Normalisation coefficients & attenuation data
-; If only one normalisation input is set; 
-; it will be assumed that they are attenuation correction factors. 
-;; The algorithm will assume that the first is normalisation, i.e. the 
-;; efficiency factors and the second the attenuation. You should not 
-;; change this order. 
-Bin Normalisation type := Chained
-	Chained Bin Normalisation Parameters:=
-   Bin Normalisation to apply first:= from ProjData
-           Bin Normalisation From ProjData :=
+Normalisation type := from ProjData
+   Bin Normalisation From ProjData :=
             normalisation projdata filename:= ${NORM}
-       End Bin Normalisation From ProjData:=
+   End Bin Normalisation From ProjData:=
 
-	Bin Normalisation to apply second:= From ProjData
-		Bin Normalisation From ProjData :=
-           normalisation projdata filename:= ${acf3d}
-        End Bin Normalisation From ProjData:=
-		
-END Chained Bin Normalisation Parameters:=
+attenuation correction factors filename := ${acf3d}
 
-;; Background data (not  normalised)
+;; Background data (not  normalised).
+; Should be set to the randoms estimate (unless you precorrected, but we haven't tested that)
 background projdata filename := ${randoms3d}
 
 ; Mask for tail-fitting
@@ -43,8 +32,11 @@ mask projdata filename := ${mask_projdata_filename}
 ; Input or output filename - depends on recompute  
 recompute mask image := 1
 mask image filename := ${mask_image}
+; threshold to be applied after filtering (in cm^-1). Default value is below
 mask attenuation image min threshold  := 0.003
-mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
+; optional filename to specify a filter before thresholding the attenuation image
+; By default a Gaussian filter with FWHM (15,20,20) will be used. Here we use an explicit file as an example.
+mask attenuation image filter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the scatter data (within the mask)

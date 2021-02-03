@@ -84,14 +84,14 @@ public:
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing.
       The image pointed to by attenuation_image_ptr is NOT modified.
   */
-  BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
+  BinNormalisationFromAttenuationImage(const shared_ptr<const DiscretisedDensity<3,float> >& attenuation_image_ptr,
                                        shared_ptr<ForwardProjectorByBin> const& = shared_ptr<ForwardProjectorByBin>());
 
   //! Checks if we can handle certain projection data.
   /*! This test is essentially checking if the forward projector can handle the data 
       by calling ForwardProjectorByBin::set_up().
   */
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& );
 
   //! Normalise some data
   /*! 
@@ -110,7 +110,7 @@ public:
   virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const; 
 
 private:
-  shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
+  shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_ptr;
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
 
   // parsing stuff

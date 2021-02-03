@@ -70,8 +70,8 @@ public:
     \param initialise_with_0 specifies if the data should be set to 0. 
         If \c false, the data is undefined until you set it yourself.
   */
-  ProjDataInMemory (shared_ptr<ExamInfo> const& exam_info_sptr,
-		    shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataInMemory (shared_ptr<const ExamInfo> const& exam_info_sptr,
+		    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                     const bool initialise_with_0 = true);
 
   //! constructor that copies data from another ProjData
@@ -80,17 +80,50 @@ public:
   //! Copy constructor
   ProjDataInMemory (const ProjDataInMemory& proj_data);
 
+  //! set all bins to the same value
+  /*! will call error() if setting failed */
+  virtual void fill(const float value);
+
+  //! set all bins from another ProjData object
+  /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
+    The current check requires at least the same segment numbers (but the source can have more),
+    all other geometric parameters have to be the same.
+ */
+  virtual void fill(const ProjData&);
+
   //! destructor deallocates all memory the object owns
   virtual ~ProjDataInMemory();
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
+  
+  void set_bin_value(const Bin &bin);
     
-  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  //! \deprecated a*x+b*y (\see xapyb)
+  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y);
+
+  //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData.
   /// This implementation requires that x and y are ProjDataInMemory
   /// (else falls back on general method)
-  virtual void axpby(const float a, const ProjData& x,
-                     const float b, const ProjData& y);
+  virtual void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b);
+
+  //! set values of the array to x*a+y*b, where a, b, x and y are ProjData.
+  /// This implementation requires that a, b, x and y are ProjDataInMemory
+  /// (else falls back on general method)
+  virtual void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b);
+
+  //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
+  /// This implementation requires that a, b and y are ProjDataInMemory
+  /// (else falls back on general method)  
+  virtual void sapyb(const float a, const ProjData& y, const float b);
+
+  //! set values of the array to self*a+y*b where a, b and y are ProjData
+   /// This implementation requires that a, b and y are ProjDataInMemory
+  /// (else falls back on general method)   
+  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
 
   /** @name iterator typedefs
    *  iterator typedefs

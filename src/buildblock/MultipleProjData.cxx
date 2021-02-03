@@ -36,14 +36,14 @@
 
 START_NAMESPACE_STIR
 
-const ProjDataInfo *
+const shared_ptr<const ProjDataInfo>
 MultipleProjData::
-get_proj_data_info_ptr() const
+get_proj_data_info_sptr() const
 {
   if (get_num_gates() == 0)
-    return 0;
+    return shared_ptr<const ProjDataInfo>();
   else
-    return _proj_datas[0]->get_proj_data_info_ptr();
+    return _proj_datas[0]->get_proj_data_info_sptr();
 }
 
 void 
@@ -55,7 +55,7 @@ set_proj_data_sptr(const shared_ptr<ProjData >& proj_data_sptr,
 }  
 
 MultipleProjData::
-MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                 const int num_gates) :
     ExamData(exam_info_sptr)
 {
@@ -71,7 +71,10 @@ read_from_file(const std::string &parameter_file)
     if (header.parse(parameter_file.c_str()) == false)
         error(boost::format("MultipleProjData::read_from_file: Error parsing %1%") % parameter_file);
 
-    int num_data_sets = header.get_num_data_sets();
+    const int num_data_sets = header.get_num_data_sets();
+
+    if (num_data_sets == 0)
+        error("MultipleProjData::read_from_file: no data sets provided");
 
     // Create the multiple proj data
     unique_ptr<MultipleProjData> multiple_proj_data( new MultipleProjData );
@@ -84,15 +87,15 @@ read_from_file(const std::string &parameter_file)
     }
 
     // Get the exam info (from the first ProjData)
-    multiple_proj_data->set_exam_info(multiple_proj_data->_proj_datas[0]->get_exam_info());
+    ExamInfo exam_info = multiple_proj_data->_proj_datas.at(0)->get_exam_info();
 
     // Update the time definitions based on each individual frame
-    multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(num_data_sets);
+    exam_info.time_frame_definitions.set_num_time_frames(num_data_sets);
     for (int i=0; i<num_data_sets; ++i) {
-        const TimeFrameDefinitions &tdef = multiple_proj_data->_proj_datas[i]->get_exam_info_ptr()->time_frame_definitions;
-        multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i+1, tdef.get_start_time(1), tdef.get_end_time(1));
+        const TimeFrameDefinitions &tdef = multiple_proj_data->_proj_datas[i]->get_exam_info().time_frame_definitions;
+        exam_info.time_frame_definitions.set_time_frame(i+1, tdef.get_start_time(1), tdef.get_end_time(1));
     }
-
+    multiple_proj_data->set_exam_info(exam_info);
     return multiple_proj_data;
 }
 
