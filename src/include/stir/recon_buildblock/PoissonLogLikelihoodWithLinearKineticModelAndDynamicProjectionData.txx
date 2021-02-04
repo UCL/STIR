@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013 - 2018, University College London
+  Copyright (C) 2013 - 2021, University College London
 
   This file is part of STIR.
 
@@ -115,7 +115,7 @@ set_defaults()
 
   this->target_parameter_parser.set_defaults();
 
-  // Modelling Stuff
+  // Kinetic Modelling Stuff
   this->_patlak_plot_sptr.reset();
 }
 
@@ -255,15 +255,19 @@ set_up_motion()
     // Create the projector pair for each frame
     _projector_pairs_sptr.resize(disp_field_headers[0].get_num_data_sets());
 
-    // For each motion field...
+    // For each motion field we need to create a projection pair, a forward and backprojector. 
+    // As we are working with motion and dynamic data, we will need to prepend to the standard PET forward projection
+    // both the linear kinetik model (e.g. Patlak) and the defirmation fields to transform the image domain between different gates.
+    // This loop does exactly that, loop through all gates (legth taken from the number of DVFs)
     for (int i=0; i<_projector_pairs_sptr.size(); ++i) {
 #ifndef NDEBUG
         info(boost::format("Frame: %1%, Creating forward non-rigid transformation") % (i+1));
 #endif
-        // Create non rigid transformation
+        // Create non rigid transformation. This lienar operator transforms images (resamples them)
+        // from one gate to another. 
         shared_ptr<NonRigidObjectTransformationUsingBSplines<3,float> > fwrd_non_rigid;
 
-        // If combined
+        // If the file was a "combined" file, containing all x,y,z calues of the DVF...
         if (combined_motion_present) {
 #ifndef NDEBUG
             info(boost::format("Reading: %1%") % (disp_field_headers[0].get_filename(i)));
@@ -273,7 +277,7 @@ set_up_motion()
                             disp_field_headers[0].get_filename(i),
                             this->_bspline_order));
         }
-        // If individual components
+        // Otherwise, there are 3 files, each with its own axial components
         else {
 #ifndef NDEBUG
             info(boost::format("Reading x: %1%") % (disp_field_headers[0].get_filename(i)));
@@ -294,13 +298,17 @@ set_up_motion()
         back_transform.reset( new Transform3DObjectImageProcessor<float>(*fwrd_transform) );
         back_transform->set_do_transpose(!fwrd_transform->get_do_transpose());
 
-        // Create projectors
+        // Create projectors. Due to historical reasons, concatenating operators is called "Pre" and "Post-smoothing" (as they were used for smoothing)
+        // However these are essentially operator concatenators, and in here we are concatenating the standard forward and
+        // backprojection for PET data with the ImageProcessors we created for motion, such that the objective fucntion uses both. 
         shared_ptr<PresmoothingForwardProjectorByBin> fwrd_projector;
         shared_ptr<PostsmoothingBackProjectorByBin>   back_projector;
+        // For forward, we first transform the image, then forward project, so a Pre-"smoothing"
         fwrd_projector.reset(
                     new PresmoothingForwardProjectorByBin(
                         this->_projector_pair_ptr->get_forward_projector_sptr(),
                         fwrd_transform));
+        // For backprojection, we first backproject the image, then transform it to the desired motion state, so a Post-"smoothing"
         back_projector.reset(
                     new PostsmoothingBackProjectorByBin(
                         this->_projector_pair_ptr->get_back_projector_sptr(),
@@ -616,27 +624,32 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   DynamicDiscretisedDensity dyn_gradient=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;
 
+  // Initialize "empty" (1.0) images. 
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(),
               dyn_image_estimate[frame_num].end_all(),
               1.F);
-
+  // We are solving parametric images (e.g. Ki/intercept for Patlak) but we need to operate on dynamic images, so lets get
+  // dynamic image estimates from current parametric estimates. 
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
-  // loop over single_frame and use model_matrix
+  // loop over each single_frame and use the model_matrix
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
+      // Initialize "empty" (1.0) images. 
       std::fill(dyn_gradient[frame_num].begin_all(),
                 dyn_gradient[frame_num].end_all(),
                 1.F);
 
-
+      // Computes the sub gradient of the objective function
+      // This is the standard forward/backprojection via matrix operations.
+      // This also includes the image transformation due to motion fields, as we added them as pre-post "smoothing" operators.
       this->_single_frame_obj_funcs[frame_num].
         compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
                                                               dyn_image_estimate[frame_num], 
                                                               subset_num);
     }
-
+  // Now that we computed the gradient of each individual frames, we need to then compute the gradient for the parametric image solver.
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(gradient,
                                                                      dyn_gradient) ; 
 }
@@ -658,9 +671,11 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
     std::fill(dyn_image_estimate[frame_num].begin_all(),
               dyn_image_estimate[frame_num].end_all(),
               1.F);
+    // We are solving parametric images (e.g. Ki/intercept for Patlak) but we need to operate on dynamic images, so lets get
+  // dynamic image estimates from current parametric estimates. 
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
-  // loop over single_frame
+  // Compute the objectie function for each frame. 
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
       frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
       ++frame_num)
@@ -680,13 +695,13 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
   DynamicDiscretisedDensity dyn_sensitivity=this->_dyn_image_template;
 
-  // loop over single_frame and use model_matrix
+  // loop over single_frame and get the sensitivity of each of them
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
       dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_subset_sensitivity(subset_num);
       //  add_subset_sensitivity(dyn_sensitivity[frame_num],subset_num);
     }
-
+  // sensitivity = dyn_sensitivity + grad(dyn_sensitivity)
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient_and_add_to_input(sensitivity,
                                                                                        dyn_sensitivity) ;
 }
