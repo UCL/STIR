@@ -125,6 +125,9 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
 
     stream_ptr = new TChain(this->chain_name.c_str());
     stream_ptr->Add(fullfilename.c_str());
+    // Turn off all branches
+    stream_ptr->SetBranchStatus("*",0);
+    // Branches are turned back on by SetBranchAddress()
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
     stream_ptr->SetBranchAddress("eventID1",&eventID1);
