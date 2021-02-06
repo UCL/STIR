@@ -73,6 +73,10 @@ std::vector<int>
 ProjDataFromStream::get_segment_sequence_in_stream() const
 { return segment_sequence; }
 
+std::vector<int>
+ProjDataFromStream::get_timing_poss_sequence_in_stream() const
+{ return timing_poss_sequence; }
+
 #if 0
 // this does not make a lot of sense. How to compare files etc. ?
 bool 

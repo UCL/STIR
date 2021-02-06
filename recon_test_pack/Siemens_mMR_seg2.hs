@@ -44,4 +44,6 @@ Number of crystals per singles unit in transaxial direction := 9
 end scanner parameters:=
 effective central bin size (cm) := 0.208815
 number of time frames := 1
+start vertical bed position (mm) := 0
+start horizontal bed position (mm) := 0
 !END OF INTERFILE :=

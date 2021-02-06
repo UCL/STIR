@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
+    Copyright (C) 2017, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,10 +32,10 @@ START_NAMESPACE_STIR
 
 
 CListEventROOT::
-CListEventROOT(const shared_ptr<Scanner>& scanner_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+CListEventROOT(const shared_ptr<const ProjDataInfo> &proj_data_info) :
+    CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
 {
-    quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring()/4.f);
+    quarter_of_detectors = static_cast<int>(proj_data_info->get_scanner_ptr()->get_num_detectors_per_ring()/4.f);
 }
 
 //!
@@ -50,6 +51,8 @@ void CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) c
 
     _det_pos.pos1() = det1;
     _det_pos.pos2() = det2;
+    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
+//    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_unmashed_tof_bin(delta_time);
 }
 
 void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
@@ -58,41 +61,27 @@ void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
 }
 
 void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
-                                    const int& crystal1, const int& crystal2)
+                                    const int& crystal1, const int& crystal2,
+                                    const double& _delta_time)
 {
-//    if  (crystal1 < 0 )
-//        det1 = scanner_sptr->get_num_detectors_per_ring() + crystal1;
-//    else if ( crystal1 >= scanner_sptr->get_num_detectors_per_ring())
-//        det1 = crystal1 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det1 = crystal1;
-
-//    if  (crystal2 < 0 )
-//        det2 = scanner_sptr->get_num_detectors_per_ring() + crystal2;
-//    else if ( crystal2 >= scanner_sptr->get_num_detectors_per_ring())
-//        det2 = crystal2 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det2 = crystal2;
 
     // STIR assumes that 0 is on y whill GATE on the x axis
     det1 = crystal1 + quarter_of_detectors;
     det2 = crystal2 + quarter_of_detectors;
 
     if  (det1 < 0 )
-        det1 = scanner_sptr->get_num_detectors_per_ring() + det1;
-    else if ( det1 >= scanner_sptr->get_num_detectors_per_ring())
-        det1 = det1 - scanner_sptr->get_num_detectors_per_ring();
+        det1 = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring() + det1;
+    else if ( det1 >= this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring())
+        det1 = det1 - this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
     if  (det2 < 0 )
-        det2 = scanner_sptr->get_num_detectors_per_ring() + det2;
-    else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
-        det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
+        det2 = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring() + det2;
+    else if ( det2 >= this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring())
+        det2 = det2 - this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
     ring1 = _ring1;
     ring2 = _ring2;
-    #ifdef STIR_TOF
     delta_time = _delta_time;
-    #endif
     swapped = false;
 }
 

@@ -86,16 +86,24 @@ public:
 
   shared_ptr<ProjMatrixByBin> &
     get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
-  
+
+  void enable_tof(ProjMatrixElemsForOneBin* );
+
+  BackProjectorByBinUsingProjMatrixByBin* clone() const;
   
 protected:
 
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
+  void actual_back_project(DiscretisedDensity<3,float>& image,
+                                   const Bin& bin);
+
 private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
+
+  ProjMatrixElemsForOneBin* tof_row;
 
 };
 

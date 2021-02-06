@@ -58,7 +58,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
-    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2  - 1;
+    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
     if (half_block < 0 )
         half_block = 0;
 }
@@ -114,17 +114,20 @@ get_next_record(CListRecordROOT& record)
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
-    crystal1 -= half_block;
-    crystal2 -= half_block;
+    // Moved to post_processings().
+    //crystal1 -= half_block;
+    //crystal2 -= half_block;
 
     // Add offset
     crystal1 += offset_dets;
     crystal2 += offset_dets;
 
+    double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
-                                  time1, time2,
+                                  time1, delta_timing_bin,
                                   eventID1, eventID2);
 }
 
@@ -200,6 +203,12 @@ set_up(const std::string & header_path)
     nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)
         error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
+
+    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
+    if (half_block < 0 )
+        half_block = 0;
+
+    offset_dets -= half_block;
 
     return Succeeded::yes;
 }

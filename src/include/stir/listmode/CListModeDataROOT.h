@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, 2017 UCL
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -180,7 +181,19 @@ private:
     float ring_spacing;
     //! Bin size, set in the hroot file (optional)
     float bin_size;
+
+    int max_num_timing_bins;
+
+    float size_timing_bin;
+
+    float timing_resolution;
+
+    float energy_resolution;
+
+    float reference_energy;
 //@}
+
+    int tof_mash_factor;
 
     KeyParser parser;
 

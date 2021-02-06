@@ -66,14 +66,19 @@ public:
     ProjDataGEAdvance (std::iostream* s);
   
     //! Get & set viewgram 
-    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
+    Viewgram<float> get_viewgram(const int view_num, const int segment_num,
+                                 const bool make_num_tangential_poss_odd=false, const int timing_pos = 0) const;
     Succeeded set_viewgram(const Viewgram<float>& v);
     
     //! Get & set sinogram 
-    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const; 
+    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,
+                                 const bool make_num_tangential_poss_odd=false, const int timing_pos = 0) const;
     Succeeded set_sinogram(const Sinogram<float>& s);
  
-    
+//    float get_bin_value(const Bin& this_bin) const
+//    {
+//        // Do nothing
+//    }
 private:
   //the file with the data
   //This has to be a reference (or pointer) to a stream, 

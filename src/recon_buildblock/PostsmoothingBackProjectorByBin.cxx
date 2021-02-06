@@ -73,6 +73,36 @@ PostsmoothingBackProjectorByBin::
   set_defaults();
 }
 
+void PostsmoothingBackProjectorByBin::
+update_filtered_density_image(DiscretisedDensity<3, float> &density)
+{
+//        image_processor_ptr->apply(*filtered_density_sptr);
+//        density += *filtered_density_sptr;
+//        filtered_density_sptr->fill(0.f);
+}
+
+BackProjectorByBin*
+PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const
+{
+    return original_back_projector_ptr.get();
+}
+
+PostsmoothingBackProjectorByBin*
+PostsmoothingBackProjectorByBin::clone() const
+{
+    PostsmoothingBackProjectorByBin* sptr(new PostsmoothingBackProjectorByBin(*this));
+//    sptr->original_back_projector_ptr.reset(this->original_back_projector_ptr->clone());
+    return sptr;
+}
+
+void PostsmoothingBackProjectorByBin::
+init_filtered_density_image(DiscretisedDensity<3, float> &density)
+{
+    filtered_density_sptr.reset(
+                density.get_empty_discretised_density());
+    assert(density.get_index_range() == filtered_density_sptr->get_index_range());
+}
+
 PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin(
                        const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
@@ -138,5 +168,6 @@ actual_back_project(const RelatedViewgrams<float>& viewgrams,
                                                 min_axial_pos_num, max_axial_pos_num,
                                                 min_tangential_pos_num, max_tangential_pos_num);
 }
+
 
 END_NAMESPACE_STIR

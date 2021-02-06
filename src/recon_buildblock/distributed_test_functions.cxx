@@ -68,6 +68,8 @@ namespace distributed
     if (vg->get_view_num()!=viewgram.get_view_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
     assert(vg->get_segment_num()==viewgram.get_segment_num());
     if (vg->get_segment_num()!=viewgram.get_segment_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
+    assert(vg->get_timing_pos_num()==viewgram.get_timing_pos_num());
+        if (vg->get_timing_pos_num()!=viewgram.get_timing_pos_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
 		
     delete vg;
     printf("\n-----Test sending viewgram done-----------\n");

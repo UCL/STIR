@@ -92,6 +92,9 @@ public:
   //! get 'basic' segment_num
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_segment_num() const;
+  //! get 'basic' timing_pos_num
+  /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
+  inline int get_basic_timing_pos_num() const;
   //! get 'basic' view_segment_num
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline ViewSegmentNumbers get_basic_view_segment_num() const;

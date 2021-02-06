@@ -255,6 +255,7 @@ public:
   std::vector<std::string> applied_corrections;
  
   // derived values
+  int num_timing_poss;
   int num_segments;
   int num_views;
   int num_bins;
@@ -292,6 +293,12 @@ private:
   float energy_resolution;
   //! Reference energy.
   float reference_energy;
+
+  int max_num_timing_poss;
+  float size_of_timing_pos;
+  float timing_resolution;
+
+  int tof_mash_factor;
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

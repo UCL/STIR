@@ -102,6 +102,15 @@ get_symmetries_used() const
 {
   return original_forward_projector_ptr->get_symmetries_used();
 }
+
+//void PresmoothingForwardProjectorByBin::
+//update_filtered_density_image(const DiscretisedDensity<3,float>& density)
+//{
+////        filtered_density_sptr.reset(density.get_empty_discretised_density());
+////    image_processor_ptr->apply(*filtered_density_sptr, density);
+////    assert(density.get_index_range() == filtered_density_sptr->get_index_range());
+//}
+
 #ifdef STIR_PROJECTORS_AS_V3
 void 
 PresmoothingForwardProjectorByBin::
@@ -138,5 +147,14 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                                                       min_axial_pos_num, max_axial_pos_num,
                                                       min_tangential_pos_num, max_tangential_pos_num);
 }
+
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+void
+PresmoothingForwardProjectorByBin::actual_forward_project(Bin&,
+                            const DiscretisedDensity<3,float>&)
+{
+  error("TODO");
+}
+#endif
 
 END_NAMESPACE_STIR

@@ -67,9 +67,11 @@ private:
     //! Set Sinogram<float>
     Succeeded set_sinogram(const Sinogram<float>& s);
     //! Get Viewgram<float>
-    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
+    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false,
+                                 const int timing_pos = 0) const;
     //! Get Sinogram<float>
-    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const;
+    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false,
+                                 const int timing_pos = 0) const;
     //! Get the segment sequence
     std::vector<int> get_segment_sequence_in_hdf5() const;
     std::vector< unsigned int > seg_ax_offset;

@@ -53,6 +53,10 @@ template <class coordT> class LORAs2Points;
   a line in several ways, each if which is more convenient for some 
   application. This class provides a common base for all of these.
 
+  Note that we take direction of the line into account (since after STIR 3.0). This is
+  necessary for TOF support for instance. This is currently done by providing the is_swapped()
+  member.
+
   \warning This is all preliminary and likely to change.
 */
 template <class coordT>
@@ -63,6 +67,10 @@ class LOR
 
   virtual 
     LOR * clone() const = 0;
+
+  //! Return if the LOR direction is opposite from normal.
+  virtual
+    bool is_swapped() const = 0;
 
   virtual
     Succeeded
@@ -178,7 +186,15 @@ class LORInCylinderCoordinates : public LOR<coordT>
   const PointOnCylinder<coordT>& p2() const { return _p2; }
   PointOnCylinder<coordT>& p2() { return _p2; }
 
-  void reset(coordT radius=1)
+  //! \copybrief LOR::is_swapped()
+  /*! In this class, this currently always return \c false. You can swap the points if
+      you want to swap the direction of the LOR.
+  */
+  bool is_swapped() const
+    {
+      return false;
+    }
+  void reset(coordT radius = 1)
     {
       // set psi such that the new LOR does intersect that cylinder
       _p1.psi()=0; _p2.psi()=static_cast<coordT>(_PI); _radius=radius; 
@@ -291,6 +307,15 @@ class LORAs2Points : public LOR<coordT>
       LOR<coordT>*
 #endif
       clone() const { return new self_type(*this); }
+  
+  //! \copybrief LOR::is_swapped()
+  /*! In this class, this currently always return \c false. You can swap the points if
+  you want to swap the direction of the LOR.
+  */
+  bool is_swapped() const
+    {
+      return false;
+    }
 
   virtual
     Succeeded
@@ -346,7 +371,8 @@ class LORInAxialAndSinogramCoordinates
   coordT& s()           { check_state(); return _s; }
 
   coordT beta() const   { check_state(); return asin(_s/private_base_type::_radius); }
-
+  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() { check_state(); return _swapped; }
   inline explicit
   LORInAxialAndSinogramCoordinates(const coordT radius = 1);
 
@@ -360,7 +386,8 @@ class LORInAxialAndSinogramCoordinates
 				   const coordT z2,
 				   const coordT phi,
 				   const coordT s,
-				   const coordT radius =1);
+				   const coordT radius =1,
+                   const bool swapped =false);
 
   inline
     LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
@@ -422,6 +449,7 @@ class LORInAxialAndSinogramCoordinates
  private:
   coordT _phi;
   coordT _s;
+  bool _swapped;
 
 };
 
@@ -455,6 +483,8 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   coordT& phi()         { check_state(); return _phi; }
   coordT beta() const   { check_state(); return _beta; }
   coordT& beta()        { check_state(); return _beta; }
+  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() { check_state(); return _swapped; }
 
   coordT s() const      { check_state(); return private_base_type::_radius*sin(_beta); }
 
@@ -491,7 +521,8 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
 				   const coordT z2,
 				   const coordT phi,
 				   const coordT beta,
-				   const coordT radius =1);
+				   const coordT radius =1,
+	               const bool swapped =false);
 
   inline
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
@@ -532,6 +563,7 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
  private:
   coordT _phi;
   coordT _beta;
+  bool _swapped;
 };
 
 /*! \ingroup LOR

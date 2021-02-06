@@ -680,10 +680,16 @@ set_up(
 	this->already_setup= true;
 }
 
+ProjMatrixByBinSPECTUB* 
+ProjMatrixByBinSPECTUB::clone() const
+{
+	return new ProjMatrixByBinSPECTUB(*this);
+}
+
 ProjMatrixByBinSPECTUB::
 ~ProjMatrixByBinSPECTUB()
 {
-  delete_UB_SPECT_arrays();
+ // delete_UB_SPECT_arrays();
 }
 
 void

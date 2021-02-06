@@ -6,11 +6,15 @@
   \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
     
+
+  \author Nikos Efthimiou
   \author Daniel Deidda
   \author Kris Thielemans
 
 */
 /*
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, University College of London
     This file is part of STIR.
@@ -61,11 +65,31 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
+    //! Returns true is the delta_time has been swapped.
+    bool
+    get_swapped() const
+    {return swapped;}
+
+    double get_delta_time() const { return delta_time; }
+protected:
+    //! The detection time difference, between the two photons.
+    //! This will work for ROOT files, but not so sure about acquired data.
+    double delta_time;
+
+    //! Indicates if the detectors' order has been swapped.
+    bool swapped;
+
 }; /*-coincidence event*/
 
 class CListRecord : public ListRecord
 {
 public:
+  
+  //! Used in TOF reconstruction to get both the geometric and the timing
+  //!  component of the event
+  virtual void full_event(Bin&, const ProjDataInfo&) const
+  {error("CListRecord::full_event() is implemented only for records which "
+         "hold timing and spatial information.");}
 };
 
 class CListRecordWithGatingInput : public CListRecord

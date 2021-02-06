@@ -144,7 +144,7 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
 Viewgram<float>
 ProjDataGEAdvance::
 get_viewgram(const int view_num, const int segment_num,
-             const bool make_num_tangential_poss_odd) const
+             const bool make_num_tangential_poss_odd, const int timing_pos) const
   {
     // --------------------------------------------------------
     // --------------------------------------------------------
@@ -312,7 +312,8 @@ Succeeded ProjDataGEAdvance::set_viewgram(const Viewgram<float>& v)
   return Succeeded::no;
 }
 
-Sinogram<float> ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
+Sinogram<float> ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num,
+                                                const bool make_num_tangential_poss_odd, const int timing_pos) const
 { 
   // TODO
   error("ProjDataGEAdvance::get_sinogram not implemented yet\n"); 

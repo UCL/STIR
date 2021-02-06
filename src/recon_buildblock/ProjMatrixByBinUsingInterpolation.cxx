@@ -161,6 +161,13 @@ set_up(
       }
   }	    
 }
+
+ProjMatrixByBinUsingInterpolation*
+ProjMatrixByBinUsingInterpolation::clone() const
+{
+	return new ProjMatrixByBinUsingInterpolation(*this);
+}
+
 // point should be w.r.t. middle of the scanner!
 static inline 
 void 

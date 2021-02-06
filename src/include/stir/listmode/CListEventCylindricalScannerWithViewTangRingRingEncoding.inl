@@ -47,6 +47,7 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
 						 view_num, tangential_pos_num);
   det_pos.pos1().tangential_coord() = det_num_1;
   det_pos.pos2().tangential_coord() = det_num_2;
+  det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
 }
 
 template <class Derived>
@@ -110,6 +111,8 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
   sinogram_coordinates_to_bin(bin, view_num, tangential_pos_num, ring_a, ring_b, 
 			      static_cast<const ProjDataInfoCylindrical&>(proj_data_info));
+  if (proj_data_info.get_num_tof_poss() > 1)
+      bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
 }
 
 template <class Derived>

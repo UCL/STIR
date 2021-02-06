@@ -77,60 +77,75 @@ find_inverse( ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in)
   int max_segment_num = ask_num("Maximum segment number to invert",
       min_segment_num,proj_data_info_ptr->get_max_segment_num(), 
       min_segment_num);
-  
+  int min_timing_pos_num = 0; // Default cases of non-TOF data
+  int max_timing_pos_num = 0;
+  if (proj_data_info_ptr->is_tof_data())
+  {
+	  int min_timing_pos_num = ask_num("Minimum timing position index to invert",
+	      proj_data_info_ptr->get_min_tof_pos_num(), proj_data_info_ptr->get_max_tof_pos_num(), 0);
+	  int max_timing_pos_num = ask_num("Maximum timing position index to invert",
+			  min_timing_pos_num,proj_data_info_ptr->get_max_tof_pos_num(),
+			  max_timing_pos_num);
+  }
  
  float max_in_viewgram =0.F;
   
   for (int segment_num = min_segment_num; segment_num<= max_segment_num;
   segment_num++) 
   {
-    SegmentByView<float> segment_by_view = 
-      projdatafromstream_in->get_segment_by_view(segment_num);
-    const float current_max_in_viewgram = segment_by_view.find_max();
-    if ( current_max_in_viewgram >= max_in_viewgram)
-     max_in_viewgram = current_max_in_viewgram ;
-      else
-      continue;
+	  for (int timing_pos_num = min_timing_pos_num; timing_pos_num<= max_timing_pos_num;
+			  timing_pos_num++)
+	  {
+		SegmentByView<float> segment_by_view =
+		  projdatafromstream_in->get_segment_by_view(segment_num,timing_pos_num);
+		const float current_max_in_viewgram = segment_by_view.find_max();
+		if ( current_max_in_viewgram >= max_in_viewgram)
+		 max_in_viewgram = current_max_in_viewgram ;
+		  else
+		  continue;
+	  }
   }
   info(boost::format("Max number in viewgram is: %1%") % max_in_viewgram);
 
   for (int segment_num = min_segment_num; segment_num<= max_segment_num;
   segment_num++) 
-    for ( int view_num = proj_data_info_ptr->get_min_view_num();
-    view_num<=proj_data_info_ptr->get_max_view_num(); view_num++)
-    {
-      Viewgram<float> viewgram_in = projdatafromstream_in->get_viewgram(view_num,segment_num);
-      Viewgram<float> viewgram_out = proj_data_info_ptr_out->get_empty_viewgram(view_num,segment_num);
+	  for (int timing_pos_num = min_timing_pos_num; timing_pos_num<= max_timing_pos_num;
+			  timing_pos_num++)
+		for ( int view_num = proj_data_info_ptr->get_min_view_num();
+		view_num<=proj_data_info_ptr->get_max_view_num(); view_num++)
+		{
+		  Viewgram<float> viewgram_in = projdatafromstream_in->get_viewgram(view_num,segment_num,false,timing_pos_num);
+		  Viewgram<float> viewgram_out = proj_data_info_ptr_out->get_empty_viewgram(view_num,segment_num,false,timing_pos_num);
 
-      // the following const was found in the ls_cyl.hs and the same value will
-      // be used for thresholding both kappa_0 and kappa_1.
-      // threshold  = 10^-4/max_in_sinogram
-      // TODO - find out batter way of finding the threshold  
-  //    const float max_in_viewgram = 54.0F;
+		  // the following const was found in the ls_cyl.hs and the same value will
+		  // be used for thresholding both kappa_0 and kappa_1.
+		  // threshold  = 10^-4/max_in_sinogram
+		  // TODO - find out batter way of finding the threshold
+	  //    const float max_in_viewgram = 54.0F;
 
-	//segment_by_view.find_max();
-   
-     const float threshold = 0.0001F*max_in_viewgram;    
-      
-      for (int i= viewgram_in.get_min_axial_pos_num(); i<=viewgram_in.get_max_axial_pos_num();i++)
-	for (int j= viewgram_in.get_min_tangential_pos_num(); j<=viewgram_in.get_max_tangential_pos_num();j++)
-	{
-	  bin= viewgram_in[i][j];
-	 	 	 
-	  if (bin >= threshold)
-	  {
-	    inv = 1.F/bin;
-	    viewgram_out[i][j] = inv;
-	  }
-	 else
-	  {	  
-	   inv =1/threshold;
-	   viewgram_out[i][j] = inv;
-	  }
+		//segment_by_view.find_max();
 
-    	}
-	projdatafromstream_out->set_viewgram(viewgram_out);
-    }
+		 const float threshold = 0.0001F*max_in_viewgram;
+
+		  for (int i= viewgram_in.get_min_axial_pos_num(); i<=viewgram_in.get_max_axial_pos_num();i++)
+		for (int j= viewgram_in.get_min_tangential_pos_num(); j<=viewgram_in.get_max_tangential_pos_num();j++)
+		{
+		  bin= viewgram_in[i][j];
+
+		  if (bin >= threshold)
+		  {
+			inv = 1.F/bin;
+			viewgram_out[i][j] = inv;
+		  }
+		 else
+		  {
+		   inv =1/threshold;
+		   viewgram_out[i][j] = inv;
+		  }
+
+			}
+		projdatafromstream_out->set_viewgram(viewgram_out);
+		}
     
 }
 

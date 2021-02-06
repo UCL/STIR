@@ -53,6 +53,9 @@ int ProjData::get_num_tangential_poss() const
 int ProjData::get_num_tof_poss() const
 { return proj_data_info_sptr->get_num_tof_poss(); }
 
+int ProjData::get_tof_mash_factor() const
+{ return proj_data_info_sptr->get_tof_mash_factor(); }
+
 int ProjData::get_min_segment_num() const
 { return proj_data_info_sptr->get_min_segment_num(); }
 
@@ -76,6 +79,12 @@ int ProjData::get_min_tangential_pos_num() const
 
 int ProjData::get_max_tangential_pos_num() const
 { return proj_data_info_sptr->get_max_tangential_pos_num(); }
+
+int ProjData::get_min_tof_pos_num() const
+{ return proj_data_info_sptr->get_min_tof_pos_num(); }
+
+int ProjData::get_max_tof_pos_num() const
+{ return proj_data_info_sptr->get_max_tof_pos_num(); }
 
 int ProjData::get_num_non_tof_sinograms() const
 { return proj_data_info_sptr->get_num_non_tof_sinograms(); }

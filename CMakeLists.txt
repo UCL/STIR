@@ -123,6 +123,10 @@ if(NOT DISABLE_CERN_ROOT)
   endif()
 endif()
 
+if(NOT DISABLE_HDF5_SUPPORT)
+    find_package(HDF5 COMPONENTS CXX)
+endif()
+
 if(NOT DISABLE_AVW)
   find_package(AVW)
 endif()

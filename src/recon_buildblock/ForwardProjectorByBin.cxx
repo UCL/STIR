@@ -209,19 +209,25 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
-
-      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
-
-      RelatedViewgrams<float> viewgrams =
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
-      forward_project(viewgrams);
+      for (int k=proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
+              k<=proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num();
+    		  ++k)
+        {
+          if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+            info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k);
+    	  else
+            info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+          RelatedViewgrams<float> viewgrams =
+            proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false, k);
+          forward_project(viewgrams);
 #ifdef STIR_OPENMP
 #pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
 #endif
-      {
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-          error("Error set_related_viewgrams in forward projecting");
-      }
+          {
+            if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+              error("Error set_related_viewgrams in forward projecting");
+          }
+        }
     }
 
 }

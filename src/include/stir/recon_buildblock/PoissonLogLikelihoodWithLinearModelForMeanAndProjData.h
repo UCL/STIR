@@ -187,6 +187,7 @@ public:
   const ProjData& get_proj_data() const;
   const shared_ptr<ProjData>& get_proj_data_sptr() const;
   const int get_max_segment_num_to_process() const;
+  const int get_max_timing_pos_num_to_process() const;
   const bool get_zero_seg0_end_planes() const;
   const ProjData& get_additive_proj_data() const;
   const shared_ptr<ProjData>& get_additive_proj_data_sptr() const;
@@ -208,6 +209,7 @@ public:
   int set_num_subsets(const int num_subsets);
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
+  void set_max_timing_pos_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
   //N.E. Changed to ExamData
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
@@ -306,6 +308,10 @@ protected:
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
 
+  //! the maximum absolute time-of-flight bin number to use in the reconstruction
+  /*! convention: if -1, use get_max_tof_pos_num()*/
+  int max_timing_pos_num_to_process;
+
   /**********************/
    ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
@@ -314,8 +320,14 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
+
+  //! Triggers calculation of sensitivity using time-of-flight
+  bool use_tofsens;
 
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;

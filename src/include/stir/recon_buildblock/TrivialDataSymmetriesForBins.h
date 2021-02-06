@@ -56,7 +56,8 @@ public:
   virtual void
     get_related_bins(std::vector<Bin>&, const Bin& b,
                       const int min_axial_pos_num, const int max_axial_pos_num,
-                      const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+                      const int min_tangential_pos_num, const int max_tangential_pos_num,
+					  const int min_timing_pos_num = 0, const int max_timing_pos_num = 0) const;
 
   virtual void
     get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,

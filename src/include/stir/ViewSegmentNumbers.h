@@ -49,17 +49,22 @@ public:
   //! an empty constructor (sets everything to 0)
   inline  ViewSegmentNumbers();
   //! constructor taking view and segment number as arguments
-  inline ViewSegmentNumbers( const int view_num,const int segment_num);
+  inline ViewSegmentNumbers( const int view_num, const int segment_num,
+                             const int tof_num = 0);
 
   //! get segment number for const objects
   inline int segment_num() const;
   //! get view number for const objects
   inline int view_num() const;
+  //! get tof number for const objects
+  inline int tof_pos_num() const;
 
   //! get reference to segment number
   inline int&  segment_num();
   //! get reference to view number
   inline int&  view_num();
+  //! get reference to timing position index
+  inline int& tof_pos_num();
 
  
   //! comparison operator, only useful for sorting
@@ -73,6 +78,7 @@ public:
 private:
   int segment;
   int view;
+  int tof;
 
 };
 

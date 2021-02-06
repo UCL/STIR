@@ -35,8 +35,9 @@ ViewSegmentNumbers::ViewSegmentNumbers()
 :segment(0),view(0)
   {}
 
-ViewSegmentNumbers::ViewSegmentNumbers( const int view_num,const int segment_num)
-    : segment(segment_num),view(view_num)
+ViewSegmentNumbers::ViewSegmentNumbers( const int view_num,const int segment_num,
+                                        const int tof_num)
+    : segment(segment_num),view(view_num),tof(tof_num)
   {}
 
 int
@@ -48,14 +49,21 @@ ViewSegmentNumbers::view_num() const
 {
   return view;}
 
+int
+ViewSegmentNumbers::tof_pos_num() const
+{
+  return tof;}
 
 int&
 ViewSegmentNumbers::segment_num() 
 {  return segment;}
-
 int& 
 ViewSegmentNumbers::view_num() 
 { return view;}
+
+int&
+ViewSegmentNumbers::tof_pos_num()
+{ return tof;}
 
 bool 
 ViewSegmentNumbers::
@@ -69,7 +77,7 @@ bool
 ViewSegmentNumbers::
 operator==(const ViewSegmentNumbers& other) const
 {
-  return (view == other.view) && (segment == other.segment);
+  return (view == other.view) && (segment == other.segment) && (tof == other.tof);
 }
 
 bool 

@@ -75,7 +75,6 @@ else()
   message(STATUS "HDF5 support disabled.")
 endif()
 
-
 if (ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)

@@ -81,7 +81,7 @@ is_interfile_signature(const char * const signature)
 {
   // checking for "interfile :"
   const char * pos_of_colon = strchr(signature, ':');
-  if (pos_of_colon == NULL)
+  if (pos_of_colon == 0)
     return false;
   string keyword(signature, pos_of_colon-signature);
   return (
@@ -1306,53 +1306,72 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     }
 
   // it's PET data if we get here
+  // N.E. Added timing locations
+  pdfs.get_proj_data_info_sptr()->get_num_tof_poss()>1 ?
+              output_header << "number of dimensions := 5\n" :
+                               output_header << "number of dimensions := 4\n";
 
-  output_header << "number of dimensions := 4\n";
-  
-  // TODO support more ? 
+  // TODO support more ?
   {
     // default to Segment_View_AxialPos_TangPos
     int order_of_segment = 4;
     int order_of_view = 3;
     int order_of_z = 2;
     int order_of_bin = 1;
+    int order_of_timing_poss = 0;
     switch(pdfs.get_storage_order())
      /*
-      {  
+      {
       case ProjDataFromStream::ViewSegmentRingBin:
-	{
-	  order_of_segment = 2;
-	  order_of_view = 1;
-	  order_of_z = 3;
-	  break;
-	}
-	*/
+    {
+      order_of_segment = 2;
+      order_of_view = 1;
+      order_of_z = 3;
+      break;
+    }
+    */
     {
       case ProjDataFromStream::Segment_View_AxialPos_TangPos:
-	{
-	  order_of_segment = 4;
-	  order_of_view = 3;
-	  order_of_z = 2;
-	  break;
-	}
+    {
+      order_of_segment = 4;
+      order_of_view = 3;
+      order_of_z = 2;
+      break;
+    }
       case ProjDataFromStream::Segment_AxialPos_View_TangPos:
-	{
-	  order_of_segment = 4;
-	  order_of_view = 2;
-	  order_of_z = 3;
-	  break;
-	}
+    {
+      order_of_segment = 4;
+      order_of_view = 2;
+      order_of_z = 3;
+      break;
+    }
+    case ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos:
+    {
+        order_of_timing_poss = 5;
+        order_of_segment = 4;
+        order_of_view = 3;
+        order_of_z = 2;
+        break;
+    }
       default:
-	{
-	  error("write_interfile_PSOV_header: unsupported storage order, "
+    {
+      error("write_interfile_PSOV_header: unsupported storage order, "
                 "defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
-	}
+    }
       }
-    
-    output_header << "matrix axis label [" << order_of_segment 
-		  << "] := segment\n";
-    output_header << "!matrix size [" << order_of_segment << "] := " 
-		  << pdfs.get_segment_sequence_in_stream().size()<< "\n";
+
+    if (order_of_timing_poss > 0)
+    {
+        output_header << "matrix axis label [" << order_of_timing_poss
+                      << "] := timing positions\n";
+        output_header << "!matrix size [" << order_of_timing_poss << "] := "
+              << pdfs.get_timing_poss_sequence_in_stream().size()<< "\n";
+    }
+
+    output_header << "matrix axis label [" << order_of_segment
+          << "] := segment\n";
+    output_header << "!matrix size [" << order_of_segment << "] := "
+          << pdfs.get_segment_sequence_in_stream().size()<< "\n";
     output_header << "matrix axis label [" << order_of_view << "] := view\n";
     output_header << "!matrix size [" << order_of_view << "] := "
 		  << pdfs.get_proj_data_info_sptr()->get_num_views() << "\n";
@@ -1364,13 +1383,24 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       std::vector<int>::const_iterator seg = segment_sequence.begin();
       output_header << "{ " <<pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
       for (seg++; seg != segment_sequence.end(); seg++)
-	output_header << "," << pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
+		output_header << "," << pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
       output_header << "}\n";
     }
 
     output_header << "matrix axis label [" << order_of_bin << "] := tangential coordinate\n";
     output_header << "!matrix size [" << order_of_bin << "] := "
-		  <<pdfs.get_proj_data_info_sptr()->get_num_tangential_poss() << "\n";
+          <<pdfs.get_proj_data_info_sptr()->get_num_tangential_poss() << "\n";
+
+    // If TOF is supported; add this in the header.
+    if (pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->is_tof_ready() &&
+            pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1)
+    {
+        // Moved in scanner section
+		//    output_header << "%number of TOF time bins :=" <<
+		//                     pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_max_of_timing_bins()  << "\n";
+    output_header << "%TOF mashing factor := " <<
+                     pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
+    }
   }
 
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
@@ -1379,8 +1409,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
    if (!is_null_ptr(proj_data_info_sptr))
      {
        // cylindrical scanners
-   
-       output_header << "minimum ring difference per segment := ";    
+
+       output_header << "minimum ring difference per segment := ";
        {
 	 std::vector<int>::const_iterator seg = segment_sequence.begin();
 	 output_header << "{ " << proj_data_info_sptr->get_min_ring_difference(*seg);

@@ -124,7 +124,7 @@ fi
 echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
 template_sino=my_DSTE_3D_rd2_template.hs
 cat > my_input.txt <<EOF
-Discovery STE
+Discovery STE nonTOF
 1
 n
 

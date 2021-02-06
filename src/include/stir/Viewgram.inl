@@ -47,6 +47,11 @@ Viewgram<elemT>::get_view_num() const
 
 template <typename elemT>
 int
+Viewgram<elemT>::get_timing_pos_num() const
+{ return timing_pos_num; }
+
+template <typename elemT>
+int
 Viewgram<elemT>::get_min_axial_pos_num() const
   {return this->get_min_index();}
 
@@ -81,8 +86,8 @@ Viewgram<elemT>::get_max_tangential_pos_num() const
 template <typename elemT>
 Viewgram<elemT>
 Viewgram<elemT>::get_empty_copy(void) const
-  {
-    Viewgram<elemT> copy(proj_data_info_sptr, get_view_num(), get_segment_num());
+{
+    Viewgram<elemT> copy(proj_data_info_sptr, get_view_num(), get_segment_num(), get_timing_pos_num());
     return copy;
 }
 
@@ -97,11 +102,11 @@ Viewgram<elemT>::get_proj_data_info_sptr() const
 template <typename elemT>
 Viewgram<elemT>::
 Viewgram(const Array<2,elemT>& p, 
-	 const shared_ptr<const ProjDataInfo>& pdi_sptr,
-	 const int v_num, const int s_num) 
+     const shared_ptr<const ProjDataInfo>& pdi_sptr,
+	 const int v_num, const int s_num, const int t_num) 
   :
   Array<2,elemT>(p), proj_data_info_sptr(pdi_sptr),
-  view_num(v_num), segment_num(s_num)
+  view_num(v_num), segment_num(s_num), timing_pos_num(t_num)
 {
   assert(view_num <= proj_data_info_sptr->get_max_view_num());
   assert(view_num >= proj_data_info_sptr->get_min_view_num());
@@ -115,8 +120,8 @@ Viewgram(const Array<2,elemT>& p,
 
 template <typename elemT>
 Viewgram<elemT>::
-Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
-	 const int v_num, const int s_num) 
+Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr, 
+	 const int v_num, const int s_num, const int t_num) 
   : 
   Array<2,elemT>(IndexRange2D (pdi_sptr->get_min_axial_pos_num(s_num),
 			       pdi_sptr->get_max_axial_pos_num(s_num),
@@ -124,7 +129,8 @@ Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
 			       pdi_sptr->get_max_tangential_pos_num())),
   proj_data_info_sptr(pdi_sptr),
   view_num(v_num),
-  segment_num(s_num)
+  segment_num(s_num),
+  timing_pos_num(t_num)
 {
   assert(view_num <= proj_data_info_sptr->get_max_view_num());
   assert(view_num >= proj_data_info_sptr->get_min_view_num());

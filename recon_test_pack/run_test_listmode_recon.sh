@@ -78,7 +78,7 @@ ThereWereErrors=0
 echo "=== Simulate normalisation data"
 # For normalisation data we are going to use a cylinder in the center,
 # with water attenuation values
-echo "=== Gnerete fake emission image"
+echo "=== Generate fake emission image"
 generate_image  lm_generate_atten_cylinder.par
 echo "=== Calculate ACFs"
 calculate_attenuation_coefficients --ACF my_acfs.hs my_atten_image.hv Siemens_mMR_seg2.hs > my_create_acfs.log 2>&1

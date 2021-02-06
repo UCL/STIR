@@ -40,6 +40,13 @@ get_bin() const
   return bin;
 }
 
+Bin*
+ProjMatrixElemsForOneBin::
+get_bin_ptr()
+{
+  return &bin;
+}
+
 void
 ProjMatrixElemsForOneBin::
 set_bin(const Bin& new_bin)

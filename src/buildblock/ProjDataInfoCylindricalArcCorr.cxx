@@ -58,14 +58,18 @@ ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr(const shared_ptr
 								const  VectorWithOffset<int>& num_axial_pos_per_segment,
 								const  VectorWithOffset<int>& min_ring_diff_v, 
 								const  VectorWithOffset<int>& max_ring_diff_v,
-								const int num_views,const int num_tangential_poss)
+                                const int num_views,const int num_tangential_poss,
+                                const int tof_mash_factor)
 								:ProjDataInfoCylindrical(scanner_ptr,
 								num_axial_pos_per_segment,
 								min_ring_diff_v, max_ring_diff_v,
 								num_views, num_tangential_poss),
 								bin_size(bin_size_v)								
 								
-{}
+{
+	if (scanner_ptr->is_tof_ready())
+        set_tof_mash_factor(tof_mash_factor);
+}
 
 
 void
@@ -121,9 +125,14 @@ ProjDataInfoCylindricalArcCorr::parameter_info()  const
 
 Bin
 ProjDataInfoCylindricalArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor,const double delta_time) const
 
 {
+  if (delta_time != 0)
+    {
+	  error("TODO NO TOF YET");
+    }
+
   Bin bin;
   LORInAxialAndSinogramCoordinates<float> lor_coords;
   if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no)

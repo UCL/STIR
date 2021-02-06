@@ -36,6 +36,8 @@
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 
@@ -144,6 +146,8 @@ void back_project(const RelatedViewgrams<float>&,
   /// Set data processor to use after back projection
   void set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr);
 
+  virtual BackProjectorByBin* clone() const = 0;
+
 protected:
 
   /*! \brief This actually does the back projection.
@@ -195,7 +199,8 @@ protected:
 	    const int start_segment_num, const int end_segment_num,
 	    const int start_axial_pos_num, const int end_axial_pos_num,
 	    const int start_tang_pos_num,const int end_tang_pos_num,
-	    const int start_view, const int end_view);
+	    const int start_view, const int end_view,
+		const int start_timing_pos_num = 0, const int end_timing_pos_num = 0);
 
 #ifdef STIR_OPENMP
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads

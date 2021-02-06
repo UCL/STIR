@@ -79,7 +79,6 @@ public:
   
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  
 private:
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
   
@@ -88,6 +87,10 @@ private:
 			      const DiscretisedDensity<3,float>& image,
 			      const int min_axial_pos_num, const int max_axial_pos_num,
 			      const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+  void actual_forward_project(Bin&, const DiscretisedDensity<3,float>&);
+#endif
 
   virtual void set_defaults();
   virtual void initialise_keymap();

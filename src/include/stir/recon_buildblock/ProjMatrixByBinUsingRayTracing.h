@@ -140,6 +140,8 @@ public :
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
+  virtual ProjMatrixByBinUsingRayTracing* clone() const;
+
   //! \name If a cylindrical FOV or the whole image will be handled
   //!@{
   bool get_restrict_to_cylindrical_FOV() const;

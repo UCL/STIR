@@ -33,6 +33,7 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 
@@ -81,8 +82,7 @@ public:
   //BackProjectorByBin const *
   const shared_ptr<BackProjectorByBin>
     get_back_projector_sptr() const;
-  
-
+    
   //! Provide access to the (minimal) symmetries used by the projectors
   /*! It is expected that the forward and back projector can handle the same
       symmetries.

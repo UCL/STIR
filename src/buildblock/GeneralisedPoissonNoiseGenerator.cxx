@@ -133,14 +133,19 @@ generate_random(ProjData& output_projdata,
   for (int seg= input_projdata.get_min_segment_num(); 
        seg<=input_projdata.get_max_segment_num();
        seg++)  
-  {
-    SegmentByView<float> seg_output= 
-      output_projdata.get_empty_segment_by_view(seg);
-  
-    this->generate_random(seg_output, input_projdata.get_segment_by_view(seg));
-    if (output_projdata.set_segment(seg_output) == Succeeded::no)
-      error("Problem writing to projection data");
-  }
+    {
+	  for (int timing_pos_num = input_projdata.get_min_tof_pos_num();
+			timing_pos_num <= input_projdata.get_max_tof_pos_num();
+			++timing_pos_num)
+	    {
+		  SegmentByView<float> seg_output= 
+            output_projdata.get_empty_segment_by_view(seg,false, timing_pos_num);
+
+          this->generate_random(seg_output, input_projdata.get_segment_by_view(seg, timing_pos_num));
+          if (output_projdata.set_segment(seg_output) == Succeeded::no)
+            error("Problem writing to projection data");
+        }
+    }
 }
 
 END_NAMESPACE_STIR

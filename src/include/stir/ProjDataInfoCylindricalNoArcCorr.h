@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief Declaration of class stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
@@ -106,7 +108,8 @@ public:
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
     const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+    const int num_views,const int num_tangential_poss,
+    const int tof_mash_factor = 0);
 
   //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
   /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
@@ -115,7 +118,8 @@ public:
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
     const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+    const int num_views,const int num_tangential_poss,
+    const int tof_mash_factor = 0);
 
   ProjDataInfo* clone() const;
 
@@ -237,27 +241,28 @@ public:
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
 			 const int det1_num, const int ring1_num,
-			 const int det2_num, const int ring2_num) const;
-
+			 const int det2_num, const int ring2_num,
+			 const int timing_pos_num = 0) const;
 
   //! This routine gets the detector pair corresponding to a bin.
-  /*! 
-    \see get_det_pair_for_view_tangential_pos_num() for
-    restrictions. In addition, this routine only works for span=1 data,
-    i.e. no axial compression.
-    \obsolete
+  /*!
+  \see get_det_pair_for_view_tangential_pos_num() for
+  restrictions. In addition, this routine only works for span=1 data,
+  i.e. no axial compression.
+  \obsolete
   */
+
   inline void
-    get_det_pair_for_bin(
-			 int& det1_num, int& ring1_num,
-			 int& det2_num, int& ring2_num,
-			 const Bin&) const;
+  get_det_pair_for_bin(
+               int& det_num1, int& ring_num1,
+               int& det_num2, int& ring_num2,
+               const Bin& bin) const;
 
   //@}
 
   virtual 
     Bin
-    get_bin(const LOR<float>&) const;
+    get_bin(const LOR<float>&,const double delta_time) const;
 
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
@@ -270,6 +275,11 @@ public:
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
+
+  void find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface(CartesianCoordinate3D<float>& coord_1,
+                                                                                 CartesianCoordinate3D<float>& coord_2,
+                                                                                 const int Ring_A,const int Ring_B,
+                                                                                 const int det1, const int det2) const;
   
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
 					       CartesianCoordinate3D<float>& coord_2,

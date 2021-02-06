@@ -100,11 +100,24 @@ namespace RDF_HDF5 {
         //if (prompt) random=1; else random=0; return Succeeded::yes; 
         return Succeeded::no;
       }
+ inline void get_detection_position(DetectionPositionPair<>& det_pos) const
+  {
+    // TODO 447->get_num_detectors_per_ring()-1
+    det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
+    det_pos.pos1().axial_coord() = loXtalAxialID;
+    det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
+//    std::cout << hiXtalTransAxID << " "  << loXtalTransAxID << std::endl;
+    det_pos.pos2().axial_coord() = hiXtalAxialID;
+  }
       inline bool is_event() const
       { 
         return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
       } // TODO need to find out how to see if it's a coincidence event
 
+      inline int get_tof_bin() const
+         {
+             return static_cast<int>(deltaTime);
+         }
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
       TODO
@@ -123,6 +136,53 @@ namespace RDF_HDF5 {
 #endif
     }; /*-coincidence event*/
 
+
+#if 0
+//! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
+/*! \ingroup listmode
+  \ingroup GE
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
+ */
+class CListGatingDataGESigna
+{
+ public:
+  #if 0
+  inline unsigned long get_time_in_millisecs() const
+    { return (time_hi()<<24) | time_lo(); }
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+    {
+      words[0].value = ((1UL<<24)-1) & (time_in_millisecs);
+      words[1].value = (time_in_millisecs) >> 24;
+      // TODO return more useful value
+      return Succeeded::yes;
+    }
+  #endif
+  inline bool is_gating_input() const
+    { return (words[0].signature==21) && (words[1].signature==29); }
+  inline unsigned int get_gating() const
+    { return words[0].reserved; } // return "reserved" bits. might be something in there
+  inline Succeeded set_gating(unsigned int g)
+    { words[0].reserved = g&7; return Succeeded::yes; }
+
+private:
+  typedef union{
+    struct {
+#if STIRIsNativeByteOrderBigEndian
+      boost::uint32_t signature : 5;
+      boost::uint32_t reserved : 3;
+      boost::uint32_t value : 24; // timing info here in the first word, but we're ignoring it
+#else
+      boost::uint32_t value : 24;
+      boost::uint32_t reserved : 3;
+      boost::uint32_t signature : 5;
+#endif
+    };      
+    boost::uint32_t raw;
+  } oneword_t;
+  oneword_t words[2];
+};
+
+#endif
 
     //! A class for storing and using a timing 'event' from a GE RDF9 listmode file
     /*! \ingroup listmode
@@ -195,8 +255,8 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
 
     get_time_in_millisecs() should therefore be zero at the first time stamp.
   */
- CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr, const unsigned long first_time_stamp) :
-  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr),
+ CListRecordGEHDF5(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const unsigned long first_time_stamp) :
+  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr),
     first_time_stamp(first_time_stamp)
     {}
 
@@ -213,7 +273,7 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
 
   bool is_event() const
   { return this->event_data.is_event(); }
-  virtual CListEvent&  event() 
+  virtual CListEvent&  event()
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
@@ -236,29 +296,30 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
       raw[0] == static_cast<CListRecordGEHDF5 const &>(e2).raw[0] &&
       (this->is_event() || (raw[1] == static_cast<CListRecordGEHDF5 const &>(e2).raw[1]));
 #endif
-  }	    
+  }
 
   // time 
   inline unsigned long get_time_in_millisecs() const 
     { return time_data.get_time_in_millisecs() - first_time_stamp; }
+
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
   inline unsigned int get_gating() const
     { return gating_data.get_gating(); }
-  inline Succeeded set_gating(unsigned int g) 
+  inline Succeeded set_gating(unsigned int g)
     { return gating_data.set_gating(g); }
 #endif
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
-  inline Succeeded set_prompt(const bool prompt = true) 
+  inline Succeeded set_prompt(const bool prompt = true)
   { return event_data.set_prompt(prompt); }
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
-    det_pos.pos1().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
+    det_pos.pos1().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
-    det_pos.pos2().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
   }
 
@@ -302,8 +363,26 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
     if (do_byte_swap)
       {
-        error("ClistRecordGEHDF5: byte-swapping not supported yet. sorry");
-        //ByteOrder::swap_order(this->raw[0]);
+        ByteOrder::swap_order(this->raw[0]);
+      }
+    if (this->is_event() || this->is_time())
+      {
+//	std::cout << "This is an event \n" ;
+        assert(size >= 6);
+
+        std::copy(data_ptr+6, data_ptr+6, reinterpret_cast<char *>(&this->raw[1]));
+//	std::cout << "after assert an event \n" ;
+      }
+    if (do_byte_swap)
+      {
+    error("don't know how to byteswap");
+        ByteOrder::swap_order(this->raw[1]);
+      }
+
+      if (this->is_event())
+      {
+        // set TOF info in ps
+       this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_pos();
       }
     return Succeeded::yes;
   }
@@ -312,7 +391,7 @@ private:
   unsigned long first_time_stamp;
   union {
     DataType  event_data;
-    TimeType   time_data; 
+    TimeType   time_data;
     //GatingType gating_data;
     boost::int32_t  raw[16/4];
   };

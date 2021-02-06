@@ -71,8 +71,8 @@ class CListEventCylindricalScannerWithViewTangRingRingEncoding :
 public CListEventCylindricalScannerWithDiscreteDetectors
 {
  public:  
-  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<Scanner>& scanner_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<ProjDataInfo>& proj_data_info) :
+    CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
     {}
 
   //! This routine returns the corresponding detector pair   

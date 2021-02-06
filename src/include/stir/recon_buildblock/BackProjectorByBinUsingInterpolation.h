@@ -180,6 +180,8 @@ public:
   */
   void use_piecewise_linear_interpolation(const bool use_piecewise_linear_interpolation);
 
+  BackProjectorByBinUsingInterpolation* clone() const;
+
 private:
  
   // KT 20/06/2001 changed type to enable use of more methods
@@ -227,6 +229,9 @@ struct ProjDataForIntBP
                           const RelatedViewgrams<float>&,
 		          const int min_axial_pos_num, const int max_axial_pos_num,
 		          const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+ void actual_back_project(DiscretisedDensity<3,float>&,
+                                  const Bin&);
 
 
   virtual void 
