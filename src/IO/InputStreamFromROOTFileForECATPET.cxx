@@ -66,13 +66,12 @@ Succeeded
 InputStreamFromROOTFileForECATPET::
 get_next_record(CListRecordROOT& record)
 {
-  auto brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
   while(true)
   {
     if (current_position == nentries)
       return Succeeded::no;
 
-    brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+    auto brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
     current_position ++ ;
 
     if (brentry < 0)
