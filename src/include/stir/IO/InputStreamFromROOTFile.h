@@ -36,6 +36,7 @@
 
 // forward declaration of ROOT's TChain
 class TChain;
+class TBranch;
 
 START_NAMESPACE_STIR
 
@@ -218,6 +219,15 @@ public:
     float globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
+
+    TBranch *br_time1 = nullptr;
+    TBranch *br_time2 = nullptr;
+    TBranch *br_eventID1 = nullptr;
+    TBranch *br_eventID2 = nullptr;
+    TBranch *br_energy1 = nullptr;
+    TBranch *br_energy2 = nullptr;
+    TBranch *br_comptonPhantom1 = nullptr;
+    TBranch *br_comptonPhantom2 = nullptr;
 
     //! \name number of "fake" crystals per block, inserted by the scanner
     //@{!

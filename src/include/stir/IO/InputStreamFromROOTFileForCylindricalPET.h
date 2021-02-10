@@ -139,6 +139,16 @@ public:
 
 protected:
 
+    // TBranches
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_submoduleID1 = nullptr;
+    TBranch *br_submoduleID2 = nullptr;
+    TBranch *br_moduleID1 = nullptr;
+    TBranch *br_moduleID2 = nullptr;
+    TBranch *br_rsectorID1 = nullptr;
+    TBranch *br_rsectorID2 = nullptr;
+
     virtual void set_defaults();
     virtual void initialise_keymap();
     virtual bool post_processing();

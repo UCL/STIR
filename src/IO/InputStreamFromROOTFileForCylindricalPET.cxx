@@ -74,9 +74,55 @@ get_next_record(CListRecordROOT& record)
         if (current_position == nentries)
             return Succeeded::no;
 
+      auto brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+      if (brentry < 0)
+        return Succeeded::no;
 
-        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
-            return Succeeded::no;
+      // InputStreamFromROOTFile
+      if (br_time1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_time2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_eventID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_eventID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_energy1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_energy2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_comptonPhantom1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_comptonPhantom2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      // Cylindrical PET
+      if (br_crystalID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_crystalID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_submoduleID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_submoduleID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_moduleID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_moduleID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+      if (br_rsectorID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_rsectorID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
+
+//        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
+//            return Succeeded::no;
 
         current_position ++ ;
 
@@ -188,14 +234,14 @@ set_up(const std::string & header_path)
         return Succeeded::no;
     }
 
-    stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
-    stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
-    stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
-    stream_ptr->SetBranchAddress("submoduleID2",&submoduleID2);
-    stream_ptr->SetBranchAddress("moduleID1",&moduleID1);
-    stream_ptr->SetBranchAddress("moduleID2",&moduleID2);
-    stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1);
-    stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2);
+    stream_ptr->SetBranchAddress("crystalID1",&crystalID1, &br_crystalID1);
+    stream_ptr->SetBranchAddress("crystalID2",&crystalID2, &br_crystalID2);
+    stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1, &br_submoduleID1);
+    stream_ptr->SetBranchAddress("submoduleID2",&submoduleID2, &br_submoduleID2);
+    stream_ptr->SetBranchAddress("moduleID1",&moduleID1, &br_moduleID1);
+    stream_ptr->SetBranchAddress("moduleID2",&moduleID2, &br_moduleID2);
+    stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1, &br_rsectorID1);
+    stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2, &br_rsectorID2);
 
     nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)

@@ -127,15 +127,16 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
     stream_ptr->Add(fullfilename.c_str());
     // Turn off all branches
     stream_ptr->SetBranchStatus("*",0);
+
     // Branches are turned back on by SetBranchAddress()
-    stream_ptr->SetBranchAddress("time1", &time1);
-    stream_ptr->SetBranchAddress("time2", &time2);
-    stream_ptr->SetBranchAddress("eventID1",&eventID1);
-    stream_ptr->SetBranchAddress("eventID2",&eventID2);
-    stream_ptr->SetBranchAddress("energy1", &energy1);
-    stream_ptr->SetBranchAddress("energy2", &energy2);
-    stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
-    stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
+    stream_ptr->SetBranchAddress("time1", &time1, &br_time1);
+    stream_ptr->SetBranchAddress("time2", &time2, &br_time2);
+    stream_ptr->SetBranchAddress("eventID1",&eventID1, &br_eventID1);
+    stream_ptr->SetBranchAddress("eventID2",&eventID2, &br_eventID2);
+    stream_ptr->SetBranchAddress("energy1", &energy1, &br_energy1);
+    stream_ptr->SetBranchAddress("energy2", &energy2, &br_energy2);
+    stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1, &br_comptonPhantom1);
+    stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2, &br_comptonPhantom2);
 
     if (read_optional_root_fields)
     {
