@@ -73,42 +73,11 @@ get_next_record(CListRecordROOT& record)
       if (current_position == nentries)
           return Succeeded::no;
 
-      auto brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+      Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
       current_position ++ ;
 
-      if (brentry < 0)
-        return Succeeded::no;
-
-      if (this->exclude_scattered) {
-        // Ensure events are no scattered
-        if (br_comptonPhantom1->GetEntry(brentry) == 0)
-          return Succeeded::no;
-        if (br_comptonPhantom2->GetEntry(brentry) == 0)
-          return Succeeded::no;
-        if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
-          continue;
-      }
-
-      if (this->exclude_randoms) {
-        // Ensure events are from same eventID
-        if (br_eventID1->GetEntry(brentry) == 0)
-          return Succeeded::no;
-        if (br_eventID2->GetEntry(brentry) == 0)
-          return Succeeded::no;
-        if ((this->eventID1 != this->eventID2))
-          continue;
-      }
-
-      // Check energy information
-      if (br_energy1->GetEntry(brentry) == 0)
-        return Succeeded::no;
-      if (br_energy2->GetEntry(brentry) == 0)
-        return Succeeded::no;
-      if (this->get_energy1_in_keV() < this->low_energy_window ||
-              this->get_energy1_in_keV() > this->up_energy_window ||
-              this->get_energy2_in_keV() < this->low_energy_window ||
-              this->get_energy2_in_keV() > this->up_energy_window)
-          continue;
+      if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
+        continue;
 
       if (br_time1->GetEntry(brentry) == 0)
         return Succeeded::no;

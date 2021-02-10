@@ -254,6 +254,9 @@ public:
     { return energy1 * 1e3; };
     float get_energy2_in_keV() const
     { return energy2 * 1e3; };
+
+    //! Checks brentry information. True if all conditions are satisfied.
+    bool check_brentry_randoms_scatter_energy_conditions(long long int brentry);
 };
 
 END_NAMESPACE_STIR

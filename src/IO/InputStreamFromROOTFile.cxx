@@ -164,6 +164,51 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
     return Succeeded::yes;
 }
 
+bool
+InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_t brentry)
+{
+  if (brentry < 0)
+    return false;
+
+  // Scatter event condition.
+  if (this->exclude_scattered) {
+    if (br_comptonPhantom1->GetEntry(brentry) == 0)
+      return false;
+    if (br_comptonPhantom2->GetEntry(brentry) == 0)
+      return false;
+    // Check if either event has been Compton scattered
+    if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
+      return false;
+  }
+
+  // Random event condition.
+  if (this->exclude_randoms) {
+    if (br_eventID1->GetEntry(brentry) == 0)
+      return false;
+    if (br_eventID2->GetEntry(brentry) == 0)
+      return false;
+    // Check for the same event
+    if ((this->eventID1 != this->eventID2))
+      return false;
+  }
+
+  // Energy condition.
+  if (br_energy1->GetEntry(brentry) == 0)
+    return false;
+  if (br_energy2->GetEntry(brentry) == 0)
+    return false;
+  // Check both energy values are within window
+  if (this->get_energy1_in_keV() < this->low_energy_window ||
+      this->get_energy1_in_keV() > this->up_energy_window ||
+      this->get_energy2_in_keV() < this->low_energy_window ||
+      this->get_energy2_in_keV() > this->up_energy_window)
+  {
+    return false;
+  }
+  return true;
+}
+
+
 void
 InputStreamFromROOTFile::set_crystal_repeater_x(int val)
 {
