@@ -111,6 +111,11 @@ get_next_record(CListRecordROOT& record)
               this->get_energy2_in_keV() > this->up_energy_window)
           continue;
 
+      if (br_time1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_time2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+
       // Get positional ID information
       if (br_crystalID1->GetEntry(brentry) == 0)
         return Succeeded::no;
@@ -161,11 +166,6 @@ get_next_record(CListRecordROOT& record)
     // Add offset
     crystal1 += offset_dets;
     crystal2 += offset_dets;
-
-    if (br_time1->GetEntry(brentry) == 0)
-      return Succeeded::no;
-    if (br_time2->GetEntry(brentry) == 0)
-      return Succeeded::no;
 
     return
             record.init_from_data(ring1, ring2,
