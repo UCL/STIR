@@ -66,30 +66,67 @@ Succeeded
 InputStreamFromROOTFileForECATPET::
 get_next_record(CListRecordROOT& record)
 {
-    while(true)
-    {
-        if (current_position == nentries)
-            return Succeeded::no;
+  auto brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+  while(true)
+  {
+    if (current_position == nentries)
+      return Succeeded::no;
 
+    brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+    current_position ++ ;
 
-        if (stream_ptr->GetEntry(current_position) == 0 )
-            return Succeeded::no;
+    if (brentry < 0)
+      return Succeeded::no;
 
-        current_position ++ ;
-
-        if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
-            continue;
-        if ( eventID1 != eventID2 && exclude_randoms )
-            continue;
-        //multiply here by 1000 to convert the list mode energy from MeV to keV
-        if (this->get_energy1_in_keV() < low_energy_window ||
-                this->get_energy1_in_keV() > up_energy_window ||
-                this->get_energy2_in_keV() < low_energy_window ||
-                this->get_energy2_in_keV() > up_energy_window)
-            continue;
-
-        break;
+    if (this->exclude_scattered) {
+      // Ensure events are no scattered
+      if (br_comptonPhantom1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_comptonPhantom2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
+        continue;
     }
+
+    if (this->exclude_randoms) {
+      // Ensure events are from same eventID
+      if (br_eventID1->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if (br_eventID2->GetEntry(brentry) == 0)
+        return Succeeded::no;
+      if ((this->eventID1 != this->eventID2))
+        continue;
+    }
+
+    // Check energy information
+    if (br_energy1->GetEntry(brentry) == 0)
+      return Succeeded::no;
+    if (br_energy2->GetEntry(brentry) == 0)
+      return Succeeded::no;
+    if (this->get_energy1_in_keV() < this->low_energy_window ||
+        this->get_energy1_in_keV() > this->up_energy_window ||
+        this->get_energy2_in_keV() < this->low_energy_window ||
+        this->get_energy2_in_keV() > this->up_energy_window)
+      continue;
+
+    if (br_time1->GetEntry(brentry) == 0)
+      return Succeeded::no;
+    if (br_time2->GetEntry(brentry) == 0)
+      return Succeeded::no;
+
+    // Get positional ID information
+    if (br_crystalID1->GetEntry(brentry) == 0)
+      return Succeeded::no;
+    if (br_crystalID2->GetEntry(brentry) == 0)
+      return Succeeded::no;
+
+    if (br_blockID1->GetEntry(brentry) == 0)
+      return Succeeded::no;
+    if (br_blockID2->GetEntry(brentry) == 0)
+      return Succeeded::no;
+
+    break;
+  }
 
     int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
             + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;

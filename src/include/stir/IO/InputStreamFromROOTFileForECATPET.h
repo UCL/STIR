@@ -133,6 +133,12 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
+    // TBranches
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_blockID1 = nullptr;
+    TBranch *br_blockID2 = nullptr;
+
     std::int32_t blockID1, blockID2;
     std::int32_t crystalID1, crystalID2;
 
