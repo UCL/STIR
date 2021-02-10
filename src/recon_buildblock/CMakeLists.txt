@@ -120,6 +120,15 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    Parallelproj_projector/ForwardProjectorByBinParallelproj
+    Parallelproj_projector/BackProjectorByBinParallelproj
+    Parallelproj_projector/ProjectorByBinPairUsingParallelproj
+  )
+endif()
+
+
 include(stir_lib_target)
 
 

@@ -84,6 +84,12 @@
 #include "stir/recon_buildblock/NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.h"
 #endif
 
+#ifdef STIR_WITH_Parallelproj_PROJECTOR
+#include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
+#endif
+
 //#include "stir/IO/InputFileFormatRegistry.h"
 
 START_NAMESPACE_STIR
@@ -133,6 +139,12 @@ static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
 static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;
 static BackProjectorByBinNiftyPET::RegisterIt gpu_bck;
 static ProjectorByBinPairUsingNiftyPET::RegisterIt gpu_pair;
+#endif
+
+#ifdef STIR_WITH_Parallelproj_PROJECTOR
+static ForwardProjectorByBinParallelproj::RegisterIt parallelproj_fwd;
+static BackProjectorByBinParallelproj::RegisterIt parallelproj_bck;
+static ProjectorByBinPairUsingParallelproj::RegisterIt parallelproj_pair;
 #endif
 
 #ifdef HAVE_LLN_MATRIX
