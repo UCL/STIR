@@ -140,25 +140,25 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
 
     if (read_optional_root_fields)
     {
-        stream_ptr->SetBranchAddress("axialPos",&axialPos);
-        stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
-        stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
-        stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
-        stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
-        stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
-        stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
-        stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle);
-        stream_ptr->SetBranchAddress("runID",&runID);
-        stream_ptr->SetBranchAddress("sinogramS",&sinogramS);
-        stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta);
-        stream_ptr->SetBranchAddress("sourceID1",&sourceID1);
-        stream_ptr->SetBranchAddress("sourceID2",&sourceID2);
-        stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
-        stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
-        stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
-        stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
-        stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
-        stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
+        stream_ptr->SetBranchAddress("axialPos",&axialPos, &br_axialPos);
+        stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1, &br_globalPosX1);
+        stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2, &br_globalPosX2);
+        stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1, &br_globalPosY1);
+        stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2, &br_globalPosY2);
+        stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1, &br_globalPosZ1);
+        stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2, &br_globalPosZ2);
+        stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle, &br_rotation_angle);
+        stream_ptr->SetBranchAddress("runID",&runID, &br_runID);
+        stream_ptr->SetBranchAddress("sinogramS",&sinogramS, &br_sinogramS);
+        stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta, &br_sinogramTheta);
+        stream_ptr->SetBranchAddress("sourceID1",&sourceID1, &br_sourceID1);
+        stream_ptr->SetBranchAddress("sourceID2",&sourceID2, &br_sourceID2);
+        stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1, &br_sourcePosX1);
+        stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2, &br_sourcePosX2);
+        stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1, &br_sourcePosY1);
+        stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2, &br_sourcePosY2);
+        stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1, &br_sourcePosZ1);
+        stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2, &br_sourcePosZ2);
     }
 
     return Succeeded::yes;

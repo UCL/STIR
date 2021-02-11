@@ -220,6 +220,8 @@ public:
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
+    //! ROOT Branch address variables.
+    //@{
     TBranch *br_time1 = nullptr;
     TBranch *br_time2 = nullptr;
     TBranch *br_eventID1 = nullptr;
@@ -228,6 +230,27 @@ public:
     TBranch *br_energy2 = nullptr;
     TBranch *br_comptonPhantom1 = nullptr;
     TBranch *br_comptonPhantom2 = nullptr;
+    //Optional Branch variables. To be used if read_optional_root_fields is true.
+    TBranch *br_axialPos = nullptr;
+    TBranch *br_globalPosX1 = nullptr;
+    TBranch *br_globalPosX2 = nullptr;
+    TBranch *br_globalPosY1 = nullptr;
+    TBranch *br_globalPosY2 = nullptr;
+    TBranch *br_globalPosZ1 = nullptr;
+    TBranch *br_globalPosZ2 = nullptr;
+    TBranch *br_rotation_angle = nullptr;
+    TBranch *br_runID = nullptr;
+    TBranch *br_sinogramS = nullptr;
+    TBranch *br_sinogramTheta = nullptr;
+    TBranch *br_sourceID1 = nullptr;
+    TBranch *br_sourceID2 = nullptr;
+    TBranch *br_sourcePosX1 = nullptr;
+    TBranch *br_sourcePosX2 = nullptr;
+    TBranch *br_sourcePosY1 = nullptr;
+    TBranch *br_sourcePosY2 = nullptr;
+    TBranch *br_sourcePosZ1 = nullptr;
+    TBranch *br_sourcePosZ2 = nullptr;
+    //@}
 
     //! \name number of "fake" crystals per block, inserted by the scanner
     //@{!
