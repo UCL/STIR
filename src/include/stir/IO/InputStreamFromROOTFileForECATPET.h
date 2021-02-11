@@ -4,9 +4,10 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForECATPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 

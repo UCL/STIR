@@ -6,10 +6,11 @@
   \author Nikos Efthimiou
   \author Harry Tsoumpas
   \author Kris Thielemans
+  \author Robert Twyman
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2020 UCL
+    Copyright (C) 2016, 2021, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
