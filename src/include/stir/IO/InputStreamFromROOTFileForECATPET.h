@@ -133,14 +133,19 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
-    // TBranches
+    //! \name TBranches for ECAT PET
+    //@{
     TBranch *br_crystalID1 = nullptr;
     TBranch *br_crystalID2 = nullptr;
     TBranch *br_blockID1 = nullptr;
     TBranch *br_blockID2 = nullptr;
+    //@}
 
+    //! \name ROOT Variables, e.g. to hold data from each entry.
+    //@{
     std::int32_t blockID1, blockID2;
     std::int32_t crystalID1, crystalID2;
+    //@}
 
     int block_repeater_y;
     int block_repeater_z;

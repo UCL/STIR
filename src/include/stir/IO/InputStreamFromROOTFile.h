@@ -220,7 +220,7 @@ public:
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
-    //! ROOT Branch address variables.
+    //! \name ROOT Branch address variables.
     //@{
     TBranch *br_time1 = nullptr;
     TBranch *br_time2 = nullptr;
@@ -278,7 +278,7 @@ public:
     float get_energy2_in_keV() const
     { return energy2 * 1e3; };
 
-    //! Checks brentry information. True if all conditions are satisfied.
+    //! Checks brentry satisfies the randoms, scatter and energy conditions.
     bool check_brentry_randoms_scatter_energy_conditions(long long int brentry);
 };
 
