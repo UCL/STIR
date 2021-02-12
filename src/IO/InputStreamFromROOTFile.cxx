@@ -69,6 +69,7 @@ InputStreamFromROOTFile::set_defaults()
     singles_readout_depth = -1;
     exclude_scattered = false;
     exclude_randoms = false;
+    check_energy_window_information = true;
     low_energy_window = 0.f;
     up_energy_window = 1000.f;
     read_optional_root_fields=false;
@@ -87,6 +88,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("name of input TChain", &this->chain_name);
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
+    this->parser.add_key("check energy window information", &this->check_energy_window_information);
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
     this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
@@ -194,17 +196,19 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
   }
 
   // Energy condition.
-  if (br_energy1->GetEntry(brentry) == 0)
-    return false;
-  if (br_energy2->GetEntry(brentry) == 0)
-    return false;
-  // Check both energy values are within window
-  if (this->get_energy1_in_keV() < this->low_energy_window ||
-      this->get_energy1_in_keV() > this->up_energy_window ||
-      this->get_energy2_in_keV() < this->low_energy_window ||
-      this->get_energy2_in_keV() > this->up_energy_window)
-  {
-    return false;
+  if (this->check_energy_window_information){
+    if (br_energy1->GetEntry(brentry) == 0)
+      return false;
+    if (br_energy2->GetEntry(brentry) == 0)
+      return false;
+    // Check both energy values are within window
+    if (this->get_energy1_in_keV() < this->low_energy_window ||
+        this->get_energy1_in_keV() > this->up_energy_window ||
+        this->get_energy2_in_keV() < this->low_energy_window ||
+        this->get_energy2_in_keV() > this->up_energy_window)
+    {
+      return false;
+    }
   }
   return true;
 }

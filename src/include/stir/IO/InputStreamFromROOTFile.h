@@ -262,6 +262,8 @@ public:
     bool exclude_scattered;
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
+    //! Check energy window information (low_energy_window < energy <  up_energy_window)
+    bool check_energy_window_information;
     //! Lower energy threshold
     float low_energy_window;
     //! Upper energy threshold
