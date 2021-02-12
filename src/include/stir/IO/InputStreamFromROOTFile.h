@@ -283,6 +283,10 @@ public:
 
     //! Checks brentry satisfies the randoms, scatter and energy conditions.
     bool check_brentry_randoms_scatter_energy_conditions(long long int brentry);
+
+    //! Checks the return of branch->GetEntry(brentry) and errors if return <= 0
+    void GetEntryCheck(const int ret)
+    { if (ret > 0) return; error(ret == 0 ? "Entry is null." : "ROOT I/O error."); };
 };
 
 END_NAMESPACE_STIR

@@ -77,21 +77,15 @@ get_next_record(CListRecordROOT& record)
     if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
       continue;
 
-    if (br_time1->GetEntry(brentry) == 0)
-      return Succeeded::no;
-    if (br_time2->GetEntry(brentry) == 0)
-      return Succeeded::no;
+    GetEntryCheck(br_time1->GetEntry(brentry));
+    GetEntryCheck(br_time2->GetEntry(brentry));
 
     // Get positional ID information
-    if (br_crystalID1->GetEntry(brentry) == 0)
-      return Succeeded::no;
-    if (br_crystalID2->GetEntry(brentry) == 0)
-      return Succeeded::no;
+    GetEntryCheck(br_crystalID1->GetEntry(brentry));
+    GetEntryCheck(br_crystalID2->GetEntry(brentry));
 
-    if (br_blockID1->GetEntry(brentry) == 0)
-      return Succeeded::no;
-    if (br_blockID2->GetEntry(brentry) == 0)
-      return Succeeded::no;
+    GetEntryCheck(br_blockID1->GetEntry(brentry));
+    GetEntryCheck(br_blockID2->GetEntry(brentry));
 
     break;
   }

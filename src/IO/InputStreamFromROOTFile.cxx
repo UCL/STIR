@@ -175,10 +175,9 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
 
   // Scatter event condition.
   if (this->exclude_scattered) {
-    if (br_comptonPhantom1->GetEntry(brentry) == 0)
-      return false;
-    if (br_comptonPhantom2->GetEntry(brentry) == 0)
-      return false;
+    GetEntryCheck(br_comptonPhantom1->GetEntry(brentry));
+    GetEntryCheck(br_comptonPhantom2->GetEntry(brentry));
+
     // Check if either event has been Compton scattered
     if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
       return false;
@@ -186,10 +185,9 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
 
   // Random event condition.
   if (this->exclude_randoms) {
-    if (br_eventID1->GetEntry(brentry) == 0)
-      return false;
-    if (br_eventID2->GetEntry(brentry) == 0)
-      return false;
+    GetEntryCheck(br_eventID1->GetEntry(brentry));
+    GetEntryCheck(br_eventID2->GetEntry(brentry));
+
     // Check for the same event
     if ((this->eventID1 != this->eventID2))
       return false;
@@ -197,10 +195,9 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
 
   // Energy condition.
   if (this->check_energy_window_information){
-    if (br_energy1->GetEntry(brentry) == 0)
-      return false;
-    if (br_energy2->GetEntry(brentry) == 0)
-      return false;
+    GetEntryCheck(br_energy1->GetEntry(brentry));
+    GetEntryCheck(br_energy2->GetEntry(brentry));
+
     // Check both energy values are within window
     if (this->get_energy1_in_keV() < this->low_energy_window ||
         this->get_energy1_in_keV() > this->up_energy_window ||
