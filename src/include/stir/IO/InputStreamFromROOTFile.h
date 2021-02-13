@@ -205,7 +205,7 @@ public:
     int crystal_repeater_z;
     //}
 
-    //! \name ROOT Variables, e.g. to hold data from each entry.
+    //! \name ROOT Variables, i.e. to hold data from each entry.
     //@{
     TChain *stream_ptr;
     // note: should be ROOT's Int_t, Double_t and Float_t types, but those

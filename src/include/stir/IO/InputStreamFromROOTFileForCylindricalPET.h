@@ -156,7 +156,7 @@ protected:
     TBranch *br_rsectorID2 = nullptr;
     //@}
 
-    //! \name ROOT Variables, e.g. to hold data from each entry.
+    //! \name ROOT Variables, i.e. to hold data from each entry.
     //@{
     std::int32_t crystalID1, crystalID2;
     std::int32_t submoduleID1, submoduleID2;
