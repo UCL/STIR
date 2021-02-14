@@ -153,4 +153,7 @@ endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
   target_link_libraries(recon_buildblock parallelproj::parallelproj_c)
+  if (parallelproj_built_with_CUDA)
+    target_link_libraries(recon_buildblock parallelproj::parallelproj_cuda)
+  endif()
 endif()
