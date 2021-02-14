@@ -36,6 +36,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
+#include "parallelproj_c.h"
 
 START_NAMESPACE_STIR
 

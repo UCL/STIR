@@ -34,6 +34,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "parallelproj_c.h"
 
 START_NAMESPACE_STIR
 

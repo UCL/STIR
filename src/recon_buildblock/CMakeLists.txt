@@ -150,3 +150,7 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
 	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
 	target_link_libraries(recon_buildblock CUDA::cudart)
 endif()
+
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  target_link_libraries(recon_buildblock parallelproj::parallelproj_c)
+endif()
