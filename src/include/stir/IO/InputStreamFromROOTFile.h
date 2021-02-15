@@ -6,10 +6,11 @@
   \author Nikos Efthimiou
   \author Harry Tsoumpas
   \author Kris Thielemans
+  \author Robert Twyman
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2020 UCL
+    Copyright (C) 2016, 2021, 2020 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -36,6 +37,7 @@
 
 // forward declaration of ROOT's TChain
 class TChain;
+class TBranch;
 
 START_NAMESPACE_STIR
 
@@ -203,7 +205,7 @@ public:
     int crystal_repeater_z;
     //}
 
-    //! \name ROOT Variables, e.g. to hold data from each entry.
+    //! \name ROOT Variables, i.e. to hold data from each entry.
     //@{
     TChain *stream_ptr;
     // note: should be ROOT's Int_t, Double_t and Float_t types, but those
@@ -219,18 +221,52 @@ public:
     float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
      //@}
 
+    //! \name ROOT Branch address variables.
+    //@{
+    TBranch *br_time1 = nullptr;
+    TBranch *br_time2 = nullptr;
+    TBranch *br_eventID1 = nullptr;
+    TBranch *br_eventID2 = nullptr;
+    TBranch *br_energy1 = nullptr;
+    TBranch *br_energy2 = nullptr;
+    TBranch *br_comptonPhantom1 = nullptr;
+    TBranch *br_comptonPhantom2 = nullptr;
+    //Optional Branch variables. To be used if read_optional_root_fields is true.
+    TBranch *br_axialPos = nullptr;
+    TBranch *br_globalPosX1 = nullptr;
+    TBranch *br_globalPosX2 = nullptr;
+    TBranch *br_globalPosY1 = nullptr;
+    TBranch *br_globalPosY2 = nullptr;
+    TBranch *br_globalPosZ1 = nullptr;
+    TBranch *br_globalPosZ2 = nullptr;
+    TBranch *br_rotation_angle = nullptr;
+    TBranch *br_runID = nullptr;
+    TBranch *br_sinogramS = nullptr;
+    TBranch *br_sinogramTheta = nullptr;
+    TBranch *br_sourceID1 = nullptr;
+    TBranch *br_sourceID2 = nullptr;
+    TBranch *br_sourcePosX1 = nullptr;
+    TBranch *br_sourcePosX2 = nullptr;
+    TBranch *br_sourcePosY1 = nullptr;
+    TBranch *br_sourcePosY2 = nullptr;
+    TBranch *br_sourcePosZ1 = nullptr;
+    TBranch *br_sourcePosZ2 = nullptr;
+    //@}
+
     //! \name number of "fake" crystals per block, inserted by the scanner
     //@{!
     int num_virtual_axial_crystals_per_block;
     int num_virtual_transaxial_crystals_per_block;
     //@}
-    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
+    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
-    //! Skip random events (eventID1 != eventID2)
+    //! Skip random events (eventID1 != eventID2). Default is false
     bool exclude_randoms;
-    //! Lower energy threshold
+    //! Check energy window information (low_energy_window < energy <  up_energy_window). Default is true
+    bool check_energy_window_information;
+    //! Lower energy threshold. Default is 1000 (keV)
     float low_energy_window;
-    //! Upper energy threshold
+    //! Upper energy threshold. Default is 0 (keV)
     float up_energy_window;
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
@@ -244,6 +280,13 @@ public:
     { return energy1 * 1e3; };
     float get_energy2_in_keV() const
     { return energy2 * 1e3; };
+
+    //! Checks brentry satisfies the randoms, scatter and energy conditions.
+    bool check_brentry_randoms_scatter_energy_conditions(long long int brentry);
+
+    //! Checks the return of branch->GetEntry(brentry) and errors if return <= 0
+    void GetEntryCheck(const int ret)
+    { if (ret > 0) return; error(ret == 0 ? "Entry is null." : "ROOT I/O error."); };
 };
 
 END_NAMESPACE_STIR

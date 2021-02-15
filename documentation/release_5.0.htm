@@ -120,6 +120,8 @@ improvements to the documentation.
   In some cases, there could only be a single time frame (start to end of the study).
   </li>
 <li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
+	<li><tt>ROOT</tt> file I/O improvements no longer gets entire entry's tree and instead loads individual branches as needed.
+    ROOT file reading is now up to 4x faster. In addition, there is now an option <tt>check energy window information</tt> (defaulting to on).</li>
 </ul>
 
 
