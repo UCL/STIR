@@ -45,13 +45,14 @@ number of crystals Z := 8
 ; per singles unit. 
 Singles readout depth := 1
 
-;
-; If set the scattered events will be skipped
+; If set the scattered events will be skipped (Default := 0)
 exclude scattered events := 0
 
-;
-; If set the random events will be skipped
+; If set the random events will be skipped (Default := 0)
 exclude random events := 0 
+
+; If check events are within the specified energy window (Default := 1)
+check energy window information := 1
 
 ; 
 ; STIR will try to align the data. 
