@@ -41,6 +41,8 @@
 #include "stir/Scanner.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
