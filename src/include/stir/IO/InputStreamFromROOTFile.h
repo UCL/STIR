@@ -258,15 +258,15 @@ public:
     int num_virtual_axial_crystals_per_block;
     int num_virtual_transaxial_crystals_per_block;
     //@}
-    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
+    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
-    //! Skip random events (eventID1 != eventID2)
+    //! Skip random events (eventID1 != eventID2). Default is false
     bool exclude_randoms;
-    //! Check energy window information (low_energy_window < energy <  up_energy_window)
+    //! Check energy window information (low_energy_window < energy <  up_energy_window). Default is true
     bool check_energy_window_information;
-    //! Lower energy threshold
+    //! Lower energy threshold. Default is 1000 (keV)
     float low_energy_window;
-    //! Upper energy threshold
+    //! Upper energy threshold. Default is 0 (keV)
     float up_energy_window;
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
