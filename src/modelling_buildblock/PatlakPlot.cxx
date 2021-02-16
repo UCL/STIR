@@ -318,11 +318,19 @@ PatlakPlot::get_starting_frame() const
   return this->_starting_frame;
 }
 
+unsigned int
+PatlakPlot::get_ending_frame() const
+{
+  return this->get_time_frame_definitions().get_num_frames();
+}
+
 TimeFrameDefinitions 
 PatlakPlot::get_time_frame_definitions() const 
 {
   return this->_frame_defs;
 }
+
+
 void
 PatlakPlot::
 initialise_keymap()
