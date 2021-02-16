@@ -107,6 +107,9 @@ post_processing()
   if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()>1)
       error("BinNormalisationSPECT: Multiple time frames not yet supported");
   
+  if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
+      error("BinNormalisationSPECT: At least one time frame should be defined");
+  
   this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(0)/num_views;
   
 //  allow to set your own calibration factor
