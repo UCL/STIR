@@ -167,7 +167,7 @@ public:
   { return buffer.get_data_ptr(); }
 
   //! member function for access to the data via a const float*
-  inline const float * get_const_data_ptr()
+  inline const float * get_const_data_ptr() const
   { return buffer.get_const_data_ptr(); }
 
   //! signal end of access to float*
@@ -175,7 +175,7 @@ public:
   { buffer.release_data_ptr(); }
 
   //! signal end of access to const float*
-  inline void release_const_data_ptr()
+  inline void release_const_data_ptr() const
   { buffer.release_const_data_ptr(); }
   //@}
 
