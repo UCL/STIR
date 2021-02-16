@@ -33,9 +33,12 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/LORCoordinates.h"
+#include "stir/info.h"
 #include "parallelproj_c.h"
 
 START_NAMESPACE_STIR
@@ -74,14 +77,6 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
     check(*proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
-    // Get span
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-            proj_data_info_cy_no_ar_cor_sptr(
-                dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(
-                    proj_data_info_sptr));
-    if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
-        error("BackProjectorByBinParallelproj: Failed casting to ProjDataInfoCylindricalNoArcCorr");
-
     // Create sinogram
     _proj_data_to_backproject_sptr.reset(
                 new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
@@ -115,7 +110,52 @@ get_output(DiscretisedDensity<3,float> &density) const
 {
 
     std::vector<float> image_vec(density.size_all());
-    // TODO 
+    auto stir_image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(density);
+
+    // create an alias for the projection data
+    const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
+
+    // parallelproj arrays
+    float voxsize[3];
+    std::copy(stir_image.get_voxel_size().begin(), stir_image.get_voxel_size().end(), voxsize);
+    int imgdim[3];
+    std::copy(stir_image.get_lengths().begin(), stir_image.get_lengths().end(), imgdim);
+    float origin[3];
+    // TODO this is guaranteed incorrect. needs some adjustments
+    std::copy(stir_image.get_origin().begin(), stir_image.get_origin().end(), origin);
+    std::vector<float> xstart(p.get_proj_data_info_sptr()->size_all()*3);
+    std::vector<float> xend(p.get_proj_data_info_sptr()->size_all()*3);
+    // TODO allocate these somehow
+
+    // loop over all LORs in the projdata to backproject
+    Bin bin;
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+    LORAs2Points<float> lor_points;
+    const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
+    for (bin.segment_num() = p.get_min_segment_num(); bin.segment_num() <= p.get_max_segment_num(); ++bin.segment_num())
+      for (bin.view_num() = p.get_min_view_num(); bin.view_num() <= p.get_max_view_num(); ++bin.view_num())
+        for (bin.axial_pos_num() = p.get_min_axial_pos_num(bin.segment_num()); bin.axial_pos_num() <= p.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+          for (bin.tangential_pos_num() = p.get_min_tangential_pos_num(); bin.tangential_pos_num() <= p.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+            {
+              p.get_proj_data_info_sptr()->get_LOR(lor, bin);
+              lor.get_intersections_with_cylinder(lor_points, radius);
+              const CartesianCoordinate3D<float>& p1 = lor_points.p1();
+              const CartesianCoordinate3D<float>& p2 = lor_points.p2();
+              // TODO somehow fill xstart/xend (what order?)
+            }
+
+    info("Calling parallelproj", 2);
+    joseph3d_back(xstart.data(),
+                  xend.data(),
+                  image_vec.data(),
+                  origin,
+                  voxsize,
+                  p.get_const_data_ptr(),
+                  static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
+                  imgdim);
+    info("done", 2);
+
+    p.release_const_data_ptr();
 
     // --------------------------------------------------------------- //
     //   Parallelproj -> STIR image conversion
