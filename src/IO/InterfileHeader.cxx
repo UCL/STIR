@@ -167,6 +167,7 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  calibration_factor=-1;
 
 
 
@@ -269,7 +270,7 @@ bool InterfileHeader::post_processing()
         {}
     }
   
-  if(this->calibration_factor>0)
+//  if(this->calibration_factor>0)
       this->exam_info_sptr->set_calibration_factor(calibration_factor);
   
   if (!isotope_name.empty()){
