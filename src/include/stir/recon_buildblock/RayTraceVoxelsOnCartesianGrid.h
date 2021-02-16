@@ -41,8 +41,8 @@ template <typename elemT> class CartesianCoordinate3D;
   the ProjMatrixElemsForOneBin object.
 
   \param lor object to which the intersected voxels and the LOI will be appended
-  \param start_point first point on the LOR. The first voxel will contain this point.
-  \param end_point last point on the LOR. The last voxel will contain this point.
+  \param start_point first point on the LOR in index coordinates. The first voxel will contain this point.
+  \param end_point last point on the LOR in index coordinates. The last voxel will contain this point.
   \param voxel_size normally in mm
   \param normalisation_constant LOIs will be multiplied with this constant
 

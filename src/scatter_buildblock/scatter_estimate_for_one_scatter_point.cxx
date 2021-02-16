@@ -61,11 +61,13 @@ SingleScatterSimulation::
   //static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,energy_resolution);
 
   const CartesianCoordinate3D<float>& scatter_point =
-    this->scatt_points_vector[scatter_point_num].coord;
+    this->scatt_points_vector[scatter_point_num].physical_coord;
   const CartesianCoordinate3D<float>& detector_coord_A =
-    this->detection_points_vector[det_num_A];
+    this->get_template_proj_data_info_sptr()->get_physical_coordinates_for_gantry_coordinates(
+      this->detection_points_in_gantry_coords_vector[det_num_A]);
   const CartesianCoordinate3D<float>& detector_coord_B =
-    this->detection_points_vector[det_num_B];
+    this->get_template_proj_data_info_sptr()->get_physical_coordinates_for_gantry_coordinates(
+      this->detection_points_in_gantry_coords_vector[det_num_B]);
   // note: costheta is -cos_angle such that it is 1 for zero scatter angle
   const float costheta = static_cast<float>(
     -cos_angle(detector_coord_A - scatter_point,
@@ -113,16 +115,8 @@ SingleScatterSimulation::
 #ifndef NDEBUG
   {  
     // check if mu-value ok
-    // currently terribly shift needed as in sample_scatter_points (TODO)
-    const VoxelsOnCartesianGrid<float>& image =
-      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*this->get_density_image_for_scatter_points_sptr());
-    const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
-    const float z_to_middle =
-    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
-    CartesianCoordinate3D<float> shifted=scatter_point;
-    shifted.z() += z_to_middle;
     assert(scatter_point_mu==
-	   (*this->get_density_image_for_scatter_points_sptr())[this->get_density_image_for_scatter_points_sptr()->get_indices_closest_to_physical_coordinates(shifted)]);
+	   (*this->get_density_image_for_scatter_points_sptr())[this->get_density_image_for_scatter_points_sptr()->get_indices_closest_to_physical_coordinates(scatter_point)]);
   }
 #endif
 

@@ -143,4 +143,78 @@ actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3
   return float_indices / this->get_grid_spacing();
 }
 
+template<int num_dimensions, typename elemT> 
+BasicCoordinate<num_dimensions, int>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>:: 
+get_min_indices() const
+{
+  BasicCoordinate<num_dimensions, int> min_indices;
+  BasicCoordinate<num_dimensions, int> max_indices;
+  this->get_regular_range(min_indices, max_indices);
+  return min_indices;
+}
+
+template<int num_dimensions, typename elemT> 
+BasicCoordinate<num_dimensions, int>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>:: 
+get_max_indices() const
+{
+  BasicCoordinate<num_dimensions, int> min_indices;
+  BasicCoordinate<num_dimensions, int> max_indices;
+  if (not this->get_regular_range(min_indices, max_indices)) {
+    // this should never happen?
+    error("Discretised Density image wasn't regular!");
+  }
+  return max_indices;
+}
+
+template<int num_dimensions, typename elemT> 
+BasicCoordinate<num_dimensions, int>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>:: 
+get_lengths() const
+{
+  BasicCoordinate<num_dimensions, int> min_indices;
+  BasicCoordinate<num_dimensions, int> max_indices;
+  if (not this->get_regular_range(min_indices, max_indices)) {
+    // this should never happen?
+    error("Discretised Density image wasn't regular!");
+  }
+  return max_indices - min_indices;
+}
+
+
+template<int num_dimensions, typename elemT> 
+BasicCoordinate<num_dimensions,float>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>:: 
+get_image_centre_in_index_coordinates() const
+{
+  BasicCoordinate<num_dimensions, int> min_indices;
+  BasicCoordinate<num_dimensions, int> max_indices;
+  if (not this->get_regular_range(min_indices, max_indices)) {
+    // this should never happen?
+    error("Discretised Density image wasn't regular!");
+  }
+  return BasicCoordinate<num_dimensions, float>(min_indices)
+    + BasicCoordinate<num_dimensions, float>(max_indices - min_indices) / 2;
+}
+
+template<int num_dimensions, typename elemT> 
+CartesianCoordinate3D<float>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
+get_image_centre_in_physical_coordinates() const
+{
+  return this->get_physical_coordinates_for_indices(
+    this->get_image_centre_in_index_coordinates());
+}
+
+template<int num_dimensions, typename elemT> 
+CartesianCoordinate3D<float>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
+get_image_centre_in_LPS_coordinates() const
+{
+  return this->get_LPS_coordinates_for_indices(
+    this->get_image_centre_in_index_coordinates()
+  );
+}
+
 END_NAMESPACE_STIR					 

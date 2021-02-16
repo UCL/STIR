@@ -52,6 +52,10 @@ public:
   Succeeded(const value& v) : v(v) {}
   bool operator==(const Succeeded &v2) const { return v == v2.v; }
   bool operator!=(const Succeeded &v2) const { return v != v2.v; }
+  Succeeded operator&(const Succeeded &v2) const {
+    return (v == yes && v2.v == yes) ? yes : no;
+  }
+  Succeeded operator&=(const Succeeded &v2) const { return *this & v2; }
 private:
   value v;
 };

@@ -51,7 +51,7 @@ LmToProjDataWithMCTests::run_tests()
 	  CartesianCoordinate3D<float> coord_2;
 	  
 	  // normally one cannot access private members of in the class but I have made it public while testing
-	  LmToProjDataWithMCObject.find_cartesian_coordinates_given_scanner_coordinates (coord_1,coord_2,
+	  LmToProjDataWithMCObject.get_det_pair_locations_in_gantry_coordinates (coord_1,coord_2,
 	    Ring_A,Ring_B, 
 	    det1,det2, 
 	    *scanner);
@@ -61,7 +61,7 @@ LmToProjDataWithMCTests::run_tests()
 	  
 	  int det1_f, det2_f,ring1_f, ring2_f;
 	  
-	  LmToProjDataWithMCObject.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
+	  LmToProjDataWithMCObject.get_det_pair_for_gantry_coordinate_pair(det1_f, det2_f, ring1_f, ring2_f,
 	    coord_1_new, coord_2_new, 
 	    *scanner);
 	  if (det1_f == det1 && Ring_A == ring1_f)

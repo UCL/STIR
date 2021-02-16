@@ -82,6 +82,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     error("DataSymmetriesForBins_PET_CartesianGrid can currently only support y-origin = 0 "
 	  "Sorry\n");
   */
+  const float ring_spacing = proj_data_info_cyl_ptr->get_ring_spacing();
   
   for (int segment_num=min_segment_num; segment_num<=max_segment_num; ++segment_num)  
   {
@@ -99,18 +100,19 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
                 % image_plane_spacing % proj_data_info_cyl_ptr->get_axial_sampling(segment_num) % segment_num);
       
     }  
-    
+
+    // get a bin (any bin) at axial position 0
+    Bin first_bin(segment_num, 0, 0, 0);
     const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
-    
-    // KT 20/06/2001 take origin.z() into account
+    const float segment_offset_in_z_gantry_coords = 
+      proj_data_info_cyl_ptr->get_m(first_bin) - ring_spacing*delta/2;
+
     axial_pos_to_z_offset[segment_num] = 
-      (cartesian_grid_info_ptr->get_max_index() + cartesian_grid_info_ptr->get_min_index())/2.F
-      - cartesian_grid_info_ptr->get_origin().z()/image_plane_spacing
-      -
-      (num_planes_per_axial_pos[segment_num]
-       *(proj_data_info_cyl_ptr->get_max_axial_pos_num(segment_num)  
-         + proj_data_info_cyl_ptr->get_min_axial_pos_num(segment_num))
-       + num_planes_per_scanner_ring*delta)/2;
+      cartesian_grid_info_ptr->get_index_coordinates_for_physical_coordinates(
+        proj_data_info_cyl_ptr->get_physical_coordinates_for_gantry_coordinates(
+          CartesianCoordinate3D<float>(segment_offset_in_z_gantry_coords, 0, 0)
+        )
+      )[1];
   }
 }
 

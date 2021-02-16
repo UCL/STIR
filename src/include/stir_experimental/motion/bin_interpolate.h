@@ -42,7 +42,7 @@ get_transformed_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& out_lor,
   // This is pretty horrible though, as the transform_point function has no clue 
   // where the origin is
   // Note that the present shift will make this version compatible with the 
-  // version above, as find_bin_given_cartesian_coordinates_of_detection
+  // version above, as get_bin_for_gantry_coordinate_pair
   // also uses an origin in the centre of the first ring
   const float z_shift = 
     (in_proj_data_info.get_scanner_ptr()->get_num_rings()-1)/2.F *

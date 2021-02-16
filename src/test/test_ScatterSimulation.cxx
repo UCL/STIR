@@ -339,7 +339,7 @@ ScatterSimulationTests::test_scatter_simulation()
 
     Scanner::Type type= Scanner::E931;
     shared_ptr<Scanner> test_scanner(new Scanner(type));
-    const float scanner_length = test_scanner->get_num_rings() * test_scanner->get_ring_spacing();
+    const float scanner_length = (test_scanner->get_num_rings() - 1) * test_scanner->get_ring_spacing();
 
     std::cerr << "Testing scatter simulation for the following scanner:\n"
               << test_scanner->parameter_info()
@@ -375,10 +375,7 @@ ScatterSimulationTests::test_scatter_simulation()
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(exam, *original_projdata_info));
 
     //// Create an object in the middle of the image (which will be in the middle of the scanner
-    CartesianCoordinate3D<int> min_ind, max_ind;
-    tmpl_density->get_regular_range(min_ind, max_ind);
-    CartesianCoordinate3D<float> centre((tmpl_density->get_physical_coordinates_for_indices(min_ind) +
-                                         tmpl_density->get_physical_coordinates_for_indices(max_ind))/2.F);
+    CartesianCoordinate3D<float> centre(tmpl_density->get_image_centre_in_physical_coordinates());
 
     EllipsoidalCylinder phantom(50.F, 50.F, 50.F, centre);
     CartesianCoordinate3D<int> num_samples(2,2,2);

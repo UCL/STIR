@@ -144,9 +144,15 @@ construct_input_data()
       this->_input_density_sptr = aptr;
     }
 
-  // forward project
+  // forward project, don't use symmetries here - a bit slower but we want to
+  // test their consistency in the reconstructions
   {
-    shared_ptr<ProjMatrixByBin> PM_sptr(new ProjMatrixByBinUsingRayTracing);    
+    shared_ptr<ProjMatrixByBinUsingRayTracing> PM_sptr(new ProjMatrixByBinUsingRayTracing);    
+    PM_sptr->set_do_symmetry_180degrees_min_phi(false);
+    PM_sptr->set_do_symmetry_90degrees_min_phi(false);
+    PM_sptr->set_do_symmetry_shift_z(false);
+    PM_sptr->set_do_symmetry_swap_s(false);
+    PM_sptr->set_do_symmetry_swap_segment(false);
     shared_ptr<ForwardProjectorByBin> fwd_proj_sptr =
       MAKE_SHARED<ForwardProjectorByBinUsingProjMatrixByBin>(PM_sptr);
     fwd_proj_sptr->set_up(this->_proj_data_sptr->get_proj_data_info_sptr(),

@@ -135,25 +135,46 @@ public:
     }
   //! check equality by comparing ranges and calling check_if_equal on all elements
   template <class T>
+    bool check_if_equal(
+      const typename VectorWithOffset<T>::const_iterator& t1_begin,
+      const typename VectorWithOffset<T>::const_iterator& t1_end,
+      const typename VectorWithOffset<T>::const_iterator& t2_begin,
+      const typename VectorWithOffset<T>::const_iterator& t2_end,
+      const std::string& str = "")
+  {
+    assert(t1_end >= t1_begin);
+    size_t size = t1_end - t1_begin;
+    if (t2_begin + size != t2_end) {
+      std::cerr << "Error: unequal ranges. " << str << std::endl;
+    }
+    for (size_t i = 0; i < size; i++)
+    {
+      if(!check_if_equal(*(t1_begin + i), *(t2_begin + i), str))
+      {
+        std::cerr << "(at VectorWithOffset<" << typeid(T).name()
+                  << "> first mismatch at index " << i << ")\n";
+        return false;
+      }
+    }
+    return true;
+  }
+
+  //! check equality by comparing ranges and calling check_if_equal on all elements
+  template <class T>
     bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, 
                         const std::string& str = "")
   {
     if (t1.get_min_index() != t2.get_min_index() ||
         t1.get_max_index() != t2.get_max_index())
     {
-      std::cerr << "Error: unequal ranges. " << str << std::endl;
+      std::cerr << "Error: unequal ranges: ("
+      << t1.get_min_index() << "," << t1.get_max_index() << ") ("
+      << t2.get_min_index() << "," << t2.get_max_index() << "). "
+      << str << std::endl;
       return everything_ok = false;
     }
 
-    for (int i=t1.get_min_index(); i<= t1.get_max_index(); i++)
-    {
-      if(!check_if_equal(t1[i], t2[i], str))
-      {
-        std::cerr << "(at VectorWithOffset<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
-        return false;
-      }
-    }
-    return true;
+    return check_if_equal<T>(t1.begin(), t1.end(), t2.begin(), t2.end(), str);
   }
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by comparing size and calling check_if_equal on all elements

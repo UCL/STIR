@@ -155,11 +155,11 @@ main(int argc,char *argv[])
        CartesianCoordinate3D<float> coord_2_90;
    
        proj_data_cyl_no_arc_ptr->
-	 find_cartesian_coordinates_given_scanner_coordinates (coord_1_0,coord_2_0,
+	 get_det_pair_locations_in_gantry_coordinates (coord_1_0,coord_2_0,
 							       ring1_0,ring2_0, 
 							       det1_0, det2_0);
 
-       proj_data_cyl_no_arc_ptr->find_cartesian_coordinates_given_scanner_coordinates (coord_1_90,coord_2_90,
+       proj_data_cyl_no_arc_ptr->get_det_pair_locations_in_gantry_coordinates (coord_1_90,coord_2_90,
 										       ring1_90,ring2_90, 
 										       det1_90, det2_90);
 

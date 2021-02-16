@@ -42,6 +42,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
 #include "stir/ExamData.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -253,6 +254,28 @@ public:
   //! Translation from LPS coordinates to indices.
   inline BasicCoordinate<num_dimensions,int>
   get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //@}
+
+  //! \name Convenience functions for the image centre
+  //@{
+
+  // TODO - use this as the implementation for where the image should be centred
+  // //! Get the voxel nearest the image centre
+  // inline BasicCoordinate<num_dimensions, int>
+  // get_image_central_index() const;
+
+  //! Get the "most-central" voxel
+  virtual BasicCoordinate<num_dimensions,float>
+  get_image_centre_in_index_coordinates() const = 0;
+
+  //! Get the average location of image sample points in physical coordinates
+  virtual CartesianCoordinate3D<float>
+  get_image_centre_in_physical_coordinates() const = 0;
+
+  //! Get the average location of image sample points in LPS patient coordinates
+  virtual CartesianCoordinate3D<float>
+  get_image_centre_in_LPS_coordinates() const = 0;
 
   //@}
 
