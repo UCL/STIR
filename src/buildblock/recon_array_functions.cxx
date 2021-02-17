@@ -235,8 +235,8 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	}
       else
 	{
-	  float& num = numerator[r][b];
-	  if (num<=small_value) // KT Feb2011 was "num<small_value", resulting in a BUG if the whole numerator viewgram was zero
+//	  float& num = numerator[r][b];
+	  if (numerator[r][b]<=small_value) // KT Feb2011 was "num<small_value", resulting in a BUG if the whole numerator viewgram was zero
 	    { 
 	      // we think num was really 0 
 	      // (we compare with small_value due to rounding errors)
@@ -402,21 +402,20 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   *accum += result;
 }
 
-float compute_Poisson_data_fit(float y, const float ybar, bool use_KL_divergence, const float small_value)
+float compute_Poisson_data_fit(float y, const float ybar, bool use_KL_divergence, const float lower_threshold)
 {
-
-  if (y <= small_value)
+  if (y <= lower_threshold)
     return -double(ybar);
 
-  if ( !use_KL_divergence )
-  {
-    //Compute the Log-Likelihood
-    return y * log(double(ybar)) - double(ybar);
-  }
-  else
+  if ( use_KL_divergence )
   {
     // Compute the KL divergence
     return - (y * log(y / double(ybar)) + double(ybar) - y);
+  }
+  else
+  {
+    //Compute the Log-Likelihood
+    return y * log(double(ybar)) - double(ybar);
   }
 }
 

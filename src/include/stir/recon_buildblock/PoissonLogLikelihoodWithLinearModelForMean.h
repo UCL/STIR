@@ -237,8 +237,13 @@ public  GeneralisedObjectiveFunction<TargetT>
   void 
     fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
 
+  //! See set_use_KL_divergence()
   bool get_use_KL_divergence();
 
+  //! Sets the use_KL_divergence bool
+  /*! use_KL_divergence bool indicates what poisson data fit term to use, Kullback-Leibler Divergence or
+  Log-likelihhood.
+  */
   void set_use_KL_divergence(const bool KL);
 
  private:
@@ -247,7 +252,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   std::string subsensitivity_filenames;
   bool recompute_sensitivity;
   bool use_subset_sensitivities;
-  bool use_KL_divergence;
+  bool use_KL_divergence; //! See set_use_KL_divergence()
 
   VectorWithOffset<shared_ptr<TargetT> > subsensitivity_sptrs;
   shared_ptr<TargetT> sensitivity_sptr;
