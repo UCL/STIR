@@ -261,7 +261,7 @@ void divide_and_truncate(Viewgram<float>& numerator,
             if (log_likelihood_ptr != NULL)
             {
               // Substitute denominator[r][b] (i.e. ybar) for num / max_quotient (i.e. y/ max_quotient)
-              sub_result += compute_data_fit_term(numerator[r][b], numerator[r][b] / max_quotient, use_KL_divergence, small_value);
+              sub_result += compute_Poisson_data_fit(numerator[r][b], numerator[r][b] / max_quotient, use_KL_divergence, small_value);
             }
             // Compute Division (WITH divide by zero correction)
             numerator[r][b] = max_quotient;
@@ -269,7 +269,7 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-              sub_result += compute_data_fit_term(numerator[r][b], denominator[r][b], use_KL_divergence, small_value);
+              sub_result += compute_Poisson_data_fit(numerator[r][b], denominator[r][b], use_KL_divergence, small_value);
 
             // Compute Division (WITHOUT divide by zero correction)
             numerator[r][b] = numerator[r][b]/denominator[r][b];
@@ -394,7 +394,7 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 	   b>be-rim_truncation_sino ))
 	{
         const float new_estimate = max(estimated_projections[r][b], projection_data[r][b]/max_quotient);
-        sub_result += compute_data_fit_term(projection_data[r][b], new_estimate, use_KL_divergence, small_value);
+        sub_result += compute_Poisson_data_fit(projection_data[r][b], new_estimate, use_KL_divergence, small_value);
       }
     result += sub_result;
   }
@@ -402,7 +402,7 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   *accum += result;
 }
 
-float compute_data_fit_term(float y, const float ybar, bool use_KL_divergence, const float small_value)
+float compute_Poisson_data_fit(float y, const float ybar, bool use_KL_divergence, const float small_value)
 {
 
   if (y <= small_value)
