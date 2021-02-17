@@ -874,8 +874,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
           
           // now divide by the data term
           {
-            int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
-            divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
+            int tmp1=0, tmp2=0;// ignore counters returned by poisson_divide_and_truncate
+            possion_divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2, nullptr, false, true);
           }
 
           // back-project
@@ -1081,7 +1081,8 @@ void RPC_process_related_viewgrams_gradient(
 
 
   // for sinogram division
-  divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr, use_KL_divergence);
+  possion_divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2,
+                              log_likelihood_ptr, use_KL_divergence, true);
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 

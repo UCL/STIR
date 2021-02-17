@@ -74,16 +74,16 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 #endif
 
 //! divide viewgrams and set 'edge bins' to zero, put answer in numerator
-void divide_and_truncate(Viewgram<float>& numerator, const Viewgram<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, double* f = NULL,
-			 const bool use_KL_divergence= false);
+void poisson_divide_and_truncate(Viewgram<float>& numerator, const Viewgram<float>& denominator,
+                                 const int rim_truncation_sino,
+                                 int& count, int& count2, double* f = NULL,
+                                 const bool use_KL_divergence= false,
+                                 const bool do_division=true);
 
 //! divide related viewgrams and set 'edge bins' to zero, put answer in numerator
-void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, double* f = NULL,
-			 const bool use_KL_divergence = false);
+    void possion_divide_and_truncate(RelatedViewgrams<float> &numerator, const RelatedViewgrams<float> &denominator,
+                                     const int rim_truncation_sino, int &count, int &count2, double *f,
+                                     const bool use_KL_divergence, const bool do_division);
 
 //! sets to zero voxels within rim_truncation_image of the FOV rim
 void truncate_rim(DiscretisedDensity<3,float>& image_input, 
