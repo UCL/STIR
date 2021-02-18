@@ -116,7 +116,11 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 			 double* accum,
 			 const bool use_KL_divergence);
 
-float compute_Poisson_data_fit(float y, float ybar, bool use_KL_divergence, float lower_threshold);
+double compute_Poisson_data_fit(const double y, const double ybar, bool use_KL_divergence);
+
+double LogLikelihood(const double y, const double ybar);
+
+double negativeKLDivergence(const double y, const double ybar);
 
 END_NAMESPACE_STIR
 #endif // __recon_array_functions_h_

@@ -262,7 +262,8 @@ void poisson_divide_and_truncate(Viewgram<float>& numerator,
             if (log_likelihood_ptr != NULL)
             {
               // Substitute denominator[r][b] (i.e. ybar) for num / max_quotient (i.e. y/ max_quotient)
-              sub_result += compute_Poisson_data_fit(numerator[r][b], numerator[r][b] / max_quotient, use_KL_divergence, small_value);
+              sub_result += compute_Poisson_data_fit(numerator[r][b], numerator[r][b] / max_quotient,
+                                                     use_KL_divergence);
             }
             // Compute Division (WITH divide by zero correction)
             if (do_division)
@@ -271,7 +272,7 @@ void poisson_divide_and_truncate(Viewgram<float>& numerator,
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-              sub_result += compute_Poisson_data_fit(numerator[r][b], denominator[r][b], use_KL_divergence, small_value);
+              sub_result += compute_Poisson_data_fit(double(numerator[r][b]), double(denominator[r][b]), use_KL_divergence);
 
             // Compute Division (WITHOUT divide by zero correction)
             if (do_division)
@@ -418,21 +419,20 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 #endif
 }
 
-float compute_Poisson_data_fit(float y, const float ybar, bool use_KL_divergence, const float lower_threshold)
+double compute_Poisson_data_fit(double y, const double ybar, bool use_KL_divergence)
 {
-  if (y <= lower_threshold)
-    return -double(ybar);
+  return use_KL_divergence ? negativeKLDivergence(y, ybar) : LogLikelihood(y, ybar);
+}
 
-  if ( use_KL_divergence )
-  {
-    // Compute the KL divergence
-    return - (y * log(y / double(ybar)) + double(ybar) - y);
-  }
-  else
-  {
-    //Compute the Log-Likelihood
-    return y * log(double(ybar)) - double(ybar);
-  }
+double LogLikelihood(const double y, const double ybar)
+{
+  return y * log(ybar) - ybar;
+}
+
+double negativeKLDivergence(const double y, const double ybar)
+{
+  return - (y * log(y / ybar) + ybar - y);
+
 }
 
 
