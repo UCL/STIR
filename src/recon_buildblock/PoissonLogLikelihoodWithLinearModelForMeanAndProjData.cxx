@@ -903,7 +903,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 //! Call-back function for compute_gradient
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
-//! Call-back function for accumulate_loglikelihood
+//! Call-back function for accumulate_Poisson_data_fit
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 
 //! Call-back function for sensitivity_computation
@@ -913,7 +913,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 //! Call-back function for compute_gradient
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
-//! Call-back function for accumulate_loglikelihood
+//! Call-back function for accumulate_Poisson_data_fit
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 
 //! Call-back function for sensitivity_computation
@@ -1121,10 +1121,10 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
   for (;
        meas_viewgrams_iter != measured_viewgrams_ptr->end();
        ++meas_viewgrams_iter, ++est_viewgrams_iter)
-    accumulate_loglikelihood(*meas_viewgrams_iter, 
-                             *est_viewgrams_iter, 
-                             rim_truncation_sino,
-                             log_likelihood_ptr, use_KL_divergence);
+    accumulate_Poisson_data_fit(*meas_viewgrams_iter,
+                                *est_viewgrams_iter,
+                                rim_truncation_sino,
+                                log_likelihood_ptr, use_KL_divergence);
 };      
 
 void RPC_process_related_viewgrams_sensitivity_computation(

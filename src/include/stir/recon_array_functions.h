@@ -109,17 +109,20 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 
 //MJ 03/01/2000  Trying to adhoc parallelize a loglikelihood computation
 
-//! compute the log term of the loglikelihood function for given part of the projection space
-void accumulate_loglikelihood(Viewgram<float>& projection_data, 
-			 const Viewgram<float>& estimated_projections,
-			 const int rim_truncation_sino,
-			 double* accum,
-			 const bool use_KL_divergence);
+//! compute the Poisson data fit function for given part of the projection space
+void accumulate_Poisson_data_fit(Viewgram<float>& projection_data,
+                                 const Viewgram<float>& estimated_projections,
+                                 const int rim_truncation_sino,
+                                 double* accum,
+                                 const bool use_KL_divergence);
 
+//! compute the Poisson data fit function for a single bin
 double compute_Poisson_data_fit(const double y, const double ybar, bool use_KL_divergence);
 
+//! compute the LogLikelihood for a single bin
 double LogLikelihood(const double y, const double ybar);
 
+//! compute the negative KL divergence for a single bin
 double negativeKLDivergence(const double y, const double ybar);
 
 END_NAMESPACE_STIR

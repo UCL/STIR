@@ -197,6 +197,7 @@ void poisson_divide_and_truncate(Viewgram<float>& numerator,
 
   const float small_value= 
     max(numerator.find_max()*SMALL_NUM, 0.F);
+  const float max_quotient = 10000.F;
   
   double result=0; // use this for total result for this viewgram, reducing numerical error
 
@@ -243,12 +244,10 @@ void poisson_divide_and_truncate(Viewgram<float>& numerator,
 	      // (we compare with small_value due to rounding errors)
 	      // this case includes 0/0, but also num<0	     
           numerator[r][b] = 0;
-          if (numerator[r][b]<0)
-            count2++;
+          if (numerator[r][b]<0) count2++;
         }
         else
         {
-          const float max_quotient = 10000.F;
 	      // set quotient to min(numerator/denominator, max_quotient)
 	      // a bit tricky to avoid division by 0	  
 	      // we do this by effectively using
@@ -364,20 +363,20 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 // KT 21/05/2001 make sure it returns same result as divide_and_truncate above
 // RT 17/02/2021 explicitly make sure that it returns the same value as (possion_)divide_and_truncate above by using
 // the same functionality
-void accumulate_loglikelihood(Viewgram<float>& projection_data, 
-			 const Viewgram<float>& estimated_projections,
-			 const int rim_truncation_sino,
-			 double* log_likelihood_ptr,
-			 const bool use_KL_divergence)
+void accumulate_Poisson_data_fit(Viewgram<float>& projection_data,
+                                 const Viewgram<float>& estimated_projections,
+                                 const int rim_truncation_sino,
+                                 double* log_likelihood_ptr,
+                                 const bool use_KL_divergence)
 {
 #if 1
   int count = 0;
   int count2 = 0;
-      poisson_divide_and_truncate(projection_data,
-                                  estimated_projections,
-                                  rim_truncation_sino,
-                                  count, count2,
-                                  log_likelihood_ptr, use_KL_divergence, false);
+  poisson_divide_and_truncate(projection_data,
+                              estimated_projections,
+                              rim_truncation_sino,
+                              count, count2,
+                              log_likelihood_ptr, use_KL_divergence, false);
 
 #else
   // Old method that does not use poisson_divide_and_truncate and therefore the same thresholding as gradient.
