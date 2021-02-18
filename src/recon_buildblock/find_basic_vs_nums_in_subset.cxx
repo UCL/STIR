@@ -43,7 +43,7 @@ namespace detail
                                const int subset_num, const int num_subsets)
   {
     std::vector<ViewSegmentNumbers> vs_nums_to_process;
-    for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
+    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
       {
         for (int view = proj_data_info.get_min_view_num() + subset_num; 
              view <= proj_data_info.get_max_view_num(); 

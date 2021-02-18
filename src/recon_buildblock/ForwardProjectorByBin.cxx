@@ -47,6 +47,8 @@
 #include <boost/format.hpp>
 #include <iostream>
 
+#include <omp.h>
+
 START_NAMESPACE_STIR
 
 
@@ -202,24 +204,37 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
+
+#ifdef STIR_OPENMP
+  std::vector< ViewSegmentNumbers > local_ViewSegmentNumbers;
+  std::vector< RelatedViewgrams<float> > local_RelatedViewgrams;
+#pragma omp single
+  {
+
+      std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n";
+      local_ViewSegmentNumbers.resize(omp_get_max_threads());
+      local_RelatedViewgrams.resize(omp_get_max_threads());
+  }
+#endif
 #ifdef STIR_OPENMP
 #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
-      const ViewSegmentNumbers vs=vs_nums_to_process[i];
+      const int thread_num=omp_get_thread_num();
+      local_ViewSegmentNumbers[thread_num]=vs_nums_to_process[i];
 
-      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
+      info(boost::format("Processing view %1% of segment %2%") % local_ViewSegmentNumbers[thread_num].view_num() % local_ViewSegmentNumbers[thread_num].segment_num(), 2);
 
-      RelatedViewgrams<float> viewgrams =
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
-      forward_project(viewgrams);
+      local_RelatedViewgrams[thread_num] =
+        proj_data.get_empty_related_viewgrams(local_ViewSegmentNumbers[thread_num], symmetries_sptr);
+      forward_project(local_RelatedViewgrams[thread_num]);
 #ifdef STIR_OPENMP
 #pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
 #endif
       {
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+        if (!(proj_data.set_related_viewgrams(local_RelatedViewgrams[thread_num]) == Succeeded::yes))
           error("Error set_related_viewgrams in forward projecting");
       }
     }
