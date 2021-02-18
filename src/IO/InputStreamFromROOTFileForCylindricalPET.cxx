@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
@@ -68,30 +68,36 @@ Succeeded
 InputStreamFromROOTFileForCylindricalPET::
 get_next_record(CListRecordROOT& record)
 {
-
     while(true)
     {
-        if (current_position == nentries)
-            return Succeeded::no;
+      if (current_position == nentries)
+          return Succeeded::no;
+
+      Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+      current_position ++ ;
+
+      if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
+        continue;
 
 
-        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
-            return Succeeded::no;
+      // Get time information
+      GetEntryCheck(br_time1->GetEntry(brentry));
+      GetEntryCheck(br_time2->GetEntry(brentry));
 
-        current_position ++ ;
+      // Get positional ID information
+      GetEntryCheck(br_crystalID1->GetEntry(brentry));
+      GetEntryCheck(br_crystalID2->GetEntry(brentry));
 
-        if ( (this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered )
-            continue;
-        if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
-            continue;
-      //multiply here by 1000 to convert the list mode energy from MeV to keV
-        if (this->get_energy1_in_keV() < this->low_energy_window ||
-                this->get_energy1_in_keV() > this->up_energy_window ||
-                this->get_energy2_in_keV() < this->low_energy_window ||
-                this->get_energy2_in_keV() > this->up_energy_window)
-            continue;
+      GetEntryCheck(br_submoduleID1->GetEntry(brentry));
+      GetEntryCheck(br_submoduleID2->GetEntry(brentry));
 
-        break;
+      GetEntryCheck(br_moduleID1->GetEntry(brentry));
+      GetEntryCheck(br_moduleID2->GetEntry(brentry));
+
+      GetEntryCheck(br_rsectorID1->GetEntry(brentry));
+      GetEntryCheck(br_rsectorID2->GetEntry(brentry));
+
+      break;
     }
 
     int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
@@ -188,14 +194,14 @@ set_up(const std::string & header_path)
         return Succeeded::no;
     }
 
-    stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
-    stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
-    stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
-    stream_ptr->SetBranchAddress("submoduleID2",&submoduleID2);
-    stream_ptr->SetBranchAddress("moduleID1",&moduleID1);
-    stream_ptr->SetBranchAddress("moduleID2",&moduleID2);
-    stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1);
-    stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2);
+    stream_ptr->SetBranchAddress("crystalID1",&crystalID1, &br_crystalID1);
+    stream_ptr->SetBranchAddress("crystalID2",&crystalID2, &br_crystalID2);
+    stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1, &br_submoduleID1);
+    stream_ptr->SetBranchAddress("submoduleID2",&submoduleID2, &br_submoduleID2);
+    stream_ptr->SetBranchAddress("moduleID1",&moduleID1, &br_moduleID1);
+    stream_ptr->SetBranchAddress("moduleID2",&moduleID2, &br_moduleID2);
+    stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1, &br_rsectorID1);
+    stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2, &br_rsectorID2);
 
     nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)
