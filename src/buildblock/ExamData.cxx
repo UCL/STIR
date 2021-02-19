@@ -47,6 +47,12 @@ ExamData::set_exam_info(ExamInfo const& new_exam_info)
   this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
 }
 
+void
+ExamData::set_exam_info_sptr(shared_ptr<const ExamInfo>  new_exam_info_sptr)
+{
+  this->exam_info_sptr=new_exam_info_sptr;
+}
+
 const ExamInfo&
 ExamData::get_exam_info() const
 {

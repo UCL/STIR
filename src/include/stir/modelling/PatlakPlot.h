@@ -92,9 +92,12 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     ModelMatrix<2> get_model_matrix(const PlasmaData& plasma_data, 
 				    const TimeFrameDefinitions& time_frame_definitions, 
 				    const unsigned int starting_frame);
-   //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
+    //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
     unsigned int
       get_starting_frame() const ;
+    //! Returns the number of the last frame available. 
+    unsigned int
+      get_ending_frame() const ;
     //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
     TimeFrameDefinitions 
       get_time_frame_definitions() const ;

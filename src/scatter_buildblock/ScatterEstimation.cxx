@@ -421,7 +421,7 @@ set_up()
    info("Scatter Estimation Parameters (objects that are not set by parsing will not be listed correctly)\n" + this->parameter_info() + "\n\n", 1);
 
     this->create_multiplicative_binnorm_sptr();
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr());
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(), this->input_projdata_sptr->get_proj_data_info_sptr());
 
 #if 1
     // Calculate the SSRB
@@ -662,7 +662,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
           this->multiplicative_binnorm_2d_sptr.reset(
                                                      new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
 
-          this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+          this->multiplicative_binnorm_2d_sptr->set_up(this->back_projdata_sptr->get_exam_info_sptr(), this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
           iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
         }
       else // run_in_2d_projdata
@@ -727,7 +727,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                     this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                     this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         add_projdata_2d_sptr->fill(*back_projdata_2d_sptr);
-        this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr, start_time, end_time);
+        this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr);
 
         iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->add_projdata_2d_sptr);
 
@@ -747,7 +747,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                  this->input_projdata_sptr->get_exam_info_sptr(),
                                                  this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
         add_projdata_sptr->fill(*back_projdata_sptr);
-        this->multiplicative_binnorm_sptr->apply(*this->add_projdata_sptr, start_time, end_time);
+        this->multiplicative_binnorm_sptr->apply(*this->add_projdata_sptr);
 
         iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->add_projdata_sptr);
 
@@ -778,9 +778,6 @@ process_data()
 
   if (!this->_already_setup)
     error("ScatterEstimation: set_up needs to be called before process_data()");
-
-    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
     float local_min_scale_value = 0.5f;
     float local_max_scale_value = 0.5f;
@@ -954,7 +951,7 @@ process_data()
                 apply_to_proj_data(*temp_projdata, min_threshold_zero);
 
                 // ok, we can multiply with the norm
-                normalisation_factors_sptr->apply(*temp_projdata, start_time, end_time);
+                normalisation_factors_sptr->apply(*temp_projdata);
 
 		// Create proj_data to save the 3d scatter estimate
                 if(!this->output_scatter_estimate_prefix.empty())
@@ -1018,7 +1015,7 @@ process_data()
 		    add_proj_data(*temp_additive_projdata, *this->back_projdata_sptr);
 		  }
 
-		this->multiplicative_binnorm_sptr->apply(*temp_additive_projdata, start_time, end_time);
+		this->multiplicative_binnorm_sptr->apply(*temp_additive_projdata);
 	    }
         }
 
@@ -1033,7 +1030,7 @@ process_data()
             {
                 add_proj_data(*add_projdata_2d_sptr, *this->back_projdata_2d_sptr);
             }
-            this->multiplicative_binnorm_2d_sptr->apply(*add_projdata_2d_sptr, start_time, end_time);
+            this->multiplicative_binnorm_2d_sptr->apply(*add_projdata_2d_sptr);
         }
         else
         {
@@ -1362,7 +1359,7 @@ ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisati
     else //Just trivial, then ..
     {
         shared_ptr<BinNormalisation> normalisation_factors_sptr(new TrivialBinNormalisation());
-        normalisation_factors_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr());
+        normalisation_factors_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(), this->input_projdata_sptr->get_proj_data_info_sptr());
 	return normalisation_factors_sptr;
     }
 }

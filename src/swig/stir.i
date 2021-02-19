@@ -100,9 +100,12 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#include "stir/recon_buildblock/LogcoshPrior.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+#include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -936,6 +939,8 @@ T * operator-> () const;
   }
 #endif
 
+%ignore stir::NumericVectorWithOffset::xapyb;
+%ignore stir::NumericVectorWithOffset::axpby;
 %include "stir/NumericVectorWithOffset.h"
 
 #ifdef SWIGPYTHON
@@ -1532,6 +1537,7 @@ namespace stir {
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
 
+%ignore *::get_exam_info_uptr_for_target;
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
@@ -1554,6 +1560,10 @@ namespace stir {
          stir::GeneralisedPrior<TargetT >,
          stir::GeneralisedPrior<TargetT > >);
 %shared_ptr(stir::RelativeDifferencePrior<elemT>);
+%shared_ptr(stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >);
+%shared_ptr(stir::LogcoshPrior<elemT>);
 
 %shared_ptr(stir::Reconstruction<TargetT >);
 %shared_ptr(stir::IterativeReconstruction<TargetT >);
@@ -1575,6 +1585,8 @@ namespace stir {
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
+%shared_ptr(stir::SqrtHessianRowSum<TargetT >);
+
 #undef TargetT
 #undef elemT
 #endif
@@ -1589,6 +1601,7 @@ namespace stir {
 %include "stir/recon_buildblock/QuadraticPrior.h"
 %include "stir/recon_buildblock/PLSPrior.h"
 %include "stir/recon_buildblock/RelativeDifferencePrior.h"
+%include "stir/recon_buildblock/LogcoshPrior.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
  // there's a get_objective_function, so we'll ignore the sptr version
@@ -1600,6 +1613,8 @@ namespace stir {
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+%include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
@@ -1644,6 +1659,11 @@ namespace stir {
        stir::GeneralisedPrior<TargetT >,
        stir::GeneralisedPrior<TargetT > >;
 %template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT>;
+%template (RPLogcoshPrior3DFloat)
+stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >;
+%template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
 
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
@@ -1663,6 +1683,8 @@ namespace stir {
 
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+%template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
 #undef elemT
 #undef TargetT

@@ -83,6 +83,8 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
                                                           const TargetT &current_estimate, 
                                                           const int subset_num); 
 
+  virtual std::unique_ptr<ExamInfo>
+  get_exam_info_uptr_for_target()  const;
  protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -100,6 +102,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                              const TargetT& input,
                                                                              const int subset_num) const;
+
+  virtual Succeeded
+    actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT &output,
+                                                              const TargetT &current_image_estimate,
+                                                              const TargetT &input,
+                                                              const int subset_num) const;
+
  public:
   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in 

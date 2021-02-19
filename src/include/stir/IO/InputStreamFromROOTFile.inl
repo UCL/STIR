@@ -154,4 +154,32 @@ InputStreamFromROOTFile::set_optional_ROOT_fields(bool val)
     read_optional_root_fields = val;
 }
 
+
+int
+InputStreamFromROOTFile::
+get_num_axial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_z+this->num_virtual_axial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFile::
+get_num_transaxial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_y+this->num_virtual_transaxial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFile::
+get_num_virtual_axial_crystals_per_block() const
+{
+  return this->num_virtual_axial_crystals_per_block;
+}
+int
+InputStreamFromROOTFile::
+get_num_virtual_transaxial_crystals_per_block() const
+{
+  return this->num_virtual_transaxial_crystals_per_block;
+}
+
 END_NAMESPACE_STIR

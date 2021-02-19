@@ -48,20 +48,6 @@ get_num_transaxial_blocks_per_bucket_v() const
 
 int
 InputStreamFromROOTFileForECATPET::
-get_num_axial_crystals_per_block_v() const
-{
-    return this->crystal_repeater_z;
-}
-
-int
-InputStreamFromROOTFileForECATPET::
-get_num_transaxial_crystals_per_block_v() const
-{
-    return this->crystal_repeater_y;
-}
-
-int
-InputStreamFromROOTFileForECATPET::
 get_num_axial_crystals_per_singles_unit() const
 {
     return this->crystal_repeater_z;
@@ -72,24 +58,6 @@ InputStreamFromROOTFileForECATPET::
 get_num_trans_crystals_per_singles_unit() const
 {
     return this->crystal_repeater_y;
-}
-
-void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_x(int val)
-{
-    crystal_repeater_x = val;
-}
-
-void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_y(int val)
-{
-    crystal_repeater_y = val;
-}
-
-void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_z(int val)
-{
-    crystal_repeater_z = val;
 }
 
 void

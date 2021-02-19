@@ -41,6 +41,7 @@ class Succeeded;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
+class ExamInfo;
 /*!
   \ingroup normalisation
   \brief Abstract base class for implementing bin-wise normalisation of data.
@@ -61,6 +62,7 @@ public:
   BinNormalisation();
 
   virtual ~BinNormalisation();
+  virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)
   /*! This function can be used to check if the operations are guaranteed to do nothing
@@ -71,7 +73,7 @@ public:
 
   //! initialises the object and checks if it can handle such projection data
   /*! Default version does nothing. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
 
   //! Return the 'efficiency' factor for a single bin
   /*! With the notation of the class documentation, this returns the factor
@@ -113,7 +115,7 @@ public:
 
     The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
   */
-  void apply(ProjData&,const double start_time, const double end_time, 
+  void apply(ProjData&, 
              shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const;
 
   //! undo the normalisation of some data
@@ -129,6 +131,9 @@ public:
   */
   void undo(ProjData&,const double start_time, const double end_time, 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
+  
+  void set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr);
+  shared_ptr<const ExamInfo> get_exam_info_sptr() const ;
 
  protected:
   //! check if the argument is the same as what was used for set_up()
@@ -137,8 +142,11 @@ public:
       If overriding this function in a derived class, you need to call this one.
    */
   virtual void check(const ProjDataInfo& proj_data_info) const;
+  
+  virtual void check(const ExamInfo& exam_info) const;
   bool _already_set_up;
 private:
+  shared_ptr<const ExamInfo> exam_info_sptr;
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 
