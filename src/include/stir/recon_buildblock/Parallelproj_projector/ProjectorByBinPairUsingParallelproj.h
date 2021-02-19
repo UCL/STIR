@@ -18,7 +18,6 @@
 */
 /*!
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
   \brief Declares class stir::ProjectorByBinPairUsingParallelproj
@@ -36,8 +35,9 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
+namespace detail { class ParallelprojHelper; }
 /*!
-  \ingroup projection
+  \ingroup Parallelproj
   \brief A projector pair based on Parallelproj projectors
 */
 class ProjectorByBinPairUsingParallelproj :
@@ -58,10 +58,15 @@ public:
   //! Default constructor 
   ProjectorByBinPairUsingParallelproj();
 
+  Succeeded
+    set_up(const shared_ptr<ProjDataInfo>&,
+           const shared_ptr<DiscretisedDensity<3,float> >&);
+
   /// Set verbosity
   void set_verbosity(const bool verbosity);
 
 private:
+  shared_ptr<detail::ParallelprojHelper> _helper;
 
   void set_defaults();
   void initialise_keymap();

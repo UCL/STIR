@@ -2,10 +2,9 @@
 //
 /*!
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
-  \brief Back projection class using Parallelproj's GPU implementation.
+  \brief Back projection class using Parallelproj's implementation.
 
   \author Richard Brown
   \author Kris Thielemans
@@ -38,10 +37,11 @@ START_NAMESPACE_STIR
 
 class DataSymmetriesForViewSegmentNumbers;
 class ProjDataInMemory;
-/*!
-  \ingroup projection
-  \brief Class for Parallelproj's GPU back projector
+namespace detail { class ParallelprojHelper; }
 
+/*!
+  \ingroup Parallelproj
+  \brief Class for Parallelproj's back projector
 */
 class BackProjectorByBinParallelproj :
   public RegisteredParsingObject<BackProjectorByBinParallelproj,
@@ -95,7 +95,10 @@ protected:
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   shared_ptr<ProjDataInMemory> _proj_data_to_backproject_sptr;
-  //ParallelprojHelper _helper;
+  shared_ptr<detail::ParallelprojHelper> _helper;
+  bool _do_not_setup_helper;
+  friend class ProjectorByBinPairUsingParallelproj;
+  void set_helper(shared_ptr<detail::ParallelprojHelper>);
   int _cuda_device;
   bool _cuda_verbosity;
 };

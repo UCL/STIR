@@ -5,7 +5,6 @@
 #define __stir_gpu_ForwardProjectorByBinParallelproj_h__
 /*!
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
   \brief Forward projection class using Parallelproj's GPU implementation.
@@ -33,16 +32,16 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-//#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
 
 START_NAMESPACE_STIR
 
 class ProjDataInMemory;
 class DataSymmetriesForViewSegmentNumbers;
+namespace detail { class ParallelprojHelper; }
 
 /*!
-  \ingroup projection
-  \brief Class for Parallelproj's GPU forward projector.
+  \ingroup Parallelproj
+  \brief Class for Parallelproj's forward projector.
 */
 class ForwardProjectorByBinParallelproj:
   public RegisteredParsingObject<ForwardProjectorByBinParallelproj,
@@ -104,7 +103,10 @@ protected:
 private:
     shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
-    // ParallelprojHelper _helper;
+    shared_ptr<detail::ParallelprojHelper> _helper;
+    bool _do_not_setup_helper;
+    friend class ProjectorByBinPairUsingParallelproj;
+    void set_helper(shared_ptr<detail::ParallelprojHelper>);
     int _cuda_device;
     bool _cuda_verbosity;
     bool _use_truncation;

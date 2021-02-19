@@ -125,6 +125,7 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
     Parallelproj_projector/ForwardProjectorByBinParallelproj
     Parallelproj_projector/BackProjectorByBinParallelproj
     Parallelproj_projector/ProjectorByBinPairUsingParallelproj
+    Parallelproj_projector/ParallelprojHelper
   )
 endif()
 

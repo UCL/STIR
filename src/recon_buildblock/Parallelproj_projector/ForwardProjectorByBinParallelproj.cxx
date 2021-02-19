@@ -3,7 +3,6 @@
 /*!
 
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
   \brief non-inline implementations for stir::ForwardProjectorByBinParallelproj
@@ -29,11 +28,12 @@
 */
 
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
-//#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "stir/info.h"
 #include "parallelproj_c.h"
 
 START_NAMESPACE_STIR
@@ -47,6 +47,7 @@ ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj() :
     _cuda_device(0), _cuda_verbosity(true), _use_truncation(false)
 {
     this->_already_set_up = false;
+    this->_do_not_setup_helper = false;
 }
 
 ForwardProjectorByBinParallelproj::~ForwardProjectorByBinParallelproj()
@@ -61,6 +62,13 @@ initialise_keymap()
   parser.add_stop_key("End Forward Projector Using Parallelproj Parameters");
   parser.add_key("CUDA device", &_cuda_device);
   parser.add_key("verbosity", &_cuda_verbosity);
+}
+
+void
+ForwardProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
+{
+  this->_helper = helper;
+  this->_do_not_setup_helper = true;
 }
 
 void
@@ -83,6 +91,8 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
     // Initialise projected_data_sptr from this->_proj_data_info_sptr
     _projected_data_sptr.reset(
                 new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
+    if (!this->_do_not_setup_helper)
+      _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
 
 }
 
@@ -125,20 +135,20 @@ set_input(const DiscretisedDensity<3,float> & density)
 {
     ForwardProjectorByBin::set_input(density);
 
-    // --------------------------------------------------------------- //
-    //   STIR -> Parallelproj image data conversion
-    // --------------------------------------------------------------- //
 
     std::vector<float> image_vec(density.size_all());
     std::copy(density.begin_all(), density.end_all(), image_vec.begin());
-    
-    // --------------------------------------------------------------- //
-    //   Forward projection
-    // --------------------------------------------------------------- //
 
-    float * projections = _projected_data_sptr->get_data_ptr();
-    float * image = image_vec.data();
-    // TODO
+    info("Calling parallelproj forward",2);
+    joseph3d_fwd(_helper->xstart.data(),
+                  _helper->xend.data(),
+                  image_vec.data(),
+                  _helper->origin.data(),
+                  _helper->voxsize.data(),
+                  _projected_data_sptr->get_data_ptr(),
+                  static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
+                  _helper->imgdim.data());
+    info("done", 2);
 
     _projected_data_sptr->release_data_ptr();
 }

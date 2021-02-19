@@ -1,8 +1,5 @@
-//
-//
 /*!
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
   \brief non-inline implementations for stir::ProjectorByBinPairUsingParallelproj
@@ -32,6 +29,8 @@
 #include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -76,20 +75,24 @@ ProjectorByBinPairUsingParallelproj()
   set_defaults();
 }
 
-/*Succeeded
+Succeeded
 ProjectorByBinPairUsingParallelproj::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
-{    	 
-  // proj_matrix_sptr->set_up()  not needed as the projection matrix will be set_up indirectly by
-  // the forward_projector->set_up (which is called in the base class)
-  // proj_matrix_sptr->set_up(proj_data_info_sptr, image_info_sptr);
+{
+  _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *image_info_sptr);
+  dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr)
+    ->set_helper(_helper);
+  dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr)
+    ->set_helper(_helper);
+
+  // the forward_projector->set_up etc will be called in the base class
 
   if (base_type::set_up(proj_data_info_sptr, image_info_sptr) != Succeeded::yes)
     return Succeeded::no;
 
   return Succeeded::yes;
-}*/
+}
 
 void ProjectorByBinPairUsingParallelproj::set_verbosity(const bool verbosity)
 {

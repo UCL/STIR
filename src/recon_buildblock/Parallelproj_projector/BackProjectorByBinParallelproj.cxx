@@ -2,7 +2,6 @@
 //
 /*!
   \file
-  \ingroup projection
   \ingroup Parallelproj
 
   \brief non-inline implementations for stir::BackProjectorByBinParallelproj
@@ -29,7 +28,7 @@
 */
 
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
-//#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
@@ -57,6 +56,7 @@ BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() :
     _cuda_device(0), _cuda_verbosity(true)
 {
     this->_already_set_up = false;
+    this->_do_not_setup_helper = false;
 }
 
 BackProjectorByBinParallelproj::~BackProjectorByBinParallelproj()
@@ -74,6 +74,13 @@ initialise_keymap()
 }
 
 void
+BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
+{
+  this->_helper = helper;
+  this->_do_not_setup_helper = true;
+}
+
+void
 BackProjectorByBinParallelproj::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
@@ -85,6 +92,9 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
     // Create sinogram
     _proj_data_to_backproject_sptr.reset(
                 new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
+
+    if (!this->_do_not_setup_helper)
+      _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers *
@@ -115,72 +125,19 @@ get_output(DiscretisedDensity<3,float> &density) const
 {
 
     std::vector<float> image_vec(density.size_all());
-    auto& stir_image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(density);
-
     // create an alias for the projection data
     const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
 
-    // parallelproj arrays
-    float voxsize[3];
-    std::copy(stir_image.get_voxel_size().begin(), stir_image.get_voxel_size().end(), voxsize);
-    int imgdim[3];
-    std::copy(stir_image.get_lengths().begin(), stir_image.get_lengths().end(), imgdim);
-
-    float origin[3];
-    BasicCoordinate<3,int> min_indices, max_indices;
-    stir_image.get_regular_range(min_indices, max_indices);
-    auto coord_first_voxel = stir_image.get_physical_coordinates_for_indices(min_indices);
-    // TODO origin shift get_LOR() uses the "centred w.r.t. gantry" coordinate system
-    // TODO this is guaranteed incorrect. needs some adjustments
-    coord_first_voxel[1] -= (stir_image.get_min_index() + stir_image.get_max_index())/2.F * voxsize[1];
-    std::copy(coord_first_voxel.begin(), coord_first_voxel.end(), origin);
-
-    std::vector<float> xstart(p.get_proj_data_info_sptr()->size_all()*3);
-    std::vector<float> xend(p.get_proj_data_info_sptr()->size_all()*3);
-
-    // loop over all LORs in the projdata to backproject
-    Bin bin;
-    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-    LORAs2Points<float> lor_points;
-    const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
-
-    // warning: next loop needs to be the same as how ProjDataInMemory stores its data. There is no guarantee that this will remain the case in the future.
-    const auto segment_sequence = ProjData::standard_segment_sequence(*p.get_proj_data_info_sptr());
-    std::size_t index(0);
-    for (int seg : segment_sequence)
-      {
-        bin.segment_num() = seg;
-        for (bin.axial_pos_num() = p.get_min_axial_pos_num(bin.segment_num()); bin.axial_pos_num() <= p.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-          {
-            for (bin.view_num() = p.get_min_view_num(); bin.view_num() <= p.get_max_view_num(); ++bin.view_num())
-              {
-                for (bin.tangential_pos_num() = p.get_min_tangential_pos_num(); bin.tangential_pos_num() <= p.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-                  {
-                    p.get_proj_data_info_sptr()->get_LOR(lor, bin);
-                    lor.get_intersections_with_cylinder(lor_points, radius);
-                    const CartesianCoordinate3D<float>& p1 = lor_points.p1();
-                    const CartesianCoordinate3D<float>& p2 = lor_points.p2();
-
-                    xstart[index] = p1[1];
-                    xend[index++] = p2[1];
-                    xstart[index] = p1[2];
-                    xend[index++] = p2[2];
-                    xstart[index] = p1[3];
-                    xend[index++] = p2[3];
-                  }
-              }
-          }
-      }
     info("Calling parallelproj backprojector", 2);
 
-    joseph3d_back(xstart.data(),
-                  xend.data(),
+    joseph3d_back(_helper->xstart.data(),
+                  _helper->xend.data(),
                   image_vec.data(),
-                  origin,
-                  voxsize,
+                  _helper->origin.data(),
+                  _helper->voxsize.data(),
                   p.get_const_data_ptr(),
                   static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                  imgdim);
+                  _helper->imgdim.data());
     info("done", 2);
 
     p.release_const_data_ptr();
