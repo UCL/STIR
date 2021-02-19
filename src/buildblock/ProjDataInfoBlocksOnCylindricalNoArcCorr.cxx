@@ -450,7 +450,7 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
   }
   else
   {
-    std::cerr<<"WARNING: couldn't find corresponding cartesian coordinates for given detection positions.\n";
+    error("couldn't find corresponding cartesian coordinates for given detection positions.\n");
     return;
   }
 }
