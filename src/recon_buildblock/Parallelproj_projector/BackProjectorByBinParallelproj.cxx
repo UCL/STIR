@@ -37,8 +37,11 @@
 #include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/LORCoordinates.h"
+#ifdef parallelproj_built_with_CUDA
+#include "parallelproj_cuda.h"
+#else
 #include "parallelproj_c.h"
-
+#endif
 // for debugging, remove later
 #include "stir/info.h"
 #include "stir/stream.h"
@@ -130,6 +133,18 @@ get_output(DiscretisedDensity<3,float> &density) const
 
     info("Calling parallelproj backprojector", 2);
 
+#ifdef parallelproj_built_with_CUDA
+    joseph3d_back(_helper->xstart.data(),
+                  _helper->xend.data(),
+                  image_vec.data(),
+                  _helper->origin.data(),
+                  _helper->voxsize.data(),
+                  p.get_const_data_ptr(),
+                  static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
+                  _helper->imgdim.data(),
+                 /*threadsperblock*/ 64,
+                  /*num_devices*/ -1);
+#else
     joseph3d_back(_helper->xstart.data(),
                   _helper->xend.data(),
                   image_vec.data(),
@@ -138,6 +153,7 @@ get_output(DiscretisedDensity<3,float> &density) const
                   p.get_const_data_ptr(),
                   static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
                   _helper->imgdim.data());
+#endif
     info("done", 2);
 
     p.release_const_data_ptr();

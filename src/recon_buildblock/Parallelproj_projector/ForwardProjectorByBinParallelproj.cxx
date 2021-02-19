@@ -34,7 +34,11 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/info.h"
+#ifdef parallelproj_built_with_CUDA
+#include "parallelproj_cuda.h"
+#else
 #include "parallelproj_c.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -143,6 +147,19 @@ set_input(const DiscretisedDensity<3,float> & density)
     _projected_data_sptr->fill(0.F);
 
     info("Calling parallelproj forward",2);
+#ifdef parallelproj_built_with_CUDA
+    joseph3d_fwd_cuda(_helper->xstart.data(),
+                      _helper->xend.data(),
+                      image_vec.data(),
+                      _helper->origin.data(),
+                      _helper->voxsize.data(),
+                      _projected_data_sptr->get_data_ptr(),
+                      static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
+                      _helper->imgdim.data(),
+                      /*threadsperblock*/ 64,
+                      /*num_devices*/ -1);
+);
+#else
     joseph3d_fwd(_helper->xstart.data(),
                   _helper->xend.data(),
                   image_vec.data(),
@@ -151,6 +168,7 @@ set_input(const DiscretisedDensity<3,float> & density)
                   _projected_data_sptr->get_data_ptr(),
                   static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
                   _helper->imgdim.data());
+#endif
     info("done", 2);
 
     _projected_data_sptr->release_data_ptr();

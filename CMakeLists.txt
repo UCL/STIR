@@ -174,11 +174,12 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-  # TODO
-  #if (CUDAToolkit_FOUND)
     find_package(parallelproj)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
+      #if (parallelproj_built_with_CUDA)
+      #  set(STIR_WITH_Parallelproj_GPU_PROJECTOR ON)
+      #endif()
     endif()
   #endif()
 endif()
