@@ -57,16 +57,25 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
   info("Creating parallelproj data-structures", 2);
 
   auto& stir_image = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
-  // parallelproj arrays
-  copy_to_array(stir_image.get_voxel_size(), voxsize);
+  
+  auto stir_voxel_size = stir_image.get_voxel_size();
+#ifndef NEWSCALE
+  // parallelproj projectors work in units of the voxel_size passed.
+  // STIR projectors have to be in pixel units, so convert the voxel-size
+  const float rescale = 1/stir_voxel_size[3];
+#else
+  const float rescale = 1.F;
+#endif
+
+  copy_to_array(stir_voxel_size*rescale, voxsize);
   copy_to_array(stir_image.get_lengths(), imgdim);
 
   BasicCoordinate<3,int> min_indices, max_indices;
   stir_image.get_regular_range(min_indices, max_indices);
   auto coord_first_voxel = stir_image.get_physical_coordinates_for_indices(min_indices);
   // TODO origin shift get_LOR() uses the "centred w.r.t. gantry" coordinate system
-  coord_first_voxel[1] -= (stir_image.get_min_index() + stir_image.get_max_index())/2.F * voxsize[1];
-  copy_to_array(coord_first_voxel, origin);
+  coord_first_voxel[1] -= (stir_image.get_min_index() + stir_image.get_max_index())/2.F * stir_voxel_size[1];
+  copy_to_array(coord_first_voxel*rescale, origin);
 
   // loop over all LORs in the projdata
   Bin bin;
@@ -88,8 +97,8 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
                 {
                   p_info.get_LOR(lor, bin);
                   lor.get_intersections_with_cylinder(lor_points, radius);
-                  const CartesianCoordinate3D<float>& p1 = lor_points.p1();
-                  const CartesianCoordinate3D<float>& p2 = lor_points.p2();
+                  const CartesianCoordinate3D<float> p1 = lor_points.p1()*rescale;
+                  const CartesianCoordinate3D<float> p2 = lor_points.p2()*rescale;
 #if 0
                   if (index+2 > xstart.size())
                     error("That went wrong: index " + std::to_string(index) + ", xstart size " + std::to_string(xstart.size()));
