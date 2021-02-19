@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020, University College London
+    Copyright (C) 2020-2021, University College London
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -36,9 +36,10 @@ private:
   typedef PoissonLLReconstructionTests<target_type> base_type;
 public:
   //! Constructor that can take some input data to run the test with
-  TestOSMAPOSL(const std::string &proj_data_filename = "",
+  TestOSMAPOSL(const std::string &projector_pair_filename = "",
+               const std::string &proj_data_filename = "",
                const std::string & density_filename = "")
-    : base_type(proj_data_filename, density_filename)
+    : base_type(projector_pair_filename, proj_data_filename, density_filename)
   {}
   virtual ~TestOSMAPOSL() {}
 
@@ -59,7 +60,7 @@ construct_reconstructor()
   this->_recon_sptr.reset(new OSMAPOSLReconstruction<target_type>);
   this->construct_log_likelihood();
   this->recon().set_objective_function_sptr(this->_objective_function_sptr);
-  this->recon().set_num_subsets(4); // TODO should really check if this is appropriate for this->_proj_data_sptr->get_num_views()
+  //this->recon().set_num_subsets(4); // TODO should really check if this is appropriate for this->_proj_data_sptr->get_num_views()
   this->recon().set_num_subiterations(20);
 }
 
@@ -112,15 +113,17 @@ USING_NAMESPACE_STIR
 int main(int argc, char **argv)
 {
     if (argc < 1 || argc > 3) {
-        std::cerr << "\n\tUsage: " << argv[0] << " [template_proj_data [image]]\n"
+        std::cerr << "\nUsage: " << argv[0] << " [projector_pair_filename [template_proj_data [image]]]\n"
+                  << "projector_pair_filename (optional) can be used to specify the projectors\n"
+                  <<"  if set to an empty string, the default ray-tracing matrix will be used.\n"
                   << "template_proj_data (optional) will serve as a template, but is otherwise not used.\n"
-                  << "Image (optional) has to be compatible with projection data and currently at zoom=1\n";
+                  << "image (optional) has to be compatible with projection data and currently at zoom=1\n";
         return EXIT_FAILURE;
     }
 
     //set_default_num_threads();
 
-    TestOSMAPOSL test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
+    TestOSMAPOSL test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "", argc > 3 ? argv[3] : "");
 
     if (test.is_everything_ok())
         test.run_tests();
