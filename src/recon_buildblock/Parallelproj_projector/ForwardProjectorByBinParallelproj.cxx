@@ -139,6 +139,9 @@ set_input(const DiscretisedDensity<3,float> & density)
     std::vector<float> image_vec(density.size_all());
     std::copy(density.begin_all(), density.end_all(), image_vec.begin());
 
+    // need to set output to zero as parallelproj accumulates
+    _projected_data_sptr->fill(0.F);
+
     info("Calling parallelproj forward",2);
     joseph3d_fwd(_helper->xstart.data(),
                   _helper->xend.data(),
