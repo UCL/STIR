@@ -6,13 +6,14 @@
   \ingroup listmode
   \brief Class for binning list mode files with the bootstrap method
     
-  \author Kris Thielemans\author Daniel Deidda
+  \author Kris Thielemans
+  \author Daniel Deidda
 
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
-    Copyright (C) 2019, University College London
+    Copyright (C) 2019, 2021, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -88,6 +89,7 @@ public:
   //void set_seed(const unsigned int seed);
   float set_reject_if_above(const float);
 
+  virtual Succeeded set_up();
 protected:
   //! will be called when a new time frame starts
   /*! Initialises a vector with the number of times each event has to be replicated */

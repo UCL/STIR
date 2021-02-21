@@ -65,6 +65,10 @@
     but allows us to subtract time-fields.</li>
   <li>Added a utility <tt>list_lm_info</tt>.</li>
   <li>Implementation of <tt>a*x+b*y</tt> methods <code>xapyb</code> and <code>sapyb</code> where <tt>a</tt> and <tt>b</tt> can be scalar or vector types.</li>
+  <li>The <code>LmToProjData</code> hierarchy has a new member function <code>set_up()</code>, and more <code>set_*</code>
+    functions, such that it can be used without parsing. Note that it will be automatically called when parsing
+    (which might change in the future).
+    </li>
 </ul>
 
 
