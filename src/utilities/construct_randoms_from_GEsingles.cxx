@@ -38,7 +38,7 @@
 #include "stir/info.h"
 #include <iostream>
 #include <string>
-#include "stir/data/SinglesRatesFromGEHDF5.h"
+#include "stir/data/SinglesFromGEHDF5.h"
 #include "stir/data/randoms_from_singles.h"
 #include <boost/format.hpp>
 
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
               proj_data_info_sptr->create_shared_clone(),
               output_file_name);
 
-  GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
+  GE::RDF_HDF5::SinglesFromGEHDF5  singles;
   singles.read_singles_from_file(input_filename);
   const float coincidence_time_window = input_file.get_coincidence_time_window();
 

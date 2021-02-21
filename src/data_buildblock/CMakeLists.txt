@@ -36,7 +36,7 @@ if (HAVE_ECAT)
 endif()
 if (HAVE_HDF5)
     list (APPEND  ${dir_LIB_SOURCES}
-        SinglesRatesFromGEHDF5
+        SinglesFromGEHDF5
   )
 endif()
 

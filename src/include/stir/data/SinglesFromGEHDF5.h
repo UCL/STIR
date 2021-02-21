@@ -20,15 +20,15 @@
   \file
   \ingroup singles_buildblock
   \ingroup GE
-  \brief Declaration of class stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
+  \brief Declaration of class stir::GE::RDF_HDF5::SinglesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
 
 */
 
-#ifndef __stir_data_SinglesRatesFromGEHDF5_H__
-#define __stir_data_SinglesRatesFromGEHDF5_H__
+#ifndef __stir_data_SinglesFromGEHDF5_H__
+#define __stir_data_SinglesFromGEHDF5_H__
 
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
@@ -51,18 +51,18 @@ namespace RDF_HDF5 {
   \todo construct_randoms_from_GEsingles.cxx needs to reorder data. This should be moved to this class
 
 */
-class SinglesRatesFromGEHDF5 : 
-public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates>
+class SinglesFromGEHDF5 : 
+public RegisteredParsingObject<SinglesFromGEHDF5, SinglesRates>
 
 { 
 public:
 
- //! Name which will be used when parsing a SinglesRatesFromGEHDF5 object 
+ //! Name which will be used when parsing a SinglesFromGEHDF5 object 
  static const char * const registered_name; 
 
 //PW Would not touch this.
  //! Default constructor 
- explicit SinglesRatesFromGEHDF5();
+ explicit SinglesFromGEHDF5();
 
  // implementation of pure virtual in SinglesRates
  virtual float
@@ -164,7 +164,7 @@ public:
  unsigned int read_singles_from_file(const std::string& rdf_filename);
 
  /*!
-  * \brief Write the SinglesRatesFromGEHDF5 object to a stream.
+  * \brief Write the SinglesFromGEHDF5 object to a stream.
   * \param[in] output The ostream to which the object will be written.
   */
  //PW Here writing of singles in output stream; unsure
