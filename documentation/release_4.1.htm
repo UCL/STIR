@@ -109,7 +109,11 @@ none
 <h3>Known problems</h3>
 <p>See the Github issues for more information.</p>
 <ul>
-<li>SPECT related
+ <li>currently images reconstructed using the GE RDF9 functionality will be reconstructed flipped
+   and slightly rotated, causing problems with attenuation alignment for instance.
+  <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
+ </li>
+  <li>SPECT related
  <ul>
  <li> Do NOT use current PET projectors on SPECT Data. You will have to choose the "SPECT UB" projector 
     in all cases (see the sample .par files).</li>
