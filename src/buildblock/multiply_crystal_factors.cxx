@@ -104,32 +104,54 @@ void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficie
 		    if (fabs(out_m - in_m) > 1E-4)
 		      continue;
 		
-		    for (bin.view_num() = proj_data.get_min_view_num(); 
-			 bin.view_num() <= proj_data.get_max_view_num();
-			 ++ bin.view_num())
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 200711
+#     pragma omp parallel for collapse(2) // OpenMP 3.1
+#  else
+#     pragma omp parallel for // older versions
+#  endif
+#endif
+		    for (int view_num = proj_data.get_min_view_num();
+			 view_num <= proj_data.get_max_view_num();
+			 ++ view_num)
 		      {
 
-			for (bin.tangential_pos_num() = proj_data_info_ptr->get_min_tangential_pos_num();
-			     bin.tangential_pos_num() <= proj_data_info_ptr->get_max_tangential_pos_num();
-			     ++bin.tangential_pos_num())
+			for (int tangential_pos_num = proj_data_info_ptr->get_min_tangential_pos_num();
+			     tangential_pos_num <= proj_data_info_ptr->get_max_tangential_pos_num();
+			     ++tangential_pos_num)
 			  {
-			    uncompressed_bin.tangential_pos_num() =
-			      bin.tangential_pos_num();
-			    for (uncompressed_bin.view_num() = bin.view_num()*mashing_factor;
-				 uncompressed_bin.view_num() < (bin.view_num()+1)*mashing_factor;
-				 ++ uncompressed_bin.view_num())
+                            Bin parallel_bin(bin);
+                            parallel_bin.view_num() = view_num;
+                            parallel_bin.tangential_pos_num() = tangential_pos_num;
+			    Bin parallel_uncompressed_bin = uncompressed_bin;
+			    parallel_uncompressed_bin.tangential_pos_num() = parallel_bin.tangential_pos_num();
+                            float result = 0.F;
+			    for (parallel_uncompressed_bin.view_num() = parallel_bin.view_num()*mashing_factor;
+				 parallel_uncompressed_bin.view_num() < (parallel_bin.view_num()+1)*mashing_factor;
+				 ++ parallel_uncompressed_bin.view_num())
 			      {
 
 				int ra = 0, a = 0;
 				int rb = 0, b = 0;
 			      
 				uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, 
-										      uncompressed_bin);
+										      parallel_uncompressed_bin);
 
-				/*(*segment_ptr)[bin.axial_pos_num()]*/
-				sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-				  efficiencies[ra][a]*efficiencies[rb][b%num_detectors_per_ring] * global_factor;
+                                result += efficiencies[ra][a]*efficiencies[rb][b%num_detectors_per_ring];
 			      }
+#if defined(STIR_OPENMP)
+# if _OPENMP >= 201012
+#  pragma omp atomic update
+# else
+#  pragma omp critical(STIRMULTIPLYCRYSTALFACTORS)
+                            {
+# endif
+#endif
+                              /*(*segment_ptr)[bin.axial_pos_num()]*/
+                              sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()] += result * global_factor;
+#if defined(STIR_OPENMP) and _OPENMP < 201012
+                            }
+#endif
 			  }
 		      }
 		  
