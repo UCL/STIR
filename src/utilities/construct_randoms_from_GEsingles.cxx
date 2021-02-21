@@ -14,9 +14,8 @@
 
 */
 /*
-  Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
   Copyright (C) 2017- 2019, University of Leeds
-  Copyright (C) 2020, University College London
+  Copyright (C) 2020, 2021, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -33,7 +32,6 @@
 */
 
 #include "stir/ProjDataInterfile.h"
-#include "stir/decay_correction_factor.h"
 #include "stir/ExamInfo.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IO/GEHDF5Wrapper.h"
@@ -41,7 +39,7 @@
 #include <iostream>
 #include <string>
 #include "stir/data/SinglesRatesFromGEHDF5.h"
-#include "stir/multiply_crystal_factors.h"
+#include "stir/data/randoms_from_singles.h"
 #include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
@@ -94,57 +92,10 @@ int main(int argc, char **argv)
               proj_data_info_sptr->create_shared_clone(),
               output_file_name);
 
-  const int num_rings =
-    proj_data_info_sptr->get_scanner_ptr()->get_num_rings();
-  const int num_detectors_per_ring =
-    proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
-  // this uses the wrong naming currently. It so happens that the formulas are the same
-  // as when multiplying efficiencies
-  Array<2,float> efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+  GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
+  singles.read_singles_from_listmode_file(input_filename);
+  const float coincidence_time_window = input_file.get_coincidence_time_window();
 
-  {
-    GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
-    singles.read_singles_from_listmode_file(input_filename);
-    // efficiencies
-    {
-      for (int r=0; r<num_rings; ++r)
-        for (int c=0; c<num_detectors_per_ring; ++c)
-        {
-          DetectionPosition<> pos(c,r,0);
-          efficiencies[r][c]=singles.get_singles_rate(pos,
-                                                      exam_info_sptr->get_time_frame_definitions().get_start_time(1),
-                                                      exam_info_sptr->get_time_frame_definitions().get_end_time(1));
-        }
-    }
-  }// nothing
-
-  {
-    const float coincidence_time_window = input_file.get_coincidence_time_window();
-
-    /* Randoms from singles formula is
-
-           randoms-rate[i,j] = coinc_window * singles-rate[i] * singles-rate[j]
-
-       However, we actually have total counts in the singles (despite the current name),
-       and need total counts in the randoms. This gives
-
-           randoms-counts[i,j] * total_to_activity = coinc_window * singles-counts[i] * singles-counts[j] * total_to_activity^2
-
-       That leads to the formula below.
-    */
-    const double duration = exam_info_sptr->get_time_frame_definitions().get_duration(1);
-    warning("Assuming F-18 tracer!!!");
-    const double isotope_halflife = 6586.2;
-    const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
-    const double total_to_activity = decay_corr_factor / duration;
-    info(boost::format("decay correction factor: %1%, time frame duration: %2%. total correction factor from activity to counts: %3%")
-         % decay_corr_factor % duration % (1/total_to_activity),
-         2);
-
-    multiply_crystal_factors(proj_data, efficiencies,
-                             coincidence_time_window*total_to_activity);
-
-  }
-
+  randoms_from_singles(proj_data, singles, coincidence_time_window);
   return EXIT_SUCCESS;
 }
