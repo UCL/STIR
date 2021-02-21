@@ -208,8 +208,8 @@ get_singles_rate(int singles_bin_index,int time_slice) const {
   // Check ranges.
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
-  if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
-       time_slice < 0 || time_slice >= m_num_time_slices ) {
+  if ( singles_bin_index < 0 || singles_bin_index >= static_cast<int>(total_singles_units) ||
+       time_slice < 0 || time_slice >= static_cast<int>(m_num_time_slices) ) {
     return(0);
   } else {
     return (*m_singles_sptr)[time_slice][singles_bin_index];
@@ -226,8 +226,8 @@ set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
-  if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
-       time_slice >= 0 && time_slice < m_num_time_slices ) {
+  if ( singles_bin_index >= 0 && singles_bin_index < static_cast<int>(total_singles_units) &&
+       time_slice >= 0 && time_slice < static_cast<int>(m_num_time_slices) ) {
     (*m_singles_sptr)[time_slice][singles_bin_index] = new_rate;
   }
 }
@@ -318,13 +318,13 @@ get_singles_time_interval() const {
 
 unsigned int
 SinglesRatesFromGEHDF5::
-read_singles_from_listmode_file(const std::string& _listmode_filename)
+read_singles_from_file(const std::string& rdf_filename)
 {
 
     unsigned int slice = 0;
 
     //PW Open the list mode file here.
-    m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
+    m_input_sptr.reset(new GEHDF5Wrapper(rdf_filename));
 
 
     SinglesRates::scanner_sptr = m_input_sptr->get_scanner_sptr();
@@ -530,7 +530,7 @@ double
 SinglesRatesFromGEHDF5::
 get_slice_start(int slice_index) const {
 
-  if ( slice_index >= m_num_time_slices ) {
+  if ( slice_index >= static_cast<int>(m_num_time_slices) ) {
     slice_index = m_num_time_slices - 1;
   }
   
@@ -551,16 +551,16 @@ SinglesRatesFromGEHDF5::
 initialise_keymap()
 {
 //PW Modify this to change sgl to listmode
-  parser.add_start_key("Singles Rates From GE HDF5 listmode File");
-  parser.add_key("listmode_filename", &_listmode_filename);
-  parser.add_stop_key("End Singles Rates From GE HDF5 listmode File");
+  parser.add_start_key("Singles Rates From GE HDF5 File");
+  parser.add_key("filename", &_rdf_filename);
+  parser.add_stop_key("End Singles Rates From GE HDF5 File");
 }
 
 bool 
 SinglesRatesFromGEHDF5::
 post_processing()
 {
-  read_singles_from_listmode_file(_listmode_filename);
+  read_singles_from_file(_rdf_filename);
   return false;
 }
 
@@ -568,7 +568,7 @@ post_processing()
 void 
 SinglesRatesFromGEHDF5::set_defaults()
 {
-  _listmode_filename = "";
+  _rdf_filename = "";
 }
 
 } // namespace

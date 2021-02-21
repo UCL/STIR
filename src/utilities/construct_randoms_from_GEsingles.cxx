@@ -93,7 +93,7 @@ int main(int argc, char **argv)
               output_file_name);
 
   GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
-  singles.read_singles_from_listmode_file(input_filename);
+  singles.read_singles_from_file(input_filename);
   const float coincidence_time_window = input_file.get_coincidence_time_window();
 
   randoms_from_singles(proj_data, singles, coincidence_time_window);

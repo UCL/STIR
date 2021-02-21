@@ -160,8 +160,8 @@ public:
  
  // IO Methods
 //PW Reading singles from .sgl changed to .BLF file format. Adapt from GE HDF5 listmode file read.
- //! The function that reads singles from *.sgl file.
- unsigned int read_singles_from_listmode_file(const std::string& _listmode_filename);
+ //! The function that reads singles from an RDF file
+ unsigned int read_singles_from_file(const std::string& rdf_filename);
 
  /*!
   * \brief Write the SinglesRatesFromGEHDF5 object to a stream.
@@ -188,8 +188,7 @@ private:
  // A value of zero for _singles_time_interval indicates that the time slices
  // are of different lengths.
  double _singles_time_interval;
-//PW change this to BLF filename
- std::string _listmode_filename;
+ std::string _rdf_filename;
 
  // Calculate and set _singles_time_interval.
  void set_time_interval();
