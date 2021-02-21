@@ -54,14 +54,14 @@ public:
   // needs to be implemented by derived class
   virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
  
-  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const final
    { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
   
  protected:
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
 
 private:
