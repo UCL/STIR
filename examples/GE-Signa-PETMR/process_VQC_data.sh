@@ -25,10 +25,10 @@ cd output
 listmode=../VQC_Phantom_Dataset_Share/LST/LST_30501_PET_Scan_for_VQC_Verification/LIST0000.BLF
 
 # make a frame definition file with 1 frame for all the data
-create_fdef_from_listmode.sh frames.fdef $listmode
+create_fdef_from_listmode.sh frames.fdef "$listmode"
 
 # create prompts and randoms sinograms
-INPUT=$listmode FRAMES=frames.fdef $pardir/unlist_and_randoms.sh
+INPUT="$listmode" FRAMES=frames.fdef $pardir/unlist_and_randoms.sh
 
 # Create a dummy attenuation file (we don't have one for the VQC phantom)
 generate_image $pardir/generate_zero_atn.par
