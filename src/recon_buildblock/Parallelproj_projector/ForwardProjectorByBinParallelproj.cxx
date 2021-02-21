@@ -111,23 +111,15 @@ get_symmetries_used() const
 
 void
 ForwardProjectorByBinParallelproj::
-actual_forward_project(RelatedViewgrams<float>&,
-      const DiscretisedDensity<3,float>&,
-        const int, const int,
-        const int, const int)
-{
-    throw std::runtime_error("Need to use set_input() if wanting to use ForwardProjectorByBinParallelproj.");
-}
-
-void
-ForwardProjectorByBinParallelproj::
 actual_forward_project(RelatedViewgrams<float>& viewgrams,
-        const int, const int,
-        const int, const int)
+                       const int min_axial_pos_num, const int max_axial_pos_num,
+                       const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-//    if (min_axial_pos_num != _proj_data_info_sptr->get_min_axial_pos_num() ||
-//         ... )
-//       error();
+  if ((min_axial_pos_num != this->_proj_data_info_sptr->get_min_axial_pos_num(viewgrams.get_basic_segment_num())) ||
+      (max_axial_pos_num != this->_proj_data_info_sptr->get_max_axial_pos_num(viewgrams.get_basic_segment_num())) ||
+      (min_tangential_pos_num != this->_proj_data_info_sptr->get_min_tangential_pos_num()) ||
+      (max_tangential_pos_num != this->_proj_data_info_sptr->get_max_tangential_pos_num()))
+    error("STIR wrapping of Parallelproj projectors current only handles projecting all data");
 
     viewgrams = _projected_data_sptr->get_related_viewgrams(
         viewgrams.get_basic_view_segment_num(), _symmetries_sptr);

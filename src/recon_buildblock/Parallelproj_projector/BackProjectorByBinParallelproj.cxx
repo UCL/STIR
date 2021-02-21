@@ -178,10 +178,15 @@ start_accumulating_in_new_target()
 void
 BackProjectorByBinParallelproj::
 actual_back_project(const RelatedViewgrams<float>& related_viewgrams,
-                         const int, const int,
-                         const int, const int)
+                    const int min_axial_pos_num, const int max_axial_pos_num,
+                    const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  // TODO would have to check if only limited data is being backprojected
+  if ((min_axial_pos_num != this->_proj_data_info_sptr->get_min_axial_pos_num(related_viewgrams.get_basic_segment_num())) ||
+      (max_axial_pos_num != this->_proj_data_info_sptr->get_max_axial_pos_num(related_viewgrams.get_basic_segment_num())) ||
+      (min_tangential_pos_num != this->_proj_data_info_sptr->get_min_tangential_pos_num()) ||
+      (max_tangential_pos_num != this->_proj_data_info_sptr->get_max_tangential_pos_num()))
+    error("STIR wrapping of Parallelproj projectors current only handles projecting all data");
+
   _proj_data_to_backproject_sptr->set_related_viewgrams(related_viewgrams);
 }
 

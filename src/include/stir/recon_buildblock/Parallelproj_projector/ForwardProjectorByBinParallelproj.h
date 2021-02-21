@@ -90,15 +90,10 @@ virtual void set_up(
     void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
 protected:
-  //! This virtual function has to be implemented by the derived class.
-  virtual void actual_forward_project(RelatedViewgrams<float>&, 
-		  const DiscretisedDensity<3,float>&,
-		  const int min_axial_pos_num, const int max_axial_pos_num,
-		  const int min_tangential_pos_num, const int max_tangential_pos_num);
 
   virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
           const int min_axial_pos_num, const int max_axial_pos_num,
-          const int min_tangential_pos_num, const int max_tangential_pos_num);
+          const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
 private:
     shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
