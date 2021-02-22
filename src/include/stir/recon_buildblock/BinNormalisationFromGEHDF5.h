@@ -32,6 +32,7 @@
 #define __stir_recon_buildblock_BinNormalisationFromGEHDF5_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -79,7 +80,7 @@ namespace RDF_HDF5 {
  
 */
 class BinNormalisationFromGEHDF5 :
-   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation>
+   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
@@ -96,8 +97,8 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>&);
+  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;

@@ -134,7 +134,7 @@ main (int argc, char * argv[])
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
-		      new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
+		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
 					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
@@ -148,7 +148,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");
@@ -161,7 +161,7 @@ main (int argc, char * argv[])
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
   if (doACF)
     {
-      normalisation_ptr->apply(*out_proj_data_ptr,start_frame,end_frame, symmetries_sptr);
+      normalisation_ptr->apply(*out_proj_data_ptr, symmetries_sptr);
     }
   else
     {

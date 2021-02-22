@@ -545,4 +545,55 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   return Succeeded::yes;
 }
 
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check argument characteristics
+    std::string explanation;
+    if (!input.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and input for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and current_image_estimate for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  GatedDiscretisedDensity gated_input=this->_gated_image_template;
+  GatedDiscretisedDensity gated_current_image_estimate=this->_gated_image_template;
+  GatedDiscretisedDensity gated_output=this->_gated_image_template;
+  this->_motion_vectors.warp_image(gated_input,input);
+  this->_motion_vectors.warp_image(gated_current_image_estimate, current_image_estimate);
+
+  for(unsigned int gate_num=1;
+      gate_num<=this->get_time_gate_definitions().get_num_gates();
+      ++gate_num)
+  {
+    this->_single_gate_obj_funcs[gate_num].
+    accumulate_sub_Hessian_times_input_without_penalty(gated_output[gate_num],
+            gated_current_image_estimate[gate_num],
+            gated_input[gate_num],
+            subset_num);
+  } // end of loop over gates
+  this->_reverse_motion_vectors.warp_image(output, gated_output);
+  output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
+  return Succeeded::yes;
+}
+
+
 END_NAMESPACE_STIR

@@ -238,6 +238,7 @@ BinNormalisationFromGEHDF5::
 post_processing()
 {
   read_norm_data(normalisation_GEHDF5_filename);
+  this->set_calibration_factor(1); //TODO: read actual factor somewhere
   return false;
 }
 
@@ -256,9 +257,9 @@ BinNormalisationFromGEHDF5(const string& filename)
 
 Succeeded
 BinNormalisationFromGEHDF5::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(proj_data_info_ptr_v);
+  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
@@ -451,7 +452,7 @@ use_geometric_factors() const
 
 float 
 BinNormalisationFromGEHDF5::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
 {  
   float	total_efficiency = 0 ;
 
