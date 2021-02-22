@@ -76,12 +76,9 @@ set(${dir_EXE_SOURCES}
 	find_ML_singles_from_delayed
   find_normfactors_from_cylinder_data
   find_recovery_coefficients_in_image_quality_phantom_nema_nu4
-  trim_projdata
-  convert_projdata_types
   write_sinogram_to_txt
   find_sum_projection_of_viewgram_and_sinogram
   separate_true_from_random_scatter_for_necr
-  find_counts_in_cylindrical_ROI
 )
 
 if (AVW_FOUND)
