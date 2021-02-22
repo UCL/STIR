@@ -10,8 +10,8 @@
   \author Daniel Deidda
 */
 /*
-    Copyright (C) 2019, UCL
-    Copyright (C) 2019, NPL
+    Copyright (C) 2019-2021, UCL
+    Copyright (C) 2019-2021, NPL
     See STIR/LICENSE.txt for details
 */
 
