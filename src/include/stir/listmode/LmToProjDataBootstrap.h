@@ -85,6 +85,7 @@ public:
   /*! The \a seed argument will override any value found in the par file */
   LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed);
 
+  virtual Succeeded set_up();
 protected:
   //! will be called when a new time frame starts
   /*! Initialises a vector with the number of times each event has to be replicated */
