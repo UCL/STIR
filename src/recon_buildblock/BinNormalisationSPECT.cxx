@@ -141,9 +141,6 @@ read_norm_data(const std::string& filename)
   }
 
 float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) const {
-    
-//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-//    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
 
