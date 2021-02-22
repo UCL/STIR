@@ -154,9 +154,6 @@ void
 BinNormalisationFromProjData::
 undo(RelatedViewgrams<float>& viewgrams) const 
   {
-    
-    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
