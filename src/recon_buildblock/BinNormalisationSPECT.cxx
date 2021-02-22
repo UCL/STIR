@@ -250,9 +250,6 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
 
 void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams) const{
 
-    
-//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-//    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
