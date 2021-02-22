@@ -103,7 +103,7 @@ calc_ring1_plus_ring2(const Bin& bin,
 
 static
 void
-set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin, 
                                 DetectionPositionPair<>& detection_position_pair) {
   int det1_num=0;
@@ -257,7 +257,7 @@ BinNormalisationFromGEHDF5(const string& filename)
 
 Succeeded
 BinNormalisationFromGEHDF5::
-set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
   BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
@@ -401,7 +401,7 @@ read_norm_data(const string& filename)
             std::vector<unsigned int> repeat_buffer;
             repeat_buffer.reserve(projInfo->get_num_axial_poss(i_seg)*count[1]-1);
             // repeat the values
-            for (unsigned int i=0; i<projInfo->get_num_axial_poss(i_seg);i++)
+            for (int i=0; i<projInfo->get_num_axial_poss(i_seg);i++)
               repeat_buffer.insert(repeat_buffer.end(),buffer.begin(),buffer.end());
             // copy data back
             // AB TODO: Hardcoded magic number, remove somehow (when magic is discovered)

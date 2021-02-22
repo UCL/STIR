@@ -4,9 +4,10 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -143,10 +144,25 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
+    //! \name TBranches for Cylindrical PET
+    //@{
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_submoduleID1 = nullptr;
+    TBranch *br_submoduleID2 = nullptr;
+    TBranch *br_moduleID1 = nullptr;
+    TBranch *br_moduleID2 = nullptr;
+    TBranch *br_rsectorID1 = nullptr;
+    TBranch *br_rsectorID2 = nullptr;
+    //@}
+
+    //! \name ROOT Variables, i.e. to hold data from each entry.
+    //@{
     std::int32_t crystalID1, crystalID2;
     std::int32_t submoduleID1, submoduleID2;
     std::int32_t moduleID1, moduleID2;
     std::int32_t rsectorID1, rsectorID2;
+    //@}
 
     int submodule_repeater_x;
     int submodule_repeater_y;

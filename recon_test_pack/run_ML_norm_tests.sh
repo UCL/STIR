@@ -7,7 +7,7 @@
 # - apply to model
 # - check if it's equal to the data
 
-#  Copyright (C) 2013, 2020 University College London
+#  Copyright (C) 2013, 2020, 2021 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -60,9 +60,13 @@ model_data=$input
 measured_data=my_norm_test.hs
 stir_math -s --including-first --times-scalar 4  $measured_data $input >/dev/null 2>&1
 
+num_iters=2
+num_eff_iters=3
+check_num_iters=$num_iters
+check_num_eff_iters=$num_eff_iters
 echo "===  run ML norm estimation"
 prog=find_ML_normfactors3D
-$prog  my_norm $measured_data $model_data 0 2 > my_${prog}.log 2>&1
+$prog  my_norm $measured_data $model_data $num_iters $num_eff_iters > my_${prog}.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error running $prog"
   error_log_files="${error_log_files} my_${prog}*.log"
@@ -73,7 +77,7 @@ fi
 
 echo "===  apply ML"
 prog=apply_normfactors3D
-$prog my_norm_check my_norm $model_data 1 1 2 > my_${prog}.log 2>&1
+$prog my_norm_check my_norm $model_data 1 $check_num_iters $check_num_eff_iters > my_${prog}.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error running $prog"
   error_log_files="${error_log_files} my_${prog}*.log"

@@ -86,9 +86,9 @@ void
   // we'll take it 1000 times smaller than the minimum of the average out_box size or in_box size
   const coord_t epsilon = 
     std::min(((*(out_coord_end-1)) - (*out_coord_begin)) /
-	     ((out_coord_end-1 - out_coord_begin)*1000),
+         ((out_coord_end-1 - out_coord_begin)*10000),
 	     ((*(in_coord_end-1)) - (*in_coord_begin)) /
-	     ((in_coord_end-1 - in_coord_begin)*1000));
+         ((in_coord_end-1 - in_coord_begin)*10000));
   
   // do actual interpolation
   // we walk through the boxes, checking the overlap.

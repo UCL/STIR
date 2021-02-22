@@ -1862,6 +1862,9 @@ only_2D:=1
 ; the following is the output prefix of the PET reconstructed image
 kernelised output filename prefix :=KOSMAPOSL
 
+;the following is only set if you want to freeze the kernel matrix after a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
+
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
@@ -2951,6 +2954,21 @@ choose one file from the directory), the JSON file containing the conversion slo
 
 The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
 a kVp of 120 is assumed. 
+
+{ \subsubsubsection{compute\_sqrt\_Hessian\_row\_sum} \label{sec:Utilities:HessianRowSum}
+}
+This executable can be used to generate the square root of the Hessian row sum of an objective function, the output of
+which may be used as a spatially variant penalty strength $\kappa$ (or \textit{kappa image}) within iterative
+reconstruction algorithms, see \ref{sec:priors:Quadratic}.
+
+This utility computes the row-sum of the Hessian of the objective function at a given image (by multiplying it with a vector of ones). The square root of the image is saved to file. Along with a method
+to compute the Hessian row sum, we include an optional method to approximate Hessian row sum that is less computational
+and does not require an estimate image for the the Hessian computation (but does require one for an output image
+template).
+
+Basic Usage:
+\cmdline{compute\_sqrt\_Hessian\_row\_sum compute\_sqrt\_Hessian\_row\_sum.par}
+An example parameter file is included in the samples folder.
 
 \subsubsection{
 Converting data}
@@ -4175,6 +4193,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If $\kappa$ is not set, this class will effectively
   use 1 for all $\kappa$'s.
+  The utility \textit{compute\_sqrt\_Hessian\_row\_sum} \ref{sec:Utilities:HessianRowSum} may be used to generate such images.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel\_size divided by the Euclidean distance between the points.

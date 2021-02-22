@@ -27,6 +27,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
         test_FBP2D
         test_FBP3DRP
         test_OSMAPOSL
+        test_priors
 )
 
 

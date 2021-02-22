@@ -57,7 +57,8 @@ set(${dir_EXE_SOURCES}
 	write_proj_matrix_by_bin 
         forward_project
         back_project
-	calculate_attenuation_coefficients 
+	calculate_attenuation_coefficients
+		compute_sqrt_Hessian_row_sum
 	attenuation_coefficients_to_projections 
         conv_GATE_raw_ECAT_projdata_to_interfile
         conv_gipl_to_interfile

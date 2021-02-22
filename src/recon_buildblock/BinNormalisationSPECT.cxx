@@ -80,16 +80,14 @@ BinNormalisationSPECT::
 initialise_keymap()
 {
   this->parser.add_start_key("Bin Normalisation SPECT");
-  this->parser.add_key("uniformity_filename", &this->uniformity_filename);
-  this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
-  this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
-  this->parser.add_key("folder_prefix", &this->folder_prefix);
-  this->parser.add_key("rel_angle", &this->rel_angle);
-  this->parser.add_key("half_life", &this->half_life); //TODO read this from the database according to isotope name
-  this->parser.add_key("view_time_interval", &this->view_time_interval);
+  this->parser.add_key("uniformity filename", &this->uniformity_filename);
+  this->parser.add_key("use detector efficiencies", &this->_use_detector_efficiencies);
+  this->parser.add_key("use uniformity factors", &this->_use_uniformity_factors);
+  this->parser.add_key("folder prefix", &this->folder_prefix);
+  this->parser.add_key("half life", &this->half_life); //TODO read this from the database according to isotope name
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("projdata filename", &this->projdata_filename);
-  this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
+  this->parser.add_key("use decay correction", &this->_use_decay_correction);
   this->parser.add_key("measured calibration factor", &this->measured_calibration_factor);
 
   this->parser.add_stop_key("End Bin Normalisation SPECT");
@@ -106,9 +104,19 @@ post_processing()
   norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
   max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
   
+  if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()>1)
+      error("BinNormalisationSPECT: Multiple time frames not yet supported");
+  
+  if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
+      error("BinNormalisationSPECT: At least one time frame should be defined");
+  
+  this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(0)/num_views;
+  
 //  allow to set your own calibration factor
   if(measured_calibration_factor>0) 
       set_calibration_factor(measured_calibration_factor);
+  else 
+      set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
   
 //  read_norm_data(normalisation_spect_filename);
   return false;
@@ -160,6 +168,7 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) con
     rel_time=(this->view_time_interval)*
              (bin.view_num()+1-head_num*
              (num_views/num_detector_heads));
+    
     /*####################################################################################################
      *####################################   uniformity factors  #########################################*/
 
