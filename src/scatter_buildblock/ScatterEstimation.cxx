@@ -576,8 +576,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
         iterative_object->set_input_data(this->input_projdata_sptr);
 
-//    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-//    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
 
     //
