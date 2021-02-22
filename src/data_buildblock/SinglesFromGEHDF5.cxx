@@ -20,7 +20,7 @@
   \file
   \ingroup singles_buildblock
   \ingroup GE
-  \brief Implementation of stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
+  \brief Implementation of stir::GE::RDF_HDF5::SinglesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -29,7 +29,7 @@
 #include "stir/DetectionPosition.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange2D.h"
-#include "stir/data/SinglesRatesFromGEHDF5.h"
+#include "stir/data/SinglesFromGEHDF5.h"
 #include "stir/round.h"
 #include "stir/stream.h"
 #include "stir/IO/GEHDF5Wrapper.h"
@@ -52,21 +52,21 @@ namespace GE {
 namespace RDF_HDF5 {
 
 const char * const 
-SinglesRatesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
+SinglesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
 
 const double MAX_INTERVAL_DIFFERENCE = 0.05; // 5% max difference.
 
 //PW Will not change this bit of code.
 // Constructor
-SinglesRatesFromGEHDF5::
-SinglesRatesFromGEHDF5()
+SinglesFromGEHDF5::
+SinglesFromGEHDF5()
 {}
 
 
 // Generate a FramesSinglesRate - containing the average rates
 // for a frame begining at start_time and ending at end_time.
 FrameSinglesRates
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_rates_for_frame(double start_time,
                     double end_time) const {
 
@@ -111,7 +111,7 @@ get_rates_for_frame(double start_time,
 // Get time slice index.
 // Returns the index of the slice that contains the specified time.
 int
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_end_time_slice_index(double t) const {
 
   unsigned int slice_index = 0;
@@ -156,7 +156,7 @@ get_end_time_slice_index(double t) const {
 // Get time slice index.
 // Returns first slice ending _after_ t.
 int
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_start_time_slice_index(double t) const {
 
   unsigned int slice_index = 0;
@@ -202,14 +202,14 @@ get_start_time_slice_index(double t) const {
 
 // Get rates using time slice and singles bin indices.
 int 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_singles_rate(int singles_bin_index,int time_slice) const {
   
   // Check ranges.
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
-  if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
-       time_slice < 0 || time_slice >= m_num_time_slices ) {
+  if ( singles_bin_index < 0 || singles_bin_index >= static_cast<int>(total_singles_units) ||
+       time_slice < 0 || time_slice >= static_cast<int>(m_num_time_slices) ) {
     return(0);
   } else {
     return (*m_singles_sptr)[time_slice][singles_bin_index];
@@ -221,13 +221,13 @@ get_singles_rate(int singles_bin_index,int time_slice) const {
 
 // Set a singles rate by bin index and time slice.
 void 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   
   unsigned int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
-  if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
-       time_slice >= 0 && time_slice < m_num_time_slices ) {
+  if ( singles_bin_index >= 0 && singles_bin_index < static_cast<int>(total_singles_units) &&
+       time_slice >= 0 && time_slice < static_cast<int>(m_num_time_slices) ) {
     (*m_singles_sptr)[time_slice][singles_bin_index] = new_rate;
   }
 }
@@ -235,7 +235,7 @@ set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
 
 
 
-unsigned int SinglesRatesFromGEHDF5::rebin(std::vector<double>& new_end_times) {
+unsigned int SinglesFromGEHDF5::rebin(std::vector<double>& new_end_times) {
 
   const int num_new_slices = new_end_times.size();
   const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
@@ -290,7 +290,7 @@ unsigned int SinglesRatesFromGEHDF5::rebin(std::vector<double>& new_end_times) {
 
  
 std::vector<double> 
-SinglesRatesFromGEHDF5::get_times() const
+SinglesFromGEHDF5::get_times() const
 {
   return _times;
 }
@@ -299,7 +299,7 @@ SinglesRatesFromGEHDF5::get_times() const
 
 
 unsigned int
-SinglesRatesFromGEHDF5:: 
+SinglesFromGEHDF5:: 
 get_num_time_slices() const {
   return(m_num_time_slices);
 }
@@ -307,7 +307,7 @@ get_num_time_slices() const {
 
 
 double
-SinglesRatesFromGEHDF5:: 
+SinglesFromGEHDF5:: 
 get_singles_time_interval() const {
   return(_singles_time_interval);
 }
@@ -317,14 +317,14 @@ get_singles_time_interval() const {
 
 
 unsigned int
-SinglesRatesFromGEHDF5::
-read_singles_from_listmode_file(const std::string& _listmode_filename)
+SinglesFromGEHDF5::
+read_singles_from_file(const std::string& rdf_filename)
 {
 
     unsigned int slice = 0;
 
     //PW Open the list mode file here.
-    m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
+    m_input_sptr.reset(new GEHDF5Wrapper(rdf_filename));
 
 
     SinglesRates::scanner_sptr = m_input_sptr->get_scanner_sptr();
@@ -346,7 +346,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     //PW Modify this bit of code too.
     if (slice != m_num_time_slices)
     {
-        error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
+        error("\nSinglesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
               slice, m_num_time_slices);
         //TODO resize singles to return array with new sizes
     }
@@ -377,9 +377,9 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
 
 
 
-// Write SinglesRatesFromGEHDF5 to a singles file.
+// Write SinglesFromGEHDF5 to a singles file.
 std::ostream& 
-SinglesRatesFromGEHDF5::write(std::ostream& output) {
+SinglesFromGEHDF5::write(std::ostream& output) {
 
   output << (*m_singles_sptr) << std::endl;
 
@@ -388,7 +388,7 @@ SinglesRatesFromGEHDF5::write(std::ostream& output) {
 
 //PW Figure this out!Does it need any change?
 float
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_singles_rate(const int singles_bin_index,
                  const double start_time, const double end_time) const {
 
@@ -472,7 +472,7 @@ get_singles_rate(const int singles_bin_index,
 }
 
 float
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_singles_rate(const DetectionPosition<>& det_pos,
                 const double start_time,
                 const double end_time) const
@@ -491,7 +491,7 @@ get_singles_rate(const DetectionPosition<>& det_pos,
 
 
 void 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 set_time_interval() {
 
   // Run through the _times vector and calculate an average difference 
@@ -527,10 +527,10 @@ set_time_interval() {
 
 // get slice start time.
 double 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 get_slice_start(int slice_index) const {
 
-  if ( slice_index >= m_num_time_slices ) {
+  if ( slice_index >= static_cast<int>(m_num_time_slices) ) {
     slice_index = m_num_time_slices - 1;
   }
   
@@ -547,28 +547,28 @@ get_slice_start(int slice_index) const {
 
 
 void 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 initialise_keymap()
 {
 //PW Modify this to change sgl to listmode
-  parser.add_start_key("Singles Rates From GE HDF5 listmode File");
-  parser.add_key("listmode_filename", &_listmode_filename);
-  parser.add_stop_key("End Singles Rates From GE HDF5 listmode File");
+  parser.add_start_key("Singles From GE HDF5 File");
+  parser.add_key("filename", &_rdf_filename);
+  parser.add_stop_key("End Singles From GE HDF5 File");
 }
 
 bool 
-SinglesRatesFromGEHDF5::
+SinglesFromGEHDF5::
 post_processing()
 {
-  read_singles_from_listmode_file(_listmode_filename);
+  read_singles_from_file(_rdf_filename);
   return false;
 }
 
 
 void 
-SinglesRatesFromGEHDF5::set_defaults()
+SinglesFromGEHDF5::set_defaults()
 {
-  _listmode_filename = "";
+  _rdf_filename = "";
 }
 
 } // namespace
