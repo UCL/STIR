@@ -152,7 +152,6 @@ set_input(const DiscretisedDensity<3,float> & density)
                       _helper->imgdim.data(),
                       /*threadsperblock*/ 64,
                       /*num_devices*/ -1);
-);
 #else
     joseph3d_fwd(_helper->xstart.data(),
                   _helper->xend.data(),
