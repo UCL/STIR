@@ -9,7 +9,8 @@
 */
 /*
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2021 University College London
+    Copright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -200,12 +201,6 @@ post_processing()
       return true;
     }
 
-  if (!interactive && output_filename_prefix.size()==0)
-    {
-      warning("You have to specify an output_filename_prefix\n");
-      return true;
-    }
-
   lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
@@ -218,11 +213,39 @@ post_processing()
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
 
-  // propagate relevant metadata
-  template_proj_data_info_ptr->set_bed_position_horizontal
-    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
-  template_proj_data_info_ptr->set_bed_position_vertical
-    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
+  // set up normalisation objects
+
+  if (is_null_ptr(normalisation_ptr))
+    {
+      warning("Invalid pre-normalisation object\n");
+      return true;
+    }
+  if (is_null_ptr(post_normalisation_ptr))
+    {
+      warning("Invalid post-normalisation object\n");
+      return true;
+    }
+
+  if (set_up() == Succeeded::no)
+    return true;
+
+#ifdef FRAME_BASED_DT_CORR
+  cerr << "LmToProjData Using FRAME_BASED_DT_CORR\n";
+#else
+  cerr << "LmToProjData NOT Using FRAME_BASED_DT_CORR\n";
+#endif
+
+  return false;
+}
+
+Succeeded LmToProjData::set_up()
+{
+  _already_setup = true;
+
+  if (!interactive && output_filename_prefix.size()==0)
+    {
+      error("You have to specify an output_filename_prefix");
+    }
 
   // initialise segment_num related variables
 
@@ -247,36 +270,10 @@ post_processing()
       min(num_segments_in_memory, num_segments);
   if (num_segments == 0)
     {
-      warning("LmToProjData: num_segments_in_memory cannot be 0");
-      return true;
+      error("LmToProjData: num_segments_in_memory cannot be 0");
     }
-  
 
-
-  Scanner const * const scanner_ptr = 
-    template_proj_data_info_ptr->get_scanner_ptr();
-
-  if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
-    {
-      warning("LmToProjData:\nScanner from list mode data (%s) is different from\n"
-	      "scanner from template projdata (%s).\n"
-	      "Full definition of scanner from list mode data:\n%s\n"
-	      "Full definition of scanner from template:\n%s\n",
-	      lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
-	      scanner_ptr->get_name().c_str(),
-	      lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
-	      scanner_ptr->parameter_info().c_str());
-      return true;
-    }
-  
   // handle store_prompts and store_delayeds
-
-  if (lm_data_ptr->has_delayeds()==false && store_delayeds==true)
-    {
-      warning("This list mode data does not seem to have delayed events.\n"
-	      "Setting store_delayeds to false.");
-      store_delayeds=true;
-    }
   
   if (store_prompts)
     {
@@ -291,34 +288,20 @@ post_processing()
 	delayed_increment = 1;
       else
 	{
-	  warning("At least one of store_prompts or store_delayeds should be true");
-	  return true;
+	  error("At least one of store_prompts or store_delayeds should be true");
 	}
-    }
-
-  // set up normalisation objects
-
-  if (is_null_ptr(normalisation_ptr))
-    {
-      warning("Invalid pre-normalisation object\n");
-      return true;
-    }
-  if (is_null_ptr(post_normalisation_ptr))
-    {
-      warning("Invalid post-normalisation object\n");
-      return true;
     }
 
   if (do_pre_normalisation)
     {
-      shared_ptr<Scanner> scanner_sptr(new Scanner(*scanner_ptr));
+      shared_ptr<Scanner> scanner_sptr(new Scanner(*template_proj_data_info_ptr->get_scanner_sptr()));
       // TODO this won't work for the HiDAC or so
       proj_data_info_cyl_uncompressed_ptr.
 	reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
 							       ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-											     1, scanner_ptr->get_num_rings()-1,
-											     scanner_ptr->get_num_detectors_per_ring()/2,
-											     scanner_ptr->get_default_num_arccorrected_bins(), 
+											     1, scanner_sptr->get_num_rings()-1,
+											     scanner_sptr->get_num_detectors_per_ring()/2,
+											     scanner_sptr->get_default_num_arccorrected_bins(), 
 											     false)));
       
       if ( normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(), proj_data_info_cyl_uncompressed_ptr)
@@ -349,13 +332,7 @@ post_processing()
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
-#ifdef FRAME_BASED_DT_CORR
-  cerr << "LmToProjData Using FRAME_BASED_DT_CORR\n";
-#else
-  cerr << "LmToProjData NOT Using FRAME_BASED_DT_CORR\n";
-#endif
-
-  return false;
+  return Succeeded::yes;
 }
 
 /**************************************************************
@@ -519,10 +496,43 @@ start_new_time_frame(const unsigned int)
 void
 LmToProjData::
 process_data()
-{ 
+{
+  if (!_already_setup)
+    error("LmToProjData: you need to call set_up() first");
+
   CPUTimer timer;
   timer.start();
 
+  // propagate relevant metadata
+  template_proj_data_info_ptr->set_bed_position_horizontal
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
+  template_proj_data_info_ptr->set_bed_position_vertical
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
+
+  // a few more checks, now that we have the lm_data_ptr
+  {
+    Scanner const * const scanner_ptr = 
+      template_proj_data_info_ptr->get_scanner_ptr();
+
+    if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
+      {
+        error("LmToProjData:\nScanner from list mode data (%s) is different from\n"
+                "scanner from template projdata (%s).\n"
+                "Full definition of scanner from list mode data:\n%s\n"
+                "Full definition of scanner from template:\n%s\n",
+                lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
+                scanner_ptr->get_name().c_str(),
+                lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
+                scanner_ptr->parameter_info().c_str());
+      }
+
+    if (lm_data_ptr->has_delayeds()==false && store_delayeds==true)
+      {
+        warning("This list mode data does not seem to have delayed events.\n"
+                "Setting store_delayeds to false.");
+        store_delayeds=true;
+      }
+  }
   // assume list mode data starts at time 0
   // we have to do this because the first time tag might occur only after a
   // few coincidence events (as happens with ECAT scanners)
@@ -540,7 +550,7 @@ process_data()
   ListRecord& record = *record_sptr;
 
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
-	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
+    error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
 
 
   /* Here starts the main loop which will store the listmode data. */
