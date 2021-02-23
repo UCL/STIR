@@ -4397,6 +4397,28 @@ Projector Pair Using NiftyPET Parameters:=
 End Projector Pair Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+\label{sec:projectorpairusingparallelproj}
+}
+This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
+\URL{https://github.com/gschramm/parallelproj}. This project provides implementations
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
+any \em{Python}).
+
+This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
+
+At present, STIR will use the GPU-accelerated functionality of \texttt{parallelproj} was
+built with \em{CUDA} support, otherwise it falls back to the \em{OpenMP} versions.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Parallelproj Parameters:=
+  verbosity := 1
+End Projector Pair Using Parallelproj Parameters:=
+\end{verbatim}
+
 { \subsubsubsection{Separate Projectors }
 }
 Forward and back projectors are completely independent of each 
@@ -4459,7 +4481,7 @@ Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up
 errors and possibly the voxels at the edge of the FOV).
 
 
-See also online documentation for class ForwardProjectorUsingRayTracing.
+See also online documentation for class \texttt{ForwardProjectorUsingRayTracing}.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -4501,11 +4523,24 @@ Forward Projector Using NiftyPET Parameters:=
 End Forward Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This forward projector wraps the \texttt{parallelproj} forward projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Forward Projector Using Parallelproj Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
 It is possible to select the type of back projector. The mechanism 
-is exactly the same as for the ForwardProjector hierarchy.
+is exactly the same as for the \texttt{ForwardProjector} hierarchy.
 
 { \subsubsubsection{Matrix}
 }
@@ -4593,6 +4628,18 @@ Back Projector Using NiftyPET Parameters:=
 End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This back projector wraps the \texttt{parallelproj} back projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Back Projector Using Parallelproj Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a projection matrix}

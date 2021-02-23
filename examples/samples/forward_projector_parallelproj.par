@@ -1,0 +1,7 @@
+Forward Projector parameters:=
+; example par file for specifying the forward projector for forward_project etc
+; this example uses the parallelproj projector
+type:=Parallelproj
+Forward Projector Using Parallelproj Parameters:=
+End Forward Projector Using Parallelproj Parameters:=
+end:=

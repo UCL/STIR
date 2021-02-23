@@ -159,7 +159,8 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
-private:
+ protected:
+  //! ProjDataInfo set by set_up()
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 

@@ -1,0 +1,7 @@
+Back Projector parameters:=
+  ; Example parameter file for specifying the back projector for back_project
+  ; this example uses the parallelproj projector
+  type:=Parallelproj
+  Back Projector Using Parallelproj Parameters:=
+  End Back Projector Using Parallelproj Parameters:=
+End:=
