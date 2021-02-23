@@ -135,8 +135,10 @@ set_input(const DiscretisedDensity<3,float> & density)
     std::vector<float> image_vec(density.size_all());
     std::copy(density.begin_all(), density.end_all(), image_vec.begin());
 
-    // need to set output to zero as parallelproj accumulates
+#if 0
+    // needed to set output to zero as parallelproj accumulates but is no longer the case
     _projected_data_sptr->fill(0.F);
+#endif
 
     info("Calling parallelproj forward",2);
 #ifdef parallelproj_built_with_CUDA
