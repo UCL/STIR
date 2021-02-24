@@ -25,6 +25,7 @@
 
   \author Kris Thielemans
   \author Tahereh Niknejad
+  \author Gefei Chen
 
 */
 
@@ -979,46 +980,6 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 	    
 }
 
-void make_fan_data(FanProjData& fan_data,
-	           const ProjData& proj_data)
-{
-  int num_rings;
-  int num_detectors_per_ring;
-  int fan_size;
-  int max_delta;
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_sptr());
-
-  const int half_fan_size = fan_size/2;
-  fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
-
-  shared_ptr<SegmentBySinogram<float> > segment_ptr;      
-  Bin bin;
-
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-  {
-    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
-    
-    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-	 ++bin.axial_pos_num())
-       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size;
-	       bin.tangential_pos_num() <= half_fan_size;
-               ++bin.tangential_pos_num())
-          {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
-            
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-            
-            fan_data(ra, a, rb, b) =
-	      fan_data(rb, b, ra, a) =
-              (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-          }
-  }
-}
 
 /// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
@@ -1124,52 +1085,10 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
 }
 
 
-void set_fan_data(ProjData& proj_data,
-		  const FanProjData& fan_data)
-{
-  int num_rings;
-  int num_detectors_per_ring;
-  int fan_size;
-  int max_delta;
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
-		 *proj_data.get_proj_data_info_sptr());
-
-  const int half_fan_size = fan_size/2;
-  assert(num_rings == fan_data.get_num_rings());
-  assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
-
-  Bin bin;
-  shared_ptr<SegmentBySinogram<float> > segment_ptr;
-
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-  {
-    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
-
-    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-	 ++bin.axial_pos_num())
-       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size;
-	       bin.tangential_pos_num() <= half_fan_size;
-               ++bin.tangential_pos_num())
-          {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
-
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-
-            (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
-              fan_data(ra, a, rb, b);
-          }
-    proj_data.set_segment(*segment_ptr);
-  }
-}
-
 /// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data)
+                  const FanProjData& fan_data, const int gap_value)
 {
     int num_rings;
     int num_detectors_per_ring;
@@ -1225,7 +1144,7 @@ void set_fan_data_add_gaps(ProjData& proj_data,
 
                     proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
 
-                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = 0;
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = gap_value;
 
 
                     int a_in_block = a%num_transaxial_crystals_per_block;
