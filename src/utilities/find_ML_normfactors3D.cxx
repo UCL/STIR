@@ -117,17 +117,17 @@ int main(int argc, char **argv)
     const int virtual_transaxial_crystals =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_virtual_transaxial_crystals_per_block();
-    const int num_rings =
+    const int num_physical_rings =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_rings() -(num_axial_blocks-1)*virtual_axial_crystals;
-    const int num_detectors_per_ring =
+    const int num_physical_detectors_per_ring =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
 
-    const int num_transaxial_crystals_per_block =
+    const int num_physical_transaxial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-    const int num_axial_crystals_per_block =
+    const int num_physical_axial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
 
@@ -138,11 +138,11 @@ int main(int argc, char **argv)
 
     FanProjData model_fan_data;
     FanProjData fan_data;
-    Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
-    DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+    Array<2,float> data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
+    DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
-    GeoData3D measured_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
+    GeoData3D measured_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+    GeoData3D norm_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
 
     BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
     BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
@@ -170,7 +170,6 @@ int main(int argc, char **argv)
             }
         }
     }
-
 
            threshold_for_KL = measured_fan_data.find_max()/100000.F;
             //display(measured_fan_data, "measured data");
@@ -336,22 +335,22 @@ int main(int argc, char **argv)
                     display(norm_block_data, "raw block norm");
                     display(fan_data, "block norm");
                 }
-            } // end block
+           } // end block
   
 
  //// print KL for fansums
-         if (do_KL)
-       {
-    Array<2,float> fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
-    GeoData3D geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
+            if (do_KL)
+            {
+                Array<2,float> fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
+                GeoData3D geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+                BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
    
-            make_fan_sum_data(fan_sums, fan_data);
-            make_geo_data(geo_data, fan_data);
-            make_block_data(block_data, measured_fan_data);
+                make_fan_sum_data(fan_sums, fan_data);
+                make_geo_data(geo_data, fan_data);
+                make_block_data(block_data, measured_fan_data);
             
-std::cerr << "KL on fans: " << KL(measured_fan_data, fan_data,0) << ", " << KL(measured_geo_data,geo_data,0) << std::endl;
-}
+                std::cerr << "KL on fans: " << KL(measured_fan_data, fan_data,0) << ", " << KL(measured_geo_data,geo_data,0) << std::endl;
+            }
         }
     }
     timer.stop();

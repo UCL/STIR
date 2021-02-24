@@ -87,25 +87,25 @@ int main(int argc, char **argv)
     const int virtual_transaxial_crystals =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_virtual_transaxial_crystals_per_block();
-    const int num_rings =
+    const int num_physical_rings =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_rings() -(num_axial_blocks-1)*virtual_axial_crystals;
-    const int num_detectors_per_ring =
+    const int num_physical_detectors_per_ring =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
 
-    const int num_transaxial_crystals_per_block =
+    const int num_physical_transaxial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-    const int num_axial_crystals_per_block =
+    const int num_physical_axial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
 
-  GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring);
+  GeoData3D norm_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring);
 
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks,
                               num_axial_blocks-1, num_transaxial_blocks-1);
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+  DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
     {
 
