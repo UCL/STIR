@@ -34,6 +34,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/info.h"
+#include "stir/recon_array_functions.h"
 #ifdef parallelproj_built_with_CUDA
 #include "parallelproj_cuda.h"
 #else
@@ -48,7 +49,7 @@ ForwardProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj() :
-    _cuda_device(0), _cuda_verbosity(true), _use_truncation(false)
+    _cuda_device(0), _cuda_verbosity(true), _use_truncation(true)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -131,9 +132,18 @@ set_input(const DiscretisedDensity<3,float> & density)
 {
     ForwardProjectorByBin::set_input(density);
 
+    // Before forward projection, we enforce a truncation outside of the FOV.
+    // This is because the parallelproj projector seems to have some trouble at the edges and this
+    // could cause some voxel values to spiral out of control.
+    //if (_use_truncation)
+      {
+        const float radius = this->_proj_data_info_sptr->get_scanner_sptr()->get_inner_ring_radius();
+        const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;
+        truncate_rim(*_density_sptr, static_cast<int>(std::max((image_radius-radius) / _helper->voxsize[2],0.F)));
+      }
 
     std::vector<float> image_vec(density.size_all());
-    std::copy(density.begin_all(), density.end_all(), image_vec.begin());
+    std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
 
 #if 0
     // needed to set output to zero as parallelproj accumulates but is no longer the case

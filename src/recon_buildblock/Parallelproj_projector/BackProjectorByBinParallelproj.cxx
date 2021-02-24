@@ -37,6 +37,7 @@
 #include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/LORCoordinates.h"
+#include "stir/recon_array_functions.h"
 #ifdef parallelproj_built_with_CUDA
 #include "parallelproj_cuda.h"
 #else
@@ -163,6 +164,15 @@ get_output(DiscretisedDensity<3,float> &density) const
     // --------------------------------------------------------------- //
     std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
 
+    // After the back projection, we enforce a truncation outside of the FOV.
+    // This is because the parallelproj projector seems to have some trouble at the edges and this
+    // could cause some voxel values to spiral out of control.
+    //if (_use_truncation)
+      {
+        const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
+        const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;
+        truncate_rim(density, static_cast<int>(std::max((image_radius-radius) / _helper->voxsize[2],0.F)));
+      }
 }
 
 void
