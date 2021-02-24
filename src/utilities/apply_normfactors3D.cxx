@@ -164,7 +164,6 @@ int main(int argc, char **argv)
       {
         FanProjData fan_data;
 
-    //make_fan_data(fan_data, *measured_data);
 	make_fan_data_remove_gaps(fan_data, *measured_data);
 
 
@@ -177,7 +176,7 @@ int main(int argc, char **argv)
 
 	if (do_display)
 	  display(fan_data, "input*norm");
-	//set_fan_data(*out_proj_data_ptr, fan_data);apply
+
     set_fan_data_add_gaps(*out_proj_data_ptr, fan_data);
 
           
