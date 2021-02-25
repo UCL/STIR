@@ -177,6 +177,42 @@ public:
   /*! \warning leaves parameters ill-defined. Set them by parsing. */
   LmToProjData();
 
+  /*! \name Functions to get/set parameters
+    This can be used as alternative to the parsing mechanism.
+   \warning Be careful with setting shared pointers. If you modify the objects in
+   one place, all objects that use the shared pointer will be affected.
+  */
+  //@{
+  void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
+  shared_ptr<ProjDataInfo> get_template_proj_data_info_sptr();
+
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const shared_ptr<ExamData>&);
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const std::string& filename);
+#if 0
+  //! get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual ListModeData& get_input_data() const;
+#endif
+
+  void set_output_filename_prefix(const std::string&);
+  std::string get_output_filename_prefix() const;
+
+  void set_store_prompts(bool);
+  bool get_store_prompts() const;
+  void set_store_delayeds(bool);
+  bool get_store_delayeds() const;
+  void set_num_segments_in_memory(int);
+  int get_num_segments_in_memory() const;
+  void set_num_events_to_store(long int);
+  long int get_num_events_to_store() const;
+  void set_time_frame_definitions(const TimeFrameDefinitions&);
+  const TimeFrameDefinitions& get_time_frame_definitions() const;
+  //@}
+
   //! Perform various checks
   /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
   virtual Succeeded set_up();
@@ -185,7 +221,6 @@ public:
   virtual void process_data();
 
 protected:
-
   
   //! will be called when a new time frame starts
   /*! The frame numbers start from 1. */
