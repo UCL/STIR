@@ -233,7 +233,7 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
 
 void set_fan_data_add_gaps(ProjData& proj_data,
                   const FanProjData& fan_data,
-                  const int gap_value=0);
+                  const float gap_value=0.F);
 
 void apply_block_norm(FanProjData& fan_data,
                       const BlockData3D& block_data,
