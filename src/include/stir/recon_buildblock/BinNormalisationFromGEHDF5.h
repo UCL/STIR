@@ -32,6 +32,7 @@
 #define __stir_recon_buildblock_BinNormalisationFromGEHDF5_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -79,7 +80,7 @@ namespace RDF_HDF5 {
  
 */
 class BinNormalisationFromGEHDF5 :
-   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation>
+   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
@@ -96,8 +97,8 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -115,9 +116,9 @@ private:
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
   int num_blocks_per_singles_unit;
@@ -133,9 +134,9 @@ private:
   float get_geometric_efficiency_factors  (const DetectionPositionPair<>& detection_position_pair) const;
   float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   string normalisation_GEHDF5_filename;
   shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;

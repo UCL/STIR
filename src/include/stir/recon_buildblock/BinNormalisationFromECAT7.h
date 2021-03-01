@@ -29,6 +29,7 @@
 #define __stir_recon_buildblock_BinNormalisationFromECAT7_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -77,7 +78,7 @@ START_NAMESPACE_ECAT7
  
 */
 class BinNormalisationFromECAT7 :
-   public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation>
+   public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
@@ -94,8 +95,8 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT7(const std::string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
+  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -131,9 +132,9 @@ private:
 				  const double start_time, const double end_time) const;
 
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   std::string normalisation_ECAT7_filename;
 };

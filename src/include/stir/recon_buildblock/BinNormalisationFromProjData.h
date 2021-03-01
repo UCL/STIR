@@ -77,36 +77,36 @@ public:
   /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it uses ProjData::get_viewgram()
       and loops over all viewgrams.
   */
-  virtual bool is_trivial() const;
+  virtual bool is_trivial() const override;
 
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors 
       with the ProjDataInfo supplied. */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const override;
     //! Get a shared_ptr to the normalisation proj_data.
   virtual shared_ptr<ProjData> get_norm_proj_data_sptr() const;
  
 private:
   shared_ptr<ProjData> norm_proj_data_ptr;
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   std::string normalisation_projdata_filename;
 };

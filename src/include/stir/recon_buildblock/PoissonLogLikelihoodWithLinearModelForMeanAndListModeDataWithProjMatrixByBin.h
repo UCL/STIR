@@ -82,7 +82,13 @@ public:
   virtual TargetT * construct_target_ptr() const;  
 
   int set_num_subsets(const int new_num_subsets);
-
+  
+  const shared_ptr<BinNormalisation> & 
+  get_normalisation_sptr() const
+  { return this->normalisation_sptr; }
+  
+  virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
+  
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,

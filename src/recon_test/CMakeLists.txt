@@ -26,7 +26,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
         test_FBP2D
         test_FBP3DRP
-        test_OSMAPOSL
+        test_priors
 )
 
 
@@ -35,6 +35,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         bcktest
         recontest
         test_data_processor_projectors
+        test_OSMAPOSL
 )
 
 include(stir_test_exe_targets)
@@ -50,4 +51,11 @@ endif()
 # test_data_processor_projectors requires input argument
 ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_SOURCE_DIR}/recon_test_pack/Utahscat600k_ca_seg4.hs)
 
-# TODO test_modelling.sh
+
+# test_OSMAPOSL can take input argument
+ADD_TEST(test_OSMAPOSL_ray_tracing_matrix  test_OSMAPOSL)
+
+if (parallelproj_FOUND)
+  ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
+endif()
+

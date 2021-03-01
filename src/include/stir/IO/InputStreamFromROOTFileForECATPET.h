@@ -4,9 +4,10 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForECATPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -90,6 +91,7 @@ public:
     //! Default constructor
     InputStreamFromROOTFileForECATPET();
 
+#if 0 // not used, so commented out
     InputStreamFromROOTFileForECATPET(std::string filename,
                                       std::string chain_name,
                                       int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
@@ -97,6 +99,7 @@ public:
                                       bool exclude_scattered, bool exclude_randoms,
                                       float low_energy_window, float up_energy_window,
                                       int offset_dets);
+#endif
 
     virtual ~InputStreamFromROOTFileForECATPET() {}
 
@@ -116,18 +119,11 @@ public:
     inline virtual int get_num_axial_blocks_per_bucket_v() const;
     //! Get the number of transaxial blocks
     inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
-    //! Get the axial number of crystals per blocks
-    inline virtual int get_num_axial_crystals_per_block_v() const;
-    //! Get the transaxial number of crystals per block
-    inline virtual int get_num_transaxial_crystals_per_block_v() const;
     //! Get the number of crystals per block
     inline virtual int get_num_axial_crystals_per_singles_unit() const;
     //! Get the number of crystals per block
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
-    inline void set_crystal_repeater_x(int);
-    inline void set_crystal_repeater_y(int);
-    inline void set_crystal_repeater_z(int);
     inline void set_block_repeater_y(int);
     inline void set_block_repeater_z(int);
 
@@ -138,12 +134,20 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
+    //! \name TBranches for ECAT PET
+    //@{
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_blockID1 = nullptr;
+    TBranch *br_blockID2 = nullptr;
+    //@}
+
+    //! \name ROOT Variables, i.e. to hold data from each entry.
+    //@{
     std::int32_t blockID1, blockID2;
     std::int32_t crystalID1, crystalID2;
+    //@}
 
-    int crystal_repeater_x;
-    int crystal_repeater_y;
-    int crystal_repeater_z;
     int block_repeater_y;
     int block_repeater_z;
 

@@ -60,7 +60,7 @@ operator=(const DynamicDiscretisedDensity& argument)
     this->_densities[i].reset(argument._densities[i]->clone());
 
   this->_scanner_sptr = argument._scanner_sptr;
-  this->_calibration_factor = argument._calibration_factor;
+//  this->exam_info_sptr->set_calibration_factor(argument.get_calibration_factor());
   this->_isotope_halflife = argument._isotope_halflife;
   this->_is_decay_corrected = argument._is_decay_corrected;
   return *this;
@@ -127,10 +127,10 @@ get_scanner_default_bin_size() const
   return this->_scanner_sptr->get_default_bin_size();
 }
 
-const float  
+ float  
 DynamicDiscretisedDensity::
 get_calibration_factor() const
-{ return this->_calibration_factor; }
+{ return this->exam_info_sptr->get_calibration_factor(); }
 
 const TimeFrameDefinitions & 
 DynamicDiscretisedDensity::
@@ -195,13 +195,17 @@ write_to_ecat7(const string& filename) const
 {
   for (  unsigned int frame_num = 1 ; frame_num<=get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
     {
-      *(_densities[frame_num-1])*=_calibration_factor;
+      *(_densities[frame_num-1])*=exam_info_sptr->get_calibration_factor();
     }
 }
 
 void  DynamicDiscretisedDensity::
 set_calibration_factor(const float calibration_factor) 
-{ _calibration_factor=calibration_factor; }
+{ 
+    auto new_exam_info_sptr = std::make_shared<ExamInfo>(this->get_exam_info());
+      new_exam_info_sptr->set_calibration_factor(calibration_factor); 
+      this->set_exam_info(*new_exam_info_sptr);
+}
 
 void  DynamicDiscretisedDensity::
 set_if_decay_corrected(const bool is_decay_corrected) 

@@ -1,5 +1,8 @@
 #! /bin/bash
 # (very complicated) script to estimate scatter for PET
+# Note: this script is obsolete since STIR 4.1. Its functionality is
+# now incorporated in the estimate_scatter utility.
+#
 # Authors: Kris Thielemans and Nikolaos Dikaios
 #
 # This file is part of STIR.
@@ -19,6 +22,12 @@
 # Copyright 2005-2009, Hammersmith Imanet Ltd
 # Copyright 2014, University College London
 
+echo "========================================================================" >& 2
+echo "WARNING: this script is obsolete since STIR 4.1. Its functionality is" >& 2
+echo "incorporated in the estimate_scatter utility." >& 2
+echo "This script will be removed in a future version." >&2
+echo "========================================================================" >& 2
+#
 # Script for including single scatter correction to the final emission image
 
 #estimate_single_scatter:

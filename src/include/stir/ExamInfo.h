@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, 2018, 202 University College London
+    Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -57,18 +57,23 @@ public :
 
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
-    low_energy_thres(-1),
-    up_energy_thres(-1)
+
+    calibration_factor(-1.F),
+    low_energy_thres(-1.F),
+    up_energy_thres(-1.F)
+
     {
   }
 
   std::string originating_system;
-  
+    
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+//  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
   { return time_frame_definitions; }
@@ -83,6 +88,10 @@ public :
   inline float get_low_energy_thres() const;
   //! Get the high energy boundary
   inline float get_high_energy_thres() const;
+  //! Get the calibration factor
+  inline  float get_calibration_factor() const;
+  //! Get the radionuclide name
+  inline std::string get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -91,6 +100,13 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+
+  //! Set the Calibration factor
+  inline void set_calibration_factor(const float cal_val);
+  //! Set the radionuclide
+  inline void set_radionuclide(const std::string& name);
+  //! Copy energy information from another ExamInfo
+  inline void set_energy_information_from(const ExamInfo&);
   //@}
 
   inline bool has_energy_information() const
@@ -108,6 +124,8 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  bool operator == (const ExamInfo &p1) const ;
+  
   //! Clone and create shared_ptr of the copy
   shared_ptr<ExamInfo> create_shared_clone()
   {
@@ -118,6 +136,9 @@ public :
   /*! the returned string is not intended for parsing. */
   std::string parameter_info() const;
 
+protected:
+  
+  float calibration_factor;
   private:
      //!
   //! \brief low_energy_thres
@@ -127,6 +148,8 @@ public :
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
+  
+  std::string radionuclide;
 
   //!
   //! \brief up_energy_thres

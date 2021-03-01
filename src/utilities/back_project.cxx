@@ -103,6 +103,11 @@ main (int argc, char * argv[])
       shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
       back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
     }
+  if (!back_projector_sptr)
+    {
+      std::cerr << "Failure parsing\n";
+      return EXIT_FAILURE;
+    }
 
   image_density_sptr->fill(0.F);
   back_projector_sptr->set_up(proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),

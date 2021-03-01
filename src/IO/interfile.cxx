@@ -594,6 +594,14 @@ write_basic_interfile_image_header(const string& header_file_name,
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
+  
+  if (exam_info.get_calibration_factor()>0.F)
+  output_header << "calibration factor := "  
+                <<exam_info.get_calibration_factor() << endl;
+  
+  if (!exam_info.get_radionuclide().empty())
+  output_header << "isotope name := "  
+                <<exam_info.get_radionuclide()  << endl;
 
   if (is_spect)
     {
@@ -1277,7 +1285,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       else
         {
           output_header << "orbit := Non-circular\n";
-          output_header << "Radius := " << ring_radii << '\n';
+          output_header << "Radii := " << ring_radii << '\n';
         }
 
       output_header << "!matrix size [1] := "

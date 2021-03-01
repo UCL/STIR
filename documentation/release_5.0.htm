@@ -14,12 +14,17 @@ detailed below.
 <h2>Overall summary</h2>
 <p>
 <ul>
-  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</li>
+  <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
-    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL)
-  </li>
+    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL).</li>
+  <li>Calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
+	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
+	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
 
-</ul>  
+  <li>KOSMAPOSL (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. Code contributed by Daniel Deidda (NPL), Kris Thielemans (UCL) and Ashley Gillman (CSIRO)</li>
+  <li>It is now possibly to call the <a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a>
+    projectors (using either OpenMP or CUDA).</li>
+</ul>
 </p>
 
 
@@ -27,7 +32,7 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys) and Robert Twyman (UCL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys), Robert Twyman (UCL) and Daniel Deidda (NPL).
 </p>
 
     <h2>Patch release info</h2>
@@ -57,6 +62,12 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
+  <li><a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a> is an
+    implementation of the Joseph algorithm for projection. If it has been installed
+    in your system, and you tell CMake where to find it (`parallelproj_DIR=/wherever/lib/cmake`), the STIR user is
+    now able to select an additional projector, called <code>Parallelproj</code>. This will use the CUDA
+    version if available, otherwise will fall-back to the OpenMP version. Check the new sample files in
+    <tt>examples/samples</tt> and the section in the User's Guide.</li>
   <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well. See<br />
     Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
     <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
@@ -65,6 +76,15 @@ improvements to the documentation.
 </li>
   <li>
       Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+  </li>
+  <li>
+    <tt>ROOT</tt> files produced by <tt>GATE</tt> can now be interpreted using ``virtual crystals", i.e. by inserting
+    ``dummy" crystals before converting to cylindrical geometry (as is done on many Siemens scanners). <code>LmToProjData</code>
+    and list mode reconstructions will then put the LORs more accurately (at least when the ``virtual crystals"
+    roughly correspond to gaps between blocks). See the update <tt>.hroot</tt> file in <tt>examples/samples</tt>.<br />
+    <strong>Warning</strong>: if you use the <tt>originating system</tt> to specify the scanner, this will be automatically enabled.
+    (If you do not want this, set it to <tt>User_defined_scanner</tt> and specify all values).<br />
+    <a href="https://github.com/UCL/STIR/pull/617/">PR #617</a>
   </li>
 </li>
 <li>Moved most code from the <tt>ctac_to_mu_values.cxx</tt> utility to a new
@@ -86,6 +106,14 @@ improvements to the documentation.
 <li><tt>list_image_info</tt> now works for dynamic images, with a new <tt>--per-volume</tt> option to list min/max/sum for every volume.
 </li>
 <li><tt>SSRB</tt> now has the option of taking a template sinogram.
+</li> 
+ <li><tt>KOSMAPOSL</tt> (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. This can be set in the parameter file through the keyword "freeze_iterative_kernel_at_subiter_num"
+</li>     
+<li><code>BinNormalisationWithCalibration</code> is a new class derived from <code>BinNormalisation</code>. This class allows to apply calibration factor from the scanner and save the information into the interfile header. To use this, a specific BinNormalisation class should be derived from BinNormalisationWithCalibration, the information about the calibration factor read, and the function get_uncalibrated_bin_efficiencies() needs to be overwritten. Note that also the isotope name and branching ratio can be set here (the latter will need to be set according to the isotope by reading into a radionuclide database). BinNormalisationSPECT already reads Calibration factor and isotope name and apply the calibration factor read from interfile. Since not all SPECT scanner do quantitative reconstruction an option of setting the calibration factor from the parameter file is added. Factors for BinNormalisationECA8/ECAT7 and GEHDF5 are set to one at the moment as we need to double check on the meaning of cross calibration factor for ECAT and find out hoe to read them for GEHDF5. Documentation for this is pending and will be added in the following PR.
+</li>
+ <li>Logcosh Prior.</li>
+<li>
+	SAFIR input file format now supports a Gaussian LOR randomization, which is applied on the endpoints of each LOR when sorting the listmode events into virtual scanner projection data.
 </li>
 </ul>
 
@@ -101,6 +129,9 @@ improvements to the documentation.
   </li>
   <li> <code>find_ML_normfactors3D</code> and <code>apply_ML_normfactors3D</code> can be used for scanner with virtual crystal(Only verified on mCT).
   </li>
+  <li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
+	<li><tt>ROOT</tt> file I/O improvements no longer gets entire entry's tree and instead loads individual branches as needed.
+    ROOT file reading is now up to 4x faster. In addition, there is now an option <tt>check energy window information</tt> (defaulting to on).</li>
 </ul>
 
 
@@ -181,6 +212,11 @@ from the above):</H2>
     </li>
     <li><code>ProjData*::copy_to</code> and <code>fill_from</code> now return the updated iterator (as opposed to the size). This is like <code>std::copy</code>, and more convenient for reusing it.
     </li>
+    <li><code>ModelMatrix::set_if_uncalibrated</code> and <code>ModelMatrix::get_if_uncalibrated</code> renamed to <code>ModelMatrix::set_is_uncalibrated</code> and <code>ModelMatrix::get_is_uncalibrated</code></li>
+    <li><code>PlasmaData::set_if_decay_corrected</code> and <code>PlasmaData::get_if_decay_corrected</code> renamed to <code>PlasmaData::set_is_decay_corrected</code> and <code>PlasmaData::get_is_decay_corrected</code></li>
+    <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
+    <li><code>BinNormalisation::set_up()</code> now need exam_info_sptr as input.</li>
+    <li><code>BinNormalisation::apply()</code> now does not need start_time and end_time as they are taken from exam_info. The same will be done with <code>undo()</code></li>
 </ul>
 
 <h3>New functionality</h3>
@@ -199,6 +235,11 @@ as used by <code>copy_to</code> and <code>fill_from</code>
   To do this, we now need a <code>typedef</code> <code>hierarchy_base_type</code> at the top level, as otherwise
   we would need multiple registries. However, this was already required by <code>write_to_file</code> anyway.
 </li>
+<li>
+  Generalised prior and Quadratic prior have a new method <code>accumulate_Hessian_times_input(output, current_estimate, input)</code>. This computes the hessian of the prior at the <code>current_image_estimate</code> and multiplies this by <code>input</code>.
+  Before this, the <code>add_multiplication_with_approximate_Hessian(output, input)</code> method was used that assumed a quadratic function and therefore <code>hessian = 1</code>.
+</li>
+<li><code>Exam_info</code>, <code>TimeFrameDefinition</code> and <code>PatientPosition </code> have now a <code>==</code> operator</li>
 </ul>
 
 

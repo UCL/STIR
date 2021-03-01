@@ -76,7 +76,7 @@ MinimalInterfileHeader::MinimalInterfileHeader()
   add_key("imaging modality",
     KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
-
+  
   add_key("version of keys",
           KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
           &version_of_keys);
@@ -167,6 +167,7 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  calibration_factor=-1;
 
 
 
@@ -175,6 +176,9 @@ InterfileHeader::InterfileHeader()
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+  
+  add_key("calibration factor", &calibration_factor); 
+  add_key("isotope name", &isotope_name); 
   add_key("study date", &study_date_time.date);
   add_key("study_time", &study_date_time.time);
   add_key("type of data", 
@@ -265,7 +269,14 @@ bool InterfileHeader::post_processing()
       catch(...)
         {}
     }
-
+  
+//  if(this->calibration_factor>0)
+      this->exam_info_sptr->set_calibration_factor(calibration_factor);
+  
+  if (!isotope_name.empty()){
+      this->exam_info_sptr->set_radionuclide(isotope_name);
+  }
+  
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
   // warning: relies on index taking same values as enums in PatientPosition
@@ -498,7 +509,7 @@ bool InterfileImageHeader::post_processing()
 
   if (InterfileHeader::post_processing() == true)
     return true;
-
+  
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }
   
