@@ -1088,7 +1088,7 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
 /// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data, const float gap_value)
+                  const FanProjData& fan_data, const int gap_value)
 {
     int num_rings;
     int num_detectors_per_ring;
