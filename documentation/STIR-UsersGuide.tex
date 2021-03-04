@@ -1862,6 +1862,9 @@ only_2D:=1
 ; the following is the output prefix of the PET reconstructed image
 kernelised output filename prefix :=KOSMAPOSL
 
+;the following is only set if you want to freeze the kernel matrix after a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
+
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
@@ -2951,6 +2954,21 @@ choose one file from the directory), the JSON file containing the conversion slo
 
 The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
 a kVp of 120 is assumed. 
+
+{ \subsubsubsection{compute\_sqrt\_Hessian\_row\_sum} \label{sec:Utilities:HessianRowSum}
+}
+This executable can be used to generate the square root of the Hessian row sum of an objective function, the output of
+which may be used as a spatially variant penalty strength $\kappa$ (or \textit{kappa image}) within iterative
+reconstruction algorithms, see \ref{sec:priors:Quadratic}.
+
+This utility computes the row-sum of the Hessian of the objective function at a given image (by multiplying it with a vector of ones). The square root of the image is saved to file. Along with a method
+to compute the Hessian row sum, we include an optional method to approximate Hessian row sum that is less computational
+and does not require an estimate image for the the Hessian computation (but does require one for an output image
+template).
+
+Basic Usage:
+\cmdline{compute\_sqrt\_Hessian\_row\_sum compute\_sqrt\_Hessian\_row\_sum.par}
+An example parameter file is included in the samples folder.
 
 \subsubsection{
 Converting data}
@@ -4175,6 +4193,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If $\kappa$ is not set, this class will effectively
   use 1 for all $\kappa$'s.
+  The utility \textit{compute\_sqrt\_Hessian\_row\_sum} \ref{sec:Utilities:HessianRowSum} may be used to generate such images.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel\_size divided by the Euclidean distance between the points.
@@ -4378,6 +4397,28 @@ Projector Pair Using NiftyPET Parameters:=
 End Projector Pair Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+\label{sec:projectorpairusingparallelproj}
+}
+This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
+\URL{https://github.com/gschramm/parallelproj}. This project provides implementations
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
+any \em{Python}).
+
+This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
+
+At present, STIR will use the GPU-accelerated functionality of \texttt{parallelproj} was
+built with \em{CUDA} support, otherwise it falls back to the \em{OpenMP} versions.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Parallelproj Parameters:=
+  verbosity := 1
+End Projector Pair Using Parallelproj Parameters:=
+\end{verbatim}
+
 { \subsubsubsection{Separate Projectors }
 }
 Forward and back projectors are completely independent of each 
@@ -4440,7 +4481,7 @@ Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up
 errors and possibly the voxels at the edge of the FOV).
 
 
-See also online documentation for class ForwardProjectorUsingRayTracing.
+See also online documentation for class \texttt{ForwardProjectorUsingRayTracing}.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -4482,11 +4523,24 @@ Forward Projector Using NiftyPET Parameters:=
 End Forward Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This forward projector wraps the \texttt{parallelproj} forward projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Forward Projector Using Parallelproj Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
 It is possible to select the type of back projector. The mechanism 
-is exactly the same as for the ForwardProjector hierarchy.
+is exactly the same as for the \texttt{ForwardProjector} hierarchy.
 
 { \subsubsubsection{Matrix}
 }
@@ -4574,6 +4628,18 @@ Back Projector Using NiftyPET Parameters:=
 End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This back projector wraps the \texttt{parallelproj} back projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Back Projector Using Parallelproj Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a projection matrix}

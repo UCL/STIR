@@ -38,7 +38,7 @@ BinNormalisationWithCalibration::set_defaults()
   base_type::set_defaults();
   
   this->calibration_factor = 1;
- /* this->branching_ratio=1;*/
+  this->branching_ratio=1;
 }
 
 void 

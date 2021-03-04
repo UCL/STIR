@@ -55,7 +55,7 @@ bool
 ChainedBinNormalisation::
 post_processing()
 {
-    if ((apply_first->get_calibration_factor()>0.F) && (apply_first->get_calibration_factor()>0.F))
+    if ((apply_first->get_calibration_factor()>0.F) && (apply_second->get_calibration_factor()>0.F))
     error("ChainedBinNormalisation: both first and second have a calibration factor. The factor would be applied twice");
   return false;
 }
@@ -99,7 +99,7 @@ ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams,const double s
   if (!is_null_ptr(apply_second))
     apply_second->apply(viewgrams,start_time,end_time);
 }
-
+#if 0
 void
 ChainedBinNormalisation::apply(ProjData& proj_data) const
 {
@@ -108,7 +108,7 @@ ChainedBinNormalisation::apply(ProjData& proj_data) const
   if (!is_null_ptr(apply_second))
     apply_second->apply(proj_data);
 }
-
+#endif
 void
 ChainedBinNormalisation::apply_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const
 {
@@ -147,6 +147,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
     apply_second->undo(viewgrams,start_time,end_time);
 }
 
+#if 0
 void
 ChainedBinNormalisation::
 undo(ProjData& proj_data,const double start_time, const double end_time) const
@@ -156,6 +157,7 @@ undo(ProjData& proj_data,const double start_time, const double end_time) const
   if (!is_null_ptr(apply_second))
     apply_second->undo(proj_data,start_time,end_time);
 }
+#endif
 
 void
 ChainedBinNormalisation::

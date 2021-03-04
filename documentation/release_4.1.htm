@@ -65,6 +65,10 @@
     but allows us to subtract time-fields.</li>
   <li>Added a utility <tt>list_lm_info</tt>.</li>
   <li>Implementation of <tt>a*x+b*y</tt> methods <code>xapyb</code> and <code>sapyb</code> where <tt>a</tt> and <tt>b</tt> can be scalar or vector types.</li>
+  <li>The <code>LmToProjData</code> hierarchy has a new member function <code>set_up()</code>, and more <code>set_*</code>
+    functions, such that it can be used without parsing. Note that it will be automatically called when parsing
+    (which might change in the future).
+    </li>
 </ul>
 
 
@@ -109,7 +113,11 @@ none
 <h3>Known problems</h3>
 <p>See the Github issues for more information.</p>
 <ul>
-<li>SPECT related
+ <li>currently images reconstructed using the GE RDF9 functionality will be reconstructed flipped
+   and slightly rotated, causing problems with attenuation alignment for instance.
+  <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
+ </li>
+  <li>SPECT related
  <ul>
  <li> Do NOT use current PET projectors on SPECT Data. You will have to choose the "SPECT UB" projector 
     in all cases (see the sample .par files).</li>
@@ -196,6 +204,7 @@ from the above):</H2>
 
 <h3>New functionality</h3>
 <ul>
+  <li>Addition of the <code>randoms_from_singles</code> function.</li>
   <li>Addition of <code>xapyb</code> and <code>sapyb</code> methods for <code>Array</code> and all inherited classes.
       (code>axpby</code> was introduced on the release_4 branch after STIR 4.0 but is now deprecated).</li>
   <li><code>ProjDataInMemory</code> now provides iterators.</li>

@@ -4,9 +4,10 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForECATPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -133,8 +134,19 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
+    //! \name TBranches for ECAT PET
+    //@{
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_blockID1 = nullptr;
+    TBranch *br_blockID2 = nullptr;
+    //@}
+
+    //! \name ROOT Variables, i.e. to hold data from each entry.
+    //@{
     std::int32_t blockID1, blockID2;
     std::int32_t crystalID1, crystalID2;
+    //@}
 
     int block_repeater_y;
     int block_repeater_z;
