@@ -56,7 +56,7 @@ construct_default_proj_data_info_uptr() const
   // construct a small scanner and sinogram
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
   // currently need this for limitation in the backprojector
-  scanner_sptr->set_default_intrinsic_tilt(0.F);
+  scanner_sptr->set_intrinsic_azimuthal_tilt(0.F);
   scanner_sptr->set_num_rings(5);
   std::unique_ptr<ProjDataInfo> proj_data_info_uptr(
         ProjDataInfo::ProjDataInfoCTI(scanner_sptr,

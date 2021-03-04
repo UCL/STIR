@@ -97,7 +97,7 @@ Scanner::get_default_bin_size() const
 { return bin_size;}
 
 float
-Scanner::get_default_intrinsic_tilt() const
+Scanner::get_intrinsic_azimuthal_tilt() const
 {
   return intrinsic_tilt;}
 
@@ -285,7 +285,7 @@ void Scanner::set_default_bin_size(const float  & new_size)
   bin_size = new_size;
 }
 
-void Scanner::set_default_intrinsic_tilt(const float &  new_tilt)
+void Scanner::set_intrinsic_azimuthal_tilt(const float new_tilt)
 {
   intrinsic_tilt = new_tilt;
 }

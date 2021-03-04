@@ -123,8 +123,10 @@ improvements to the documentation.
 <h3>Changed functionality</h3>
 <ul>
 <li>
-View Offset Support enabled for the scanners with intrinsic tilt angle.
+View Offset Support enabled for the scanners with intrinsic azimutal tilt angle.
 <p><strong>WARNING</strong>:For the scanners that have non-zero view-offset, images will now get rotated. Backward compatibility achieved by disabling the CMAKE View Offset option. </p>
+<p>To reflect this change, <code>Scanner::get_default_intrinsic_tilt()</code> has been renamed to <code>get_intrinsic_azimuthal_tilt()</code>.</p>
+</li>
 <li>
 <li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
 </li>

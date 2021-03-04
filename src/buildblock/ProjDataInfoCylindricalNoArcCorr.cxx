@@ -162,7 +162,7 @@ float
 ProjDataInfoCylindricalNoArcCorr::
 get_psi_offset() const
 {
-  return this->get_scanner_ptr()->get_default_intrinsic_tilt();
+  return this->get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
 }
 
 /*!
@@ -195,7 +195,7 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
 #ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
-  const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
+  const float intrinsic_tilt = get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
   assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
   assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - intrinsic_tilt - _PI) < 1.E-4);
 #endif
@@ -253,7 +253,7 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
 #ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
-  const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
+  const float intrinsic_tilt = get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
   assert(fabs(get_phi(Bin(0,0,0,0)) - intrinsic_tilt) < 1.E-4);
   assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) -intrinsic_tilt - _PI) < 1.E-4);
 #endif
@@ -602,7 +602,7 @@ get_bin(const LOR<float>& lor) const
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
   //PW Accurate bin view number = phi - intrinsic_tilt.
-  bin.view_num() = round(to_0_2pi(lor_coords.phi() - scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
+  bin.view_num() = round(to_0_2pi(lor_coords.phi() - scanner_ptr->get_intrinsic_azimuthal_tilt()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   assert(bin.view_num()<=get_num_views());
   const bool swap_direction =

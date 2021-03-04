@@ -335,7 +335,7 @@ set_up(
 	vox.thcm = vol.thcm;
 	
 	//... projecction parameters ..........................................
-	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
+	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180/_PI);
 	prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180/_PI);
 	prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0)/10;
 	

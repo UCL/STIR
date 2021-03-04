@@ -719,10 +719,10 @@ void make_ECAT7_main_header(Main_header& mhead,
     scanner.get_inner_ring_radius()*2*
     static_cast<float>(sin(_PI/scanner.get_num_detectors_per_ring()*
 	scanner.get_max_num_non_arccorrected_bins()/2.)/10);
-  mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
+  mhead.intrinsic_tilt = scanner.get_intrinsic_azimuthal_tilt();
   mhead.bin_size = scanner.get_default_bin_size()/10;
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
-  mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
+  mhead.intrinsic_tilt = scanner.get_intrinsic_azimuthal_tilt();
   
   mhead.distance_scanned=
     mhead.plane_separation * scanner.get_num_rings()*2;

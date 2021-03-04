@@ -940,7 +940,7 @@ Scanner::parameter_info() const
     << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
     << "Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
     << "Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
-    << "View offset (degrees)                    := " << get_default_intrinsic_tilt()*180/_PI << '\n';
+    << "View offset (degrees)                    := " << get_intrinsic_azimuthal_tilt()*180/_PI << '\n';
   s << "Maximum number of non-arc-corrected bins := "
     << get_max_num_non_arccorrected_bins() << '\n'
     << "Default number of arc-corrected bins     := "
