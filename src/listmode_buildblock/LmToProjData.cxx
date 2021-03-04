@@ -530,7 +530,7 @@ process_data()
       {
         warning("This list mode data does not seem to have delayed events.\n"
                 "Setting store_delayeds to false.");
-        store_delayeds=true;
+        store_delayeds=false;
       }
   }
   // assume list mode data starts at time 0
