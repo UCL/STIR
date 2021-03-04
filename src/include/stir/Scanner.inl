@@ -99,7 +99,12 @@ Scanner::get_default_bin_size() const
 float
 Scanner::get_intrinsic_azimuthal_tilt() const
 {
-  return intrinsic_tilt;}
+#ifdef STIR_LEGACY_IGNORE_VIEW_OFFSET
+  return 0.F;
+#else
+  return intrinsic_tilt;
+#endif
+}
 
 int 
 Scanner::get_num_transaxial_blocks_per_bucket() const

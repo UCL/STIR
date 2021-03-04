@@ -150,8 +150,9 @@ if(NOT DISABLE_NLOHMANN_JSON)
     endif()
 endif()
 
-# Enable version 3 projectors
+# Legacy options
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+option(STIR_LEGACY_IGNORE_VIEW_OFFSET "Ignore using scanner view-offset (or intrinsic azimuthal tilt), as in STIR 4 or earlier" OFF)
 
 # NiftyPET projector
 if(NOT DISABLE_NiftyPET_PROJECTOR OR NOT DISABLE_Parallelproj_PROJECTOR)
