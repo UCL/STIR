@@ -102,8 +102,17 @@ class Scanner
 
   //! get the scanner pointer from the name
   static Scanner * get_scanner_from_name(const std::string& name);
-  //! get the list of all names for the particular scanner
+  //! get a string listing names for all predefined scanners
+  /* \return a string with one line per predefined scanner, listing the predefined names for
+     that scanner (separated by a comma)
+  */
   static std::string list_all_names();
+  //! get a list with the names for each predefined scanner
+  /* \return a list of strings, each element is a name of a predefined scanner.
+     If a scanner can have multiple names, only one name is returned, i.e.
+     the list has the same length as the number of predefined scanners.
+  */
+  static std::list<std::string> get_names_of_predefined_scanners();
 
   // E931 HAS to be first, Unknown_scanner HAS to be last
   // also, the list HAS to be consecutive (so DO NOT assign numbers here)

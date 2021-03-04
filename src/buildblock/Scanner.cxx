@@ -3,7 +3,7 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2013-2016,2019-2021 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
@@ -1159,19 +1159,33 @@ string Scanner:: list_all_names()
   Type type= E931; 
   while (type != Unknown_scanner)
   {
-    scanner_ptr = new Scanner(type);
-    s << scanner_ptr->list_names() << '\n';
-    
-    delete scanner_ptr;
+    Scanner scanner(type);
     // tricky business to find next type
-    int int_type = type;
-    ++int_type;
-    type = static_cast<Type>(int_type);
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    s << scanner.list_names() << '\n';
   }
   
   return s.str();
 }
 
+std::list<std::string> Scanner::get_names_of_predefined_scanners()
+{
+  std::list<std::string> ret;
+  Type type= E931;
+  auto current = ret.begin();
+  while (type != Unknown_scanner)
+  {
+    Scanner scanner(type);
+    // tricky business to find next type
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    ret.push_back(scanner.get_name());
+  }
+  return ret;
+}
 
 static list<string> 
 string_list(const string& s)
