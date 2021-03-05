@@ -3,6 +3,7 @@
 
 /*!
   \file
+  \ingroup projdata
 
   \brief Declaration of class stir::Radionuclide
   
@@ -11,8 +12,8 @@
   \author Kris Thielemans
 */
 /*
-    Copyright (C) 2020 National Physical Laboratory
-    Copyright (C) 2020 University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,8 +31,6 @@
 #ifndef __stir_Radionuclide_H__
 #define __stir_Radionuclide_H__
 
-
-#include "stir/common.h"
 #include "stir/ImagingModality.h"
 
 
@@ -78,11 +77,6 @@ private :
   
 };
 
-
-
 END_NAMESPACE_STIR
-
-
 #include "stir/Radionuclide.inl"
-
-#endif //__Radionuclide_H__
+#endif //__stir_Radionuclide_H__

@@ -26,6 +26,7 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use this.")
 endif()
 
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -80,9 +81,10 @@ else() #if(CYGWIN)
 #  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
 # TODO append version numbers
-set(STIR_DATA_DIR "share/stir")
+set(STIR_DATA_DIR "share/stir") 
 set(ConfigPackageLocation lib/cmake/)
-
+set(STIR_CONFIG_DIR "" CACHE PATH "") 
+message("${STIR_CONFIG_DIR} defined")
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).

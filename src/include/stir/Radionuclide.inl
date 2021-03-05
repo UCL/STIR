@@ -9,8 +9,8 @@
   \author Kris Thielemans
 */
 /*
-    Copyright (C) 2020 National Physical Laboratory
-    Copyright (C) 2020 University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@
 
     See STIR/LICENSE.txt for details
 */
-
 START_NAMESPACE_STIR
 
 Radionuclide::Radionuclide()
@@ -65,6 +64,5 @@ Radionuclide::operator==(const Radionuclide& r) const{
     return name==r.name && abs(energy-r.energy)<= 10e-5 && abs(branching_ratio-r.branching_ratio)<= 10e-5 &&
            abs(half_life-r.half_life)<= 10e-5 && modality==r.modality;
 }
-
 
 END_NAMESPACE_STIR
