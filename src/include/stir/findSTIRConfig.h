@@ -1,0 +1,4 @@
+#ifndef FINDSTIRCONFIG_H
+#define FINDSTIRCONFIG_H
+
+#endif // FINDSTIRCONFIG_H
