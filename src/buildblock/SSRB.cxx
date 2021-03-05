@@ -94,6 +94,12 @@ SSRB(const ProjDataInfo& in_proj_data_info,
   out_proj_data_info_sptr->
     set_num_tangential_poss(in_proj_data_info.get_num_tangential_poss() -
 			    num_tang_poss_to_trim);
+  if (num_views_to_combine>1)
+    {
+      const float offset = in_proj_data_info_sptr->get_azimuthal_angle_offset() +
+        in_proj_data_info_sptr->get_azimuthal_angle_sampling() * (num_views_to_combine-1)/2.F;
+      out_proj_data_info_sptr->set_azimuthal_angle_offset(offset);
+    }
 
   // Find new maximum segment_num
   // To understand this formula, check how the out_segment_num is related to 

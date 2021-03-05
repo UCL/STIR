@@ -70,7 +70,7 @@ initialise_ring_diff_arrays_if_not_done_yet() const
 //PW Added the view offset from the scanner, code may now support intrinsic tilt.
 float
 ProjDataInfoCylindrical::get_phi(const Bin& bin)const
-{ return bin.view_num()*azimuthal_angle_sampling + get_scanner_ptr()->get_intrinsic_azimuthal_tilt();}
+{ return bin.view_num()*azimuthal_angle_sampling + azimuthal_angle_offset;}
 
 
 float
@@ -121,6 +121,13 @@ get_num_axial_poss_per_ring_inc(const int segment_num) const
   return
     max_ring_diff[segment_num] != min_ring_diff[segment_num] ?
     2 : 1;
+}
+
+
+float
+ProjDataInfoCylindrical::get_azimuthal_angle_offset() const
+{
+  return azimuthal_angle_offset;
 }
 
 float

@@ -163,6 +163,7 @@ ProjDataInfoCylindricalNoArcCorr::
 get_psi_offset() const
 {
   return this->get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
+  //this->get_azimuthal_angle_offset();
 }
 
 /*!
@@ -195,9 +196,9 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
 #ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
-  const float intrinsic_tilt = get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
-  assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - intrinsic_tilt - _PI) < 1.E-4);
+  const float v_offset = get_azimuthal_angle_offset();
+  assert(fabs(get_phi(Bin(0,0,0,0))-v_offset) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - v_offset - _PI) < 1.E-4);
 #endif
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
@@ -253,9 +254,9 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
 #ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
-  const float intrinsic_tilt = get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
-  assert(fabs(get_phi(Bin(0,0,0,0)) - intrinsic_tilt) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) -intrinsic_tilt - _PI) < 1.E-4);
+  const float v_offset = get_azimuthal_angle_offset();
+  assert(fabs(get_phi(Bin(0,0,0,0)) - v_offset) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - v_offset - _PI) < 1.E-4);
 #endif
   //const int min_tang_pos_num = -(num_detectors/2);
   //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
@@ -602,7 +603,7 @@ get_bin(const LOR<float>& lor) const
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
   //PW Accurate bin view number = phi - intrinsic_tilt.
-  bin.view_num() = round(to_0_2pi(lor_coords.phi() - scanner_ptr->get_intrinsic_azimuthal_tilt()) / get_azimuthal_angle_sampling());
+  bin.view_num() = round(to_0_2pi(lor_coords.phi() - get_azimuthal_angle_offset()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   assert(bin.view_num()<=get_num_views());
   const bool swap_direction =
