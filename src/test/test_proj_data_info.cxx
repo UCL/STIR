@@ -16,7 +16,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2021, University College London
     Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 

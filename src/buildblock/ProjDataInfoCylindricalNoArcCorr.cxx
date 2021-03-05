@@ -145,6 +145,13 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
   return s.str();
 }
 
+float
+ProjDataInfoCylindricalNoArcCorr::
+get_psi_offset() const
+{
+  return this->get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
+}
+
 /*
    Warning:
    this code makes use of an implementation dependent feature:
@@ -157,14 +164,6 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
 
    Update: compile time assert is implemented.
 */
-
-float
-ProjDataInfoCylindricalNoArcCorr::
-get_psi_offset() const
-{
-  return this->get_scanner_ptr()->get_intrinsic_azimuthal_tilt();
-  //this->get_azimuthal_angle_offset();
-}
 
 /*!
   Go from sinograms to detectors.
