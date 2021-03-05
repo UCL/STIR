@@ -276,6 +276,10 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 #        INCLUDE(${STIR_DIR}/lib.cmake)
 endforeach(STIR_DIR)
 
+
+install(DIRECTORY config/ DESTINATION ${STIR_DATA_DIR}/config
+                FILES_MATCHING PATTERN "*.json")
+            
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled
 find_package(Doxygen)

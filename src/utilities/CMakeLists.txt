@@ -87,9 +87,6 @@ endif()
 
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
-
-  install(DIRECTORY share/ DESTINATION ${STIR_DATA_DIR}
-		  FILES_MATCHING PATTERN "*.json")
 endif()
 
 include(stir_exe_targets)

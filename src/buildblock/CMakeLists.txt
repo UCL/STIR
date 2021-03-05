@@ -8,6 +8,7 @@ set(${dir_LIB_SOURCES}
   PatientPosition
   ExamInfo
   ExamData
+  findSTIRConfig
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
@@ -38,6 +39,7 @@ set(${dir_LIB_SOURCES}
   NumericType ByteOrder 
   KeyParser  
   recon_array_functions 
+  RadionuclideDBProcessor
   linear_regression overlap_interpolate 
   error warning
   TextWriter
