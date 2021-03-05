@@ -1,0 +1,54 @@
+{  "nuclide": 
+
+ {  "^18^Fluorine":
+
+  {  "modality": 
+    {   :"PET"
+      {  "properties": [
+               {
+                "kev": 511,
+                "BRatio": 0.9686,
+                "half_life": 6584.04,
+                }      ]
+      }
+    }
+  },  
+
+   "^99m^Technetium":
+
+  {  "modality": 
+    {   "NM":
+      {  "properties": [
+               {
+                "kev": 140.511,
+                "BRatio": 0.885,
+                "half_life": 21624.12,
+                }       ]
+      }  
+    }
+  },
+
+   "^90^Yttrium":
+
+  {  "modality": 
+    {   "NM":
+      {  "properties": [
+               {
+                "kev": 150,
+                "BRatio": 0.000000014,
+                "half_life": 230549.76,
+                }       ]
+      }, 
+
+        "PET":
+       {  "properties": [
+               {
+                "kev": 511,
+                "BRatio": 0.000000014,
+                "half_life": 230549.76,
+                }       ]
+       }  
+     }
+   }
+ }
+}
