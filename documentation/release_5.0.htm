@@ -123,9 +123,10 @@ improvements to the documentation.
 <h3>Changed functionality</h3>
 <ul>
 <li>
-View Offset Support enabled for the scanners with intrinsic azimutal tilt angle.
+View Offset Support enabled for the PET scanners with intrinsic azimutal tilt angle.
 <p><strong>WARNING</strong>:For the scanners that have non-zero view-offset, images will now get rotated. Backward compatibility for reconstructed images can be achieved by setting the <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> CMake option to <tt>ON</tt>. (However, copied sinogram data will then always have the offset set to 0, in contrast to earlier versions of STIR).</p>
 <p>To reflect this change, <code>Scanner::get_default_intrinsic_tilt()</code> has been renamed to <code>get_intrinsic_azimuthal_tilt()</code>.</p>
+Note: start angle was already supported for SPECT
 </li>
 <li>
 <li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
