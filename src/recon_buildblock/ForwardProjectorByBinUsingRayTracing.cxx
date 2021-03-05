@@ -123,7 +123,7 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
     {
       error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. Sorry.");
     }
-  if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
+  if (fabs(proj_data_info_sptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
     {
       error("The on-the-fly Ray tracing forward projector cannot handle data with non-zero view offset. Use another projector. Sorry.");
     }
