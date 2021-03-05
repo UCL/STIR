@@ -1147,7 +1147,6 @@ Scanner::get_scanner_from_name(const string& name)
 
 string Scanner:: list_all_names()
 {
-  Scanner * scanner_ptr;
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[30000];
@@ -1174,7 +1173,6 @@ std::list<std::string> Scanner::get_names_of_predefined_scanners()
 {
   std::list<std::string> ret;
   Type type= E931;
-  auto current = ret.begin();
   while (type != Unknown_scanner)
   {
     Scanner scanner(type);
