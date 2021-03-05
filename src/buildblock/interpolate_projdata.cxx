@@ -242,11 +242,11 @@ interpolate_projdata(ProjData& proj_data_out,
  
   const float out_view_offset = 
     use_view_offset
-    ? proj_data_out_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
     : 0.F;
   const float in_view_offset = 
     use_view_offset
-    ? proj_data_in_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
     : 0.F;
   offset[2] = 
     (proj_data_in_info.get_phi(Bin(0,0,0,0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0,0,0,0)) - out_view_offset) / in_sampling_phi;

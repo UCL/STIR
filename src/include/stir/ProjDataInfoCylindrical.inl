@@ -3,6 +3,7 @@
     Copyright (C) 2000-2003, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2018, University of Leeds
 
     This file is part of STIR.
 
@@ -27,6 +28,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author Berta Marti Fuster
   \author PARAPET project
 */
@@ -65,9 +67,10 @@ initialise_ring_diff_arrays_if_not_done_yet() const
     }
 }
 
+//PW Added the view offset from the scanner, code may now support intrinsic tilt.
 float
 ProjDataInfoCylindrical::get_phi(const Bin& bin)const
-{ return bin.view_num()*azimuthal_angle_sampling;}
+{ return bin.view_num()*azimuthal_angle_sampling + azimuthal_angle_offset;}
 
 
 float
@@ -118,6 +121,13 @@ get_num_axial_poss_per_ring_inc(const int segment_num) const
   return
     max_ring_diff[segment_num] != min_ring_diff[segment_num] ?
     2 : 1;
+}
+
+
+float
+ProjDataInfoCylindrical::get_azimuthal_angle_offset() const
+{
+  return azimuthal_angle_offset;
 }
 
 float

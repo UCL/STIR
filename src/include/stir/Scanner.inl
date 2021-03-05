@@ -97,9 +97,14 @@ Scanner::get_default_bin_size() const
 { return bin_size;}
 
 float
-Scanner::get_default_intrinsic_tilt() const
+Scanner::get_intrinsic_azimuthal_tilt() const
 {
-  return intrinsic_tilt;}
+#ifdef STIR_LEGACY_IGNORE_VIEW_OFFSET
+  return 0.F;
+#else
+  return intrinsic_tilt;
+#endif
+}
 
 int 
 Scanner::get_num_transaxial_blocks_per_bucket() const
@@ -285,7 +290,7 @@ void Scanner::set_default_bin_size(const float  & new_size)
   bin_size = new_size;
 }
 
-void Scanner::set_default_intrinsic_tilt(const float &  new_tilt)
+void Scanner::set_intrinsic_azimuthal_tilt(const float new_tilt)
 {
   intrinsic_tilt = new_tilt;
 }
