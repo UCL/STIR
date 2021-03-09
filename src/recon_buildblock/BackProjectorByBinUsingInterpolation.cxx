@@ -135,6 +135,10 @@ BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> cons
 				     shared_ptr<const DiscretisedDensity<3,float> > const& image_info_ptr)
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
+
+  if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
+    error("BackProjectorByBinUsingInterpolation cannot handle non-zero view-offset. Sorry");
+
   this->symmetries_ptr.
     reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
 						      do_symmetry_90degrees_min_phi,

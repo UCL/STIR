@@ -14,15 +14,17 @@ detailed below.
 <h2>Overall summary</h2>
 <p>
 <ul>
-  <li>At least C++-11 is now required. We are not aware of any problems with most recent versions of C++.</li>
+  <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
-    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL)
+    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL).</li>
   <li>Calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
 	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
 	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
 
   <li>KOSMAPOSL (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. Code contributed by Daniel Deidda (NPL), Kris Thielemans (UCL) and Ashley Gillman (CSIRO)</li>
-</ul>  
+  <li>It is now possibly to call the <a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a>
+    projectors (using either OpenMP or CUDA).</li>
+</ul>
 </p>
 
 
@@ -48,8 +50,18 @@ improvements to the documentation.
 
 <h3>Changes breaking backwards compatibility from a user-perspective</h3>
 <ul>
-  <li> </li>
-  <ul>
+<li>
+View Offset Support enabled for the PET scanners.
+<ul>
+ <li>For the scanners that have non-zero intrinsic azimuthal tilt angle, reconstructed images will now get rotated.</li>
+ <li>If you use view mashing, in previous STIR versions images were rotated according to half the number of mashed views. This is now corrected.</li>
+</ul>
+<strong>WARNING</strong> This means that reconstructed PET images will <strong>not be identical</strong> when either the scanner has non-zero view-offset, or view-mashing is on.<br />
+To reflect this change, <code>Scanner::get_default_intrinsic_tilt()</code> has been renamed to <code>get_intrinsic_azimuthal_tilt()</code>.<br />
+Note: start angle was already supported for SPECT<br />
+Backward compatibility for reconstructed images can be achieved by setting the <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> CMake option to <tt>ON</tt>. (However, copied sinogram data will then always have the offset set to 0, in contrast to earlier versions of STIR).
+</li>
+</ul>
 
 
 <h3>Bug fixes</h3>
@@ -60,6 +72,12 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
+  <li><a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a> is an
+    implementation of the Joseph algorithm for projection. If it has been installed
+    in your system, and you tell CMake where to find it (`parallelproj_DIR=/wherever/lib/cmake`), the STIR user is
+    now able to select an additional projector, called <code>Parallelproj</code>. This will use the CUDA
+    version if available, otherwise will fall-back to the OpenMP version. Check the new sample files in
+    <tt>examples/samples</tt> and the section in the User's Guide.</li>
   <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well. See<br />
     Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
     <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
@@ -106,6 +124,8 @@ improvements to the documentation.
  <li>Logcosh Prior.</li>
 <li>
 	SAFIR input file format now supports a Gaussian LOR randomization, which is applied on the endpoints of each LOR when sorting the listmode events into virtual scanner projection data.
+</li>
+<li><code>Scanner</code> has now a new <code>static</code> member <code>get_names_of_predefined_scanners</code> returning a list of names.
 </li>
 </ul>
 
@@ -237,6 +257,9 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <ul>
     <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
     </li>
+<li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
+  nor psi to be between 0 and 2 pi. They will standardise the input automatically.
+  </li>
 </ul>
 
 </body>

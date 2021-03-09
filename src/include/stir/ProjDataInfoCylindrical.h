@@ -97,6 +97,9 @@ public:
 	    const Bin& bin) const;
 
  
+  //! Set azimuthal angle offset (in radians)
+  void set_azimuthal_angle_offset(const float angle);
+  //! Set the azimuthal sampling (in radians)
   void set_azimuthal_angle_sampling(const float angle);
  
   //void set_axial_sampling(const float samp, int segment_num);
@@ -105,10 +108,16 @@ public:
   /*! calls ProjDataInfo::set_num_views(), but makes sure that we cover the
       same range of angles as before (usually, but not necessarily, 180 degrees)
       by adjusting azimuthal_angle_sampling.
+
+      \warning This function does not change the \c azimutal_angle_offset, such that
+      the first view returns the same \c get_phi. Depending on what you want, you
+      might have to call \c set_azimuthal_angle_offset() as well.
   */
   virtual void
     set_num_views(const int new_num_views);
 
+  //! Get azimuthal angle offset (in radians)
+  inline float get_azimuthal_angle_offset() const;
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
   virtual inline float get_sampling_in_t(const Bin&) const;
@@ -262,6 +271,7 @@ protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
 private:
+  float azimuthal_angle_offset;
   float azimuthal_angle_sampling;
   VectorWithOffset<float> ring_radius;
   float ring_spacing;

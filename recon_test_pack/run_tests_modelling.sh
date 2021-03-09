@@ -153,17 +153,9 @@ done
 # Create the appropriate proj_data files
 extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f%dg1d0b0.hv dyn_from_p0005-p5.hv
 # if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
-rm -f fwd.par
-cat <<EOF > fwd.par
-Forward Projector parameters:=
-type :=  ray tracing
-  forward  Projector Using Ray Tracing Parameters :=
-  End Forward Projector Using Ray Tracing Parameters :=
-end :=
-EOF
 
 for fr in `count 23 28`; do
-    forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs fwd.par
+    forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs
 done
 #fi
 

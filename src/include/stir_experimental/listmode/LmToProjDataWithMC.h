@@ -40,7 +40,8 @@ public:
 
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
   virtual void process_new_time_event(const ListTime& time_event);
-
+  virtual Succeeded set_up();
+  
 protected: 
   //! motion information
   shared_ptr<RigidObject3DMotion> ro3d_ptr;

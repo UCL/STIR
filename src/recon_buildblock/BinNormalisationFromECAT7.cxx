@@ -475,7 +475,7 @@ use_crystal_interference_factors() const
 #if 1
 float 
 BinNormalisationFromECAT7::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
+get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
 
 
   // TODO disable when not HR+ or HR++
