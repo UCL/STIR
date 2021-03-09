@@ -33,6 +33,7 @@
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
 #include "stir/shared_ptr.h"
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 
@@ -131,7 +132,14 @@ public:
   */
   void undo(ProjData&, 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
-  
+
+  //! old interface. do not use
+  STIR_DEPRECATED void undo(ProjData& p,const double /*start_time*/, const double /*end_time*/, 
+            shared_ptr<DataSymmetriesForViewSegmentNumbers> sym = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const
+  {
+    this->undo(p, sym);
+  }
+
   void set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr);
 
   shared_ptr<const ExamInfo> get_exam_info_sptr() const ;
