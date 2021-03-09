@@ -327,6 +327,8 @@ post_processing()
     }
   else
     {
+      auto all_frames_exam_info_sptr = std::make_shared<ExamInfo>(lm_data_ptr->get_exam_info());
+      all_frames_exam_info_sptr->set_time_frame_definitions(frame_defs);
       if ( post_normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(),template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of post-normalisation failed\n");
