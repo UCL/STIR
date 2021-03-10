@@ -100,7 +100,7 @@ Bin::set_bin_value( float v )
 { bin_value = v ;}
 
 void
-Bin::set_time_frame( int t )
+Bin::time_frame_num( int t )
 { time_frame = t ;}
 
 Bin&  

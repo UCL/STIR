@@ -77,7 +77,7 @@ public:
   //! set the value to be back projected 
   inline void set_bin_value( float v );
   //! set bin timeframe 
-  inline void set_time_frame( int t );
+  inline void time_frame_num( int t );
   
   //! accumulate voxel's contribution during forward projection 
   inline Bin&  operator+=(const float dx);
