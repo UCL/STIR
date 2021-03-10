@@ -65,11 +65,15 @@ public:
   inline int tangential_pos_num()  const; 
   //! get view number
   inline int view_num() const; 
+  //! get time-frame number (1-based)
+  inline int time_frame_num() const;
   
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
   inline int& tangential_pos_num(); 
   inline int& view_num(); 
+  inline int& time_frame_num();
+  
   
   //! get an empty copy
   inline Bin get_empty_copy() const;
@@ -78,7 +82,7 @@ public:
   inline float get_bin_value()const; 
   //! set the value to be back projected 
   inline void set_bin_value( float v );
-  //! set bin timeframe 
+  //! set time-frame number (1-based) 
   inline void time_frame_num( int t );
   
   //! accumulate voxel's contribution during forward projection 

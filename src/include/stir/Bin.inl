@@ -58,6 +58,10 @@ int
  Bin::view_num() const
 { return view;}
 
+int
+ Bin:: time_frame_num() const
+{return time_frame;}
+
 int&
  Bin::axial_pos_num()
 { return axial_pos;}
@@ -73,6 +77,10 @@ int&
 int&
  Bin:: view_num() 
 { return view;}
+
+int&
+ Bin:: time_frame_num()
+{return time_frame;}
 
 #if 0
 const ProjDataInfo *
@@ -101,7 +109,10 @@ Bin::set_bin_value( float v )
 
 void
 Bin::time_frame_num( int t )
-{ time_frame = t ;}
+{ 
+    if(t<=0)
+        error("Time-frame number needs to be positive");                                                                                                                                           
+    time_frame = t ;}
 
 Bin&  
 Bin::operator+=(const float dx) 
