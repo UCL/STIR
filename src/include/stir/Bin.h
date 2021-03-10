@@ -43,6 +43,8 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
+ The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
+ handling list mode data.
 */
 
 class Bin
