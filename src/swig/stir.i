@@ -105,6 +105,8 @@
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
+#include "stir/recon_buildblock/SqrtHessianRowSum.h"
+
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
@@ -1583,6 +1585,8 @@ namespace stir {
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
+%shared_ptr(stir::SqrtHessianRowSum<TargetT >);
+
 #undef TargetT
 #undef elemT
 #endif
@@ -1609,6 +1613,8 @@ namespace stir {
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+%include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
@@ -1677,6 +1683,8 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+%template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
 #undef elemT
 #undef TargetT

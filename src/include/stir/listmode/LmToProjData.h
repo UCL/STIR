@@ -16,7 +16,7 @@
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
-    Copyright (C) 2019, University College of London
+    Copyright (C) 2019, 2021, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -177,9 +177,13 @@ public:
   /*! \warning leaves parameters ill-defined. Set them by parsing. */
   LmToProjData();
 
+  //! Perform various checks
+  /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
+  virtual Succeeded set_up();
+
   //! This function does the actual work
   virtual void process_data();
-  
+
 protected:
 
   
@@ -268,6 +272,8 @@ protected:
   //! A variable that will be set to 1,0 or -1, according to store_prompts and store_delayeds
   int delayed_increment;
 
+  //! an internal bool variable to check if the object has been set-up or not
+  bool _already_setup;
 };
 
 END_NAMESPACE_STIR

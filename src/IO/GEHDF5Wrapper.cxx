@@ -62,23 +62,20 @@ GEHDF5Wrapper::read_dataset_int32(const std::string& dataset_name)
 
 bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 {
-    H5::H5File file;
-    file.openFile( filename, H5F_ACC_RDONLY );
-    if(!file.isHdf5(filename))
-        return false;
-
     try
     {
-        return (check_GE_signature(file));
+      if(!H5::H5File::isHdf5(filename))
+        return false;
+
+      H5::H5File file;
+      file.openFile( filename, H5F_ACC_RDONLY );
+
+      return (check_GE_signature(file));
     }
     catch(...)
     {
         return false;
-    }
-    
-    // should never get here
-    return false;
-    
+    }   
 }
 
 bool GEHDF5Wrapper::check_GE_signature(H5::H5File& file)
@@ -376,7 +373,7 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
     if (!is_list_file())
       scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
     scanner_sptr->set_ring_spacing(ring_spacing);
-    scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
+    scanner_sptr->set_intrinsic_azimuthal_tilt(intrinsic_tilt*_PI/180);
     scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
     scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
     scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);

@@ -1188,14 +1188,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
-#if 0
-  // TODO get_phi currently ignores view offset
   const float angle_first_view = 
-    pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
-#else
-  const float angle_first_view = 
-    pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
-#endif
+    pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180/_PI);
   const float angle_increment = 
     (pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,1,0,0)) -
      pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);

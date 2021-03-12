@@ -215,7 +215,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
-  //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
+  //WRONG mhead.gantry_tilt= scanner.get_intrinsic_azimuthal_tilt();
 #endif // STIR_ORIGINAL_ECAT6
 }
 

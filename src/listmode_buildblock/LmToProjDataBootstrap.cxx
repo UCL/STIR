@@ -105,16 +105,21 @@ bool
 LmToProjDataBootstrap<LmToProjDataT>::
 post_processing()
 {
-  if (LmToProjData::post_processing())
-    return true;
-
-  if (seed == 0)
-    return true;
-
-  return false;
+  return LmToProjDataT::post_processing();
 }
 
+template <typename LmToProjDataT>
+Succeeded LmToProjDataBootstrap<LmToProjDataT>::set_up()
+{
+  if (LmToProjDataT::set_up() == Succeeded::no)    
+    return Succeeded::no;
 
+  if (this->seed == 0)
+    {
+      error("Seed needs to be non-zero");
+    }
+  return Succeeded::yes;
+}
 
 template <typename LmToProjDataT> 
 void 
