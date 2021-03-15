@@ -28,6 +28,18 @@
 
   The option <tt>--NOPMRT</tt> forces forward projection using the (old) Ray Tracing
 
+  \par Optionially include parameter file for specifying the forward projector (overrules --PMRT and --NOPMRT options)
+  \verbatim
+  Forward Projector parameters:=
+    type := Matrix
+      Forward projector Using Matrix Parameters :=
+        Matrix type := Ray Tracing
+         Ray tracing matrix parameters :=
+         End Ray tracing matrix parameters :=
+        End Forward Projector Using Matrix Parameters :=
+  End:=
+  \endverbatim
+
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
 
