@@ -18,13 +18,15 @@
   \par Usage
   \verbatim
      calculate_attenuation_coefficients
-             [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>
+             [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]
   \endverbatim
   <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
   the attenuation factor (i.e. the inverse of the ACFs).
 
   The option <tt>--PMRT</tt> forces forward projection using the Probability Matrix Using Ray Tracing 
   (stir::ProjMatrixByBinUsingRayTracing).
+
+  The option <tt>--NOPMRT</tt> forces forward projection using the (old) Ray Tracing
 
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
