@@ -90,8 +90,8 @@ get_s(const Bin& bin) const
 	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 	get_LOR(lor, bin);
 	if (bin.view_num()==0 && lor.phi()>0.1)
-		return -1*ring_radius * sin(lor.beta());
-	return ring_radius * sin(lor.beta());
+          return -1*lor.radius() * sin(lor.beta());
+	return lor.radius() * sin(lor.beta());
 }
 
 float
