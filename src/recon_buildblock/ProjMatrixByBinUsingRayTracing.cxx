@@ -580,7 +580,8 @@ calculate_proj_matrix_elems_for_one_bin(
                                                  det_num2,
                                                  bin.view_num(),
                                                  bin.tangential_pos_num());
-    phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
+    phi = static_cast<float>(
+            (det_num1+det_num2)*_PI/num_detectors-_PI/2 + proj_data_info_noarccor.get_azimuthal_angle_offset() );
     const float old_phi=proj_data_info_ptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
