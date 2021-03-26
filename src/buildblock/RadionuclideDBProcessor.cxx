@@ -69,21 +69,29 @@ get_record_from_json()
     error("RadionuclideDB: no nuclide set for the Radionuclide info");
 
   //Read Radionuclide file
-  std::ifstream json_file_stream(this->filename);
+  
+  std::string s =this->filename;
+  std::ifstream json_file_stream(s);
+  
+  if(!json_file_stream)
+      error("Could not open Json file!");
+//  std::string out;
+  
+//  while(json_file_stream >> out)
+//      std::cout << out;
+  
+//  std::cout<<json_file_stream.rdbuf();
+//  json_file_stream.close();
   nlohmann::json radionuclide_json;
   json_file_stream >> radionuclide_json;
+//  radionuclide_json.parse(json_file_stream);
+//  std::cout<< radionuclide_json;
   
   if (radionuclide_json.find("nuclide") == radionuclide_json.end())
   {
     error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclide\" in file \""
           + filename + "\")");
   }
-
-  if (radionuclide_json.find("modality") == radionuclide_json.end())
-    {
-      error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"modality\" in file \""
-            + filename + "\")");
-    }
   
 
   std::string name = this->nuclide_name;
@@ -93,13 +101,11 @@ get_record_from_json()
   //Get desired kVp  as float value
   float  h_life = this->half_life;
   info("RadionuclideDB: finding record radionuclide:" + nuclide_name+
-       ", keV="+std::to_string(keV)+
-       " T_1/2="+ std::to_string(h_life) +
        "in file "+ filename);
 
   //Extract appropriate chunk of JSON file for given nuclide.
   nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][modality_str]["properties"];
-
+//[name]["modality"][modality_str]["properties"]
   int location = -1;
   int pos = 0;
   for (auto entry : target){

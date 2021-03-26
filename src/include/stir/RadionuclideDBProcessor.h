@@ -69,6 +69,7 @@ START_NAMESPACE_STIR
 
 class RadionuclideDBProcessor//: public Radionuclide
 {
+public:
 //  static constexpr const char * const registered_name = "nuclideDB"; 
   
   //! Default constructor
