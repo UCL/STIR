@@ -96,7 +96,7 @@ set_branching_ratio(const float br){
 
 void
 BinNormalisationWithCalibration::
-set_radionuclide(const std::string& rnuclide){
+set_radionuclide(const Radionuclide rnuclide){
     this->radionuclide=rnuclide;
 }
 

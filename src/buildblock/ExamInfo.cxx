@@ -44,7 +44,7 @@ ExamInfo::parameter_info() const
 #endif
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
   s << "Calibration Factor: " << this->calibration_factor << '\n';
-  s << "Radionuclide: " << this->radionuclide << '\n';
+  s << "Radionuclide: " << this->radionuclide.get_name() << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
   s << "Scan start time: " << this->start_time_in_secs_since_1970 << '\n';
   if (this->start_time_in_secs_since_1970>0)

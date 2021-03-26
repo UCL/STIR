@@ -34,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/RadionuclideDBProcessor.h"
 #include "stir/info.h"
 #include <numeric>
 #include <functional>
@@ -274,7 +275,9 @@ bool InterfileHeader::post_processing()
       this->exam_info_sptr->set_calibration_factor(calibration_factor);
   
   if (!isotope_name.empty()){
-      this->exam_info_sptr->set_radionuclide(isotope_name);
+      // here I need to cal the DB and set the Radionuclide memeber
+     RadionuclideDBProcessor radionuclide_processor=RadionuclideDBProcessor(exam_info_sptr->imaging_modality,isotope_name);
+     this->exam_info_sptr->set_radionuclide(radionuclide_processor.get_radionuclide());
   }
   
   if (patient_orientation_index<0 || patient_rotation_index<0)
