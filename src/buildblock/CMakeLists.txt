@@ -8,7 +8,7 @@ set(${dir_LIB_SOURCES}
   PatientPosition
   ExamInfo
   ExamData
-  findSTIRConfig
+  find_STIR_config
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
