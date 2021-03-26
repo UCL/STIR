@@ -30,7 +30,7 @@
 
 START_NAMESPACE_STIR
 
-class Projdata;
+class ProjData;
 class SinglesRates;
 
 /*!
