@@ -80,6 +80,8 @@ namespace stir {
 
 #cmakedefine STIR_MPI
 
+#cmakedefine STIR_CONFIG_DIR "@STIR_CONFIG_DIR@"
+
 #cmakedefine STIR_USE_BOOST_SHARED_PTR
 
 #cmakedefine STIR_NO_UNIQUE_PTR

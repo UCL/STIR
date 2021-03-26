@@ -277,8 +277,9 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 endforeach(STIR_DIR)
 
 
-install(DIRECTORY config/ DESTINATION ${STIR_DATA_DIR}/config
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/config/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/stir/config
                 FILES_MATCHING PATTERN "*.json")
+            message("installing JSON file from " ${CMAKE_SOURCE_DIR}/src/config/" to " ${CMAKE_INSTALL_PREFIX}/share/stir/config)
             
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled
