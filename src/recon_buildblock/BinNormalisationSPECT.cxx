@@ -111,6 +111,7 @@ post_processing()
     if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
         error("BinNormalisationSPECT: At least one time frame should be defined");
     
+    set_num_views(norm_proj_data_info_ptr->get_num_views());
     this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
     
 //  allow to set your own calibration factor
@@ -161,8 +162,8 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,cons
                             zoom);
     }
 
-    if(bin.view_num()==0)
-    set_num_views(norm_proj_data_info_ptr->get_num_views());
+//    if(bin.view_num()==0)
+//    set_num_views(norm_proj_data_info_ptr->get_num_views());
 
     int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
     double rel_time;
@@ -210,8 +211,8 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
                             zoom);
     }
 
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
+//    if(view_num==0)
+//    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
@@ -272,8 +273,8 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
                         zoom);
 }
 
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
+//    if(view_num==0)
+//    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
