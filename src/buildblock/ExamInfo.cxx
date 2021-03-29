@@ -79,7 +79,7 @@ ExamInfo::operator == (const ExamInfo &p1) const {
             this->time_frame_definitions==p1.time_frame_definitions &&
 //              this->branching_ratio==p1.branching_ratio &&
             ((this->calibration_factor<=0 && p1.calibration_factor<=0) || 
-             abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-4) &&
+             abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-3) &&
             this->imaging_modality==p1.imaging_modality &&
             this->originating_system==p1.originating_system &&
             this->patient_position==p1.patient_position &&
