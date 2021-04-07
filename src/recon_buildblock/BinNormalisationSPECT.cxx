@@ -97,21 +97,22 @@ bool
 BinNormalisationSPECT::
 post_processing()
 {
-  if(use_uniformity_factors()){
-      uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
-  read_uniformity_table(uniformity);}
-
-  norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
-  max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+    if(use_uniformity_factors()){
+        uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
+    read_uniformity_table(uniformity);}
   
-  if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()>1)
-      error("BinNormalisationSPECT: Multiple time frames not yet supported");
-  
-  if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
-      error("BinNormalisationSPECT: At least one time frame should be defined");
-  
-  this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(0)/num_views;
-  
+    norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
+    set_exam_info_sptr(norm_proj_data_info_ptr->get_exam_info_sptr());
+    max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+    
+    if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()>1)
+        error("BinNormalisationSPECT: Multiple time frames not yet supported");
+    
+    if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
+        error("BinNormalisationSPECT: At least one time frame should be defined");
+    
+    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
+    
 //  allow to set your own calibration factor
   if(measured_calibration_factor>0) 
       set_calibration_factor(measured_calibration_factor);

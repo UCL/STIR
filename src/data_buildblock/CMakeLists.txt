@@ -25,7 +25,8 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
 	SinglesRates 
-	SinglesRatesForTimeFrames 
+	SinglesRatesForTimeFrames
+        randoms_from_singles
 )
 if (HAVE_ECAT)
   list(APPEND  ${dir_LIB_SOURCES}
@@ -35,7 +36,7 @@ if (HAVE_ECAT)
 endif()
 if (HAVE_HDF5)
     list (APPEND  ${dir_LIB_SOURCES}
-        SinglesRatesFromGEHDF5
+        SinglesFromGEHDF5
   )
 endif()
 

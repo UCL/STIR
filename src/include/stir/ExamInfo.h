@@ -124,17 +124,7 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
-  bool operator == (const ExamInfo &p1) const {      
-      return  this->up_energy_thres==p1.up_energy_thres &&
-              this->low_energy_thres==p1.low_energy_thres &&
-              this->radionuclide==p1.radionuclide &&
-              this->time_frame_definitions==p1.time_frame_definitions &&
-//              this->branching_ratio==p1.branching_ratio &&
-              this->calibration_factor==p1.calibration_factor &&
-              this->imaging_modality==p1.imaging_modality &&
-              this->originating_system==p1.originating_system &&
-              this->patient_position==p1.patient_position &&
-              this->start_time_in_secs_since_1970==p1.start_time_in_secs_since_1970; }
+  bool operator == (const ExamInfo &p1) const ;
   
   //! Clone and create shared_ptr of the copy
   shared_ptr<ExamInfo> create_shared_clone()

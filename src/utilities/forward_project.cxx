@@ -124,6 +124,11 @@ main (int argc, char * argv[])
       shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
       forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
     }
+  if (!forw_projector_sptr)
+    {
+      std::cerr << "Failure parsing\n";
+      return EXIT_FAILURE;
+    }
 
   forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                              image_density_sptr );

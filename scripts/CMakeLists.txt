@@ -30,7 +30,8 @@ set(${dir_scripts}
   zoom_att_image.sh
   get_num_voxels.sh
   create_fdef_from_listmode.sh
-)
+  force_view_offset_to_zero.sh
+  )
 
 
 

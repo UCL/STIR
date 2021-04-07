@@ -28,7 +28,8 @@ set(${dir_LIB_SOURCES}
   RelatedViewgrams 
   scale_sinograms 
   interpolate_projdata 
-  extend_projdata 
+  extend_projdata
+  multiply_crystal_factors
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
   ParseDiscretisedDensityParameters

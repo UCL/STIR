@@ -187,9 +187,11 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
- private:
+ protected:
+  //! ProjDataInfo set by set_up()
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 
+ private:
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
 	    const int start_segment_num, const int end_segment_num,

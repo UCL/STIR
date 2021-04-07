@@ -48,6 +48,8 @@ START_NAMESPACE_STIR
   \ingroup singles_buildblock
 
  \brief A single frame of singles information.
+
+ \todo This class does not store rates, but totals! Naming is all wrong.
  */
 class FrameSinglesRates
 {
@@ -127,9 +129,11 @@ class FrameSinglesRates
   <i>Singles</i> in PET are photons detected by a single detector. In PET they
   are useful to estimate  dead-time.
 
-  This class allows to get the rate of singles during an acquisition.
-  There will be 1 rate per <i>singles unit</i>. See Scanner for
+  This class allows to get the singles-counts during an acquisition.
+  There will be 1 per <i>singles unit</i>. See Scanner for
   some more info.
+
+ \todo This class does not store rates, but totals! Naming is all wrong.
 */
 class SinglesRates : public RegisteredObject<SinglesRates>
 {

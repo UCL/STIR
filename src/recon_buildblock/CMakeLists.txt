@@ -120,6 +120,16 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    Parallelproj_projector/ForwardProjectorByBinParallelproj
+    Parallelproj_projector/BackProjectorByBinParallelproj
+    Parallelproj_projector/ProjectorByBinPairUsingParallelproj
+    Parallelproj_projector/ParallelprojHelper
+  )
+endif()
+
+
 include(stir_lib_target)
 
 
@@ -140,4 +150,11 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
 	target_link_libraries(recon_buildblock NiftyPET::mmr_auxe)
 	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
 	target_link_libraries(recon_buildblock CUDA::cudart)
+endif()
+
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  target_link_libraries(recon_buildblock parallelproj::parallelproj_c)
+  if (parallelproj_built_with_CUDA)
+    target_link_libraries(recon_buildblock parallelproj::parallelproj_cuda)
+  endif()
 endif()
