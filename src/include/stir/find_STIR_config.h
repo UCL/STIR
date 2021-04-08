@@ -6,7 +6,7 @@
 #include "stir/common.h"
 START_NAMESPACE_STIR
 
-std::string find_STIR_config_file(std::string filename);
+std::string find_STIR_config_file(const std::string& filename);
 
 
 END_NAMESPACE_STIR
