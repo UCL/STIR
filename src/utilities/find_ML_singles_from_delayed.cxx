@@ -103,16 +103,7 @@ int main(int argc, char **argv)
       // write fan sums to file
       {
         std::string fan_sum_name = "fansums_for_";
-        {
-          // extract filename
-          char sep = '/';
-#ifdef _WIN32
-          sep = '\\';
-#endif
-          std::string fname = argv[2];
-          size_t i = fname.rfind(sep, fname.length());
-          fan_sum_name += fname.substr(i+1, fname.length() - i);
-        }
+        fan_sum_name += get_filename(argv[2]);
 	fan_sum_name.erase(fan_sum_name.begin() + fan_sum_name.rfind('.'), 
 			   fan_sum_name.end());
 	fan_sum_name += ".dat"; 
