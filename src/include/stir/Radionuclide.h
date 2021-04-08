@@ -47,7 +47,7 @@ public:
   //! default constructor
   inline Radionuclide();
 
-  //!  A constructor : constructs a radionuclide with all itss information
+  //!  A constructor : constructs a radionuclide with all it's information
   inline Radionuclide(std::string name, float energy, float branching_ratio, float half_life,
     ImagingModality modality);
   
