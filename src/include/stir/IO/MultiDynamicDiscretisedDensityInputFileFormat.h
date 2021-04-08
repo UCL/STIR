@@ -111,11 +111,11 @@ public InputFileFormat<DynamicDiscretisedDensity>
     }
     // Hard wire some stuff for now (TODO?)
     dyn_disc_den_ptr->set_if_decay_corrected(1.);
-    dyn_disc_den_ptr->set_isotope_halflife(6586.2F);
+    dyn_disc_den_ptr->set_isotope_halflife(dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().get_half_life());
     
-    if(!dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().get_name().empty() && 
-       dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().get_name()!="^18^Fluorine")
-        error("MultiDynamicDiscretisedDensityInputFileFormat: halflife hardwired to 18F but the isotope used in this data is different");
+//    if(!dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().get_name().empty() && 
+//       dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().get_name()!="^18^Fluorine")
+//        error("MultiDynamicDiscretisedDensityInputFileFormat: halflife hardwired to 18F but the isotope used in this data is different");
     
     return unique_ptr<data_type>(dyn_disc_den_ptr);
   }

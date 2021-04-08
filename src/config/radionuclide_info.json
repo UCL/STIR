@@ -155,7 +155,7 @@
       }
     },
                                 
-    "^90^Yttrium":
+    ["^90^Yttrium", "Y-90", "90Y"]:
 
     {  "modality": 
                 

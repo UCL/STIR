@@ -50,7 +50,7 @@ public:
   
   void set_calibration_factor(const float);
   void set_branching_ratio(const float);
-  void set_radionuclide(const Radionuclide);
+  void set_radionuclide(const Radionuclide&);
   
   // needs to be implemented by derived class
   virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;

@@ -57,7 +57,7 @@ ExamInfo::set_calibration_factor( const float cal_val)
 }
 
 void
-ExamInfo::set_radionuclide(const Radionuclide arg)
+ExamInfo::set_radionuclide(const Radionuclide& arg)
 {
     radionuclide = arg;
 }

@@ -32,7 +32,7 @@
 #include "stir/error.h"
 //#include "stir/ImagingModality.h"
 #include <nlohmann/json.hpp>
-#include "stir/findSTIRConfig.h"
+#include "stir/find_STIR_config.h"
 
 START_NAMESPACE_STIR
 
