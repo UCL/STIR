@@ -8,7 +8,7 @@
 
 START_NAMESPACE_STIR
 
-std::string find_STIR_config_file(std::string filename){
+std::string find_STIR_config_file(const std::string& filename){
     
     std::string dir;
     dir = STIR_CONFIG_DIR;
