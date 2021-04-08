@@ -107,7 +107,7 @@ public :
   //! Set the Calibration factor
   inline void set_calibration_factor(const float cal_val);
   //! Set the radionuclide
-  inline void set_radionuclide(const Radionuclide arg);
+  inline void set_radionuclide(const Radionuclide& arg);
   //! Copy energy information from another ExamInfo
   inline void set_energy_information_from(const ExamInfo&);
   //@}
