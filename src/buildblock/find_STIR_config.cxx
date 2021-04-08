@@ -21,4 +21,12 @@ std::string find_STIR_config_file(const std::string& filename){
     return dir+"/"+filename;
 
 }
+
+void find_STIR_config_dir(){
+    
+    std::string dir;
+    dir = STIR_CONFIG_DIR;
+        info("Config directory is "+dir);
+}
+
 END_NAMESPACE_STIR

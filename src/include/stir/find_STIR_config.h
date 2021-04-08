@@ -7,6 +7,7 @@
 START_NAMESPACE_STIR
 
 std::string find_STIR_config_file(const std::string& filename);
+void find_STIR_config_dir();
 
 
 END_NAMESPACE_STIR

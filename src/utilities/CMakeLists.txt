@@ -36,6 +36,7 @@ set(${dir_EXE_SOURCES}
         estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
+        stir_config_dir
 	list_projdata_info 
 	list_image_info 
 	list_image_values 
