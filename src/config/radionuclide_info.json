@@ -57,20 +57,6 @@
       }
    },  
        
-    "^18^Fluorine":
-      
-    {  "modality": 
-     {   "PET":
-       {  "properties": [
-                {
-                 "kev": 511,
-                 "BRatio": 0.9686,
-                 "half_life": 6584.04
-                 }      ]
-       }
-     }
-  },  
-      
     "^64^Copper":
      
      {  "modality": 
@@ -155,7 +141,7 @@
       }
     },
                                 
-    ["^90^Yttrium", "Y-90", "90Y"]:
+    "^90^Yttrium":
 
     {  "modality": 
                 
