@@ -157,6 +157,7 @@ public:
 
     inline void set_chain_name(const std::string&);
 
+    inline void set_exclude_true_events(bool);
     inline void set_exclude_scattered_events(bool);
 
     inline void set_exclude_random_events(bool);
@@ -258,6 +259,8 @@ public:
     int num_virtual_axial_crystals_per_block;
     int num_virtual_transaxial_crystals_per_block;
     //@}
+    //! Skip True events (eventID1 == eventID2). Default is false
+    bool exclude_trues;
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
     //! Skip random events (eventID1 != eventID2). Default is false

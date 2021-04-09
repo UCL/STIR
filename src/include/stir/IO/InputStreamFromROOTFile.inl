@@ -119,6 +119,12 @@ InputStreamFromROOTFile::set_chain_name(const std::string& val)
 }
 
 void
+InputStreamFromROOTFile::set_exclude_true_events(bool val)
+{
+  exclude_trues = val;
+}
+
+void
 InputStreamFromROOTFile::set_exclude_scattered_events(bool val)
 {
     exclude_scattered = val;

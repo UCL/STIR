@@ -67,6 +67,7 @@ InputStreamFromROOTFile::set_defaults()
 {
     starting_stream_position = 0;
     singles_readout_depth = -1;
+    exclude_trues = false;
     exclude_scattered = false;
     exclude_randoms = false;
     check_energy_window_information = true;
@@ -86,6 +87,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("name of data file", &this->filename);
     this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
     this->parser.add_key("name of input TChain", &this->chain_name);
+    this->parser.add_key("exclude true events", &this->exclude_trues);
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("check energy window information", &this->check_energy_window_information);
@@ -125,6 +127,11 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
         error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
               filename.c_str());
     }
+
+    // Check status of the exclude 
+    if (this->exclude_trues && this->exclude_randoms)
+      error("InputStreamFromROOTFile: Both exclusion of true and random events has been set and therefore "
+            "no data will be processes.");
 
     stream_ptr = new TChain(this->chain_name.c_str());
     stream_ptr->Add(fullfilename.c_str());
@@ -183,13 +190,17 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
       return false;
   }
 
-  // Random event condition.
-  if (this->exclude_randoms) {
+  // Trues/Random event exclusion condition.
+  if (this->exclude_randoms || this->exclude_trues) {
     GetEntryCheck(br_eventID1->GetEntry(brentry));
     GetEntryCheck(br_eventID2->GetEntry(brentry));
 
-    // Check for the same event
-    if ((this->eventID1 != this->eventID2))
+    // exclude randoms
+    if (this->exclude_randoms && this->eventID1 != this->eventID2)
+      return false;
+
+    // exclude trues
+    if (this->exclude_trues && this->eventID1 == this->eventID2)
       return false;
   }
 
