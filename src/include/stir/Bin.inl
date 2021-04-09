@@ -107,13 +107,6 @@ void
 Bin::set_bin_value( float v )
 { bin_value = v ;}
 
-void
-Bin::time_frame_num( int t )
-{ 
-    if(t<=0)
-        error("Time-frame number needs to be positive");                                                                                                                                           
-    time_frame = t ;}
-
 Bin&  
 Bin::operator+=(const float dx) 
 { bin_value+=dx;  
