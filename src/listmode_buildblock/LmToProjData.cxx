@@ -655,7 +655,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             bin.time_frame_num(current_frame_num);
+             bin.time_frame_num() = current_frame_num;
                      get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store
