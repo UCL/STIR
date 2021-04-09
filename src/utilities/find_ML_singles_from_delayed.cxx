@@ -103,7 +103,7 @@ int main(int argc, char **argv)
       // write fan sums to file
       {
         std::string fan_sum_name = "fansums_for_";
-	fan_sum_name += argv[2];
+        fan_sum_name += get_filename(argv[2]);
 	fan_sum_name.erase(fan_sum_name.begin() + fan_sum_name.rfind('.'), 
 			   fan_sum_name.end());
 	fan_sum_name += ".dat"; 
