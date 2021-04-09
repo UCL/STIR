@@ -158,7 +158,10 @@ public:
     inline void set_chain_name(const std::string&);
 
     inline void set_exclude_true_events(bool);
+
     inline void set_exclude_scattered_events(bool);
+
+    inline void set_exclude_unscattered_events(bool);
 
     inline void set_exclude_random_events(bool);
 
@@ -263,6 +266,8 @@ public:
     bool exclude_trues;
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
+    //! Skip unscattered events (comptonphantom1 == 0 && comptonphantom2 == 0)). Default is false
+    bool exclude_unscattered;
     //! Skip random events (eventID1 != eventID2). Default is false
     bool exclude_randoms;
     //! Check energy window information (low_energy_window < energy <  up_energy_window). Default is true

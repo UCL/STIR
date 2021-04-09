@@ -69,6 +69,7 @@ InputStreamFromROOTFile::set_defaults()
     singles_readout_depth = -1;
     exclude_trues = false;
     exclude_scattered = false;
+    exclude_unscattered = false;
     exclude_randoms = false;
     check_energy_window_information = true;
     low_energy_window = 0.f;
@@ -89,6 +90,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("name of input TChain", &this->chain_name);
     this->parser.add_key("exclude true events", &this->exclude_trues);
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
+    this->parser.add_key("exclude unscattered events", &this->exclude_unscattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("check energy window information", &this->check_energy_window_information);
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
@@ -128,9 +130,13 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
               filename.c_str());
     }
 
-    // Check status of the exclude 
+    // Check status of the exclusions based upon event ID
     if (this->exclude_trues && this->exclude_randoms)
-      error("InputStreamFromROOTFile: Both exclusion of true and random events has been set and therefore "
+      error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
+            "no data will be processes.");
+
+    if (this->exclude_scattered && this->exclude_unscattered)
+      error("InputStreamFromROOTFile: Both the exclusion of scattered and unscattered events has been set. Therefore, "
             "no data will be processes.");
 
     stream_ptr = new TChain(this->chain_name.c_str());
@@ -180,13 +186,15 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
   if (brentry < 0)
     return false;
 
-  // Scatter event condition.
-  if (this->exclude_scattered) {
+  // Scattered/unscattered event exclusion condition.
+  if (this->exclude_scattered || this->exclude_unscattered) {
     GetEntryCheck(br_comptonPhantom1->GetEntry(brentry));
     GetEntryCheck(br_comptonPhantom2->GetEntry(brentry));
 
-    // Check if either event has been Compton scattered
-    if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
+    // Check if either event has been Compton scattered and should be excluded
+    if (this->exclude_scattered && (this->comptonphantom1 > 0 || this->comptonphantom2 > 0))
+      return false;
+    if (this->exclude_unscattered && (this->comptonphantom1 == 0 && this->comptonphantom2 == 0))
       return false;
   }
 

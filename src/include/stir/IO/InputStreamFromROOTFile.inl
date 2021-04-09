@@ -131,6 +131,12 @@ InputStreamFromROOTFile::set_exclude_scattered_events(bool val)
 }
 
 void
+InputStreamFromROOTFile::set_exclude_unscattered_events(bool val)
+{
+  exclude_unscattered = val;
+}
+
+void
 InputStreamFromROOTFile::set_exclude_random_events(bool val)
 {
     exclude_randoms = val;
