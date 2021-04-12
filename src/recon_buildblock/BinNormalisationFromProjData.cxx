@@ -141,7 +141,7 @@ is_trivial() const
 }
 
 void 
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
   {
     this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
@@ -152,7 +152,7 @@ BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const dou
 
 void 
 BinNormalisationFromProjData::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
   {
     this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
@@ -163,7 +163,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
   }
 
 float 
-BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
 {
   //TODO
   error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");
@@ -178,4 +178,3 @@ BinNormalisationFromProjData::get_norm_proj_data_sptr() const
 }
  
 END_NAMESPACE_STIR
-

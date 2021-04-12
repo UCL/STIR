@@ -98,16 +98,17 @@ public:
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
+  
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const override;
+  virtual float get_bin_efficiency(const Bin& bin) const override; 
 
 private:
   shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_ptr;

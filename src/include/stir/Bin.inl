@@ -38,7 +38,7 @@ Bin::Bin()
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value)
 	 :segment(segment_num),view(view_num),
-	 axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value)
+	 axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value),time_frame(1)
      {}
 
      
@@ -58,6 +58,10 @@ int
  Bin::view_num() const
 { return view;}
 
+int
+ Bin:: time_frame_num() const
+{return time_frame;}
+
 int&
  Bin::axial_pos_num()
 { return axial_pos;}
@@ -73,6 +77,10 @@ int&
 int&
  Bin:: view_num() 
 { return view;}
+
+int&
+ Bin:: time_frame_num()
+{return time_frame;}
 
 #if 0
 const ProjDataInfo *

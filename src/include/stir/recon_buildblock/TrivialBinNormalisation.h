@@ -46,10 +46,10 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
-  virtual inline void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const override {}
-  virtual inline void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const override {}
+  virtual inline void apply(RelatedViewgrams<float>&) const override {}
+  virtual inline void undo(RelatedViewgrams<float>&) const override {}
   
-  virtual inline float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const override { return 1.F;}
+  virtual inline float get_bin_efficiency(const Bin& bin) const override { return 1.F;}
 
   virtual inline bool is_trivial() const override { return true;}  
 

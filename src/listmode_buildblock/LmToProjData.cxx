@@ -310,6 +310,8 @@ Succeeded LmToProjData::set_up()
     }
   else
     {
+      auto all_frames_exam_info_sptr = std::make_shared<ExamInfo>(lm_data_ptr->get_exam_info());
+      all_frames_exam_info_sptr->set_time_frame_definitions(frame_defs);
       if ( post_normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(),template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of post-normalisation failed\n");
@@ -376,16 +378,16 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 
 
     // do_normalisation
-#ifndef FRAME_BASED_DT_CORR
-     const double start_time = current_time;
-     const double end_time = current_time;
-#else
-     const double start_time = frame_defs.get_start_time(current_frame_num);
-     const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
+//#ifndef FRAME_BASED_DT_CORR
+//     const double start_time = current_time;
+//     const double end_time = current_time;
+//#else
+//     const double start_time = frame_defs.get_start_time(current_frame_num);
+//     const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
      
       const float bin_efficiency = 
-	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -434,14 +436,14 @@ do_post_normalisation(Bin& bin) const
 	}
       else
 	{
-#ifndef FRAME_BASED_DT_CORR
-	  const double start_time = current_time;
-	  const double end_time = current_time;
-#else
-	  const double start_time = frame_defs.get_start_time(current_frame_num);
-	  const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
-	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+//#ifndef FRAME_BASED_DT_CORR
+//	  const double start_time = current_time;
+//	  const double end_time = current_time;
+//#else
+//	  const double start_time = frame_defs.get_start_time(current_frame_num);
+//	  const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin);
 	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
 	  if (bin_efficiency < 1.E-10)
 	    {
@@ -663,6 +665,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
+             bin.time_frame_num() = current_frame_num;
                      get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store

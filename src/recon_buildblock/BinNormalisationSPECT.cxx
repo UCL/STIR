@@ -1,8 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2019, UCL
-    Copyright (C) 2019, NPL
+    Copyright (C) 2019-2021, UCL
+    Copyright (C) 2019-2021, NPL
     This file is part of STIR.
     Most of this file is free software; you can redistribute that part and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -149,7 +149,7 @@ read_norm_data(const std::string& filename)
 {// to think about this
   }
 
-float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
+float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) const {
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
 
@@ -194,8 +194,10 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin,cons
 return normalisation;
 }
 
-void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
 
+    
+//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
@@ -249,14 +251,14 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
                             normalisation/decay_correction_factor(half_life, rel_time);
                         }
           (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
-            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin, start_time, end_time))*
+            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin))*
              normalisation);
            normalisation=1;
         }
     }
 }
 
-void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams) const{
 
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
@@ -313,7 +315,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 
 
             (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()]*=
-        (this->get_uncalibrated_bin_efficiency(bin,start_time, end_time)*normalisation);
+        (this->get_uncalibrated_bin_efficiency(bin)*normalisation);
             normalisation=1;
 
         }

@@ -475,8 +475,10 @@ use_crystal_interference_factors() const
 #if 1
 float 
 BinNormalisationFromECAT7::
-get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
-
+get_uncalibrated_bin_efficiency(const Bin& bin) const {
+    
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
   // TODO disable when not HR+ or HR++
   /*
@@ -584,8 +586,8 @@ get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const d
 	if (this->use_dead_time())
 	  {
 	    lor_efficiency_this_pair *=
-	      get_dead_time_efficiency(pos1, start_time, end_time) * 
-	      get_dead_time_efficiency(pos2, start_time, end_time);
+	      get_dead_time_efficiency(pos1) * 
+	      get_dead_time_efficiency(pos2);
 	  }
 	if (this->use_geometric_factors())
 	  {
@@ -636,10 +638,11 @@ get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const d
 
 
 float 
-BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& det_pos,
-						    const double start_time,
-						    const double end_time) const
+BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& det_pos) const
 {
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+    
   if (is_null_ptr(singles_rates_ptr)) {
     return 1;
   }

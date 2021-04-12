@@ -222,7 +222,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
 #ifdef STIR_OPENMP
 #pragma omp critical(MULT)
 #endif
-      normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
+      normalisation_sptr->undo(*mult_viewgrams_sptr);
     }
                         
   if (view_segment_num.segment_num()==0 && zero_seg0_end_planes)

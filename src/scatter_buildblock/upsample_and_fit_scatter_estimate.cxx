@@ -78,8 +78,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
       scatter_normalisation.set_up(emission_proj_data.get_exam_info_sptr(), emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
-      scatter_normalisation.undo(interpolated_scatter, 
-                                 time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
+      scatter_normalisation.undo(interpolated_scatter);
       Array<2,float> scale_factors;
 
       if (min_scale_factor == max_scale_factor)
