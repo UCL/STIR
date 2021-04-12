@@ -30,6 +30,7 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/error.h"
 #include "stir/FilePath.h"
+#include "stir/info.h"
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -130,15 +131,6 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
               filename.c_str());
     }
 
-    // Check status of the exclusions based upon event ID
-    if (this->exclude_trues && this->exclude_randoms)
-      error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
-            "no data will be processes.");
-
-    if (this->exclude_scattered && this->exclude_unscattered)
-      error("InputStreamFromROOTFile: Both the exclusion of scattered and unscattered events has been set. Therefore, "
-            "no data will be processes.");
-
     stream_ptr = new TChain(this->chain_name.c_str());
     stream_ptr->Add(fullfilename.c_str());
     // Turn off all branches
@@ -175,6 +167,38 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
         stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2, &br_sourcePosY2);
         stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1, &br_sourcePosZ1);
         stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2, &br_sourcePosZ2);
+    }
+
+
+    {
+      // Ensure that two conflicting exclusions are not applied
+      if (this->exclude_trues && this->exclude_randoms)
+        error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
+              "no data will be processes.");
+      if (this->exclude_scattered && this->exclude_unscattered)
+        error("InputStreamFromROOTFile: Both the exclusion of scattered and unscattered events has been set. Therefore, "
+              "no data will be processes.");
+
+      // Show which event types will be unlisted based upon the exclusion criteria
+      bool trues = true;
+      bool randoms = true;
+      bool scattered = true;
+      bool scattered_randoms = true;
+      if ( this->exclude_trues || this->exclude_unscattered)
+        trues = false;
+      if ( this->exclude_randoms || this->exclude_unscattered )
+        randoms= false;
+      if ( this->exclude_scattered || this->exclude_trues )
+        scattered = false;
+      if ( this->exclude_scattered || this->exclude_randoms )
+        scattered_randoms = false;
+
+      std::string status = "InputStreamFromROOTFile: Processing data with the following event type inclusions:"
+                           "\n  Unscattered from same eventID:        " + std::to_string(trues) +
+                           "\n  Unscattered from different eventIDs:  " + std::to_string(randoms) +
+                           "\n  Scattered from same eventID:          " + std::to_string(scattered) +
+                           "\n  Scattered different eventIDs:         " + std::to_string(scattered_randoms);
+      info(status, 2);
     }
 
     return Succeeded::yes;
