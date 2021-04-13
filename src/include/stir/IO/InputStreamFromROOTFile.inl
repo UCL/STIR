@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 
   \author Nikos Efthimiou
   \author Harry Tsoumpas
+  \author Robert Twyman
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"
