@@ -263,7 +263,7 @@ public:
     int num_virtual_transaxial_crystals_per_block;
     //@}
     //! Skip True events (eventID1 == eventID2). Default is false
-    bool exclude_trues;
+    bool exclude_nonrandom;
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
     //! Skip unscattered events (comptonphantom1 == 0 && comptonphantom2 == 0)). Default is false

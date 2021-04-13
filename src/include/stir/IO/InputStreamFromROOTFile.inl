@@ -121,7 +121,7 @@ InputStreamFromROOTFile::set_chain_name(const std::string& val)
 void
 InputStreamFromROOTFile::set_exclude_true_events(bool val)
 {
-  exclude_trues = val;
+  exclude_nonrandom = val;
 }
 
 void

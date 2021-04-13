@@ -68,7 +68,7 @@ InputStreamFromROOTFile::set_defaults()
 {
     starting_stream_position = 0;
     singles_readout_depth = -1;
-    exclude_trues = false;
+    exclude_nonrandom = false;
     exclude_scattered = false;
     exclude_unscattered = false;
     exclude_randoms = false;
@@ -89,7 +89,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("name of data file", &this->filename);
     this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
     this->parser.add_key("name of input TChain", &this->chain_name);
-    this->parser.add_key("exclude true events", &this->exclude_trues);
+    this->parser.add_key("exclude non-random events", &this->exclude_nonrandom);
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
     this->parser.add_key("exclude unscattered events", &this->exclude_unscattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
@@ -172,7 +172,7 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
 
     {
       // Ensure that two conflicting exclusions are not applied
-      if (this->exclude_trues && this->exclude_randoms)
+      if (this->exclude_nonrandom && this->exclude_randoms)
         error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
               "no data will be processed.");
       if (this->exclude_scattered && this->exclude_unscattered)
@@ -184,11 +184,11 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
       bool randoms = true;
       bool scattered = true;
       bool scattered_randoms = true;
-      if ( this->exclude_trues || this->exclude_unscattered)
+      if (this->exclude_nonrandom || this->exclude_unscattered)
         trues = false;
       if ( this->exclude_randoms || this->exclude_unscattered )
         randoms= false;
-      if ( this->exclude_scattered || this->exclude_trues )
+      if ( this->exclude_scattered || this->exclude_nonrandom )
         scattered = false;
       if ( this->exclude_scattered || this->exclude_randoms )
         scattered_randoms = false;
@@ -223,7 +223,7 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
   }
 
   // Trues/Random event exclusion condition.
-  if (this->exclude_randoms || this->exclude_trues) {
+  if (this->exclude_randoms || this->exclude_nonrandom) {
     GetEntryCheck(br_eventID1->GetEntry(brentry));
     GetEntryCheck(br_eventID2->GetEntry(brentry));
 
@@ -232,7 +232,7 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
       return false;
 
     // exclude trues
-    if (this->exclude_trues && this->eventID1 == this->eventID2)
+    if (this->exclude_nonrandom && this->eventID1 == this->eventID2)
       return false;
   }
 
