@@ -770,8 +770,13 @@ GATE_Cylindrical_PET Parameters :=
   number of crystals_Z := 4
 
   Singles readout depth := 1
+
+  ; exclude different event types
+  exclude non-random events := 0
+  exclude unscattered events := 0
   exclude scattered events := 0
   exclude random events := 0
+
   offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
