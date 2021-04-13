@@ -174,10 +174,10 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
       // Ensure that two conflicting exclusions are not applied
       if (this->exclude_trues && this->exclude_randoms)
         error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
-              "no data will be processes.");
+              "no data will be processed.");
       if (this->exclude_scattered && this->exclude_unscattered)
         error("InputStreamFromROOTFile: Both the exclusion of scattered and unscattered events has been set. Therefore, "
-              "no data will be processes.");
+              "no data will be processed.");
 
       // Show which event types will be unlisted based upon the exclusion criteria
       bool trues = true;
