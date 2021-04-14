@@ -37,6 +37,8 @@ number of crystals_Y := 1
 number of crystals_Z := 4
 
 Singles readout depth := 1
+exclude unscattered events := 0
+exclude non-random events := 0
 exclude scattered events := 0
 exclude random events := 0
 check energy window information := 1
