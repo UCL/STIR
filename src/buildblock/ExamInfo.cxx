@@ -43,10 +43,12 @@ ExamInfo::parameter_info() const
   std::ostringstream s;
 #endif
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
-  s << "Calibration Factor: " << this->calibration_factor << '\n';
+  s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
   s << "Radionuclide: " << this->radionuclide << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
-  s << "Scan start time: " << this->start_time_in_secs_since_1970 << '\n';
+  s << "Scan start time: " << std::fixed << std::setprecision(12) <<this->start_time_in_secs_since_1970
+   << std::setprecision(5) <<'\n'; // reset for further floats
+ 
   if (this->start_time_in_secs_since_1970>0)
     {
       DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(this->start_time_in_secs_since_1970);
