@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2013, 2014, 2018, 2020, University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2014, 2018, 2020-2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,9 +21,11 @@
   \brief implementation of stir::ExamInfo
 
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 #include "stir/ExamInfo.h"
 #include "stir/date_time_functions.h"
+#include <iomanip>
 
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
@@ -46,8 +49,7 @@ ExamInfo::parameter_info() const
   s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
   s << "Radionuclide: " << this->radionuclide << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
-  s << "Scan start time: " << std::fixed << std::setprecision(12) <<this->start_time_in_secs_since_1970
-   << std::setprecision(5) <<'\n'; // reset for further floats
+  s << "Scan start time: " << std::fixed << std::setprecision(1) <<this->start_time_in_secs_since_1970 <<'\n'; // reset for further floats
  
   if (this->start_time_in_secs_since_1970>0)
     {
