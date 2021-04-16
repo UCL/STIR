@@ -10,7 +10,7 @@
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2021, 2020 UCL
+    Copyright (C) 2016, 2021, 2020, 2021 UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -157,7 +157,11 @@ public:
 
     inline void set_chain_name(const std::string&);
 
+    inline void set_exclude_true_events(bool);
+
     inline void set_exclude_scattered_events(bool);
+
+    inline void set_exclude_unscattered_events(bool);
 
     inline void set_exclude_random_events(bool);
 
@@ -258,8 +262,12 @@ public:
     int num_virtual_axial_crystals_per_block;
     int num_virtual_transaxial_crystals_per_block;
     //@}
+    //! Skip True events (eventID1 == eventID2). Default is false
+    bool exclude_nonrandom;
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0). Default is false
     bool exclude_scattered;
+    //! Skip unscattered events (comptonphantom1 == 0 && comptonphantom2 == 0)). Default is false
+    bool exclude_unscattered;
     //! Skip random events (eventID1 != eventID2). Default is false
     bool exclude_randoms;
     //! Check energy window information (low_energy_window < energy <  up_energy_window). Default is true

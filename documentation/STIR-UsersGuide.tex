@@ -770,8 +770,13 @@ GATE_Cylindrical_PET Parameters :=
   number of crystals_Z := 4
 
   Singles readout depth := 1
+
+  ; exclude different event types
+  exclude non-random events := 0
+  exclude unscattered events := 0
   exclude scattered events := 0
   exclude random events := 0
+
   offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
@@ -793,6 +798,51 @@ available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
+
+\subsubsubsection{ROOT exclusion keys configurations}
+The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
+Below are sets event types that will be processed with an exclusion or combination of exclusions.
+The exclusions of an event type is false by default.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ | c | c | }
+        \hline
+        \textbf{Event(s) type} & \textbf{Exclusion Configuration}
+        \\ \hline \hline
+        All events & \textit{None}
+
+        \\ \hline \hline
+        \vtop{\hbox{\strut Scattered from same eventID }
+        \hbox{\strut Unscattered from same eventID}}
+        & \textit{exclude random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Unscattered from same eventID }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude scattered events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from different eventIDs }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude non-random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from same eventID}
+        \hbox{\strut Scattered from different eventIDs}}
+        & \textit{exclude unscattered events := 1}
+
+        \\ \hline \hline
+        Unscattered from same eventID & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Unscattered from different eventIDs &  \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Scattered from same eventID  & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+        Scattered from different eventIDs & \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+    \end{tabular}
+    \caption{A guide on how to process specific types of events from a ROOT file using various exclusion keys and combinations of keys.}
+    \label{tab:ROOT_file_exclusions}
+\end{table}
+
 
 \subsection{Multi header format}
 \label{multi-file-format}

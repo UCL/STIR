@@ -95,9 +95,10 @@ check(const ExamInfo &exam_info) const
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
 void 
-BinNormalisation::apply(RelatedViewgrams<float>& viewgrams,
-			const double start_time, const double end_time) const 
+BinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
 {
+  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
+  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -109,14 +110,16 @@ BinNormalisation::apply(RelatedViewgrams<float>& viewgrams,
 	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
         (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
-          std::max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
+          std::max(1.E-20F, get_bin_efficiency(bin));
   }
 }
 
 void 
 BinNormalisation::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
 {
+  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
+  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -128,7 +131,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
          (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= 
-	   this->get_bin_efficiency(bin,start_time, end_time);
+	   this->get_bin_efficiency(bin);
   }
 
 }
@@ -171,7 +174,7 @@ apply(ProjData& proj_data,
           proj_data.get_related_viewgrams(vs, symmetries_sptr);
       }
 
-      this->apply(viewgrams, start_time, end_time);
+      this->apply(viewgrams);
 
 #ifdef STIR_OPENMP
 #pragma omp critical (BINNORMALISATION_APPLY__VIEWGRAMS)
@@ -184,10 +187,13 @@ apply(ProjData& proj_data,
 
 void 
 BinNormalisation::
-undo(ProjData& proj_data,const double start_time, const double end_time, 
+undo(ProjData& proj_data,
      shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
+  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
+  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
+  this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
@@ -213,7 +219,7 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
           proj_data.get_related_viewgrams(vs, symmetries_sptr);
       }
 
-      this->undo(viewgrams, start_time, end_time);
+      this->undo(viewgrams);
 
 #ifdef STIR_OPENMP
 #pragma omp critical (BINNORMALISATION_UNDO__VIEWGRAMS)

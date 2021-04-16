@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2013, 2014, 2018, 2020, University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2014, 2018, 2020-2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,9 +21,11 @@
   \brief implementation of stir::ExamInfo
 
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 #include "stir/ExamInfo.h"
 #include "stir/date_time_functions.h"
+#include <iomanip>
 
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
@@ -43,10 +46,11 @@ ExamInfo::parameter_info() const
   std::ostringstream s;
 #endif
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
-  s << "Calibration Factor: " << this->calibration_factor << '\n';
+  s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
   s << "Radionuclide: " << this->radionuclide << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
-  s << "Scan start time: " << this->start_time_in_secs_since_1970 << '\n';
+  s << "Scan start time: " << std::fixed << std::setprecision(1) <<this->start_time_in_secs_since_1970 <<'\n'; // reset for further floats
+ 
   if (this->start_time_in_secs_since_1970>0)
     {
       DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(this->start_time_in_secs_since_1970);
@@ -73,16 +77,16 @@ ExamInfo::parameter_info() const
 
 bool 
 ExamInfo::operator == (const ExamInfo &p1) const {      
-    return  this->up_energy_thres==p1.up_energy_thres &&
-            this->low_energy_thres==p1.low_energy_thres &&
+    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && /* keV*/
+            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&/* keV*/
             this->radionuclide==p1.radionuclide &&
             this->time_frame_definitions==p1.time_frame_definitions &&
 //              this->branching_ratio==p1.branching_ratio &&
             ((this->calibration_factor<=0 && p1.calibration_factor<=0) || 
-             abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-4) &&
+             abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-3) &&
             this->imaging_modality==p1.imaging_modality &&
             this->originating_system==p1.originating_system &&
             this->patient_position==p1.patient_position &&
-            this->start_time_in_secs_since_1970==p1.start_time_in_secs_since_1970; }
+            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;/* sec */ }
 
 END_NAMESPACE_STIR

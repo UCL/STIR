@@ -30,6 +30,7 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/error.h"
 #include "stir/FilePath.h"
+#include "stir/info.h"
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -67,7 +68,9 @@ InputStreamFromROOTFile::set_defaults()
 {
     starting_stream_position = 0;
     singles_readout_depth = -1;
+    exclude_nonrandom = false;
     exclude_scattered = false;
+    exclude_unscattered = false;
     exclude_randoms = false;
     check_energy_window_information = true;
     low_energy_window = 0.f;
@@ -86,7 +89,9 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("name of data file", &this->filename);
     this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
     this->parser.add_key("name of input TChain", &this->chain_name);
+    this->parser.add_key("exclude non-random events", &this->exclude_nonrandom);
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
+    this->parser.add_key("exclude unscattered events", &this->exclude_unscattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("check energy window information", &this->check_energy_window_information);
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
@@ -164,6 +169,38 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
         stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2, &br_sourcePosZ2);
     }
 
+
+    {
+      // Ensure that two conflicting exclusions are not applied
+      if (this->exclude_nonrandom && this->exclude_randoms)
+        error("InputStreamFromROOTFile: Both the exclusion of true and random events has been set. Therefore, "
+              "no data will be processed.");
+      if (this->exclude_scattered && this->exclude_unscattered)
+        error("InputStreamFromROOTFile: Both the exclusion of scattered and unscattered events has been set. Therefore, "
+              "no data will be processed.");
+
+      // Show which event types will be unlisted based upon the exclusion criteria
+      bool trues = true;
+      bool randoms = true;
+      bool scattered = true;
+      bool scattered_randoms = true;
+      if (this->exclude_nonrandom || this->exclude_unscattered)
+        trues = false;
+      if ( this->exclude_randoms || this->exclude_unscattered )
+        randoms= false;
+      if ( this->exclude_scattered || this->exclude_nonrandom )
+        scattered = false;
+      if ( this->exclude_scattered || this->exclude_randoms )
+        scattered_randoms = false;
+
+      std::string status = "InputStreamFromROOTFile: Processing data with the following event type inclusions:"
+                           "\n  Unscattered from same eventID:        " + std::to_string(trues) +
+                           "\n  Unscattered from different eventIDs:  " + std::to_string(randoms) +
+                           "\n  Scattered from same eventID:          " + std::to_string(scattered) +
+                           "\n  Scattered different eventIDs:         " + std::to_string(scattered_randoms);
+      info(status, 2);
+    }
+
     return Succeeded::yes;
 }
 
@@ -173,23 +210,29 @@ InputStreamFromROOTFile::check_brentry_randoms_scatter_energy_conditions(Long64_
   if (brentry < 0)
     return false;
 
-  // Scatter event condition.
-  if (this->exclude_scattered) {
+  // Scattered/unscattered event exclusion condition.
+  if (this->exclude_scattered || this->exclude_unscattered) {
     GetEntryCheck(br_comptonPhantom1->GetEntry(brentry));
     GetEntryCheck(br_comptonPhantom2->GetEntry(brentry));
 
-    // Check if either event has been Compton scattered
-    if (this->comptonphantom1 > 0 || this->comptonphantom2 > 0)
+    // Check if either event has been Compton scattered and should be excluded
+    if (this->exclude_scattered && (this->comptonphantom1 > 0 || this->comptonphantom2 > 0))
+      return false;
+    if (this->exclude_unscattered && (this->comptonphantom1 == 0 && this->comptonphantom2 == 0))
       return false;
   }
 
-  // Random event condition.
-  if (this->exclude_randoms) {
+  // Trues/Random event exclusion condition.
+  if (this->exclude_randoms || this->exclude_nonrandom) {
     GetEntryCheck(br_eventID1->GetEntry(brentry));
     GetEntryCheck(br_eventID2->GetEntry(brentry));
 
-    // Check for the same event
-    if ((this->eventID1 != this->eventID2))
+    // exclude randoms
+    if (this->exclude_randoms && this->eventID1 != this->eventID2)
+      return false;
+
+    // exclude trues
+    if (this->exclude_nonrandom && this->eventID1 == this->eventID2)
       return false;
   }
 

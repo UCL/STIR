@@ -30,7 +30,7 @@
   \author PARAPET project
   \author Tobias Beisel
 */
-/* Modification history:
+/* Modification history:d
    KT 30/05/2002
    get rid of dependence on specific symmetries (i.e. views up to 45 degrees)
    
@@ -132,7 +132,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       mult_viewgrams_sptr.reset(
         new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
       mult_viewgrams_sptr->fill(1.F);
-      normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
+      normalisation_sptr->undo(*mult_viewgrams_sptr);
     }
                         
   if (view_segment_num.segment_num()==0 && zero_seg0_end_planes)

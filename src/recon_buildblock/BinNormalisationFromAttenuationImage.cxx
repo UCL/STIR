@@ -145,7 +145,7 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const 
 
 
 void 
-BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
@@ -164,7 +164,7 @@ BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,c
 
 void 
 BinNormalisationFromAttenuationImage::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
@@ -182,7 +182,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 }
 
 float 
-BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin) const
 {
   //TODO
   error("BinNormalisationFromAttenuationImage::get_bin_efficiency is not implemented");

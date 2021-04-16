@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2013, 2018, 2020 University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2018, 2020-2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,6 +21,7 @@
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
   \author Nikos Efthimiou
+  \author Daniel Deidda
 */
 
 

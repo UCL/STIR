@@ -43,6 +43,8 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
+ The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
+ handling list mode data.
 */
 
 class Bin
@@ -63,11 +65,15 @@ public:
   inline int tangential_pos_num()  const; 
   //! get view number
   inline int view_num() const; 
+  //! get time-frame number (1-based)
+  inline int time_frame_num() const;
   
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
   inline int& tangential_pos_num(); 
   inline int& view_num(); 
+  inline int& time_frame_num();
+  
   
   //! get an empty copy
   inline Bin get_empty_copy() const;
@@ -98,6 +104,7 @@ private :
   int  axial_pos; 
   int  tangential_pos; 
   float bin_value;
+  int time_frame;
   
   
 };
