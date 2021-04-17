@@ -43,6 +43,7 @@
 #include "stir/round.h"
 #include "stir/numerics/norm.h"
 #include "stir/warning.h"
+#include "stir/info.h"
 #include <boost/format.hpp>
 #include <math.h>
 
@@ -93,9 +94,9 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
           {
             const int view_mashing = get_view_mashing_factor();
             const float offset_inc =  static_cast<float>(_PI/(num_detectors_per_ring/2) * (view_mashing-1)/2.F);
-            warning(boost::format("Detected view-mashing factor %1% from the number of views (%2%) and the number of detectors per ring (%3%).\n"
-                                  "Adjusting the azimuthal angle offset accordingly (an extra offset of %4% degrees)")
-                    % view_mashing % num_views % num_detectors_per_ring % (offset_inc * 180 / _PI));
+            info(boost::format("Detected view-mashing factor %1% from the number of views (%2%) and the number of detectors per ring (%3%).\n"
+                               "Adjusting the azimuthal angle offset accordingly (an extra offset of %4% degrees)")
+                 % view_mashing % num_views % num_detectors_per_ring % (offset_inc * 180 / _PI));
 
             azimuthal_angle_offset += offset_inc;
           }
