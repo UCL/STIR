@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 - 2008-02-22, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2021 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,6 +37,8 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <string>
+#include <stdexcept>
 #include <boost/format.hpp>
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -59,14 +61,20 @@ double
 TimeFrameDefinitions::
 get_start_time(unsigned int frame_num) const
 {
-  return frame_times.at(frame_num-1).first;
+  if (frame_num > frame_times.size())
+    throw std::runtime_error("TimeFrameDefinitions: asked for frame " + std::to_string(frame_num)
+                             + ", but only " + std::to_string(frame_times.size()) + " frames present.");
+  return frame_times[frame_num-1].first;
 }
 
 double
 TimeFrameDefinitions::
 get_end_time(unsigned int frame_num) const
 {
-  return frame_times.at(frame_num-1).second;
+  if (frame_num > frame_times.size())
+    throw std::runtime_error("TimeFrameDefinitions: asked for frame " + std::to_string(frame_num)
+                             + ", but only " + std::to_string(frame_times.size()) + " frames present.");
+  return frame_times[frame_num-1].second;
 }
 
 double
@@ -113,6 +121,9 @@ TimeFrameDefinitions::
 get_time_frame_num(const double start_time, const double end_time) const
 {
   assert(end_time >=start_time);
+  if (this->get_num_frames() == 0)
+    throw std::runtime_error("TimeFrameDefinitions::get_time_frame_num called, but not time frames defined for this data.");
+
   for (unsigned int i = 1; i <=this->get_num_frames(); i++)
     {
       const double start = this->get_start_time(i);
@@ -271,6 +282,9 @@ void
 TimeFrameDefinitions::
 set_time_frame(const int frame_num, const double start, const double end)
 {
+  if (frame_num > frame_times.size())
+    throw std::runtime_error("TimeFrameDefinitions::set_time_frame called for frame " + std::to_string(frame_num)
+                             + ", but only " + std::to_string(frame_times.size()) + " frames present.");
     frame_times.at(frame_num-1).first = start;
     frame_times.at(frame_num-1).second = end;
 }
