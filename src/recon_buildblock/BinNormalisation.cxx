@@ -97,8 +97,6 @@ check(const ExamInfo &exam_info) const
 void 
 BinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -118,8 +116,6 @@ void
 BinNormalisation::
 undo(RelatedViewgrams<float>& viewgrams) const 
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -141,8 +137,6 @@ BinNormalisation::
 apply(ProjData& proj_data,
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
@@ -190,8 +184,6 @@ BinNormalisation::
 undo(ProjData& proj_data,
      shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
