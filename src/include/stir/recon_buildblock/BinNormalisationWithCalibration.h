@@ -44,7 +44,7 @@ public:
     
   BinNormalisationWithCalibration();
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
-  float get_calibration_factor() const;
+  float get_calibration_factor() const override;
   float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
