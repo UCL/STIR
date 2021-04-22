@@ -3,24 +3,18 @@ Licensing information for STIR 4.0.2
 
 See for more info http://stir.sourceforge.net, section Registration.
 
-Most files contain a copyright statement. For those files where this is missing, the
-following holds:
-
-Files in the following subdirectories are covered by the 
-GNU General Public License (see GPL.txt for text):
-    recon_test
-    utilities 
-    analytic/FBP3DRP/FBP*
-    iterative/OSMAPOSL
-    include/stir/OSMAPOSL
-
-Files in all other subdirectories are covered by the 
-GNU Lesser General Public License (see LGPL.txt for text).
+Most files are licensed under the Apache-2.0 license. The exception is
+FourierRebinning.cxx which is licensed under the LGPL-2.1
+and the PARAPET license (see below). Therefore if you use FourierRebinning,
+it is safest to assume that all of STIR is licensed under the LGPL-2.1
+license.
 
 Some files are in addition covered by the PARAPET license 
-(see PARAPETLICENSE.txt). This is always indicated in the file, but
-a complete list is also given at the end of this file.
+(see LICENSES/PARAPET-license.txt). This is always indicated in the file, but
+a complete list is also given at the end of this file. This license covers the
+code written by the PARAPET project (i.e. up to version 0.92, 12 Jan 2001).
 
+License documents are avaialble in the LICENSES directory.
 
 Explicit list of files that carry the PARAPET license
 ----------------------------------------------------
