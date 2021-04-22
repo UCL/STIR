@@ -20,3 +20,6 @@ find $* -type f -exec grep -q 'GNU.*General Public License' {} \; -exec sed -E -
 
 find $* -path .git -prune \
      -o -name "*[xhlkc]" -type f  -exec grep -l PARAPET {} \; -exec sed -E -i -f $script_path/add-PARAPET-license.sed {} \;
+
+find $* -path .git -prune \
+     -o -name FourierRebinning.cxx -exec sed -E -i -e s/Apache-2.0/LGPL-2.1-or-later/ {} \;
