@@ -23,7 +23,7 @@ set(dir iterative_POSSPS)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-   POSSPS
+   POSSPS.cxx
 )
 
 include(stir_exe_targets)

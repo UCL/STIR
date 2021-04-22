@@ -24,7 +24,7 @@ set(dir local_recon_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
- PostsmoothingForwardProjectorByBin
+ PostsmoothingForwardProjectorByBin.cxx
 )
 
 include(stir_lib_target)

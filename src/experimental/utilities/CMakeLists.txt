@@ -18,8 +18,8 @@ set(dir local_utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-create_normfactors3D
-create_normfactors
+create_normfactors3D.cxx
+create_normfactors.cxx
 )
 
 

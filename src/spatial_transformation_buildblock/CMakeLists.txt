@@ -23,10 +23,10 @@ set(dir spatial_transformation_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-   SpatialTransformation
-   GatedSpatialTransformation
-   warp_image
-   InvertAxis
+   SpatialTransformation.cxx
+   GatedSpatialTransformation.cxx
+   warp_image.cxx
+   InvertAxis.cxx
 ) 
 
 include(stir_lib_target)

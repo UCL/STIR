@@ -23,7 +23,7 @@ set(dir iterative_POSMAPOSL)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-   POSMAPOSL
+   POSMAPOSL.cxx
 )
 
 include(stir_exe_targets)

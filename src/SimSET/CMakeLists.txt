@@ -24,8 +24,8 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 # routines that need linking with the STIR library
 set(${dir_EXE_SOURCES}
-	conv_SimSET_projdata_to_STIR
-	conv_to_SimSET_att_image
+	conv_SimSET_projdata_to_STIR.cxx
+	conv_to_SimSET_att_image.cxx
 )
 
 include(stir_exe_targets)
