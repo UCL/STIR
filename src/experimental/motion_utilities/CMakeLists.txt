@@ -22,9 +22,9 @@ set(dir local_motion_utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-  rigid_object_transform_projdata
-  rigid_object_transform_image
-  non_rigid_transform
+  rigid_object_transform_projdata.cxx
+  rigid_object_transform_image.cxx
+  non_rigid_transform.cxx
 )
 
 #include(stir_exe_targets)

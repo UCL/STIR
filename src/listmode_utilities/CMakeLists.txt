@@ -23,22 +23,22 @@ set(dir listmode_utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-  lm_to_projdata
-  lm_to_projdata_bootstrap
-  lm_to_projdata_with_random_rejection
-  lm_fansums
-  list_lm_info
-  list_lm_events
-  list_lm_countrates
-)
+  lm_to_projdata.cxx
+  lm_to_projdata_bootstrap.cxx
+  lm_to_projdata_with_random_rejection.cxx
+  lm_fansums.cxx
+  list_lm_info.cxx
+  list_lm_events.cxx
+  list_lm_countrates.cxx
+  )
 
 if (HAVE_ECAT)
   # yes, the LLN files seem to be there, so we can compile more
   list(APPEND ${dir_EXE_SOURCES}
-	scan_sgl_file
-	print_sgl_values
-	rebin_sgl_file
-	add_ecat7_header_to_sgl
+	scan_sgl_file.cxx
+	print_sgl_values.cxx
+	rebin_sgl_file.cxx
+	add_ecat7_header_to_sgl.cxx
   )
 endif()
 

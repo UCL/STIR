@@ -24,19 +24,19 @@ set(dir  data_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	SinglesRates 
-	SinglesRatesForTimeFrames
-        randoms_from_singles
+	SinglesRates.cxx
+	SinglesRatesForTimeFrames.cxx
+        randoms_from_singles.cxx
 )
 if (HAVE_ECAT)
   list(APPEND  ${dir_LIB_SOURCES}
-	SinglesRatesFromSglFile 
-	SinglesRatesFromECAT7  
+	SinglesRatesFromSglFile.cxx
+	SinglesRatesFromECAT7.cxx
   )
 endif()
 if (HAVE_HDF5)
     list (APPEND  ${dir_LIB_SOURCES}
-        SinglesFromGEHDF5
+        SinglesFromGEHDF5.cxx
   )
 endif()
 
