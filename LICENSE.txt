@@ -14,7 +14,10 @@ Some files are in addition covered by the PARAPET license
 a complete list is also given at the end of this file. This license covers the
 code written by the PARAPET project (i.e. up to version 0.92, 12 Jan 2001).
 
-License documents are avaialble in the LICENSES directory.
+License documents are available in the LICENSES directory.
+License information is now indicated in the files using [SPDX identifiers](https://spdx.dev/ids/).
+This allows easier automatic checking and is also more compact.
+
 
 Explicit list of files that carry the PARAPET license
 ----------------------------------------------------
