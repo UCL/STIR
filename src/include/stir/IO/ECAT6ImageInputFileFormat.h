@@ -23,15 +23,16 @@
 #include "stir/error.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"
+#include "stir/deprecated.h"
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 //! Class for reading images in ECAT6 file-format.
 /*! \ingroup ECAT
-    \preliminary
+    \deprecated
 
 */
-class ECAT6ImageInputFileFormat :
+class STIR_DEPRECATED ECAT6ImageInputFileFormat :
 public InputFileFormat<DiscretisedDensity<3,float> >
 {
  public:

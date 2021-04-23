@@ -29,6 +29,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/Array.h"
+#include "stir/deprecated.h"
 
 #include <iostream>
 #include <vector>
@@ -47,8 +48,9 @@ START_NAMESPACE_STIR
 
   No writing yet.
 
+ \deprecated
 */
-class ProjDataGEAdvance : public ProjData
+class STIR_DEPRECATED ProjDataGEAdvance : public ProjData
 {
 public:
     

@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup ECAT
-
+  \deprecated
   \brief Declaration of routines which convert ECAT6 things into our 
   building blocks and vice versa.
 
