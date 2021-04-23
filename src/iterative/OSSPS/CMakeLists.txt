@@ -4,7 +4,7 @@ set(dir iterative_OSSPS)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	OSSPSReconstruction
+	OSSPSReconstruction.cxx
 )
 
 #$(dir)_REGISTRY_SOURCES:= 
@@ -14,7 +14,7 @@ include(stir_lib_target)
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-	OSSPS
+	OSSPS.cxx
 )
 
 

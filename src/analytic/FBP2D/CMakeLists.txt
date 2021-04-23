@@ -6,8 +6,8 @@ set(dir analytic_FBP2D)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	RampFilter 
-	FBP2DReconstruction
+	RampFilter.cxx
+	FBP2DReconstruction.cxx
 )
 
 #$(dir)_REGISTRY_SOURCES:= 
@@ -18,7 +18,7 @@ target_link_libraries(analytic_FBP2D recon_buildblock IO )
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-	FBP2D
+	FBP2D.cxx
 )
 
 include(stir_exe_targets)

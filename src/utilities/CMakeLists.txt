@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -23,71 +15,71 @@ set(dir utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-  manip_image 
-  stir_write_pgm
-	manip_projdata 
-	display_projdata 
-	do_linear_regression 
-	postfilter 
-	compare_projdata 
-	compare_image 
-	extract_segments
-	extract_single_images_from_dynamic_image
-        estimate_triple_energy_window_scatter_sinogram
-	correct_projdata 
-	stir_math 
-	list_projdata_info 
-	list_image_info 
-	list_image_values 
-        list_detector_and_bin_info
-	find_maxima_in_image 
-        create_multi_header
-	create_projdata_template 
-	SSRB 
-        invert_axis
-	poisson_noise 
-	get_time_frame_info 
-	generate_image 
-	list_ROI_values 
-	zoom_image 
-	find_fwhm_in_image 
-	abs_image 
-        convert_to_binary_image 
-	rebin_projdata 
-	write_proj_matrix_by_bin 
-        forward_project
-        back_project
-	calculate_attenuation_coefficients
-		compute_sqrt_Hessian_row_sum
-	attenuation_coefficients_to_projections 
-        conv_GATE_raw_ECAT_projdata_to_interfile
-        conv_gipl_to_interfile
-        conv_interfile_to_gipl
-        shift_image
-        shift_image_origin
-        warp_and_accumulate_gated_images
-        warp_image
-        zeropad_planes
-	apply_normfactors3D
-	apply_normfactors
-	construct_randoms_from_singles
-	find_ML_normfactors3D
-	find_ML_normfactors
-	find_ML_singles_from_delayed
+  manip_image.cxx
+  stir_write_pgm.cxx
+	manip_projdata.cxx
+	display_projdata.cxx
+	do_linear_regression.cxx
+	postfilter.cxx
+	compare_projdata.cxx
+	compare_image.cxx
+	extract_segments.cxx
+	extract_single_images_from_dynamic_image.cxx
+        estimate_triple_energy_window_scatter_sinogram.cxx
+	correct_projdata.cxx
+	stir_math.cxx
+	list_projdata_info.cxx
+	list_image_info.cxx
+	list_image_values.cxx
+        list_detector_and_bin_info.cxx
+	find_maxima_in_image.cxx
+        create_multi_header.cxx
+	create_projdata_template.cxx
+	SSRB.cxx
+        invert_axis.cxx
+	poisson_noise.cxx
+	get_time_frame_info.cxx
+	generate_image.cxx
+	list_ROI_values.cxx
+	zoom_image.cxx
+	find_fwhm_in_image.cxx
+	abs_image.cxx
+        convert_to_binary_image.cxx
+	rebin_projdata.cxx
+	write_proj_matrix_by_bin.cxx
+        forward_project.cxx
+        back_project.cxx
+	calculate_attenuation_coefficients.cxx
+	compute_sqrt_Hessian_row_sum.cxx
+	attenuation_coefficients_to_projections.cxx
+        conv_GATE_raw_ECAT_projdata_to_interfile.cxx
+        conv_gipl_to_interfile.cxx
+        conv_interfile_to_gipl.cxx
+        shift_image.cxx
+        shift_image_origin.cxx
+        warp_and_accumulate_gated_images.cxx
+        warp_image.cxx
+        zeropad_planes.cxx
+	apply_normfactors3D.cxx
+	apply_normfactors.cxx
+	construct_randoms_from_singles.cxx
+	find_ML_normfactors3D.cxx
+	find_ML_normfactors.cxx
+	find_ML_singles_from_delayed.cxx
 )
 
 if (AVW_FOUND)
-  list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
+  list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
 endif()
 
 if (HDF5_FOUND)
  list(APPEND ${dir_EXE_SOURCES}
-    construct_randoms_from_GEsingles
+    construct_randoms_from_GEsingles.cxx
  )
 endif()
 
 if (nlohmann_json_FOUND)
-  list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
+  list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
 
   install(DIRECTORY share/ DESTINATION ${STIR_DATA_DIR}
 		  FILES_MATCHING PATTERN "*.json")
