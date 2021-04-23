@@ -21,8 +21,6 @@ This allows easier automatic checking and is also more compact.
 
 Explicit list of files that carry the PARAPET license
 ----------------------------------------------------
-./scripts/maintenance/make_distribution.sh
-./scripts/maintenance/change-license.sh
 ./recon_test_pack/run_tests.sh
 ./recon_test_pack/run_ecat_tests.sh
 ./documentation/STIR-UsersGuide.tex

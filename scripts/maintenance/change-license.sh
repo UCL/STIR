@@ -8,7 +8,7 @@
 # The actual replacement is done with sed and the sed script change-license.sed.
 #
 # Copyright (C) 2021 University College London
-# SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+# SPDX-License-Identifier: Apache-2.0
 # Author: Kris Thielemans
 
 script_path=`dirname $0`

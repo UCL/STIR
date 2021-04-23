@@ -113,7 +113,7 @@ if [ $do_license = 1 ]; then
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
   find . -path .git -prune \
-     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET  >>LICENSE.txt 
+     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET-license  >>LICENSE.txt 
   git add LICENSE.txt
 fi
 
