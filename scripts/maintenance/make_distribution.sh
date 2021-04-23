@@ -11,7 +11,7 @@
 
 # This file is part of STIR.
 #
-# SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 #
@@ -251,4 +251,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "if not beta, did you run with 'do_website_final_version=1'?
+echo "if not beta, did you run with 'do_website_final_version=1'?"
