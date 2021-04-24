@@ -16,7 +16,7 @@ export INPUT FRAMES
 
 if [ ! -f $FRAMES ]; then
     # make a frame definition file with 1 frame for all the data
-    create_fdef_from_listmode.sh frames.fdef $listmode
+    create_fdef_from_listmode.sh frames.fdef $INPUT
 fi
 
 # create prompt sinograms
