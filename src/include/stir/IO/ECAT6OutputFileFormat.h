@@ -26,6 +26,7 @@
 // include for namespace macros
 #include "stir/IO/stir_ecat_common.h"
 #include <string>
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -41,8 +42,10 @@ START_NAMESPACE_ECAT6
 
   \warning Currently output always uses 2-byte signed integers in
   little-endian byte order.
+
+  \deprecated
  */
-class ECAT6OutputFileFormat : 
+class STIR_DEPRECATED ECAT6OutputFileFormat : 
   public RegisteredParsingObject<
         ECAT6OutputFileFormat,
         OutputFileFormat<DiscretisedDensity<3,float> >,

@@ -40,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 4.0}}
+ Version 4.1}}
 \end{center}
 
 \end{spacing}
@@ -61,7 +61,11 @@ A. Zverovich \\
 T. Beisel \\
 {\it \small Univ. of Paderborn} \\
 C. Falc\'{o}n \\
-{\it \small Univ. of Barcelona}
+{\it \small Univ. of Barcelona} \\
+R. Twyman \\
+{\it \small University College London}
+\\
+\\
 
 SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
@@ -212,12 +216,12 @@ that you would otherwise experience when using \textit{STIR} and ECAT7
 files.
 
 \subsubsection{
-Enabling GE RDF and VOLPET support}
+Enabling GE RDF  support}
 \label{sec:RDFsupport}
-We have software that reads VOLPET and RDF data for all GE scanners, but this can currently
-not be distributed due to licensing restrictions. If you have the
-GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
-support in \textit{STIR}.
+This software includes support for GE Raw Data Format (RDF) version 9 files, used
+by the GE Signa PET/MR and some PET/CT scanners (depending on their software version). This is only enabled if CMake was able to find HDF5 libraries.
+For most operating systems this can be done via your package manager which we highly recommend. You could also
+download from the <a href="https://www.hdfgroup.org/downloads/hdf5/">HDF5 group download page</a>.
 
 \subsection{
 Building}
@@ -626,17 +630,22 @@ but do not write it.
 
 \subsubsection{VOLPET sinograms}
 
-The GE VOLPET sinogram format is supported for reading, but for
-the GE Advance only and data files must have a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views. 
-See section \ref{sec:RDFsupport} for enabling support for other scanners and
-data in the GE RDF format.
+The GE VOLPET sinogram format for the GE Advance was supported for reading, but 
+only for data files with a single data set, maximum ring 
+difference 11 and contain 281 bins * 256 segments * 336 views.
+This has not been tested in a long time so will be removed in a future version.
+
+\subsubsection{RDF9 data}
+See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
+that use the GE RDF format. We currently support uncompressed listmode,
+uncompressed sinograms and normalisation files. (well-counter files are not
+yet supported). Please check \texttt{examples/GE-Signa-PETMR} for some
+information.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
 
-ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.
+ECAT6 data are no longer supported.
 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
@@ -646,6 +655,8 @@ will be read for static reconstruction.
 is currently ignored.
 
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
+
+\textbf{Warning} ECAT7 support is no longer tested.
 
 \subsubsection{Image IO using the AVW library}
 See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
@@ -3061,49 +3072,6 @@ factor is \texttt{<} 0, in which case it is assumed to be 1).
 \textbf{Warning} Note that sinogram data have to be 'corner-swapped', 
 see section \ref{sec:ecat_swap_corners}.
 
-{ \subsubsubsection{conv\_to\_ecat6}
-}
-This program is used to convert image or projection data into 
-CTI ECAT 6 data (input can be any format currently supported 
-by the library). It normally should be run as follows:
-
-
-for images:
-\cmdline{conv\_to\_ecat6 [-k] [-i] outputfilename.img {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ] scanner}
-
-
-for projection data:
-\cmdline{conv\_to\_ecat6 -s[2] [-k] [-i] outputfilename.scn {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ]}
-
-
-If there are no command line parameters, the user is asked for 
-the filenames and options instead. Unless the --\textit{i} option is 
-used, the data will be assigned a frame number in the order that 
-they occur on the command line.
-
-
-See \textbf{STIR/buildblock/Scanner.cxx} for supported scanner names, 
-but examples are ``ECAT 953'', ``ART'', 
-``Advance''. 
-
-
-{ \subsubsubsubsection{Command line options}
-}\begin{description}
-\item[-s2] This option forces output to 2D sinograms (ignoring higher 
-segments).
-\item[-k] the existing ECAT6 file will NOT be overwritten, but added 
-to. Any existing data in the ECAT6 file with the same \texttt{<}frame,gate,data,bed\texttt{>} 
-specification will be overwritten.
-\item[-i] ask for \texttt{<} frame,gate,data,bed\texttt{>} for each dataset
-\end{description}
-
-Note that to store projection data in ECAT6, a 3D sinogram cannot 
-be axially compressed (CTI \textit{span}=1).\\
-\textbf{Warning} This utility does \textit{not} corner-swap 3D projection 
-data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
-
 { \subsubsubsection{conv\_to\_ecat7}
 }
 This program is used to convert image or projection data into 
@@ -3170,6 +3138,7 @@ is currently ignored.
 
 \subsubsubsection{ecat\_swap\_corners}
 \label{sec:ecat_swap_corners}
+This utility is obsolete and will be removed in a next version.
 { \subsubsubsubsection{Usage}
 }
 \cmdline{ecat\_swap\_corners out\_name in\_name}
@@ -4269,12 +4238,12 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
   $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
-  modification the penatly function used to prevent divide by zero's.
+  modification the penalty function used to prevent divide by zero's.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
-  x-voxel\_size divided by the Euclidean distance between the points.
+  \texttt{x-voxel\_size} divided by the Euclidean distance between the points.
  
 { \subsubsubsubsection{Parameters}
 }
@@ -5319,6 +5288,8 @@ variable), see section \ref{sec:UsingCMake}.
 \subsubsection{
 X Windows display}
 \label{sec:display}
+\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
 the bitmaps are displayed. To proceed, you have to make this 

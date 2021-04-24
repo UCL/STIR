@@ -22,8 +22,6 @@ PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
-cmake_minimum_required(VERSION 2.8.3)
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # Compiler Id for Apple Clang is AppleClang, see STIR issue #531
 endif()

@@ -11,7 +11,7 @@
 
 # This file is part of STIR.
 #
-# SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 #
@@ -113,7 +113,7 @@ if [ $do_license = 1 ]; then
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
   find . -path .git -prune \
-     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET  >>LICENSE.txt 
+     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET-license  >>LICENSE.txt 
   git add LICENSE.txt
 fi
 
@@ -251,4 +251,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "if not beta, did you run with 'do_website_final_version=1'?
+echo "if not beta, did you run with 'do_website_final_version=1'?"
