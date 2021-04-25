@@ -135,7 +135,7 @@ rebin()
   for ( num_tang_poss_pow2 = 1; num_tang_poss_pow2 < proj_data_sptr->get_num_tangential_poss() && num_tang_poss_pow2 < (1<<15); num_tang_poss_pow2*=2);
   
   //CL Initialise the 2D Fourier transform of all rebinned sinograms P(w,k)=0
-   const int num_planes = proj_data_sptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()*2-1;
+  const int num_planes = proj_data_sptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()*2-1;
 
   Array<3,std::complex<float> > FT_rebinned_data(IndexRange3D(0, num_planes-1, 0, num_views_pow2-1, 0, num_tang_poss_pow2-1));
   Array<3,float> Weights_for_FT_rebinned_data(IndexRange3D(0, num_planes-1, 0,num_views_pow2-1, 0,num_tang_poss_pow2-1));

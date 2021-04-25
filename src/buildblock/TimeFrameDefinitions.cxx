@@ -282,15 +282,15 @@ void
 TimeFrameDefinitions::
 set_time_frame(const int frame_num, const double start, const double end)
 {
-  if (frame_num > frame_times.size())
+  if (frame_num > (int) frame_times.size())
     throw std::runtime_error("TimeFrameDefinitions::set_time_frame called for frame " + std::to_string(frame_num)
                              + ", but only " + std::to_string(frame_times.size()) + " frames present.");
-    frame_times.at(frame_num-1).first = start;
-    frame_times.at(frame_num-1).second = end;
+  frame_times.at(frame_num-1).first = start;
+  frame_times.at(frame_num-1).second = end;
 }
 
 bool TimeFrameDefinitions::operator == (const TimeFrameDefinitions &t) const {
-    for (int frame=0;frame<frame_times.size(); frame++){
+    for (int frame=0;frame< (int)frame_times.size(); frame++){
         
         const bool is_identical=(abs(frame_times.at(frame).first - t.frame_times.at(frame).first) <= 10e-5) &&
                       (abs(frame_times.at(frame).second - t.frame_times.at(frame).second) <= 10e-5);

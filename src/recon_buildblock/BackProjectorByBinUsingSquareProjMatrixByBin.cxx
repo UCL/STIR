@@ -93,23 +93,23 @@ actual_back_project(DiscretisedDensity<3,float>& image,
     for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
       for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
       { 
+        Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
+        proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
+        auto element_ptr = 
+          proj_matrix_row.begin();
 
-	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
-	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
-	auto element_ptr = 
-	  proj_matrix_row.begin();
+        // square matrix elements
+        while (element_ptr != proj_matrix_row.end())
+        {	  
+          const float val=element_ptr->get_value();
+          *element_ptr *=val;	  
+          element_ptr++;
+        }
 
-	// square matrix elements
-	while (element_ptr != proj_matrix_row.end())
-	{	  
-	  const float val=element_ptr->get_value();
-	  *element_ptr *=val;	  
-	   element_ptr++;
-	}
-
-	proj_matrix_row.back_project(image, bin);	
+        proj_matrix_row.back_project(image, bin);	
       }
-      ++r_viewgrams_iter;
+
+    ++r_viewgrams_iter;
   }
 }
 

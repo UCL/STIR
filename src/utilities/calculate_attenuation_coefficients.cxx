@@ -156,8 +156,8 @@ main (int argc, char * argv[])
     }
 
   // dummy values currently necessary for BinNormalisation, but they will be ignored
-  const double start_frame = 0;
-  const double end_frame = 0;
+  // const double start_frame = 0;
+  // const double end_frame = 0;
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
   if (doACF)
     {

@@ -490,7 +490,7 @@ static void write_interfile_image_data_descriptions(std::ostream& output_header,
 
     output_header << "number of image data types := " << data_type_descriptions.size() << '\n';
     output_header << "index nesting level := {data type}\n";
-    for (int i=0; i<data_type_descriptions.size(); i++)
+    for (unsigned int i=0; i<data_type_descriptions.size(); i++)
         output_header << "image data type description[" << i+1 << "] := " << data_type_descriptions[i] << "\n";
 }
 
@@ -911,7 +911,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
     VectorWithOffset<float> scaling_factors(image.get_num_params());
-    for (int i=1; i<=image.get_num_params(); i++) {
+    for (int i=1; i<= (int) image.get_num_params(); i++) {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();
         write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
@@ -960,7 +960,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
     VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
-    for (int i=1; i<=image.get_num_time_frames(); i++)
+    for (int i=1; i<= (int)image.get_num_time_frames(); i++)
 {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();

@@ -499,7 +499,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
         prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
       }
       
-      prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
+  prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
 }              
 
 template <typename elemT>

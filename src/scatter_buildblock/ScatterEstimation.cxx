@@ -773,281 +773,280 @@ Succeeded
 ScatterEstimation::
 process_data()
 {
-
   if (!this->_already_setup)
     error("ScatterEstimation: set_up needs to be called before process_data()");
 
-    float local_min_scale_value = 0.5f;
-    float local_max_scale_value = 0.5f;
+  float local_min_scale_value = 0.5f;
+  float local_max_scale_value = 0.5f;
 
-    stir::BSpline::BSplineType  spline_type = stir::BSpline::quadratic;
+  stir::BSpline::BSplineType  spline_type = stir::BSpline::quadratic;
 
-    // This has been set to 2D or 3D in the set_up()
-    shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_exam_info_sptr(),
-                                                                          this->scatter_simulation_sptr->get_template_proj_data_info_sptr()->create_shared_clone()));
-    scatter_simulation_sptr->set_output_proj_data_sptr(unscaled_est_projdata_sptr);
+  // This has been set to 2D or 3D in the set_up()
+  shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_exam_info_sptr(),
+                                                                        this->scatter_simulation_sptr->get_template_proj_data_info_sptr()->create_shared_clone()));
+  scatter_simulation_sptr->set_output_proj_data_sptr(unscaled_est_projdata_sptr);
 
-    // Here the scaled scatter data will be stored.
-    // Wether 2D or 3D depends on how the ScatterSimulation was initialised
-    shared_ptr<ProjData> scaled_est_projdata_sptr;
+  // Here the scaled scatter data will be stored.
+  // Wether 2D or 3D depends on how the ScatterSimulation was initialised
+  shared_ptr<ProjData> scaled_est_projdata_sptr;
 
-    shared_ptr<BinNormalisation> normalisation_factors_sptr =
-        this->get_normalisation_object_sptr(run_in_2d_projdata
-					    ? this->multiplicative_binnorm_2d_sptr
-					    : this->multiplicative_binnorm_sptr);
-    if(run_in_2d_projdata)
-    {
-        scaled_est_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                            this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-        scaled_est_projdata_sptr->fill(0.F);
+  shared_ptr<BinNormalisation> normalisation_factors_sptr =
+      this->get_normalisation_object_sptr(run_in_2d_projdata
+            ? this->multiplicative_binnorm_2d_sptr
+            : this->multiplicative_binnorm_sptr);
+  if(run_in_2d_projdata)
+  {
+      scaled_est_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+      scaled_est_projdata_sptr->fill(0.F);
+  }
+  else
+  {
+      scaled_est_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                          this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+      scaled_est_projdata_sptr->fill(0.F);
+  }
+
+  info("ScatterEstimation: Start processing...");
+  shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
+
+  //Recompute the initial y image if the max is equal to the min.
+#if 1
+  if( this->current_activity_image_sptr->find_max() == this->current_activity_image_sptr->find_min() )
+  {
+      info("ScatterEstimation: The max and the min values of the current activity image are equal."
+          "We deduce that it has been initialised to some value, therefore we will run an initial "
+          "reconstruction ...");
+
+      if (iterative_method)
+          reconstruct_iterative(0, this->current_activity_image_sptr);
+      else
+          reconstruct_analytic(0, this->current_activity_image_sptr);
+
+      if ( run_debug_mode )
+      {
+          std::string out_filename = extras_path.get_path() + "initial_activity_image";
+          OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
+                  write_to_file(out_filename, *this->current_activity_image_sptr);
+      }
+  }
+#else
+  {
+      std::string filename = extras_path.get_path() + "recon_0.hv";
+      current_activity_image_sptr = read_from_file<DiscretisedDensity<3,float> >(filename);
+  }
+#endif
+  // Set the first activity image
+  scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
+
+  if (this->do_average_at_2)
+      act_image_for_averaging.reset(this->current_activity_image_sptr->clone());
+
+  //
+  // Begin the estimation process...
+  //
+  info("ScatterEstimation: Begin the estimation process...");
+  for (int i_scat_iter = 1;
+      i_scat_iter <= this->num_scatter_iterations;
+      i_scat_iter++)
+  {
+
+
+      if ( this->do_average_at_2)
+      {
+          if (i_scat_iter == 2) // do average 0 and 1
+          {
+              if (is_null_ptr(act_image_for_averaging))
+                  error("Storing the first activity estimate has failed at some point.");
+
+              *this->current_activity_image_sptr += *act_image_for_averaging;
+              *this->current_activity_image_sptr /= 2.f;
+          }
+      }
+
+      if (!iterative_method)
+      {
+          // Threshold
+      }
+
+      info("ScatterEstimation: Scatter simulation in progress...");
+      if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
+          error("ScatterEstimation: Failure at set_up() of the Scatter Simulation.");
+
+      if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
+          error("ScatterEstimation: Scatter simulation failed");
+      info("ScatterEstimation: Scatter simulation done...");
+
+      if(this->run_debug_mode) // Write unscaled scatter sinogram
+      {
+          std::stringstream convert;   // stream used for the conversion
+          convert << "unscaled_" << i_scat_iter;
+          FilePath tmp(convert.str(),false);
+          tmp.prepend_directory_name(extras_path.get_path());
+          unscaled_est_projdata_sptr->write_to_file(tmp.get_string());
+      }
+
+      // Set the min and max scale factors
+      // We're going to assume that the first iteration starts from an image without scatter correction, and therefore
+      // overestimates scatter. This could be inaccurate, but is the case most of the time.
+      // TODO introduce a variable to control this behaviour
+      if (i_scat_iter > 0)
+      {
+          local_max_scale_value = this->max_scale_value;
+          local_min_scale_value = this->min_scale_value;
+      }
+
+      scaled_est_projdata_sptr->fill(0.F);
+
+      upsample_and_fit_scatter_estimate(*scaled_est_projdata_sptr, *data_to_fit_projdata_sptr,
+                                        *unscaled_est_projdata_sptr,
+                                        *normalisation_factors_sptr,
+                                        *this->mask_projdata_sptr, local_min_scale_value,
+                                        local_max_scale_value, this->half_filter_width,
+                                        spline_type, true);
+
+      if(this->run_debug_mode)
+      {
+          std::stringstream convert;   // stream used for the conversion
+          convert << "scaled_" << i_scat_iter;
+          FilePath tmp(convert.str(),false);
+          tmp.prepend_directory_name(extras_path.get_path());
+          scaled_est_projdata_sptr->write_to_file(tmp.get_string());
+      }
+
+
+      // When saving we need to go 3D.
+      if (this->export_scatter_estimates_of_each_iteration ||
+              i_scat_iter == this->num_scatter_iterations )
+      {
+
+          shared_ptr <ProjData> temp_scatter_projdata;
+
+          if(run_in_2d_projdata)
+          {
+        info("ScatterEstimation: upsampling scatter to 3D");
+              //this is complicated as the 2d scatter estimate was
+              //"unnormalised" (divided by norm2d), so we need to undo this 2D norm, and put a 3D norm in.
+              //unfortunately, currently the values in the gaps in the
+              //scatter estimate are not quite zero (just very small)
+              //so we have to first make sure that they are zero before
+              //we do any of this, otherwise the values after normalisation will be garbage
+              //we do this by min-thresholding and then subtracting the threshold.
+              //as long as the threshold is tiny, this will be ok
+
+              // At the same time we are going to save to a temp projdata file
+
+              shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (scaled_est_projdata_sptr->get_exam_info_sptr(),
+                                                                        scaled_est_projdata_sptr->get_proj_data_info_sptr()));
+              temp_projdata->fill(*scaled_est_projdata_sptr);
+              pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9f, NumericInfo<float>().max_value());
+              pow_times_add add_scalar (-1e-9f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+              apply_to_proj_data(*temp_projdata, min_threshold);
+              apply_to_proj_data(*temp_projdata, add_scalar);
+  // threshold back to 0 to avoid getting tiny negatives (due to numerical precision errors)
+              pow_times_add min_threshold_zero (0.0f, 1.0f, 1.0f, 0.f, NumericInfo<float>().max_value());
+              apply_to_proj_data(*temp_projdata, min_threshold_zero);
+
+              // ok, we can multiply with the norm
+              normalisation_factors_sptr->apply(*temp_projdata);
+
+  // Create proj_data to save the 3d scatter estimate
+              if(!this->output_scatter_estimate_prefix.empty())
+              {
+                  std::stringstream convert;
+                  convert << this->output_scatter_estimate_prefix << "_" << i_scat_iter;
+                  std::string output_scatter_filename = convert.str();
+
+                  scatter_estimate_sptr.reset(
+                              new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr() ,
+                                                    output_scatter_filename,
+                                                    std::ios::in | std::ios::out | std::ios::trunc));
+              }
+              else
+              {
+      // TODO should check if we have one already from previous iteration
+                  scatter_estimate_sptr.reset(
+                              new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr()));
+              }
+  scatter_estimate_sptr->fill(0.0);
+
+              // Upsample to 3D
+              //we're currently not doing the tail fitting in this step, but keeping the same scale as determined in 2D
+  //Note that most of the arguments here are ignored because we fix the scale to 1
+  shared_ptr<BinNormalisation> normalisation_factors_3d_sptr =
+    this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
+
+              upsample_and_fit_scatter_estimate(*scatter_estimate_sptr,
+                                                *this->input_projdata_sptr,
+                                                *temp_projdata,
+                                                *normalisation_factors_3d_sptr,
+                                                *this->input_projdata_sptr,
+                                                1.0f, 1.0f, 1, spline_type,
+                                                false);
     }
     else
     {
-        scaled_est_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                            this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-        scaled_est_projdata_sptr->fill(0.F);
+        scatter_estimate_sptr = scaled_est_projdata_sptr;
     }
 
-    info("ScatterEstimation: Start processing...");
-    shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
-
-    //Recompute the initial y image if the max is equal to the min.
-#if 1
-    if( this->current_activity_image_sptr->find_max() == this->current_activity_image_sptr->find_min() )
+    if(!this->output_additive_estimate_prefix.empty())
     {
-        info("ScatterEstimation: The max and the min values of the current activity image are equal."
-             "We deduce that it has been initialised to some value, therefore we will run an initial "
-             "reconstruction ...");
+  info("ScatterEstimation: constructing additive sinogram");
+  // Now save the full background term.
+  std::stringstream convert;
+  convert << this->output_additive_estimate_prefix << "_" <<
+    i_scat_iter;
+  std::string output_additive_filename = convert.str();
 
-        if (iterative_method)
-            reconstruct_iterative(0, this->current_activity_image_sptr);
-        else
-            reconstruct_analytic(0, this->current_activity_image_sptr);
+  shared_ptr<ProjData> temp_additive_projdata(
+            new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                this->input_projdata_sptr->get_proj_data_info_sptr() ,
+                output_additive_filename,
+                std::ios::in | std::ios::out | std::ios::trunc));
 
-        if ( run_debug_mode )
-        {
-            std::string out_filename = extras_path.get_path() + "initial_activity_image";
-            OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-                    write_to_file(out_filename, *this->current_activity_image_sptr);
-        }
-    }
-#else
+  temp_additive_projdata->fill(*scatter_estimate_sptr);
+  if (!is_null_ptr(this->back_projdata_sptr))
     {
-        std::string filename = extras_path.get_path() + "recon_0.hv";
-        current_activity_image_sptr = read_from_file<DiscretisedDensity<3,float> >(filename);
-    }
-#endif
-    // Set the first activity image
-    scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
-
-    if (this->do_average_at_2)
-        act_image_for_averaging.reset(this->current_activity_image_sptr->clone());
-
-    //
-    // Begin the estimation process...
-    //
-    info("ScatterEstimation: Begin the estimation process...");
-    for (int i_scat_iter = 1;
-         i_scat_iter <= this->num_scatter_iterations;
-         i_scat_iter++)
-    {
-
-
-        if ( this->do_average_at_2)
-        {
-            if (i_scat_iter == 2) // do average 0 and 1
-            {
-                if (is_null_ptr(act_image_for_averaging))
-                    error("Storing the first activity estimate has failed at some point.");
-
-                *this->current_activity_image_sptr += *act_image_for_averaging;
-                *this->current_activity_image_sptr /= 2.f;
-            }
-        }
-
-        if (!iterative_method)
-        {
-            // Threshold
-        }
-
-        info("ScatterEstimation: Scatter simulation in progress...");
-        if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
-            error("ScatterEstimation: Failure at set_up() of the Scatter Simulation.");
-
-        if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
-            error("ScatterEstimation: Scatter simulation failed");
-        info("ScatterEstimation: Scatter simulation done...");
-
-        if(this->run_debug_mode) // Write unscaled scatter sinogram
-        {
-            std::stringstream convert;   // stream used for the conversion
-            convert << "unscaled_" << i_scat_iter;
-            FilePath tmp(convert.str(),false);
-            tmp.prepend_directory_name(extras_path.get_path());
-            unscaled_est_projdata_sptr->write_to_file(tmp.get_string());
-        }
-
-        // Set the min and max scale factors
-        // We're going to assume that the first iteration starts from an image without scatter correction, and therefore
-        // overestimates scatter. This could be inaccurate, but is the case most of the time.
-        // TODO introduce a variable to control this behaviour
-        if (i_scat_iter > 0)
-        {
-            local_max_scale_value = this->max_scale_value;
-            local_min_scale_value = this->min_scale_value;
-        }
-
-        scaled_est_projdata_sptr->fill(0.F);
-
-        upsample_and_fit_scatter_estimate(*scaled_est_projdata_sptr, *data_to_fit_projdata_sptr,
-                                          *unscaled_est_projdata_sptr,
-                                          *normalisation_factors_sptr,
-                                          *this->mask_projdata_sptr, local_min_scale_value,
-                                          local_max_scale_value, this->half_filter_width,
-                                          spline_type, true);
-
-        if(this->run_debug_mode)
-        {
-            std::stringstream convert;   // stream used for the conversion
-            convert << "scaled_" << i_scat_iter;
-            FilePath tmp(convert.str(),false);
-            tmp.prepend_directory_name(extras_path.get_path());
-            scaled_est_projdata_sptr->write_to_file(tmp.get_string());
-        }
-
-
-        // When saving we need to go 3D.
-        if (this->export_scatter_estimates_of_each_iteration ||
-                i_scat_iter == this->num_scatter_iterations )
-        {
-
-            shared_ptr <ProjData> temp_scatter_projdata;
-
-            if(run_in_2d_projdata)
-            {
-	        info("ScatterEstimation: upsampling scatter to 3D");
-                //this is complicated as the 2d scatter estimate was
-                //"unnormalised" (divided by norm2d), so we need to undo this 2D norm, and put a 3D norm in.
-                //unfortunately, currently the values in the gaps in the
-                //scatter estimate are not quite zero (just very small)
-                //so we have to first make sure that they are zero before
-                //we do any of this, otherwise the values after normalisation will be garbage
-                //we do this by min-thresholding and then subtracting the threshold.
-                //as long as the threshold is tiny, this will be ok
-
-                // At the same time we are going to save to a temp projdata file
-
-                shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (scaled_est_projdata_sptr->get_exam_info_sptr(),
-                                                                           scaled_est_projdata_sptr->get_proj_data_info_sptr()));
-                temp_projdata->fill(*scaled_est_projdata_sptr);
-                pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9f, NumericInfo<float>().max_value());
-                pow_times_add add_scalar (-1e-9f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
-                apply_to_proj_data(*temp_projdata, min_threshold);
-                apply_to_proj_data(*temp_projdata, add_scalar);
-		// threshold back to 0 to avoid getting tiny negatives (due to numerical precision errors)
-                pow_times_add min_threshold_zero (0.0f, 1.0f, 1.0f, 0.f, NumericInfo<float>().max_value());
-                apply_to_proj_data(*temp_projdata, min_threshold_zero);
-
-                // ok, we can multiply with the norm
-                normalisation_factors_sptr->apply(*temp_projdata);
-
-		// Create proj_data to save the 3d scatter estimate
-                if(!this->output_scatter_estimate_prefix.empty())
-                {
-                    std::stringstream convert;
-                    convert << this->output_scatter_estimate_prefix << "_" << i_scat_iter;
-                    std::string output_scatter_filename = convert.str();
-
-                    scatter_estimate_sptr.reset(
-                                new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                      this->input_projdata_sptr->get_proj_data_info_sptr() ,
-                                                      output_scatter_filename,
-                                                      std::ios::in | std::ios::out | std::ios::trunc));
-                }
-                else
-                {
-		    // TODO should check if we have one already from previous iteration
-                    scatter_estimate_sptr.reset(
-                                new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                      this->input_projdata_sptr->get_proj_data_info_sptr()));
-                }
-		scatter_estimate_sptr->fill(0.0);
-
-                // Upsample to 3D
-                //we're currently not doing the tail fitting in this step, but keeping the same scale as determined in 2D
-		//Note that most of the arguments here are ignored because we fix the scale to 1
-		shared_ptr<BinNormalisation> normalisation_factors_3d_sptr =
-		  this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
-
-                upsample_and_fit_scatter_estimate(*scatter_estimate_sptr,
-                                                  *this->input_projdata_sptr,
-                                                  *temp_projdata,
-                                                  *normalisation_factors_3d_sptr,
-                                                  *this->input_projdata_sptr,
-                                                  1.0f, 1.0f, 1, spline_type,
-                                                  false);
-	    }
-	    else
-	    {
-	        scatter_estimate_sptr = scaled_est_projdata_sptr;
-	    }
-
-	    if(!this->output_additive_estimate_prefix.empty())
-	    {
-		info("ScatterEstimation: constructing additive sinogram");
-		// Now save the full background term.
-		std::stringstream convert;
-		convert << this->output_additive_estimate_prefix << "_" <<
-		  i_scat_iter;
-		std::string output_additive_filename = convert.str();
-
-		shared_ptr<ProjData> temp_additive_projdata(
-					     new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-								   this->input_projdata_sptr->get_proj_data_info_sptr() ,
-								   output_additive_filename,
-								   std::ios::in | std::ios::out | std::ios::trunc));
-
-		temp_additive_projdata->fill(*scatter_estimate_sptr);
-		if (!is_null_ptr(this->back_projdata_sptr))
-		  {
-		    add_proj_data(*temp_additive_projdata, *this->back_projdata_sptr);
-		  }
-
-		this->multiplicative_binnorm_sptr->apply(*temp_additive_projdata);
-	    }
-        }
-
-        // In the additive put the scaled scatter estimate
-        // If we have randoms, then add them to the scaled scatter estimate
-        // Then normalise
-        if(run_in_2d_projdata)
-        {
-            this->add_projdata_2d_sptr->fill(*scaled_est_projdata_sptr);
-
-            if (!is_null_ptr(this->back_projdata_2d_sptr))
-            {
-                add_proj_data(*add_projdata_2d_sptr, *this->back_projdata_2d_sptr);
-            }
-            this->multiplicative_binnorm_2d_sptr->apply(*add_projdata_2d_sptr);
-        }
-        else
-        {
-	    // TODO restructure code to move additive_projdata code from above
-            error("ScatterEstimation: You should not be here. This is not 2D.");
-        }
-        current_activity_image_sptr->fill(1.f);
-
-        iterative_method ? reconstruct_iterative(i_scat_iter,
-                                                 this->current_activity_image_sptr):
-                           reconstruct_analytic(i_scat_iter, this->current_activity_image_sptr);
-
-        scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
-
+      add_proj_data(*temp_additive_projdata, *this->back_projdata_sptr);
     }
 
-    info("ScatterEstimation: Scatter Estimation finished !!!");
+  this->multiplicative_binnorm_sptr->apply(*temp_additive_projdata);
+    }
+      }
 
-    return Succeeded::yes;
+      // In the additive put the scaled scatter estimate
+      // If we have randoms, then add them to the scaled scatter estimate
+      // Then normalise
+      if(run_in_2d_projdata)
+      {
+          this->add_projdata_2d_sptr->fill(*scaled_est_projdata_sptr);
+
+          if (!is_null_ptr(this->back_projdata_2d_sptr))
+          {
+              add_proj_data(*add_projdata_2d_sptr, *this->back_projdata_2d_sptr);
+          }
+          this->multiplicative_binnorm_2d_sptr->apply(*add_projdata_2d_sptr);
+      }
+      else
+      {
+    // TODO restructure code to move additive_projdata code from above
+          error("ScatterEstimation: You should not be here. This is not 2D.");
+      }
+      current_activity_image_sptr->fill(1.f);
+
+      iterative_method ? reconstruct_iterative(i_scat_iter,
+                                              this->current_activity_image_sptr):
+                        reconstruct_analytic(i_scat_iter, this->current_activity_image_sptr);
+
+      scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
+
+  }
+
+  info("ScatterEstimation: Scatter Estimation finished !!!");
+
+  return Succeeded::yes;
 }
 
 void

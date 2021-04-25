@@ -850,9 +850,9 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     this->get_projector_pair().get_symmetries_used()->clone());
 
   const double start_time =
-    this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
+     this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
   const double end_time =
-    this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
+     this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
 
   this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();

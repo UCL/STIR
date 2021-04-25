@@ -242,26 +242,29 @@ while (argc>1 && strncmp(argv[1],"--",2)==0)
 
   if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
-if (do_filename)
-  out << std::setw(15) << "ImageName";
-else
-  out << input_file << '\n';
+  
+  if (do_filename)
+    out << std::setw(15) << "ImageName";
+  else
+    out << input_file << '\n';
 
   out << std::setw(15) << "ROI";
 
-    if(by_plane)
-      out    << std::setw(10) << "Plane_num" ;
-      out << std::setw(15) << "Mean "
-          << std::setw(15) << "Stddev";
-    if(do_max)
-      out << std::setw(15) << "Max ";
-    if(do_min)
-      out << std::setw(15) << "Min ";
-    if (do_CV)
-      out << std::setw(15) << "CV";
-    if (do_V)
-      out << std::setw(15) << "Volume";
-    out  <<'\n';
+  if(by_plane)
+    out    << std::setw(10) << "Plane_num" ;
+  
+  out << std::setw(15) << "Mean "
+      << std::setw(15) << "Stddev";
+  
+  if(do_max)
+    out << std::setw(15) << "Max ";
+  if(do_min)
+    out << std::setw(15) << "Min ";
+  if (do_CV)
+    out << std::setw(15) << "CV";
+  if (do_V)
+    out << std::setw(15) << "Volume";
+  out  <<'\n';
   {
     std::vector<shared_ptr<Shape3D> >::const_iterator current_shape_iter =
       parameters.shape_ptrs.begin();

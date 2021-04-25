@@ -332,6 +332,7 @@ ArrayFilterTests::run_tests()
     // initialise to some arbitrary values
     {
       Array<2,float>::full_iterator iter = test.begin_all();
+      ++iter;
       /*for (int i=-100; iter != test.end_all(); ++i, ++iter)
        *iter = 1;//i*i*2.F-i-100.F;*/
       test[0][0]=1;

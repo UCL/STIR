@@ -122,14 +122,13 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
   if (is_trivial())
     {    
       for (int z=out_min_z; z<=out_max_z; z++) 
-	for (int y=out_min_y; y<=out_max_y; y++) 
-	  for (int x=out_min_x; x<=out_max_x; x++) 
-	    
-	  {
-	    out_array[z][y][x] = ((z>=in_min_z && z <= in_max_z ) && (y>=in_min_y && y <= in_max_y ) && 
+      for (int y=out_min_y; y<=out_max_y; y++)
+      for (int x=out_min_x; x<=out_max_x; x++) 
+	    {
+        out_array[z][y][x] = ((z>=in_min_z && z <= in_max_z ) && (y>=in_min_y && y <= in_max_y ) && 
 	      (x>=in_min_x && x <= in_max_x ) ? in_array[z][y][x] : 0);   
-	  }
-	  return;
+	    }
+	    return;
     }
   
   const int k_min = filter_coefficients.get_min_index();
@@ -256,13 +255,12 @@ do_it_2d(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
   if (is_trivial())
   {    
     for (int y=out_min_y; y<=out_max_y; y++) 
-      for (int x=out_min_x; x<=out_max_x; x++) 
-	
+      for (int x=out_min_x; x<=out_max_x; x++) 	
       {
-	out_array[y][x] = ((y>=in_min_y && y <= in_max_y ) && 
-	  (x>=in_min_x && x <= in_max_x ) ? in_array[y][x] : 0);   
+        out_array[y][x] = ((y>=in_min_y && y <= in_max_y ) && 
+        (x>=in_min_x && x <= in_max_x ) ? in_array[y][x] : 0);   
       }
-      return;
+    return;
   }
   
  

@@ -104,15 +104,14 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
 
   
   if (is_trivial())
-  {    
-      for (int y=out_min_y; y<=out_max_y; y++) 
-	for (int x=out_min_x; x<=out_max_x; x++) 
-	  
-	{
-	  out_array[y][x] = ((y>=in_min_y && y <= in_max_y ) && 
-	    (x>=in_min_x && x <= in_max_x ) ? in_array[y][x] : 0);   
-	}
-	return;
+  {
+    for (int y=out_min_y; y<=out_max_y; y++)
+      for (int x=out_min_x; x<=out_max_x; x++)
+      {
+        out_array[y][x] = ((y>=in_min_y && y <= in_max_y ) && 
+        (x>=in_min_x && x <= in_max_x ) ? in_array[y][x] : 0);
+      }
+    return;
   }
   
   const int j_min = filter_coefficients.get_min_index();
