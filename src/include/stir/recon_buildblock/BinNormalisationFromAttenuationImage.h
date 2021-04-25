@@ -100,6 +100,7 @@ public:
   */
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
+
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
