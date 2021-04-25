@@ -13,8 +13,8 @@
       
 */
 /*
-    Copyright (C) 2016-2018, University College London
-    Copyright (C) 2016-2018, University of Leeds
+    Copyright (C) 2016-2018, 2020-2021 University College London
+    Copyright (C) 2016-2019, University of Leeds
     Copyright (C) 2016-2018, University of Hull
 
     This file is part of STIR.
@@ -142,6 +142,16 @@ private:
   const std::size_t size_of_record_signature;
   const std::size_t max_size_of_record;
 
+  //! read data from buffer
+  void read_data(char* output,const std::streampos offset, const hsize_t size) const;
+  // members for buffering
+
+  boost::shared_array<char> buffer;
+  std::size_t max_buffer_size;
+  //! currently filled size
+  mutable std::size_t buffer_size;
+  mutable std::streampos start_of_buffer_offset;
+  void fill_buffer(const std::streampos offset) const;
 };
 
 } // namespace
