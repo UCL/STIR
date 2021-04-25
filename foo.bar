@@ -1,5 +1,0 @@
-# checks to run:
-clang-tidy --list-checks -checks='clang-diagnostic-*,clang-analyzer-*,-*,bugprone*,modernize*,performance*,-modernize-pass-by-value,-modernize-use-using,-modernize-use-trailing-return-type'
-
-# how to do the check:
-run-clang-tidy -p build/ -header-filter=.* -checks='clang-diagnostic-*,clang-analyzer-*,-*,bugprone*,modernize*,performance*,-modernize-pass-by-value,-modernize-use-using,-modernize-use-trailing-return-type' -fix

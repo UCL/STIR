@@ -88,3 +88,4 @@ install_manifest.txt
 
 build/
 install/
+.vscode
