@@ -139,7 +139,7 @@ main(int argc, char *argv[])
   int save = 0;
   
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;   
-  VoxelsOnCartesianGrid<float> * vox_image_ptr = 0;
+  VoxelsOnCartesianGrid<float> * vox_image_ptr = nullptr;
 
   if (argc<4)
     {

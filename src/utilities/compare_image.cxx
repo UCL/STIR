@@ -40,13 +40,13 @@ if the files are identical or not.
   KT 12/09/2001 added rim_truncation option
 */
 
-#include "stir/DiscretisedDensity.h"
 #include "stir/ArrayFunction.h"
-#include "stir/recon_array_functions.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
+#include "stir/recon_array_functions.h"
+#include <cstdlib>
 #include <numeric>
-#include <stdlib.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

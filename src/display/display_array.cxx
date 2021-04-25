@@ -143,7 +143,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
   // first try to get all images in one window
   int num_in_window = plane_stack.get_length();
 
-  screen_image_t *sc_image = new screen_image_t[num_in_window];
+  auto *sc_image = new screen_image_t[num_in_window];
   num_in_window = center_sc_images(&scale,min_x,max_x,min_y,max_y, 
                            length_x,
 			   length_y,
@@ -164,7 +164,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
     SC_CLEAR_BLOCK((SC_C_BACKGROUND+ SC_C_MAX)/3,0,(int)SC_X_MAX ,0,(int)SC_Y_MAX );
     SC_SCALE(SC_X_MAX-30,30, 20, SC_Y_MAX - 60);
     // output title, making some attempt to centre it
-    if (title != 0)      
+    if (title != nullptr)      
       put_textstr(SC_X_MAX/2 - strlen(title)*4, 35, title);
 
     const long image_sizeX = scale*(length_x-1)+1;
@@ -193,7 +193,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
 	thismaxi = (double)plane_stack[nr].find_max();
       
       // TODO ANCI C++ 'new' throws exception when it cannot allocate
-      if ( (sc_image[i].image= new image_t[image_sizeX * image_sizeY])==0 )
+      if ( (sc_image[i].image= new image_t[image_sizeX * image_sizeY])==nullptr )
       {
 	warning("display: Error allocating space for image buffer. Exiting");
 	return;
@@ -476,7 +476,7 @@ void display(const Array<3,elemT>& plane_stack,
   assert(plane_stack.get_min_index() == text.get_min_index());
   assert(plane_stack.get_max_index() == text.get_max_index());
 
-  info(boost::format("Displaying %1%") % (title==0 ? "" : title));
+  info(boost::format("Displaying %1%") % (title==nullptr ? "" : title));
 #if defined(STIR_PGM)
   display_pgm(plane_stack, scale_factors, 
                    text, maxi, title,  scale);
@@ -516,7 +516,7 @@ void display(const RelatedViewgrams<elemT>& vs,
 				all_of_them.get_max_index());
   
   VectorWithOffset<char *>::iterator text_iter = text.begin();
-  typename RelatedViewgrams<elemT>::const_iterator vs_iter = vs.begin();
+  auto vs_iter = vs.begin();
 
   while(vs_iter != vs.end())
   {

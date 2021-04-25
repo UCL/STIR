@@ -104,7 +104,7 @@ linear_regression_compute_S(double& S,
   
   for (; data_iter != data_end; ++data_iter, ++coords_iter, ++weights_iter)
   {
-    const double weight = static_cast<double>(*weights_iter);
+    const auto weight = static_cast<double>(*weights_iter);
     S += weight;
     Sx += weight * (*coords_iter);
     Sy += weight * (*data_iter);

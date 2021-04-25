@@ -53,10 +53,10 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -90,7 +90,7 @@ class OutputFileFormatTests : public RunTests
 public:
   OutputFileFormatTests(istream& in) ;
 
-  void run_tests();
+  void run_tests() override;
 private:
   istream& in;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_ptr;
@@ -186,7 +186,7 @@ void OutputFileFormatTests::run_tests()
 	unique_ptr<DiscretisedDensity<3,float> >
 	  density_ptr = read_from_file<DiscretisedDensity<3,float> >(filename);
 	
-	const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
+	const  auto * image_as_read_ptr =
 	  dynamic_cast< VoxelsOnCartesianGrid<float> const *>
 	  (density_ptr.get());
 

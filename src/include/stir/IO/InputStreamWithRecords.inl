@@ -65,7 +65,7 @@ InputStreamWithRecords(const std::string& filename,
     options(options)
 {
   assert(size_of_record_signature<=max_size_of_record);
-  std::fstream* s_ptr = new std::fstream;
+  auto* s_ptr = new std::fstream;
   open_read_binary(*s_ptr, filename.c_str());
   stream_ptr.reset(s_ptr);
   if (reset() == Succeeded::no)

@@ -207,8 +207,8 @@ xapyb(const ProjData& x, const float a,
 {
     // To use this method, we require that all three proj data be ProjDataInMemory
     // So cast them. If any null pointers, fall back to default functionality
-    const ProjDataInMemory *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
-    const ProjDataInMemory *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
+    const auto *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
+    const auto *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
     // At least one is not ProjDataInMemory, fall back to default
     if (is_null_ptr(x_pdm) || is_null_ptr(y_pdm)) {
         ProjData::xapyb(x,a,y,b);
@@ -244,10 +244,10 @@ xapyb(const ProjData& x, const ProjData& a,
 {
     // To use this method, we require that all three proj data be ProjDataInMemory
     // So cast them. If any null pointers, fall back to default functionality
-    const ProjDataInMemory *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
-    const ProjDataInMemory *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
-    const ProjDataInMemory *a_pdm = dynamic_cast<const ProjDataInMemory*>(&a);
-    const ProjDataInMemory *b_pdm = dynamic_cast<const ProjDataInMemory*>(&b);
+    const auto *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
+    const auto *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
+    const auto *a_pdm = dynamic_cast<const ProjDataInMemory*>(&a);
+    const auto *b_pdm = dynamic_cast<const ProjDataInMemory*>(&b);
 
 
     // At least one is not ProjDataInMemory, fall back to default

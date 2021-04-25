@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
   DiscretisedDensity<3,float>& input_image = *input_image_sptr;  
   std::list<ResolutionIndex<3,float> > list_res_index = 
     find_fwhm_in_image(input_image,num_maxima,level,dimension,nema);    
-  std::list<ResolutionIndex<3,float> >:: iterator current_iter=list_res_index.begin();    
+  auto current_iter=list_res_index.begin();    
   if (dimension!=0)    
     {
       std::string output_string;

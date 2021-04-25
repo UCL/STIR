@@ -146,10 +146,10 @@ ProjMatrixByBinFromFile::post_processing()
   shared_ptr<DiscretisedDensity<3,float> > 
     density_info_sptr(read_from_file<DiscretisedDensity<3,float> >(template_density_filename));
   {
-    const VoxelsOnCartesianGrid<float> * image_info_ptr =
+    const auto * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_sptr.get());
 
-    if (image_info_ptr == NULL)
+    if (image_info_ptr == nullptr)
       error("ProjMatrixByBinFromFile initialised with a wrong type of DiscretisedDensity");
  
     densel_range = image_info_ptr->get_index_range();
@@ -191,10 +191,10 @@ set_up(
     )
 {
 
-  const VoxelsOnCartesianGrid<float> * image_info_ptr =
+  const auto * image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if (image_info_ptr == nullptr)
     error("ProjMatrixByBinFromFile set-up with a wrong type of DiscretisedDensity\n");
 
   // TODO allow for smaller range
@@ -236,12 +236,12 @@ namespace {
       c = bin.tangential_pos_num(); fst.write ( (char*)&c, sizeof(boost::int32_t));
     }
     {
-      boost::uint32_t c= static_cast<boost::uint32_t>(lor.size());
+      auto c= static_cast<boost::uint32_t>(lor.size());
       fst.write( (char*)&c , sizeof(boost::uint32_t));  
     }
     if (!fst)
       return Succeeded::no;
-    ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+    auto element_ptr = lor.begin();
     // todo add compression in this loop 
     while (element_ptr != lor.end())
       {           
@@ -378,7 +378,7 @@ write_to_file(const std::string& output_filename_prefix,
     // TODO symmetries should not be hard-coded
     if (!is_null_ptr(dynamic_cast<const DataSymmetriesForBins_PET_CartesianGrid * const>(proj_matrix.get_symmetries_ptr())))
       {
-        const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
+        const auto& symmetries =
           dynamic_cast<const DataSymmetriesForBins_PET_CartesianGrid&>
           (*proj_matrix.get_symmetries_ptr());
         

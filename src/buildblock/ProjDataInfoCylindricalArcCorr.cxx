@@ -54,9 +54,9 @@ using std::string;
 
 START_NAMESPACE_STIR
 ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr()
-{}
+= default;
 
-ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,float bin_size_v,								
+ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner>& scanner_ptr,float bin_size_v,								
 								const  VectorWithOffset<int>& num_axial_pos_per_segment,
 								const  VectorWithOffset<int>& min_ring_diff_v, 
 								const  VectorWithOffset<int>& max_ring_diff_v,

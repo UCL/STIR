@@ -72,7 +72,7 @@ class DynamicDiscretisedDensity: public ExamData
     DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
 
-  DynamicDiscretisedDensity() {}
+  DynamicDiscretisedDensity() = default;
 
   DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);
 

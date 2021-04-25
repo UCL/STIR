@@ -136,7 +136,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 
       ProjMatrixElemsForOneBin proj_matrix_row;
   
-      RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
+      auto r_viewgrams_iter = viewgrams.begin();
   
       while( r_viewgrams_iter!=viewgrams.end())
 	{
@@ -189,16 +189,10 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 						    min_axial_pos_num, max_axial_pos_num,
 						    min_tangential_pos_num, max_tangential_pos_num);
     
-	    for (
-#ifndef STIR_NO_NAMESPACES
-		 std::
-#endif
-		   vector<AxTangPosNumbers>::const_iterator r_ax_tang_poss_iter = related_ax_tang_poss.begin();
-		 r_ax_tang_poss_iter != related_ax_tang_poss.end();
-		 ++r_ax_tang_poss_iter)
+	    for (const auto & related_ax_tang_pos : related_ax_tang_poss)
 	      {
-		const int axial_pos_tmp = (*r_ax_tang_poss_iter)[1];
-		const int tang_pos_tmp = (*r_ax_tang_poss_iter)[2];
+		const int axial_pos_tmp = related_ax_tang_pos[1];
+		const int tang_pos_tmp = related_ax_tang_pos[2];
 	  
 		// symmetries might take the ranges out of what the user wants
 		if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
@@ -208,19 +202,17 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 		already_processed[axial_pos_tmp][tang_pos_tmp] = 1;
        
 	  
-		for (RelatedViewgrams<float>::const_iterator viewgram_iter = viewgrams.begin();
-		     viewgram_iter != viewgrams.end();
-		     ++viewgram_iter)
+		for (const auto & viewgram : viewgrams)
 		  {
 		    // KT 21/02/2002 added check on 0
-		    if ((*viewgram_iter)[axial_pos_tmp][tang_pos_tmp] == 0)
+		    if (viewgram[axial_pos_tmp][tang_pos_tmp] == 0)
 		      continue;
 		    proj_matrix_row_copy = proj_matrix_row;
-		    Bin bin(viewgram_iter->get_segment_num(),
-			    viewgram_iter->get_view_num(),
+		    Bin bin(viewgram.get_segment_num(),
+			    viewgram.get_view_num(),
 			    axial_pos_tmp,
 			    tang_pos_tmp,
-			    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
+			    viewgram[axial_pos_tmp][tang_pos_tmp]);
 	      
 		    unique_ptr<SymmetryOperation> symm_op_ptr = 
 		      symmetries->find_symmetry_operation_from_basic_bin(bin);

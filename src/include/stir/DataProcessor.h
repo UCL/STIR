@@ -132,7 +132,7 @@ protected:
   //*! \todo should return Succeeded */
   virtual void virtual_apply(DataT& data) const =0;
 private:  
-  bool is_set_up_already;  
+  bool is_set_up_already{false};  
 
 };
 

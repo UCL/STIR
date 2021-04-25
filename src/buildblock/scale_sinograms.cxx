@@ -37,7 +37,7 @@ Succeeded
 scale_sinograms(
 		ProjData& scaled_scatter_proj_data, 		
 		const ProjData& scatter_proj_data, 
-		const Array<2,float> scale_factors)
+		const Array<2,float>& scale_factors)
 {	
   const ProjDataInfo &proj_data_info = 
     dynamic_cast<const ProjDataInfo&> 
@@ -54,7 +54,7 @@ scale_sinograms(
 	 ++bin.axial_pos_num())		
       {
 	Sinogram<float> scatter_sinogram = scatter_proj_data.get_sinogram(
-									  bin.axial_pos_num(),bin.segment_num(),0);		
+									  bin.axial_pos_num(),bin.segment_num(),false);		
 	Sinogram<float> scaled_sinogram =
 	  scatter_sinogram;
 	scaled_sinogram*=scale_factors[bin.segment_num()][bin.axial_pos_num()];

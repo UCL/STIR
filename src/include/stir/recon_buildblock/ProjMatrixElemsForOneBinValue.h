@@ -102,8 +102,8 @@ public:
   friend inline bool operator<(const ProjMatrixElemsForOneBinValue& el1, const ProjMatrixElemsForOneBinValue& el2);
  
 private:
-  short c3,c2,c1; 
-  float value;
+  short c3{0},c2{0},c1{0}; 
+  float value{0};
   
 };
 

@@ -145,7 +145,7 @@ DataSymmetriesForBins_PET_CartesianGrid
           "(can only handle projection data corresponding to a cylinder)\n",
       typeid(*proj_data_info_ptr).name());
 
-  const DiscretisedDensityOnCartesianGrid<3,float> *
+  const auto *
     cartesian_grid_info_ptr =
      dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
       (image_info_ptr.get());

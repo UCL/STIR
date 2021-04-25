@@ -1,7 +1,7 @@
 #ifndef TEXT_WRITER_TYPES
 #define TEXT_WRITER_TYPES
 
-#include <string.h>
+#include <cstring>
 
 #include <fstream>
 #include <iostream>
@@ -17,13 +17,13 @@ enum OUTPUT_CHANNEL {INFORMATION_CHANNEL, WARNING_CHANNEL, ERROR_CHANNEL};
 
 class aTextWriter {
 public:
-	virtual ~aTextWriter() {}
+	virtual ~aTextWriter() = default;
 	virtual void write(const char* text) const = 0;
 };
 
 class TextPrinter : public aTextWriter {
 public:
-	TextPrinter(const char* s = 0) : _stream(0) {
+	TextPrinter(const char* s = nullptr)  {
 		if (s) {
 			if (strcmp(s, "stdout") == 0 || strcmp(s, "cout") == 0)
 				_stream = 1;
@@ -31,7 +31,7 @@ public:
 				_stream = 2;
 		}
 	}
-	virtual void write(const char* text) const {
+	void write(const char* text) const override {
 		switch (_stream) {
 		case 1:
 			std::cout << text;
@@ -44,14 +44,14 @@ public:
 		}
 	}
 private:
-	int _stream;
+	int _stream{0};
 };
 
 class TextWriter : public aTextWriter {
 public:
 	std::ostream* out;
-	TextWriter(std::ostream* os = 0) : out(os) {}
-	virtual void write(const char* text) const {
+	TextWriter(std::ostream* os = nullptr) : out(os) {}
+	void write(const char* text) const override {
 		if (out) {
 			(*out) << text;
 			(*out).flush();
@@ -108,9 +108,9 @@ private:
 	static void init_() {
 		static bool initialized = false;
 		if (!initialized) {
-			information_channel_ = 0;
-			warning_channel_ = 0;
-			error_channel_ = 0;
+			information_channel_ = nullptr;
+			warning_channel_ = nullptr;
+			error_channel_ = nullptr;
 			initialized = true;
 		}
 	}

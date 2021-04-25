@@ -88,7 +88,7 @@ public:
 			   const OptionsT& options,
 			   const std::streampos start_of_data = 0);
 
-  virtual ~InputStreamWithRecords() {}
+  virtual ~InputStreamWithRecords() = default;
 
   inline
   virtual 

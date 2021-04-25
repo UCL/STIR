@@ -49,20 +49,20 @@ class MultiParametricDiscretisedDensityInputFileFormat :
 public InputFileFormat<ParametricVoxelsOnCartesianGrid>
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "Multi"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream&) const
+		    std::istream&) const override
   {
     //. todo should check if it's an image
     // checking for "multi :"
     const char * pos_of_colon = strchr(signature.get_signature(), ':');
-    if (pos_of_colon == NULL)
+    if (pos_of_colon == nullptr)
       return false;
     std::string keyword(signature.get_signature(), pos_of_colon-signature.get_signature());
     return (
@@ -70,8 +70,8 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
             standardise_interfile_keyword("multi"));
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream&) const
+  unique_ptr<data_type>
+    read_from_file(std::istream&) const override
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;
@@ -81,8 +81,8 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {
     MultipleDataSetHeader header;
     if (header.parse(filename.c_str()) == false)
@@ -94,7 +94,7 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
 
     using SingleDiscretisedDensityType = ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType;
     auto t = stir::read_from_file<SingleDiscretisedDensityType>(header.get_filename(0));
-    ParametricVoxelsOnCartesianGrid* par_disc_den_ptr = new ParametricVoxelsOnCartesianGrid(*t);
+    auto* par_disc_den_ptr = new ParametricVoxelsOnCartesianGrid(*t);
     par_disc_den_ptr->update_parametric_image(*t,1);
     for (std::size_t i=2; i<=header.get_num_data_sets(); ++i)
       {

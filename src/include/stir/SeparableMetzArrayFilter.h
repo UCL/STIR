@@ -84,7 +84,7 @@ public:
   \brief Default constructor
   \warning This currently does not set things properly for a trivial filter.
   */
-  SeparableMetzArrayFilter() {}
+  SeparableMetzArrayFilter() = default;
   
   //! Constructor
   /*! 

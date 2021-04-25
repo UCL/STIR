@@ -28,16 +28,16 @@
 */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Bin.h"
 #include "stir/IndexRange.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/Bin.h"
-#include "stir/round.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/round.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 
 START_NAMESPACE_STIR
 
@@ -46,7 +46,7 @@ JacobianForIntBP(const ProjDataInfoCylindrical* proj_data_info_ptr, bool exact)
      
      : R2(square(proj_data_info_ptr->get_ring_radius())),
        ring_spacing2 (square(proj_data_info_ptr->get_ring_spacing())),
-       arccor(dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(proj_data_info_ptr)!=0),
+       arccor(dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(proj_data_info_ptr)!=nullptr),
        backprojection_normalisation 
       (proj_data_info_ptr->get_ring_spacing()/2/proj_data_info_ptr->get_num_views()),
        use_exact_Jacobian_now(exact)
@@ -116,10 +116,10 @@ set_up(
 
   proj_data_info_ptr= proj_data_info_ptr_v; 
 
-  const VoxelsOnCartesianGrid<float> * image_info_ptr =
+  const auto * image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if (image_info_ptr == nullptr)
     error("ProjMatrixByBinUsingInterpolation initialised with a wrong type of DiscretisedDensity\n");
  
   densel_range = image_info_ptr->get_index_range();
@@ -138,7 +138,7 @@ set_up(
 						do_symmetry_swap_s,
 						do_symmetry_shift_z));
 
-  if (dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr.get())==0)
+  if (dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr.get())==nullptr)
     error("ProjMatrixByBinUsingInterpolation needs ProjDataInfoCylindrical for jacobian\n");
   jacobian = JacobianForIntBP(&(proj_data_info_cyl()), use_exact_Jacobian_now);
 

@@ -155,7 +155,7 @@ public:
     //! \obsolete
     inline const H5::H5File& get_file() const;
 
-    ~GEHDF5Wrapper() {}
+    ~GEHDF5Wrapper() = default;
 
 
     std::uint32_t read_dataset_uint32(const std::string& dataset_name);

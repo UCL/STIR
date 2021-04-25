@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
   }
 
   LmToProjDataWithRandomRejection<LmToProjData> 
-    application(argc>=2 ? argv[1] : 0);
+    application(argc>=2 ? argv[1] : nullptr);
   if (argc==3)
     application.set_reject_if_above(float(atof(argv[2])));
   application.process_data();

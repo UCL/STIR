@@ -61,9 +61,9 @@ public:
   shared_ptr<ProjDataRebinning> proj_data_rebinning_sptr;
 private:
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   
 };
 
@@ -102,7 +102,7 @@ RebinProjDataParameters(const char * const par_filename)
 {
   set_defaults();
   Succeeded success = Succeeded::yes;
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     success = parse(par_filename)==true? Succeeded::yes : Succeeded::no;
   else
     ask_parameters();
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     cerr<<"Usage: " << argv[0] << " par_file\n"
        	<< endl; 
   }
-  RebinProjDataParameters parameters( argc==2 ? argv[1] : 0);
+  RebinProjDataParameters parameters( argc==2 ? argv[1] : nullptr);
  
   if (argc!=2)
     {

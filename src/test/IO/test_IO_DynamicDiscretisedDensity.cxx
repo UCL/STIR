@@ -78,8 +78,8 @@ public:
 
 protected:
 
-    void create_image();
-    void check_result();
+    void create_image() override;
+    void check_result() override;
 };
 
 void IOTests_DynamicDiscretisedDensity::create_image()
@@ -133,8 +133,8 @@ void IOTests_DynamicDiscretisedDensity::check_result()
         std::cerr << "\t\tChecking dynamic image " << i << "...\n";
         
         // Cast the discretised density to voxels on cartesian grids to check grid spacing
-        VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_write_sptr->get_density(i));
-        VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_read_sptr->get_density(i));
+        auto *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_write_sptr->get_density(i));
+        auto *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_read_sptr->get_density(i));
 
         if (is_null_ptr(image_to_write_ptr) || is_null_ptr(image_to_read_ptr)) {
             everything_ok = false;

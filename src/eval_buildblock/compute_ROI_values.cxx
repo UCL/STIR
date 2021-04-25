@@ -43,7 +43,7 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
                              const Shape3D& shape,
                              const CartesianCoordinate3D<int>& num_samples)
 {
-  const VoxelsOnCartesianGrid<float>& image =
+  const auto& image =
      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
   const int min_z = image.get_min_index();
@@ -152,7 +152,7 @@ compute_plane_range_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
                                    const Shape3D& shape,
                                    const CartesianCoordinate3D<int>& num_samples)
 {
-  const VoxelsOnCartesianGrid<float>& image =
+  const auto& image =
      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
   const int min_z = image.get_min_index();

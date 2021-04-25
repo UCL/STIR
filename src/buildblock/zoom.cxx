@@ -115,10 +115,10 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
     
   shared_ptr<ProjDataInfo>
     new_proj_data_info_sptr(in_viewgrams.get_proj_data_info_sptr()->clone());
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+  auto* new_proj_data_info_arccorr_sptr =
     dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_sptr==0)
+  if ( new_proj_data_info_arccorr_sptr==nullptr)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
   new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);
@@ -138,7 +138,7 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
 				  symmetries_sptr);
 
   {
-    RelatedViewgrams<float>::iterator out_iter = out_viewgrams.begin();
+    auto out_iter = out_viewgrams.begin();
     RelatedViewgrams<float>::const_iterator in_iter = in_viewgrams.begin();
     for (; out_iter != out_viewgrams.end(); ++out_iter, ++in_iter)
       zoom_viewgram(*out_iter, *in_iter,
@@ -161,10 +161,10 @@ zoom_viewgram (Viewgram<float>& in_view,
     
   shared_ptr<ProjDataInfo>
     new_proj_data_info_sptr(in_view.get_proj_data_info_sptr()->clone());
-  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_sptr =
+  auto* new_proj_data_info_arccorr_sptr =
     dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_sptr.get());
 
-  if ( new_proj_data_info_arccorr_sptr==0)
+  if ( new_proj_data_info_arccorr_sptr==nullptr)
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
   
   new_proj_data_info_arccorr_sptr->set_min_tangential_pos_num(min_tang_pos_num);

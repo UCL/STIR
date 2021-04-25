@@ -47,7 +47,7 @@ template <int num_dimensions, typename elemT>
 class ArrayFunctionObject
 {
 public:
-  virtual ~ArrayFunctionObject() {}
+  virtual ~ArrayFunctionObject() = default;
   //! in-place modification
   /*! \warning Not all derived classes will be able to handle arbitrary index ranges
       for \a in_array.

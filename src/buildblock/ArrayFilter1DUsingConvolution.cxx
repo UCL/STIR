@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 ArrayFilter1DUsingConvolution<elemT>::
 ArrayFilter1DUsingConvolution()
-  : filter_coefficients(), _bc(BoundaryConditions::zero)
+  : filter_coefficients() 
 {
   
 }

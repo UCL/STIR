@@ -38,8 +38,8 @@ extern "C" {
 
 #include "stir/IO/stir_ecat_common.h"
 #endif
+#include <cmath>
 #include <iostream>
-#include <math.h>
 
 using std::cerr;
 using std::endl;
@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 class ScannerTests: public RunTests
 {
 public:  
-  void run_tests();
+  void run_tests() override;
 private:
   void test_scanner(const Scanner&);
 };

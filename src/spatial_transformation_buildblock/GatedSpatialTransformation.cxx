@@ -50,7 +50,7 @@ GatedSpatialTransformation::GatedSpatialTransformation()
 }
 
 GatedSpatialTransformation::~GatedSpatialTransformation()   //!< default destructor
-{ }
+= default;
 
 Succeeded 
 GatedSpatialTransformation::set_up()
@@ -100,7 +100,7 @@ post_processing()
 
 //! Implementation to read the transformation vectors will be moved to the IO directory because it should be general. For example it can be in ECAT7 image formant
 void
-GatedSpatialTransformation::read_from_files(const std::string input_string) 
+GatedSpatialTransformation::read_from_files(const std::string& input_string) 
 { 
   const std::string gate_defs_input_string=input_string + ".gdef";
 
@@ -127,7 +127,7 @@ GatedSpatialTransformation::read_from_files(const std::string input_string)
 
 //! Implementation to write the transformation vectors
 void
-GatedSpatialTransformation::write_to_files(const std::string output_string) 
+GatedSpatialTransformation::write_to_files(const std::string& output_string) 
 {
   (this->_spatial_transformation_z).write_to_files(output_string,"d1");
   (this->_spatial_transformation_y).write_to_files(output_string,"d2");

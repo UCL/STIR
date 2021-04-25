@@ -39,8 +39,8 @@ read_data_1d(std::istream& s, Array<1, elemT>& data,
 	   const ByteOrder byte_order)
 {
   if (!s || 
-    (dynamic_cast<std::ifstream*>(&s)!=0 && !dynamic_cast<std::ifstream*>(&s)->is_open()) || 
-      (dynamic_cast<std::fstream*>(&s)!=0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
+    (dynamic_cast<std::ifstream*>(&s)!=nullptr && !dynamic_cast<std::ifstream*>(&s)->is_open()) || 
+      (dynamic_cast<std::fstream*>(&s)!=nullptr && !dynamic_cast<std::fstream*>(&s)->is_open()))
     { warning("read_data: error before reading from stream.\n"); return Succeeded::no; }
 
   // note: find num_to_read (using size()) outside of s.read() function call
@@ -72,13 +72,13 @@ read_data_1d(FILE* & fptr_ref, Array<1, elemT>& data,
 	   const ByteOrder byte_order)
 {
   FILE *fptr = fptr_ref;
-  if (fptr==NULL || ferror(fptr))
+  if (fptr==nullptr || ferror(fptr))
     { warning("read_data: error before reading from FILE.\n"); return Succeeded::no; }
 
   // note: find num_to_read (using size()) outside of s.read() function call
   // otherwise Array::check_state() in size() might abort if
   // get_data_ptr() is called before size() (which is compiler dependent)
-  const std::size_t num_to_read =
+  const auto num_to_read =
     static_cast<std::size_t>(data.size());
   const std::size_t num_read =
     fread(reinterpret_cast<char *>(data.get_data_ptr()), sizeof(elemT), num_to_read, fptr);

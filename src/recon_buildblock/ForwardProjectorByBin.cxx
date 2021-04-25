@@ -34,31 +34,32 @@
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjData.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/Succeeded.h"
-#include "stir/info.h"
-#include "stir/error.h"
 #include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ProjData.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/Succeeded.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/error.h"
+#include "stir/info.h"
 #include "stir/is_null_ptr.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include <boost/format.hpp>
 #include <iostream>
+#include <utility>
+
 
 START_NAMESPACE_STIR
 
 
 ForwardProjectorByBin::ForwardProjectorByBin()
-  :   _already_set_up(false)
+     
 {
   set_defaults();
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
-{
-}
+= default;
 
 void
 ForwardProjectorByBin::
@@ -206,10 +207,8 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
 #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  for (auto vs : vs_nums_to_process)
     {
-      const ViewSegmentNumbers vs=vs_nums_to_process[i];
-
       info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
 
       RelatedViewgrams<float> viewgrams =
@@ -267,11 +266,9 @@ forward_project(RelatedViewgrams<float>& viewgrams,
       viewgrams.get_num_viewgrams())
       error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
 
-    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
-     iter != viewgrams.end();
-     ++iter)
+    for (const auto & viewgram : viewgrams)
       {
-    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    ViewSegmentNumbers vs(viewgram.get_view_num(), viewgram.get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
     if (vs != basic_vs)
       error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
@@ -325,7 +322,7 @@ void
 ForwardProjectorByBin::
 set_pre_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr)
 {
-    _pre_data_processor_sptr = pre_data_processor_sptr;
+    _pre_data_processor_sptr = std::move(pre_data_processor_sptr);
 }
 
 END_NAMESPACE_STIR

@@ -175,7 +175,7 @@ RelatedViewgrams<elemT>&
 RelatedViewgrams<elemT>::
 operator*= (const elemT f)
 {
-  for (iterator iter = begin(); iter != end(); ++iter)
+  for (auto iter = begin(); iter != end(); ++iter)
     *iter *= f;
   return *this;
 }
@@ -188,7 +188,7 @@ operator/= (const elemT f)
 {
   assert(f!=0);
 
-  for (iterator iter = begin(); iter != end(); ++iter)
+  for (auto iter = begin(); iter != end(); ++iter)
     *iter /= f;
   return *this;
 }
@@ -199,7 +199,7 @@ RelatedViewgrams<elemT>&
 RelatedViewgrams<elemT>::
 operator+= (const elemT f)
 {
-  for (iterator iter = begin(); iter != end(); ++iter)
+  for (auto iter = begin(); iter != end(); ++iter)
     *iter += f;
   return *this;
 }
@@ -210,7 +210,7 @@ RelatedViewgrams<elemT>&
 RelatedViewgrams<elemT>::
 operator-= (const elemT f)
 {
-  for (iterator iter = begin(); iter != end(); ++iter)
+  for (auto iter = begin(); iter != end(); ++iter)
     *iter -= f;
   return *this;
 }
@@ -223,8 +223,8 @@ RelatedViewgrams<elemT>::
 operator*= (const RelatedViewgrams<elemT>& arg)
 {
   assert(get_num_viewgrams() == arg.get_num_viewgrams());
-  iterator iter = begin(); 
-  const_iterator arg_iter = arg.begin();
+  auto iter = begin(); 
+  auto arg_iter = arg.begin();
   for ( ; iter != end(); ++iter, ++arg_iter)
     *iter *= *arg_iter;
   return *this;
@@ -237,8 +237,8 @@ RelatedViewgrams<elemT>::
 operator/= (const RelatedViewgrams<elemT>& arg)
 {
   assert(get_num_viewgrams() == arg.get_num_viewgrams());
-  iterator iter = begin(); 
-  const_iterator arg_iter = arg.begin();
+  auto iter = begin(); 
+  auto arg_iter = arg.begin();
   for ( ; iter != end(); ++iter, ++arg_iter)
     *iter /= *arg_iter;
   return *this;
@@ -252,8 +252,8 @@ RelatedViewgrams<elemT>::
 operator+= (const RelatedViewgrams<elemT>& arg)
 {
   assert(get_num_viewgrams() == arg.get_num_viewgrams());
-  iterator iter = begin(); 
-  const_iterator arg_iter = arg.begin();
+  auto iter = begin(); 
+  auto arg_iter = arg.begin();
   for ( ; iter != end(); ++iter, ++arg_iter)
     *iter += *arg_iter;
   return *this;
@@ -266,8 +266,8 @@ RelatedViewgrams<elemT>::
 operator-= (const RelatedViewgrams<elemT>& arg)
 {
   assert(get_num_viewgrams() == arg.get_num_viewgrams());
-  iterator iter = begin(); 
-  const_iterator arg_iter = arg.begin();
+  auto iter = begin(); 
+  auto arg_iter = arg.begin();
   for ( ; iter != end(); ++iter, ++arg_iter)
     *iter -= *arg_iter;
   return *this;
@@ -282,7 +282,7 @@ find_max() const
 {
   Array<1,elemT> max_per_viewgram(get_num_viewgrams());
   typename Array<1,elemT>::iterator max_iter = max_per_viewgram.begin();
-  const_iterator iter = begin(); 
+  auto iter = begin(); 
   while (iter != end())
   {
     *max_iter = iter->find_max();
@@ -298,7 +298,7 @@ find_min() const
 {
   Array<1,elemT> min_per_viewgram(get_num_viewgrams());
   typename Array<1,elemT>::iterator min_iter = min_per_viewgram.begin();
-  const_iterator iter = begin(); 
+  auto iter = begin(); 
   while (iter != end())
   {
     *min_iter = iter->find_min();
@@ -312,7 +312,7 @@ template <typename elemT>
 void 
 RelatedViewgrams<elemT>::fill(const elemT &n)
 {
- for (iterator iter = begin(); iter != end(); ++iter)
+ for (auto iter = begin(); iter != end(); ++iter)
     iter->fill(n);
 }
 
@@ -353,12 +353,12 @@ grow(const IndexRange<2>& range)
   }
   pdi_ptr->set_min_tangential_pos_num(range[ax_min].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[ax_min].get_max_index());
-  shared_ptr<ProjDataInfo> pdi_shared_ptr = pdi_ptr;
+  const shared_ptr<ProjDataInfo>& pdi_shared_ptr = pdi_ptr;
 
   // now resize each viewgram 
   // this will not set their respective proj_data_info_ptr correctly though,
   // so, we have to construct new viewgrams for this
-  for (iterator iter= begin();
+  for (auto iter= begin();
        iter != end();
        ++iter)
   {

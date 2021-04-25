@@ -23,14 +23,14 @@
  \brief This program corrects the motion from an image.
  \author Charalampos Tsoumpas
  */
-#include "stir/IO/OutputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/GatedDiscretisedDensity.h"
-#include "stir/spatial_transformation/GatedSpatialTransformation.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
+#include "stir/spatial_transformation/GatedSpatialTransformation.h"
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

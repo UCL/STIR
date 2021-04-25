@@ -36,8 +36,8 @@ const char * const
 KineticModel::registered_name = "Kinetic Model Type";
 
 KineticModel::KineticModel()    //!< default constructor
-{ }
+= default;
 KineticModel::~KineticModel()   //!< default destructor
-{ }
+= default;
 
 END_NAMESPACE_STIR

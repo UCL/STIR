@@ -48,20 +48,20 @@ class MultiDynamicDiscretisedDensityInputFileFormat :
 public InputFileFormat<DynamicDiscretisedDensity>
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "Multi"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream&) const
+		    std::istream&) const override
   {
     //. todo should check if it's an image
     // checking for "multi :"
     const char * pos_of_colon = strchr(signature.get_signature(), ':');
-    if (pos_of_colon == NULL)
+    if (pos_of_colon == nullptr)
       return false;
     std::string keyword(signature.get_signature(), pos_of_colon-signature.get_signature());
     return (
@@ -69,8 +69,8 @@ public InputFileFormat<DynamicDiscretisedDensity>
             standardise_interfile_keyword("multi"));
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream&) const
+  unique_ptr<data_type>
+    read_from_file(std::istream&) const override
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;
@@ -80,13 +80,13 @@ public InputFileFormat<DynamicDiscretisedDensity>
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {
     MultipleDataSetHeader header;
     if (header.parse(filename.c_str()) == false)
          error("MultiDynamicDiscretisedDensity:::read_from_file: Error parsing %s", filename.c_str());
-    DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
+    auto* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
     ExamInfo exam_info;
     for (std::size_t i=1U; i<=header.get_num_data_sets(); ++i) {

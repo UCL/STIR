@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 class ListTime
 {
 public:
-  virtual ~ListTime() {}
+  virtual ~ListTime() = default;
 
   virtual unsigned long get_time_in_millisecs() const = 0;
   inline double get_time_in_secs() const

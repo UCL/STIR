@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 
 DataSymmetriesForViewSegmentNumbers::
 ~DataSymmetriesForViewSegmentNumbers()
-{}
+= default;
 
 /*! Default implementation always returns \c true. Needs to be overloaded.
  */

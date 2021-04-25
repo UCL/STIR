@@ -3,8 +3,7 @@ START_NAMESPACE_STIR
 
 template <class DataT>
 PostFiltering<DataT>::PostFiltering()
-{
-}
+= default;
 
 template <class DataT>
 void

@@ -139,7 +139,7 @@ class SinglesRates : public RegisteredObject<SinglesRates>
 {
 public: 
 
-  virtual ~SinglesRates () {}
+  ~SinglesRates () override = default;
   //! Get the singles rate for a particular singles unit and a frame with the specified start and end times.   
   /*! The behaviour of this function is specified by the derived classes.
     \warning Currently might return -1 if the \a start_time, \a end_time

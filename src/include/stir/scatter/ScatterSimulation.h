@@ -94,7 +94,7 @@ public:
     //! Default constructor
     ScatterSimulation();
 
-    virtual ~ScatterSimulation();
+    ~ScatterSimulation() override;
 
     virtual Succeeded process_data();
     //! gives method information
@@ -136,17 +136,17 @@ public:
 
     void set_template_proj_data_info(const ProjDataInfo&);
 
-    void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
+    void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >&);
 
     void set_activity_image(const std::string& filename);
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
     void set_exam_info(const ExamInfo&);
-    void set_exam_info_sptr(const shared_ptr<const ExamInfo>);
+    void set_exam_info_sptr(const shared_ptr<const ExamInfo>&);
 
     void set_output_proj_data_sptr(shared_ptr<ProjData>);
 
-    void set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
+    void set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >&);
 
     void set_density_image(const std::string&);
     //! This function depends on the ProjDataInfo of the scanner.
@@ -154,11 +154,11 @@ public:
     void set_output_proj_data(const std::string&);
 
     void
-    set_output_proj_data_sptr(const shared_ptr<const ExamInfo>,
-                              const shared_ptr<const ProjDataInfo>,
+    set_output_proj_data_sptr(const shared_ptr<const ExamInfo>&,
+                              const shared_ptr<const ProjDataInfo>&,
                               const std::string &);
 
-    void set_density_image_for_scatter_points_sptr(shared_ptr<const DiscretisedDensity<3,float> >);
+    void set_density_image_for_scatter_points_sptr(const shared_ptr<const DiscretisedDensity<3,float> >&);
 
     void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f,
                                       int _size_zoom_xy = -1, int _size_zoom_z = -1);
@@ -242,12 +242,12 @@ protected:
 
 
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
+    void set_defaults() override;
+    void initialise_keymap() override;
     //! \warning post_processing will set everything that has a file name in
     //! the par file. The corresponding set functions should be used either
     //! for files that are not stored in the drive.
-    virtual bool post_processing();
+    bool post_processing() override;
 
     enum image_type{act_image_type, att_image_type};
     struct ScatterPoint

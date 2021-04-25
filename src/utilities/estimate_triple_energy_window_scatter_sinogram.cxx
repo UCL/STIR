@@ -129,7 +129,7 @@ main(int argc, char **argv)
   if (argc==0)
     { cerr << "No par file on command line\n"; exit(EXIT_FAILURE); }
   else{
-      if (argv[1]!=0)
+      if (argv[1]!=nullptr)
       {
         if (estimate.parse(argv[1]) == false)
             exit(EXIT_FAILURE);

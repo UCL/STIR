@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     error("Scanner '%s' is not a valid name", scanner_name);
 	
   FILE *GATE_file ;
-  if( (GATE_file=fopen(GATE_filename,"rb"))==NULL)
+  if( (GATE_file=fopen(GATE_filename,"rb"))==nullptr)
     error("Cannot open GATE file %s", GATE_filename);
   else {
     long GATE_file_size=fseek(GATE_file, 0, SEEK_END);

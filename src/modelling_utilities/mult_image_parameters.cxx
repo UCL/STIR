@@ -47,8 +47,8 @@ int main(int argc, char * argv[])
 {
 
   USING_NAMESPACE_STIR;
-  const char * output_filename = 0;
-  const char * input_filename = 0;
+  const char * output_filename = nullptr;
+  const char * input_filename = nullptr;
 
   const char * const usage = "mult_image_parameters -o output_filename -i input_filename\n";
   opterr = 0;
@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
       }
   }
 
-  if (output_filename==0 || input_filename==0)
+  if (output_filename==nullptr || input_filename==nullptr)
     {
 	std::cerr << usage;
 	return EXIT_FAILURE;

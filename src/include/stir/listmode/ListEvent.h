@@ -55,7 +55,7 @@ START_NAMESPACE_STIR
 class ListEvent
 {
 public:
-  virtual ~ListEvent() {}
+  virtual ~ListEvent() = default;
  virtual bool is_prompt() const =0;// {return helper_is_prompt();}
 
   //! Finds the LOR between the coordinates where the detection took place

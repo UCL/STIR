@@ -46,10 +46,10 @@ PlasmaData::PlasmaData(const std::vector<PlasmaSample> & plasma_blood_plot)
 
 //! default destructor
 PlasmaData::~PlasmaData()
-{ }
+= default;
 
 //! Implementation to read the input function from ONLY a 3-columns data file (Time-InputFunctionRadioactivity-WholeBloodRadioactivity).
-void  PlasmaData::read_plasma_data(const std::string input_string) 
+void  PlasmaData::read_plasma_data(const std::string& input_string) 
 { 
   std::ifstream data_stream(input_string.c_str()); 
   if(!data_stream)    
@@ -113,9 +113,8 @@ void PlasmaData::set_plot(const std::vector<PlasmaSample> & plasma_blood_plot)
 void PlasmaData::shift_time(const double time_shift)
 {       
   _time_shift=time_shift;
-  for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
-      cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
-    cur_iter->set_time_in_s(cur_iter->get_time_in_s()+time_shift);                           
+  for(auto & cur_iter : this->_plasma_blood_plot)
+    cur_iter.set_time_in_s(cur_iter.get_time_in_s()+time_shift);                           
 }
 
 //!Function to get the time shift
@@ -159,11 +158,10 @@ decay_correct_PlasmaData()
   else
     {
       assert(this->_isotope_halflife>0);
-      for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
-          cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
+      for(auto & cur_iter : this->_plasma_blood_plot)
         {
-          cur_iter->set_plasma_counts_in_kBq( static_cast<float>(cur_iter->get_plasma_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s())));
-          cur_iter->set_blood_counts_in_kBq( static_cast<float>(cur_iter->get_blood_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s())));  
+          cur_iter.set_plasma_counts_in_kBq( static_cast<float>(cur_iter.get_plasma_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter.get_time_in_s())));
+          cur_iter.set_blood_counts_in_kBq( static_cast<float>(cur_iter.get_blood_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter.get_time_in_s())));  
         }       
       PlasmaData::set_is_decay_corrected(true);
     }
@@ -171,7 +169,7 @@ decay_correct_PlasmaData()
 
 //! Sorts the plasma_data into frames
 PlasmaData 
-PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
+PlasmaData::get_sample_data_in_frames(const TimeFrameDefinitions& time_frame_def)
 { 
   if (this->_is_decay_corrected==false)
     {
@@ -184,7 +182,7 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
   const unsigned int num_frames=time_frame_def.get_num_frames();
   std::vector<PlasmaSample> samples_in_frames_vector(num_frames);
   PlasmaData::const_iterator cur_iter;
-  std::vector<PlasmaSample>::iterator frame_iter=samples_in_frames_vector.begin();
+  auto frame_iter=samples_in_frames_vector.begin();
 
   // Estimate the plasma_frame_vector and the plasma_frame_sum_vector using the integrate_discrete_function() implementation
   for (unsigned int frame_num=1; frame_num<=num_frames && frame_iter!=samples_in_frames_vector.end() ; ++frame_num, ++frame_iter )

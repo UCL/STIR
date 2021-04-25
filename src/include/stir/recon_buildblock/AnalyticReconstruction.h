@@ -76,8 +76,8 @@ public:
     Reconstruction::output_filename_prefix. 
     \return Succeeded::yes if everything was alright.
    */
-  virtual Succeeded 
-    reconstruct(); 
+  Succeeded 
+    reconstruct() override; 
 
   //! executes the reconstruction storing result in \c target_image_sptr
   /*!
@@ -90,11 +90,11 @@ public:
    in a derived class, hides the other. So, we need an implementation for 
    this function. This is the reason to use the actual_reconstruct function.
   */     
-  virtual Succeeded 
-    reconstruct(shared_ptr<TargetT> const& target_image_sptr);
+  Succeeded 
+    reconstruct(shared_ptr<TargetT> const& target_image_sptr) override;
 
-  virtual void set_input_data(const shared_ptr<ExamData>&);
-  virtual const ProjData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData>&) override;
+  const ProjData& get_input_data() const override;
   //! @name forwarding functions for ParseDiscretisedDensityParameters
   //@{
   int get_output_image_size_xy() const;
@@ -138,9 +138,9 @@ protected:
     actual_reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
  
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();  
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  bool post_processing() override;  
+  void set_defaults() override;
+  void initialise_keymap() override;
 
 
 };

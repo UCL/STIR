@@ -42,7 +42,7 @@ class DateTimeTest : public RunTests
 {
   void check_round_trip(const double secs, const double tz_offset, const std::string& str);
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 
@@ -51,7 +51,7 @@ DateTimeTest::run_tests()
 {
   // just do a consistency check first: mktime and local time should be "inverse" of eachother
   {
-    time_t current_time = time(0);
+    time_t current_time = time(nullptr);
     struct tm * local_time = localtime(&current_time);
     if (difftime(current_time, mktime(local_time)) != 0)
       error("CTIME internal error");

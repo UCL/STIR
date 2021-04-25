@@ -125,7 +125,7 @@ do_segments(DiscretisedDensity<3,float>& image,
 	proj_data_org.get_empty_related_viewgrams(vs, symmetries_sptr);
 	//proj_data_org.get_empty_related_viewgrams(vs.view_num(),vs.segment_num(), symmetries_sptr);
       
-      RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams_empty.begin();
+      auto r_viewgrams_iter = viewgrams_empty.begin();
       while(r_viewgrams_iter!=viewgrams_empty.end())
       {
 	Viewgram<float>&  single_viewgram = *r_viewgrams_iter;
@@ -150,7 +150,7 @@ do_segments(DiscretisedDensity<3,float>& image,
 	proj_data_org.get_related_viewgrams(vs,
 	//proj_data_org.get_related_viewgrams(vs.view_num(),vs.segment_num(),
 	symmetries_sptr);
-      RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
+      auto r_viewgrams_iter = viewgrams.begin();
       
       while(r_viewgrams_iter!=viewgrams.end())
       {
@@ -252,7 +252,7 @@ main(int argc, char **argv)
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
       int z_size = 2*proj_data_info_sptr->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
-      VoxelsOnCartesianGrid<float> * vox_image_ptr =
+      auto * vox_image_ptr =
 	new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,
 					 zoom,
 					 Coordinate3D<float>(0,0,0),

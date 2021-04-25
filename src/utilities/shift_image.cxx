@@ -25,7 +25,7 @@
 #include "stir/Succeeded.h"
 #include "stir/round.h"
 
-#include <math.h>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

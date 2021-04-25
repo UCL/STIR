@@ -27,8 +27,10 @@
 #define __stir_GatedDiscretisedDensity_H__
 
 #include "stir/DiscretisedDensity.h"
-#include "stir/shared_ptr.h"
 #include "stir/TimeGateDefinitions.h"
+#include "stir/shared_ptr.h"
+#include <utility>
+
 #include <vector>
 #include <string>
 
@@ -54,7 +56,7 @@ class GatedDiscretisedDensity
     GatedDiscretisedDensity*
     read_from_files(const std::string& filename,const std::string& suffix);
 	
-  GatedDiscretisedDensity() {}
+  GatedDiscretisedDensity() = default;
 
   GatedDiscretisedDensity(const GatedDiscretisedDensity&argument);
   GatedDiscretisedDensity(const std::string& filename);
@@ -135,7 +137,7 @@ class GatedDiscretisedDensity
   //@}
 
   void set_time_gate_definitions(TimeGateDefinitions time_gate_definitions) 
-  {this->_time_gate_definitions=time_gate_definitions;}
+  {this->_time_gate_definitions=std::move(time_gate_definitions);}
 
   const TimeGateDefinitions & 
     get_time_gate_definitions() const ;

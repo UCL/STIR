@@ -75,7 +75,7 @@ find_transform_z(
 		 const int segment_num, 
 		 const int  axial_pos_num) const
 {
-  const ProjDataInfoCylindrical* proj_data_info_cyl_ptr =
+  const auto* proj_data_info_cyl_ptr =
     static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
 
   const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
@@ -422,11 +422,11 @@ get_related_bins_factorised(std::vector<AxTangPosNumbers>& ax_tang_poss, const B
   {
      if (b.tangential_pos_num() >= min_tangential_pos_num &&
          b.tangential_pos_num() <= max_tangential_pos_num)
-        ax_tang_poss.push_back(AxTangPosNumbers(axial_pos_num, b.tangential_pos_num()));
+        ax_tang_poss.emplace_back(axial_pos_num, b.tangential_pos_num());
      if (do_symmetry_swap_s && b.tangential_pos_num()!=0 &&
          -b.tangential_pos_num() >= min_tangential_pos_num &&
          -b.tangential_pos_num() <= max_tangential_pos_num)
-        ax_tang_poss.push_back(AxTangPosNumbers(axial_pos_num, -b.tangential_pos_num()));
+        ax_tang_poss.emplace_back(axial_pos_num, -b.tangential_pos_num());
     }
 }
     
@@ -450,10 +450,10 @@ get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const 
   rel_vs.reserve(num_related_view_segment_numbers(vs));
   rel_vs.resize(0);
 
-  rel_vs.push_back(ViewSegmentNumbers(view_num,segment_num));
+  rel_vs.emplace_back(view_num,segment_num);
 
   if (symz)
-    rel_vs.push_back(ViewSegmentNumbers(view_num,-segment_num));
+    rel_vs.emplace_back(view_num,-segment_num);
 
   if (do_symmetry_180degrees_min_phi && do_symmetry_90degrees_min_phi && (view_num % (num_views/2)) != num_views/4)
   {
@@ -461,16 +461,16 @@ get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const 
       view_num < num_views/2 ?
       view_num + num_views/2 :
       view_num - num_views/2;
-    rel_vs.push_back(ViewSegmentNumbers( related_view_num,segment_num));
+    rel_vs.emplace_back( related_view_num,segment_num);
     if (symz)
-      rel_vs.push_back(ViewSegmentNumbers( related_view_num,-segment_num));
+      rel_vs.emplace_back( related_view_num,-segment_num);
   }
 
   if (do_symmetry_180degrees_min_phi && (view_num % (num_views/2)) != 0)
   {
-    rel_vs.push_back(ViewSegmentNumbers( num_views - view_num,segment_num));
+    rel_vs.emplace_back( num_views - view_num,segment_num);
     if (symz)
-      rel_vs.push_back(ViewSegmentNumbers( num_views - view_num,-segment_num));
+      rel_vs.emplace_back( num_views - view_num,-segment_num);
   }
   if (do_symmetry_90degrees_min_phi && (view_num % (num_views/4)) != 0)
   {
@@ -478,9 +478,9 @@ get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const 
     // use modulo num_views (but add num_views first to ensure positivity)
     const int related_view_num = 
       (num_views/2 - view_num + num_views) % num_views;
-    rel_vs.push_back(ViewSegmentNumbers( related_view_num,segment_num));
+    rel_vs.emplace_back( related_view_num,segment_num);
     if (symz)
-      rel_vs.push_back(ViewSegmentNumbers( related_view_num,-segment_num));
+      rel_vs.emplace_back( related_view_num,-segment_num);
   }
 
 

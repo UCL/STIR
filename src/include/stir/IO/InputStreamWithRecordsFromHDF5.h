@@ -95,7 +95,7 @@ public:
                            const std::size_t max_size_of_record);
 
 
-  virtual ~InputStreamWithRecordsFromHDF5() {}
+  virtual ~InputStreamWithRecordsFromHDF5() = default;
 
   inline
   virtual 

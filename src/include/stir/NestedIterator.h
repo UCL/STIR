@@ -125,8 +125,8 @@ public:
   template <typename othertopleveliterT, typename otherGetRestRangeFunctionT>
   inline NestedIterator(
 			  NestedIterator<othertopleveliterT, otherGetRestRangeFunctionT> other,
-			  typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = 0,
-			  typename boost::enable_if_convertible<typename otherGetRestRangeFunctionT::rest_iter_type, rest_iter_type>::type* = 0)
+			  typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = nullptr,
+			  typename boost::enable_if_convertible<typename otherGetRestRangeFunctionT::rest_iter_type, rest_iter_type>::type* = nullptr)
     : _current_top_level_iter(other._current_top_level_iter), 
       _end_top_level_iter(other._end_top_level_iter), 
       _current_rest_iter(other._current_rest_iter), 

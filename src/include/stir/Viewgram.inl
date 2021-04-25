@@ -80,7 +80,7 @@ Viewgram<elemT>::get_max_tangential_pos_num() const
 
 template <typename elemT>
 Viewgram<elemT>
-Viewgram<elemT>::get_empty_copy(void) const
+Viewgram<elemT>::get_empty_copy() const
   {
     Viewgram<elemT> copy(proj_data_info_sptr, get_view_num(), get_segment_num());
     return copy;

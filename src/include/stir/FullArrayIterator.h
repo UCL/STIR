@@ -81,8 +81,8 @@ public:
   template <typename othertopleveliterT, typename otherrestiterT, typename _otherRef, typename _otherPtr>
     FullArrayIterator(
                           FullArrayIterator<othertopleveliterT, otherrestiterT, elemT,  _otherRef, _otherPtr> const& other,
-                          typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = 0,
-                          typename boost::enable_if_convertible<otherrestiterT, restiterT>::type* = 0)
+                          typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = nullptr,
+                          typename boost::enable_if_convertible<otherrestiterT, restiterT>::type* = nullptr)
     : current_top_level_iter(other.current_top_level_iter), 
       last_top_level_iter(other.last_top_level_iter), 
       current_rest_iter(other.current_rest_iter), 

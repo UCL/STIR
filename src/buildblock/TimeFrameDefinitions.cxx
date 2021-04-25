@@ -114,7 +114,7 @@ get_num_time_frames() const
 
 TimeFrameDefinitions::
 TimeFrameDefinitions()
-{}
+= default;
 
 unsigned int 
 TimeFrameDefinitions::
@@ -215,7 +215,7 @@ read_fdef_file(const string& fdef_filename)
       }
     while (num--)
     {
-      frame_times.push_back(make_pair(previous_end_time, previous_end_time+duration));
+      frame_times.emplace_back(previous_end_time, previous_end_time+duration);
       previous_end_time+=duration;
     }
   }
@@ -275,7 +275,7 @@ TimeFrameDefinitions(const vector<double>& start_times,
 TimeFrameDefinitions::
 TimeFrameDefinitions(const TimeFrameDefinitions& org_frame_defs, unsigned int frame_num)
 {
-  this->frame_times.push_back(make_pair(org_frame_defs.get_start_time(frame_num), org_frame_defs.get_end_time(frame_num)));
+  this->frame_times.emplace_back(org_frame_defs.get_start_time(frame_num), org_frame_defs.get_end_time(frame_num));
 }
 
 void

@@ -78,7 +78,7 @@ post_processing()
        parsing_iter != filter_coefficients_for_parsing.end();
        ++parsing_iter, ++coefficients_iter)
     {
-      const unsigned int size = static_cast<unsigned int>(parsing_iter->size());
+      const auto size = static_cast<unsigned int>(parsing_iter->size());
       const int min_index = -static_cast<int>((size/2));
       if (size%2==0)
 	warning("Parsing SeparableConvolutionImageFilter\n"

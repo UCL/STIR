@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 class ProjDataTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   void run_tests_on_proj_data(ProjData&);
   void run_tests_in_memory_only(ProjDataInMemory&);
@@ -265,7 +265,7 @@ run_tests()
 
   std::cerr<< "\n-----------------Repeating tests but now with interfile input\n";
 
-  ProjDataInterfile(exam_info_sptr, proj_data_info_sptr,
+  ProjDataInterfile give_me_a_name(exam_info_sptr, proj_data_info_sptr,
                     "test_proj_data.hs", std::ios::in|std::ios::out|std::ios::trunc);
   run_tests_on_proj_data(proj_data_in_memory);
 

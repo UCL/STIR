@@ -71,7 +71,7 @@ const int task_do_distributable_sensitivity_computation=44;
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
                                      const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                     const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
+                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
                                      const shared_ptr<const DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled);
@@ -175,7 +175,7 @@ void distributable_computation(
                                bool zero_seg0_end_planes,
                                double* double_out_ptr,
                                const shared_ptr<ProjData>& additive_binwise_correction,
-                               const shared_ptr<BinNormalisation> normalise_sptr,
+                               const shared_ptr<BinNormalisation>& normalise_sptr,
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,

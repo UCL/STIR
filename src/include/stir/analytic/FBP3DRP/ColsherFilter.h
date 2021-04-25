@@ -62,7 +62,7 @@ public:
 #ifndef NRFFT       
   //! Default constructor
   /*! \warning Leaves object in ill-defined state*/
-  ColsherFilter() {}
+  ColsherFilter() = default;
   /*!
     \brief constructor for the ColsherFilter.
     
@@ -101,7 +101,7 @@ public:
 
   virtual std::string parameter_info() const;
   
-  ~ColsherFilter() {}
+  ~ColsherFilter() override = default;
 
 
   private:

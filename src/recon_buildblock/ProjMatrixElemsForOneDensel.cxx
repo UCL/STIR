@@ -69,7 +69,7 @@ ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator*=(const float
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
   {
-    iterator element_ptr = begin();
+    auto element_ptr = begin();
     while (element_ptr != end())
     {
       *element_ptr *= d;        
@@ -85,7 +85,7 @@ ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator/=(const float
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
   {
-    iterator element_ptr = begin();
+    auto element_ptr = begin();
     while (element_ptr != end())
     { 
       *element_ptr /= d;
@@ -136,7 +136,7 @@ void ProjMatrixElemsForOneDensel::sort()
 float ProjMatrixElemsForOneDensel::square_sum() const
 {
   float sq_sum=0;
-  const_iterator element_ptr = begin();
+  auto element_ptr = begin();
   while (element_ptr != end())
   {
     sq_sum += square(element_ptr->get_bin_value());        
@@ -154,14 +154,14 @@ merge( ProjMatrixElemsForOneDensel &lor2 )
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
 
-  iterator element_ptr = begin();
-  iterator element_ptr2= lor2.begin();
+  auto element_ptr = begin();
+  auto element_ptr2= lor2.begin();
   
   bool found=false;
   while ( element_ptr2 != lor2.end() )
   {   		
     //unsigned int key = make_key( element_ptr2->x, element_ptr2->y,element_ptr2->z);    		 
-    iterator  dup_xyz = element_ptr; 	  
+    auto  dup_xyz = element_ptr; 	  
     while ( dup_xyz != end() )
     {
       //unsigned int dup_key = make_key( dup_xyz->x,dup_xyz->y,dup_xyz->z);			 

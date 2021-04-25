@@ -40,9 +40,9 @@ VectorWithOffset<T>::init()
 {		
   length =0;	// i.e. an empty row of zero length,
   start = 0;	// no offsets
-  num = 0;	// and no data.
-  begin_allocated_memory = 0;
-  end_allocated_memory = 0;
+  num = nullptr;	// and no data.
+  begin_allocated_memory = nullptr;
+  end_allocated_memory = nullptr;
 }
 
 template <class T>
@@ -229,7 +229,7 @@ VectorWithOffset<T>::rend() const
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset()
-: _owns_memory_for_data(true)
+ 
 { 
   pointer_access = false;  
   this->init();

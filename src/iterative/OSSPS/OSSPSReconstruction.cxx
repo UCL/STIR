@@ -142,7 +142,7 @@ ask_parameters()
     const std::string objective_function_type = ask_string("");
     
     this->objective_function_sptr.
-      reset(GeneralisedObjectiveFunction<TargetT>::read_registered_object(0, objective_function_type)); 
+      reset(GeneralisedObjectiveFunction<TargetT>::read_registered_object(nullptr, objective_function_type)); 
     
   } 
   
@@ -275,7 +275,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     }
 
   if (!is_null_ptr(this->get_prior_ptr())&& 
-      dynamic_cast<PriorWithParabolicSurrogate<TargetT>*>(this->get_prior_ptr())==0)
+      dynamic_cast<PriorWithParabolicSurrogate<TargetT>*>(this->get_prior_ptr())==nullptr)
   {
     warning("OSSPS: Prior must be of a type derived from PriorWithParabolicSurrogate\n");
     return Succeeded::no;
@@ -455,7 +455,7 @@ update_estimate(TargetT &current_image_estimate)
       *std::max_element(current_image_estimate.begin_all(),
 			current_image_estimate.end_all()); 
     const float new_min = 0.F;
-    const float new_max = 
+    const auto new_max = 
       static_cast<float>(upper_bound);
     info(boost::format("current image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max % std::max(current_min, new_min) % std::min(current_max, new_max));
     

@@ -30,21 +30,21 @@
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/PixelsOnCartesianGrid.h"
-#include "stir/NumericType.h"
-#include "stir/IndexRange3D.h"
+#include "stir/Bin.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/utilities.h"
+#include "stir/IO/read_data.h"
+#include "stir/IndexRange3D.h"
+#include "stir/NumericType.h"
+#include "stir/PixelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/Scanner.h"
-#include "stir/Bin.h"
-#include "stir/IO/read_data.h"
 #include "stir/info.h"
-#include <fstream>
-#include <algorithm>
-#include <math.h>
-#include <memory>
 #include "stir/unique_ptr.h"
+#include "stir/utilities.h"
+#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <memory>
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -64,7 +64,7 @@ static void find_sampling_and_z_size(
 
   // first z- things
 
-  if (const ProjDataInfoCylindrical*
+  if (const auto*
         proj_data_info_cyl_ptr = 
         dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr))
 
@@ -310,7 +310,7 @@ VoxelsOnCartesianGrid<elemT>*
 #endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
-  VoxelsOnCartesianGrid *temp = new VoxelsOnCartesianGrid(*this);
+  auto *temp = new VoxelsOnCartesianGrid(*this);
   temp->set_exam_info(temp->get_exam_info());
   return temp;
 }

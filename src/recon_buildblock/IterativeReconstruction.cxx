@@ -143,7 +143,7 @@ ask_parameters()
     const string inter_iteration_filter_type = ask_string("");
     
     this->inter_iteration_filter_ptr.
-      reset(DataProcessor<TargetT>::read_registered_object(0, inter_iteration_filter_type));      
+      reset(DataProcessor<TargetT>::read_registered_object(nullptr, inter_iteration_filter_type));      
   } 
   
   
@@ -348,8 +348,7 @@ set_report_objective_function_values_interval(const int arg)
 template <typename TargetT>
 IterativeReconstruction<TargetT>::
 IterativeReconstruction()
-{
-}
+= default;
 
 template <typename TargetT>
 std::string
@@ -502,7 +501,7 @@ set_up(shared_ptr<TargetT > const& target_data_sptr)
 
   // KT 05/07/2000 made randomise_subset_order int
   if (this->randomise_subset_order!=0){
-    srand((unsigned int) (time(NULL)) ); //seed the rand() function
+    srand((unsigned int) (time(nullptr)) ); //seed the rand() function
   }
 
 

@@ -36,9 +36,9 @@ const char * const
 SpatialTransformation::registered_name = "Motion Field Type";
 
 SpatialTransformation::SpatialTransformation()    //!< default constructor
-{ }
+= default;
 
 SpatialTransformation::~SpatialTransformation()   //!< default destructor
-{ }
+= default;
 
 END_NAMESPACE_STIR

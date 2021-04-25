@@ -94,12 +94,12 @@ public:
   inline int get_num_tangential_poss() const;
   
   //! Get an empty sinogram of the same dimensions, segment_num etc.
-  inline Sinogram get_empty_copy(void) const;
+  inline Sinogram get_empty_copy() const;
  
   //! Overloading Array::grow
-  void grow(const IndexRange<2>& range);
+  void grow(const IndexRange<2>& range) override;
   //! Overloading Array::resize
-  void resize(const IndexRange<2>& range);
+  void resize(const IndexRange<2>& range) override;
 
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo>

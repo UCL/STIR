@@ -91,7 +91,7 @@ class ProjMatrixByBin :
 {
 public:
   
-  virtual ~ProjMatrixByBin() {}
+  ~ProjMatrixByBin() override = default;
 
   //! To be called before any calculation is performed
   /*! Note that get_proj_matrix_elems_for_one_bin() will expect objects of
@@ -179,13 +179,13 @@ protected:
   
   //! sets value for caching configuration (enables caching, but for 'basic' bins only)
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets keys for caching configuration
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap();
+  void initialise_keymap() override;
   //! Checks if parameters have sensible values
   /*! Has to be called by post_processing in the leaf-class */
-  virtual bool post_processing();
+  bool post_processing() override;
   
   /////////////////////////////// caching stuff //////////////////////
 

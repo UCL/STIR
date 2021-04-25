@@ -30,18 +30,18 @@
   
 */
 
-#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/Array.h"
 #include "stir/IndexRange4D.h"
-#include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/round.h"
 #include "stir/shared_ptr.h"
 #include "stir/zoom.h"
+#include <cmath>
 #include <memory>
-#include <math.h>
 
 #include <algorithm>
 using std::min;
@@ -50,7 +50,7 @@ using std::max;
 START_NAMESPACE_STIR
 
 JacobianForIntBP::
-JacobianForIntBP(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr, bool exact)
+JacobianForIntBP(const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr, bool exact)
      
      : R2(square(proj_data_info_sptr->get_ring_radius())),
        dxy2(square(proj_data_info_sptr->get_tangential_sampling())),
@@ -149,10 +149,10 @@ BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> cons
 
    // check if data are according to what we can handle
 
-  const VoxelsOnCartesianGrid<float> * vox_image_info_ptr =
+  const auto * vox_image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (image_info_ptr.get());
 
-  if (vox_image_info_ptr == NULL)
+  if (vox_image_info_ptr == nullptr)
     error("BackProjectorByBinUsingInterpolation initialised with a wrong type of DiscretisedDensity\n");
 
   const CartesianCoordinate3D<float> voxel_size = vox_image_info_ptr->get_voxel_size();
@@ -214,7 +214,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	  "can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
   }
   // this will throw an exception when the cast does not work
-  VoxelsOnCartesianGrid<float>& image = 
+  auto& image = 
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(density);
   // TODO somehow check symmetry object in RelatedViewgrams
 
@@ -225,7 +225,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   // zoom the viewgrams if necessary
   // if zoom==1 there's no need for allocation of a new
   // RelatedViewgrams object, so we do some trickery with a pointer
-  const RelatedViewgrams<float>* zoomed_viewgrams_ptr = 0;
+  const RelatedViewgrams<float>* zoomed_viewgrams_ptr = nullptr;
   // to make it exception-proof we need to use an unique_ptr or shared_ptr
   shared_ptr<RelatedViewgrams<float> > zoomed_viewgrams_sptr;
   int zoomed_min_tangential_pos_num;
@@ -258,7 +258,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
     }
 
   const int num_views = viewgrams.get_proj_data_info_sptr()->get_num_views();
-  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = zoomed_viewgrams_ptr->begin();
+  auto r_viewgrams_iter = zoomed_viewgrams_ptr->begin();
   if (zoomed_viewgrams_ptr->get_basic_segment_num() == 0)
     {
       // no segment symmetry

@@ -65,7 +65,7 @@ LORInCylinderCoordinates(const PointOnCylinder<coordT>& p1,
 template <class coordT>
 LORAs2Points<coordT>::
 LORAs2Points()
-{}
+= default;
 
 template <class coordT>
 LORAs2Points<coordT>::
@@ -345,10 +345,10 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
     (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
   if (argsqrt<=0)
     return Succeeded::no; // LOR is outside detector radius
-  const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
+  const auto root = static_cast<coordT2>(sqrt(argsqrt));
 
-  const coordT2 l1 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2);
-  const coordT2 l2 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2);
+  const auto l1 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2);
+  const auto l2 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2);
   // TODO won't work when coordT1!=coordT2
   intersection_coords.p1() = d*l1 + c1;
   intersection_coords.p2() = d*l2 + c1;

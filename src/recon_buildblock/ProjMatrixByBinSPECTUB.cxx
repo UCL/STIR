@@ -51,16 +51,16 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <fstream>
-#include <sstream>
 #include <algorithm>
-#include <stdio.h>
+#include <cctype>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <math.h>
-#include <ctype.h>
 //#include <time.h>
 
 //... user defined libraries .............................................................
@@ -197,7 +197,7 @@ get_attenuation_image_sptr() const
 
 void
 ProjMatrixByBinSPECTUB::
-set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >& value)
 {
   this->attenuation_image_sptr = value;
   if (this->attenuation_type == "no")
@@ -258,10 +258,10 @@ set_up(
 
   using namespace SPECTUB;
 
-   const VoxelsOnCartesianGrid<float> * image_info_ptr =
+   const auto * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if (image_info_ptr == nullptr)
     error("ProjMatrixByBinFromFile set-up with a wrong type of DiscretisedDensity\n");
 
   if (this->already_setup) 
@@ -289,7 +289,7 @@ set_up(
 	this->voxel_size = image_info_ptr->get_voxel_size();
 	this->origin = image_info_ptr->get_origin();
 
-	const ProjDataInfoCylindricalArcCorr * proj_Data_Info_Cylindrical =
+	const auto * proj_Data_Info_Cylindrical =
           dynamic_cast<const ProjDataInfoCylindricalArcCorr* > (this->proj_data_info_ptr.get());
 
 	CPUTimer timer; 
@@ -561,7 +561,7 @@ set_up(
 	}
 		//read_att_map( attmap );
 	}
-	else attmap = NULL;
+	else attmap = nullptr;
 
 	//... to generate mask..........................................................
 
@@ -575,7 +575,7 @@ set_up(
                                                                    read_from_file<DiscretisedDensity<3,float> >(wmh.msk_fn));
                 if (!density_info_ptr->has_same_characteristics(*mask_sptr))
                   error("Currently the mask image and emission image must have the same dimension, orientation and voxel size");
-                float * mask_from_file = new float [ vol.Nvox ];
+                auto * mask_from_file = new float [ vol.Nvox ];
                 std::copy(mask_sptr->begin_all(), mask_sptr->end_all(),mask_from_file);
                 // call UB generate_msk pretending that this mask is an attenuation image
                 // we do this to avoid using its own read_msk_file
@@ -589,7 +589,7 @@ set_up(
 		generate_msk( msk_3d, msk_2d, attmap, &vol);
               }
           }
-	else msk_2d = msk_3d = NULL;
+	else msk_2d = msk_3d = nullptr;
 
 	//... Initialization and memory allocation for the weight matrix ...................
 
@@ -606,12 +606,12 @@ set_up(
 
 	//... double array wm.val and wm.col .....................................................
 
-	if ( ( wm.val = new (std::nothrow) float * [ wm.NbOS ] ) == NULL ) 
+	if ( ( wm.val = new (std::nothrow) float * [ wm.NbOS ] ) == nullptr ) 
           {
             //error_wm_SPECT( 200, "wm.val[]" );
             error("Error allocating space to store values for SPECTUB matrix");
           }
-	if ( ( wm.col = new (std::nothrow) int   * [ wm.NbOS ] ) == NULL ) 
+	if ( ( wm.col = new (std::nothrow) int   * [ wm.NbOS ] ) == nullptr ) 
           {
             //error_wm_SPECT( 200, "wm.col[]" );
             error("Error allocating space to store column indices for SPECTUB matrix");
@@ -619,7 +619,7 @@ set_up(
 
 	//... array wm.ne .........................................................................
 
-	if ( ( wm.ne = new (std::nothrow) int [ wm.NbOS + 1 ]) == 0 ) 
+	if ( ( wm.ne = new (std::nothrow) int [ wm.NbOS + 1 ]) == nullptr ) 
           {
             // error_wm_SPECT(200,"wm.ne[]");
             error("Error allocating space to store number of elements for SPECTUB matrix");
@@ -785,13 +785,13 @@ compute_one_subset(const int kOS) const
 
   for( int i = 0 ; i < wmh.prj.NbOS ; i++ ){
 
-    if ( ( wm.val[ i ] = new (std::nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( wm.val[ i ] = new (std::nothrow) float [ NITEMS[kOS][ i ] ]) == nullptr) 
       {
         //error_wm_SPECT( 200, "wm.val[][]" );
         error("Error allocating space to store values for SPECTUB matrix");
       }
 
-    if ( ( wm.col[ i ] = new (std::nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( wm.col[ i ] = new (std::nothrow) int   [ NITEMS[kOS][ i ] ]) == nullptr) 
       {
         //error_wm_SPECT( 200, "wm.col[]" );
         error("Error allocating space to store column indices for SPECTUB matrix");

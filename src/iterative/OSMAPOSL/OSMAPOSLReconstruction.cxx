@@ -169,7 +169,7 @@ ask_parameters()
     
     const std::string inter_update_filter_type = ask_string("");
     
-    inter_update_filter_ptr.reset(DataProcessor<TargetT >::read_registered_object(0, inter_update_filter_type));
+    inter_update_filter_ptr.reset(DataProcessor<TargetT >::read_registered_object(nullptr, inter_update_filter_type));
     
   } 
 
@@ -564,9 +564,9 @@ update_estimate(TargetT &current_image_estimate)
       const float current_max = 
         *std::max_element(multiplicative_update_image_ptr->begin_all(),
                           multiplicative_update_image_ptr->end_all()); 
-      const float new_min = 
+      const auto new_min = 
         static_cast<float>(this->minimum_relative_change);
-      const float new_max = 
+      const auto new_max = 
         static_cast<float>(this->maximum_relative_change);
       info(boost::format("Update image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max % (min(current_min, new_min)) % (max(current_max, new_max)));
 

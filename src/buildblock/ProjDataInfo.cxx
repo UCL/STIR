@@ -161,7 +161,7 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
 
 
 ProjDataInfo::ProjDataInfo()
-  : bed_position_horizontal(0.F), bed_position_vertical(0.F)
+   
 {}
 
 
@@ -317,11 +317,11 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
   vector<Viewgram<float> > viewgrams;
   viewgrams.reserve(pairs.size());
 
-  for (unsigned int i=0; i<pairs.size(); i++)
+  for (auto & pair : pairs)
   {
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_empty_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_tangential_poss_odd));
+    viewgrams.push_back(get_empty_viewgram(pair.view_num(),
+                                          pair.segment_num(), make_num_tangential_poss_odd));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);

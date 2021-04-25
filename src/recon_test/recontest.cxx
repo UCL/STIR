@@ -15,15 +15,15 @@
 */
 
 
-#include "stir/DiscretisedDensity.h"
-#include "stir/IO/read_from_file.h"
-#include "stir/recon_buildblock/Reconstruction.h"
-#include <iostream>
-#include <stdlib.h>
-#include <string>
-#include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/HighResWallClockTimer.h"
+#include "stir/IO/read_from_file.h"
+#include "stir/Succeeded.h"
+#include "stir/recon_buildblock/Reconstruction.h"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 static void print_usage_and_exit()
 {

@@ -56,7 +56,7 @@ public:
    ParsingObject() ;
    ParsingObject(const ParsingObject&) ;
    ParsingObject& operator=(const ParsingObject&) ;
-  virtual ~ParsingObject() {}
+  virtual ~ParsingObject() = default;
   
   /*! \name parsing functions
 
@@ -94,7 +94,7 @@ protected:
    virtual void set_key_values();
 
 private:
-  bool keymap_is_initialised;  
+  bool keymap_is_initialised{false};  
 protected:
   KeyParser parser;
 

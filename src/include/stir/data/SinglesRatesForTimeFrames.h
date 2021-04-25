@@ -66,7 +66,7 @@ public:
         does not corresponds to a time frame.
     */
     float get_singles_rate(const int singles_bin_index, 
-                           const double start_time, const double end_time) const;
+                           const double start_time, const double end_time) const override;
     
     //! Generate a FramesSinglesRate - containing the average rates
     //  for a frame begining at start_time and ending at end_time.

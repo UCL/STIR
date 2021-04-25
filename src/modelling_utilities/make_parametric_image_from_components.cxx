@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
             if (is_null_ptr(dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get())))
                 throw std::runtime_error("Failed to convert parameter to VoxelsOnCartesianGrid.");
 
-            VoxelsOnCartesianGrid<float> *param = dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get());
+            auto *param = dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get());
 
             params.push_back(*param);
 

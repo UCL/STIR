@@ -25,6 +25,10 @@
     See STIR/LICENSE.txt for details
 */
 
+#include <utility>
+
+
+
 #include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/is_null_ptr.h"
@@ -33,12 +37,11 @@ START_NAMESPACE_STIR
 
 ListModeData::
 ListModeData()
-{
-}
+= default;
 
 ListModeData::
 ~ListModeData()
-{}
+= default;
 
 const Scanner*
 ListModeData::
@@ -53,7 +56,7 @@ void
 ListModeData::
 set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr)
 {
-    proj_data_info_sptr = new_proj_data_info_sptr;
+    proj_data_info_sptr = std::move(new_proj_data_info_sptr);
 }
 
 shared_ptr<const ProjDataInfo>

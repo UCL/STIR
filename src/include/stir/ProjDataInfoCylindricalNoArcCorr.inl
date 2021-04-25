@@ -30,7 +30,7 @@
 
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
-#include <math.h>
+#include <cmath>
 
 START_NAMESPACE_STIR
 

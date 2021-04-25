@@ -43,7 +43,7 @@ transform_proj_matrix_elems_for_one_bin(
   transform_bin_coordinates(bin);
   lor.set_bin(bin);
   
-  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
+  auto element_ptr = lor.begin();
   while (element_ptr != lor.end()) 
   {
     Coordinate3D<int> c(element_ptr->get_coords());
@@ -63,7 +63,7 @@ transform_proj_matrix_elems_for_one_densel(
   transform_image_coordinates(densel);
   probs.set_densel(densel);
   
-  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  auto element_ptr = probs.begin();
   while (element_ptr != probs.end()) 
   {
     Bin c(*element_ptr);

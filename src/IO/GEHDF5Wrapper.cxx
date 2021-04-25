@@ -487,7 +487,7 @@ void GEHDF5Wrapper::initialise_exam_info()
 
     frameStartTime_dataset.read(&frameStartTime, H5::PredType::NATIVE_UINT32);
     frameDuration_dataset.read(&frameDuration, H5::PredType::NATIVE_UINT32);
-    const double frame_start_time = double(frameStartTime - scanStartTime);
+    const auto frame_start_time = double(frameStartTime - scanStartTime);
 
     std::vector<std::pair<double, double> >tf{{frame_start_time,frame_start_time+frameDuration/1000}};
 
@@ -531,7 +531,7 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
         error("Dataset dimensions ("+ std::to_string(dataset_list_Ndims) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
     hsize_t dims_out[m_max_dataset_dims];
 
-    m_dataspace.getSimpleExtentDims( dims_out, NULL);
+    m_dataspace.getSimpleExtentDims( dims_out, nullptr);
     m_list_size=dims_out[0];
     const hsize_t tmp_size_of_record_signature = m_size_of_record_signature;
     m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
@@ -559,7 +559,7 @@ Succeeded GEHDF5Wrapper::initialise_singles_data()
             error("Dataset dimensions ("+ std::to_string(rank) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
         hsize_t dims[m_max_dataset_dims];
         // Read size of dimensions
-        m_dataspace.getSimpleExtentDims( dims, NULL); 
+        m_dataspace.getSimpleExtentDims( dims, nullptr); 
 
         m_NX_SUB = dims[0];    // hyperslab dimensions
         m_NY_SUB = dims[1];
@@ -609,7 +609,7 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
             error("Dataset dimensions ("+ std::to_string(rank) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
         hsize_t dims[m_max_dataset_dims];
         // Read size of dimensions
-        m_dataspace.getSimpleExtentDims( dims, NULL);
+        m_dataspace.getSimpleExtentDims( dims, nullptr);
 
         // AB for signa, these where [1981,27,357] and [45,448,357]
         m_NX_SUB = dims[0] ;    // hyperslab dimensions
@@ -654,7 +654,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const unsigned int slice_nu
                 error("Dataset dimensions ("+ std::to_string(rank) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
             hsize_t dims[m_max_dataset_dims];
 
-            m_dataspace.getSimpleExtentDims( dims, NULL);
+            m_dataspace.getSimpleExtentDims( dims, nullptr);
 
             m_NX_SUB = dims[0];    // hyperslab dimensions
             m_NY_SUB = dims[1];
@@ -691,7 +691,7 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
             error("Dataset dimensions ("+ std::to_string(rank) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
         hsize_t dims[m_max_dataset_dims];
         // Read size of dimensions
-        m_dataspace.getSimpleExtentDims( dims, NULL);
+        m_dataspace.getSimpleExtentDims( dims, nullptr);
 
 
         m_NX_SUB = dims[0];    // hyperslab dimensions
@@ -732,7 +732,7 @@ Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_of
 {
     if(!is_list_file())
         error("The file provided is not list data. Aborting");
-    hsize_t pos = static_cast<hsize_t>(current_offset);
+    auto pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &size, &pos );
     m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(size);

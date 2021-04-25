@@ -30,6 +30,10 @@
 #define __stir_recon_buildblock_BinNormalisation_H__
 
 
+#include <utility>
+
+
+
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
 #include "stir/shared_ptr.h"
@@ -62,7 +66,7 @@ public:
 
   BinNormalisation();
 
-  virtual ~BinNormalisation();
+  ~BinNormalisation() override;
   virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)
@@ -137,7 +141,7 @@ public:
   STIR_DEPRECATED void undo(ProjData& p,const double /*start_time*/, const double /*end_time*/, 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> sym = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const
   {
-    this->undo(p, sym);
+    this->undo(p, std::move(sym));
   }
 
   
@@ -145,10 +149,10 @@ public:
   STIR_DEPRECATED void apply(ProjData& p,const double /*start_time*/, const double /*end_time*/, 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> sym = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const
   {
-    this->apply(p, sym);
+    this->apply(p, std::move(sym));
   }
   
-  void set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr);
+  void set_exam_info_sptr(const shared_ptr<const ExamInfo>& _exam_info_sptr);
 
   shared_ptr<const ExamInfo> get_exam_info_sptr() const ;
 
@@ -161,7 +165,7 @@ public:
   virtual void check(const ProjDataInfo& proj_data_info) const;
   
   virtual void check(const ExamInfo& exam_info) const;
-  bool _already_set_up;
+  bool _already_set_up{false};
 private:
   shared_ptr<const ExamInfo> exam_info_sptr;
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;

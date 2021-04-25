@@ -98,7 +98,7 @@ calc_ring1_plus_ring2(const Bin& bin,
 
 static
 void
-set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(const shared_ptr<const ProjDataInfoCylindricalNoArcCorr>& proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin, 
                                 DetectionPositionPair<>& detection_position_pair) {
   int det1_num=0;
@@ -219,7 +219,7 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr_v, const shared_ptr<cons
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
-  if (proj_data_info_cyl_ptr==0)
+  if (proj_data_info_cyl_ptr==nullptr)
   {
     warning("BinNormalisationFromECAT8 can only be used on non-arccorrected data\n");
     return Succeeded::no;

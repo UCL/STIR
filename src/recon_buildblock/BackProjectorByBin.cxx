@@ -32,13 +32,15 @@
 
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/ProjData.h"
+#include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/ProjData.h"
+#include "stir/RelatedViewgrams.h"
 #include "stir/info.h"
 #include "stir/is_null_ptr.h"
-#include "stir/DataProcessor.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
+#include <utility>
+
 #include <vector>
 #ifdef STIR_OPENMP
 #include "stir/is_null_ptr.h"
@@ -50,14 +52,13 @@
 START_NAMESPACE_STIR
 
 BackProjectorByBin::BackProjectorByBin()
-  :   _already_set_up(false)
+     
 {
     set_defaults();
 }
 
 BackProjectorByBin::~BackProjectorByBin()
-{
-}
+= default;
 
 void
 BackProjectorByBin::
@@ -215,9 +216,9 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
 #pragma omp for schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
-    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    for (auto vs : vs_nums_to_process)
       {
-        const ViewSegmentNumbers vs=vs_nums_to_process[i];
+        
 #ifdef STIR_OPENMP
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
@@ -290,11 +291,9 @@ back_project(const RelatedViewgrams<float>& viewgrams,
       viewgrams.get_num_viewgrams())
       error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
 
-    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
-     iter != viewgrams.end();
-     ++iter)
+    for (const auto & viewgram : viewgrams)
       {
-    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    ViewSegmentNumbers vs(viewgram.get_view_num(), viewgram.get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
     if (vs != basic_vs)
       error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
@@ -365,7 +364,7 @@ void
 BackProjectorByBin::
 set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
 {
-    _post_data_processor_sptr = post_data_processor_sptr;
+    _post_data_processor_sptr = std::move(post_data_processor_sptr);
 }
 
 void

@@ -129,7 +129,7 @@ private:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
-  virtual bool post_processing();
+  bool post_processing() override;
   void set_imaging_modality();
   shared_ptr<ExamInfo> exam_info_sptr;
   std::string imaging_modality_as_string;
@@ -341,7 +341,7 @@ GenerateImage(const char * const par_filename)
 {
   set_defaults();
   initialise_keymap();
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     {
       if (parse(par_filename) == false)
 	exit(EXIT_FAILURE);
@@ -429,7 +429,7 @@ int main(int argc, char * argv[])
     std::cerr << "Usage: " << argv[0] << " par_file\n";
     exit(EXIT_FAILURE);
   }
-  GenerateImage application(argc==2 ? argv[1] : 0);
+  GenerateImage application(argc==2 ? argv[1] : nullptr);
   Succeeded success = application.compute();
 
   return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;

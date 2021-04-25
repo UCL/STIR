@@ -39,9 +39,9 @@ public:
     //! Constructor that can take some input data to run the test with
     TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm);
 
-    virtual ~TestDataProcessorProjectors() {}
+    ~TestDataProcessorProjectors() override = default;
 
-    void run_tests();
+    void run_tests() override;
 protected:
     std::string _sinogram_filename;
     float _fwhm;
@@ -97,8 +97,8 @@ compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, con
 
     DiscretisedDensity<3,float>::const_full_iterator im_1_iter = im_1.begin_all_const();
     DiscretisedDensity<3,float>::const_full_iterator im_2_iter = im_2.begin_all_const();
-    std::vector<float>::iterator arr_1_iter = arr_1.begin();
-    std::vector<float>::iterator arr_2_iter = arr_2.begin();
+    auto arr_1_iter = arr_1.begin();
+    auto arr_2_iter = arr_2.begin();
     while (im_1_iter!=im_1.end_all_const()) {
         *arr_1_iter = *im_1_iter;
         *arr_2_iter = *im_2_iter;

@@ -120,7 +120,7 @@ read_from_file(const string& filename) // The written image is read in respect t
 	 }
     
        gated_proj_data_sptr.reset(new GatedProjData);
-       const unsigned int num_gates =
+       const auto num_gates =
 	 static_cast<unsigned int>(filenames.size());
        gated_proj_data_sptr->_proj_datas.resize(num_gates);
 
@@ -156,7 +156,7 @@ GatedProjData::read_from_gdef(const string& filename)
 {
   const string gdef_filename=filename+".gdef";
   std::cout << "GatedProjData: Reading gate definitions " << gdef_filename.c_str() << std::endl;
-  GatedProjData * gated_proj_data_ptr = new GatedProjData;
+  auto * gated_proj_data_ptr = new GatedProjData;
   gated_proj_data_ptr->_time_gate_definitions.read_gdef_file(gdef_filename);
   gated_proj_data_ptr->_proj_datas.resize(gated_proj_data_ptr->_time_gate_definitions.get_num_gates());
   for ( unsigned int num = 1 ; num<=(gated_proj_data_ptr->_time_gate_definitions).get_num_gates() ;  ++num ) 

@@ -70,7 +70,7 @@ class Bin;
 class SymmetryOperation
 {
 public:
-  virtual inline ~SymmetryOperation() {}
+  virtual inline ~SymmetryOperation() = default;
   virtual inline bool is_trivial() const { return false;}
   virtual void 
     transform_bin_coordinates(Bin&) const = 0;
@@ -104,20 +104,20 @@ public:
 class TrivialSymmetryOperation : public SymmetryOperation
 {
 public:
-  inline bool is_trivial() const { return true;}
+  inline bool is_trivial() const override { return true;}
   inline void 
-    transform_bin_coordinates(Bin& b) const {}
+    transform_bin_coordinates(Bin& b) const override {}
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers& n) const {}
+    transform_view_segment_indices(ViewSegmentNumbers& n) const override {}
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const {}
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override {}
   inline void 
     transform_proj_matrix_elems_for_one_bin(
-       ProjMatrixElemsForOneBin& lor) const {}
+       ProjMatrixElemsForOneBin& lor) const override {}
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const {}
+      ProjMatrixElemsForOneDensel&) const override {}
 };
 
 

@@ -30,7 +30,7 @@
 
 #include "stir/evaluation/ROIValues.h"
 #include "stir/NumericInfo.h"
-#include <math.h>
+#include <cmath>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else

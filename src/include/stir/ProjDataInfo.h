@@ -129,7 +129,7 @@ public:
   inline shared_ptr<ProjDataInfo> create_shared_clone() const;
 
   //! Destructor
-  virtual ~ProjDataInfo() {}
+  virtual ~ProjDataInfo() = default;
 
   /**************** member functions *********/
 
@@ -393,8 +393,8 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
-  float bed_position_horizontal;
-  float bed_position_vertical;
+  float bed_position_horizontal{0.F};
+  float bed_position_vertical{0.F};
   
 };
 

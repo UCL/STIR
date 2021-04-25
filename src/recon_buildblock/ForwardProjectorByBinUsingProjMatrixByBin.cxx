@@ -133,7 +133,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
     
     ProjMatrixElemsForOneBin proj_matrix_row;
     
-    RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
+    auto r_viewgrams_iter = viewgrams.begin();
     
     while( r_viewgrams_iter!=viewgrams.end())
     {
@@ -182,16 +182,10 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                                                 min_axial_pos_num, max_axial_pos_num,
                                                 min_tangential_pos_num, max_tangential_pos_num);
         
-        for (
-#ifndef STIR_NO_NAMESPACES
-          std::
-#endif
-            vector<AxTangPosNumbers>::iterator r_ax_poss_iter = r_ax_poss.begin();
-          r_ax_poss_iter != r_ax_poss.end();
-          ++r_ax_poss_iter)
+        for (auto & r_ax_pos : r_ax_poss)
         {
-          const int axial_pos_tmp = (*r_ax_poss_iter)[1];
-          const int tang_pos_tmp = (*r_ax_poss_iter)[2];
+          const int axial_pos_tmp = r_ax_pos[1];
+          const int tang_pos_tmp = r_ax_pos[2];
           
           // symmetries might take the ranges out of what the user wants
           if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
@@ -201,14 +195,12 @@ ForwardProjectorByBinUsingProjMatrixByBin::
           already_processed[axial_pos_tmp][tang_pos_tmp] = 1;
           
           
-          for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-               viewgram_iter != viewgrams.end();
-               ++viewgram_iter)
+          for (auto & viewgram_iter : viewgrams)
           {
-            Viewgram<float>& viewgram = *viewgram_iter;
+            Viewgram<float>& viewgram = viewgram_iter;
             proj_matrix_row_copy = proj_matrix_row;
-            Bin bin(viewgram_iter->get_segment_num(),
-                    viewgram_iter->get_view_num(),
+            Bin bin(viewgram_iter.get_segment_num(),
+                    viewgram_iter.get_view_num(),
                     axial_pos_tmp,
                     tang_pos_tmp);
             

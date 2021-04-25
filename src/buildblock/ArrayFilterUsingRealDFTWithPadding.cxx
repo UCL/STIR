@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 ArrayFilterUsingRealDFTWithPadding()
-{}
+= default;
 
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 

@@ -43,7 +43,7 @@ int time_zone_offset_in_secs()
     {
       first_run = false;
 
-      time_t current_time = time(0);
+      time_t current_time = time(nullptr);
       //struct tm * local_time = localtime(&current_time);
       //std::cerr << "Local: " << local_time->tm_hour << ',' << local_time->tm_isdst;
       struct tm * gmt = gmtime(&current_time);
@@ -57,7 +57,7 @@ int time_zone_offset_in_secs()
 
 int current_time_zone_and_DST_offset_in_secs()
 {
-  time_t current_time = time(0);
+  time_t current_time = time(nullptr);
   struct tm * local_time = localtime(&current_time);
   const int isdst = local_time->tm_isdst;
   return time_zone_offset_in_secs() + isdst*3600;
@@ -188,7 +188,7 @@ double DICOM_datetime_to_secs_since_Unix_epoch(const std::string& str_org, bool 
           error("DICOM DT '" + str + "' is ill-formed for the fractional seconds");
         try
           {
-            const double frac_secs = boost::lexical_cast<double>(fraction);
+            const auto frac_secs = boost::lexical_cast<double>(fraction);
             time_diff += frac_secs;
           }
         catch (...)

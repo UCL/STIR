@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
 DataSymmetriesForDensels::
 DataSymmetriesForDensels()
-{}
+= default;
 
 /*! Default implementation always returns \c true. Needs to be overloaded.
  */

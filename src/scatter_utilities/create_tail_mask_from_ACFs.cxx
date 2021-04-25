@@ -97,7 +97,7 @@ int main(int argc, const char *argv[])
         std::stringstream hdr_stream(argv[1]);
         std::string sargv = hdr_stream.str();
 
-        size_t lastindex = sargv.find_last_of(".");
+        size_t lastindex = sargv.find_last_of('.');
         std::string extension = sargv.substr(lastindex);
         std::string par_ext = ".par";
         if ( extension.compare(par_ext) != 0 )

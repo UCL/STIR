@@ -39,10 +39,10 @@
 #include "stir/Scanner.h"
 #include "stir/IndexRange.h"
 
-#include <iostream>
-#include <math.h>
-#include <algorithm>
 #include "stir/RunTests.h"
+#include <algorithm>
+#include <cmath>
+#include <iostream>
 
 using std::cerr;
 using std::endl;
@@ -58,7 +58,7 @@ START_NAMESPACE_STIR
 class VoxelsOnCartesianGridTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 
@@ -154,7 +154,7 @@ VoxelsOnCartesianGridTests::run_tests()
     
     // KT 11/09/2001 adapted as this constructor now takes zoom into account
     const bool is_arccorrected =
-      dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(proj_data_info_ptr.get()) != 0;
+      dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(proj_data_info_ptr.get()) != nullptr;
     check(is_arccorrected, "ProjDataInfoCTI should have returned arc-corrected data");
     if (is_arccorrected)
     {
@@ -236,9 +236,9 @@ VoxelsOnCartesianGridTests::run_tests()
       
       shared_ptr<DiscretisedDensity<3,float> > emp(ob5.get_empty_copy()); 
       
-      VoxelsOnCartesianGrid<float>* emp1 =
+      auto* emp1 =
         dynamic_cast<VoxelsOnCartesianGrid<float>* >(emp.get());
-      check(emp1 != 0, "test on pointer conversion from get_empty_copy");
+      check(emp1 != nullptr, "test on pointer conversion from get_empty_copy");
       
       IndexRange<3> obtained_range3 = emp1->get_index_range();
       check_if_equal( emp->get_origin(), ob5.get_origin(), "test on origin");  

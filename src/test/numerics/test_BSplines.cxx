@@ -53,8 +53,8 @@ namespace BSpline {
   {
   public:
     BSplines_Tests() 
-    {}
-    void run_tests();
+    = default;
+    void run_tests() override;
   private:  
     template <class elemT>
     bool check_at_sample_points(const std::vector<elemT>& v,
@@ -99,7 +99,7 @@ namespace BSpline {
       BSplines_weights_correct_vector_3.push_back(0.);			//3 
       BSplines_weights_correct_vector_3.push_back(0.666667);	//4
 	  	  	  
-      std::vector<elemT>:: iterator cur_iter_stir_out_3= BSplines_weights_STIR_vector_3.begin()
+      auto cur_iter_stir_out_3= BSplines_weights_STIR_vector_3.begin()
 	, 	  cur_iter_test_3= BSplines_weights_correct_vector_3.begin()		  ;
       for (; cur_iter_stir_out_3!=BSplines_weights_STIR_vector_3.end() &&
 	     cur_iter_test_3!=BSplines_weights_correct_vector_3.end();	  
@@ -119,7 +119,7 @@ namespace BSpline {
       BSplines_weights_correct_vector_2.push_back(0.00);  //3	 
       BSplines_weights_correct_vector_2.push_back(0.75);        //4
 	  
-      std::vector<elemT>:: iterator cur_iter_stir_out_2= BSplines_weights_STIR_vector_2.begin()
+      auto cur_iter_stir_out_2= BSplines_weights_STIR_vector_2.begin()
 	, 	  cur_iter_test_2= BSplines_weights_correct_vector_2.begin()		  ;
       for (; cur_iter_stir_out_2!=BSplines_weights_STIR_vector_2.end() &&
 	     cur_iter_test_2!=BSplines_weights_correct_vector_2.end();	  
@@ -138,7 +138,7 @@ namespace BSpline {
       BSplines_weights_correct_vector_5.push_back(0.109918);    //2
       BSplines_weights_correct_vector_5.push_back(0.00140058);  //3	 
       BSplines_weights_correct_vector_5.push_back(0.55);       //4	  
-      std::vector<elemT>:: iterator cur_iter_stir_out= BSplines_weights_STIR_vector_5.begin()
+      auto cur_iter_stir_out= BSplines_weights_STIR_vector_5.begin()
 	, 	  cur_iter_test= BSplines_weights_correct_vector_5.begin()		  ;
       for (; cur_iter_stir_out!=BSplines_weights_STIR_vector_5.end() &&
 	     cur_iter_test!=BSplines_weights_correct_vector_5.end();	  
@@ -157,7 +157,7 @@ namespace BSpline {
       oMoms_weight_correct_vector.push_back(0.563976);//2
       oMoms_weight_correct_vector.push_back(0.0738333);//3	  
       oMoms_weight_correct_vector.push_back(0.); //4	  
-      std::vector<elemT>:: iterator cur_iter_stir_out= oMoms_weight_STIR_vector.begin()
+      auto cur_iter_stir_out= oMoms_weight_STIR_vector.begin()
 	, 	  cur_iter_test= oMoms_weight_correct_vector.begin()		  ;
       for (; cur_iter_stir_out!= oMoms_weight_STIR_vector.end() &&
 	     cur_iter_test!= oMoms_weight_correct_vector.end();	  
@@ -179,7 +179,7 @@ namespace BSpline {
       BSplines_1st_der_weight_correct_vector.push_back(-0.465); //2
       BSplines_1st_der_weight_correct_vector.push_back(-0.245); //3
       BSplines_1st_der_weight_correct_vector.push_back(0.); //4	  
-      for ( std::vector<elemT>:: iterator cur_iter_stir_out= BSplines_1st_der_weight_STIR_vector.begin()
+      for ( auto cur_iter_stir_out= BSplines_1st_der_weight_STIR_vector.begin()
 	      , cur_iter_test= BSplines_1st_der_weight_correct_vector.begin();
 	    cur_iter_stir_out!=BSplines_1st_der_weight_STIR_vector.end() &&
 	      cur_iter_test!=BSplines_1st_der_weight_correct_vector.end();	  
@@ -203,7 +203,7 @@ namespace BSpline {
 						(BSplines1DRegularGridTest(i+epsilon) - 
 						 BSplines1DRegularGridTest(i-epsilon)) /(2*epsilon));
 	}	  	
-      for ( std::vector<elemT>:: iterator cur_iter_stir_out= BSplines_1st_der_est_vector.begin()
+      for ( auto cur_iter_stir_out= BSplines_1st_der_est_vector.begin()
 	      , cur_iter_test=BSplines_1st_der_STIR_vector.begin();
 	    cur_iter_test!=BSplines_1st_der_STIR_vector.end();	  
 	    ++cur_iter_stir_out, ++cur_iter_test)
@@ -356,7 +356,7 @@ namespace BSpline {
 	  STIR_left_output_sample.push_back(BSplines1DRegularGridTests(i-epsilon));	  
 	  STIR_right_output_sample.push_back(BSplines1DRegularGridTests(i+epsilon));
 	}	 
-      std::vector<elemT>:: iterator cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
+      auto cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
 	cur_iter_stir_right_out= STIR_right_output_sample.begin();
       for (; cur_iter_stir_left_out!=STIR_left_output_sample.end() &&
 	     cur_iter_stir_right_out!=STIR_right_output_sample.end();	 
@@ -380,7 +380,7 @@ namespace BSpline {
 	  STIR_left_output_sample.push_back(BSplines1DRegularGridTests.BSplines_1st_der(i-epsilon));	  
 	  STIR_right_output_sample.push_back(BSplines1DRegularGridTests.BSplines_1st_der(i+epsilon));
 	}	 
-      std::vector<elemT>:: iterator cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
+      auto cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
 	cur_iter_stir_right_out= STIR_right_output_sample.begin();
       for (; cur_iter_stir_left_out!=STIR_left_output_sample.end() &&
 	     cur_iter_stir_right_out!=STIR_right_output_sample.end();	 
@@ -398,7 +398,7 @@ namespace BSpline {
 					  		
       STIR_output_sample=BSplines1DRegularGridTests.BSplines_output_sequence(output_sample_position);
 
-      std::vector<elemT>:: iterator cur_iter_stir_out = STIR_output_sample.begin();
+      auto cur_iter_stir_out = STIR_output_sample.begin();
 
       for (; cur_iter_stir_out!=STIR_output_sample.end(); ++cur_iter_stir_out)	
 	check_if_equal(*cur_iter_stir_out, (elemT)1,	

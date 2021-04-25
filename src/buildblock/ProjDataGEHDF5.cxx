@@ -30,6 +30,10 @@
 
 
 
+#include <utility>
+
+
+
 #include "stir/ProjDataGEHDF5.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
@@ -58,7 +62,7 @@ ProjDataGEHDF5::ProjDataGEHDF5(const std::string& input_filename) :
 
 ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr) :
   ProjData(),
-  m_input_hdf5_sptr(input_hdf5_sptr)
+  m_input_hdf5_sptr(std::move(input_hdf5_sptr))
 {
     this->initialise_from_wrapper();
 }
@@ -212,7 +216,7 @@ ProjDataGEHDF5::find_segment_index_in_sequence(const int segment_num) const
 {
 #ifndef STIR_NO_NAMESPACES
 
-  std::vector<int>::const_iterator iter =
+  auto iter =
     std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
 #else
   vector<int>::const_iterator iter =

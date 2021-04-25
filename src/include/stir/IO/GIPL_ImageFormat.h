@@ -71,9 +71,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __GIPL_IMAGE_H
 #define __GIPL_IMAGE_H
 
-#include <vector>
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
+#include <vector>
 
 #define _SHORT									0
 #define _FLOAT									1

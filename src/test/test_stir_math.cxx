@@ -35,17 +35,17 @@
 #include "stir/IndexRange.h"
 #include "stir/CartesianCoordinate3D.h"
 
-#include "stir/RunTests.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/RunTests.h"
 #include "stir/SegmentByView.h"
-#include "stir/thresholding.h"
 #include "stir/Succeeded.h"
+#include "stir/thresholding.h"
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #ifndef STIR_NO_NAMESPACE
 using std::generate;
@@ -68,7 +68,7 @@ public:
     : stir_math_executable(stir_math_executable)
   {}
   
-  void run_tests();
+  void run_tests() override;
 private:
   string stir_math_executable;
   //! returns true if it ran it successfully

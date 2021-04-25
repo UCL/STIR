@@ -29,10 +29,10 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/GIPL_ImageFormat.h"
 
-#include <stdio.h>
-#include <sstream>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }		
 
-  Image * image= new Image;
+  auto * image= new Image;
   image->GiplRead(argv[1]);
   string filename(argv[1]);
   string output_filename;

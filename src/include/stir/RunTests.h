@@ -268,7 +268,7 @@ protected:
   //! tolerance for comparisons with real values
   double tolerance;
   //! variable storing current status
-  bool everything_ok;
+  bool everything_ok{true};
 
   //! function that is called by some check_if_equal implementations. It just uses operator!=
   template<class T>
@@ -309,7 +309,7 @@ END_NAMESPACE_STIR
 START_NAMESPACE_STIR
 
 RunTests::RunTests(const double tolerance)
-  : tolerance(tolerance), everything_ok(true)
+  : tolerance(tolerance) 
 {}
 
 RunTests::~RunTests()

@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 class MatrixTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   void run_tests_1D();
   void run_tests_2D();
@@ -264,7 +264,7 @@ run_tests_max_eigenvector()
   }
 
   {
-    const float pi2=static_cast<float>(_PI/2);
+    const auto pi2=static_cast<float>(_PI/2);
     const Array<2,float> rotation =
       //      make_orthogonal_matrix(.2F,.4F,-1.F);
       make_orthogonal_matrix(pi2,pi2,pi2);

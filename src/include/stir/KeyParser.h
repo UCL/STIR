@@ -84,12 +84,12 @@ public:
 class map_element
 {
 public :
-  KeyArgument::type type;
-  void (KeyParser::*p_object_member)();	// pointer to a member function
+  KeyArgument::type type{KeyArgument::NONE};
+  void (KeyParser::*p_object_member)(){0};	// pointer to a member function
   //TODO void (*p_object_member)();
-  void *p_object_variable;		// pointer to a variable 
-  int vectorised_key_level;
-  const ASCIIlist_type * p_object_list_of_values;// only used by ASCIIlist
+  void *p_object_variable{0};		// pointer to a variable 
+  int vectorised_key_level{0};
+  const ASCIIlist_type * p_object_list_of_values{0};// only used by ASCIIlist
   // TODO should really not be here, but it works for now
   typedef RegisteredObjectBase * (Parser)(std::istream*, const std::string&);
   Parser* parser;
@@ -99,7 +99,7 @@ public :
   // map_element(KeyArgument::type t, void (KeyParser::*object_member_ptr)());
   
   map_element(KeyArgument::type t, void (KeyParser::*object_member_ptr)(),
-	      void* variable_ptr, const int vectorised_key_level, const ASCIIlist_type *list_of_valid_keywords = 0);
+	      void* variable_ptr, const int vectorised_key_level, const ASCIIlist_type *list_of_valid_keywords = nullptr);
   map_element(void (KeyParser::*pom)(),
 	      RegisteredObjectBase** pov, 
               Parser *);
@@ -386,7 +386,7 @@ protected :
       \warning this interface to KeyParser will change in a future release */
   void add_key(const std::string& keyword, 
     KeyArgument::type t, KeywordProcessor function,
-    void* variable= 0, const ASCIIlist_type * const list = 0);
+    void* variable= nullptr, const ASCIIlist_type * const list = nullptr);
   //! add a keyword to the list, together with its call_back function
   /*! This provides a more flexible way to add keys with specific call_backs.
       Can currently only be used by derived classes, as KeywordProcessor has to be a 
@@ -394,16 +394,16 @@ protected :
       \warning this interface to KeyParser will change in a future release */
   void add_key(const std::string& keyword, 
     KeyArgument::type t, KeywordProcessor function,
-               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = 0);
+               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = nullptr);
   
   //! version that defaults 'function' to set_variable
   /*! \warning this interface to KeyParser will change in a future release */
   void add_key(const std::string& keyword, KeyArgument::type t, 
-	      void* variable, const ASCIIlist_type * const list = 0);
+	      void* variable, const ASCIIlist_type * const list = nullptr);
   //! version that defaults 'function' to set_variable
   /*! \warning this interface to KeyParser will change in a future release */
   void add_key(const std::string& keyword, KeyArgument::type t, 
-               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = 0);
+               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = nullptr);
 
   //! Removes a key from the kep map
   /*! \return \c true if it was found, \c false otherwise */

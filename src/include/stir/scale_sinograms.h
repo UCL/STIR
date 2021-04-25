@@ -41,7 +41,7 @@ class Succeeded;
 */
 Succeeded scale_sinograms(ProjData& output_proj_data, 		
 			  const ProjData& input_proj_data, 
-			  const Array<2,float> scale_factors_per_sinogram);
+			  const Array<2,float>& scale_factors_per_sinogram);
 
 //! find scale factors between two different sinograms
 /*! \ingroup projdata

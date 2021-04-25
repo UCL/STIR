@@ -137,7 +137,7 @@ void display(const Array<3,elemT>& plane_stack,
 template <class elemT>
 void display(const Array<3,elemT>& plane_stack,
 	     double maxi)
-{ display(plane_stack, maxi, 0, 0); }
+{ display(plane_stack, maxi, nullptr, 0); }
 
 template <class elemT>
 void display(const Array<3,elemT>& plane_stack)
@@ -156,7 +156,7 @@ void display(const Array<2,elemT>& plane,
 
 template <class elemT>
 void display(const Array<2,elemT>& plane)
-{ display(plane, 0, 0., 0); }
+{ display(plane, nullptr, 0., 0); }
 
 
 #endif

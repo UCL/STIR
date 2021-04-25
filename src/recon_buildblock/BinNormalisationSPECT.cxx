@@ -70,7 +70,7 @@ BinNormalisationSPECT::set_defaults()
   this->_use_uniformity_factors = false;
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
-  this->resampled=0;
+  this->resampled=false;
   this->measured_calibration_factor=-1.F;
 
 }
@@ -222,14 +222,14 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
             (view_num+1-head_num*
             (num_views/num_detector_heads));
 
-    for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
+    for (auto & viewgram : viewgrams)
     {
-      Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
-      for (bin.axial_pos_num()= iter->get_min_axial_pos_num();
-       bin.axial_pos_num()<=iter->get_max_axial_pos_num();
+      Bin bin(viewgram.get_segment_num(),viewgram.get_view_num(), 0,0);
+      for (bin.axial_pos_num()= viewgram.get_min_axial_pos_num();
+       bin.axial_pos_num()<=viewgram.get_max_axial_pos_num();
        ++bin.axial_pos_num())
-        for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num();
-         bin.tangential_pos_num()<=iter->get_max_tangential_pos_num();
+        for (bin.tangential_pos_num()= viewgram.get_min_tangential_pos_num();
+         bin.tangential_pos_num()<=viewgram.get_max_tangential_pos_num();
          ++bin.tangential_pos_num()){
 
             /*####################################################################################################
@@ -250,7 +250,7 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
                             normalisation=
                             normalisation/decay_correction_factor(half_life, rel_time);
                         }
-          (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
+          viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] /=
             (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin))*
              normalisation);
            normalisation=1;
@@ -284,14 +284,14 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
             (view_num+1-head_num*
             (num_views/num_detector_heads));
 
-    for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
+    for (auto & viewgram : viewgrams)
     {
-      Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
-      for (bin.axial_pos_num()= iter->get_min_axial_pos_num();
-       bin.axial_pos_num()<=iter->get_max_axial_pos_num();
+      Bin bin(viewgram.get_segment_num(),viewgram.get_view_num(), 0,0);
+      for (bin.axial_pos_num()= viewgram.get_min_axial_pos_num();
+       bin.axial_pos_num()<=viewgram.get_max_axial_pos_num();
        ++bin.axial_pos_num())
-        for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num();
-         bin.tangential_pos_num()<=iter->get_max_tangential_pos_num();
+        for (bin.tangential_pos_num()= viewgram.get_min_tangential_pos_num();
+         bin.tangential_pos_num()<=viewgram.get_max_tangential_pos_num();
          ++bin.tangential_pos_num()){
 
 /*####################################################################################################
@@ -314,7 +314,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
             }
 
 
-            (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()]*=
+            viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*=
         (this->get_uncalibrated_bin_efficiency(bin)*normalisation);
             normalisation=1;
 
@@ -369,7 +369,7 @@ for(int n=0;n<=2;n++){
         }
     }
 }
-resampled=1;
+resampled=true;
 //set_uniformity(down_sampled_uniformity);
 }
 

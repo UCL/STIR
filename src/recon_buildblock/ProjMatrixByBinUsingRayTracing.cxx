@@ -47,17 +47,17 @@
  */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
-#include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/round.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/modulo.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
+#include "stir/round.h"
 #include "stir/stream.h"
 #include <algorithm>
-#include <math.h>
 #include <boost/format.hpp>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACE
 using std::min;
@@ -274,10 +274,10 @@ set_up(
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
 
   proj_data_info_ptr= proj_data_info_ptr_v; 
-  const VoxelsOnCartesianGrid<float> * image_info_ptr =
+  const auto * image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if (image_info_ptr == nullptr)
     error("ProjMatrixByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
  
   voxel_size = image_info_ptr->get_voxel_size();
@@ -310,9 +310,9 @@ set_up(
 
   if (use_actual_detector_boundaries)
     {
-      const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
+      const auto * proj_data_info_cyl_ptr =
         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
-      if (proj_data_info_cyl_ptr== 0)
+      if (proj_data_info_cyl_ptr== nullptr)
         {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
                   " is reset to false as the projection data should be non-arccorected.\n");
@@ -566,7 +566,7 @@ calculate_proj_matrix_elems_for_one_bin(
   else
   {
     // can be static_cast later on
-    const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
+    const auto& proj_data_info_noarccor =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
     // TODO check on 180 degrees for views
     const int num_detectors =
@@ -749,7 +749,7 @@ calculate_proj_matrix_elems_for_one_bin(
             for (int z_index=1; z_index<num_lors_per_axial_pos; ++z_index)
               {
                 // add 1 to each z in the LOR
-                ProjMatrixElemsForOneBin::iterator element_ptr = lor_with_next_z.begin();
+                auto element_ptr = lor_with_next_z.begin();
                 const ProjMatrixElemsForOneBin::iterator element_end = lor_with_next_z.end();
                 while (element_ptr != element_end)
                   {
@@ -852,7 +852,7 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
       {
         // multiply the value with the overlap
         std::size_t count = 0; // counter for elements in original LOR
-        for (  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
+        for (  auto element_ptr = lor.begin();
                count != org_size; //element_ptr != element_end;
                ++element_ptr, ++count)
             *element_ptr *= overlap_of_voxel_with_TOR;

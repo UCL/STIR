@@ -74,7 +74,7 @@ void
 InputFileFormatRegistry<DataT>::
 remove_from_registry(const Factory& factory)
 {
-  iterator iter = this->_registry.begin();
+  auto iter = this->_registry.begin();
   iterator const end = this->_registry.end();
   while (iter != end)
     {
@@ -93,7 +93,7 @@ InputFileFormatRegistry<DataT>::
 find_factory(const FileSignature& signature,
 	     std::istream& input) const
 {
-  const_iterator iter= this->_actual_find_factory(signature, input);
+  auto iter= this->_actual_find_factory(signature, input);
   if (this->_valid(iter))
     return *(iter->second);
   else
@@ -113,7 +113,7 @@ InputFileFormatRegistry<DataT>::
 find_factory(const FileSignature& signature,
 	     const std::string& filename) const
 {
-  const_iterator iter= this->_actual_find_factory(signature, filename);
+  auto iter= this->_actual_find_factory(signature, filename);
   if (this->_valid(iter))
     return *(iter->second);
   else
@@ -148,7 +148,7 @@ void
 InputFileFormatRegistry<DataT>::
 list_registered_names(std::ostream& stream) const
 {
-  const_iterator iter = this->_registry.begin();
+  auto iter = this->_registry.begin();
   const_iterator const end = this->_registry.end();
   while (iter != end)
     {

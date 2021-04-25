@@ -36,7 +36,7 @@
 #endif
 
 #include "stir/round.h"
-#include <math.h>
+#include <cmath>
 using namespace std;
 START_NAMESPACE_STIR
 

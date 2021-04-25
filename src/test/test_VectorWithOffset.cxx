@@ -62,7 +62,7 @@ START_NAMESPACE_STIR
 class VectorWithOffsetTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void
@@ -204,7 +204,7 @@ VectorWithOffsetTests::run_tests()
 
     // tests of reserve() with non-zero length
     {
-      const VectorWithOffset<int> ref = v;
+      const VectorWithOffset<int>& ref = v;
       VectorWithOffset<int> test = ref;
       // check reserve within range (should have no effect)
       test.reserve(0,1);
@@ -323,7 +323,7 @@ VectorWithOffsetTests::run_tests()
 
     // tests of resize() with non-zero length
     {
-      const VectorWithOffset<int> ref = v;
+      const VectorWithOffset<int>& ref = v;
       VectorWithOffset<int> test = ref;
       // check resize with identical range (should have no effect)
       test.resize(ref.get_min_index(), ref.get_max_index());
@@ -465,7 +465,7 @@ VectorWithOffsetTests::run_tests()
   // tests on operator += etc
   /**********************************************************************/
   {
-    const VectorWithOffset<int> ref = v;
+    const VectorWithOffset<int>& ref = v;
     VectorWithOffset<int> test = ref;
 
     test = ref; test += ref;

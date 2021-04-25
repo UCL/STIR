@@ -93,7 +93,7 @@ main(int argc, char **argv)
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
       int z_size = 2*proj_data_info_sptr->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
-      VoxelsOnCartesianGrid<float> * vox_image_ptr =
+      auto * vox_image_ptr =
 	new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,
 					 zoom,
 					 Coordinate3D<float>(0,0,0),

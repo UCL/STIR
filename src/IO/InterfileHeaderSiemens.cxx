@@ -400,12 +400,9 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   else
     {
     is_arccorrected = false;
-    for (
-      std::vector<string>::const_iterator iter = applied_corrections.begin();
-      iter != applied_corrections.end();
-      ++iter)
+    for (const auto & applied_correction : applied_corrections)
       {
-        const string correction = standardise_keyword(*iter);
+        const string correction = standardise_keyword(applied_correction);
         if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected")
           {
             is_arccorrected = true;

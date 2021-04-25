@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   const int interpolation_type = (argc==6) ? 3 : atoi(argv[6]);	
   const bool extend_borders = (argc<=7) ? false : (atoi(argv[7])!=0);
 
-  const BSpline::BSplineType spline_type = static_cast<BSpline::BSplineType> (interpolation_type);
+  const auto spline_type = static_cast<BSpline::BSplineType> (interpolation_type);
 
   std::cerr << "Interpolating using with splines level: " << spline_type << "\n"; 
   // read image

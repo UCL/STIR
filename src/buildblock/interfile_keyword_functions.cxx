@@ -26,7 +26,7 @@
 */
 
 #include "stir/interfile_keyword_functions.h"
-#include <ctype.h>
+#include <cctype>
 
 using namespace std;
 

@@ -28,6 +28,10 @@
 #ifndef __stir_ExamInfo_H__
 #define __stir_ExamInfo_H__
 
+#include <memory>
+
+
+
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
@@ -58,11 +62,8 @@ public :
   */
 
   ExamInfo()
-    : start_time_in_secs_since_1970(0.),
-
-    calibration_factor(-1.F),
-    low_energy_thres(-1.F),
-    up_energy_thres(-1.F)
+    
+    
 
     {
   }
@@ -82,7 +83,7 @@ public :
   TimeFrameDefinitions& get_time_frame_definitions()
   { return time_frame_definitions; }
 
-  double start_time_in_secs_since_1970;
+  double start_time_in_secs_since_1970{0.};
 
   //! \name Functions that return info related on the acquisition settings
   //@{
@@ -131,7 +132,7 @@ public :
   //! Clone and create shared_ptr of the copy
   shared_ptr<ExamInfo> create_shared_clone()
   {
-      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+      return std::make_shared<ExamInfo>(*this);
   }
 
   //! Return a string with info on parameters
@@ -140,7 +141,7 @@ public :
 
 protected:
   
-  float calibration_factor;
+  float calibration_factor{-1.F};
   private:
      //!
   //! \brief low_energy_thres
@@ -149,7 +150,7 @@ protected:
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
-  float low_energy_thres;
+  float low_energy_thres{-1.F};
   
   std::string radionuclide;
 
@@ -160,7 +161,7 @@ protected:
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation
   //! If scatter simulation is not needed, can default to -1
-  float up_energy_thres;
+  float up_energy_thres{-1.F};
 };
 
 END_NAMESPACE_STIR

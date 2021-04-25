@@ -59,8 +59,8 @@ class find_fwhm_in_imageTests : public RunTests
 {
 public:
   find_fwhm_in_imageTests() 
-  {}
-  void run_tests();
+  = default;
+  void run_tests() override;
 private:
   //istream& in;
 };
@@ -125,7 +125,7 @@ void find_fwhm_in_imageTests::run_tests()
 
     check(result.size() == 1, "check only 1 maximum for single point source case");
 
-    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+    auto current_result_iter =
       result.begin();
     
     check_if_equal(current_result_iter->voxel_location, location_of_maximum,
@@ -153,7 +153,7 @@ void find_fwhm_in_imageTests::run_tests()
 
     check(result.size() == 1, "check only 1 maximum for 2 point sources in 1 slice");
 
-    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+    auto current_result_iter =
       result.begin();
     
     check_if_equal(current_result_iter->voxel_location, location_of_maximum,
@@ -181,7 +181,7 @@ void find_fwhm_in_imageTests::run_tests()
 
     check(result.size() == 1, "check only 1 maximum for 2 point sources in different slices");
 
-    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+    auto current_result_iter =
       result.begin();
     
     check_if_equal(current_result_iter->voxel_location, location_of_maximum,
@@ -218,7 +218,7 @@ void find_fwhm_in_imageTests::run_tests()
 
     check(result.size() == 2, "check only 2 maxima from 3 point source case");
 
-    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+    auto current_result_iter =
       result.begin();
     
     check_if_equal(current_result_iter->voxel_location, location_of_maximum1,
@@ -259,15 +259,12 @@ void find_fwhm_in_imageTests::run_tests()
       check(result.size() == static_cast<unsigned>(image[z_location].get_length()) , 
 	    "check number of maxima in line source along y axis");
       int y=image[z_location].get_min_index();
-      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
-	   result.begin(); 
-	   current_result_iter != result.end();
-	   ++current_result_iter)
+      for(const auto & current_result_iter : result)
 	{
 	  Coordinate3D<int> location_of_maximum(z_location,y,x_location);
-	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+	  check_if_equal(current_result_iter.voxel_location, location_of_maximum,
 			 "check location of maximum in line source along y axis");
-	  check_if_equal(current_result_iter->resolution, 
+	  check_if_equal(current_result_iter.resolution, 
 			 Coordinate3D<float>(12,0,10),
 			 "check resolution in line source along y axisXXX");
           ++y;
@@ -295,15 +292,12 @@ void find_fwhm_in_imageTests::run_tests()
       check(result.size() == static_cast<unsigned>(image[z_location][y_location].get_length()) , 
 	    "check number of maxima in line source along x axis");
       int x=image[z_location][y_location].get_min_index();
-      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
-	   result.begin(); 
-	   current_result_iter != result.end();
-	   ++current_result_iter)
+      for(const auto & current_result_iter : result)
 	{
 	  Coordinate3D<int> location_of_maximum(z_location,y_location,x);
-	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+	  check_if_equal(current_result_iter.voxel_location, location_of_maximum,
 			 "check location of maximum in line source along x axis");
-	  check_if_equal(current_result_iter->resolution, 
+	  check_if_equal(current_result_iter.resolution, 
 			 Coordinate3D<float>(12,10,0),
 			 "check resolution in line source along x axis");
           ++x;
@@ -330,15 +324,12 @@ void find_fwhm_in_imageTests::run_tests()
       check(result.size() == static_cast<unsigned>(image.get_length()) , 
 	    "check number of maxima in line source along z axis");
       int z=image.get_min_index();
-      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
-	   result.begin(); 
-	   current_result_iter != result.end();
-	   ++current_result_iter)
+      for(const auto & current_result_iter : result)
 	{
 	  Coordinate3D<int> location_of_maximum(z, y_location,x_location);
-	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+	  check_if_equal(current_result_iter.voxel_location, location_of_maximum,
 			 "check location of maximum in line source along z axis");
-	  check_if_equal(current_result_iter->resolution, 
+	  check_if_equal(current_result_iter.resolution, 
 			 Coordinate3D<float>(0,11,10),
 			 "check resolution in line source along z axis");
           ++z;

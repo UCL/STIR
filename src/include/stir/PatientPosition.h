@@ -61,7 +61,7 @@ class PatientPosition
 
   //! Default constructor (setting to unknown position and orientation)
   PatientPosition()
-    : orientation(unknown_orientation), rotation(unknown_rotation)
+     
     {
       assert(rotation >=0);
       assert(rotation<= unknown_rotation);
@@ -113,8 +113,8 @@ class PatientPosition
 
   const char * const get_position_as_string() const;	
  private:
-  OrientationValue orientation;
-  RotationValue rotation;
+  OrientationValue orientation{unknown_orientation};
+  RotationValue rotation{unknown_rotation};
 };
 
 END_NAMESPACE_STIR

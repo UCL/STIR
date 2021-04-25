@@ -24,23 +24,25 @@
 */
 
 #include "stir/listmode/CListRecordECAT8_32bit.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
-#include "stir/error.h"
-#include "stir/Succeeded.h"
 #include "stir/IO/stir_ecat_common.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <algorithm>
 #include <iostream>
+#include <memory>
+
 START_NAMESPACE_STIR
 namespace ecat {
 
 CListEventECAT8_32bit::
 CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) 
+  CListEventCylindricalScannerWithDiscreteDetectors(std::make_shared<Scanner>(*proj_data_info_sptr->get_scanner_ptr())) 
 {
-  const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
+  const auto * const proj_data_info_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());
-  if (proj_data_info_ptr == 0)
+  if (proj_data_info_ptr == nullptr)
     error("CListEventECAT8_32bit can only be initialised with cylindrical projection data without arc-correction");
  if (proj_data_info_ptr->get_max_ring_difference(0) != proj_data_info_ptr->get_min_ring_difference(0))
    error("CListEventECAT8_32bit can only handle axial compression==1");

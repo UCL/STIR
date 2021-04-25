@@ -46,7 +46,7 @@ class Succeeded;
 class ListGatingInput
 {
 public:
-  virtual ~ListGatingInput() {}
+  virtual ~ListGatingInput() = default;
 
   //! get gating-related info
   /*! Generally, gates are numbered from 0 to some maximum value.

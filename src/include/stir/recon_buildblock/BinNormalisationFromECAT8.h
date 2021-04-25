@@ -93,7 +93,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT8(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
   float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
@@ -132,9 +132,9 @@ private:
 				  const double start_time, const double end_time) const;
 
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   string normalisation_ECAT8_filename;
 };

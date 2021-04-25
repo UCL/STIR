@@ -28,13 +28,13 @@
 */
 
 #include "stir/Array.h"
-#include "stir/convert_array.h"
-#include "stir/NumericInfo.h"
 #include "stir/IndexRange3D.h"
+#include "stir/NumericInfo.h"
 #include "stir/RunTests.h"
-#include <vector>
+#include "stir/convert_array.h"
+#include <cmath>
 #include <iostream>
-#include <math.h>
+#include <vector>
 using std::cerr;
 using std::endl;
 
@@ -44,7 +44,7 @@ START_NAMESPACE_STIR
 class convert_array_Tests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 
@@ -65,7 +65,7 @@ convert_array_Tests::run_tests()
     
     {
       // float -> short with a preferred scale factor
-      float scale_factor = float(1);
+      auto scale_factor = float(1);
       Array<1,short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
       
       check(scale_factor == float(1),"test convert_array float->short 1D");
@@ -158,7 +158,7 @@ convert_array_Tests::run_tests()
     
     {
       // float -> short with a preferred scale factor
-      float scale_factor = float(1);
+      auto scale_factor = float(1);
       Array<3,short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
       
       check(scale_factor == float(1));

@@ -34,11 +34,11 @@
 */
 
 // for sqrt
-#include <math.h>
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>
+#include <cmath>
 
 START_NAMESPACE_STIR
 

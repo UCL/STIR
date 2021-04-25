@@ -107,7 +107,7 @@ write_pgm (const std::string& filename,
   }
 
   FILE *pgm = fopen ( filename.c_str() , "wb");
-  if (pgm == NULL)
+  if (pgm == nullptr)
   {
     error("Error opening file %s for output to PGM.",filename.c_str());
   }
@@ -122,7 +122,7 @@ write_pgm (const std::string& filename,
     {
       for ( int x = min_indices[2]; x <= max_indices[2]; x++)
 	{
-	  double val = static_cast<double>(plane[y][x]);
+	  auto val = static_cast<double>(plane[y][x]);
 	  if (val>max_threshold) 
 	    val=max_threshold;
 	  else if (val<min_threshold) 

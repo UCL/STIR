@@ -32,7 +32,7 @@ START_NAMESPACE_STIR
 
 SinglesRatesForTimeFrames::
 SinglesRatesForTimeFrames()
-{}
+= default;
 
 
 float 

@@ -39,7 +39,7 @@ using std::max;
 START_NAMESPACE_STIR
 
 DetPairData::DetPairData()
-{}
+= default;
 
 DetPairData::DetPairData(const IndexRange<2>& range)
 :base_type(range), num_detectors(range.get_length())
@@ -135,7 +135,7 @@ void make_det_pair_data(DetPairData& det_pair_data,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+  const auto& proj_data_info =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general_type);
 
   const int num_detectors = 
@@ -206,7 +206,7 @@ void set_det_pair_data(ProjData& proj_data,
 {
   const shared_ptr<const ProjDataInfo> proj_data_info_sptr =
     proj_data.get_proj_data_info_sptr();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+  const auto& proj_data_info =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
 
   const int num_detectors = det_pair_data.get_num_detectors();
@@ -449,10 +449,10 @@ double KL(const DetPairData& d1, const DetPairData& d2, const double threshold)
 
 //////////   *******   GeoData3D   ********  //////
 GeoData3D::GeoData3D()
-{}
+= default;
 
 GeoData3D::~GeoData3D()
-{}
+= default;
 
 
 GeoData3D::
@@ -706,10 +706,10 @@ std::istream& operator>>(std::istream& s, GeoData3D& geo_data)
 
 
 FanProjData::FanProjData()
-{}
+= default;
 
 FanProjData::~FanProjData()
-{}
+= default;
 
 #if 0
 FanProjData::FanProjData(const IndexRange<4>& range)
@@ -949,9 +949,9 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info)
 {
-  const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr = 
+  const auto * const proj_data_info_ptr = 
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(&proj_data_info);
-  if (proj_data_info_ptr == 0)
+  if (proj_data_info_ptr == nullptr)
   {
     error("Can only process not arc-corrected data\n");
   }

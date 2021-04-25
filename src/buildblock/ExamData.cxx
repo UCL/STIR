@@ -25,6 +25,8 @@
 
 
 #include <iostream>
+#include <utility>
+
 START_NAMESPACE_STIR
 
 ExamData::
@@ -39,7 +41,7 @@ ExamData::ExamData(const shared_ptr<const ExamInfo> &_this_exam) :
 
 
 ExamData::~ExamData()
-{}
+= default;
 
 void
 ExamData::set_exam_info(ExamInfo const& new_exam_info)
@@ -50,7 +52,7 @@ ExamData::set_exam_info(ExamInfo const& new_exam_info)
 void
 ExamData::set_exam_info_sptr(shared_ptr<const ExamInfo>  new_exam_info_sptr)
 {
-  this->exam_info_sptr=new_exam_info_sptr;
+  this->exam_info_sptr=std::move(new_exam_info_sptr);
 }
 
 const ExamInfo&

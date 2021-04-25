@@ -42,16 +42,16 @@ START_NAMESPACE_STIR
 
 BinNormalisation::
 BinNormalisation()
-  :   _already_set_up(false)
+     
 {
 }
 
 BinNormalisation::
 ~BinNormalisation()
-{}
+= default;
 
 void BinNormalisation::
-set_exam_info_sptr(const shared_ptr<const ExamInfo> _exam_info_sptr)
+set_exam_info_sptr(const shared_ptr<const ExamInfo>& _exam_info_sptr)
 {
     this->exam_info_sptr=_exam_info_sptr;
 }
@@ -98,16 +98,16 @@ void
 BinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
-  for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
+  for (auto & viewgram : viewgrams)
   {
-    Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
-    for (bin.axial_pos_num()= iter->get_min_axial_pos_num(); 
-	 bin.axial_pos_num()<=iter->get_max_axial_pos_num(); 
+    Bin bin(viewgram.get_segment_num(),viewgram.get_view_num(), 0,0);
+    for (bin.axial_pos_num()= viewgram.get_min_axial_pos_num(); 
+	 bin.axial_pos_num()<=viewgram.get_max_axial_pos_num(); 
 	 ++bin.axial_pos_num())
-      for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num(); 
-	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
+      for (bin.tangential_pos_num()= viewgram.get_min_tangential_pos_num(); 
+	   bin.tangential_pos_num()<=viewgram.get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
-        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
+        viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
           std::max(1.E-20F, get_bin_efficiency(bin));
   }
 }
@@ -117,16 +117,16 @@ BinNormalisation::
 undo(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
-  for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
+  for (auto & viewgram : viewgrams)
   {
-    Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
-    for (bin.axial_pos_num()= iter->get_min_axial_pos_num(); 
-	 bin.axial_pos_num()<=iter->get_max_axial_pos_num(); 
+    Bin bin(viewgram.get_segment_num(),viewgram.get_view_num(), 0,0);
+    for (bin.axial_pos_num()= viewgram.get_min_axial_pos_num(); 
+	 bin.axial_pos_num()<=viewgram.get_max_axial_pos_num(); 
 	 ++bin.axial_pos_num())
-      for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num(); 
-	   bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); 
+      for (bin.tangential_pos_num()= viewgram.get_min_tangential_pos_num(); 
+	   bin.tangential_pos_num()<=viewgram.get_max_tangential_pos_num(); 
 	   ++bin.tangential_pos_num())
-         (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= 
+         viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] *= 
 	   this->get_bin_efficiency(bin);
   }
 
@@ -151,10 +151,8 @@ apply(ProjData& proj_data,
 #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
 #endif
     // note: older versions of openmp need an int as loop
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  for (auto vs : vs_nums_to_process)
     {
-      const ViewSegmentNumbers vs=vs_nums_to_process[i];
-      
       RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
       // reading/writing to streams is not safe in multi-threaded code
@@ -198,10 +196,8 @@ undo(ProjData& proj_data,
 #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
 #endif
     // note: older versions of openmp need an int as loop
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  for (auto vs : vs_nums_to_process)
     {
-      const ViewSegmentNumbers vs=vs_nums_to_process[i];
-      
       RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
 #pragma omp critical (BINNORMALISATION_UNDO__VIEWGRAMS)

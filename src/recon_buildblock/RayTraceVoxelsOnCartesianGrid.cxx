@@ -38,11 +38,11 @@
 */
 
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
-#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/round.h"
-#include <math.h>
 #include <algorithm>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACE
 using std::min;

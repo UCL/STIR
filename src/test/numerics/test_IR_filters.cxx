@@ -47,8 +47,8 @@ class IR_filterTests : public RunTests
 {
 public:
   IR_filterTests() 
-  {}
-  void run_tests();
+  = default;
+  void run_tests() override;
 private:
   //istream& in;
 };
@@ -126,9 +126,9 @@ void IR_filterTests::run_tests()
                   
     FIR_filter(stir_FIR_output.begin(), stir_FIR_output.end(),
                input_test_signal.begin(), input_test_signal.end(),
-               input_factors.begin(), input_factors.end(),0);
+               input_factors.begin(), input_factors.end(),false);
                   
-    std::vector<int>:: iterator cur_iter_stir_out= stir_FIR_output.begin(), 
+    auto cur_iter_stir_out= stir_FIR_output.begin(), 
       cur_iter_FIR_out= output_FIR_test_value.begin();
 
     for (;
@@ -144,8 +144,8 @@ void IR_filterTests::run_tests()
     IIR_filter(stir_IIR_output.begin(), stir_IIR_output.end(),
                input_test_signal.begin(), input_test_signal.end(),
                input_factors.begin(), input_factors.end(),
-               poles.begin(), poles.end(),0);             
-    std::vector<int>:: iterator cur_iter_stir_IIR_out= 
+               poles.begin(), poles.end(),false);             
+    auto cur_iter_stir_IIR_out= 
       stir_IIR_output.begin(), 
       cur_iter_IIR_out= output_IIR_test_value.begin();
     for (;

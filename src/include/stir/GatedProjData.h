@@ -41,7 +41,7 @@ public:
   unique_ptr<GatedProjData>
     read_from_file(const std::string& filename);
 
-  GatedProjData() {};
+  GatedProjData() = default;;
 
   GatedProjData(const MultipleProjData& m):
     MultipleProjData(m)

@@ -85,7 +85,7 @@ PresmoothingForwardProjectorByBin(
 
 PresmoothingForwardProjectorByBin::
 ~PresmoothingForwardProjectorByBin()
-{}
+= default;
 
 void
 PresmoothingForwardProjectorByBin::

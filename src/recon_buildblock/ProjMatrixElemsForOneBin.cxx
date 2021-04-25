@@ -84,7 +84,7 @@ ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator*=(const float d)
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
   {
-    iterator element_ptr = begin();
+    auto element_ptr = begin();
     while (element_ptr != end())
     {
       *element_ptr *= d;        
@@ -100,7 +100,7 @@ ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator/=(const float d)
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
   {
-    iterator element_ptr = begin();
+    auto element_ptr = begin();
     while (element_ptr != end())
     { 
       *element_ptr /= d;
@@ -162,7 +162,7 @@ void ProjMatrixElemsForOneBin::sort()
 float ProjMatrixElemsForOneBin::square_sum() const
 {
   float sq_sum=0;
-  const_iterator element_ptr = begin();
+  auto element_ptr = begin();
   while (element_ptr != end())
   {
     sq_sum += square(element_ptr->get_value());        
@@ -194,8 +194,8 @@ merge( ProjMatrixElemsForOneBin &lor2 )
   sort();
   lor2.sort();
 
-  iterator element_ptr = begin();
-  iterator element_ptr2= lor2.begin();
+  auto element_ptr = begin();
+  auto element_ptr2= lor2.begin();
   // implementation note: cannot use const_iterator in the line above
   // as some compilers (including gcc 3.* and VC 7.0) would not compile
   // the elements.insert() line below, as the types of the iterators no longer 
@@ -356,7 +356,7 @@ back_project(DiscretisedDensity<3,float>& density,
       return;
     
     BasicCoordinate<3,int> coords;
-    const_iterator element_ptr = 
+    auto element_ptr = 
       begin();
     while (element_ptr != end())
     {
@@ -377,7 +377,7 @@ forward_project(Bin& single,
   {  
     
     BasicCoordinate<3,int> coords;
-    const_iterator element_ptr = begin();
+    auto element_ptr = begin();
     
     while (element_ptr != end())
     {
@@ -398,7 +398,7 @@ back_project(DiscretisedDensity<3,float>& density,
 {  
   const DataSymmetriesForBins* symmetries = r_bins.get_symmetries_ptr(); 
   
-  RelatedBins::const_iterator r_bins_iterator =r_bins.begin();
+  auto r_bins_iterator =r_bins.begin();
   ProjMatrixElemsForOneBin row_copy;
   while (r_bins_iterator != r_bins.end())
     
@@ -424,7 +424,7 @@ forward_project(RelatedBins& r_bins,
 {
   const DataSymmetriesForBins* symmetries = r_bins.get_symmetries_ptr(); 
   
-  RelatedBins::iterator r_bins_iterator =r_bins.begin();
+  auto r_bins_iterator =r_bins.begin();
   ProjMatrixElemsForOneBin row_copy;
   
   while (r_bins_iterator != r_bins.end())
@@ -453,17 +453,17 @@ operator==(const ProjMatrixElemsForOneBin& lor) const
     // extra brackets here to avoid VC 7.1 complaining about this_iter
     // being defined here in for() and a few lines further on
     // (it really shouldn't complain)
-    for (const_iterator this_iter= begin(); this_iter!= end(); ++this_iter)
+    for (auto this_iter : *this)
       {
-	const float current_value=this_iter->get_value();
+	const float current_value=this_iter.get_value();
 	if (current_value> max_value)
 	  max_value = current_value;
       }
   }
   const float tolerance = max_value*.002F;
 
-  const_iterator this_iter= begin(); 
-  const_iterator lor_iter = lor.begin();
+  auto this_iter= begin(); 
+  auto lor_iter = lor.begin();
   while (this_iter!= end() && lor_iter!=lor.end())
     {
       if (this_iter->get_coords() == lor_iter->get_coords())

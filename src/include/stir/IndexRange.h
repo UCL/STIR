@@ -175,8 +175,8 @@ public:
   inline void resize(const int min_index, const int max_index);
 
 private:
-  int min; 
-  int max;
+  int min{0}; 
+  int max{0};
 };
 
 

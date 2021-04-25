@@ -39,7 +39,7 @@ START_NAMESPACE_STIR
 
 ProjectorByBinPair::
 ProjectorByBinPair()
-  :   _already_set_up(false)
+     
 {
 }
 

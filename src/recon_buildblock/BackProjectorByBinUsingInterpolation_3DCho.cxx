@@ -79,13 +79,12 @@
 
 
 #include "stir/ProjDataInfo.h"
-#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/Succeeded.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/round.h"
-#include "stir/Succeeded.h"
-#include <math.h>
+#include <cmath>
 
 #include <algorithm>
 using std::min;
@@ -170,7 +169,7 @@ static const double epsilon = 1e-10;
    */
 
 // KT 25/09/2001 changed return value
-static Succeeded find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+static Succeeded find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr,
                               const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad,
@@ -182,7 +181,7 @@ static Succeeded find_start_values(const shared_ptr<const ProjDataInfoCylindrica
 
 
 inline void 
-check_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+check_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr,
 	     const float delta, const double cphi, const double sphi, 
 	     const int s, const int ring0,
 	     const int X1, const int Y1, const int Z1,
@@ -236,7 +235,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90
 #endif
 (Array<4, float > const &Projptr,
 			       VoxelsOnCartesianGrid<float>& image,                               
-                               const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+                               const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr,
                                float delta,
                                const double cphi, const double sphi, int s, int ring0,
                                const int num_planes_per_axial_pos,
@@ -1050,7 +1049,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
 #endif
  (Array<4, float > const& Projptr,
 						     VoxelsOnCartesianGrid<float>& image,                                                     
-                                                     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+                                                     const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr,
                                                       float delta,
                                                       const double cphi, const double sphi,
                                                       int s, int ring0,
@@ -2260,7 +2259,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 
 
 static Succeeded
-find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr>& proj_data_info_sptr,
                               const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad, const double d_sl,

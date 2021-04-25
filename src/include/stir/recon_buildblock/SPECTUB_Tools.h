@@ -368,7 +368,7 @@ void free_wm ( wm_type *f );                       // to free weight_mat
 void free_wm_da ( wm_da_type *f );                 // to free weight_mat_da
 
 
-void error_wmtools_SPECT(int nerr, std::string txt);    // error messages in wm_SPECT
+void error_wmtools_SPECT(int nerr, const std::string& txt);    // error messages in wm_SPECT
 
 
 //... functions from wm_SPECT.2.0............................

@@ -25,7 +25,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 START_NAMESPACE_STIR

@@ -305,7 +305,7 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
       % this->anatomical_sd[i]);
    }
    
-   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+   const auto* current_anatomical_cast =
      dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
        (target_image_sptr.get());
    
@@ -1143,9 +1143,9 @@ unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
       const float current_max = 
         *std::max_element(kmultiplicative_update_ptr->begin_all(),
                           kmultiplicative_update_ptr->end_all());
-      const float new_min = 
+      const auto new_min = 
         static_cast<float>(this->minimum_relative_change);
-      const float new_max = 
+      const auto new_max = 
         static_cast<float>(this->maximum_relative_change);
       info(boost::format("Update image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max % (min(current_min, new_min)) % (max(current_max, new_max)));
 

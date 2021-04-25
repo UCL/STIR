@@ -59,7 +59,7 @@ template <class coordT>
 class LOR
 {
  public:
-  virtual ~LOR() {}
+  virtual ~LOR() = default;
 
   virtual 
     LOR * clone() const = 0;
@@ -222,30 +222,30 @@ class LORInCylinderCoordinates : public LOR<coordT>
   inline
     LORInCylinderCoordinates(const LORAs2Points<coordT>&);
 
-  virtual
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     self_type* 
 #else
       LOR<coordT>*
 #endif    
-    clone() const { return new self_type(*this); }
+    clone() const override { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   PointOnCylinder<coordT> _p1;
@@ -284,30 +284,30 @@ class LORAs2Points : public LOR<coordT>
   inline
     LORAs2Points(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&);
 
-  virtual
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self_type(*this); }
+      clone() const override { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   CartesianCoordinate3D<coordT> _p1;
@@ -373,13 +373,13 @@ class LORInAxialAndSinogramCoordinates
     LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  virtual
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self_type(*this); }
+      clone() const override { return new self_type(*this); }
 
   void reset(coordT radius=1)
     {
@@ -402,22 +402,22 @@ class LORInAxialAndSinogramCoordinates
     }
     
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   coordT _phi;
@@ -504,30 +504,30 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  virtual
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self_type(*this); }
+      clone() const override { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   coordT _phi;

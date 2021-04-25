@@ -31,9 +31,9 @@
 #include "stir/zoom.h"
 #include "stir/centre_of_gravity.h"
 
-#include <iostream>
-#include <math.h>
 #include "stir/RunTests.h"
+#include <cmath>
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
 class zoom_imageTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 

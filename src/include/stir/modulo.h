@@ -79,7 +79,7 @@ inline
 float
 modulo(const float a, const float b)
 {
-  float res = 
+  auto res = 
     static_cast<float>(modulo(static_cast<double>(a),static_cast<double>(b)));
   assert(res>=0);
   const float abs_b = b>=0 ? b : -b;
@@ -130,7 +130,7 @@ inline
 FloatOrDouble
 from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 {
-  static const FloatOrDouble two_pi =static_cast<FloatOrDouble>(2*_PI);
+  static const auto two_pi =static_cast<FloatOrDouble>(2*_PI);
   assert(phi>= -two_pi);
   assert(phi< two_pi);
   if (phi>=0)

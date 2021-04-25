@@ -986,7 +986,7 @@ string Scanner::list_names() const
   // work-around VC bug
   std::
 #endif
-  list<string>::const_iterator iterator = list_of_names.begin(); 
+  auto iterator = list_of_names.begin(); 
   s << *iterator;
   ++iterator;
   while(iterator!=list_of_names.end())
@@ -1123,12 +1123,10 @@ Scanner::get_scanner_from_name(const string& name)
   {
     scanner_ptr = new Scanner(type);
     const list<string>& list_of_names = scanner_ptr->get_all_names();
-    for (std::list<string>::const_iterator iter =list_of_names.begin();
-	 iter!=list_of_names.end();
-	   ++iter)
+    for (const auto & list_of_name : list_of_names)
       {
 	const string matching_scanner_name =
-	  standardise_interfile_keyword(*iter);
+	  standardise_interfile_keyword(list_of_name);
 	if (matching_scanner_name==matching_name)
 	  return scanner_ptr;
       }

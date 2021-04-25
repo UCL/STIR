@@ -68,12 +68,12 @@
   \endcode
   This use SSRB to convert in.hs into the shape of template_sino.hs and save the result as interile out.
 */
-#include "stir/ProjData.h"
-#include "stir/shared_ptr.h"
 #include "stir/SSRB.h"
-#include <string>
-#include <string.h>
+#include "stir/ProjData.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/shared_ptr.h"
+#include <cstring>
+#include <string>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;

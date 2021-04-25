@@ -355,12 +355,12 @@ bool InterfileHeader::post_processing()
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
     for (int frame=0; frame<this->get_num_datasets(); frame++)
-      for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
+      for (double & i : image_scaling_factors[frame])
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
         // probably never occured) or lln_quantification_units
-        if ((all_one && image_scaling_factors[frame][i] != 1.) ||
-            (!all_one && image_scaling_factors[frame][i] != lln_quantification_units))
+        if ((all_one && i != 1.) ||
+            (!all_one && i != lln_quantification_units))
           {
             warning("Interfile error: key 'quantification units' can only be used when either "
                     "image_scaling_factors[] keywords are not present, or have identical values.\n");
@@ -368,7 +368,7 @@ bool InterfileHeader::post_processing()
           }
         // if they're all 1, we set the value to lln_quantification_units
         if (all_one)
-          image_scaling_factors[frame][i] = lln_quantification_units;
+          i = lln_quantification_units;
       }
     if (all_one)
     {
@@ -941,15 +941,9 @@ bool InterfilePDFSHeader::post_processing()
   else
   {
     is_arccorrected = false;
-    for (
-#ifndef STIR_NO_NAMESPACES
-      std::
-#endif
-      vector<string>::const_iterator iter = applied_corrections.begin();
-         iter != applied_corrections.end();
-         ++iter)
+    for (const auto & applied_correction : applied_corrections)
     {
-      const string correction = standardise_keyword(*iter);
+      const string correction = standardise_keyword(applied_correction);
       if(correction == "arc correction" || correction == "arc corrected")
       {
         is_arccorrected = true;
@@ -1008,7 +1002,7 @@ bool InterfilePDFSHeader::post_processing()
   {
     // feable attempt to guess the system by checking the num_views etc
 
-    char const * warning_msg = 0;
+    char const * warning_msg = nullptr;
     if (num_detectors_per_ring < 1)
     {
       num_detectors_per_ring = num_views*2;

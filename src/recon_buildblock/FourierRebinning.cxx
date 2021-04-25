@@ -435,7 +435,7 @@ rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weigh
         for (int i = kmin; i <= num_views_pow2/2; i++) {
 
               float w = static_cast<float>(j) * radial_sampling_freq_w;
-              float k = static_cast<float>(i);     
+              auto k = static_cast<float>(i);     
             
      //CON FORE consistency criteria . FORE is a good approximation only if w and k are large 
      //CON (FORE is a high frequency approximation).
@@ -575,7 +575,7 @@ do_log_file()
       warning("FORE Rebinning :: Error opening log file\n");
     }
 
-    std::time_t now = std::time(NULL);
+    std::time_t now = std::time(nullptr);
     logfile << "FORE Rebinning :: Date of the FORE image reconstruction : " << std::asctime(std::localtime(&now))
             << parameter_info()
             << "\n\n CPU Time :\n" << get_CPU_timer_value() << '\n';

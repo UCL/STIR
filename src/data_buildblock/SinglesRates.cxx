@@ -26,6 +26,10 @@
   \author Tim Borgeaud
 */
 
+#include <utility>
+
+
+
 #include "stir/data/SinglesRates.h"
 using std::vector;
 
@@ -43,7 +47,7 @@ FrameSinglesRates(vector<float>& avg_singles_rates,
   _start_time(start_time),
   _end_time(end_time),
   _singles(avg_singles_rates),
-  _scanner_sptr(scanner_sptr)
+  _scanner_sptr(std::move(scanner_sptr))
 {
   assert(avg_singles_rates.size() == static_cast<std::size_t>(scanner_sptr->get_num_singles_units()));
 }

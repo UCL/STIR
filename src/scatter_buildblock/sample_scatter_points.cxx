@@ -26,11 +26,11 @@
   \author Kris Thielemans
 */
 
-#include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/info.h"
-#include <time.h>
+#include "stir/scatter/ScatterSimulation.h"
 #include <boost/format.hpp>
+#include <ctime>
 using namespace std;
 START_NAMESPACE_STIR
 
@@ -48,7 +48,7 @@ ScatterSimulation::
 sample_scatter_points()
 { 
 
-  const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map =
+  const auto& attenuation_map =
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
     (*this->density_image_for_scatter_points_sptr);
 
@@ -56,7 +56,7 @@ sample_scatter_points()
   CartesianCoordinate3D<int> coord;
   if(!this->density_image_for_scatter_points_sptr->get_regular_range(min_index, max_index))
     error("scatter points sampling works only on regular ranges, at the moment\n");    
-  const VoxelsOnCartesianGrid<float>& image =
+  const auto& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
   CartesianCoordinate3D<float>  origin = image.get_origin();
@@ -71,7 +71,7 @@ sample_scatter_points()
 
   if(this->randomly_place_scatter_points)
     { // Initialize Pseudo Random Number generator using time  
-      srand((unsigned)time( NULL ));
+      srand((unsigned)time( nullptr ));
     }
   this->scatt_points_vector.resize(0); // make sure we don't keep scatter points from a previous run
   this->scatt_points_vector.reserve(1000);  

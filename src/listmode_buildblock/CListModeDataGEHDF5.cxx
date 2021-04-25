@@ -108,7 +108,7 @@ Succeeded
 CListModeDataGEHDF5::
 get_next_record(CListRecord& record_of_general_type) const
 {
-  CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
+  auto& record = static_cast<CListRecordT&>(record_of_general_type);
   return current_lm_data_ptr->get_next_record(record);
 }
 

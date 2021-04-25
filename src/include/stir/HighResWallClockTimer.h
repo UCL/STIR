@@ -49,7 +49,7 @@
 #   include <sys/time.h>
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 #if defined(_MSC_VER) && (_MSC_VER < 1100) && !defined(bool)
 
@@ -95,35 +95,35 @@ namespace stir {
   public:
 
     //! Create a timer
-    inline HighResWallClockTimer(void);
+    inline HighResWallClockTimer();
     //! Destroy a timer
-    inline virtual ~HighResWallClockTimer(void);
+    inline virtual ~HighResWallClockTimer();
 
     // Default copy ctor & assignment op are just fine
 
     //! Start a timer
     inline void start(bool bReset = false);
     //! Stop a running timer
-    inline void stop(void);
+    inline void stop();
     //! Reset a timer
-    inline void reset(void);
+    inline void reset();
     //! Check if a timer is running
-    inline bool is_running(void);
+    inline bool is_running();
 
     //! Returns the number of whole seconds elapsed
-    inline int get_sec(void);
+    inline int get_sec();
     //! Returns the number of nanoseconds that elapsed on top of whatever get_sec() returned
-    inline int get_nanosec(void);
+    inline int get_nanosec();
     //! Returns the elapsed time (in seconds)
-    inline double value(void);
+    inline double value();
 
     //! Attempts to \e guess the timer resolution
-    static int get_resolution_in_nanosecs(void); // in nanoseconds
+    static int get_resolution_in_nanosecs(); // in nanoseconds
 
   protected:
   private:
 
-    bool  m_bRunning;
+    bool  m_bRunning{false};
     int   m_Secs;
     int   m_Nanosecs;
 
@@ -147,14 +147,14 @@ namespace stir {
 
 
   /*! The timer is not started, and elapsed time is set to zero. */
-  inline HighResWallClockTimer::HighResWallClockTimer(void)
-    :   m_bRunning(false)
+  inline HighResWallClockTimer::HighResWallClockTimer()
+       
     {
       reset();
     };
 
     /*! The timer must not be running. */
-    inline HighResWallClockTimer::~HighResWallClockTimer(void)
+    inline HighResWallClockTimer::~HighResWallClockTimer()
       {
 	assert(!m_bRunning);
       };
@@ -183,7 +183,7 @@ namespace stir {
 #ifndef NDEBUG
 	int Result = 
 #endif
-	  gettimeofday(&m_Start, NULL);
+	  gettimeofday(&m_Start, nullptr);
 	assert(Result == 0);
 #endif
       };
@@ -192,7 +192,7 @@ namespace stir {
       When a timer is stopped (=not running), get_sec(), get_nanosec(), and value() can be
       used to obtain elapsed time.
     */
-    inline void HighResWallClockTimer::stop(void)
+    inline void HighResWallClockTimer::stop()
       {
 	assert(m_bRunning);
 
@@ -257,7 +257,7 @@ namespace stir {
 #ifndef NDEBUG
 	int Result = 
 #endif
-	  gettimeofday(&m_Finish, NULL);
+	  gettimeofday(&m_Finish, nullptr);
 	assert(Result == 0);
 	m_Secs += (m_Finish.tv_sec - m_Start.tv_sec);
 	int Microsecs = (m_Finish.tv_usec - m_Start.tv_usec);
@@ -283,34 +283,34 @@ namespace stir {
       };
 
     /*! Sets the elapsed time to zero. The timer must not be running. */
-    inline void HighResWallClockTimer::reset(void)
+    inline void HighResWallClockTimer::reset()
       {
 	assert(!m_bRunning);
 	m_Secs = m_Nanosecs = 0;
       };
 
     /*! Returns true if the timer is running, or false otherwise */
-    inline bool HighResWallClockTimer::is_running(void)
+    inline bool HighResWallClockTimer::is_running()
       {
 	return m_bRunning;
       };
 
     /*! The timer must not be running */
-    inline int HighResWallClockTimer::get_sec(void)
+    inline int HighResWallClockTimer::get_sec()
       {
 	assert(!m_bRunning);
 	return m_Secs;
       };
 
     /*! The timer must not be running */
-    inline int HighResWallClockTimer::get_nanosec(void)
+    inline int HighResWallClockTimer::get_nanosec()
       {
 	assert(!m_bRunning);
 	return m_Nanosecs;
       };
 
     /*! The timer must not be running */
-    inline double HighResWallClockTimer::value(void)
+    inline double HighResWallClockTimer::value()
       {
 	return get_sec() + double(get_nanosec()) / 1e9;
       }
@@ -333,7 +333,7 @@ namespace stir {
       \return Estimated timer resolution (in nanoseconds)
     */
 
-    inline int HighResWallClockTimer::get_resolution_in_nanosecs(void)
+    inline int HighResWallClockTimer::get_resolution_in_nanosecs()
       {
 
 	/*static*/ int Resolution = -1; // cached resolution

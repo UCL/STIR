@@ -51,10 +51,10 @@ public:
    /*! Implementation to read the model matrix from a text file
      \warning In this way the information about the calibration _is_uncalibrated and the counts _is_converted is not passed.
    */
-   inline void read_from_file(const std::string input_string);
+   inline void read_from_file(const std::string& input_string);
 
   //! Implementation to write the model matrix to a text file
-   inline Succeeded write_to_file(const std::string output_string); 
+   inline Succeeded write_to_file(const std::string& output_string); 
 
    //! \name Functions to get parameters @{
    inline Array<2,float> get_model_array() const;

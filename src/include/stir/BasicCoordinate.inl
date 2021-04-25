@@ -145,7 +145,7 @@ fill(const coordT& c)
 
 template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>::BasicCoordinate()
-{}
+= default;
 
 template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>::

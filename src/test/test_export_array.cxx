@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
 class ExportArrayTests : public RunTests
 {
 public:
-    void run_tests();
+    void run_tests() override;
 
 protected:
     void test_static_data();
@@ -285,7 +285,7 @@ void ExportArrayTests :: run_static_test(ProjData& test_proj_data,
     {
       const std::vector<int> segment_sequence = ProjData::standard_segment_sequence(*test_proj_data.get_proj_data_info_sptr());
       test_array_iter = test_array.begin_all();
-      for (std::vector<int>::const_iterator iter = segment_sequence.begin(); iter != segment_sequence.end(); ++iter)
+      for (auto iter = segment_sequence.begin(); iter != segment_sequence.end(); ++iter)
         {
           const int seg = *iter;
           const SegmentBySinogram<float> segment = test_proj_data.get_segment_by_sinogram(seg);

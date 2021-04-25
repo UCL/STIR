@@ -142,8 +142,8 @@ int main(int argc, char *argv[])
               }
        }
         {
-          ListRecordWithGatingInput * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
-          if (record_ptr!=0 && record_ptr->is_gating_input())
+          auto * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
+          if (record_ptr!=nullptr && record_ptr->is_gating_input())
             {
               recognised=true;
               if (list_gating)
@@ -157,9 +157,9 @@ int main(int argc, char *argv[])
         {
           recognised=true;
           if (list_coincidence)
-            {CListEventCylindricalScannerWithDiscreteDetectors * event_ptr = 
+            {auto * event_ptr = 
                 dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event());
-              if (event_ptr!=0)
+              if (event_ptr!=nullptr)
                 {
                   DetectionPositionPair<> det_pos;
                   event_ptr->get_detection_position(det_pos);
@@ -176,9 +176,9 @@ int main(int argc, char *argv[])
                 }
             }
           if (list_SPECT_event)
-            {ListEvent * event_ptr =
+            {auto * event_ptr =
                 dynamic_cast<ListEvent *>(&record.event());
-              if (event_ptr!=0)
+              if (event_ptr!=nullptr)
                 {
                   LORAs2Points<float> lor;
                   lor=event_ptr->get_LOR();

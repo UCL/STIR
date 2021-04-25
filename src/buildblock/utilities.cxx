@@ -111,7 +111,7 @@ FILE*& open_write_binary(FILE*& fptr,
 void close_file(FILE*& fptr)
 {
   fclose(fptr);
-  fptr=0;
+  fptr=nullptr;
 }
 
 const char *
@@ -134,7 +134,7 @@ find_filename(const char * const filename_with_directory)
 #else // defined(__OS_UNIX__)
  name = strrchr(filename_with_directory,'/');
 #endif 
- if (name!=NULL)
+ if (name!=nullptr)
    // KT 10/01/2000 name++ changed to name+1
    return name+1;
  else
@@ -314,7 +314,7 @@ prepend_directory_name(char * filename_with_directory,
 		       const char * const directory_name)
 {
   if (is_absolute_pathname(filename_with_directory) ||
-      directory_name == 0 ||
+      directory_name == nullptr ||
       strlen(directory_name) == 0)
     return filename_with_directory;
 
@@ -457,7 +457,7 @@ void * read_stream_in_memory(istream& input, streamsize& file_size)
   // allocate memory
   // TODO file_size could be longer than what size_t allows, but arrays cannot be longer
   char *memory = new char[static_cast<std::size_t>(file_size)];
-  if (memory == 0)
+  if (memory == nullptr)
     { error("Not enough memory\n");  }
 
   {

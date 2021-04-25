@@ -36,8 +36,8 @@ using std::ifstream;
 START_NAMESPACE_STIR
 
 ParsingObject::ParsingObject() 
-:
-  keymap_is_initialised(false)
+
+  
 {}
 
   

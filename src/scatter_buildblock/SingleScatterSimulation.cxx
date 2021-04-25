@@ -38,7 +38,7 @@ SingleScatterSimulation(const std::string& parameter_filename)
 
 SingleScatterSimulation::
 ~SingleScatterSimulation()
-{}
+= default;
 
 
 void

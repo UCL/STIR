@@ -43,13 +43,13 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
 #endif
-#include "stir/Shape/EllipsoidalCylinder.h"
-#include "stir/Shape/Box3D.h"
 #include "stir/IO/write_to_file.h"
-#include "stir/stream.h"
-#include <iostream>
-#include <math.h>
+#include "stir/Shape/Box3D.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/centre_of_gravity.h"
+#include "stir/stream.h"
+#include <cmath>
+#include <iostream>
 
 using std::cerr;
 using std::endl;
@@ -66,7 +66,7 @@ class ScatterSimulationTests: public RunTests
 {
 public:  
     bool write_output;
-    void run_tests();
+    void run_tests() override;
 private:
 
     //! Load a ProjDataInfo downsample and perform some consistency checks.

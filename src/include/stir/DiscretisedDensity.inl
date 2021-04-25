@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
 template<int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions,elemT>::DiscretisedDensity()
-{}
+= default;
 
 template<int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::

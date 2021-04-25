@@ -59,7 +59,7 @@ namespace detail_interpolate_projdata
   make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info)
   {
 
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == NULL)
+    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == nullptr)
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     shared_ptr<ProjDataInfo> new_proj_data_info_sptr(

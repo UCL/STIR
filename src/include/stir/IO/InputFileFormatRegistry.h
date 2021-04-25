@@ -70,9 +70,9 @@ class InputFileFormatRegistry
     shared_ptr<self_type>& default_sptr();
 
   //! Default constructor without defaults (see find_factory())
-  inline InputFileFormatRegistry() {}
+  inline InputFileFormatRegistry() = default;
 
-  inline ~InputFileFormatRegistry() {}
+  inline ~InputFileFormatRegistry() = default;
 			 
 
   /*! \brief Add a file-format to the registry with given ranking
@@ -137,7 +137,7 @@ class InputFileFormatRegistry
     _actual_find_factory(const FileSignature& signature,
 			 File& input) const
     {
-      const_iterator iter = this->_registry.begin();
+      auto iter = this->_registry.begin();
       const_iterator const end = this->_registry.end();
       while (iter != end)
 	{

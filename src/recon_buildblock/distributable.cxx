@@ -80,7 +80,7 @@ START_NAMESPACE_STIR
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
                                      const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                     const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
+                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
                                      const shared_ptr<const DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled)
@@ -151,7 +151,7 @@ zero_end_sinograms(ViewgramsPtr viewgrams_ptr)
     {
       const int min_ax_pos_num = viewgrams_ptr->get_min_axial_pos_num();
       const int max_ax_pos_num = viewgrams_ptr->get_max_axial_pos_num();
-      for (RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams_ptr->begin();
+      for (auto r_viewgrams_iter = viewgrams_ptr->begin();
            r_viewgrams_iter != viewgrams_ptr->end();
            ++r_viewgrams_iter)
         {
@@ -290,7 +290,7 @@ void distributable_computation(
                                bool zero_seg0_end_planes,
                                double* log_likelihood_ptr,
                                const shared_ptr<ProjData>& binwise_correction,
-                               const shared_ptr<BinNormalisation> normalisation_sptr,
+                               const shared_ptr<BinNormalisation>& normalisation_sptr,
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
@@ -382,10 +382,10 @@ void distributable_computation(
   
   assert(!is_null_ptr(proj_dat_ptr));
   
-  if (output_image_ptr != NULL)
+  if (output_image_ptr != nullptr)
     output_image_ptr->fill(0);
   
-  if (log_likelihood_ptr != NULL)
+  if (log_likelihood_ptr != nullptr)
     {
       (*log_likelihood_ptr) = 0.0;
     };
@@ -408,7 +408,7 @@ void distributable_computation(
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
   forward_projector_ptr->set_input(*input_image_ptr);
-  if (output_image_ptr != NULL)
+  if (output_image_ptr != nullptr)
     back_projector_ptr->start_accumulating_in_new_target();
 
 #ifdef STIR_OPENMP
@@ -430,10 +430,8 @@ void distributable_computation(
 #pragma omp for schedule(runtime)  
 #endif
     // note: older versions of openmp need an int as loop
-    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    for (auto view_segment_num : vs_nums_to_process)
       {
-        const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
-
         shared_ptr<RelatedViewgrams<float> > y;
         shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
         shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
@@ -511,7 +509,7 @@ void distributable_computation(
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
   }
 #endif
-  if (output_image_ptr != NULL)
+  if (output_image_ptr != nullptr)
     back_projector_ptr->get_output(*output_image_ptr);
 #ifdef STIR_MPI
   //end of iteration processing

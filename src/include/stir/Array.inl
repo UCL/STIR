@@ -84,7 +84,7 @@ Array<num_dimensions, elemT>::Array(const base_type& t)
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::~Array()
-{}
+= default;
 
 
 template <int num_dimensions, typename elemT>
@@ -471,7 +471,7 @@ Array<1, elemT>::Array(const base_type &il)
 
 template <typename elemT>
 Array<1, elemT>::~Array()
-{}
+= default;
 
 template <typename elemT>
 typename Array<1, elemT>::full_iterator 

@@ -29,7 +29,7 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #ifdef STIR_OPENMP
 #include <omp.h>

@@ -56,10 +56,10 @@ using std::vector;
 START_NAMESPACE_STIR
 ProjDataInfoCylindricalNoArcCorr:: 
 ProjDataInfoCylindricalNoArcCorr()
-{}
+= default;
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner>& scanner_ptr,
                                  const float ring_radius_v, const float angular_increment_v,
 				 const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v, 
@@ -79,7 +79,7 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 }
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner>& scanner_ptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v, 
                                  const  VectorWithOffset<int>& max_ring_diff_v,
@@ -365,15 +365,13 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
       const int det2_num = 
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-	   rings_iter != ring_pairs.end();
-	   ++rings_iter)
+      for (const auto & ring_pair : ring_pairs)
 	{
 	  assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
 	  dps[current_dp_num].pos1().tangential_coord() = det1_num;     
-	  dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
+	  dps[current_dp_num].pos1().axial_coord() = ring_pair.first;
 	  dps[current_dp_num].pos2().tangential_coord() = det2_num;     
-	  dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
+	  dps[current_dp_num].pos2().axial_coord() = ring_pair.second;
 	  ++current_dp_num;
 	}
     }

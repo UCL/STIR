@@ -78,7 +78,7 @@ template <class T, class T2>
 inline 
 void assign(std::vector<T>& v, const T2& y)
 {
-  for (typename std::vector<T>::iterator iter = v.begin(); 
+  for (auto iter = v.begin(); 
        iter != v.end(); ++iter)
     assign(*iter, y);
 }

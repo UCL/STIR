@@ -60,7 +60,7 @@ public:
   //! Default constructor calls reset_timers()
   BackProjectorByBin();
 
-  virtual ~BackProjectorByBin();
+  ~BackProjectorByBin() override;
 
   //! Stores all necessary geometric info
  /*! 
@@ -178,14 +178,14 @@ protected:
       If overriding this function in a derived class, you need to call this one.
    */
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
-  bool _already_set_up;
+  bool _already_set_up{false};
 
   //! Clone of the density sptr set with set_up()
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
  protected:
   //! ProjDataInfo set by set_up()

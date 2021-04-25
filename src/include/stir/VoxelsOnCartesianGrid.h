@@ -146,7 +146,7 @@ DiscretisedDensity<3,elemT>*
 #else
 VoxelsOnCartesianGrid<elemT>*
 #endif
- get_empty_copy() const;
+ get_empty_copy() const override;
 
 //! Like get_empty_copy, but returning a pointer to a VoxelsOnCartesianGrid
 VoxelsOnCartesianGrid<elemT>* get_empty_voxels_on_cartesian_grid() const;
@@ -154,9 +154,9 @@ VoxelsOnCartesianGrid<elemT>* get_empty_voxels_on_cartesian_grid() const;
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
 virtual DiscretisedDensity<3,elemT>*
 #else
-virtual VoxelsOnCartesianGrid<elemT>*
+VoxelsOnCartesianGrid<elemT>*
 #endif
-clone() const;
+clone() const override;
 
 //! Extract a single plane
 PixelsOnCartesianGrid<elemT> get_plane(const int z) const;

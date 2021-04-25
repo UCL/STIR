@@ -39,8 +39,8 @@ class erfTests : public RunTests
 {
 public:
   erfTests() 
-  {}
-  void run_tests();
+  = default;
+  void run_tests() override;
 private:
   //istream& in;
 };
@@ -89,7 +89,7 @@ void erfTests::run_tests()
         STIR_vector[i] = erf(input_vector[i]);
         STIR_vector_c[i] = erfc(input_vector[i]);			 
       }
-    std::vector<double>:: iterator cur_iter_cor = output_correct_vector.begin(), 
+    auto cur_iter_cor = output_correct_vector.begin(), 
       cur_iter_cor_c = output_correct_vector_c.begin(), 
       cur_iter_STIR = STIR_vector.begin(),
       cur_iter_STIR_c = STIR_vector_c.begin();		  

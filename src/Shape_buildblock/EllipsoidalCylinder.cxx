@@ -194,9 +194,9 @@ bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& co
 	  r.x();
 	const float y_pos=
 	  r.y();
-	const float phi_1 = 
+	const auto phi_1 = 
 	  static_cast<float>(_PI*theta_1/180.0);
-	const float phi_2 = 
+	const auto phi_2 = 
 	  static_cast<float>(_PI*theta_2/180.0);
 	// Adding theta cuts for partial cylinders from theta_1 to theta_2
 	float theta_r = atan2(y_pos,x_pos);
@@ -227,8 +227,8 @@ get_geometric_volume()const
      }
    if (theta_1 == 360.0) T1 = 0.0;
    if (theta_2 ==   0.0) T2 = 360.0;
-   const float phi_1 = static_cast<float>(T1*_PI/180.0);
-   const float phi_2 = static_cast<float>(T2*_PI/180.0);
+   const auto phi_1 = static_cast<float>(T1*_PI/180.0);
+   const auto phi_2 = static_cast<float>(T2*_PI/180.0);
    
    // Begin Volume Calculation
    if (T1 == 0.0 && T2 == 360.0)
@@ -368,10 +368,10 @@ bool
 EllipsoidalCylinder:: 
 operator==(const Shape3D& shape) const
 {
-  EllipsoidalCylinder const * cylinder_ptr =
+  auto const * cylinder_ptr =
     dynamic_cast<EllipsoidalCylinder const *>(&shape);
   return
-    cylinder_ptr != 0 && (*this == *cylinder_ptr);
+    cylinder_ptr != nullptr && (*this == *cylinder_ptr);
 }
 
 END_NAMESPACE_STIR

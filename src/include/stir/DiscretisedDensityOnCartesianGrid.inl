@@ -92,7 +92,7 @@ actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&
   if (!base_type::actual_has_same_characteristics(other_of_base_type, explanation))
     return false;
 
-  DiscretisedDensityOnCartesianGrid<num_dimensions, elemT> const& other =
+  auto const& other =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<num_dimensions, elemT> const&>
     (other_of_base_type);
   

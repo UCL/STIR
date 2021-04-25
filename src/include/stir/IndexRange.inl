@@ -161,7 +161,7 @@ IndexRange<num_dimensions>::
  ***************************************/
 
 IndexRange<1>::IndexRange()
-: min(0), max(0)
+ 
 {}
 
 IndexRange<1>::IndexRange(const int min_v, const int max_v)

@@ -49,7 +49,7 @@ START_NAMESPACE_STIR
 class warp_imageTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void
@@ -95,7 +95,7 @@ warp_imageTests::run_tests()
 
   TimeGateDefinitions gate_defs(gate_sequence);
 
-  const  VoxelsOnCartesianGrid<float> new_image=warp_image(image_sptr,motion_x_sptr,motion_y_sptr,motion_z_sptr,BSpline::BSplineType(1),0);
+  const  VoxelsOnCartesianGrid<float> new_image=warp_image(image_sptr,motion_x_sptr,motion_y_sptr,motion_z_sptr,BSpline::BSplineType(1),false);
   const BasicCoordinate<3,int> new_indices = make_coordinate(indices[1]-1,indices[2]-2,indices[3]-3);
 
   {

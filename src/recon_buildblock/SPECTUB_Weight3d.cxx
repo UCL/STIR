@@ -30,11 +30,11 @@
 #include "stir/spatial_transformation/InvertAxis.h"
 
 //system libraries
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <stdlib.h>
 #include <string>
-#include <math.h>
 
 namespace SPECTUB {
 
@@ -43,8 +43,8 @@ namespace SPECTUB {
 
 #define maxim(a,b) ((a)>=(b)?(a):(b))
 #define minim(a,b) ((a)<=(b)?(a):(b))
-#define abs(a) ((a)>=0?(a):(-a))
-#define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
+#define abs(a) ((a)>=0?(a):(-(a)))
+#define SIGN(a) ((a)<-EPSILON?-1:((a)>EPSILON?1:0))
  
 #define REF_DIST 5.    //reference distance for fanbeam PSF
 
@@ -68,7 +68,7 @@ void wm_calculation( const int kOS,
 {
 	
 	float weight;
-	float coeff_att = (float) 1.;
+	auto coeff_att = (float) 1.;
 	int   jp;
 	float eff;
     
@@ -99,7 +99,7 @@ void wm_calculation( const int kOS,
 
 	//... variables for attenuation component .............................................
 		
-	attpth_type *attpth = 0; // initialise to avoid compiler warning
+	attpth_type *attpth = nullptr; // initialise to avoid compiler warning
 	int sizeattpth = 1; // initialise to avoid compiler warning
 	
 	if ( wmh.do_att || wmh.do_msk_att ){
@@ -722,7 +722,7 @@ void calc_psf_bin (float center_psf,
 	//... first weigth calculation ...............................................................................
 	
 	int   ip = 0;											// counter for the number of surviving weights
-	float area = (float)0. ;
+	auto area = (float)0. ;
 	
 	weight = vxprj->acu[ i1 ] - vxprj->acu[ 0 ];
 	
@@ -844,7 +844,7 @@ void calc_att_path(const bin_type& bin, const voxel_type& vox, const volume_type
 	
 	//... variables initialization .....................................
 	
-	float dant  = (float)0. ;   // previous distance (distance from voxel to the last change of voxel in the attenuation map)
+	auto dant  = (float)0. ;   // previous distance (distance from voxel to the last change of voxel in the attenuation map)
     int ni      = 0 ;           // number of voxels in the attenuation path
 	int iv      = vox.ip ;      // voxel index on the attenuation map  
 	
@@ -936,7 +936,7 @@ int comp_dist( float dx,
 
 float calc_att( const attpth_type *const attpth, const float *const attmap , int nsli ){
 	
-	float att_coef = (float)0.;
+	auto att_coef = (float)0.;
 	int iv;
 	
 	for ( int i = 0 ; i < attpth->lng ; i++ ){

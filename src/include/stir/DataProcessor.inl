@@ -32,7 +32,7 @@ START_NAMESPACE_STIR
 template <typename DataT>
 DataProcessor<DataT>::
 DataProcessor()
-: is_set_up_already(false)
+ 
 {}
    
 template <typename DataT>

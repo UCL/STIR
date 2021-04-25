@@ -27,19 +27,19 @@
   \author Kris Thielemans 
 */
 
-#include "stir/ProjDataInterfile.h"
 #include "stir/ExamInfo.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/Sinogram.h"
-#include "stir/Scanner.h"
-#include "stir/shared_ptr.h"
-#include "stir/is_null_ptr.h"
 #include "stir/IO/read_data.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInterfile.h"
+#include "stir/Scanner.h"
+#include "stir/Sinogram.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
+#include "stir/shared_ptr.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #define NUMARG 12
 
 
@@ -72,8 +72,8 @@ int main(int argc,char **argv)
   const int num_views=atoi(argv[3]);
   const int num_tangential_poss=atoi(argv[4]);
   const int num_rings=atoi(argv[5]);
-  const float FOV_radius = static_cast<float>(atof(argv[6])*10); // times 10 for mm
-  const float scanner_length = static_cast<float>(atof(argv[7])*10); // times 10 for mm
+  const auto FOV_radius = static_cast<float>(atof(argv[6])*10); // times 10 for mm
+  const auto scanner_length = static_cast<float>(atof(argv[7])*10); // times 10 for mm
   const char * const scanner_name = argv[8];
   const int max_ring_difference=atoi(argv[9]);
   const int dataset_num = atoi(argv[10]);
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
 	    "number of tangential positions.\n"
 	    "Proceed at your own risk (but you will get artifacts in the images");
   FILE *file;
-  if( (file=fopen(simset_filename,"rb")) ==NULL){
+  if( (file=fopen(simset_filename,"rb")) ==nullptr){
     error("Cannot open the simset file %s", simset_filename);
   }
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));

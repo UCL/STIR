@@ -32,7 +32,7 @@
 START_NAMESPACE_STIR
 
 ViewSegmentNumbers::ViewSegmentNumbers()
-:segment(0),view(0)
+
   {}
 
 ViewSegmentNumbers::ViewSegmentNumbers( const int view_num,const int segment_num)

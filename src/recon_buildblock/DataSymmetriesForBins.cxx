@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
 DataSymmetriesForBins::
 ~DataSymmetriesForBins()
-{}
+= default;
 
 DataSymmetriesForBins::
 DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
@@ -111,26 +111,12 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
   rel_b.reserve(ax_tang_poss.size() * vs.size());
   rel_b.resize(0);
 
-  for (
-#ifdef _MSC_VER
-    // VC bug work-around...
-       std::
-#endif
-         vector<ViewSegmentNumbers>::const_iterator view_seg_ptr = vs.begin();
-       view_seg_ptr != vs.end();
-       ++view_seg_ptr)
+  for (auto v : vs)
   {
-    for (
-#ifdef _MSC_VER
-    // VC bug work-around...
-         std::
-#endif
-           vector<AxTangPosNumbers>::const_iterator ax_tang_pos_ptr = ax_tang_poss.begin();
-         ax_tang_pos_ptr != ax_tang_poss.end();
-         ++ax_tang_pos_ptr)
+    for (const auto & ax_tang_pos : ax_tang_poss)
     {
-      rel_b.push_back(Bin(view_seg_ptr->segment_num(), view_seg_ptr->view_num(), 
-                          (*ax_tang_pos_ptr)[1], (*ax_tang_pos_ptr)[2]));
+      rel_b.emplace_back(v.segment_num(), v.view_num(), 
+                          ax_tang_pos[1], ax_tang_pos[2]);
     }
   }
 }

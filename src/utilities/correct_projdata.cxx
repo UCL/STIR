@@ -150,6 +150,8 @@ This parameter will be removed.
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/is_null_ptr.h"
+#include <memory>
+
 #include <string>
 #include <iostream> 
 #include <fstream>
@@ -208,9 +210,9 @@ public:
   bool do_arc_correction;
 private:
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   string input_filename;
   string output_filename;
   string scatter_projdata_filename;
@@ -485,7 +487,7 @@ set_up()
   else
     {
       arc_correction_sptr = 
-	shared_ptr<ArcCorrection>(new ArcCorrection);
+	std::make_shared<ArcCorrection>();
       arc_correction_sptr->set_up(input_proj_data_info_sptr);
       output_proj_data_info_sptr =
 	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
@@ -564,7 +566,7 @@ CorrectProjDataApplication::
 CorrectProjDataApplication(const char * const par_filename)
 {
   set_defaults();
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     parse(par_filename) ;
   else
     ask_parameters();
@@ -583,7 +585,7 @@ int main(int argc, char *argv[])
     cerr<<"Usage: " << argv[0] << " par_file\n"
        	<< endl; 
   }
-  CorrectProjDataApplication correct_proj_data_application( argc==2 ? argv[1] : 0);
+  CorrectProjDataApplication correct_proj_data_application( argc==2 ? argv[1] : nullptr);
  
   if (argc!=2)
     {

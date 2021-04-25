@@ -80,7 +80,7 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   
   // reads the views_scaling_factors
   {
-    float scale = float(1);
+    auto scale = float(1);
     // KT 18/10/99 added on_disk_byte_order
     if (read_data(*sino_stream, view_scaling_factor,
                   NumericType::FLOAT, 
@@ -276,7 +276,7 @@ get_viewgram(const int view_num, const int segment_num,
     for (int ring =get_min_axial_pos_num(segment_num) ; ring <= get_max_axial_pos_num(segment_num); ring++)
     {
       {
-        float scale = float(1);
+        auto scale = float(1);
         if (read_data(*sino_stream, data[ring],
                       on_disk_data_type, 
                       scale,

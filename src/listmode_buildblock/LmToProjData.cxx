@@ -120,7 +120,7 @@ static void
 allocate_segments(VectorWithOffset<segment_type *>& segments,
                        const int start_segment_index,
 	               const int end_segment_index,
-                       const shared_ptr<const ProjDataInfo> proj_data_info_sptr);
+                       const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
 // In the next 2 functions, the 'output' parameter needs to be passed 
 // because save_and_delete_segments needs it when we're not using SegmentByView
@@ -155,7 +155,7 @@ set_defaults()
   num_segments_in_memory = -1;
   normalisation_ptr.reset(new TrivialBinNormalisation);
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
-  do_pre_normalisation =0;
+  do_pre_normalisation =false;
   num_events_to_store = 0L;
   do_time_frame = false; 
 }
@@ -351,7 +351,7 @@ LmToProjData::
 LmToProjData(const char * const par_filename)
 {
   set_defaults();
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     {
       if (parse(par_filename)==false)
 	error("Exiting\n");
@@ -467,7 +467,7 @@ get_compression_count(const Bin& bin) const
 {
   // TODO this currently works ONLY for cylindrical PET scanners
 
-   const ProjDataInfoCylindrical& proj_data_info =
+   const auto& proj_data_info =
       dynamic_cast<const ProjDataInfoCylindrical&>(*template_proj_data_info_ptr);
 
     return static_cast<int>(proj_data_info.get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),bin.axial_pos_num()))*
@@ -759,7 +759,7 @@ void
 allocate_segments( VectorWithOffset<segment_type *>& segments,
 		  const int start_segment_index, 
 		  const int end_segment_index,
-		  const shared_ptr<const ProjDataInfo> proj_data_info_sptr)
+		  const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
   
   for (int seg=start_segment_index ; seg<=end_segment_index; seg++)

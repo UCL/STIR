@@ -81,7 +81,7 @@ is_interfile_signature(const char * const signature)
 {
   // checking for "interfile :"
   const char * pos_of_colon = strchr(signature, ':');
-  if (pos_of_colon == NULL)
+  if (pos_of_colon == nullptr)
     return false;
   string keyword(signature, pos_of_colon-signature);
   return (
@@ -100,7 +100,7 @@ create_image_and_header_from(InterfileImageHeader& hdr,
 {
   if (!hdr.parse(input))
   {
-      return 0; //KT 10/12/2001 do not call ask_parameters anymore 
+      return nullptr; //KT 10/12/2001 do not call ask_parameters anymore 
     }
   
   // prepend directory_for_data to the data_file_name from the header
@@ -161,13 +161,13 @@ read_interfile_image(istream& input,
     data_in.seekg(hdr.data_offset_each_dataset[0]);
 
   // read into image_sptr first
-  float scale = float(1);
+  auto scale = float(1);
   if (read_data(data_in, *image_ptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
       == Succeeded::no
       || scale != 1)
     {
       warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
-      return 0;
+      return nullptr;
     }
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
@@ -206,7 +206,7 @@ read_interfile_dynamic_image(istream& input,
 
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info().originating_system));
 
-  DynamicDiscretisedDensity * dynamic_dens_ptr =
+  auto * dynamic_dens_ptr =
     new DynamicDiscretisedDensity(hdr.get_exam_info().time_frame_definitions,
                                   hdr.get_exam_info().start_time_in_secs_since_1970,
                                   scanner_sptr,
@@ -223,13 +223,13 @@ read_interfile_dynamic_image(istream& input,
       data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
 
       // read into image_sptr first
-      float scale = float(1);
+      auto scale = float(1);
       if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
           == Succeeded::no
           || fabs(scale-float(1))>float(1e-10))
         {
           warning("read_interfile_dynamic_image: error reading data or scale factor returned by read_data not equal to 1");
-          return 0;
+          return nullptr;
         }
 
       for (int i=0; i< hdr.matrix_size[2][0]; i++)
@@ -269,7 +269,7 @@ read_interfile_parametric_image(istream& input,
   voxel_size[2] = hdr.pixel_sizes[1];
   voxel_size[3] = hdr.pixel_sizes[0];
 
-  ParametricVoxelsOnCartesianGrid* parametric_dens_ptr =
+  auto* parametric_dens_ptr =
           new ParametricVoxelsOnCartesianGrid(
               ParametricVoxelsOnCartesianGridBaseType(
                   hdr.get_exam_info_sptr(),
@@ -288,13 +288,13 @@ read_interfile_parametric_image(istream& input,
       data_in.seekg(hdr.data_offset_each_dataset[kin_param-1]);
 
       // read into image_sptr first
-      float scale = float(1);
+      auto scale = float(1);
       if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
           == Succeeded::no
           || scale != 1)
         {
           warning("read_interfile_parametric_image: error reading data or scale factor returned by read_data not equal to 1");
-          return 0;
+          return nullptr;
         }
 
       for (int i=0; i< hdr.matrix_size[2][0]; i++)
@@ -302,7 +302,7 @@ read_interfile_parametric_image(istream& input,
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[kin_param-1][i]);
 
       // Check that we're dealing with VoxelsOnCartesianGrid
-      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==0)
+      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==nullptr)
         error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
 
       // Set the image for the given kinetic parameter
@@ -921,8 +921,8 @@ write_basic_interfile(const string& filename,
 
     // Tell it what the different kinetic parameters mean
     std::vector<std::string> data_type_descriptions;
-    data_type_descriptions.push_back("slope");
-    data_type_descriptions.push_back("intercept");
+    data_type_descriptions.emplace_back("slope");
+    data_type_descriptions.emplace_back("intercept");
 
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
@@ -996,7 +996,7 @@ read_interfile_PDFS_SPECT(istream& input,
   InterfilePDFSHeaderSPECT hdr;  
    if (!hdr.parse(input))
     {
-      return 0; // KT 10122001 do not call ask_parameters anymore
+      return nullptr; // KT 10122001 do not call ask_parameters anymore
     }
 
   char full_data_file_name[max_filename_length];
@@ -1018,7 +1018,7 @@ read_interfile_PDFS_SPECT(istream& input,
    if (!data_in->good())
      {
        warning("interfile parsing: error opening file %s",full_data_file_name);
-       return 0;
+       return nullptr;
      }
 
    return new ProjDataFromStream(hdr.get_exam_info_sptr(), 
@@ -1044,7 +1044,7 @@ read_interfile_PDFS_Siemens(istream& input,
   if (!hdr.parse(input))
     {
       warning("Interfile parsing of Siemens Interfile projection data failed");
-      return 0;
+      return nullptr;
     }
   // KT 14/01/2000 added directory capability
   // prepend directory_for_data to the data_file_name from the header
@@ -1057,7 +1057,7 @@ read_interfile_PDFS_Siemens(istream& input,
   if (!data_in->good())
     {
     warning("interfile parsing: error opening file %s", full_data_file_name);
-    return 0;
+    return nullptr;
     }
 
   if (hdr.compression)
@@ -1087,7 +1087,7 @@ read_interfile_PDFS(istream& input,
     if (!hdr.parse(input, false)) // parse without warnings
       {
         warning("Interfile parsing failed");
-        return 0;
+        return nullptr;
       }
     input.clear(); // clear EOF or other flags before we proceed
     input.seekg(offset);
@@ -1109,7 +1109,7 @@ read_interfile_PDFS(istream& input,
   if (!hdr.parse(input))
     {
       warning("Interfile parsing of PET projection data failed");
-      return 0;
+      return nullptr;
     }
 
   // KT 14/01/2000 added directory capability
@@ -1133,7 +1133,7 @@ read_interfile_PDFS(istream& input,
    if (!data_in->good())
      {
        warning("interfile parsing: error opening file %s",full_data_file_name);
-       return 0;
+       return nullptr;
      }
 
    return new ProjDataFromStream(hdr.get_exam_info_sptr(),
@@ -1355,7 +1355,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
-      std::vector<int>::const_iterator seg = segment_sequence.begin();
+      auto seg = segment_sequence.begin();
       output_header << "{ " <<pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
       for (seg++; seg != segment_sequence.end(); seg++)
 	output_header << "," << pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
@@ -1376,7 +1376,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
    
        output_header << "minimum ring difference per segment := ";    
        {
-	 std::vector<int>::const_iterator seg = segment_sequence.begin();
+	 auto seg = segment_sequence.begin();
 	 output_header << "{ " << proj_data_info_sptr->get_min_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
 	   output_header << "," <<proj_data_info_sptr->get_min_ring_difference(*seg);
@@ -1385,7 +1385,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
        output_header << "maximum ring difference per segment := ";
        {
-	 std::vector<int>::const_iterator seg = segment_sequence.begin();
+	 auto seg = segment_sequence.begin();
 	 output_header << "{ " <<proj_data_info_sptr->get_max_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
 	   output_header << "," <<proj_data_info_sptr->get_max_ring_difference(*seg);

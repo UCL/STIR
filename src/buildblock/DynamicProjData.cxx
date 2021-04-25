@@ -27,26 +27,24 @@
 
 #include "stir/DynamicProjData.h"
 #include "stir/ExamInfo.h"
-#include "stir/TimeFrameDefinitions.h"
-#include "stir/IO/stir_ecat7.h"
-#include "stir/ProjDataFromStream.h"
-#include "stir/ExamInfo.h"
-#include "stir/TimeFrameDefinitions.h"
-#include <iostream>
-#include "stir/Succeeded.h"
-#include "stir/is_null_ptr.h"
-#include "stir/round.h"
-#include "stir/error.h"
-#include "stir/warning.h"
-#include "stir/info.h"
-#include "stir/utilities.h"
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
+#include "stir/IO/stir_ecat7.h"
 #include "stir/MultipleDataSetHeader.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/Succeeded.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/error.h"
+#include "stir/info.h"
+#include "stir/is_null_ptr.h"
+#include "stir/round.h"
+#include "stir/utilities.h"
+#include "stir/warning.h"
 #include <boost/format.hpp>
+#include <cmath>
 #include <fstream>
-#include <math.h>
+#include <iostream>
 
 using std::string;
 using std::istream;
@@ -229,7 +227,7 @@ read_interfile_DPDFS(istream& input,
 
    if (!hdr.parse(input))
     {
-      return 0; // KT 10122001 do not call ask_parameters anymore
+      return nullptr; // KT 10122001 do not call ask_parameters anymore
     }
 
   // KT 14/01/2000 added directory capability
@@ -253,13 +251,13 @@ read_interfile_DPDFS(istream& input,
    if (!data_in->good())
      {
        warning("interfile parsing: error opening file %s",full_data_file_name);
-       return 0;
+       return nullptr;
      }
    shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_sptr->create_shared_clone());
    unsigned long data_offset = hdr.data_offset_each_dataset[0];
    // offset in file between time frames
    unsigned long data_offset_increment = 0UL; // we will find it below
-   DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData(hdr.get_exam_info_sptr());
+   auto * dynamic_proj_data_ptr = new DynamicProjData(hdr.get_exam_info_sptr());
    if (is_null_ptr(dynamic_proj_data_ptr))
      {
        error(boost::format("DynamicProjData: error allocating memory for new object (for file \"%1%\")")
@@ -273,8 +271,8 @@ read_interfile_DPDFS(istream& input,
        info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
        shared_ptr<ExamInfo> current_exam_info_sptr(new ExamInfo(*hdr.get_exam_info_sptr()));
        std::vector<std::pair<double, double> > frame_times;
-       frame_times.push_back(std::make_pair(hdr.get_exam_info().time_frame_definitions.get_start_time(frame_num),
-					    hdr.get_exam_info().time_frame_definitions.get_end_time(frame_num)));
+       frame_times.emplace_back(hdr.get_exam_info().time_frame_definitions.get_start_time(frame_num),
+					    hdr.get_exam_info().time_frame_definitions.get_end_time(frame_num));
        TimeFrameDefinitions time_frame_defs(frame_times);
        current_exam_info_sptr->set_time_frame_definitions(time_frame_defs);
 

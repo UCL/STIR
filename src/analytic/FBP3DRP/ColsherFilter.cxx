@@ -45,7 +45,7 @@
 #include <fstream>
 #endif
 
-#include <math.h>
+#include <cmath>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
@@ -146,7 +146,7 @@ set_up(int target_height, int target_width, float theta,
 
   // KT&Darren Hogg 03/07/2001 inserted correct scale factor 
   // TODO this assumes current value for the magic_number in backprojector
-  const float scale_factor = static_cast<float>(4*_PI*d_a);
+  const auto scale_factor = static_cast<float>(4*_PI*d_a);
  
   for (int j = 0; j <=  height/2; ++j) 
     {

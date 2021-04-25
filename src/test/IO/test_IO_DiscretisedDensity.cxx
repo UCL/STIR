@@ -77,9 +77,9 @@ public:
 
 protected:
 
-    void create_image();
-    void read_image();
-    void check_result();
+    void create_image() override;
+    void read_image() override;
+    void check_result() override;
 };
 
 void IOTests_DiscretisedDensity::create_image()
@@ -105,8 +105,8 @@ void IOTests_DiscretisedDensity::read_image()
 void IOTests_DiscretisedDensity::check_result()
 {
     // Cast the discretised density to voxels on cartesian grids to check grid spacing
-    VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_write_sptr.get());
-    VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_read_sptr.get());
+    auto *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_write_sptr.get());
+    auto *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_read_sptr.get());
 
     compare_images(*image_to_write_ptr, *image_to_read_ptr);
 

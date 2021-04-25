@@ -83,7 +83,7 @@ void linear_regression_compute_fit_from_S(Value& constant, Value& scale,
     }
   if (use_estimated_variance==true)
   {
-    const Value estimated_variance = 
+    const auto estimated_variance = 
       static_cast<Value>(chi_square/(data_size - 2));
     variance_of_scale *=estimated_variance;
     variance_of_constant *=estimated_variance;

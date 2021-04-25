@@ -58,18 +58,18 @@ public:
     const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr);
 	 
 	 
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
 
-   virtual void set_up(		 
+   void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
 
-  virtual void actual_back_project(DiscretisedDensity<3,float>& image,
+  void actual_back_project(DiscretisedDensity<3,float>& image,
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
-		                   const int min_tangential_pos_num, const int max_tangential_pos_num);
+		                   const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
 
   shared_ptr<ProjMatrixByBin> &
@@ -80,8 +80,8 @@ public:
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
 private:
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 };
 
 

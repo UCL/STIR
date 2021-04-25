@@ -40,12 +40,12 @@
 #include <sstream>
 #endif
 
-#include "stir/round.h"
-#include "stir/numerics/norm.h"
-#include "stir/warning.h"
 #include "stir/info.h"
+#include "stir/numerics/norm.h"
+#include "stir/round.h"
+#include "stir/warning.h"
 #include <boost/format.hpp>
-#include <math.h>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACES
 using std::min_element;
@@ -63,7 +63,7 @@ START_NAMESPACE_STIR
 
 ProjDataInfoCylindrical::
 ProjDataInfoCylindrical()
-{}
+= default;
 
 
 ProjDataInfoCylindrical::
@@ -93,7 +93,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
         else
           {
             const int view_mashing = get_view_mashing_factor();
-            const float offset_inc =  static_cast<float>(_PI/(num_detectors_per_ring/2) * (view_mashing-1)/2.F);
+            const auto offset_inc =  static_cast<float>(_PI/(num_detectors_per_ring/2) * (view_mashing-1)/2.F);
             info(boost::format("Detected view-mashing factor %1% from the number of views (%2%) and the number of detectors per ring (%3%).\n"
                                "Adjusting the azimuthal angle offset accordingly (an extra offset of %4% degrees)")
                  % view_mashing % num_views % num_detectors_per_ring % (offset_inc * 180 / _PI));
@@ -320,7 +320,7 @@ blindly_equals(const root_type * const that) const
   if (!base_type::blindly_equals(that))
     return false;
 
-  const self_type& proj_data_info = static_cast<const self_type&>(*that);
+  const auto& proj_data_info = static_cast<const self_type&>(*that);
   const Array<1,float> tmp(this->ring_radius - proj_data_info.ring_radius);
   return
     fabs(this->azimuthal_angle_sampling - proj_data_info.azimuthal_angle_sampling) < 0.05F &&

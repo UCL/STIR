@@ -46,7 +46,7 @@ class modellingTests : public RunTests
 public:
   explicit modellingTests(const std::string& directory);
 
-  void run_tests();
+  void run_tests() override;
 private:
   //istream& in;
   std::string directory;

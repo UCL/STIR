@@ -50,8 +50,8 @@ namespace BSpline {
   {
   public:
     BSplinesRegularGrid_Tests() 
-    {}
-    void run_tests();
+    = default;
+    void run_tests() override;
   private:  
     template <class elemT>
     bool check_at_sample_points(const Array<2,elemT>& v,
@@ -152,7 +152,7 @@ namespace BSpline {
                         const BasicCoordinate<num_dimensions,pos_type>& p,
                         const char * const message)
     {   
-      const elemT epsilon = static_cast<elemT>(1.E-4);
+      const auto epsilon = static_cast<elemT>(1.E-4);
       BasicCoordinate<num_dimensions,elemT> gradient =
         interpolator.gradient(p);
       const elemT value =

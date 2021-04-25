@@ -77,9 +77,9 @@ public:
   void compute();
 private:
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   std::string input_filename;
   std::string output_filename_prefix;
   std::string frame_definition_filename;
@@ -156,7 +156,7 @@ LmFansums::
 LmFansums(const char * const par_filename)
 {
   set_defaults();
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     parse(par_filename) ;
   else
     ask_parameters();
@@ -225,7 +225,7 @@ compute()
         else if (record.is_event() && frame_defs.get_start_time(current_frame_num) <= current_time)
 	  {
             // do a consistency check with dynamic_cast first
-            if (first_event && dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event()) == 0)
+            if (first_event && dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event()) == nullptr)
               error("Currently only works for scanners with discrete detectors.");
             first_event=false;
 
@@ -318,7 +318,7 @@ int main(int argc, char * argv[])
     cerr << "Usage: " << argv[0] << " [par_file]\n";
     exit(EXIT_FAILURE);
   }
-  LmFansums lm_fansums(argc==2 ? argv[1] : 0);
+  LmFansums lm_fansums(argc==2 ? argv[1] : nullptr);
   lm_fansums.compute();
 
   return EXIT_SUCCESS;

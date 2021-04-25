@@ -132,10 +132,10 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
 
   // check if data are according to what we can handle
 
-  const VoxelsOnCartesianGrid<float> * vox_image_info_ptr =
+  const auto * vox_image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (image_info_ptr.get());
 
-  if (vox_image_info_ptr == NULL)
+  if (vox_image_info_ptr == nullptr)
     error("ForwardProjectorByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
 
   const CartesianCoordinate3D<float> voxel_size = vox_image_info_ptr->get_voxel_size();
@@ -194,7 +194,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 {
   // this will throw an exception when the cast does not work
-  const VoxelsOnCartesianGrid<float>& image = 
+  const auto& image = 
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
   const int num_views = viewgrams.get_proj_data_info_sptr()->get_num_views();

@@ -42,8 +42,8 @@ class integrate_discrete_functionTests : public RunTests
 {
 public:
   integrate_discrete_functionTests() 
-  {}
-  void run_tests();
+  = default;
+  void run_tests() override;
 };
 
 

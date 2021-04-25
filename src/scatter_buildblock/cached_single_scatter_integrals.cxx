@@ -92,7 +92,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
   float * location_in_cache = 
     this->use_cache
     ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num]
-    : 0;
+    : nullptr;
 
   /* OPENMP note:
      We use atomic read/write to get at the cache. This should ensure validity.
@@ -150,7 +150,7 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
   float * location_in_cache = 
     this->use_cache
     ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num]
-    : 0;
+    : nullptr;
 
   float value;
 #if defined(STIR_OPENMP)

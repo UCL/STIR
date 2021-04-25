@@ -55,7 +55,7 @@ PatlakPlot::PatlakPlot()
 }
 
 PatlakPlot::~PatlakPlot()   //!< default destructor
-{ }
+= default;
 
  //! Simply get model matrix if it has been already stored
 ModelMatrix<2>
@@ -69,7 +69,7 @@ get_model_matrix() const
 }
 
 //! Simply set model matrix 
-void PatlakPlot::set_model_matrix(ModelMatrix<2> model_matrix)
+void PatlakPlot::set_model_matrix(const ModelMatrix<2>& model_matrix)
 {
   this->_model_matrix=model_matrix;
   this->_matrix_is_stored=true;
@@ -96,7 +96,7 @@ create_model_matrix()
       IndexRange<2> data_range(min_range,max_range);
       Array<2,float> patlak_array(data_range);
       VectorWithOffset<float> time_vector(min_range[2],max_range[2]);
-      PlasmaData::const_iterator cur_iter=this->_plasma_frame_data.begin();
+      auto cur_iter=this->_plasma_frame_data.begin();
 
       double sum_value=0.;
       unsigned int sample_num;

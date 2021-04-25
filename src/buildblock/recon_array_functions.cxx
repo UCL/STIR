@@ -132,7 +132,7 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
 		  const bool strictly_less_than_radius)
 {      
   // TODO the 'rim_truncate' part of this function does not make a lot of sense in general
-  DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
+  auto& input_image_cartesian =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
 
   if (!input_image_cartesian.is_regular())
@@ -152,7 +152,7 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
   const int ym=(ys+ye)/2;
   const int xm=(xs+xe)/2;
   
-  const float truncated_radius = 
+  const auto truncated_radius = 
     static_cast<float>((xe-xs)/2 - rim_truncation_image);
    
 
@@ -254,13 +254,13 @@ void divide_and_truncate(Viewgram<float>& numerator,
 		{
 		  // cancel singularity
 		  count++;
-		  if (log_likelihood_ptr != NULL) 
+		  if (log_likelihood_ptr != nullptr) 
 		    sub_result -= double(num*log(num/max_quotient));
 		  num = max_quotient;
 		}
 	      else
 		{
-		  if (log_likelihood_ptr != NULL) 
+		  if (log_likelihood_ptr != nullptr) 
 		    sub_result -= double(num*log(denom));
 		  num = num/denom;
 		}
@@ -268,10 +268,10 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	}
 #endif
     }
-    if (log_likelihood_ptr != NULL) 
+    if (log_likelihood_ptr != nullptr) 
       result += sub_result;
   }
-  if (log_likelihood_ptr != NULL) 
+  if (log_likelihood_ptr != nullptr) 
     *log_likelihood_ptr += result;
 
 }
@@ -284,8 +284,8 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
 {
   assert(numerator.get_num_viewgrams() == denominator.get_num_viewgrams());
   assert(*(numerator.get_proj_data_info_sptr()) == (*denominator.get_proj_data_info_sptr()));
-  RelatedViewgrams<float>::iterator numerator_iter = numerator.begin();
-  RelatedViewgrams<float>::const_iterator denominator_iter = denominator.begin();
+  auto numerator_iter = numerator.begin();
+  auto denominator_iter = denominator.begin();
   while(numerator_iter!=numerator.end())
   {
    divide_and_truncate(*numerator_iter,

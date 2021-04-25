@@ -140,7 +140,7 @@ public:
 
     // Set functions
     //! Set the input projdata.
-    inline void set_input_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_input_proj_data_sptr(const shared_ptr<ProjData>&);
     //! Set the input projdata
     /*! Using same name as Reconstruction */
 #if STIR_VERSION < 050000
@@ -151,24 +151,24 @@ public:
     shared_ptr<const ProjData> get_input_data() const;
 
     //! Set the reconstruction method for the scatter estimation
-    inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
+    inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >&);
     //! Set the full resolution attenuation image.
-    inline void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float > > );
+    inline void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float > >& );
     //! set projection data that contains the attenuation correction factors
-    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
+    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>&);
     //! set normalisation object (excluding attenuation)
-    void set_normalisation_sptr(const shared_ptr<BinNormalisation>);
+    void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
     //!
-    inline void set_background_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_background_proj_data_sptr(const shared_ptr<ProjData>&);
     //!
-    inline void set_initial_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
+    inline void set_initial_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >&);
 
-    inline void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float> >);
+    inline void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float> >&);
     //! set mask for tail-fitting
     /*! \c arg will not be modified */
-    inline void set_mask_proj_data_sptr(const shared_ptr<ProjData> arg);
+    inline void set_mask_proj_data_sptr(const shared_ptr<ProjData>& arg);
 
-    inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
+    inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>&);
 
     inline void set_num_iterations(int);
 
@@ -197,9 +197,9 @@ public:
 
  protected:
     //! All recomputes_** will default true
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
     //! Recompute or load the mask image.
     bool recompute_mask_image;
@@ -300,7 +300,7 @@ private:
     shared_ptr < const DiscretisedDensity < 3, float >  > mask_image_sptr;
 
     //! \brief set_up iterative reconstruction
-    Succeeded set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > arg);
+    Succeeded set_up_iterative(const shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > >& arg);
 
     //! \brief set_up analytic reconstruction
     Succeeded set_up_analytic();
@@ -340,8 +340,8 @@ private:
     //! Returns a shared pointer to a new ProjData. If we run in run_debug_mode and
     //! the extras_path has been set, then it will be a ProjDataInterfile, otherwise it will be a ProjDataInMemory.
     shared_ptr<ProjData> create_new_proj_data(const std::string& filename,
-					      const shared_ptr<const ExamInfo> exam_info_sptr,
-					      const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const;
+					      const shared_ptr<const ExamInfo>& exam_info_sptr,
+					      const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) const;
 
     //! \details Average the two first activity images 0 and 1 (defaults to \c true)
     bool do_average_at_2;

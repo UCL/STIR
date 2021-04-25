@@ -40,7 +40,7 @@ class KineticParameters:public BasicCoordinate<num_param,elemT>
   typedef BasicCoordinate<num_param,elemT>  base_type;
  public:
   KineticParameters()
-    {}
+    = default;
 
   KineticParameters(const base_type& c)
     : base_type(c)

@@ -37,14 +37,14 @@ template <typename Derived, typename Base, typename Parent>
 Base*
 RegisteredParsingObject<Derived,Base,Parent>::read_from_stream(std::istream* in)
 {
-  Derived * der_ptr = new Derived;
-  if (in != NULL)
+  auto * der_ptr = new Derived;
+  if (in != nullptr)
   {
     if(der_ptr->parse(*in)==false)
     {
       //parsing failed, return 0 pointer
       delete der_ptr;
-      return 0;
+      return nullptr;
     }
   }
   else

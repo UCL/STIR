@@ -28,7 +28,7 @@ START_NAMESPACE_STIR
 template <typename coordT>
 DetectionPositionPair<coordT>::
 DetectionPositionPair()
-{}
+= default;
 
 template <typename coordT>
 DetectionPositionPair<coordT>::

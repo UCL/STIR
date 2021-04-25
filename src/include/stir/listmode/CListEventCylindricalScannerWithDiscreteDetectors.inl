@@ -91,7 +91,7 @@ bool
 CListEventCylindricalScannerWithDiscreteDetectors::
 is_valid_template(const ProjDataInfo& proj_data_info) const
 {
-	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= nullptr)
 		return true;
 
 	return false;

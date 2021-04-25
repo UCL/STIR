@@ -71,8 +71,8 @@ public:
   inline bool operator!=(const ViewSegmentNumbers& other) const;
 
 private:
-  int segment;
-  int view;
+  int segment{0};
+  int view{0};
 
 };
 

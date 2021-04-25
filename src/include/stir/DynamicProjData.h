@@ -48,7 +48,7 @@ public:
   unique_ptr<DynamicProjData>
     read_from_file(const std::string& filename);
 
-  DynamicProjData() {}
+  DynamicProjData() = default;
 
   DynamicProjData(const MultipleProjData& m):
     MultipleProjData(m)

@@ -38,7 +38,7 @@ Timer::Timer()
 }
 
 Timer::~Timer()
-{}
+= default;
 
 void Timer::start() 
 { 

@@ -56,10 +56,10 @@
 // for open_read/write_binary
 #include "stir/utilities.h"
 
-#include <stdio.h>
+#include <boost/format.hpp>
+#include <cstdio>
 #include <fstream>
 #include <sstream>
-#include <boost/format.hpp>
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::ifstream;
@@ -145,7 +145,7 @@ private:
 
     {
       open_write_binary(os, "output.flt");
-      const Array<num_dimensions, elemT> copy=t1;
+      const Array<num_dimensions, elemT>& copy=t1;
       check(write_data(os,t1,ByteOrder::swapped)==Succeeded::yes, "write_data could not write array with swapped byte order");
       check_if_equal(t1  ,copy, "test out with byte-swapping didn't change the array" );
       close_file(os);
@@ -171,7 +171,7 @@ private:
        for ostream to be able to write again, but that's not defined for FILE*.
     */
     {
-      const Array<num_dimensions, elemT> copy=t1;
+      const Array<num_dimensions, elemT>& copy=t1;
       cerr << "\n\tYou should now see a warning that writing failed. That's by intention.\n";
       check(write_data(os,t1,ByteOrder::swapped)!=Succeeded::yes, "write_data with swapped byte order should have failed");
       check_if_equal(t1  ,copy, "test out with byte-swapping didn't change the array even with failed IO" );
@@ -213,7 +213,7 @@ private:
 
           // compare with convert()
           {
-            float newscale = static_cast<float>(scale);
+            auto newscale = static_cast<float>(scale);
             Array<num_dimensions,output_type> origconverted = 
               convert_array(newscale, orig, NumericInfo<output_type>());
             check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
@@ -282,7 +282,7 @@ private:
   }
 
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 
@@ -457,10 +457,10 @@ ArrayTests::run_tests()
 
       {
         // copy constructor;
-        Array<2,float> t21(t2);
+        const Array<2,float>& t21(t2);
         check_if_equal(t21  , t2, "test Array2D copy constructor" );
         // 'assignment constructor' (this simply calls copy constructor)
-        Array<2,float> t22 = t2;
+        const Array<2,float>& t22 = t2;
         check_if_equal(t22  , t2, "test Array2D copy constructor" );
       }
     }
@@ -657,7 +657,7 @@ ArrayTests::run_tests()
     check_if_equal(test4.get_index_range(), larger_range, "test Array4D grow index range");
     check_if_equal(test4.sum(), 131.9F , "test Array4D grow sum");
     {
-      const Array<4,float> test41 = test4;
+      const Array<4,float>& test41 = test4;
       check_if_equal(test4  , test41, "test Array4D copy constructor" );
       check_if_equal( test41[-3][1][2][1] , 6.6F, "test on indexing after grow");
     }

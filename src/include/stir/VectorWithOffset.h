@@ -73,7 +73,7 @@ class VectorWithOffset_iter
   template <class OtherelemT>
     VectorWithOffset_iter(
 			  VectorWithOffset_iter<OtherelemT> const& other,
-			  typename boost::enable_if_convertible<OtherelemT, elemT>::type* = 0)
+			  typename boost::enable_if_convertible<OtherelemT, elemT>::type* = nullptr)
     : VectorWithOffset_iter::iterator_adaptor_(other.base()) {}
 };
 
@@ -403,7 +403,7 @@ private:
   mutable
 #endif
   bool pointer_access;
-  bool _owns_memory_for_data;
+  bool _owns_memory_for_data{true};
 };
 
 END_NAMESPACE_STIR

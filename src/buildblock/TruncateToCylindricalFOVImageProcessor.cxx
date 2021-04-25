@@ -65,7 +65,7 @@ TruncateToCylindricalFOVImageProcessor<elemT>::
 virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 {
-  if (dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,elemT> *>(&density) == 0)
+  if (dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,elemT> *>(&density) == nullptr)
     return Succeeded::no;
   else
     return Succeeded::yes;

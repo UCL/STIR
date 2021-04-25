@@ -157,13 +157,12 @@ public:
   template < typename iterT>
   iterT copy_to(iterT array_iter) const
   {
-    for ( std::vector<shared_ptr<ProjData> >::const_iterator it = _proj_datas.begin();
-            it != _proj_datas.end(); ++it)
+    for (const auto & _proj_data : _proj_datas)
       {
-          if ( is_null_ptr( *(it)))
+          if ( is_null_ptr( _proj_data))
               error("Dynamic/gated ProjData have not been properly allocated. Abort.");
 
-          array_iter = stir::copy_to(*(*it), array_iter);
+          array_iter = stir::copy_to(*_proj_data, array_iter);
       }
       return array_iter;
   }
@@ -177,13 +176,12 @@ public:
   template <typename iterT>
   void fill_from(iterT array_iter)
   {
-      for (std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
-           it != _proj_datas.end(); ++it)
+      for (auto & _proj_data : _proj_datas)
       {
-          if ( is_null_ptr( *(it)))
+          if ( is_null_ptr( _proj_data))
               error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          array_iter = (*it)->fill_from(array_iter);
+          array_iter = _proj_data->fill_from(array_iter);
       }
   }
 

@@ -90,7 +90,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
 {       
 
 
-  const VoxelsOnCartesianGrid<float>& image =
+  const auto& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>& >
     (density);
   
@@ -116,7 +116,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
   lor.sort();
   float sum = 0;  // add up values along LOR
   {     
-    ProjMatrixElemsForOneBin::iterator element_ptr =lor.begin() ;
+    auto element_ptr =lor.begin() ;
     bool we_have_been_within_the_image = false;
     while (element_ptr != lor.end())
       {

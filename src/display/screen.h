@@ -130,28 +130,28 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
 #define SC_RECT(x,y)    ( SC__filled ? \
                           XFillRectangle(SCX_display, SCX_window, SCX_gc,\
                                 (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
-                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
+                                (unsigned int)abs((x)-SC__curPointX), (unsigned int)abs((y)-SC__curPointY))\
                         : XDrawRectangle(SCX_display, SCX_window, SCX_gc,\
                                 (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
-                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
+                                (unsigned int)abs((x)-SC__curPointX), (unsigned int)abs((y)-SC__curPointY))\
                         )
 #define SC_RECTR(x,y)   ( SC__filled ? \
                           XFillRectangle(SCX_display, SCX_window, SCX_gc,\
-                                (x<0 ? SC__curPointX + x : SC__curPointX),\
-                                (y<0 ? SC__curPointY + y : SC__curPointY),\
+                                ((x)<0 ? SC__curPointX + (x) : SC__curPointX),\
+                                ((y)<0 ? SC__curPointY + (y) : SC__curPointY),\
                                 abs(x), abs(y))\
                         : XDrawRectangle(SCX_display, SCX_window, SCX_gc,\
-                                (x<0 ? SC__curPointX + x : SC__curPointX),\
-                                (y<0 ? SC__curPointY + y : SC__curPointY),\
+                                ((x)<0 ? SC__curPointX + (x) : SC__curPointX),\
+                                ((y)<0 ? SC__curPointY + (y) : SC__curPointY),\
                                 abs(x), abs(y))\
                         )
 #define SC_ELLIPSE(x,y)  ( SC__filled ? \
                           XFillArc(SCX_display, SCX_window,SCX_gc, \
-                                SC__curPointX-x,SC__curPointY-y,\
-                                2*x, 2*y, 0, 360*64)\
+                                SC__curPointX-(x),SC__curPointY-(y),\
+                                2*(x), 2*(y), 0, 360*64)\
                         : XDrawArc(SCX_display, SCX_window,SCX_gc, \
-                                SC__curPointX-x,SC__curPointY-y,\
-                                2*x, 2*y, 0, 360*64)\
+                                SC__curPointX-(x),SC__curPointY-(y),\
+                                2*(x), 2*(y), 0, 360*64)\
                         )
 #define SC_CIRCLE(x)    SC_ELLIPSE(x,x)
 #define SC_TEXT(str)    XDrawString(SCX_display, SCX_window,SCX_gc, \
@@ -160,7 +160,7 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
   /* KT 28/11/2002 only enable mask when the visual is PseudoColor */
 #define SC_MASK(par)    if (SCX_get_class(SCX_visual_info)==PseudoColor) \
                             XSetPlaneMask(SCX_display, SCX_gc, \
-                                (unsigned long)par)
+                                (unsigned long)(par))
 #define SC_LINFUN(par)  XSetFunction(SCX_display, SCX_gc, par)
 #define SC_LUTX(par,R,G,B)
 #define SC_CLEARS(par)

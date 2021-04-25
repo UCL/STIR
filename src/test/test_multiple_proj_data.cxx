@@ -61,7 +61,7 @@ START_NAMESPACE_STIR
 class MultipleProjDataTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
   void set_multi_file(const std::string &multi_file) { _multi_file = multi_file; }
 private:
   std::string _multi_file;

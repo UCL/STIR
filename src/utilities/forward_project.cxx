@@ -47,13 +47,13 @@
   \endverbatim
 */
 
-#include "stir/ProjDataInterfile.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include <cstdlib>
 #include <iostream>
-#include <stdlib.h>
 
 static void print_usage_and_exit()
 {

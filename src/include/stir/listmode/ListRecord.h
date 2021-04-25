@@ -54,7 +54,7 @@ class ListRecord
 {
 public:
 
-    virtual ~ListRecord(){}
+    virtual ~ListRecord()= default;
 
   virtual bool is_time() const = 0;
 

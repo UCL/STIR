@@ -81,7 +81,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
   ProjMatrixElemsForOneBin proj_matrix_row;
   
   
-  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
+  auto r_viewgrams_iter = viewgrams.begin();
 
   
   while( r_viewgrams_iter!=viewgrams.end())
@@ -96,7 +96,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 
 	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
 	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
-	ProjMatrixElemsForOneBin::iterator element_ptr = 
+	auto element_ptr = 
 	  proj_matrix_row.begin();
 
 	// square matrix elements

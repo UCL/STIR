@@ -38,7 +38,7 @@ namespace BSpline
   public:
     typedef posT result_type;
 
-    virtual ~PieceWiseFunction() {}
+    virtual ~PieceWiseFunction() = default;
 
     virtual posT kernel_length_left() const = 0;
     virtual int kernel_total_length() const = 0;
@@ -76,11 +76,11 @@ namespace BSpline
   class BSplineFunction<near_n, posT>: public PieceWiseFunction<posT>
   {
   public:
-    BSplineFunction() {}
-    posT kernel_length_left() const { return static_cast<posT>(.5); }
+    BSplineFunction() = default;
+    posT kernel_length_left() const override { return static_cast<posT>(.5); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=1);
-    int kernel_total_length() const  { return kernel_total_length_value; }
-    posT function_piece(const posT x, int p) const
+    int kernel_total_length() const override  { return kernel_total_length_value; }
+    posT function_piece(const posT x, int p) const override
     {
       switch (p)
         {
@@ -91,7 +91,7 @@ namespace BSpline
           return 0;
         }
     }
-    posT derivative_piece(const posT, int ) const
+    posT derivative_piece(const posT, int ) const override
     {
       return 0;
     }
@@ -100,7 +100,7 @@ namespace BSpline
     {
       return static_cast<int>(absx+.5);
     }
-    int find_piece(const posT x) const
+    int find_piece(const posT x) const override
     {
       const int abs_p = this->find_abs_piece(fabs(x));
       if (x>0)
@@ -108,7 +108,7 @@ namespace BSpline
       else
         return -abs_p;
     }
-    int find_highest_piece() const
+    int find_highest_piece() const override
     {
       return 0;
     }
@@ -118,11 +118,11 @@ namespace BSpline
   class BSplineFunction<linear, posT>: public PieceWiseFunction<posT>
   {
   public:
-    BSplineFunction() {}
-    posT kernel_length_left() const { return static_cast<posT>(1); }
+    BSplineFunction() = default;
+    posT kernel_length_left() const override { return static_cast<posT>(1); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=2);
-    int kernel_total_length() const  { return kernel_total_length_value; }
-    posT function_piece(const posT x, int p) const
+    int kernel_total_length() const override  { return kernel_total_length_value; }
+    posT function_piece(const posT x, int p) const override
     {
       switch (p)
         {
@@ -134,7 +134,7 @@ namespace BSpline
           return 0;
         }
     }
-    posT derivative_piece(const posT x, int p) const
+    posT derivative_piece(const posT x, int p) const override
     {
       switch (p)
         {
@@ -146,12 +146,12 @@ namespace BSpline
           return 0;
         }
     }
-    int find_piece(const posT x) const
+    int find_piece(const posT x) const override
     {
       return static_cast<int>(floor(x));
     }
 
-    int find_highest_piece() const
+    int find_highest_piece() const override
     {
       return 0;
     }
@@ -161,11 +161,11 @@ namespace BSpline
   class BSplineFunction<quadratic, posT>: public PieceWiseFunction<posT>
   {
   public:
-    BSplineFunction() {}
-    posT kernel_length_left() const { return static_cast<posT>(1.5); }
+    BSplineFunction() = default;
+    posT kernel_length_left() const override { return static_cast<posT>(1.5); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=3);
-    int kernel_total_length() const  { return kernel_total_length_value; }
-    posT function_piece(const posT x, int p) const
+    int kernel_total_length() const override  { return kernel_total_length_value; }
+    posT function_piece(const posT x, int p) const override
     {
       switch (std::abs(p))
         {
@@ -180,7 +180,7 @@ namespace BSpline
           return 0;
         }
     }
-    posT derivative_piece(const posT x, int p) const
+    posT derivative_piece(const posT x, int p) const override
     {
       switch (std::abs(p))
         {
@@ -212,7 +212,7 @@ namespace BSpline
 
     }
   public:
-    int find_piece(const posT x) const
+    int find_piece(const posT x) const override
     {
       const int abs_p = this->find_abs_piece(fabs(x));
       if (x>0)
@@ -220,7 +220,7 @@ namespace BSpline
       else
         return -abs_p;
     }
-    int find_highest_piece() const
+    int find_highest_piece() const override
     {
       return 1;
     }
@@ -246,11 +246,11 @@ namespace BSpline
   class BSplineFunction<cubic, posT>: public PieceWiseFunction<posT>
   {
   public:
-    BSplineFunction() {}
-    posT kernel_length_left() const { return static_cast<posT>(2); }
+    BSplineFunction() = default;
+    posT kernel_length_left() const override { return static_cast<posT>(2); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
-    int kernel_total_length() const  { return kernel_total_length_value; }
-    posT function_piece(const posT x, int p) const
+    int kernel_total_length() const override  { return kernel_total_length_value; }
+    posT function_piece(const posT x, int p) const override
     {
       const posT absx = std::fabs(x);
       switch (p)
@@ -268,7 +268,7 @@ namespace BSpline
           return 0;
         }
     }
-    posT derivative_piece(const posT x, int p) const
+    posT derivative_piece(const posT x, int p) const override
     {
       switch (p)
         {
@@ -284,11 +284,11 @@ namespace BSpline
           return 0;
         }
     }
-    int find_piece(const posT x) const
+    int find_piece(const posT x) const override
     {
       return static_cast<int>(floor(x));
     }
-    int find_highest_piece() const
+    int find_highest_piece() const override
     {
       return 1;
     }
@@ -299,11 +299,11 @@ namespace BSpline
   class BSplineFunction<oMoms, posT>: public PieceWiseFunction<posT>
   {
   public: 
-    BSplineFunction() {}
-    posT kernel_length_left() const { return static_cast<posT>(2); }
+    BSplineFunction() = default;
+    posT kernel_length_left() const override { return static_cast<posT>(2); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
-    int kernel_total_length() const  { return kernel_total_length_value; }
-    posT function_piece(const posT x, int p) const
+    int kernel_total_length() const override  { return kernel_total_length_value; }
+    posT function_piece(const posT x, int p) const override
     {
       const posT absx = std::fabs(x);
       switch (p)
@@ -318,7 +318,7 @@ namespace BSpline
           return 0;
         }
     }
-    posT derivative_piece(const posT x, int p) const
+    posT derivative_piece(const posT x, int p) const override
     {
       const posT absx = std::fabs(x);
       const int sign=x>0?1:-1;
@@ -334,11 +334,11 @@ namespace BSpline
           return 0;
         }
     }
-    int find_piece(const posT x) const
+    int find_piece(const posT x) const override
     {
       return static_cast<int>(floor(x));
     }
-    int find_highest_piece() const
+    int find_highest_piece() const override
     {
       return 1;
     }

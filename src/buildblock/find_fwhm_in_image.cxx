@@ -75,7 +75,7 @@ find_fwhm_in_image(DiscretisedDensity<3,elemT> & input_image,
  
   const DiscretisedDensityOnCartesianGrid <3,float>* input_image_cartesian_ptr =
     dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*> (&input_image);
-  if (input_image_cartesian_ptr == 0)
+  if (input_image_cartesian_ptr == nullptr)
     {
       error("find_fwhm_in_image currently only works with DiscretisedDensityOnCartesianGrid images");
     }

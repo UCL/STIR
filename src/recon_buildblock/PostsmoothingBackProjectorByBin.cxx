@@ -84,7 +84,7 @@ PostsmoothingBackProjectorByBin(
 
 PostsmoothingBackProjectorByBin::
 ~PostsmoothingBackProjectorByBin()
-{}
+= default;
 
 void
 PostsmoothingBackProjectorByBin::

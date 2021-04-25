@@ -72,7 +72,7 @@ set_directions_from_Euler_angles(
 
 
 Shape3DWithOrientation::Shape3DWithOrientation()
-{}
+= default;
 
 
 Shape3DWithOrientation::Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,

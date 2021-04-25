@@ -270,7 +270,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
   
   this->check(current_image_estimate);
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
   if (this->weights.get_length() ==0)
@@ -350,7 +350,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   this->check(current_image_estimate);
   
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
   if (this->weights.get_length() ==0)

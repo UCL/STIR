@@ -127,7 +127,7 @@ read_from_files(const string& filename) // The written image is read in respect 
 {
   const string gdef_filename=filename+".gdef";
   std::cout << "GatedDiscretisedDensity: Reading gate definitions " << gdef_filename.c_str() << std::endl;
-  GatedDiscretisedDensity * gated_image_ptr = 0;
+  GatedDiscretisedDensity * gated_image_ptr = nullptr;
   gated_image_ptr = new GatedDiscretisedDensity;
   gated_image_ptr->_time_gate_definitions.read_gdef_file(gdef_filename);
   gated_image_ptr->_densities.resize(gated_image_ptr->_time_gate_definitions.get_num_gates());
@@ -149,7 +149,7 @@ read_from_files(const string& filename,const string& suffix) // The written imag
 {
   const string gdef_filename=filename+".gdef";
   std::cout << "GatedDiscretisedDensity: Reading gate definitions " << gdef_filename.c_str() << std::endl;
-  GatedDiscretisedDensity * gated_image_ptr = 0;
+  GatedDiscretisedDensity * gated_image_ptr = nullptr;
   gated_image_ptr = new GatedDiscretisedDensity;
   gated_image_ptr->_time_gate_definitions.read_gdef_file(gdef_filename);
   gated_image_ptr->_densities.resize(gated_image_ptr->_time_gate_definitions.get_num_gates());

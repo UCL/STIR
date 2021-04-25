@@ -63,7 +63,7 @@ LmToProjDataWithRandomRejection<LmToProjDataT>::
 LmToProjDataWithRandomRejection(const char * const par_filename)
 {
   set_defaults();
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     this->parse(par_filename) ;
   else
     this->ask_parameters();
@@ -75,7 +75,7 @@ LmToProjDataWithRandomRejection(const char * const par_filename, const unsigned 
 {
   set_defaults();
   seed = seed_v;
-  if (par_filename!=0)
+  if (par_filename!=nullptr)
     {
       this->parse(par_filename);
       // make sure that seed_v parameter overrides whatever was in the par file

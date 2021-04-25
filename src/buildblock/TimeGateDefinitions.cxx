@@ -71,7 +71,7 @@ get_num_time_gates() const
 
 TimeGateDefinitions::
 TimeGateDefinitions()
-{}
+= default;
 
 TimeGateDefinitions::
 TimeGateDefinitions(const string& gdef_filename)
@@ -104,7 +104,7 @@ read_gdef_file(const string& gdef_filename)
         error("TimeGateDefinitions: Reading gate_def file \"%s\":\n"
 	      "encountered negative numbers (%d, %g)\n",
 	      gdef_filename.c_str(), gate_num, duration);
-      this->_gate_sequence.push_back(make_pair(gate_num, duration));
+      this->_gate_sequence.emplace_back(gate_num, duration);
     }
   if (this->get_num_gates()==0)
     error("TimeGateDefinitions: Reading gate definitions file \"%s\":\n"

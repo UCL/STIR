@@ -44,14 +44,14 @@
   \endverbatim
 */
 
-#include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/ProjData.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/IO/OutputFileFormat.h"
+#include <cstdlib>
 #include <iostream>
-#include <stdlib.h>
 
 static void print_usage_and_exit()
 {

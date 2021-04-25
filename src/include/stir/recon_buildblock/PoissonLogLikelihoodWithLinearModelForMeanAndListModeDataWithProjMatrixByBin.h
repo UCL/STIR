@@ -75,34 +75,34 @@ public:
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
 
   //! This should compute the gradient of the objective function at the \a current_estimate overwriting \a gradient
-  virtual  
+   
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
                                          const TargetT &current_estimate,  
-                                         const int subset_num);  
-  virtual TargetT * construct_target_ptr() const;  
+                                         const int subset_num) override;  
+  TargetT * construct_target_ptr() const override;  
 
-  int set_num_subsets(const int new_num_subsets);
+  int set_num_subsets(const int new_num_subsets) override;
   
   const shared_ptr<BinNormalisation> & 
   get_normalisation_sptr() const
   { return this->normalisation_sptr; }
   
-  virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
+  unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const override;
   
 protected:
-  virtual double
+  double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num)
+                                                      const int subset_num) override
   { // TODO 
     error("compute_objective_function_without_penalty Not implemented yet");
     return 0; 
   }
 
-  virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr); 
+  Succeeded 
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) override; 
  
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
@@ -123,13 +123,13 @@ protected:
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets keys
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void initialise_keymap() override;
+  bool post_processing() override;
 
-  virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
   void
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;

@@ -80,7 +80,7 @@ Sinogram<elemT>::get_max_tangential_pos_num() const
 
 template <typename elemT>
 Sinogram<elemT>
-Sinogram<elemT>::get_empty_copy(void) const
+Sinogram<elemT>::get_empty_copy() const
 {
     Sinogram<elemT> copy(proj_data_info_ptr, get_axial_pos_num(), get_segment_num());
     return copy;

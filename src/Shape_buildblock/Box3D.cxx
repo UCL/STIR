@@ -175,10 +175,10 @@ bool
 Box3D:: 
 operator==(const Shape3D& shape) const
 {
-  Box3D const * box_ptr =
+  auto const * box_ptr =
     dynamic_cast<Box3D const *>(&shape);
   return
-    box_ptr != 0 && (*this == *box_ptr);
+    box_ptr != nullptr && (*this == *box_ptr);
 }
 
 END_NAMESPACE_STIR

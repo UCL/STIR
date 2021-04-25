@@ -275,7 +275,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     }
   //ProjDataInterfile ramp_filtered_proj_data(arc_corrected_proj_data_info_sptr,"ramp_filtered");
 
-  VoxelsOnCartesianGrid<float>& image =
+  auto& image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 
 
@@ -329,14 +329,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
             arc_correction.do_arc_correction(viewgrams);
 
         // now filter
-        for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-             viewgram_iter != viewgrams.end();
-             ++viewgram_iter)
+        for (auto & viewgram : viewgrams)
           {
 #ifdef NRFFT
             filter.apply(*viewgram_iter);
 #else
-            std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
+            std::for_each(viewgram.begin(), viewgram.end(), 
                           filter);
 #endif
           }
@@ -358,7 +356,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     (*proj_data_ptr->get_proj_data_info_sptr());
 
   float magic_number = 1.F;
-  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) != 0)
+  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) != nullptr)
     {
       // KT & Darren Hogg 17/05/2000 finally found the scale factor!
       // TODO remove magic, is a scale factor in the backprojector 

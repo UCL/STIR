@@ -49,15 +49,15 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF TH
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----*/
 
-#include <stdio.h>
-#include <iostream>
+#include <cstdio>
 #include <fstream>
+#include <iostream>
 using namespace std;
 
 #include <cstdlib>
 
-#include <math.h>
 #include "stir/IO/GIPL_ImageFormat.h"
+#include <cmath>
 
 // -------------------------------------------------------------------------
 //   Constructor
@@ -65,8 +65,8 @@ using namespace std;
 
 Image::Image()
 {
-	vData = NULL;
-	vData_f = NULL;
+	vData = nullptr;
+	vData_f = nullptr;
 
 	// Initially no downscaling
 	vDownsample[0] = 1;
@@ -87,19 +87,19 @@ Image::Image(const int num_voxels, const short data_type_case)
       vData_f = new float[this->MaxLength];
       for (int i = 0; i < this->MaxLength; i++)
 	this->vData_f[i] = 0.F;
-      vData = NULL;
+      vData = nullptr;
     }
   else if(this->m_image_type == 15)  
     {
       vData = new short[this->MaxLength];
       for (int i = 0; i < this->MaxLength; i++)
 	this->vData[i] = 0;
-      vData_f = NULL;
+      vData_f = nullptr;
     }
   else
     {
-	vData = NULL;
-	vData_f = NULL;
+	vData = nullptr;
+	vData_f = nullptr;
     }
       vDownsample[0] = 1;
       vDownsample[1] = 1;

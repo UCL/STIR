@@ -126,7 +126,7 @@ set_up()
 
 ProjDataRebinning::
 ~ProjDataRebinning()
-{}
+= default;
 
 void ProjDataRebinning::set_max_segment_num_to_process(int ns)
 { max_segment_num_to_process = ns;

@@ -163,7 +163,7 @@
 // assume everything uses IEEE floating point arithmetic
 #define _IEEE	1
 // warning: strange definition of TRUNC that will go very weird on non-IEEE machines
-#define TRUNC(x) *(((int *) &x) + 1) &= 0xf8000000
+#define TRUNC(x) *(((int *) &(x)) + 1) &= 0xf8000000
 #endif
 
 

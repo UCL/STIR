@@ -142,7 +142,7 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   const streamoff intra_views_offset = offsets[2];
   
   Viewgram<float> viewgram(proj_data_info_sptr, view_num, segment_num);
-  float scale = float(1);
+  auto scale = float(1);
   Succeeded succeeded = Succeeded::yes;
   
 #ifdef STIR_OPENMP
@@ -236,7 +236,7 @@ ProjDataFromStream::get_bin_value(const Bin& this_bin) const
     }
 
    Array< 1,  float>  value(1);
-    float scale = float(1);
+    auto scale = float(1);
 
     // Now the storage order is not more important. Just read.
     if (read_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
@@ -276,7 +276,7 @@ ProjDataFromStream::set_bin_value(const Bin& this_bin)
 
     Array< 1,  float>  value(1);
     value[0]=this_bin.get_bin_value();
-    float scale = float(1);
+    auto scale = float(1);
     // Now the storage order is not more important. Just read.
     if (write_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
             == Succeeded::no)
@@ -645,7 +645,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   const streamoff beg_ax_pos_offset = offsets[1];
   const streamoff intra_ax_pos_offset = offsets[2];
   Sinogram<float> sinogram(proj_data_info_sptr, ax_pos_num, segment_num);
-  float scale = float(1);
+  auto scale = float(1);
   Succeeded succeeded = Succeeded::yes;
 
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
@@ -869,7 +869,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
     {
       SegmentBySinogram<float> segment(proj_data_info_sptr,segment_num);
-      float scale = float(1);
+      auto scale = float(1);
       Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
 #pragma omp critical(PROJDATAFROMSTREAMIO)
@@ -917,7 +917,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
   {    
     SegmentByView<float> segment(proj_data_info_sptr,segment_num);
     streamoff segment_offset = get_offset_segment(segment_num);
-    float scale = float(1);
+    auto scale = float(1);
     Succeeded succeeded = Succeeded::yes;  
 #ifdef STIR_OPENMP
 #pragma omp critical(PROJDATAFROMSTREAMIO)

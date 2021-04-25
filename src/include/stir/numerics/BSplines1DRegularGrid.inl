@@ -33,7 +33,7 @@ namespace BSpline {
   template <typename out_elemT, typename in_elemT, typename constantsT>
   BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines1DRegularGrid()
-  { }
+  = default;
 
   template <typename out_elemT, typename in_elemT, typename constantsT>
   BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
@@ -54,7 +54,7 @@ namespace BSpline {
   template <typename out_elemT, typename in_elemT, typename constantsT>
   BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   ~BSplines1DRegularGrid()
-  {}
+  = default;
 
   template <typename out_elemT, typename in_elemT, typename constantsT>
   void
@@ -175,7 +175,7 @@ namespace BSpline {
     std::vector<pos_type> output_vector(output_relative_position_end_iterator-
 					output_relative_position_begin_iterator);	
 	
-    for(RandIterOut current_iterator=output_vector.begin(), 
+    for(auto current_iterator=output_vector.begin(), 
 	  current_relative_position_iterator=output_relative_position_begin_iterator; 
 	current_iterator!=output_vector.end() && 
 	  current_relative_position_iterator!=output_relative_position_end_iterator; 

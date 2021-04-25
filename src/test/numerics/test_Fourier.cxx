@@ -65,8 +65,8 @@ class FourierTests : public RunTests
 {
 public:
   FourierTests() 
-  {}
-  void run_tests();
+  = default;
+  void run_tests() override;
 private:
   template <int num_dimensions>
   void test_single_dimension(const IndexRange<num_dimensions>& index_range);

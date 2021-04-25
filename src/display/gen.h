@@ -123,8 +123,8 @@ extern  char getch(void);
 
 /* Macro's for using the arrowkeys. For explanation see above.
 */
-#define KB_DIRECTION(c) (c==0x1b && getch()==0x5b && \
-        (c=getch())>=0x41 && c<=0x44)
+#define KB_DIRECTION(c) ((c)==0x1b && getch()==0x5b && \
+        ((c)=getch())>=0x41 && (c)<=0x44)
 #define KB_UPARROW 0x41
 #define KB_DNARROW 0x42
 #define KB_RTARROW 0x43
@@ -138,8 +138,8 @@ extern  char getch(void);
 #undef KB_RTARROW
 #undef KB_LTARROW
 /* the next one is probably wrong */
-#define KB_DIRECTION(c) (c==0x1b && getch()==0x5b && \
-        (c=getch())>=0x41 && c<=0x44)
+#define KB_DIRECTION(c) ((c)==0x1b && getch()==0x5b && \
+        ((c)=getch())>=0x41 && (c)<=0x44)
 #define KB_UPARROW XK_Up
 #define KB_DNARROW XK_Down
 #define KB_RTARROW XK_Right

@@ -357,7 +357,7 @@ void ScatterEstimation::set_export_scatter_estimates_of_each_iteration(bool arg)
 
 void
 ScatterEstimation::
-set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
+set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>& arg)
 {
   this->_already_setup = false;
   this->atten_norm_3d_sptr.reset(new BinNormalisationFromProjData(arg));
@@ -366,7 +366,7 @@ set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
 
 void
 ScatterEstimation::
-set_normalisation_sptr(const shared_ptr<BinNormalisation> arg)
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
   this->_already_setup = false;
   this->norm_3d_sptr = arg;
@@ -565,7 +565,7 @@ set_up()
 
 Succeeded
 ScatterEstimation::
-set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > iterative_object)
+set_up_iterative(const shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > >& iterative_object)
 {
     info("ScatterEstimation: Setting up iterative reconstruction ...");
 
@@ -1086,7 +1086,7 @@ ScatterEstimation::
 reconstruct_analytic(int _current_iter_num,
                      shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
 {
-    AnalyticReconstruction* analytic_object =
+    auto* analytic_object =
             dynamic_cast<AnalyticReconstruction* > (this->reconstruction_template_sptr.get());
     analytic_object->reconstruct(this->current_activity_image_sptr);
 
@@ -1347,7 +1347,7 @@ ScatterEstimation::create_multiplicative_binnorm_sptr()
 shared_ptr<BinNormalisation>
 ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const
 {
-    const ChainedBinNormalisation* tmp_chain_norm_sptr =
+    const auto* tmp_chain_norm_sptr =
       dynamic_cast<const ChainedBinNormalisation*>(combined_norm_sptr.get());
 
     if (!is_null_ptr(tmp_chain_norm_sptr ))
@@ -1365,7 +1365,7 @@ ScatterEstimation::get_normalisation_object_sptr(const shared_ptr<BinNormalisati
 shared_ptr<ProjData>
 ScatterEstimation::get_attenuation_correction_factors_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const
 {
-  const ChainedBinNormalisation* tmp_chain_norm_sptr =
+  const auto* tmp_chain_norm_sptr =
     dynamic_cast<const ChainedBinNormalisation*>(combined_norm_sptr.get());
   shared_ptr<BinNormalisation> atten_norm_sptr;
   if (!is_null_ptr(tmp_chain_norm_sptr ))
@@ -1383,8 +1383,8 @@ ScatterEstimation::get_attenuation_correction_factors_sptr(const shared_ptr<BinN
 }
 
 shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string& filename,
-                                                             const shared_ptr<const ExamInfo> exam_info_sptr,
-                                                             const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const
+                                                             const shared_ptr<const ExamInfo>& exam_info_sptr,
+                                                             const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) const
 {
     shared_ptr<ProjData> pd_sptr;
     if (run_debug_mode)

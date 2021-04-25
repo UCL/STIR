@@ -70,7 +70,7 @@ START_NAMESPACE_STIR
 class ROITests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   //! Run a series of tests for a shape
   /*!
@@ -95,7 +95,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
 {
     shape.construct_volume(image, Coordinate3D<int>(1,1,1));
 
-    if (dynamic_cast<DiscretisedShape3D const *>(&shape) != 0)
+    if (dynamic_cast<DiscretisedShape3D const *>(&shape) != nullptr)
     {
 #ifdef test_ROIs_DISPLAY
       shared_ptr<DiscretisedDensity<3,float> > copy_sptr =
@@ -182,7 +182,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       check_if_equal(ROI_values.get_min(), ROI_values2.get_min(), "ROI min after translation shape vs. image");
     }
     // test on scaling (test only works if all scale factors < 1)
-    if (dynamic_cast<DiscretisedShape3D const *>(&shape) == 0)
+    if (dynamic_cast<DiscretisedShape3D const *>(&shape) == nullptr)
     {
       const float volume_before_scale = shape.get_geometric_volume();
       const CartesianCoordinate3D<float> scale(.5F,.9F,.8F);
@@ -219,7 +219,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
     }
 
     // test on setting direction vectors (test only works if new shape is smaller than original)
-    if (dynamic_cast<Shape3DWithOrientation const *>(&shape) != 0)
+    if (dynamic_cast<Shape3DWithOrientation const *>(&shape) != nullptr)
     {
       const float volume_before_scale = shape.get_geometric_volume();
       // rotate over 45 degrees around 1 and scale
@@ -264,7 +264,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
 #endif
     }
     // test on parsing
-    if (dynamic_cast<DiscretisedShape3D const *>(&shape) == 0)
+    if (dynamic_cast<DiscretisedShape3D const *>(&shape) == nullptr)
     {
       shared_ptr<Shape3D> shape_sptr(shape.clone());
       KeyParser parser;

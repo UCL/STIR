@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 
 template <class Root>
 RegisteredObject<Root>::RegisteredObject()
-{}
+= default;
 
 
 #ifndef __STIR_REGISTRY_NOT_INLINE
@@ -52,7 +52,7 @@ Root*
 RegisteredObject<Root>::read_registered_object(std::istream* in, const std::string& registered_name)
 {
   RootFactory factory = registry().find_factory(registered_name);
-  return factory==0 ? 0 : (*factory)(in);
+  return factory==nullptr ? nullptr : (*factory)(in);
 }
 
 template <class Root>
@@ -62,7 +62,7 @@ RegisteredObject<Root>::ask_type_and_parameters()
   std::cout << "Which type do you want? Possible values are:\n";
   list_registered_names(std::cout);
   const std::string registered_name = ask_string("Enter type", "None");
-  return read_registered_object(0, registered_name);
+  return read_registered_object(nullptr, registered_name);
 }
  
 template <class Root>

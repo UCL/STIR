@@ -58,7 +58,7 @@ initialise_keymap()
 template <typename TargetT>
 GeneralisedObjectiveFunction<TargetT>::
 ~GeneralisedObjectiveFunction()
-{}
+= default;
 
 template <typename TargetT>
 Succeeded 

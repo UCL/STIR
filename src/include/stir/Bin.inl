@@ -33,7 +33,7 @@
 START_NAMESPACE_STIR
 
 Bin::Bin()
-{}
+= default;
 
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value)

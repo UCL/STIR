@@ -57,7 +57,7 @@ public:
   //! Default constructor 
   ProjectorByBinPair();
 
-  virtual ~ProjectorByBinPair() {}
+  ~ProjectorByBinPair() override = default;
 
   //! Stores all necessary geometric info
   /*! 
@@ -107,7 +107,7 @@ protected:
       If overriding this function in a derived class, you need to call this one.
    */
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
-  bool _already_set_up;
+  bool _already_set_up{false};
 
  private:
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;

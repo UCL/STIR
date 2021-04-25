@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 
 DynamicDiscretisedDensity::
 DynamicDiscretisedDensity(const DynamicDiscretisedDensity& argument)
-{
+ : ExamData(argument) {
   (*this) = argument;
 }
 

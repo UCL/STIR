@@ -31,7 +31,7 @@
 START_NAMESPACE_STIR
 
 // Global static pointer used to ensure a single instance of the class.
-Verbosity* Verbosity::_instance = NULL; 
+Verbosity* Verbosity::_instance = nullptr; 
 
 Verbosity::Verbosity(){
   _verbosity_level = 2;

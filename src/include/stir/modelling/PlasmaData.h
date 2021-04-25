@@ -70,7 +70,7 @@ class PlasmaData
  /*! Implementation to read the input function from ONLY a 3-columns data file (Time-InputFunctionRadioactivity-TotalBloodRadioactivity).
    \warning Assumes that the input function is not corrected for decay.
  */
-  inline void read_plasma_data(const std::string input_string) ;
+  inline void read_plasma_data(const std::string& input_string) ;
 
   inline void set_plot(const std::vector<PlasmaSample> & plasma_blood_plot);
 
@@ -78,7 +78,7 @@ class PlasmaData
     \warning It corrects for decay if the data are not decay corrected. 
     \return PlasmaData are in start-end frames time mode. 
   */
-  inline PlasmaData get_sample_data_in_frames(TimeFrameDefinitions time_frame_def);
+  inline PlasmaData get_sample_data_in_frames(const TimeFrameDefinitions& time_frame_def);
 
   /*!Function to shift the time data
     This is useful if the start time of the scan and the start time of the plasma are not precisely correct. 

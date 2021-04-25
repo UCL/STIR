@@ -45,7 +45,7 @@ int
 ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 {
 #ifndef STIR_NO_NAMESPACES
-  std::vector<int>::const_iterator iter =
+  auto iter =
     std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
 #else
   vector<int>::const_iterator iter =

@@ -76,15 +76,15 @@ SSRB(const ProjDataInfo& in_proj_data_info,
       num_tang_poss_to_trim)
     error("SSRB: too large number of tangential positions to trim (%d)\n",
 	  num_tang_poss_to_trim);
-  const ProjDataInfoCylindrical * const in_proj_data_info_sptr =
+  const auto * const in_proj_data_info_sptr =
     dynamic_cast<ProjDataInfoCylindrical const * >
     (&in_proj_data_info);
-  if (in_proj_data_info_sptr== NULL)
+  if (in_proj_data_info_sptr== nullptr)
     {
       error("SSRB works only on segments with proj_data_info of "
 	    "type ProjDataInfoCylindrical\n");
     }
-  ProjDataInfoCylindrical * out_proj_data_info_sptr =
+  auto * out_proj_data_info_sptr =
     dynamic_cast<ProjDataInfoCylindrical * >
     (in_proj_data_info_sptr->clone());
 

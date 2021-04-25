@@ -87,7 +87,7 @@ PoissonLLReconstructionTests<TargetT>::
 construct_log_likelihood()
 { 
   this->_objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>);
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>& objective_function =
+  auto& objective_function =
     reinterpret_cast<  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>& >(*this->_objective_function_sptr);
   objective_function.set_proj_data_sptr(this->_proj_data_sptr);
   if (!this->_projector_pair_sptr)

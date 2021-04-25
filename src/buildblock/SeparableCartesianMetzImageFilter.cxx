@@ -42,7 +42,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 /*  if (consistency_check(density) == Succeeded::no)
     return Succeeded::no;
   */
-  const VoxelsOnCartesianGrid<float>& image =
+  const auto& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
   metz_filter = 

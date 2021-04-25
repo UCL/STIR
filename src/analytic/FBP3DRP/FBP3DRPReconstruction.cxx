@@ -332,7 +332,7 @@ method_info() const
 { return("FBP3DRP"); }
 
 FBP3DRPReconstruction::~FBP3DRPReconstruction()
-{}
+= default;
 
 VoxelsOnCartesianGrid<float>&  
 FBP3DRPReconstruction::estimated_image()
@@ -372,7 +372,7 @@ set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr)
   if (base_type::set_up(target_image_sptr) == Succeeded::no)
     return Succeeded::no;
 
-  if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_sptr().get()) == 0)
+  if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_sptr().get()) == nullptr)
     error("FBP3DRP currently needs cylindrical projection data. Sorry");
 
   if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
@@ -396,7 +396,7 @@ FBP3DRPReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
 {
   this->check(*target_image_ptr);
-  VoxelsOnCartesianGrid<float>& image =
+  auto& image =
     dynamic_cast<VoxelsOnCartesianGrid<float> &>(*target_image_ptr);
   // set default values such that it will work also in the case of already_2D_recon
   alpha_fit = 1.0F;
@@ -734,7 +734,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
   back_projector_sptr->get_output(image);
 
   // Normalise the image
-  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) == 0)
+  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) == nullptr)
     {
       // TODO remove magic, is a scale factor in the interpolating backprojector (for which we compensate in the Colsher filter)
       const float magic_number=2*input_proj_data_info_cyl().get_ring_radius()*input_proj_data_info_cyl().get_num_views()/input_proj_data_info_cyl().get_ring_spacing();
@@ -932,7 +932,7 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
   //  do not use std::for_each. at present on gcc it copies the filter for every viewgram
   //  std::for_each(viewgrams.begin(), viewgrams.end(), 
   //		colsher_filter);
-  RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
+  auto viewgram_iter = viewgrams.begin();
   for (; viewgram_iter != viewgrams.end(); ++viewgram_iter) 
     colsher_filter(*viewgram_iter);
 
@@ -988,7 +988,7 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
     }
     full_log << endl ;
 
-    const time_t now  = time(NULL);
+    const time_t now  = time(nullptr);
 
     logfile << "Date of the image reconstruction : " << asctime(localtime(&now))
              << parameter_info() ;

@@ -33,18 +33,18 @@
     See STIR/LICENSE.txt for details
 */
 
+#include "stir/Bin.h"
+#include "stir/LORCoordinates.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
-#include "stir/Bin.h"
-#include "stir/LORCoordinates.h"
-#include "stir/round.h"
 #include "stir/num_threads.h"
-#include <iostream>
-#include <iomanip>
+#include "stir/round.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -127,9 +127,9 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 	    // fall within the scanner. In this case, the get_bin(get_LOR(org_bin)) code 
 	    // will return an out-of-range bin (i.e. value<0).
 	    int axial_pos_num_margin=0;
-	    const ProjDataInfoCylindrical* const proj_data_info_cyl_ptr =
+	    const auto* const proj_data_info_cyl_ptr =
 	      dynamic_cast<const ProjDataInfoCylindrical* const>(&proj_data_info);
-	    if (proj_data_info_cyl_ptr!=0)
+	    if (proj_data_info_cyl_ptr!=nullptr)
 	      {
 		axial_pos_num_margin =
 		  std::max(
@@ -411,16 +411,14 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 	    proj_data_info.
 	    get_all_ring_pairs_for_segment_axial_pos_num(segment_num,
 							 axial_pos_num);
-	  for (ProjDataInfoCylindrical::RingNumPairs::const_iterator iter = ring_pairs.begin();
-	       iter != ring_pairs.end();
-	       ++iter)
+	  for (const auto & ring_pair : ring_pairs)
 	    {
 	      int check_segment_num = 0, check_axial_pos_num = 0;
 	      check(proj_data_info.
 		    get_segment_axial_pos_num_for_ring_pair(check_segment_num,
 							    check_axial_pos_num,
-							    iter->first,
-							    iter->second) ==
+							    ring_pair.first,
+							    ring_pair.second) ==
 		    Succeeded::yes,
 		    "test if segment,ax_pos_num found for a ring pair");
 	      check_if_equal(check_segment_num, segment_num,
@@ -442,7 +440,7 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 class ProjDataInfoCylindricalArcCorrTests: public ProjDataInfoCylindricalTests
 {
 public:  
-  void run_tests();
+  void run_tests() override;
 };
 
 
@@ -615,7 +613,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 class ProjDataInfoCylindricalNoArcCorrTests: public ProjDataInfoCylindricalTests
 {
 public:  
-  void run_tests();
+  void run_tests() override;
 private:
   void test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info);
 };
@@ -909,13 +907,11 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	      Bin new_bin;
 	      // set value for comparison with bin
 	      new_bin.set_bin_value(0);
-	      for (std::vector<DetectionPositionPair<> >::const_iterator det_pos_pair_iter = det_pos_pairs.begin();
-		   det_pos_pair_iter != det_pos_pairs.end();
-		   ++det_pos_pair_iter)
+	      for (const auto & det_pos_pair : det_pos_pairs)
 		{
 		  const bool there_is_a_bin =
 		    proj_data_info.get_bin_for_det_pos_pair(new_bin, 
-							    *det_pos_pair_iter) ==
+							    det_pos_pair) ==
 		    Succeeded::yes;
 		  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
 		      !check(bin == new_bin, "checking if we round-trip to the same bin"))

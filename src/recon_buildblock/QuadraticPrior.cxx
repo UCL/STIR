@@ -234,7 +234,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
   
   this->check(current_image_estimate);
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
   if (this->weights.get_length() ==0)
@@ -314,7 +314,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   this->check(current_image_estimate);
   
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
   if (this->weights.get_length() ==0)
@@ -453,10 +453,10 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   
   this->check(current_image_estimate);
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
-  DiscretisedDensityOnCartesianGrid<3,elemT>& prior_Hessian_for_single_densel_cast =
+  auto& prior_Hessian_for_single_densel_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(prior_Hessian_for_single_densel);
 
   if (weights.get_length() ==0)
@@ -517,7 +517,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
   
   this->check(current_image_estimate);
   
-  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+  const auto& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
   if (weights.get_length() ==0)
@@ -610,7 +610,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
 
   this->check(input);
   
-  DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
+  auto& output_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(output);
 
   if (weights.get_length() ==0)

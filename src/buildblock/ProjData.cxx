@@ -111,7 +111,7 @@ read_from_file(const string& filename,
       }
   }
 
-  fstream * input = new fstream(actual_filename.c_str(), openmode | ios::binary);
+  auto * input = new fstream(actual_filename.c_str(), openmode | ios::binary);
   if (! *input)
     error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
@@ -295,11 +295,11 @@ ProjData::get_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
   vector<Viewgram<float> > viewgrams;
   viewgrams.reserve(pairs.size());
 
-  for (unsigned int i=0; i<pairs.size(); i++)
+  for (auto & pair : pairs)
   {
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_bins_odd));
+    viewgrams.push_back(get_viewgram(pair.view_num(),
+                                          pair.segment_num(), make_num_bins_odd));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);
@@ -310,7 +310,7 @@ Succeeded
 ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams) 
 {
 
-  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
+  auto r_viewgrams_iter = viewgrams.begin();
   while( r_viewgrams_iter!=viewgrams.end())
   {
     if (set_viewgram(*r_viewgrams_iter)== Succeeded::no)

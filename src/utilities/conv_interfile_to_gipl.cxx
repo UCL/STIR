@@ -29,10 +29,10 @@
 #include "stir/IO/GIPL_ImageFormat.h"
 
 // general header files
-#include <stdio.h>
-#include <sstream>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;

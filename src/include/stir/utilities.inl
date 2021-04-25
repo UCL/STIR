@@ -47,7 +47,7 @@ ask_num (const std::string& str,
 	 NUMBER default_value)
 { 
   
-  while(1)
+  while(true)
   { 
     std::string input;
     std::cerr << "\n" << str 

@@ -81,7 +81,7 @@ secs_since_Unix_epoch_to_DICOM_datetime(double secs,
 struct DateTimeStrings
 {
   DateTimeStrings()
-  {}
+  = default;
   DateTimeStrings(const std::string& date, const std::string& time)
   : date(date), time(time)
   {}

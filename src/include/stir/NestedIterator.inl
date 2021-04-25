@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 template <class topleveliterT, class GetRestRangeFunctionT>
 NestedIterator<topleveliterT, GetRestRangeFunctionT>::
 NestedIterator()
-{}
+= default;
 
 #if defined __GNUC__
 // Attempt to switch off warning about unitialised _current_rest_iter

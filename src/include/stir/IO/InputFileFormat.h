@@ -48,7 +48,7 @@ class InputFileFormat
 {
  public:
   typedef DataT data_type;
-  virtual ~InputFileFormat() {}
+  virtual ~InputFileFormat() = default;
 
   virtual bool
     can_read(const FileSignature& signature,

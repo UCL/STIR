@@ -47,13 +47,13 @@ class GatedSpatialTransformation: public RegisteredParsingObject<GatedSpatialTra
   static const char * const registered_name; 
 
   GatedSpatialTransformation(); //!< default constructor
-  ~GatedSpatialTransformation(); //!< default destructor
+  ~GatedSpatialTransformation() override; //!< default destructor
   //!  Construct an empty GatedSpatialTransformation based on a shared_ptr<DiscretisedDensity<3,float> >
   GatedSpatialTransformation(const TimeGateDefinitions& time_gate_definitions,
                 const shared_ptr<DiscretisedDensity<3,float> >& density_sptr);
 
-  void read_from_files(const std::string input_string);
-  void write_to_files(const std::string output_string); 
+  void read_from_files(const std::string& input_string);
+  void write_to_files(const std::string& output_string); 
 
   //! \name Functions to get parameters @{
   GatedDiscretisedDensity get_spatial_transformation_z() const;
@@ -81,13 +81,13 @@ class GatedSpatialTransformation: public RegisteredParsingObject<GatedSpatialTra
   void 
     accumulate_warp_image(DiscretisedDensity<3, float> & new_reference_image,
                           const GatedDiscretisedDensity & gated_image) const ;
-  void set_defaults();
-  Succeeded set_up(); 
+  void set_defaults() override;
+  Succeeded set_up() override; 
   //@}
  private:
   typedef RegisteredParsingObject<GatedSpatialTransformation,SpatialTransformation> base_type;
-  void initialise_keymap();
-  bool post_processing();	
+  void initialise_keymap() override;
+  bool post_processing() override;	
   std::string _transformation_filename_prefix;
   GatedDiscretisedDensity _spatial_transformation_z;
   GatedDiscretisedDensity _spatial_transformation_y;

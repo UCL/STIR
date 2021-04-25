@@ -162,10 +162,10 @@ bool
 Ellipsoid:: 
 operator==(const Shape3D& shape) const
 {
-  Ellipsoid const * cylinder_ptr =
+  auto const * cylinder_ptr =
     dynamic_cast<Ellipsoid const *>(&shape);
   return
-    cylinder_ptr != 0 && (*this == *cylinder_ptr);
+    cylinder_ptr != nullptr && (*this == *cylinder_ptr);
 }
 
 

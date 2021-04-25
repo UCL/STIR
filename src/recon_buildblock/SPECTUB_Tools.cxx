@@ -19,15 +19,15 @@
 */
 
 //system libraries
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <math.h>
-#include <boost/math/special_functions/fpclassify.hpp>
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 //using std::string;
@@ -47,8 +47,8 @@ namespace SPECTUB {
 
 #define maxim(a,b) ((a)>=(b)?(a):(b))
 #define minim(a,b) ((a)<=(b)?(a):(b))
-#define abs(a) ((a)>=0?(a):(-a))
-#define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
+#define abs(a) ((a)>=0?(a):(-(a)))
+#define SIGN(a) ((a)<-EPSILON?-1:((a)>EPSILON?1:0))
 
 #define DELIMITER1 '#' //delimiter character in input parameter text file
 #define DELIMITER2 '%' //delimiter character in input parameter text file
@@ -70,7 +70,7 @@ void write_wm_FC()
 	
 	int ia_acum = 0;
 	
-	if ( (fid = fopen( wm.OSfn.c_str(), "wb" ) ) == NULL ) error_wmtools_SPECT( 31, wm.OSfn );
+	if ( (fid = fopen( wm.OSfn.c_str(), "wb" ) ) == nullptr ) error_wmtools_SPECT( 31, wm.OSfn );
 	
 	fwrite ( &(wm.NbOS), sizeof(int), 1, fid);  // to write number of rows of wm (NbOS)
 	fwrite ( &(wm.Nvox), sizeof(int), 1, fid);  // to write number of columns of wm (Nvox)
@@ -205,7 +205,7 @@ void write_wm_STIR()
 	int seg_num = 0;             // segment number for STIR matrix (always zero)
 	FILE *fid;
 	
-	if ( ( fid = fopen( wm.OSfn.c_str() , "wb" )) == NULL ) error_wmtools_SPECT( 31, wm.OSfn );
+	if ( ( fid = fopen( wm.OSfn.c_str() , "wb" )) == nullptr ) error_wmtools_SPECT( 31, wm.OSfn );
 	
 	//...loop for matrix elements: projection index ..................
 	
@@ -576,8 +576,8 @@ void fill_ang ( angle_type *ang )
 		angR = fabs( angR - (float)90. * (float)quad );			 // reduced angle: equivalent angle in 0->45degrees interval
 		if ( angR > (float)45. ) angR = fabs( (float)90. - angR );   
 	
-		float sinR = (float)sin( angR * dg2rd );		// sinus of the reduced angle
-		float cosR = (float)cos( angR * dg2rd );		// cosinus of the reduced angle
+		auto sinR = (float)sin( angR * dg2rd );		// sinus of the reduced angle
+		auto cosR = (float)cos( angR * dg2rd );		// cosinus of the reduced angle
 		
 		//... parametres of the oblique projection of a square voxel size 1 (half a trapezoid) .......
 		
@@ -732,7 +732,7 @@ void read_msk_file( bool *msk )
 	
 	aux = new int [ wmh.vol.Nvox ];
 	
-	if ( (fid = fopen( wmh.msk_fn.c_str() , "rb")) == NULL) error_wmtools_SPECT( 126, wmh.msk_fn);
+	if ( (fid = fopen( wmh.msk_fn.c_str() , "rb")) == nullptr) error_wmtools_SPECT( 126, wmh.msk_fn);
 	fread( aux, sizeof(int), wmh.vol.Nvox, fid);
 	fclose(fid);
 	
@@ -750,7 +750,7 @@ void read_msk_file( bool *msk )
 void read_att_map( float *attmap )
 {
 	FILE *fid;
-	if ( ( fid = fopen( wmh.att_fn.c_str() , "rb") ) == NULL ) error_wmtools_SPECT ( 124, wmh.att_fn );
+	if ( ( fid = fopen( wmh.att_fn.c_str() , "rb") ) == nullptr ) error_wmtools_SPECT ( 124, wmh.att_fn );
 	fread( attmap, sizeof(float), wmh.vol.Nvox, fid);
 	
 	bool exist_nan = false;
@@ -911,7 +911,7 @@ void free_wm_da( wm_da_type *f )
 //== error_wmtools_SPECT ======================================================
 //=============================================================================
 
-void error_wmtools_SPECT( int nerr, string txt )
+void error_wmtools_SPECT( int nerr, const string& txt )
 {
 #if 0
   switch(nerr){

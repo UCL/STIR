@@ -62,7 +62,7 @@ public:
     FilePath(const std::string &__str, bool _run_checks = true);
 
     ~FilePath()
-    {}
+    = default;
 
     //! Returns true if my_string points to a directory
     bool is_directory() const;

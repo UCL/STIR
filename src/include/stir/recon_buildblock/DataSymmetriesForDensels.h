@@ -63,7 +63,7 @@ class DataSymmetriesForDensels
 public:
   DataSymmetriesForDensels();
 
-  virtual ~DataSymmetriesForDensels() {};
+  virtual ~DataSymmetriesForDensels() = default;;
 
   virtual 
     DataSymmetriesForDensels 

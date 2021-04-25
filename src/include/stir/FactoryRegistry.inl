@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 
 template <class Key, class Factory, class Compare> 
 FactoryRegistry<Key, Factory, Compare>::FactoryRegistry()
-: has_defaults(false)
+ 
 {}
 
 
@@ -100,7 +100,7 @@ void
 FactoryRegistry<Key, Factory, Compare>::
 list_keys(std::ostream& s) const
 {
-  for (typename FactoryMap::const_iterator i = m.begin(); i != m.end(); ++i)
+  for (auto i = m.begin(); i != m.end(); ++i)
     s << i->first << '\n';
 }
 
@@ -109,7 +109,7 @@ Factory const &
 FactoryRegistry<Key, Factory, Compare>::
 find_factory(const Key& key) const /*throw(unknown_typename)*/ 
 {
-  typename FactoryMap::const_iterator i = m.find(key);
+  auto i = m.find(key);
   if (i != m.end()) 
     return i->second;
 

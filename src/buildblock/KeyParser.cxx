@@ -174,7 +174,7 @@ static void read_line(istream& input, string& line,
 	  end_of_env_string-start_of_env_string+1;
 	const string name_of_env_variable = line.substr(start_of_env_string+2, size_of_env_string-3);
 	const char * const value_of_env_variable = std::getenv(name_of_env_variable.c_str());
-	if (value_of_env_variable == 0)
+	if (value_of_env_variable == nullptr)
 	  {
 	    warning("KeyParser: environment variable '%s' not found. Replaced by empty string.\n"
 		    "This happened while parsing the following line:\n%s",
@@ -195,12 +195,8 @@ static void read_line(istream& input, string& line,
 // map_element implementation;
 
 map_element::map_element()
-  :
-  type(KeyArgument::NONE),
-  p_object_member(0),
-  p_object_variable(0),
-  vectorised_key_level(0),
-  p_object_list_of_values(0)
+  
+  
 {}
 
 map_element::map_element(KeyArgument::type t, 
@@ -224,7 +220,7 @@ map_element::map_element(void (KeyParser::*pom)(),
   p_object_member(pom),
   p_object_variable(pov),
   vectorised_key_level(0),
-  p_object_list_of_values(0),
+  p_object_list_of_values(nullptr),
   parser(parser)//static_cast<Parser *>(parser))
   {}
 
@@ -236,25 +232,16 @@ map_element::map_element(void (KeyParser::*pom)(),
   p_object_member(pom),
   p_object_variable(pov),
   vectorised_key_level(0),
-  p_object_list_of_values(0),
+  p_object_list_of_values(nullptr),
   parser(parser)//static_cast<Parser *>(parser))
   {}
 
 map_element::~map_element()
-{
-}
+= default;
 
 
 map_element& map_element::operator=(const map_element& me)
-{
-  type=me.type;
-  p_object_member=me.p_object_member;
-  p_object_variable=me.p_object_variable;
-  vectorised_key_level=me.vectorised_key_level;
-  p_object_list_of_values=me.p_object_list_of_values;
-  parser = me.parser;
-  return *this;
-}
+= default;
 
 // KeyParser implementation
 
@@ -264,12 +251,11 @@ KeyParser::KeyParser()
   
   current_index=-1;
   status=end_parsing;
-  current=0;//KTnew map_element();
+  current=nullptr;//KTnew map_element();
 }
 
 KeyParser::~KeyParser()
-{
-}
+= default;
 
 bool KeyParser::parse(const char * const filename, const bool write_warning)
 {
@@ -322,21 +308,19 @@ KeyParser::get_keyword(const string& line) const
 
 map_element* KeyParser::find_in_keymap(const string& keyword)
 {
-  for (Keymap::iterator iter = kmap.begin();
-       iter != kmap.end();
-       ++iter)
+  for (auto & iter : kmap)
   {
-     if (iter->first == keyword)
-       return &(iter->second);
+     if (iter.first == keyword)
+       return &(iter.second);
   }
   // it wasn't there
-  return 0;
+  return nullptr;
 }
 
 bool
 KeyParser::remove_key(const string& keyword)
 {
-  for (Keymap::iterator iter = kmap.begin();
+  for (auto iter = kmap.begin();
        iter != kmap.end();
        ++iter)
   {
@@ -355,7 +339,7 @@ KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
 {
   const string standardised_keyword = standardise_keyword(keyword);
   map_element * elem_ptr = find_in_keymap(standardised_keyword);
-  if (elem_ptr != 0)
+  if (elem_ptr != nullptr)
   {
     warning(boost::format("KeyParser: keyword '%s' already registered for parsing, overwriting previous value") % keyword);
     *elem_ptr = new_element;
@@ -570,9 +554,9 @@ void KeyParser::add_key(const string& keyword,
 void
 KeyParser::print_keywords_to_stream(ostream& out) const
 {
-  for (Keymap::const_iterator key = kmap.begin(); key != kmap.end(); ++key)
+  for (const auto & key : kmap)
   {
-    out << key->first << '\n';
+    out << key.first << '\n';
   }
   out << endl;
 }
@@ -1064,8 +1048,8 @@ void KeyParser::set_variable()
                    << keyword << "\" is \""
                    << par_ascii
                    << "\"\n\tshould have been one of:";
-              for (unsigned int i=0; i<current->p_object_list_of_values->size(); i++)
-                cerr << "\n\t" << (*current->p_object_list_of_values)[i];
+              for (const auto & p_object_list_of_value : *current->p_object_list_of_values)
+                cerr << "\n\t" << p_object_list_of_value;
               cerr << '\n' << endl;
             }
 	    break;
@@ -1092,7 +1076,7 @@ void KeyParser::set_variable()
   else	// Sets vector elements using current_index
     {
       if (current->vectorised_key_level==0)
-        error(boost::format("Error parsing: encountered unexpected \"vectorisation\" of key: \"%1%[%2%]\"") % keyword % current_index);
+        error(boost::format(R"(Error parsing: encountered unexpected "vectorisation" of key: "%1%[%2%]")") % keyword % current_index);
 
       switch(current->type)
 	{
@@ -1124,8 +1108,8 @@ void KeyParser::set_variable()
                    << keyword << "\" is \""
                    << par_ascii
                    << "\"\n\tshould have been one of:";
-              for (unsigned int i=0; i<current->p_object_list_of_values->size(); i++)
-                cerr << "\n\t" << (*current->p_object_list_of_values)[i];
+              for (const auto & p_object_list_of_value : *current->p_object_list_of_values)
+                cerr << "\n\t" << p_object_list_of_value;
             }
 	    break;
 	  }
@@ -1156,7 +1140,7 @@ int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& 
 Succeeded KeyParser::map_keyword(const string& keyword)
 {
   current = find_in_keymap(keyword);
-  return (current==0 ? Succeeded::no : Succeeded::yes);
+  return (current==nullptr ? Succeeded::no : Succeeded::yes);
 }
 
 
@@ -1164,7 +1148,7 @@ Succeeded KeyParser::map_keyword(const string& keyword)
 void KeyParser::process_key()
 {
   // KT 17/05/2001 replaced NULL with 0 to prevent gcc compiler warning
-  if(current->p_object_member!=0)
+  if(current->p_object_member!=nullptr)
   {
     (this->*(current->p_object_member))();	//calls appropriate member function
   }
@@ -1229,58 +1213,58 @@ string KeyParser::parameter_info() const
 #endif
 
     // first find start key
-    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
+    for (const auto & i : kmap)
     {      
-      if (i->second.p_object_member == &KeyParser::start_parsing)
-      s << i->first << " :=\n";
+      if (i.second.p_object_member == &KeyParser::start_parsing)
+      s << i.first << " :=\n";
     }
 
-    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
+    for (const auto & i : kmap)
     {
-     if (i->second.p_object_member == &KeyParser::start_parsing ||
-         i->second.p_object_member == &KeyParser::stop_parsing)
+     if (i.second.p_object_member == &KeyParser::start_parsing ||
+         i.second.p_object_member == &KeyParser::stop_parsing)
          continue;
 
-      if (i->second.vectorised_key_level > 0)
+      if (i.second.vectorised_key_level > 0)
         {
           warning("KeyParser: cannot handle vectorised key yet");//TODO
           continue;
         }
-      s << i->first << " := ";
-      switch(i->second.type)
+      s << i.first << " := ";
+      switch(i.second.type)
       {
         // TODO will break with vectorised keys
       case KeyArgument::DOUBLE:
-        s << *reinterpret_cast<double*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<double*>(i.second.p_object_variable); break;
       case KeyArgument::FLOAT:
-        s << *reinterpret_cast<float*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<float*>(i.second.p_object_variable); break;
       case KeyArgument::INT:
-        s << *reinterpret_cast<int*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<int*>(i.second.p_object_variable); break;
       case KeyArgument::BOOL:
-        s << (*reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0); break;
+        s << (*reinterpret_cast<bool*>(i.second.p_object_variable) ? 1 : 0); break;
       case KeyArgument::UINT:
-        s << *reinterpret_cast<unsigned int*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<unsigned int*>(i.second.p_object_variable); break;
       case KeyArgument::ULONG:
-        s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<unsigned long*>(i.second.p_object_variable); break;
       case KeyArgument::LONG:
-        s << *reinterpret_cast<long*>(i->second.p_object_variable); break;
+        s << *reinterpret_cast<long*>(i.second.p_object_variable); break;
       case KeyArgument::NONE:
         break;
       case KeyArgument::ASCII :
-	 s << *reinterpret_cast<string*>(i->second.p_object_variable); break;	  	  
+	 s << *reinterpret_cast<string*>(i.second.p_object_variable); break;	  	  
       case KeyArgument::ASCIIlist :
         { 
-	    const int index = *reinterpret_cast<int*>(i->second.p_object_variable);
+	    const int index = *reinterpret_cast<int*>(i.second.p_object_variable);
             s << (index == -1 ?
                    "UNALLOWED VALUE" :
-                   (*i->second.p_object_list_of_values)[index]);
+                   (*i.second.p_object_list_of_values)[index]);
 	    break;
 	}
       case KeyArgument::PARSINGOBJECT:
         {
           RegisteredObjectBase* parsing_object_ptr =
-            *reinterpret_cast<RegisteredObjectBase**>(i->second.p_object_variable);
-	  if (parsing_object_ptr!=0)
+            *reinterpret_cast<RegisteredObjectBase**>(i.second.p_object_variable);
+	  if (parsing_object_ptr!=nullptr)
 	  {
 	    s << parsing_object_ptr->get_registered_name() << endl;
 	    s << parsing_object_ptr->parameter_info() << endl;
@@ -1296,7 +1280,7 @@ string KeyParser::parameter_info() const
           s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
 #else
           shared_ptr<RegisteredObjectBase> parsing_object_ptr =
-            (*reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(i->second.p_object_variable));
+            (*reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(i.second.p_object_variable));
           
           if (!is_null_ptr(parsing_object_ptr))
 	  {
@@ -1312,27 +1296,27 @@ string KeyParser::parameter_info() const
         }
 
       case KeyArgument::LIST_OF_DOUBLES:
-        s << *reinterpret_cast<DoubleVect*>(i->second.p_object_variable); break;	  	  
+        s << *reinterpret_cast<DoubleVect*>(i.second.p_object_variable); break;	  	  
       case KeyArgument::LIST_OF_INTS:
-        s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  
+        s << *reinterpret_cast<IntVect*>(i.second.p_object_variable); break;	  
       case KeyArgument::ARRAY2D_OF_FLOATS:
-	detail::to_stream(s, *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable)); break;
+	detail::to_stream(s, *reinterpret_cast<Array<2,float>*>(i.second.p_object_variable)); break;
       case KeyArgument::ARRAY3D_OF_FLOATS:
-	detail::to_stream(s, *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable)); break;
+	detail::to_stream(s, *reinterpret_cast<Array<3,float>*>(i.second.p_object_variable)); break;
       case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
 	{
 	    typedef BasicCoordinate<3,float> type;
-	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
+	    s << *reinterpret_cast<type*>(i.second.p_object_variable);
 	    break;
 	}
       case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
 	{
 	    typedef BasicCoordinate<3,Array<3,float> > type;
-	    detail::to_stream(s, *reinterpret_cast<type*>(i->second.p_object_variable));
+	    detail::to_stream(s, *reinterpret_cast<type*>(i.second.p_object_variable));
 	    break;
 	}
       case KeyArgument::LIST_OF_ASCII:
-        s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
+        s << *reinterpret_cast<vector<string>*>(i.second.p_object_variable); break;	  	  
       default :
 	  warning("KeyParser error: unknown type. Implementation error\n");
 	  break;
@@ -1341,10 +1325,10 @@ string KeyParser::parameter_info() const
       s << endl;
     }
     // finally, find stop key
-    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
+    for (const auto & i : kmap)
     {      
-      if (i->second.p_object_member == &KeyParser::stop_parsing)
-      s << i->first << " := \n";
+      if (i.second.p_object_member == &KeyParser::stop_parsing)
+      s << i.first << " := \n";
     }
 
     return s.str();
@@ -1354,7 +1338,7 @@ void KeyParser::ask_parameters()
 {   
   // This is necessary for set_parsing_object. It will allow the 
   // 'recursive' parser to see it's being called interactively.
-  input = 0;
+  input = nullptr;
   while(true)
   {
     string line;

@@ -42,11 +42,11 @@ ModelMatrix<num_param>::ModelMatrix()
 //! default destructor
 template <int num_param> 
 ModelMatrix<num_param>::~ModelMatrix()
-{ }
+= default;
 
 //! Implementation to read the model matrix
 template <int num_param> 
-void ModelMatrix<num_param>::read_from_file(const std::string input_string) 
+void ModelMatrix<num_param>::read_from_file(const std::string& input_string) 
 { 
   std::ifstream data_stream(input_string.c_str()); 
   unsigned int  starting_frame, last_frame;
@@ -77,7 +77,7 @@ void ModelMatrix<num_param>::read_from_file(const std::string input_string)
 
 //! Implementation to write the model matrix
 template <int num_param> 
-Succeeded ModelMatrix<num_param>::write_to_file(const std::string output_string) 
+Succeeded ModelMatrix<num_param>::write_to_file(const std::string& output_string) 
 { 
 
   BasicCoordinate<2,int> model_array_min, model_array_max;

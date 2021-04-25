@@ -29,21 +29,21 @@
       
 */
 
-#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/RunTests.h"
 #include "stir/Scanner.h"
-#include "stir/IndexRange.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins.h"
-#include "stir/RunTests.h"
 #include "stir/stream.h"
+#include <cmath>
 #include <iostream>
 #include <sstream>
-#include <math.h>
 #ifndef STIR_NO_NAMESPACES
 using std::stringstream;
 using std::cerr;
@@ -71,9 +71,9 @@ coordinates_less(const BasicCoordinate<3,T>& el1, const BasicCoordinate<3,T>& el
 class DataSymmetriesForBins_PET_CartesianGridTests : public RunTests
 {
 public:
-  DataSymmetriesForBins_PET_CartesianGridTests(char const * template_proj_data_filename = 0);
+  DataSymmetriesForBins_PET_CartesianGridTests(char const * template_proj_data_filename = nullptr);
 
-  void run_tests();
+  void run_tests() override;
 private:
   char const * template_proj_data_filename;
 
@@ -579,7 +579,7 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
   shared_ptr<DiscretisedDensity<3,float> > 
     density_sptr(new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,zoom,origin));
 
-  VoxelsOnCartesianGrid<float> & image =
+  auto & image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_sptr);
 
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
@@ -682,7 +682,7 @@ void
 DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
 { 
   cerr << "Tests for DataSymmetriesForBins_PET_CartesianGrid\n";
-  if (template_proj_data_filename == 0)
+  if (template_proj_data_filename == nullptr)
     {
       {  
 	cerr << "Testing span=1\n";
@@ -730,7 +730,7 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  DataSymmetriesForBins_PET_CartesianGridTests tests(argc==2? argv[1] : 0);
+  DataSymmetriesForBins_PET_CartesianGridTests tests(argc==2? argv[1] : nullptr);
   tests.run_tests();
   return tests.main_return_value();
 }

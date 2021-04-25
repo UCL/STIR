@@ -234,7 +234,7 @@ fourier_1d_for_real_data(const Array<1,T>& v, const int sign)
     error("fourier_1d_of_real can only handle arrays of even length.\n");
 
   Array<1,complex_t> c;
-  const unsigned int n = static_cast<unsigned int>(v.size()/2);
+  const auto n = static_cast<unsigned int>(v.size()/2);
   // we reserve a range of 0,n here, such that 
   // resize(n) later doesn't reallocate and copy
   c.reserve(n+1);

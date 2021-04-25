@@ -73,11 +73,11 @@ public:
       \todo it would be better to parse an objective function. That would allow us to set
       all parameters from the command line.
   */
-  GeneralisedPriorTests(char const * const density_filename = 0);
+  GeneralisedPriorTests(char const * const density_filename = nullptr);
   typedef DiscretisedDensity<3,float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
-  void run_tests();
+  void run_tests() override;
 protected:
   char const * density_filename;
   shared_ptr<GeneralisedPrior<target_type> >  objective_function_sptr;
@@ -86,7 +86,7 @@ protected:
   /*! Note that this function is not specific to a particular prior */
   void run_tests_for_objective_function(const std::string& test_name,
                                         GeneralisedPrior<target_type>& objective_function,
-                                        shared_ptr<target_type> target_sptr);
+                                        const shared_ptr<target_type>& target_sptr);
 };
 
 GeneralisedPriorTests::
@@ -98,7 +98,7 @@ void
 GeneralisedPriorTests::
 run_tests_for_objective_function(const std::string& test_name,
                                  GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                 shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+                                 const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
   std::cerr << "----- test " << test_name << '\n';
   if (!check(objective_function.set_up(target_sptr)==Succeeded::yes, "set-up of objective function"))
@@ -129,7 +129,7 @@ run_tests_for_objective_function(const std::string& test_name,
       *target_iter += eps;  // perturb current voxel
       const double value_at_inc = objective_function.compute_value(target);
       *target_iter = org_image_value; // restore
-      const float ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
+      const auto ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
       *gradient_2_iter = ngradient_at_iter;
       testOK = testOK && this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
       //for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
@@ -150,7 +150,7 @@ void
 GeneralisedPriorTests::
 construct_input_data(shared_ptr<target_type>& density_sptr)
 {
-  if (this->density_filename == 0)
+  if (this->density_filename == nullptr)
     {
       // construct a small image with random voxel values between 0 and 1
 
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 {
   set_default_num_threads();
 
-  GeneralisedPriorTests tests(argc>1? argv[1] : 0);
+  GeneralisedPriorTests tests(argc>1? argv[1] : nullptr);
   tests.run_tests();
   return tests.main_return_value();
 }

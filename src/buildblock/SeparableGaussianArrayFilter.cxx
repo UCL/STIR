@@ -43,7 +43,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <math.h>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ios;

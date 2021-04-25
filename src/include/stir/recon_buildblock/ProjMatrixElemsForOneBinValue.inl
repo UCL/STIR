@@ -56,10 +56,8 @@ ProjMatrixElemsForOneBinValue(const BasicCoordinate<3,int>& coords,
 
 ProjMatrixElemsForOneBinValue::
 ProjMatrixElemsForOneBinValue()
-    : c3(0),
-      c2(0),
-      c1(0),
-      value(0)
+    
+      
 {}  
 
 BasicCoordinate<3,int> 

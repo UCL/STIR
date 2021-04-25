@@ -40,8 +40,8 @@ write_data_1d(std::ostream& s, const Array<1, elemT>& data,
 	   const bool can_corrupt_data)
 {
   if (!s || 
-      (dynamic_cast<std::ofstream*>(&s)!=0 && !dynamic_cast<std::ofstream*>(&s)->is_open()) || 
-      (dynamic_cast<std::fstream*>(&s)!=0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
+      (dynamic_cast<std::ofstream*>(&s)!=nullptr && !dynamic_cast<std::ofstream*>(&s)->is_open()) || 
+      (dynamic_cast<std::fstream*>(&s)!=nullptr && !dynamic_cast<std::fstream*>(&s)->is_open()))
     { warning("write_data: error before writing to stream.\n"); return Succeeded::no; }
   
   // While writing, the array is potentially byte-swapped.
@@ -58,7 +58,7 @@ write_data_1d(std::ostream& s, const Array<1, elemT>& data,
   */
   if (!byte_order.is_native_order())
   {
-    Array<1,elemT>& data_ref =
+    auto& data_ref =
       const_cast<Array<1,elemT>&>(data);
     for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
       ByteOrder::swap_order(data_ref[i]);
@@ -83,7 +83,7 @@ write_data_1d(std::ostream& s, const Array<1, elemT>& data,
 
   if (!can_corrupt_data && !byte_order.is_native_order())
   {
-    Array<1,elemT>& data_ref =
+    auto& data_ref =
       const_cast<Array<1,elemT>&>(data);
     for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
       ByteOrder::swap_order(data_ref[i]);
@@ -105,7 +105,7 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
 	   const bool can_corrupt_data)
 {
   FILE *fptr = fptr_ref;
-  if (fptr==0|| ferror(fptr))
+  if (fptr==nullptr|| ferror(fptr))
     { warning("write_data: error before writing to FILE.\n"); return Succeeded::no; }
   
   // While writing, the array is potentially byte-swapped.
@@ -122,7 +122,7 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
   */
   if (!byte_order.is_native_order())
   {
-    Array<1,elemT>& data_ref =
+    auto& data_ref =
       const_cast<Array<1,elemT>&>(data);
     for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
       ByteOrder::swap_order(data_ref[i]);
@@ -131,7 +131,7 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
   // note: find num_to_write (using size()) outside of s.write() function call
   // otherwise Array::check_state() in size() might abort if
   // get_const_data_ptr() is called before size() (which is compiler dependent)
-  const std::size_t num_to_write =
+  const auto num_to_write =
     static_cast<std::size_t>(data.size());
   const std::size_t num_written =
     fwrite(reinterpret_cast<const char *>(data.get_const_data_ptr()), sizeof(elemT), num_to_write, fptr);
@@ -140,7 +140,7 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
 
   if (!can_corrupt_data && !byte_order.is_native_order())
   {
-    Array<1,elemT>& data_ref =
+    auto& data_ref =
       const_cast<Array<1,elemT>&>(data);
     for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
       ByteOrder::swap_order(data_ref[i]);

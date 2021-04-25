@@ -42,7 +42,7 @@ void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficie
     const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr = 
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
       (proj_data.get_proj_data_info_sptr().get());
-    if (proj_data_info_ptr == 0)
+    if (proj_data_info_ptr == nullptr)
       {
 	error("Can only process not arc-corrected data\n");
       }
@@ -61,8 +61,8 @@ void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficie
                                               /*span=*/1, max_ring_diff,
                                               /*num_views=*/ num_detectors_per_ring/2,
                                               scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                              /*arccorrection=*/false));
-    const ProjDataInfoCylindricalNoArcCorr * const
+                                              /*arc_corrected=*/false));
+    const auto * const
       uncompressed_proj_data_info_ptr =
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
       (uncompressed_proj_data_info_uptr.get());

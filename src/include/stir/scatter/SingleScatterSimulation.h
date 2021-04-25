@@ -61,24 +61,24 @@ public:
     explicit
     SingleScatterSimulation(const std::string& parameter_filename);
 
-    virtual ~SingleScatterSimulation();
+    ~SingleScatterSimulation() override;
 
-    virtual Succeeded process_data();
+    Succeeded process_data() override;
     //! gives method information
-    virtual std::string method_info() const;
+    std::string method_info() const override;
     //! prompts the user to enter parameter values manually
-    virtual void ask_parameters();
+    void ask_parameters() override;
     //! Perform checks and intialisations
-    virtual Succeeded set_up();
+    Succeeded set_up() override;
 protected:
 
     void initialise(const std::string& parameter_filename);
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
+    void set_defaults() override;
+    void initialise_keymap() override;
 
     //! used to check acceptable parameter ranges, etc...
-    virtual bool post_processing();
+    bool post_processing() override;
 
 
     //!
@@ -92,8 +92,8 @@ protected:
                                                   const unsigned det_num_A,
                                                   const unsigned det_num_B);
 
-    virtual double
-      scatter_estimate(const Bin& bin);
+    double
+      scatter_estimate(const Bin& bin) override;
 
     virtual void
     actual_scatter_estimate(double& scatter_ratio_singles,

@@ -178,9 +178,9 @@ FilePath FilePath::append(const std::string &p)
     std::vector<std::string> v = split(p, separator.c_str());
 
     // Run over the vector creating the subfolders recrusively.
-    for (unsigned int i = 0; i < v.size(); i++)
+    for (auto & i : v)
     {
-        new_path = merge(new_path, v.at(i));
+        new_path = merge(new_path, i);
         FilePath::append_separator(new_path);
 
         // if current level already exists move to the next.
@@ -353,10 +353,8 @@ const std::vector<std::string> FilePath::split(const std::string& s, const char*
     if (strlen(c) == 0)
         c = separator.c_str();
 
-    for(unsigned int i = 0; i < s.size(); i++)
+    for(char n : s)
     {
-        char n = s.at(i);
-
         if(n != *c) buff+=n; else
             if(n == *c && buff != "") { v.push_back(buff); buff = ""; }
     }

@@ -54,12 +54,12 @@
   forward projected
 */
 
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/round.h"
-#include <math.h>
 #include <algorithm>
+#include <cmath>
 #ifndef STIR_NO_NAMESPACE
 using std::min;
 using std::max;

@@ -104,7 +104,7 @@ public:
 private:
   typedef std::map<Key, Factory, Compare > FactoryMap;
   FactoryMap m;	  
-  const bool has_defaults;
+  const bool has_defaults{false};
   const Key default_key;
   const Factory default_factory;
 

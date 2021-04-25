@@ -55,8 +55,8 @@ START_NAMESPACE_STIR
   {
   public:
     DynamicDiscretisedDensityTests() 
-    {}
-    void run_tests();
+    = default;
+    void run_tests() override;
     //private:
   };
 
@@ -86,7 +86,7 @@ START_NAMESPACE_STIR
   std::pair< double, double > time_frame_pair(1.,2.5);
   time_frame_definitions_vector[0]=time_frame_pair;
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
-  const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
+  const auto scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
 
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
@@ -134,7 +134,7 @@ START_NAMESPACE_STIR
   time_frame_definitions_vector[1]=second_time_frame_pair;
 
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
-  const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
+  const auto scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
 
@@ -205,7 +205,7 @@ START_NAMESPACE_STIR
   time_frame_definitions_vector[2]=third_time_frame_pair;
 
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
-  const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
+  const auto scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,

@@ -194,7 +194,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
             bin_size_in_cm,
             scanner_ptr_from_file->get_default_bin_size()/10);
 #endif
-  ProjDataInfoCylindricalArcCorr* my_data_info_ptr = 
+  auto* my_data_info_ptr = 
     new ProjDataInfoCylindricalArcCorr (
                                         scanner_ptr_from_file,
                                         float(bin_size_in_cm*10.),

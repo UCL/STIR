@@ -97,11 +97,11 @@ int main(int argc, char **argv)
       {
 	const VoxelsOnCartesianGrid<float> * image_ptr =
 	  dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_sptr.get());
-	if (image_ptr==NULL)
+	if (image_ptr==nullptr)
 	  error("Input image is not of VoxelsOnCartesianGrid type. Sorry\n");
-	VoxelsOnCartesianGrid<float> * output_image_ptr =
+	auto * output_image_ptr =
 	  dynamic_cast<VoxelsOnCartesianGrid<float> *>(output_density_sptr.get());
-	if (output_image_ptr==NULL)
+	if (output_image_ptr==nullptr)
 	  error("Output image is not of VoxelsOnCartesianGrid type. Sorry\n");
 	zoom_image(*output_image_ptr, *image_ptr, zoom_options);
       }
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
   const VoxelsOnCartesianGrid<float> * image_ptr =
     dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_ptr.get());
 
-  if (image_ptr==NULL)
+  if (image_ptr==nullptr)
     error("Image is not of VoxelsOnCartesianGrid type. Sorry\n");
 
   // initialise zooming parameters

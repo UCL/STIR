@@ -98,11 +98,11 @@ public:
       \todo it would be better to parse an objective function. That would allow us to set
       all parameters from the command line.
   */
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const * const proj_data_filename = 0, char const * const density_filename = 0);
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const * const proj_data_filename = nullptr, char const * const density_filename = nullptr);
   typedef DiscretisedDensity<3,float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
-  void run_tests();
+  void run_tests() override;
 protected:
   char const * proj_data_filename;
   char const * density_filename;
@@ -142,7 +142,7 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
       *target_iter += eps;
       const double value_at_inc = objective_function.compute_objective_function(target, subset_num);
       *target_iter -= eps;
-      const float gradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
+      const auto gradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
       *gradient_2_iter++ = gradient_at_iter;
       testOK = testOK && 
         this->check_if_equal(gradient_at_iter, *gradient_iter, "gradient");
@@ -170,7 +170,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 construct_input_data(shared_ptr<target_type>& density_sptr)
 { 
   shared_ptr<ProjData> proj_data_sptr;
-  if (this->proj_data_filename == 0)
+  if (this->proj_data_filename == nullptr)
     {
       // construct a small scanner and sinogram
       shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
@@ -206,7 +206,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
         ProjData::read_from_file(this->proj_data_filename);
     }
 
-  if (this->density_filename == 0)
+  if (this->density_filename == nullptr)
     {
       // construct a small image
 
@@ -293,7 +293,7 @@ proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
   }
 
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>& objective_function =
+  auto& objective_function =
     reinterpret_cast<  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>& >(*objective_function_sptr);
   objective_function.set_proj_data_sptr(proj_data_sptr);
   objective_function.set_use_subset_sensitivities(true);
@@ -346,8 +346,8 @@ int main(int argc, char **argv)
 {
   set_default_num_threads();
 
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
-                                                                   argc>2? argv[2] : 0);
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : nullptr,
+                                                                   argc>2? argv[2] : nullptr);
   tests.run_tests();
   return tests.main_return_value();
 }

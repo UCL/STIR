@@ -60,7 +60,7 @@ const double MAX_INTERVAL_DIFFERENCE = 0.05; // 5% max difference.
 // Constructor
 SinglesFromGEHDF5::
 SinglesFromGEHDF5()
-{}
+= default;
 
 
 // Generate a FramesSinglesRate - containing the average rates

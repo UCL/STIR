@@ -29,7 +29,7 @@ START_NAMESPACE_STIR
 
   //! default constructor
 PlasmaSample::PlasmaSample()
-{ }
+= default;
   //! constructor, time in s
 PlasmaSample::
 PlasmaSample(const double sample_time, const float plasma_sample_counts, const float blood_sample_counts)
@@ -41,7 +41,7 @@ PlasmaSample(const double sample_time, const float plasma_sample_counts, const f
 
   //! default destructor
 PlasmaSample::~PlasmaSample()
-{ }
+= default;
   
   //! set the time of the sample
 void PlasmaSample::set_time_in_s( const double time )

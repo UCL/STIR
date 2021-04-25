@@ -42,7 +42,7 @@
 START_NAMESPACE_STIR
 ArcCorrection::
 ArcCorrection()
-{}
+= default;
 
 const ProjDataInfoCylindricalNoArcCorr&
 ArcCorrection::
@@ -82,11 +82,11 @@ set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr,
        const float bin_size)
 {
   if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>
-      (noarc_corr_proj_data_info_sptr.get()) == 0)
+      (noarc_corr_proj_data_info_sptr.get()) == nullptr)
     {
       // give friendly warning message
       if (dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
-	  (noarc_corr_proj_data_info_sptr.get()) != 0)
+	  (noarc_corr_proj_data_info_sptr.get()) != nullptr)
 	warning("ArcCorrection called with arc-corrected proj_data_info");
       else
 	warning("ArcCorrection called with proj_data_info of the wrong type:\n\t%s",
@@ -293,8 +293,8 @@ void
 ArcCorrection::
 do_arc_correction(RelatedViewgrams<float>& out, const RelatedViewgrams<float>& in) const
 {
-  RelatedViewgrams<float>::iterator out_iter = out.begin();
-  RelatedViewgrams<float>::const_iterator in_iter = in.begin();
+  auto out_iter = out.begin();
+  auto in_iter = in.begin();
   for (; out_iter != out.end(); ++out_iter, ++in_iter)
     do_arc_correction(*out_iter, *in_iter);
 }

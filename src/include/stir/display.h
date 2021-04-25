@@ -178,7 +178,7 @@ template <typename elemT> class RelatedViewgrams;
 template <class elemT>
 void display(const RelatedViewgrams<elemT>& v1,
              double maxi = 0,
-	     const char * const title = 0,
+	     const char * const title = nullptr,
              int zoom = 0);
 
 class DetPairData;

@@ -576,7 +576,7 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
   else caching_info_ptr = NULL;
 #else 
   //non parallel version
-  caching_info_ptr = NULL;
+  caching_info_ptr = nullptr;
 #endif 
 
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
@@ -635,7 +635,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                  -this->max_segment_num_to_process,
                                  this->max_segment_num_to_process, 
                                  this->zero_seg0_end_planes!=0, 
-                                 NULL, 
+                                 nullptr, 
                                  this->additive_proj_data_sptr 
                                  , caching_info_ptr
                                  );
@@ -740,7 +740,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  min_segment_num,
                                  max_segment_num, 
                                  this->zero_seg0_end_planes!=0, 
-                                 NULL, 
+                                 nullptr, 
                                  this->additive_proj_data_sptr, 
                                  this->normalisation_sptr, 
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
@@ -869,18 +869,18 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 #pragma omp parallel for schedule(runtime)
 #endif
   // note: older versions of openmp need an int as loop
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  for (auto vs_nums_to_proces : vs_nums_to_process)
       {
 #ifdef STIR_OPENMP
           const int thread_num = omp_get_thread_num();
           info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
                % thread_num % omp_get_num_threads()
-               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+               % vs_nums_to_proces.segment_num() % vs_nums_to_proces.view_num(), 2);
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
-               % vs_nums_to_process[i].segment_num() % vs_nums_to_process[i].view_num(), 2);
+               % vs_nums_to_proces.segment_num() % vs_nums_to_proces.view_num(), 2);
 #endif
-          const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
+          const ViewSegmentNumbers view_segment_num=vs_nums_to_proces;
 
           // first compute data-term: y*norm^2
           RelatedViewgrams<float> viewgrams =
@@ -983,9 +983,8 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   //OMP may mess this up
   // Try:  std::vector<RelatedViewgrams<float>> input_viewgrams_vec(vs_nums_to_process.size());
   std::vector<RelatedViewgrams<float>> input_viewgrams_vec;
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+  for (auto view_segment_num : vs_nums_to_process)
   {
-    const ViewSegmentNumbers view_segment_num = vs_nums_to_process[i];
     input_viewgrams_vec.push_back(this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr));
   }
 
@@ -1147,7 +1146,7 @@ void distributable_accumulate_loglikelihood(
           distributable_computation(forward_projector_sptr,
                                     back_projector_sptr,
                                     symmetries_sptr,
-                                    NULL, &input_image, 
+                                    nullptr, &input_image, 
                                     proj_dat, true, //i.e. do read projection data
                                     subset_num, num_subsets,
                                     min_segment, max_segment,
@@ -1240,7 +1239,7 @@ void RPC_process_related_viewgrams_gradient(
         
         
         
-  if (additive_binwise_correction_ptr != NULL)
+  if (additive_binwise_correction_ptr != nullptr)
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
   }
@@ -1273,17 +1272,17 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
 
   forward_projector_sptr->forward_project(estimated_viewgrams);
   
-  if (additive_binwise_correction_ptr != NULL)
+  if (additive_binwise_correction_ptr != nullptr)
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
   };
   
-  if (mult_viewgrams_ptr != NULL)
+  if (mult_viewgrams_ptr != nullptr)
   {
     estimated_viewgrams *= (*mult_viewgrams_ptr);
   }
 
-  RelatedViewgrams<float>::iterator meas_viewgrams_iter = 
+  auto meas_viewgrams_iter = 
           measured_viewgrams_ptr->begin();
   RelatedViewgrams<float>::const_iterator est_viewgrams_iter = 
           estimated_viewgrams.begin();

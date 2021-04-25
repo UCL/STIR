@@ -152,12 +152,9 @@ BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams) 
   forward_projector_ptr->forward_project(attenuation_viewgrams);
 	
   // TODO cannot use std::transform ?
-  for (RelatedViewgrams<float>::iterator viewgrams_iter = 
-          attenuation_viewgrams.begin();
-       viewgrams_iter != attenuation_viewgrams.end();
-       ++viewgrams_iter)
+  for (auto & attenuation_viewgram : attenuation_viewgrams)
   {
-    in_place_exp(*viewgrams_iter);
+    in_place_exp(attenuation_viewgram);
   }
   viewgrams *= attenuation_viewgrams;
 }
@@ -171,12 +168,9 @@ undo(RelatedViewgrams<float>& viewgrams) const
   forward_projector_ptr->forward_project(attenuation_viewgrams);
 	
   // TODO cannot use std::transform ?
-  for (RelatedViewgrams<float>::iterator viewgrams_iter = 
-          attenuation_viewgrams.begin();
-       viewgrams_iter != attenuation_viewgrams.end();
-       ++viewgrams_iter)
+  for (auto & attenuation_viewgram : attenuation_viewgrams)
   {
-    in_place_exp(*viewgrams_iter);
+    in_place_exp(attenuation_viewgram);
   }
   viewgrams /= attenuation_viewgrams;
 }

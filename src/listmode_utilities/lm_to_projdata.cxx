@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
 	  exit(EXIT_SUCCESS);
 	}
     }
-  LmToProjData application(argc==2 ? argv[1] : 0);
+  LmToProjData application(argc==2 ? argv[1] : nullptr);
   application.process_data();
 
   return EXIT_SUCCESS;

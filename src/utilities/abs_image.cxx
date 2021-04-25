@@ -44,10 +44,10 @@
 int main(int argc, char * argv[])
 {
   USING_NAMESPACE_STIR;
-  const char * output_filename = 0;
-  const char * input_filename = 0;
-  bool do_parametric=0;
-  bool do_dynamic=0;
+  const char * output_filename = nullptr;
+  const char * input_filename = nullptr;
+  bool do_parametric=false;
+  bool do_dynamic=false;
 
   const char * const usage = "abs_image [ -p | -d ] -o output_filename -i input_filename\n";
   opterr = 0;
@@ -84,7 +84,7 @@ int main(int argc, char * argv[])
 	}
   }
 
-  if (output_filename==0 || input_filename==0)
+  if (output_filename==nullptr || input_filename==nullptr)
     {
       std::cerr << usage;
       return EXIT_FAILURE;

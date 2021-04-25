@@ -33,7 +33,7 @@ namespace BSpline {
 template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
 BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT, constantsT>::
 ~BSplinesRegularGrid()
-{}
+= default;
 	
   template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
   void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::

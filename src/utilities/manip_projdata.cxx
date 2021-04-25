@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
     bool quit=false,reload=false;
 
     shared_ptr<ProjData> first_operand;
-    ProjDataFromStream *output_proj_data=  NULL;
+    ProjDataFromStream *output_proj_data=  nullptr;
         // Start
     do { //(re)start from here
         bool buffer_opened=false;
@@ -383,7 +383,7 @@ int main(int argc, char *argv[])
             }
 
             shared_ptr<ProjData> second_operand;
-            float *scalar=NULL;
+            float *scalar=nullptr;
 
             if(operation==_absdiff || operation==_add_sino || operation==_subtract_sino || 
                operation==_mult_sino || operation==_div_sino) //requiring 2nd sinogram operand
@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
                     do_math(operation,seg1,seg2,accum_max,accum_min,accum_sum,false);
                 }
 
-                else if(scalar != NULL) {
+                else if(scalar != nullptr) {
                     if(operation==_zero_ends )
                         for(int i=seg1.get_min_view_num();i<=seg1.get_max_view_num();i++)
                             for(int j=0;j<*scalar;j++ ) {
@@ -493,7 +493,7 @@ int main(int argc, char *argv[])
                         do_math(operation,seg1_pos,seg2_pos,accum_max,accum_min,accum_sum,true);
                         do_math(operation,seg1_neg,seg2_neg,accum_max,accum_min,accum_sum,true);
                     }
-                    else if(scalar != NULL) {
+                    else if(scalar != nullptr) {
                         do_math(operation,seg1_pos,seg_sinogram_pos,accum_max,accum_min,accum_sum,true,*scalar);
                         do_math(operation,seg1_neg,seg_sinogram_neg,accum_max,accum_min,accum_sum,true,*scalar);
                     }
@@ -522,10 +522,10 @@ int main(int argc, char *argv[])
 	      // alternatively, the output_proj_data would use a read/write file, and
 	      // we would do first_operand = output_proj_data
               
-	      if (output_proj_data != NULL)
+	      if (output_proj_data != nullptr)
 	      {
 		delete output_proj_data;
-		output_proj_data = NULL;
+		output_proj_data = nullptr;
 	      }
 	      buffer_opened = false;	      
 	      
@@ -536,7 +536,7 @@ int main(int argc, char *argv[])
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Maximum= "<<accum_max<<endl;
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Minimum= "<<accum_min<<endl;
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Total counts= "<<accum_sum<<endl;  
-            if (scalar != NULL) delete scalar;
+            if (scalar != nullptr) delete scalar;
 
         } while(!quit); // end math operations do-while loop
     } while(!quit); // restart do-while loop
