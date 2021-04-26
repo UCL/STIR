@@ -97,13 +97,13 @@ public:
 					  const bool do_symmetry_shift_z = true);
 
 
-  virtual 
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins_PET_CartesianGrid
 #else
     DataSymmetriesForViewSegmentNumbers
 #endif
-    * clone() const;
+    * clone() const override;
 
   //! Check equality
   virtual bool operator==(const DataSymmetriesForBins_PET_CartesianGrid&) const;
@@ -118,25 +118,25 @@ public:
   inline void
     get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
                                 const int min_axial_pos_num, const int max_axial_pos_num,
-                                const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+                                const int min_tangential_pos_num, const int max_tangential_pos_num) const override;
 
   inline int
-    num_related_bins(const Bin& b) const;
+    num_related_bins(const Bin& b) const override;
 
   inline unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_bin(Bin&) const;
+    find_symmetry_operation_from_basic_bin(Bin&) const override;
 
   inline bool
-    find_basic_bin(Bin& b) const;
+    find_basic_bin(Bin& b) const override;
   
   inline int
-    num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const;
+    num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const override;
   
   inline void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const;
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const override;
   
   inline bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
+    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const override;
 
   //! find out how many image planes there are for every scanner ring
   inline float get_num_planes_per_scanner_ring() const;
@@ -191,7 +191,7 @@ private:
     cartesian_grid_info_ptr() const;
 #endif
 
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type * const) const override;
 
 
   inline bool

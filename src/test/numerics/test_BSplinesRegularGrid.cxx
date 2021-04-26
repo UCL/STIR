@@ -51,7 +51,7 @@ namespace BSpline {
   public:
     BSplinesRegularGrid_Tests() 
     {}
-    void run_tests();
+    void run_tests() override;
   private:  
     template <class elemT>
     bool check_at_sample_points(const Array<2,elemT>& v,

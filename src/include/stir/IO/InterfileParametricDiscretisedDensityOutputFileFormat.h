@@ -80,16 +80,16 @@ public :
                    const ByteOrder& = ByteOrder::native);
 
 
-  virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
+  ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
  protected:
-  virtual Succeeded  
+  Succeeded  
     actual_write_to_file(std::string& output_filename,
-		  const ParametricDiscretisedDensity<DiscDensityT>& density) const;
+		  const ParametricDiscretisedDensity<DiscDensityT>& density) const override;
 
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 };
 

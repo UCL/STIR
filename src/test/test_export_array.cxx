@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
 class ExportArrayTests : public RunTests
 {
 public:
-    void run_tests();
+    void run_tests() override;
 
 protected:
     void test_static_data();

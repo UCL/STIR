@@ -117,7 +117,7 @@ public:
     const  VectorWithOffset<int>& max_ring_diff_v,
     const int num_views,const int num_tangential_poss);
 
-  ProjDataInfo* clone() const;
+  ProjDataInfo* clone() const override;
 
   bool operator==(const self_type&) const;
 
@@ -126,12 +126,12 @@ public:
     This does \c not take the 'interleaving' into account which is 
     customarily applied to raw PET data.
   */
-  inline virtual float get_s(const Bin&) const;
+  inline float get_s(const Bin&) const override;
 
   //! Gets angular increment (in radians)
   inline float get_angular_increment() const;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
 
   //! \name Functions that convert between bins and detection positions
   //@{ 
@@ -255,9 +255,9 @@ public:
 
   //@}
 
-  virtual 
+  
     Bin
-    get_bin(const LOR<float>&) const;
+    get_bin(const LOR<float>&) const override;
 
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
@@ -313,7 +313,7 @@ private:
   //! build look-up table unless already done before
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
 
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type * const) const override;
 
 };
 

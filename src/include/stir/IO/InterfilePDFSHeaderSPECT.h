@@ -48,7 +48,7 @@ public:
 protected:
 
   //! Returns false if OK, true if not.
-  virtual bool post_processing();
+  bool post_processing() override;
 
  private:
 

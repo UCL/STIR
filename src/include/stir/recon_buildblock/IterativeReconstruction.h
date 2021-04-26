@@ -131,8 +131,8 @@ public:
 
     \return Succeeded::yes if everything was alright.
    */     
-  virtual Succeeded 
-    reconstruct();
+  Succeeded 
+    reconstruct() override;
 
   //! executes the reconstruction with \a target_data_sptr as initial value
   /*! After calling set_up(), repeatedly calls update_estimate(); end_of_iteration_processing();
@@ -140,8 +140,8 @@ public:
 
       Final reconstruction is saved in \a target_data_sptr
   */
-  virtual Succeeded 
-    reconstruct(shared_ptr<TargetT > const& target_data_sptr);
+  Succeeded 
+    reconstruct(shared_ptr<TargetT > const& target_data_sptr) override;
 
   //! A utility function that creates a filename_prefix by appending the current subiteration number
   /*! Only works when no extension is present.
@@ -243,11 +243,11 @@ public:
   //!
   //! \brief set_input_data
   //! \author Nikos Efthimiou
-  void set_input_data(const shared_ptr<ExamData>& arg);
-  virtual const ExamData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData>& arg) override;
+  const ExamData& get_input_data() const override;
   //@}
 
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_ptr);
+  Succeeded set_up(shared_ptr <TargetT > const& target_data_ptr) override;
 
   //! the principal operations for updating the data iterates at each iteration
   virtual void update_estimate(TargetT &current_estimate)=0;
@@ -329,10 +329,10 @@ protected:
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();
+  bool post_processing() override;
 
  private:
   //! member storing the order in which the subsets will be traversed in this iteration

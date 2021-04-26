@@ -62,7 +62,7 @@ START_NAMESPACE_STIR
 class VectorWithOffsetTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void

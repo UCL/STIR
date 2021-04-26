@@ -79,7 +79,7 @@ class IOTests : public RunTests
 public:
     IOTests(std::istream& in);
 
-    void run_tests();
+    void run_tests() override;
 protected:
 
     void         set_up();

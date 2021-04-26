@@ -84,33 +84,33 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   /*! Dimensions etc are set from the \a gated_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
+  TargetT *
+    construct_target_ptr() const override; 
 
-  virtual void 
+  void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
 							  const TargetT &current_estimate, 
-							  const int subset_num); 
+							  const int subset_num) override; 
 
-  virtual double
+  double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						      const int subset_num);
+						      const int subset_num) override;
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
+  Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr) override;
 
   //! Add subset sensitivity to existing data
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
-  virtual Succeeded 
+  Succeeded 
     actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                            const TargetT& input,
-                                                                           const int subset_num) const;
-  virtual Succeeded
+                                                                           const int subset_num) const override;
+  Succeeded
     actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT &output,
             const TargetT &current_image_estimate,
             const TargetT &input,
-            const int subset_num) const;
+            const int subset_num) const override;
 
   void set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions); 
 
@@ -140,13 +140,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   //@{
   void set_recompute_sensitivity(const bool);
   void set_sensitivity_sptr(const shared_ptr<TargetT>&);
-  virtual int set_num_subsets(const int num_subsets);
+  int set_num_subsets(const int num_subsets) override;
 
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
-  virtual const GatedProjData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData> &) override;
+  const GatedProjData& get_input_data() const override;
   //@}
  protected:
   //! Filename with input projection data
@@ -191,12 +191,12 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
 
   //! gated image template
   GatedDiscretisedDensity _gated_image_template;
-  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
   //! Sets defaults before parsing 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 };
 

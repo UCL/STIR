@@ -95,14 +95,14 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
 
   //! Checks if we can handle certain projection data.
   /*! Calls set_up for the BinNormalisation members. */
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
   //! Normalise some data
   /*! 
     This calls apply() of the 2 BinNormalisation members
   */
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
   virtual void apply(ProjData&) const override;
 #endif
@@ -119,7 +119,7 @@ virtual void apply_only_second(ProjData&) const;
   /*! 
     This calls undo() of the 2 BinNormalisation members. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
   virtual void undo(ProjData&) const override;
  #endif 
@@ -132,7 +132,7 @@ virtual void undo_only_second(RelatedViewgrams<float>& viewgrams) const;
 
 virtual void undo_only_second(ProjData&) const;
 
-  virtual float get_bin_efficiency(const Bin& bin) const override;
+  float get_bin_efficiency(const Bin& bin) const override;
   
  //! Returns the is_trivial() status of the first normalisation object.
  //! \warning Currently, if the object has not been set the function throws an error.
@@ -148,9 +148,9 @@ private:
   shared_ptr<BinNormalisation> apply_first;
   shared_ptr<BinNormalisation> apply_second;
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR

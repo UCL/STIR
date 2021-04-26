@@ -76,7 +76,7 @@ public:
   ROIValuesParameters();
   virtual void set_defaults();
   virtual void initialise_keymap();
-  virtual bool post_processing();
+  bool post_processing() override;
   std::vector<shared_ptr<Shape3D> > shape_ptrs;
   std::vector<std::string> shape_names;
   CartesianCoordinate3D<int> num_samples;

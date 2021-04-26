@@ -70,7 +70,7 @@ START_NAMESPACE_STIR
 class ROITests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   //! Run a series of tests for a shape
   /*!

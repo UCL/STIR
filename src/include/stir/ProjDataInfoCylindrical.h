@@ -77,11 +77,11 @@ public:
     const VectorWithOffset<int>& max_ring_diff,
     const int num_views,const int num_tangential_poss);
 
-  inline virtual float get_tantheta(const Bin&) const; 
+  inline float get_tantheta(const Bin&) const override; 
 		       
-  inline float get_phi(const Bin&) const; 
+  inline float get_phi(const Bin&) const override; 
  
-  inline float get_t(const Bin&) const;
+  inline float get_t(const Bin&) const override;
 
   //! Return z-coordinate of the middle of the LOR
   /*!
@@ -90,11 +90,11 @@ public:
     \warning Current implementation assumes that the axial positions are always 'centred',
     i.e. get_m(Bin(..., min_axial_pos_num,...)) == - get_m(Bin(..., max_axial_pos_num,...))
   */  
-  inline float get_m(const Bin&) const;
+  inline float get_m(const Bin&) const override;
 
-  virtual void
+  void
     get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
-	    const Bin& bin) const;
+	    const Bin& bin) const override;
 
  
   //! Set azimuthal angle offset (in radians)
@@ -113,15 +113,15 @@ public:
       the first view returns the same \c get_phi. Depending on what you want, you
       might have to call \c set_azimuthal_angle_offset() as well.
   */
-  virtual void
-    set_num_views(const int new_num_views);
+  void
+    set_num_views(const int new_num_views) override;
 
   //! Get azimuthal angle offset (in radians)
   inline float get_azimuthal_angle_offset() const;
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
-  virtual inline float get_sampling_in_t(const Bin&) const;
-  virtual inline float get_sampling_in_m(const Bin&) const;
+  inline float get_sampling_in_t(const Bin&) const override;
+  inline float get_sampling_in_m(const Bin&) const override;
 
   //! Get the axial sampling (e.g in z_direction)
   /*! 
@@ -144,10 +144,10 @@ public:
   //! Set maximum ring difference
   void set_max_ring_difference(int max_ring_diff_v, int segment_num);
 
-  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment); 
-  virtual void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num);
-  virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
-  virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
+  void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment) override; 
+  void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num) override;
+  void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num) override;
+  void reduce_segment_range(const int min_segment_num, const int max_segment_num) override;
 
   //! Set detector ring radius for all views
   inline void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius);
@@ -245,7 +245,7 @@ public:
 					    const int segment_num,
                                             const int axial_pos_num) const;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
 
 protected:
 
@@ -268,7 +268,7 @@ protected:
   bool sampling_corresponds_to_physical_rings;
   
 protected:
-  virtual bool blindly_equals(const root_type * const) const = 0;
+  bool blindly_equals(const root_type * const) const override = 0;
 
 private:
   float azimuthal_angle_offset;

@@ -65,9 +65,9 @@ public:
  explicit SinglesFromGEHDF5();
 
  // implementation of pure virtual in SinglesRates
- virtual float
+ float
    get_singles_rate(const int singles_bin_index, 
-		    const double start_time, const double end_time) const;
+		    const double start_time, const double end_time) const override;
 
  //! Generate a FramesSinglesRate - containing the average rates
  //  for a frame begining at start_time and ending at end_time.
@@ -129,7 +129,7 @@ public:
 
  float get_singles_rate(const DetectionPosition<>& det_pos,
                  const double start_time,
-                 const double end_time) const;
+                 const double end_time) const override;
 
  //! Set a singles rate by singles bin index and time slice.
  //
@@ -197,9 +197,9 @@ private:
  double get_slice_start(int slice_index) const;
  
 
- virtual void set_defaults();
- virtual void initialise_keymap();
- virtual bool post_processing();
+ void set_defaults() override;
+ void initialise_keymap() override;
+ bool post_processing() override;
  
 };
 

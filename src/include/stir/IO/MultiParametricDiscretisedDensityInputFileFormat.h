@@ -49,15 +49,15 @@ class MultiParametricDiscretisedDensityInputFileFormat :
 public InputFileFormat<ParametricVoxelsOnCartesianGrid>
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "Multi"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream&) const
+		    std::istream&) const override
   {
     //. todo should check if it's an image
     // checking for "multi :"
@@ -70,8 +70,8 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
             standardise_interfile_keyword("multi"));
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream&) const
+  unique_ptr<data_type>
+    read_from_file(std::istream&) const override
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;
@@ -81,8 +81,8 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {
     MultipleDataSetHeader header;
     if (header.parse(filename.c_str()) == false)

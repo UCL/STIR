@@ -118,7 +118,7 @@ public:
 #endif
 
   //! Destructor
-  virtual ~ProjData() {}
+  ~ProjData() override {}
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;

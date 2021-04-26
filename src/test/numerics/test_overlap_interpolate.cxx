@@ -44,7 +44,7 @@ START_NAMESPACE_STIR
 class overlap_interpolateTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
 #ifndef STIR_OVERLAP_NORMALISATION
   template <class ValueT, class BoundaryT>

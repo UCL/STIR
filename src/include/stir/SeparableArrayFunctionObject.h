@@ -64,12 +64,12 @@ public:
    */
   SeparableArrayFunctionObject (const VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >&); 
 
-  bool is_trivial() const;
+  bool is_trivial() const override;
 
 protected:
  
   VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > > all_1d_array_filters;
-  virtual void do_it(Array<num_dimensions,elemT>& array) const;
+  void do_it(Array<num_dimensions,elemT>& array) const override;
 
 };
 

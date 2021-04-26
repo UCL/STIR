@@ -83,15 +83,15 @@ private:
 public:
   DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
-  virtual ~DataSymmetriesForBins();
+  ~DataSymmetriesForBins() override;
 
-  virtual 
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins 
 #else
     DataSymmetriesForViewSegmentNumbers
 #endif
-    * clone() const = 0;
+    * clone() const override = 0;
 
 #if 0
   TODO!
@@ -181,7 +181,7 @@ protected:
   const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
-  virtual bool blindly_equals(const root_type * const) const = 0;
+  bool blindly_equals(const root_type * const) const override = 0;
 };
 
 END_NAMESPACE_STIR

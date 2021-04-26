@@ -96,9 +96,9 @@ public:
     int safety_margin;
 
 protected:
-    void initialise_keymap();
-    bool post_processing();
-    void set_defaults();
+    void initialise_keymap() override;
+    bool post_processing() override;
+    void set_defaults() override;
 
 private:
     //!

@@ -46,7 +46,7 @@ class TrivialDataSymmetriesForViewSegmentNumbers : public DataSymmetriesForViewS
 {
 public:
 
-  virtual inline DataSymmetriesForViewSegmentNumbers * clone() const;
+  inline DataSymmetriesForViewSegmentNumbers * clone() const override;
 
 
 #if 0
@@ -56,22 +56,22 @@ public:
     get_basic_view_segment_index_range() const;
 #endif
 
-  virtual inline void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const;
+  inline void
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const override;
 
-  virtual inline int
-    num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
+  inline int
+    num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const override;
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
   
   in this class, \a v_s is unchanged, and the return value is always false.
   'v_s' is changed (i.e. it was NOT a basic view/segment).
   */  
-  virtual inline bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
+  inline bool
+    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const override;
 
 private:
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type * const) const override;
 
 };
 

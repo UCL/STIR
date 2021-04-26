@@ -109,14 +109,14 @@ private:
   shared_ptr<ArrayFilterUsingRealDFTWithPadding<num_dimensions,elemT> > _array_filter_sptr; // ChT::float
   Array<num_dimensions,elemT> _filter_coefficients;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   
-  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image) override;
   void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, 
-		      const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
-  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+		      const DiscretisedDensity<num_dimensions,elemT>& in_density) const override;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const override ;
   
 };
 

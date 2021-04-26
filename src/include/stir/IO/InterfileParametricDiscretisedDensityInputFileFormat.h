@@ -45,22 +45,22 @@ class InterfileParametricDiscretisedDensityInputFileFormat :
 public InputFileFormat<ParametricVoxelsOnCartesianGrid>
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "Interfile"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream&) const
+		    std::istream&) const override
   {
     //. todo should check if it's an image
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream&) const
+  unique_ptr<data_type>
+    read_from_file(std::istream&) const override
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;//(read_interfile_dynamic_image(input));
@@ -70,8 +70,8 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {
     unique_ptr<data_type> ret(read_interfile_parametric_image(filename));
     if (is_null_ptr(ret))

@@ -66,7 +66,7 @@ class ScatterSimulationTests: public RunTests
 {
 public:  
     bool write_output;
-    void run_tests();
+    void run_tests() override;
 private:
 
     //! Load a ProjDataInfo downsample and perform some consistency checks.

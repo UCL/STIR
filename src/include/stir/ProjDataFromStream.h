@@ -121,23 +121,23 @@ public:
   inline std::vector<int> get_segment_sequence_in_stream() const;
     
   //! Get & set viewgram 
-  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
-  Succeeded set_viewgram(const Viewgram<float>& v);
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const override;
+  Succeeded set_viewgram(const Viewgram<float>& v) override;
     
   //! Get & set sinogram 
-  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const; 
-  Succeeded set_sinogram(const Sinogram<float>& s);
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const override; 
+  Succeeded set_sinogram(const Sinogram<float>& s) override;
     
   //! Get all sinograms for the given segment
-  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num) const;
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num) const override;
   //! Get all viewgrams for the given segment
-  SegmentByView<float> get_segment_by_view(const int segment_num) const;
+  SegmentByView<float> get_segment_by_view(const int segment_num) const override;
     
     
   //! Set all sinograms for the given segment
-  Succeeded set_segment(const SegmentBySinogram<float>&);
+  Succeeded set_segment(const SegmentBySinogram<float>&) override;
   //! Set all viewgrams for the given segment
-  Succeeded set_segment(const SegmentByView<float>&);
+  Succeeded set_segment(const SegmentByView<float>&) override;
 
   //! Get scale factor
   float get_scale_factor() const;  

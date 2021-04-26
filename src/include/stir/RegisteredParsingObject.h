@@ -97,9 +97,9 @@ public:
 inline static Base* read_from_stream(std::istream*); 
 
   //! Returns  Derived::registered_name
-  inline std::string get_registered_name() const;
+  inline std::string get_registered_name() const override;
   //! Returns a string with all parameters and their values, in a form suitable for parsing again
-  inline std::string parameter_info();
+  inline std::string parameter_info() override;
 
 public:
 

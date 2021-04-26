@@ -83,13 +83,13 @@ public:
  
   //virtual TargetT * construct_target_ptr();  
  
-  virtual Succeeded
-   set_up(shared_ptr <TargetT > const& target_sptr);
+  Succeeded
+   set_up(shared_ptr <TargetT > const& target_sptr) override;
  
-  virtual  
+   
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
 	    				 const TargetT &current_estimate,  
-					 const int subset_num)=0;  
+					 const int subset_num) override =0;  
   //! time frame definitions
   /*! \todo This is currently used to be able to compute the gradient for 
     one time frame. However, it probably does not belong here.
@@ -99,11 +99,11 @@ public:
   */
     TimeFrameDefinitions frame_defs;
 
-    virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-    virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+    void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
+    void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
 
-    virtual void set_input_data(const shared_ptr<ExamData> &);
-    virtual const ListModeData& get_input_data() const;
+    void set_input_data(const shared_ptr<ExamData> &) override;
+    const ListModeData& get_input_data() const override;
 protected:
   std::string frame_defs_filename;
 
@@ -126,12 +126,12 @@ protected:
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets keys
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap(); 
+  void initialise_keymap() override; 
 
-  virtual bool post_processing(); 
+  bool post_processing() override; 
 
    //! will be called when a new time frame starts
    /*! The frame numbers start from 1. */

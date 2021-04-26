@@ -70,7 +70,7 @@ class Shape3DWithOrientation: public Shape3D
 public:
 
   bool operator==(const Shape3DWithOrientation& s) const;
-  virtual void scale(const CartesianCoordinate3D<float>& scale3D);
+  void scale(const CartesianCoordinate3D<float>& scale3D) override;
 
   //! get direction vectors currently in use
   /*! Index offsets will always be 1 */
@@ -125,10 +125,10 @@ protected:
 
   //! sets defaults for parsing
   /*! sets direction vectors to the normal unit vectors. */
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-  virtual void set_key_values();
+  void set_defaults() override;  
+  void initialise_keymap() override;
+  bool post_processing() override;
+  void set_key_values() override;
 
 private:
 #if 0

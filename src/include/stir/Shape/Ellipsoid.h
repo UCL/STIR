@@ -69,23 +69,23 @@ public:
 	     const CartesianCoordinate3D<float>& centre,
 	     const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
   //! get volume
-  float get_geometric_volume() const;
+  float get_geometric_volume() const override;
 #if 0
   //! Get approximate geometric area
   float get_geometric_area() const;
 #endif
 
-  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
+  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const override;
 
-  Shape3D* clone() const;
+  Shape3D* clone() const override;
 
   //! Compare cylinders
   /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
   bool
     operator==(const Ellipsoid&) const;
 
-  virtual bool
-    operator==(const Shape3D& shape) const;
+  bool
+    operator==(const Shape3D& shape) const override;
 
   inline float get_radius_x() const
     { return radii.x(); }
@@ -104,9 +104,9 @@ protected:
 
   //! set defaults before parsing
   /*! sets radii to 0 and calls Shape3DWithOrientation::set_defaults() */
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;  
+  void initialise_keymap() override;
+  bool post_processing() override;
   
 };
 

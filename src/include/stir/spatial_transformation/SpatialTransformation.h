@@ -44,7 +44,7 @@ class SpatialTransformation: public RegisteredObject<SpatialTransformation>
   SpatialTransformation();
 
   //! default destructor
-  virtual ~SpatialTransformation();
+  ~SpatialTransformation() override;
 
   virtual Succeeded set_up() = 0;
 };

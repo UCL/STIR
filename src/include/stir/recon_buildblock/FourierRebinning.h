@@ -126,7 +126,7 @@ class FourierRebinning : public   RegisteredParsingObject<
  public:
   //! Name which will be used when parsing a ProjDataRebinning object
   static const char * const registered_name; 
-  virtual void set_defaults();
+  void set_defaults() override;
 
   protected:
 //! Smallest angular freq. index minimum 2 ( 1 is zero frequency)
@@ -145,12 +145,12 @@ class FourierRebinning : public   RegisteredParsingObject<
     FourierRebinning();
 
 //! This method returns the type of the algorithm for the rebinning
-    std::string method_info() const
+    std::string method_info() const override
         { return("FORE"); }
 
 
 //! This method creates a stack of 2D rebinned sinograms from the whole 3D data set (i.e. the ProjData data) and saves it.
-   Succeeded rebin();
+   Succeeded rebin() override;
 
 //! A set of get and set utility functions to access the rebinning parameters     
   inline void set_kmin(int km){kmin = km;}
@@ -223,8 +223,8 @@ class FourierRebinning : public   RegisteredParsingObject<
 
     
  protected:
-  virtual bool post_processing();  
-  virtual void initialise_keymap();
+  bool post_processing() override;  
+  void initialise_keymap() override;
 
 };
 

@@ -60,7 +60,7 @@ public:
   //! Default constructor calls reset_timers()
   BackProjectorByBin();
 
-  virtual ~BackProjectorByBin();
+  ~BackProjectorByBin() override;
 
   //! Stores all necessary geometric info
  /*! 
@@ -184,8 +184,8 @@ protected:
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
  protected:
   //! ProjDataInfo set by set_up()

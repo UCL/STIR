@@ -64,19 +64,19 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel& ) const;
+      ProjMatrixElemsForOneDensel& ) const override;
 
 private:
   int axial_pos_shift;
@@ -93,20 +93,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -128,20 +128,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -161,20 +161,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -193,20 +193,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -225,20 +225,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -258,20 +258,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -289,20 +289,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -320,20 +320,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -352,20 +352,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -384,20 +384,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -416,20 +416,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -447,20 +447,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -478,20 +478,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -510,20 +510,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;
@@ -541,20 +541,20 @@ public:
   {}
 
   inline void 
-    transform_bin_coordinates(Bin&) const;
+    transform_bin_coordinates(Bin&) const override;
   inline void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const;
+    transform_view_segment_indices(ViewSegmentNumbers&) const override;
   inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const override;
 
   void 
     transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+      ProjMatrixElemsForOneBin& lor) const override;
 
 
-  virtual void 
+  void 
     transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
+      ProjMatrixElemsForOneDensel&) const override;
 
 private:
   int view180;

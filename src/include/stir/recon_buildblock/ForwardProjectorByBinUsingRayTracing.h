@@ -95,12 +95,12 @@ public:
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
-  virtual void set_up(		 
+  void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
-  virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
 
  protected:
   //! variable that determines if a cylindrical FOV or the whole image will be handled
@@ -111,7 +111,7 @@ private:
   void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
-		  const int min_tangential_pos_num, const int max_tangential_pos_num);
+		  const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
 
   // KT 20/06/2001 changed type from 'const DataSymmetriesForViewSegmentNumbers *'
@@ -246,8 +246,8 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 			  const bool restrict_to_cylindrical_FOV);
 #endif
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 };
 END_NAMESPACE_STIR
 #endif

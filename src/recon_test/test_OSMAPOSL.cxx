@@ -41,15 +41,15 @@ public:
                const std::string & density_filename = "")
     : base_type(projector_pair_filename, proj_data_filename, density_filename)
   {}
-  virtual ~TestOSMAPOSL() {}
+  ~TestOSMAPOSL() override {}
 
   
-  virtual void construct_reconstructor();
+  void construct_reconstructor() override;
   OSMAPOSLReconstruction<target_type>&
   recon()
   { return dynamic_cast<OSMAPOSLReconstruction<target_type>& >(*this->_recon_sptr); }
 
-  void run_tests();
+  void run_tests() override;
 };
 
 

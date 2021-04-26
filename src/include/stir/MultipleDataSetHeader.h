@@ -67,7 +67,7 @@ virtual void set_defaults();
 //! Initialise keymap
 virtual void initialise_keymap();
 //! Post process
-virtual bool post_processing();
+bool post_processing() override;
 
 int _num_data_sets;
 std::vector<std::string> _filenames;

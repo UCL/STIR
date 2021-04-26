@@ -60,7 +60,7 @@ START_NAMESPACE_STIR
 class ArcCorrectionTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 protected:
   void run_tests_for_specific_proj_data_info(const ArcCorrection&);
 };

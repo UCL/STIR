@@ -40,13 +40,13 @@ public:
             const std::string & density_filename = "")
     : base_type(proj_data_filename, density_filename)
   {}
-  virtual ~TestFBP2D() {}
+  ~TestFBP2D() override {}
 
-  virtual std::unique_ptr<ProjDataInfo>
-    construct_default_proj_data_info_uptr() const;
+  std::unique_ptr<ProjDataInfo>
+    construct_default_proj_data_info_uptr() const override;
   
-  virtual void construct_reconstructor();
-  void run_tests();
+  void construct_reconstructor() override;
+  void run_tests() override;
 };
 
 std::unique_ptr<ProjDataInfo>

@@ -127,15 +127,15 @@ class PLSPrior:  public
 
   //! Has to be called before using this object
   /*! \todo set the anatomical image to zero if not defined */
-  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
+  Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr) override;
 
   //! compute the value of the function
   double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! compute gradient
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
+                        const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! get current kappa image
   /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
@@ -189,14 +189,14 @@ protected:
 
   double eta, alpha;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
   //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
-  virtual bool post_processing();
+  bool post_processing() override;
 
   //! Check that the prior is ready to be used
-  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+  void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const override;
 
  private:
 

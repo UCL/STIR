@@ -46,7 +46,7 @@ public:
     explicit IOTests_ITKMulticomponent(const std::string &multi) :
         _multi(multi) {}
 
-    void run_tests();
+    void run_tests() override;
 
 protected:
 

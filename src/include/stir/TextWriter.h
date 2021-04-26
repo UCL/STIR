@@ -31,7 +31,7 @@ public:
 				_stream = 2;
 		}
 	}
-	virtual void write(const char* text) const {
+	void write(const char* text) const override {
 		switch (_stream) {
 		case 1:
 			std::cout << text;
@@ -51,7 +51,7 @@ class TextWriter : public aTextWriter {
 public:
 	std::ostream* out;
 	TextWriter(std::ostream* os = 0) : out(os) {}
-	virtual void write(const char* text) const {
+	void write(const char* text) const override {
 		if (out) {
 			(*out) << text;
 			(*out).flush();

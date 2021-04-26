@@ -53,14 +53,14 @@ class ArrayFunctionObject_1ArgumentImplementation :
   public ArrayFunctionObject<num_dimensions,elemT>
 {
 public:
-  virtual void operator() (Array<num_dimensions,elemT>& array) const
+  void operator() (Array<num_dimensions,elemT>& array) const override
   {
     do_it(array);
   }
 
   //! result stored in another array, implemented inline
-  virtual void inline operator() (Array<num_dimensions,elemT>& out_array, 
-                           const Array<num_dimensions,elemT>& in_array) const
+  void inline operator() (Array<num_dimensions,elemT>& out_array, 
+                           const Array<num_dimensions,elemT>& in_array) const override
   {
     assert(out_array.get_index_range() == in_array.get_index_range());
     out_array = in_array;

@@ -75,7 +75,7 @@ public:
     //! sets default values
     /*! Sets \c use_approximate_hessian to \c true and \c compute_with_penalty to \c false
     */
-    void set_defaults();
+    void set_defaults() override;
 
     //! The main function to compute and save the sqrt of the Hessian row sum volume
     /*! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
@@ -153,8 +153,8 @@ private:
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
 
     //! used to check acceptable parameter ranges, etc...
-    bool post_processing();
-    void initialise_keymap();
+    bool post_processing() override;
+    void initialise_keymap() override;
 };
 
 END_NAMESPACE_STIR

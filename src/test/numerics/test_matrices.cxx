@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 class MatrixTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   void run_tests_1D();
   void run_tests_2D();

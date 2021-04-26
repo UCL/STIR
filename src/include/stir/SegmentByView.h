@@ -77,43 +77,43 @@ public:
   
   //TODO ? how to declare a conversion routine that works for any Segment ?
   //! Get storage order
-  inline StorageOrder get_storage_order() const;
+  inline StorageOrder get_storage_order() const override;
   //! Get view number 
-  inline int get_num_views() const;
+  inline int get_num_views() const override;
   //! Get number of axial positions
-  inline int get_num_axial_poss() const;
+  inline int get_num_axial_poss() const override;
   //! Get number of tangetial positions
-  inline int get_num_tangential_poss()  const;
+  inline int get_num_tangential_poss()  const override;
   //! Get minimum view number
-  inline int get_min_view_num() const;
+  inline int get_min_view_num() const override;
   //! Get maximum view number
-  inline int get_max_view_num() const;
+  inline int get_max_view_num() const override;
   //! Get minimum axial position number
-  inline int get_min_axial_pos_num() const;
+  inline int get_min_axial_pos_num() const override;
   //! Get maximum axial positin number
-  inline int get_max_axial_pos_num() const;
+  inline int get_max_axial_pos_num() const override;
   //! Get minimum tangential position
-  inline int get_min_tangential_pos_num() const;
+  inline int get_min_tangential_pos_num() const override;
   //! Get maximum tangetial position number
-  inline int get_max_tangential_pos_num() const;
+  inline int get_max_tangential_pos_num() const override;
   
   //! Get sinogram
-  Sinogram<elemT> get_sinogram(int axial_pos_num) const;
+  Sinogram<elemT> get_sinogram(int axial_pos_num) const override;
   //! Get viewgram
-  inline Viewgram<elemT> get_viewgram(int view_num) const;
+  inline Viewgram<elemT> get_viewgram(int view_num) const override;
   //! Set sinogram
-  inline void set_sinogram(const Sinogram<elemT> &s);
+  inline void set_sinogram(const Sinogram<elemT> &s) override;
   //! Set sinogram
-  void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);
+  void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num) override;
   //! Set viewgram
-  inline void set_viewgram(const Viewgram<elemT> &v);
+  inline void set_viewgram(const Viewgram<elemT> &v) override;
 
   //! Overloading Array::grow
-  void grow(const IndexRange<3>& range);
+  void grow(const IndexRange<3>& range) override;
   //! Overloading Array::resize
-  void resize(const IndexRange<3>& range);
+  void resize(const IndexRange<3>& range) override;
 
-  virtual bool operator ==(const Segment<elemT>&) const;
+  bool operator ==(const Segment<elemT>&) const override;
 };
 
 END_NAMESPACE_STIR
