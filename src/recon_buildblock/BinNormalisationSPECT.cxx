@@ -119,7 +119,6 @@ post_processing()
   else 
       set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
   
-//  read_norm_data(normalisation_spect_filename);
   return false;
 }
 
@@ -134,6 +133,8 @@ Succeeded
 BinNormalisationSPECT::
 set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
+    
+    set_num_views(norm_proj_data_info_ptr->get_num_views());
   return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
@@ -155,14 +156,10 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) con
 
     if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-        resample_uniformity(//down_sampled_uniformity,
-                            uniformity,
+        resample_uniformity(uniformity,
                             max_tang,
                             zoom);
     }
-
-    if(bin.view_num()==0)
-    set_num_views(norm_proj_data_info_ptr->get_num_views());
 
     int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
     double rel_time;
@@ -190,7 +187,7 @@ float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) con
                     normalisation=
                     normalisation/decay_correction_factor(half_life, rel_time);
                 }
-//std::cout<<"value"<<uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1]<<" "<<normalisation<<std::endl;
+                
 return normalisation;
 }
 
@@ -206,14 +203,10 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
 
     if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-        resample_uniformity(//down_sampled_uniformity,
-                            uniformity,
+        resample_uniformity(uniformity,
                             max_tang,
                             zoom);
     }
-
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
@@ -268,14 +261,10 @@ void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams) const{
 
 if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-    resample_uniformity(//down_sampled_uniformity,
-                        uniformity,
+    resample_uniformity(uniformity,
                         max_tang,
                         zoom);
 }
-
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
@@ -325,7 +314,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 void
 BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
-{//std::ofstream unif_table("uniformity.dat",std::ios::out);
+{
     for(int n=1; n<=num_detector_heads; n++ ){
       
               const std::string n_string = boost::lexical_cast<std::string>(n);
@@ -340,15 +329,13 @@ read_uniformity_table(Array<3,float>& uniformity) const
               for(int j=1;j<=1023;j++)
                   for(int i=1;i<=1023;i++){
                       uniformity[n-1][j][i]=map[j+i*1024];
-//                      std::cout<<"value"<<uniformity[n-1][j][i]<<std::endl;
                   }
               }
 }
 
 void
 BinNormalisationSPECT::
-resample_uniformity(//Array<3,float>& down_sampled_uniformity,
-                    Array<3,float> uniformity,
+resample_uniformity(Array<3,float> uniformity,
                     const int max_tang,
                     const int zoom) const
 {
@@ -361,9 +348,6 @@ for(int n=0;n<=2;n++){
 
                     down_sampled_uniformity[n][i][j]=down_sampled_uniformity[n][i][j] +
                                             uniformity[n][zoom*i+l][zoom*j+k]/square(zoom);
-//                    std::cout<<"uni"<<uniformity[n][zoom*i+l][zoom*j+k]/square(zoom)<<","
-//                             <<down_sampled_uniformity[n][i][j]<<std::endl;
-
                 }
             }
         }
