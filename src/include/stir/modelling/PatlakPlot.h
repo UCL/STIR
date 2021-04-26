@@ -83,7 +83,7 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
   static const char * const registered_name; 
 
    PatlakPlot();   //!< Default constructor (calls set_defaults())
-   ~PatlakPlot();   //!< default destructor
+   ~PatlakPlot() override;   //!< default destructor
    /*! \name Functions to get parameters */
    //@{
     //! Simply gets model matrix, if it has been already stored.
@@ -137,9 +137,9 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     void 
       apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const;
 
-    void set_defaults();
+    void set_defaults() override;
 
-    Succeeded set_up(); 
+    Succeeded set_up() override; 
 
   bool _if_cardiac;   //!< Switches between cardiac and brain data
   unsigned int _starting_frame;   //!< Starting frame to apply the model
@@ -154,8 +154,8 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
 
  private:
   void create_model_matrix();  //!< Creates model matrix from private members
-  void initialise_keymap();
-  bool post_processing();
+  void initialise_keymap() override;
+  bool post_processing() override;
   mutable ModelMatrix<2> _model_matrix;
   bool _matrix_is_stored;
   typedef RegisteredParsingObject<PatlakPlot,KineticModel> base_type;

@@ -68,7 +68,7 @@ public:
     : stir_math_executable(stir_math_executable)
   {}
   
-  void run_tests();
+  void run_tests() override;
 private:
   string stir_math_executable;
   //! returns true if it ran it successfully

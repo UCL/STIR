@@ -77,7 +77,7 @@ public:
   typedef DiscretisedDensity<3,float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
-  void run_tests();
+  void run_tests() override;
 protected:
   char const * density_filename;
   shared_ptr<GeneralisedPrior<target_type> >  objective_function_sptr;

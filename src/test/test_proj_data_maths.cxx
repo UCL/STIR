@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 class ProjDataInMemoryTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 static

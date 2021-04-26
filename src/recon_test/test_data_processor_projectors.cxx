@@ -39,9 +39,9 @@ public:
     //! Constructor that can take some input data to run the test with
     TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm);
 
-    virtual ~TestDataProcessorProjectors() {}
+    ~TestDataProcessorProjectors() override {}
 
-    void run_tests();
+    void run_tests() override;
 protected:
     std::string _sinogram_filename;
     float _fwhm;

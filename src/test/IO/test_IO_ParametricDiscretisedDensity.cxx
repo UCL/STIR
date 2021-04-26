@@ -78,8 +78,8 @@ public:
     explicit IOTests_ParametricDiscretisedDensity(istream& in) : IOTests(in) {}
 
 protected:
-    void create_image();
-    void check_result();
+    void create_image() override;
+    void check_result() override;
 };
 void IOTests_ParametricDiscretisedDensity::create_image()
 {

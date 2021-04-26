@@ -170,14 +170,14 @@ public:
   //! Destructor
   /*! Calls end_distributable_computation()
    */
-  ~PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
+  ~PoissonLogLikelihoodWithLinearModelForMeanAndProjData() override;
 
   //! Returns a pointer to a newly allocated target object (with 0 data).
   /*! Dimensions etc are set from the \a proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
+  TargetT *
+    construct_target_ptr() const override; 
 
   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in 
@@ -205,42 +205,42 @@ public:
 
   */
   //@{
-  int set_num_subsets(const int num_subsets);
+  int set_num_subsets(const int num_subsets) override;
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
   //N.E. Changed to ExamData
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
-  virtual const ProjData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData> &) override;
+  const ProjData& get_input_data() const override;
 //@}
   
-  virtual void 
+  void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
                                                           const TargetT &current_estimate, 
-                                                          const int subset_num); 
+                                                          const int subset_num) override; 
 
-  virtual std::unique_ptr<ExamInfo>
-  get_exam_info_uptr_for_target()  const;
+  std::unique_ptr<ExamInfo>
+  get_exam_info_uptr_for_target()  const override;
 #if 0
   // currently not used
   float sum_projection_data() const;
 #endif
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
  protected:
-  virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
+  Succeeded 
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) override;
 
-  virtual double
+  double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num);
+                                                      const int subset_num) override;
 
   /*!
     The Hessian (without penalty) is approximately given by:
@@ -271,10 +271,10 @@ public:
 
     It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson).
   */
-  virtual Succeeded 
+  Succeeded 
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                              const TargetT& input,
-                                                                             const int subset_num) const;
+                                                                             const int subset_num) const override;
 
   /*!
     The Hessian (without penalty) is approximately given by:
@@ -289,11 +289,11 @@ public:
     This function is computationally expensive and can be approximated, see
     add_multiplication_with_approximate_sub_Hessian_without_penalty()
   */
-  virtual Succeeded
+  Succeeded
         actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
                 const TargetT& current_image_estimate,
                 const TargetT& input,
-                const int subset_num) const;
+                const int subset_num) const override;
 
 protected:
   //! Filename with input projection data
@@ -343,13 +343,13 @@ protected:
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets keys for parsing
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap();
+  void initialise_keymap() override;
   //! checks values after parsing
   /*! Has to be called by post_processing in the leaf-class */  
-  virtual bool post_processing();
+  bool post_processing() override;
 
   //! Checks of the current subset scheme is approximately balanced
   /*! For this class, this means that the sub-sensitivities are 
@@ -357,7 +357,7 @@ protected:
       of views etc. It ignores unbalancing caused by normalisation_sptr
       (e.g. for instance when using asymmetric attenuation).
   */
-  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
 #if 0

@@ -107,22 +107,22 @@ class QuadraticPrior:  public
   //! Constructs it explicitly
   QuadraticPrior(const bool only_2D, float penalization_factor);
   
-  virtual bool
-    parabolic_surrogate_curvature_depends_on_argument() const
+  bool
+    parabolic_surrogate_curvature_depends_on_argument() const override
     { return false; }
 
   //! compute the value of the function
   double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! compute gradient 
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
+                        const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! compute the parabolic surrogate for the prior
   /*! in the case of quadratic priors this will just be the sum of weighting coefficients*/
   void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
+                        const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! compute Hessian 
   void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
@@ -130,16 +130,16 @@ class QuadraticPrior:  public
                 const DiscretisedDensity<3,elemT> &current_image_estimate);
 
   //! Call accumulate_Hessian_times_input
-  virtual Succeeded 
+  Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
-                                                const DiscretisedDensity<3,elemT>& input) const;
+                                                const DiscretisedDensity<3,elemT>& input) const override;
 
   //! Compute the multiplication of the hessian of the prior multiplied by the input.
   //! For the quadratic function, the hessian of the prior is 1.
   //! Therefore this will return the weights multiplied by the input.
-  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+  Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                    const DiscretisedDensity<3,elemT>& current_estimate,
-                                                   const DiscretisedDensity<3,elemT>& input) const;
+                                                   const DiscretisedDensity<3,elemT>& input) const override;
 
   //! get penalty weights for the neighbourhood
   Array<3,float> get_weights() const;
@@ -158,7 +158,7 @@ class QuadraticPrior:  public
   void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
+  Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr) override;
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -180,11 +180,11 @@ protected:
   std::string kappa_filename;
 
   //! Check that the prior is ready to be used
-  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+  void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
  private:
   shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
 };

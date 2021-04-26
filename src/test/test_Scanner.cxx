@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 class ScannerTests: public RunTests
 {
 public:  
-  void run_tests();
+  void run_tests() override;
 private:
   void test_scanner(const Scanner&);
 };

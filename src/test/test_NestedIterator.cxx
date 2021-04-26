@@ -49,7 +49,7 @@ class NestedIteratorTests : public RunTests
 private:
 
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 

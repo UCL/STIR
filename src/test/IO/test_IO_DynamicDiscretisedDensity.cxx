@@ -78,8 +78,8 @@ public:
 
 protected:
 
-    void create_image();
-    void check_result();
+    void create_image() override;
+    void check_result() override;
 };
 
 void IOTests_DynamicDiscretisedDensity::create_image()

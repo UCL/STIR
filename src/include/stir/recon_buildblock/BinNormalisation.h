@@ -62,7 +62,7 @@ public:
 
   BinNormalisation();
 
-  virtual ~BinNormalisation();
+  ~BinNormalisation() override;
   virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)

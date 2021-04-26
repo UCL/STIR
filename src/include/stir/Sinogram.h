@@ -97,9 +97,9 @@ public:
   inline Sinogram get_empty_copy(void) const;
  
   //! Overloading Array::grow
-  void grow(const IndexRange<2>& range);
+  void grow(const IndexRange<2>& range) override;
   //! Overloading Array::resize
-  void resize(const IndexRange<2>& range);
+  void resize(const IndexRange<2>& range) override;
 
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo>

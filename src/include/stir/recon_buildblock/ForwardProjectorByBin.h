@@ -125,7 +125,7 @@ virtual void set_up(
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-    virtual ~ForwardProjectorByBin();
+    ~ForwardProjectorByBin() override;
 
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
@@ -156,8 +156,8 @@ protected:
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _pre_data_processor_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
  protected:
   //! ProjDataInfo set by set_up()

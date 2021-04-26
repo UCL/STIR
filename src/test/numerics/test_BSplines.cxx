@@ -54,7 +54,7 @@ namespace BSpline {
   public:
     BSplines_Tests() 
     {}
-    void run_tests();
+    void run_tests() override;
   private:  
     template <class elemT>
     bool check_at_sample_points(const std::vector<elemT>& v,

@@ -60,7 +60,7 @@ class find_fwhm_in_imageTests : public RunTests
 public:
   find_fwhm_in_imageTests() 
   {}
-  void run_tests();
+  void run_tests() override;
 private:
   //istream& in;
 };

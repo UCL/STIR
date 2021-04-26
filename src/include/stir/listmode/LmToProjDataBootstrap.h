@@ -85,13 +85,13 @@ public:
   /*! The \a seed argument will override any value found in the par file */
   LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed);
 
-  virtual Succeeded set_up();
+  Succeeded set_up() override;
 protected:
   //! will be called when a new time frame starts
   /*! Initialises a vector with the number of times each event has to be replicated */
-  virtual void start_new_time_frame(const unsigned int new_frame_num);
+  void start_new_time_frame(const unsigned int new_frame_num) override;
 
-  virtual void get_bin_from_event(Bin& bin, const ListEvent&) const;
+  void get_bin_from_event(Bin& bin, const ListEvent&) const override;
 
 
   // \name parsing variables
@@ -108,9 +108,9 @@ private:
 
   replication_type num_times_to_replicate;
   mutable replication_type::const_iterator num_times_to_replicate_iter;
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   
 };

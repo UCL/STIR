@@ -90,7 +90,7 @@ class OutputFileFormatTests : public RunTests
 public:
   OutputFileFormatTests(istream& in) ;
 
-  void run_tests();
+  void run_tests() override;
 private:
   istream& in;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_ptr;

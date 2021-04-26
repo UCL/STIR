@@ -63,14 +63,14 @@ class MedianArrayFilter3D: public ArrayFunctionObject_2ArgumentImplementation<3,
 public:
   explicit MedianArrayFilter3D (const Coordinate3D<int>& mask_radius);    
   MedianArrayFilter3D ();    
-  bool is_trivial() const;
+  bool is_trivial() const override;
   
 private:
   int mask_radius_x;
   int mask_radius_y;
   int mask_radius_z;
   
-  virtual void do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const;
+  void do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const override;
 
   //! extract all neighbours and put them in a 1D array
   /*! \return the number of neighbours within the image range

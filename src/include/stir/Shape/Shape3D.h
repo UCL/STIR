@@ -76,7 +76,7 @@ class Shape3D :
 public:
 
   
-  virtual ~Shape3D() {}
+  ~Shape3D() override {}
   
   //! Compare shapes
   /*!
@@ -195,7 +195,7 @@ public:
   
 
   // need to overload this to avoid ambiguity between Object::parameter_info and ParsingObject::parameter_info()
-  virtual std::string parameter_info();
+  std::string parameter_info() override;
 
 protected:
   inline Shape3D();
@@ -203,8 +203,8 @@ protected:
 
   //! \name Parsing functions
   //@{
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
+  void set_defaults() override;  
+  void initialise_keymap() override;
   //@}
 private:
   //! origin of the shape

@@ -63,13 +63,13 @@ private:
 
     unsigned int find_segment_offset(const int segment_num) const;
     //! Set Viewgram<float>
-    Succeeded set_viewgram(const Viewgram<float>& v);
+    Succeeded set_viewgram(const Viewgram<float>& v) override;
     //! Set Sinogram<float>
-    Succeeded set_sinogram(const Sinogram<float>& s);
+    Succeeded set_sinogram(const Sinogram<float>& s) override;
     //! Get Viewgram<float>
-    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
+    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const override;
     //! Get Sinogram<float>
-    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const;
+    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const override;
     //! Get the segment sequence
     std::vector<int> get_segment_sequence_in_hdf5() const;
     std::vector< unsigned int > seg_ax_offset;

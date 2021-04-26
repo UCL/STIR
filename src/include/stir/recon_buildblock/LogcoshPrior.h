@@ -116,21 +116,21 @@ public:
     //! Constructs it explicitly with scalar
     LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
-    virtual bool
-    parabolic_surrogate_curvature_depends_on_argument() const
+    bool
+    parabolic_surrogate_curvature_depends_on_argument() const override
     { return false; }
 
     //! compute the value of the function
     double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
     //! compute gradient
     void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                          const DiscretisedDensity<3,elemT> &current_image_estimate);
+                          const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
     //! compute the parabolic surrogate for the prior
     void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
-                                       const DiscretisedDensity<3,elemT> &current_image_estimate);
+                                       const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
     //! compute Hessian
     void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
@@ -138,9 +138,9 @@ public:
                          const DiscretisedDensity<3,elemT> &current_image_estimate);
 
     //! Compute the multiplication of the hessian of the prior multiplied by the input.
-    virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+    Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                      const DiscretisedDensity<3,elemT>& current_estimate,
-                                                     const DiscretisedDensity<3,elemT>& input) const;
+                                                     const DiscretisedDensity<3,elemT>& input) const override;
 
     //! get penalty weights for the neigbourhood
     Array<3,float> get_weights() const;
@@ -188,9 +188,9 @@ protected:
     //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
     std::string kappa_filename;
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
 private:
     //! Spatially variant penalty penalty image ptr

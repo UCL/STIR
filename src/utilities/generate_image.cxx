@@ -129,7 +129,7 @@ private:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
-  virtual bool post_processing();
+  bool post_processing() override;
   void set_imaging_modality();
   shared_ptr<ExamInfo> exam_info_sptr;
   std::string imaging_modality_as_string;

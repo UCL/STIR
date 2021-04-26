@@ -48,7 +48,7 @@ class LmToProjDataAbstract : public ParsingObject
 public:
 
     /// Destructor
-    virtual ~LmToProjDataAbstract() {}
+    ~LmToProjDataAbstract() override {}
 
     /// Set up
     virtual Succeeded set_up() { return Succeeded::yes; }

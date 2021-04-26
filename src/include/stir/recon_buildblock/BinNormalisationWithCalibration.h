@@ -44,7 +44,7 @@ public:
     
   BinNormalisationWithCalibration();
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
-  float get_calibration_factor() const;
+  float get_calibration_factor() const override;
   float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
@@ -54,14 +54,14 @@ public:
   // needs to be implemented by derived class
   virtual float get_uncalibrated_bin_efficiency(const Bin&) const  = 0;
  
-  virtual float get_bin_efficiency(const Bin& bin) const final
+  float get_bin_efficiency(const Bin& bin) const final
    { return this->get_uncalibrated_bin_efficiency(bin)/get_calib_decay_branching_ratio_factor(bin); }
   
  protected:
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 
 private:

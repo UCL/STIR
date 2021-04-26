@@ -99,13 +99,13 @@ class ProjMatrixByBinSPECTUB :
   ProjMatrixByBinSPECTUB();
 
   //! Destructor (deallocates UB SPECT memory)
-  ~ProjMatrixByBinSPECTUB();
+  ~ProjMatrixByBinSPECTUB() override;
 
   //! Checks all necessary geometric info
-  virtual void set_up(		 
+  void set_up(		 
 		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-                      );
+                      ) override;
 
   bool get_keep_all_views_in_cache() const;
   //! Enable keeping the matrix in memory
@@ -181,13 +181,13 @@ class ProjMatrixByBinSPECTUB :
   bool already_setup;
 
 
-  virtual void 
+  void 
     calculate_proj_matrix_elems_for_one_bin(
-                                            ProjMatrixElemsForOneBin&) const;
+                                            ProjMatrixElemsForOneBin&) const override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
 

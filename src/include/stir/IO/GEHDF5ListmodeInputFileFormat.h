@@ -51,24 +51,24 @@ class GEHDF5ListmodeInputFileFormat :
 public InputFileFormat<ListModeData >
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "GEHDF5"; }
 
  protected:
 
- virtual 
+ 
  bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+		    std::istream& input) const override
   {
     error("Cannot read from stream");
     return false; 
   }
  
-  virtual bool 
+  bool 
     can_read(const FileSignature& signature,
-	     const std::string& filename) const
+	     const std::string& filename) const override
   {
     // check that it's a GE HDF5 list file etc
     try
@@ -98,16 +98,16 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
       }
   }
  public:
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+  unique_ptr<data_type>
+    read_from_file(std::istream& input) const override
   {
     warning("read_from_file for GEHDF5 listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
       unique_ptr<data_type>();
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {	
     return unique_ptr<data_type>(new CListModeDataGEHDF5(filename));
   }

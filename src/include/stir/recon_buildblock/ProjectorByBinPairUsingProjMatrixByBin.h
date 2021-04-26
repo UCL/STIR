@@ -62,10 +62,10 @@ public:
 
   //! Stores all necessary geometric info
   /*! First constructs forward and back projectors and then calls base_type::setup */
-  virtual Succeeded set_up(		 
+  Succeeded set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+    ) override;
 
   ProjMatrixByBin const * 
     get_proj_matrix_ptr() const;
@@ -77,9 +77,9 @@ public:
 private:
 
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
-  void set_defaults();
-  void initialise_keymap();
-  bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR
