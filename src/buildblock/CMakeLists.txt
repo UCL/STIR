@@ -81,6 +81,11 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        GeometryBlocksOnCylindrical
+        ProjDataInfoBlocksOnCylindrical
+        ProjDataInfoBlocksOnCylindricalNoArcCorr
+        ProjDataInfoGeneric
+        ProjDataInfoGenericNoArcCorr
         date_time_functions
 )
 if (HAVE_HDF5)

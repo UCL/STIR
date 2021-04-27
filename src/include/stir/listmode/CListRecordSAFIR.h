@@ -3,6 +3,7 @@
  Coincidence Event Class for SAFIR: Header File
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
 	Copyright 2020 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +27,7 @@
   \brief Declaration of class stir::CListEventSAFIR and stir::CListRecordSAFIR with supporting classes
 
   \author Jannis Fischer
+	\author Parisa Khateri
 */
 
 #ifndef __stir_listmode_CListRecordSAFIR_H__
@@ -43,7 +45,7 @@
 #include "boost/cstdint.hpp"
 
 #include "stir/listmode/DetectorCoordinateMapFromFile.h"
-
+#include "boost/make_shared.hpp"
 
 START_NAMESPACE_STIR
 
@@ -78,6 +80,11 @@ public:
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
+	
+	//! author Parisa Khateri
+  //! Override the default implementation
+  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+
 	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
 
 	//! Returns 0 if event is prompt and 1 if random/delayed

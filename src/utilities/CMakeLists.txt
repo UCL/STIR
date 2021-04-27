@@ -74,6 +74,11 @@ set(${dir_EXE_SOURCES}
 	find_ML_normfactors3D
 	find_ML_normfactors
 	find_ML_singles_from_delayed
+  find_normfactors_from_cylinder_data
+  find_recovery_coefficients_in_image_quality_phantom_nema_nu4
+  write_sinogram_to_txt
+  find_sum_projection_of_viewgram_and_sinogram
+  separate_true_from_random_scatter_for_necr
 )
 
 if (AVW_FOUND)

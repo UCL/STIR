@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2016, UCL
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,6 +29,7 @@
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
   \author PARAPET project
+  \author Parisa Khateri
 
 
 */
@@ -236,6 +238,48 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
+std::string
+Scanner::get_scanner_orientation() const
+{
+  return scanner_orientation;
+}
+
+std::string
+Scanner::get_scanner_geometry() const
+{
+  return scanner_geometry;
+}
+
+float
+Scanner::get_axial_crystal_spacing() const
+{
+       return axial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_crystal_spacing() const
+{
+       return transaxial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_block_spacing() const
+{
+       return transaxial_block_spacing;
+}
+
+float
+Scanner::get_axial_block_spacing() const
+{
+       return axial_block_spacing;
+}
+
+std::string
+Scanner::get_crystal_map_file_name() const
+{
+  return crystal_map_file_name;
+}
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)
@@ -345,6 +389,41 @@ Scanner::set_reference_energy(const float new_num)
     reference_energy = new_num;
 }
 
+void Scanner::set_scanner_orientation(const std::string& new_scanner_orientation)
+{
+  scanner_orientation = new_scanner_orientation;
+}
+
+void Scanner::set_scanner_geometry(const std::string& new_scanner_geometry)
+{
+  scanner_geometry = new_scanner_geometry;
+}
+
+void Scanner::set_axial_crystal_spacing(const float&  new_spacing)
+{
+  axial_crystal_spacing = new_spacing;
+}
+
+void Scanner::set_transaxial_crystal_spacing(const float&  new_spacing)
+{
+  transaxial_crystal_spacing = new_spacing;
+}
+
+void Scanner::set_transaxial_block_spacing(const float&  new_spacing)
+{
+  transaxial_block_spacing = new_spacing;
+}
+
+void Scanner::set_axial_block_spacing(const float&  new_spacing)
+{
+  axial_block_spacing = new_spacing;
+}
+
+void Scanner::set_crystal_map_file_name(const std::string& new_crystal_map_file_name)
+{
+  crystal_map_file_name = new_crystal_map_file_name;
+}
+
 /********    Calculate singles bin index from detection position    *********/
 
 
@@ -389,7 +468,21 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
   return(singles_bin_index % get_num_transaxial_singles_units());
 }
 
-
+// For retrieving the coordinates / detector, ring id from the scanner
+stir::DetectionPosition<>
+Scanner::get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const{
+    if (crystal_map_file_name == ""){
+        stir::error("Crystal Map not defined!");
+    }
+    return input_index_to_stir_index.at(det_pos);
+}
+stir::CartesianCoordinate3D<float>
+Scanner::get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const{
+    if (crystal_map_file_name == ""){
+        stir::error("Crystal Map not defined!");
+    }
+    return stir_index_to_coord.at(det_pos);
+}
 
 END_NAMESPACE_STIR
 
