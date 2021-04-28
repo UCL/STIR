@@ -92,7 +92,9 @@ void
 InputStreamWithRecordsFromHDF5<RecordT>::
 fill_buffer(const std::streampos offset) const
 {
-  this->buffer_size = std::min(this->max_buffer_size, m_list_size - offset);
+  this->buffer_size =
+    static_cast<std::size_t>(std::min(static_cast<uint64_t>(this->max_buffer_size),
+                                      m_list_size - offset));
   input_sptr->read_list_data(buffer.get(), offset, hsize_t(this->buffer_size));
   this->start_of_buffer_offset =  offset;
 }
@@ -102,14 +104,21 @@ void
 InputStreamWithRecordsFromHDF5<RecordT>::
 read_data(char* output,const std::streampos offset, const hsize_t size) const
 {
-  if (this->buffer_size == 0 || offset < this->start_of_buffer_offset || offset >= (this->start_of_buffer_offset + this->buffer_size))
+  if (this->buffer_size == 0 || offset < this->start_of_buffer_offset ||
+      offset >= (this->start_of_buffer_offset + static_cast<std::streampos>(this->buffer_size)))
     this->fill_buffer(offset);
+
+  // copy data from buffer to output
   const std::size_t offset_in_buffer = offset - this->start_of_buffer_offset;
   const hsize_t size_in_buffer = std::min(size, static_cast<hsize_t>(this->buffer_size - offset_in_buffer));
 
   memcpy(output, this->buffer.get() + offset_in_buffer, static_cast<std::size_t>(size_in_buffer));
+
+  // check if there is anything else to read after the end of the buffer
   if (size_in_buffer < size)
-    read_data(output + size_in_buffer, offset + size_in_buffer, size - size_in_buffer);
+    read_data(output + size_in_buffer,
+              offset + static_cast<std::streampos>(size_in_buffer),
+              size - size_in_buffer);
 }
 
 template <class RecordT>
@@ -131,7 +140,8 @@ get_next_record(RecordT& record)
       auto remainder = size_of_record - this->size_of_record_signature;
       if (remainder > 0)
         this->read_data(data_ptr+this->size_of_record_signature,
-                       current_offset+this->size_of_record_signature, hsize_t(remainder));
+                       current_offset+static_cast<std::streampos>(this->size_of_record_signature),
+                       hsize_t(remainder));
       current_offset += size_of_record;
       return
         record.init_from_data_ptr(data_ptr, size_of_record,false);
