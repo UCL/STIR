@@ -18,6 +18,7 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
 	SinglesRates.cxx
 	SinglesRatesForTimeFrames.cxx
+        SinglesRatesForTimeSlices.cxx
         randoms_from_singles.cxx
 )
 if (HAVE_ECAT)
