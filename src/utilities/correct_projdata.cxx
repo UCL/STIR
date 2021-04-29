@@ -73,6 +73,8 @@ correct_projdata Parameters :=
 
   ; scatter term to be subtracted AFTER norm+atten correction
   ; defaults to 0
+  ; - scatter which should NOT be used here (it would need to be added to randoms and used above)
+  ; - additive_term which should be used here BUT already included the randoms
   ;scatter projdata filename := scatter.hs
 
   ; to interpolate to uniform sampling in 's', set value to 1
