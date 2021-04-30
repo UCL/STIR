@@ -35,7 +35,6 @@ class SinglesRates;
 
   \todo Dead-time is currently completely ignored.
   \todo The function currently assumes F-18 half-life.
-  \todo The SinglesRates class actually gives total singles, not rates!
 */
 void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window);
 

@@ -67,6 +67,9 @@ START_NAMESPACE_ECAT7
   End Bin Normalisation From ECAT7:=
   \endverbatim
  
+  \par Warning
+  dead-time code might currently give wrong results due to uncertainty in units for singles rates
+
 */
 class BinNormalisationFromECAT7 :
    public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation>
