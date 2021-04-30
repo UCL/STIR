@@ -25,6 +25,7 @@
 
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
+#include "stir/TimeFrameDefinitions.h"
 
 
 START_NAMESPACE_STIR
@@ -130,7 +131,11 @@ public:
  
  //! Return the time interval per slice of singles data.
  double get_singles_time_interval() const;
- 
+
+ //! return time-intervals for every slice
+ TimeFrameDefinitions
+   get_time_frame_definitions() const;
+
 
 protected:
  
@@ -155,7 +160,7 @@ protected:
  void set_time_interval();
 
  //! get slice start time.
- double get_slice_start(int slice_index) const;
+ double get_slice_start_time(int slice_index) const;
  
 };
 

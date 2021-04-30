@@ -51,12 +51,13 @@ public:
  static const char * const registered_name; 
 
  //! Default constructor 
- explicit SinglesFromGEHDF5();
- 
- // IO Methods
-//PW Reading singles from .sgl changed to .BLF file format. Adapt from GE HDF5 listmode file read.
- //! The function that reads singles from an RDF file
- unsigned int read_singles_from_file(const std::string& rdf_filename);
+ SinglesFromGEHDF5();
+
+ //! construct from filename
+ explicit SinglesFromGEHDF5(const std::string& rdf_filename)
+ { read_from_file(rdf_filename); }
+
+ void read_from_file(const std::string& rdf_filename);
  
 
 private:

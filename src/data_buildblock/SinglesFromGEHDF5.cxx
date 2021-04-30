@@ -44,9 +44,9 @@ SinglesFromGEHDF5()
 {}
 
 
-unsigned int
+void
 SinglesFromGEHDF5::
-read_singles_from_file(const std::string& rdf_filename)
+read_from_file(const std::string& rdf_filename)
 {
 
     unsigned int slice = 0;
@@ -84,24 +84,21 @@ read_singles_from_file(const std::string& rdf_filename)
         //TODO resize singles to return array with new sizes
     }
     _times = std::vector<double>(_num_time_slices);
-    if (_num_time_slices>1) // this is the same as checking if the input file is a listmode file
+    if (_num_time_slices>1) // this is currently the same as checking if the input file is a listmode file
     {
+      // GE RDF9 listmode stores singles every second
+      _singles_time_interval = 1.0;
       for(unsigned int slice = 0;slice < _num_time_slices;++slice)
-          _times[slice] = slice+1.0; 
+        _times[slice] = slice+_singles_time_interval; // note that this has to store the "end-time" of the slice
 
       assert(_times.size()!=0);
-      _singles_time_interval = _times[1] - _times[0];
     }
     else // Then it must be a sinogram, and therefore only has 1 time and 1 interval.
     {
         TimeFrameDefinitions tf = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions();
-        _times[0]= tf.get_duration(1);
+        _times[0]= tf.get_end_time(1);
         _singles_time_interval = tf.get_duration(1);
     }
-    
-    // Return number of time slices read.
-    return slice;
-    
 }
 
 
@@ -119,7 +116,7 @@ bool
 SinglesFromGEHDF5::
 post_processing()
 {
-  read_singles_from_file(_rdf_filename);
+  read_from_file(_rdf_filename);
   return false;
 }
 

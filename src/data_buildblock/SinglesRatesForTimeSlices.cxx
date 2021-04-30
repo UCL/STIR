@@ -25,6 +25,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <vector>
+#include <utility>
 #include <algorithm>
 
 
@@ -62,13 +63,7 @@ get_rates_for_frame(double start_time,
   int start_slice = get_start_time_slice_index(start_time);
   int end_slice = get_end_time_slice_index(end_time);
   
-  double frame_start_time;
-  if ( start_slice == 0 ) {
-    frame_start_time = _times[0] - _singles_time_interval;
-  } else {
-    frame_start_time = _times[start_slice - 1];
-  }
-
+  double frame_start_time = get_slice_start_time(start_slice);
   double frame_end_time = _times[end_slice];
 
   // Create temp FrameSinglesRate object
@@ -227,8 +222,7 @@ rebin(std::vector<double>& new_end_times) {
   // Sort the set of new time slices.
   std::sort(new_end_times.begin(), new_end_times.end());
 
-  // Start with initial time of 0.0 seconds.
-  double start_time = 0;
+  double start_time = get_slice_start_time(0);
 
   
   // Loop over new time slices.
@@ -430,19 +424,33 @@ set_time_interval() {
 // get slice start time.
 double 
 SinglesRatesForTimeSlices::
-get_slice_start(int slice_index) const {
+get_slice_start_time(int slice_index) const {
 
   if ( slice_index >= _num_time_slices ) {
     slice_index = _num_time_slices - 1;
   }
   
   if ( slice_index == 0 ) {
-    return(0); // TODO allow for non-zero start
+    return(_times[0] - _singles_time_interval);
   } else {
     return(_times[slice_index - 1]);
   }
 }
- 
+
+TimeFrameDefinitions
+SinglesRatesForTimeSlices::
+get_time_frame_definitions() const
+{
+
+  std::vector<std::pair<double, double> > start_ends(get_num_time_slices());
+  for (int i=0; i<get_num_time_slices(); ++i)
+    {
+      start_ends[i].first=get_slice_start_time(i);
+      start_ends[i].second=_times[i];
+    }
+  return TimeFrameDefinitions(start_ends);
+}
+
 END_NAMESPACE_STIR
 
 

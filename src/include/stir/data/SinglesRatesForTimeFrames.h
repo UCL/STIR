@@ -77,7 +77,7 @@ public:
     unsigned int get_num_frames() const;
 
     //! Get the time frame definitions
-    const TimeFrameDefinitions& 
+    const TimeFrameDefinitions&
       get_time_frame_definitions() const;
 
 protected:
