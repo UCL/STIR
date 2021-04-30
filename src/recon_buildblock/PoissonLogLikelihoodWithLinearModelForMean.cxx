@@ -368,6 +368,10 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
 {
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("compute_sub_gradient_without_penalty subset_num out-of-range error");
+  if (!this->use_subset_sensitivities)
+    // When use_subset_sensitivities==false, subset sensitivity are populated with `total_sensitivity / num_subsets`
+    error("compute_sub_gradient_without_penalty: with use_subset_sensitivities = false, "
+          "there is an error in the gradient computation.");
 
   this->
     compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
