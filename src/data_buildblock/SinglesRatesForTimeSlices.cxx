@@ -304,68 +304,47 @@ get_singles(const int singles_bin_index,
   
   // Total contribution from all slices.
   double total_singles;
+  // Start and end times for starting and ending slices.
+  double slice_start_time;
+  double slice_end_time;
 
+  // Calculate the fraction of the start_slice to include.
+  slice_start_time = get_slice_start_time(start_slice);
+  slice_end_time = _times[start_slice];
 
-  {
-    if (start_time>end_time)
-      error(boost::format("get_singles() called with start_time %1% larger than end time %2%")
-            % start_time % end_time);
+  if (start_time>end_time)
+    error(boost::format("get_singles() called with start_time %1% larger than end time %2%")
+          % start_time % end_time);
+  if (start_time < get_slice_start_time(start_slice) - 1e-2 /* allow for some rounding */)
+    error(boost::format("get_singles() called with start time %1% which is smaller than the start time in the data (%2%)")
+          % start_time % slice_start_time);
+  if (end_time > _times[end_slice] + 1e-2 /* allow for some rounding */)
+      error(boost::format("get_singles() called with end time %1% which is larger than the end time in the data (%2%)")
+            % end_time % slice_end_time);
 
-    // Start and end times for starting and ending slices.
-    double slice_start_time;
-    double slice_end_time;
-    double included_duration; 
-    double old_duration;
-    double fraction;
-    
-    
-    // Total slices included (including fractional amounts) in the average.
-    float total_slices;
-        
-    
+  double old_duration = slice_end_time - slice_start_time;
+  double included_duration = slice_end_time - start_time;
 
-    // Calculate the fraction of the start_slice to include.
-    slice_start_time = get_slice_start_time(start_slice);
-    slice_end_time = _times[start_slice];
+  double fraction = included_duration / old_duration;
+    
+  // Set the total singles so far to be the fraction of the bin.
+  total_singles = fraction * _singles[start_slice][singles_bin_index];
+  if ( start_slice < end_slice ) {
 
-    if (start_time < slice_start_time - 1e-2 /* allow for some rounding */)
-      error(boost::format("get_singles() called with start time %1% which is smaller than the start time in the data (%2%)")
-            % start_time % slice_start_time);
-    old_duration = slice_end_time - slice_start_time;
-    included_duration = slice_end_time - start_time;
-
-    fraction = included_duration / old_duration;
-       
-    
-    // Set the total number of contributing bins to this fraction.
-    total_slices = fraction;
-    
-    // Set the total singles so far to be the fraction of the bin.
-    total_singles = fraction * _singles[start_slice][singles_bin_index];
-    
-    
-    
     // Calculate the fraction of the end_slice to include.
     slice_start_time = get_slice_start_time(end_slice);
     slice_end_time = _times[end_slice];
-    if (end_time > slice_end_time + 1e-2 /* allow for some rounding */)
-      error(boost::format("get_singles() called with end time %1% which is larger than the end time in the data (%2%)")
-            % end_time % slice_end_time);
         
     old_duration = slice_end_time - slice_start_time;
     included_duration = end_time - slice_start_time;
         
     fraction = included_duration / old_duration;
-    
-    // Add this fraction to the total of the number of bins contributing.
-    total_slices += fraction;
-    
+
     // Add the fraction of the bin to the running total.
     total_singles += fraction * _singles[end_slice][singles_bin_index];
- 
     
     // Add all intervening slices.
-    for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
+    for(int slice = start_slice + 1; slice < end_slice ; ++slice) {
       total_singles += _singles[slice][singles_bin_index];
     }
   }
