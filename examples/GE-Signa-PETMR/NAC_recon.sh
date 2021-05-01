@@ -6,11 +6,13 @@
 # Edits: Ander Biguri
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
+: ${pardir:=$(dirname $0)}
+# convert to absolute path (assumes that it exists), from DVK's answer on stackexchange
+pardir=`cd "$pardir";pwd`
 
 # names are from unlist_and_randoms
 : ${sino_input:=sinospan2_f1g1d0b0.hs}
-: ${randoms3d:=randomsspan2.hs}
+: ${randoms3d:=randomsspan2_f1g1d0b0.hs}
 
 : ${num_subsets:=14}
 : ${num_subiters:=42}
@@ -26,7 +28,7 @@ mkdir -p output
 
 # output name (or input if it exists already) for normalisation sinogram
 : ${norm_sino_prefix:=output/fullnormfactorsspan2}
-${pardir}/create_norm_projdata.sh ${norm_sino_prefix} ${RDFNORM} ${sino_input}
+${pardir}/create_norm_projdata.sh "${norm_sino_prefix}" "${RDFNORM}" "${sino_input}"
 
 # use some more memorable names
 data3d=${sino_input}
@@ -34,7 +36,7 @@ norm3d=${norm_sino_prefix}.hs
 
 echo "Creating additive sinogram for the reconstruction (randoms only here)"
 additive_sino=output/add_sino.hs
-stir_math -s ${additive_sino}  ${randoms3d} ${norm3d}
+stir_math -s ${additive_sino}  "${randoms3d}" "${norm3d}"
 
 ### do an image reconstruction
 
@@ -45,6 +47,6 @@ stir_math -s ${additive_sino}  ${randoms3d} ${norm3d}
 
 echo "Running OSMAPOSL"
 echo "Log will be in NAC_image.log"
-INPUT=${data3d} OUTPUT=NAC_image NORM=${norm3d} ADDSINO=${additive_sino} \
+INPUT="${data3d}" OUTPUT=NAC_image NORM="${norm3d}" ADDSINO="${additive_sino}" \
     SUBSETS=$num_subsets SUBITERS=$num_subiters SAVEITERS=$num_subsets SENS=output/subset_sens_NAC RECOMP_SENS=1 \
      OSMAPOSL ${pardir}/OSMAPOSLbackground.par 2>&1 | tee NAC_image.log

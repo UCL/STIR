@@ -6,22 +6,25 @@
 # we would need a simple loop to cover that case as well.
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
+: ${pardir:=$(dirname $0)}
+# convert to absolute path (assumes that it exists), from DVK's answer on stackexchange
+pardir=`cd "$pardir";pwd`
 
 # should get these parameters from command line
 : ${INPUT:=LIST0000.BLF}
 : ${FRAMES:=frames.fdef}
+: ${TEMPLATE:="$pardir"/template.hs}
+export INPUT
+export FRAMES
+export TEMPLATE
 
-export INPUT FRAMES
-
-if [ ! -f $FRAMES ]; then
+if [ ! -f "$FRAMES" ]; then
     # make a frame definition file with 1 frame for all the data
-    create_fdef_from_listmode.sh frames.fdef $INPUT
+    create_fdef_from_listmode.sh frames.fdef "$INPUT"
 fi
 
 # create prompt sinograms
-OUTPUT=sinospan2 TEMPLATE=${pardir}/template.hs lm_to_projdata ${pardir}/lm_to_projdata.par 
+OUTPUT=sinospan2 lm_to_projdata ${pardir}/lm_to_projdata.par
 
 # estimate randoms from singles
-construct_randoms_from_GEsingles randomsspan2 "${INPUT}" sinospan2_f1g1d0b0.hs
-
+construct_randoms_from_GEsingles randomsspan2_f1g1d0b0 "${INPUT}" sinospan2_f1g1d0b0.hs

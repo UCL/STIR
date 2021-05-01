@@ -6,7 +6,7 @@
 # Author: Kris Thielemans
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
+: ${pardir:=$(dirname $0)}
 
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` output_filename_prefix GE_AC_filename STIR_NAC_filename"
