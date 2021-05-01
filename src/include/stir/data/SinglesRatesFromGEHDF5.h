@@ -11,15 +11,15 @@
   \file
   \ingroup singles_buildblock
   \ingroup GE
-  \brief Declaration of class stir::GE::RDF_HDF5::SinglesFromGEHDF5
+  \brief Declaration of class stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
 
 */
 
-#ifndef __stir_data_SinglesFromGEHDF5_H__
-#define __stir_data_SinglesFromGEHDF5_H__
+#ifndef __stir_data_SinglesRatesFromGEHDF5_H__
+#define __stir_data_SinglesRatesFromGEHDF5_H__
 
 #include "stir/data/SinglesRatesForTimeSlices.h"
 #include "stir/RegisteredParsingObject.h"
@@ -41,22 +41,23 @@ class GEHDF5Wrapper;
   \todo expose GE::RDF_HDF5::GEHDF5Wrapper.get_exam_info_sptr()
 
 */
-class SinglesFromGEHDF5 : 
-  public RegisteredParsingObject<SinglesFromGEHDF5, SinglesRates, SinglesRatesForTimeSlices>
+class SinglesRatesFromGEHDF5 : 
+  public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates, SinglesRatesForTimeSlices>
 
 { 
 public:
 
- //! Name which will be used when parsing a SinglesFromGEHDF5 object 
+ //! Name which will be used when parsing a SinglesRatesFromGEHDF5 object 
  static const char * const registered_name; 
 
  //! Default constructor 
- explicit SinglesFromGEHDF5();
- 
- // IO Methods
-//PW Reading singles from .sgl changed to .BLF file format. Adapt from GE HDF5 listmode file read.
- //! The function that reads singles from an RDF file
- unsigned int read_singles_from_file(const std::string& rdf_filename);
+ SinglesRatesFromGEHDF5();
+
+ //! construct from filename
+ explicit SinglesRatesFromGEHDF5(const std::string& rdf_filename)
+ { read_from_file(rdf_filename); }
+
+ void read_from_file(const std::string& rdf_filename);
  
 
 private:

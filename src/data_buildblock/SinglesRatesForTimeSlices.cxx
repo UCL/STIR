@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003-2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -21,8 +22,10 @@
 #include "stir/IndexRange2D.h"
 #include "stir/data/SinglesRatesForTimeSlices.h"
 #include "stir/round.h"
-
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <vector>
+#include <utility>
 #include <algorithm>
 
 
@@ -60,13 +63,7 @@ get_rates_for_frame(double start_time,
   int start_slice = get_start_time_slice_index(start_time);
   int end_slice = get_end_time_slice_index(end_time);
   
-  double frame_start_time;
-  if ( start_slice == 0 ) {
-    frame_start_time = _times[0] - _singles_time_interval;
-  } else {
-    frame_start_time = _times[start_slice - 1];
-  }
-
+  double frame_start_time = get_slice_start_time(start_slice);
   double frame_end_time = _times[end_slice];
 
   // Create temp FrameSinglesRate object
@@ -138,7 +135,7 @@ get_start_time_slice_index(double t) const {
 
   // Start with an initial estimate.
   if ( _singles_time_interval != 0 ) {
-    slice_index = static_cast<int>(floor(t / _singles_time_interval));
+    slice_index = std::max(0,static_cast<int>(floor((t-_times[0]) / _singles_time_interval)));
   }
 
   if ( slice_index >= _num_time_slices ) {
@@ -174,7 +171,7 @@ get_start_time_slice_index(double t) const {
 
 
 
-
+#if 0
 // Get rates using time slice and singles bin indices.
 int 
 SinglesRatesForTimeSlices::
@@ -191,13 +188,13 @@ get_singles_rate(int singles_bin_index, int time_slice) const {
   }
 
 }
+#endif
 
 
-
-// Set a singles rate by bin index and time slice.
+// Set a singles by bin index and time slice.
 void 
 SinglesRatesForTimeSlices::
-set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
+set_singles(int singles_bin_index, int time_slice, int new_rate) {
   
   int total_singles_units = scanner_sptr->get_num_singles_units();
   
@@ -225,8 +222,7 @@ rebin(std::vector<double>& new_end_times) {
   // Sort the set of new time slices.
   std::sort(new_end_times.begin(), new_end_times.end());
 
-  // Start with initial time of 0.0 seconds.
-  double start_time = 0;
+  double start_time = get_slice_start_time(0);
 
   
   // Loop over new time slices.
@@ -245,7 +241,7 @@ rebin(std::vector<double>& new_end_times) {
       // Get the singles rate average between start and end times for all bins.
       for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin ) {
         new_singles[new_slice][singles_bin] = 
-          round(get_singles_rate(singles_bin, start_time, end_time));
+          round(get_singles(singles_bin, start_time, end_time));
       }
       
     }
@@ -295,8 +291,8 @@ get_singles_time_interval() const {
 
 float
 SinglesRatesForTimeSlices::
-get_singles_rate(const int singles_bin_index,
-                 const double start_time, const double end_time) const {
+get_singles(const int singles_bin_index,
+            const double start_time, const double end_time) const {
 
   // First Calculate an inclusive range. start_time_slice is the 
   // the first slice with an ending time greater than start_time.
@@ -308,69 +304,49 @@ get_singles_rate(const int singles_bin_index,
   
   // Total contribution from all slices.
   double total_singles;
+  // Start and end times for starting and ending slices.
+  double slice_start_time;
+  double slice_end_time;
 
+  // Calculate the fraction of the start_slice to include.
+  slice_start_time = get_slice_start_time(start_slice);
+  slice_end_time = _times[start_slice];
 
-  if ( start_slice == end_slice ) {
-    // If the start and end slices are the same then just use that time slice.
-    total_singles = static_cast<double>(_singles[start_slice][singles_bin_index]);
-  } else {
-    
-    // Start and end times for starting and ending slices.
-    double slice_start_time;
-    double slice_end_time;
-    double included_duration; 
-    double old_duration;
-    double fraction;
-    
-    
-    // Total slices included (including fractional amounts) in the average.
-    float total_slices;
-        
-    
+  if (start_time>end_time)
+    error(boost::format("get_singles() called with start_time %1% larger than end time %2%")
+          % start_time % end_time);
+  if (start_time < get_slice_start_time(start_slice) - 1e-2 /* allow for some rounding */)
+    error(boost::format("get_singles() called with start time %1% which is smaller than the start time in the data (%2%)")
+          % start_time % slice_start_time);
+  if (end_time > _times[end_slice] + 1e-2 /* allow for some rounding */)
+      error(boost::format("get_singles() called with end time %1% which is larger than the end time in the data (%2%)")
+            % end_time % slice_end_time);
 
-    // Calculate the fraction of the start_slice to include.
-    slice_start_time = get_slice_start(start_slice);
-    slice_end_time = _times[start_slice];
+  double old_duration = slice_end_time - slice_start_time;
+  double included_duration = slice_end_time - start_time;
+
+  double fraction = included_duration / old_duration;
     
-    old_duration = slice_end_time - slice_start_time;
-    included_duration = slice_end_time - start_time;
-        
-    fraction = included_duration / old_duration;
-       
-    
-    // Set the total number of contributing bins to this fraction.
-    total_slices = fraction;
-    
-    // Set the total singles so far to be the fraction of the bin.
-    total_singles = fraction * _singles[start_slice][singles_bin_index];
-    
-    
-    
+  // Set the total singles so far to be the fraction of the bin.
+  total_singles = fraction * _singles[start_slice][singles_bin_index];
+  if ( start_slice < end_slice ) {
+
     // Calculate the fraction of the end_slice to include.
-    slice_start_time = get_slice_start(end_slice);
+    slice_start_time = get_slice_start_time(end_slice);
     slice_end_time = _times[end_slice];
         
     old_duration = slice_end_time - slice_start_time;
     included_duration = end_time - slice_start_time;
         
     fraction = included_duration / old_duration;
-    
-    // Add this fraction to the total of the number of bins contributing.
-    total_slices += fraction;
-    
+
     // Add the fraction of the bin to the running total.
     total_singles += fraction * _singles[end_slice][singles_bin_index];
- 
     
     // Add all intervening slices.
-    for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
+    for(int slice = start_slice + 1; slice < end_slice ; ++slice) {
       total_singles += _singles[slice][singles_bin_index];
     }
-    
-    
-    // Divide by total amount of contributing slices.
-    total_singles = total_singles / total_slices;
-       
   }
 
   return( static_cast<float>(total_singles) );
@@ -427,19 +403,33 @@ set_time_interval() {
 // get slice start time.
 double 
 SinglesRatesForTimeSlices::
-get_slice_start(int slice_index) const {
+get_slice_start_time(int slice_index) const {
 
   if ( slice_index >= _num_time_slices ) {
     slice_index = _num_time_slices - 1;
   }
   
   if ( slice_index == 0 ) {
-    return(0);
+    return(_times[0] - _singles_time_interval);
   } else {
     return(_times[slice_index - 1]);
   }
 }
- 
+
+TimeFrameDefinitions
+SinglesRatesForTimeSlices::
+get_time_frame_definitions() const
+{
+
+  std::vector<std::pair<double, double> > start_ends(get_num_time_slices());
+  for (int i=0; i<get_num_time_slices(); ++i)
+    {
+      start_ends[i].first=get_slice_start_time(i);
+      start_ends[i].second=_times[i];
+    }
+  return TimeFrameDefinitions(start_ends);
+}
+
 END_NAMESPACE_STIR
 
 

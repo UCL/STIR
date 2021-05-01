@@ -1,6 +1,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -24,6 +25,7 @@
 
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
+#include "stir/TimeFrameDefinitions.h"
 
 
 START_NAMESPACE_STIR
@@ -44,13 +46,13 @@ public:
 
  // implementation of pure virtual in SinglesRates
  virtual float
-   get_singles_rate(const int singles_bin_index, 
-		    const double start_time, const double end_time) const;
+   get_singles(const int singles_bin_index,
+               const double start_time, const double end_time) const;
 
 
  //! Generate a FramesSinglesRate - containing the average rates
  //  for a frame begining at start_time and ending at end_time.
- FrameSinglesRates get_rates_for_frame(double start_time,
+ FrameSinglesRates STIR_DEPRECATED get_rates_for_frame(double start_time,
                                        double end_time) const;
 
 
@@ -100,17 +102,15 @@ public:
  virtual int get_start_time_slice_index(double t) const;
 
 
+ #if 0
  //! Get rates using time slice and singles bin indices.
  //
  // The singles rate returned is the rate for a whole singles unit.
  //
  int get_singles_rate(int singles_bin_index, int time_slice) const;
-
- //! Set a singles rate by singles bin index and time slice.
- //
- // The singles rate returned is the rate for a whole singles unit.
- //
- void set_singles_rate(int singles_bin_index, int time_slice, int new_rate);
+#endif
+ //! Set a singles by singles bin index and time slice.
+ void set_singles(int singles_bin_index, int time_slice, int new_singles);
 
 
  //! Rebin the sgl slices into a different set of consecutive slices.
@@ -131,26 +131,36 @@ public:
  
  //! Return the time interval per slice of singles data.
  double get_singles_time_interval() const;
- 
+
+ //! return time-intervals for every slice
+ TimeFrameDefinitions
+   get_time_frame_definitions() const;
+
 
 protected:
  
- // Indexed by time slice and singles bin index.
+ //! total singles per time slice and singles-bin
+ /*!Indexed by time slice and singles bin index.*/
  Array<2, int> _singles;
- 
+
+ //! end times of each time slice (in secs)
+ /*! expected to use equidistant sampling */
  std::vector<double> _times;
  
  int _num_time_slices;
 
- // A value of zero for _singles_time_interval indicates that the time slices
- // are of different lengths.
+ //! time interval in secs
+ /*! \warning A value of zero for _singles_time_interval indicates that the time slices
+   are of different lengths.
+   However, some of the code probably doesn't check for this.
+ */
  double _singles_time_interval;
 
  //! Calculate and set _singles_time_interval from _times
  void set_time_interval();
 
- // get slice start time.
- double get_slice_start(int slice_index) const;
+ //! get slice start time.
+ double get_slice_start_time(int slice_index) const;
  
 };
 

@@ -236,15 +236,6 @@ GEHDF5Wrapper::check_file()
     if(is_sino_file())
     {
         is_sino = true;
-         if (rdf_ver == 9) //AB todo: is this valid for 10?
-        {
-            // Check 1: Is the file compressed?
-            unsigned int is_compressed;
-            H5::DataSet str_file_version = file.openDataSet("/HeaderData/Sorter/Segment2/compDataSegSize");
-            str_file_version.read(&is_compressed, H5::PredType::NATIVE_UINT32);
-            if (is_compressed)
-                error("The RDF9 file sinogram is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
-        }
         return Succeeded::yes;
     }
     if(is_norm_file())
@@ -581,6 +572,16 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
 {
     if(!is_sino_file())
         error("The file provided is not sinogram data. Aborting");
+
+    if(rdf_ver==9)
+    {
+      // Is the file compressed?
+      unsigned int is_compressed;
+      H5::DataSet str_file_version = file.openDataSet("/HeaderData/Sorter/Segment2/compDataSegSize");
+      str_file_version.read(&is_compressed, H5::PredType::NATIVE_UINT32);
+      if (is_compressed)
+        error("The RDF9 file sinogram is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
+    }
 
     if(view_num == 0 || view_num > static_cast<unsigned>(this->get_scanner_sptr()->get_num_detectors_per_ring()/2))
       error("internal error in GE HDF5 code: view number "+ std::to_string(view_num) +" is incorrect");

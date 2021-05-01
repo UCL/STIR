@@ -91,7 +91,7 @@ public:
 
     Succeeded initialise_efficiency_factors();
 
-    //! reads coincidence time window from file
+    //! reads coincidence time window from file (in secs)
     float get_coincidence_time_window() const;
 
     //! reads listmode event(s)
