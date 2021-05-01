@@ -4,6 +4,8 @@
 # 
 # Relies on reg_aladin from NiftyReg, but you could use other registration algorithms of course
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
 : ${pardir:=$(dirname $0)}

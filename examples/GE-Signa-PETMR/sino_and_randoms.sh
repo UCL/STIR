@@ -2,6 +2,8 @@
 # copies prompts data from a GE sinogram RDF and creates randoms estimate from the singles in the RDF
 # output names are the same as the unlist_and_randoms.sh script for convenience
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # should get these parameters from command line
 : ${INPUT:=rdf_f1b1.rdf}

@@ -1,6 +1,8 @@
 #! /bin/sh -e
 # Example script to create a normalisation projdata from the GE norm file
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
 : ${pardir:=$(dirname $0)}

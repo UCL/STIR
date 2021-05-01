@@ -1,7 +1,11 @@
+
 # Reconstructing data from GE SIGNA PET/MR Scanner
 
 Author: Palak Wadwha
 Edits: Kris Thielemans
+
+SPDX-License-Identifier: Apache-2.0
+See STIR/LICENSE.txt for details
 
 WARNING: In this release, the reconstructed images are x,z flipped, rotated and
 shifted w.r.t. to the scanner DICOMS.

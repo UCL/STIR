@@ -4,6 +4,8 @@
 # Default filenames are for output of unlist_and_randoms.sh, and for the NEMA demo files
 # Author: Kris Thielemans
 # Edits: Ander Biguri
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
 : ${pardir:=$(dirname $0)}

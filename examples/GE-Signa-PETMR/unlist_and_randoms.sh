@@ -1,6 +1,8 @@
 #! /bin/sh -e
 # unlists listmode data into span2 and creates randoms estimate from the singles in the listmode data
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # right now randoms stuff only handles single time frame
 # we would need a simple loop to cover that case as well.

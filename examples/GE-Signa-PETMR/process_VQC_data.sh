@@ -7,6 +7,8 @@
 # To extract the RDF files from GE DICOM, we rely on nm_extract from https://github.com/UCL/pet-rd-tools
 #
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # By default, it will find the parameter files in the same directory as the script.
 # You can change the file, or run the script by doing something like

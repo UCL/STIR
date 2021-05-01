@@ -3,6 +3,8 @@
 # Example script to create a mu-file in STIR units from a CTAC
 # could be adapted for MRAC if slopes are adjusted
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` output_filename CT_filename"
