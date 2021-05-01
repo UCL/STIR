@@ -12,7 +12,7 @@
   \file
   \ingroup singles_buildblock
   \ingroup GE
-  \brief Implementation of stir::GE::RDF_HDF5::SinglesFromGEHDF5
+  \brief Implementation of stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -20,7 +20,7 @@
 
 #include "stir/IndexRange.h"
 #include "stir/IndexRange2D.h"
-#include "stir/data/SinglesFromGEHDF5.h"
+#include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/stream.h"
 #include "stir/IO/GEHDF5Wrapper.h"
 
@@ -36,16 +36,16 @@ namespace GE {
 namespace RDF_HDF5 {
 
 const char * const 
-SinglesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
+SinglesRatesFromGEHDF5::registered_name = "SinglesRatesFromGEHDF5";
 
 // Constructor
-SinglesFromGEHDF5::
-SinglesFromGEHDF5()
+SinglesRatesFromGEHDF5::
+SinglesRatesFromGEHDF5()
 {}
 
 
 void
-SinglesFromGEHDF5::
+SinglesRatesFromGEHDF5::
 read_from_file(const std::string& rdf_filename)
 {
 
@@ -79,7 +79,7 @@ read_from_file(const std::string& rdf_filename)
     //PW Modify this bit of code too.
     if (slice != _num_time_slices)
     {
-        error("\nSinglesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
+        error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
               slice, _num_time_slices);
         //TODO resize singles to return array with new sizes
     }
@@ -103,17 +103,16 @@ read_from_file(const std::string& rdf_filename)
 
 
 void 
-SinglesFromGEHDF5::
+SinglesRatesFromGEHDF5::
 initialise_keymap()
 {
-//PW Modify this to change sgl to listmode
-  parser.add_start_key("Singles From GE HDF5 File");
+  parser.add_start_key("SinglesRatesFromGEHDF5");
   parser.add_key("filename", &_rdf_filename);
-  parser.add_stop_key("End Singles From GE HDF5 File");
+  parser.add_stop_key("End SinglesRatesFromGEHDF5");
 }
 
 bool 
-SinglesFromGEHDF5::
+SinglesRatesFromGEHDF5::
 post_processing()
 {
   read_from_file(_rdf_filename);
@@ -122,7 +121,7 @@ post_processing()
 
 
 void 
-SinglesFromGEHDF5::set_defaults()
+SinglesRatesFromGEHDF5::set_defaults()
 {
   _rdf_filename = "";
 }

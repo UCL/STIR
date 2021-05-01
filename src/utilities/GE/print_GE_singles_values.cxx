@@ -2,18 +2,19 @@
 //
 /*
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     See STIR/LICENSE.txt for details
 */
 /*!
 
   \file
-  \brief Utility program that prints out values from an RDF file.
+  \brief Utility program that prints out singles values from an RDF file.
 
   \author Kris Thielemans
 */
 
 
-#include "stir/data/SinglesFromGEHDF5.h"
+#include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/stream.h"
 #include "stir/IndexRange3D.h"
 #include <iostream>
@@ -38,7 +39,7 @@ main (int argc, char **argv)
 
   const std::string rdf_filename = argv[1];
   // Singles file object.
-  GE::RDF_HDF5::SinglesFromGEHDF5 singles(rdf_filename);
+  GE::RDF_HDF5::SinglesRatesFromGEHDF5 singles(rdf_filename);
 
   // Get total number of frames
   //int num_frames = singles.get_num_frames();
