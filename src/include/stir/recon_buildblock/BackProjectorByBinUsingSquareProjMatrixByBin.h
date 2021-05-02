@@ -12,17 +12,11 @@
 
   \brief 
 
-  \author Mustapha Sadki
   \author Kris Thielemans
-  \author PARAPET project
-
-  $Date: 
-
-  $Revision: 
 */
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2001, IRSL
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 
