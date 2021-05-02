@@ -3,7 +3,7 @@
 
 /*!
   \file
-  \ingroup 
+  \ingroup utilities
 
   \brief This programm was based on bck_project originnal code with the difference
    that here we normalize the final value of a single pixel with a sum of all values 

@@ -275,7 +275,7 @@ void Image::GetMinMaxValue()
 /**
 *	\brief	Read GIPL header.
 *
-*	\param	myfile		Input file
+*	\param	myFile		Input file
 */
 // -------------------------------------------------------------------------
 void Image::ReadGiplHeader(std::fstream* myFile)

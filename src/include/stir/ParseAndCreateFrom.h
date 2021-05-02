@@ -38,7 +38,7 @@ class KeyParser;
   without having to know what the actual \c OutputT is.
 
   This of course only works if a specialisation is created for the
-  \c OutputT and \InputT of interest.
+  \c OutputT and \c InputT of interest.
 
   A specialisation needs to define all four member functions as the reconstruction
   code will otherwise break.

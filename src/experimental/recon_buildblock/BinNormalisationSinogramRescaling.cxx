@@ -3,7 +3,6 @@
 /*!
   \file
   \ingroup recon_buildblock
-  \ingroup 
 
   \brief Implementation for class BinNormalisationSinogramRescaling
 

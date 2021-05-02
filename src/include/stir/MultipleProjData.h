@@ -140,10 +140,9 @@ public:
 
   //!
   //! \brief copy_to
-  //! \param full_iterator of some array
-  //! \details Copy all data to an array.
+  //! \param array_iter an iterator to an array or other object (which has to be pre-allocated)
+  //! \details Copy all data by incrementing \c array_iter.
   //! \author Nikos Efthimiou
-  //! \warning Full::iterator should be supplied.
   template < typename iterT>
   void copy_to(iterT array_iter)
   {
@@ -160,10 +159,9 @@ public:
 
   //!
   //! \brief fill_from
-  //! \param full_iterator of some array
-  //! \details Fills all ProjData from a 2D array.
+  //! \param array_iter output iterator, e.g. of some array
+  //! \details Fills all ProjData from the iterator (which has to fit the size)
   //! \author Nikos Efthimiou
-  //! \warning Full::iterator should be supplied.
   template <typename iterT>
   void fill_from(iterT array_iter)
   {
@@ -180,10 +178,8 @@ public:
   }
 
   //!
-  //! \brief size_all
-  //! \return
+  //! \brief Returns the total number of elements in the object
   //! \author Nikos Efthimiou
-  //! \details Returns the total size of the object
   std::size_t size_all() const
   {
       std::size_t size = 0;

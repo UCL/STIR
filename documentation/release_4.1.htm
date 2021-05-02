@@ -51,9 +51,10 @@
 <ul>
   <li>Reading of GE HDF5 data (GE fileformat RDF 9) for the GE Signa PET/MR and recent GE PET/CT scanners (but depending on their
     software version).
-    We currently read listmode, sinograms and calibration files.
+    We currently read listmode, sinograms and calibration files (except for the WCC (well-counter calibration) files).
     This code is TOF-ready, but TOF is not enabled pending merge of the TOF Pull Request. Therefore, all reconstructions
     will be non-TOF.<br />
+    See examples in <tt>examples/GE-Signa-PETMR</tt> (also applicable for PETCT data).<br />
     <strong>Warning:</strong> currently images will be reconstructed flipped with respect to the standard
     STIR orientation. This is particularly noticeable when output in Nifti/MetaIO etc. See
     <a href="https://github.com/UCL/STIR/issues/675">issue #675</a>.
@@ -200,7 +201,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 
 <h3>Documentation changes</h3>
 <ul>
-<li>Added documentation on new features</li> 
+<li>Added documentation on new features and fixed some old doxygen problems.</li> 
  </ul>
 
 <h3>recon_test_pack changes</h3>

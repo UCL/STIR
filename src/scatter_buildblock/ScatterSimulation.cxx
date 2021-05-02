@@ -116,7 +116,7 @@ process_data()
             bin_counter +=
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
-            /* ////////////////// SCATTER ESTIMATION TIME ////////////////*/
+            /* ////////////////// SCATTER ESTIMATION TIME //////////////// */
             {
                 wall_clock_timer.stop(); // must be stopped before getting the value
                 info(boost::format("%1$5u / %2% bins done. Total time elapsed %3$5.2f secs, remaining about %4$5.2f mins (ignoring caching).")

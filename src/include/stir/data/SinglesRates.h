@@ -147,8 +147,6 @@ public:
   /*! The behaviour of this function is specified by the derived classes.
     \warning Currently might return -1 if the \a start_time, \a end_time
     are invalid (e.g. out of the measured range).
-
-    Expected to be `get_singles_rate(..)
   */
   virtual float
     get_singles(const int singles_bin_index,
@@ -160,19 +158,18 @@ public:
     \warning Currently might return -1 if the \a start_time, \a end_time
     are invalid (e.g. out of the measured range).
 
-    Default implementation uses Scanner::get_singles_bin_index().
+    Default implementation uses Scanner::get_singles_bin_index() and get_singles_rate(int,double,double).
   */
-
   virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
 				 const double start_time,
 				 const double end_time) const;
 
-    //! Virtual function that returns the number of singles given the detection positions and time-interval of detection
+  //! Virtual function that returns the number of singles given the detection positions and time-interval of detection
   /*! The behaviour of this function is specified by the derived classes.
     \warning Currently might return -1 if the \a start_time, \a end_time
     are invalid (e.g. out of the measured range).
 
-    Default implementation uses Scanner::get_singles_bin_index().
+    Default implementation uses Scanner::get_singles_bin_index() and get_singles(int,double,double).
   */
 
   virtual float get_singles(const DetectionPosition<>& det_pos, 

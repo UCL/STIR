@@ -104,7 +104,7 @@ public:
                              const hsize_t size) const;
 
     //! read singles at time slice \c current_id
-    /*! \param current)id is 1-based index */
+    /*! \param[in] current_id is a 1-based index */
     Succeeded read_singles(Array<1, unsigned int> &output,
                           const unsigned int current_id);
 
