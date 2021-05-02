@@ -39,7 +39,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=4.0.0}
+: ${VERSION:=4.1.0}
 : ${TAG:=rel_${VERSION}}
 
 
@@ -64,7 +64,7 @@ set -e
 #fi
 
 
-read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, .zenodo.json?"
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, .zenodo.json? (press Ctrl-C if not)"
 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
