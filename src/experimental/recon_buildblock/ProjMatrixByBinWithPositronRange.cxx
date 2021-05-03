@@ -5,16 +5,14 @@
   \file
   \ingroup recon_buildblock
 
-  \brief non-inline implementations for ProjMatrixByBinWithPositronRange
+  \brief non-inline implementations for stir::ProjMatrixByBinWithPositronRange
 
-  \author Mustapha Sadki
   \author Kris Thielemans
-  \author PARAPET project
 
 */
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2004, IRSL
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 
@@ -65,7 +63,7 @@ ProjMatrixByBinWithPositronRange::set_defaults()
   ProjMatrixByBin::set_defaults();
   positron_range_C =-1;
   positron_range_k1=-1;
-  positron_range_k2=-1;
+  positron_range_k2=-1;/
   post_proj_matrix_ptr=0;
   positron_range_zoom=1;
   positron_num_samples=1;
