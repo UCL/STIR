@@ -104,7 +104,7 @@ main (int argc, char **argv)
     for (vector<int>::iterator col = columns.begin() ; col < columns.end() ; ++col) {
       
       if ( *col >= 0 && *col < total_singles_units ) {
-        float val = singles_from_ecat7.get_singles_rate(*col, frame);
+        float val = singles_from_ecat7.get_singles(*col, frame);
         
         cout << setw(9) << val << " ";
       }

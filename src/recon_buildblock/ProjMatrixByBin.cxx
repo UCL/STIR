@@ -142,8 +142,8 @@ set_up(
 
 /*!
     \warning Preconditions
-    <li>abs(axial_pos_num) fits in 17 bits
-    <li>abs(tangential_pos_num) fits in 11 bits   
+    <li>abs(axial_pos_num) fits in 17 bits</li>
+    <li>abs(tangential_pos_num) fits in 11 bits</li>   
   */
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const

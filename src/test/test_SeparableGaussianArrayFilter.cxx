@@ -34,6 +34,8 @@
 START_NAMESPACE_STIR
 
 
+#define num_dimensions 3
+
 /*!
   \brief Tests SeparableGaussianArrayFilter functionality
   \ingroup test
@@ -41,9 +43,6 @@ START_NAMESPACE_STIR
 
   Currently only very basic tests on normalisation
 */
-
-#define num_dimensions 3
-
 class SeparableGaussianArrayFilterTests : public RunTests
 {
 public:

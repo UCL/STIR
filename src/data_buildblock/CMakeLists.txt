@@ -18,6 +18,7 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
 	SinglesRates.cxx
 	SinglesRatesForTimeFrames.cxx
+        SinglesRatesForTimeSlices.cxx
         randoms_from_singles.cxx
 )
 if (HAVE_ECAT)
@@ -28,7 +29,7 @@ if (HAVE_ECAT)
 endif()
 if (HAVE_HDF5)
     list (APPEND  ${dir_LIB_SOURCES}
-        SinglesFromGEHDF5.cxx
+        SinglesRatesFromGEHDF5.cxx
   )
 endif()
 

@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -77,6 +78,14 @@ get_end_time() const {
 // Get the average singles rate for a particular bin.
 float
 SinglesRates::
+get_singles_rate(const int singles_bin_index,
+                 const double start_time, const double end_time) const
+{
+  return static_cast<float>(get_singles(singles_bin_index, start_time, end_time)/(end_time-start_time));
+}
+
+float
+SinglesRates::
 get_singles_rate(const DetectionPosition<>& det_pos,
                  const double start_time, const double end_time) const 
 {
@@ -84,6 +93,14 @@ get_singles_rate(const DetectionPosition<>& det_pos,
   return(get_singles_rate(singles_bin_index, start_time, end_time));
 }
 
+float
+SinglesRates::
+get_singles(const DetectionPosition<>& det_pos,
+            const double start_time, const double end_time) const
+{
+  const int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
+  return(get_singles(singles_bin_index, start_time, end_time));
+}
 
 
 END_NAMESPACE_STIR

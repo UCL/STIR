@@ -74,7 +74,8 @@ endif()
 
 if (HDF5_FOUND)
  list(APPEND ${dir_EXE_SOURCES}
-    construct_randoms_from_GEsingles.cxx
+   construct_randoms_from_GEsingles.cxx
+   GE/print_GE_singles_values.cxx
  )
 endif()
 

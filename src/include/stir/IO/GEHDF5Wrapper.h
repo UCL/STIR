@@ -91,19 +91,20 @@ public:
 
     Succeeded initialise_efficiency_factors();
 
-    //! reads coincidence time window from file
+    //! reads coincidence time window from file (in secs)
     float get_coincidence_time_window() const;
 
-    //! reads a listmode event
-    /* \param output: has to be pre-allocated and of the correct size
-       \param current_offset will be incremented
+    //! reads listmode event(s)
+    /* \param[output] output: has to be pre-allocated and of the correct size
+       \param[in] offset: start in listmode data (in number of bytes)
+       \param[in]: size to read (in number of bytes)
     */
     Succeeded read_list_data(char* output,
-                             std::streampos& current_offset,
+                             const std::streampos offset,
                              const hsize_t size) const;
 
     //! read singles at time slice \c current_id
-    /*! \param current)id is 1-based index */
+    /*! \param[in] current_id is a 1-based index */
     Succeeded read_singles(Array<1, unsigned int> &output,
                           const unsigned int current_id);
 
@@ -180,10 +181,8 @@ private:
 
     H5::DataSpace m_dataspace;
 
-    H5::DataSpace* m_memspace_ptr;
-
     std::uint64_t m_list_size = 0;
-
+    int m_dataset_list_Ndims;
     unsigned int m_num_singles_samples;
 
     bool is_list = false;

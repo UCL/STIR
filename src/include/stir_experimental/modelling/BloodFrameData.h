@@ -78,7 +78,8 @@ class BloodFrameData
   //! default constructor
   inline BloodFrameData();
 
-  //! constructor giving a vector //ChT::ToDO: Better to use iterators
+  //! constructor giving a vector
+  //ChT::ToDO: Better to use iterators
   inline BloodFrameData(const std::vector<BloodFrame> & blood_plot);
 
   //! default constructor

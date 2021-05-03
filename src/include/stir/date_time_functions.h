@@ -67,7 +67,7 @@ secs_since_Unix_epoch_to_DICOM_datetime(double secs,
                                         int time_zone_offset_in_secs = current_time_zone_and_DST_offset_in_secs());
 
 /*! 
-  \brief A simple structure to hold 2 strings (\c date and \time)
+  \brief A simple structure to hold 2 strings (\c date and \c time)
  \ingroup date_time
 */
 struct DateTimeStrings

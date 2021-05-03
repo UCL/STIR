@@ -154,10 +154,10 @@ public:
   virtual ~KeyParser();
 
   //! parse() returns false if there is some error, true otherwise
-  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
   bool parse(std::istream& f, const bool write_warnings=true);
   //! parse() returns false if there is some error, true otherwise
-  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
   bool parse(const char * const filename, const bool write_warnings=true);
 
   ////// functions to add keys and their actions 

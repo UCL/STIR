@@ -30,8 +30,7 @@ CListEventROOT(const shared_ptr<Scanner>& scanner_sptr) :
 }
 
 //!
-//! \brief CListEventROOT::get_detection_position
-//! \param det_pos
+//! \brief fill \c _det_pos from event
 //! \author Nikos Efthimiou
 //!
 void CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) const

@@ -1,7 +1,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2017-2019, University of Leeds
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -11,59 +11,48 @@
 /*!
   \file
   \ingroup singles_buildblock
-  \ingroup GE
-  \brief Declaration of class stir::GE::RDF_HDF5::SinglesFromGEHDF5
 
-  \author Palak Wadhwa
+  \brief Declaration of class stir::SinglesRatesForTimeSlices
+
   \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Tim Borgeaud
 
 */
 
-#ifndef __stir_data_SinglesFromGEHDF5_H__
-#define __stir_data_SinglesFromGEHDF5_H__
+#ifndef __stir_data_SinglesRatesForTimeSlices_H__
+#define __stir_data_SinglesRatesForTimeSlices_H__
 
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
-#include "stir/RegisteredParsingObject.h"
-#include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/TimeFrameDefinitions.h"
 
 
 START_NAMESPACE_STIR
-namespace GE {
-namespace RDF_HDF5 {
 
 /*!
   \ingroup singles_buildblock
-  \ingroup GE
-  \brief A class for reading singles over the number of time samples from an GE HDF5 .BLF listmode file format.
-
-  .BLF files are generated as a result of PET scan by GE SIGNA PET/MR scanners.
-
-  \todo expose GE::RDF_HDF5::GEHDF5Wrapper.get_exam_info_sptr()
-  \todo construct_randoms_from_GEsingles.cxx needs to reorder data. This should be moved to this class
+  \brief A class for singles that are recorded at equal time intervals
 
 */
-class SinglesFromGEHDF5 : 
-public RegisteredParsingObject<SinglesFromGEHDF5, SinglesRates>
+class SinglesRatesForTimeSlices : 
+public SinglesRates
 
 { 
 public:
 
- //! Name which will be used when parsing a SinglesFromGEHDF5 object 
- static const char * const registered_name; 
-
-//PW Would not touch this.
  //! Default constructor 
- explicit SinglesFromGEHDF5();
+ SinglesRatesForTimeSlices();
 
  // implementation of pure virtual in SinglesRates
  virtual float
-   get_singles_rate(const int singles_bin_index, 
-		    const double start_time, const double end_time) const;
+   get_singles(const int singles_bin_index,
+               const double start_time, const double end_time) const;
+
 
  //! Generate a FramesSinglesRate - containing the average rates
  //  for a frame begining at start_time and ending at end_time.
- FrameSinglesRates get_rates_for_frame(double start_time,
+ FrameSinglesRates STIR_DEPRECATED get_rates_for_frame(double start_time,
                                        double end_time) const;
 
 
@@ -113,27 +102,21 @@ public:
  virtual int get_start_time_slice_index(double t) const;
 
 
+ #if 0
  //! Get rates using time slice and singles bin indices.
  //
  // The singles rate returned is the rate for a whole singles unit.
  //
  int get_singles_rate(int singles_bin_index, int time_slice) const;
-
- float get_singles_rate(const DetectionPosition<>& det_pos,
-                 const double start_time,
-                 const double end_time) const;
-
- //! Set a singles rate by singles bin index and time slice.
- //
- // The singles rate returned is the rate for a whole singles unit.
- //
- void set_singles_rate(int singles_bin_index, int time_slice, int new_rate);
+#endif
+ //! Set a singles by singles bin index and time slice.
+ void set_singles(int singles_bin_index, int time_slice, int new_singles);
 
 
- //! Rebin the .BLF slices into a different set of consecutive slices.
+ //! Rebin the sgl slices into a different set of consecutive slices.
  //
  // Returns the number of new bins.
- unsigned int rebin(std::vector<double>& new_end_times);
+ int rebin(std::vector<double>& new_end_times);
  
   
  //! Get the vector of time values for each time slice index.
@@ -143,60 +126,44 @@ public:
  // Some inspectors
 
  //! Return the number of time slices.
- unsigned int get_num_time_slices() const;
+ int get_num_time_slices() const;
 
  
  //! Return the time interval per slice of singles data.
  double get_singles_time_interval() const;
 
- 
- // IO Methods
-//PW Reading singles from .sgl changed to .BLF file format. Adapt from GE HDF5 listmode file read.
- //! The function that reads singles from an RDF file
- unsigned int read_singles_from_file(const std::string& rdf_filename);
+ //! return time-intervals for every slice
+ TimeFrameDefinitions
+   get_time_frame_definitions() const;
 
- /*!
-  * \brief Write the SinglesFromGEHDF5 object to a stream.
-  * \param[in] output The ostream to which the object will be written.
-  */
- //PW Here writing of singles in output stream; unsure
- std::ostream& write(std::ostream& output);
 
+protected:
  
+ //! total singles per time slice and singles-bin
+ /*!Indexed by time slice and singles bin index.*/
+ Array<2, int> _singles;
 
-private:
- 
- // Indexed by time slice and singles bin index.
- shared_ptr<Array<2, unsigned int> > m_singles_sptr;
-
- shared_ptr<GEHDF5Wrapper> m_input_sptr;
- 
+ //! end times of each time slice (in secs)
+ /*! expected to use equidistant sampling */
  std::vector<double> _times;
- std::vector<int> _total_prompts;
- std::vector<int> _total_randoms;
+ 
+ int _num_time_slices;
 
- unsigned int m_num_time_slices = 0;
-
- // A value of zero for _singles_time_interval indicates that the time slices
- // are of different lengths.
+ //! time interval in secs
+ /*! \warning A value of zero for _singles_time_interval indicates that the time slices
+   are of different lengths.
+   However, some of the code probably doesn't check for this.
+ */
  double _singles_time_interval;
- std::string _rdf_filename;
 
- // Calculate and set _singles_time_interval.
+ //! Calculate and set _singles_time_interval from _times
  void set_time_interval();
 
- // get slice start time.
- double get_slice_start(int slice_index) const;
- 
-
- virtual void set_defaults();
- virtual void initialise_keymap();
- virtual bool post_processing();
+ //! get slice start time.
+ double get_slice_start_time(int slice_index) const;
  
 };
 
-} // namespace
-}
 END_NAMESPACE_STIR
 
 

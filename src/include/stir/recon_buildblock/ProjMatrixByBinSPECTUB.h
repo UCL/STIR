@@ -109,7 +109,7 @@ class ProjMatrixByBinSPECTUB :
   void set_keep_all_views_in_cache(bool value = true);
   std::string get_attenuation_type() const;
   //! Set type of attenuation modelling
-  /* Has to be "no", "simple" or "full"
+  /*! Has to be "no", "simple" or "full"
 
     You have to call set_up() after this (unless the value didn't change).
   */

@@ -40,11 +40,7 @@ Explicit list of files that carry the PARAPET license
 ./src/display/mathlinkhelp.c
 ./src/display/screengen.c
 ./src/display/gen.c
-./src/experimental/recon_test/fwdtestDensel.cxx
-./src/experimental/recon_buildblock/ProjMatrixByDensel.cxx
-./src/experimental/recon_buildblock/ProjMatrixByBinWithPositronRange.cxx
 ./src/experimental/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.cxx
-./src/experimental/recon_buildblock/ProjMatrixByBinUsingSolidAngle.cxx
 ./src/eval_buildblock/ROIValues.cxx
 ./src/iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
 ./src/iterative/OSMAPOSL/OSMAPOSL.cxx
@@ -198,7 +194,6 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/recon_buildblock/RelatedBins.inl
 ./src/include/stir/recon_buildblock/RelatedDensels.h
 ./src/include/stir/recon_buildblock/Reconstruction.h
-./src/include/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h
 ./src/include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h
 ./src/include/stir/recon_buildblock/BackProjectorByBin.h
 ./src/include/stir/recon_buildblock/SymmetryOperation.h
@@ -224,8 +219,6 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/VoxelsOnCartesianGrid.inl
 ./src/include/stir/stream.h
 ./src/include/stir_experimental/phantoms/Utah.h
-./src/include/stir_experimental/Filter.h
-./src/include/stir_experimental/fft.h
 ./src/test/test_ByteOrder.cxx
 ./src/test/test_VectorWithOffset.cxx
 ./src/test/test_coordinates.cxx

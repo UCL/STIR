@@ -4,13 +4,14 @@
 
   \file
   \ingroup ImageProcessor
-  \brief Implementations for class multiply_plane_scale_factorsImageProcessor
+  \brief Implementations for class stir::multiply_plane_scale_factorsImageProcessor
 
   \author Kris Thielemans
 
 */
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 #include "stir_experimental/multiply_plane_scale_factorsImageProcessor.h"
