@@ -118,22 +118,23 @@ Support for the following will be removed in the next version:
     <li><code>ScatterEstimation</code> has now many more <code>set*</code> functions such that most
       (all?) parameters can be set from C++/Python (i.e. without parsing).
     </li>
-    <li>The <code>SinglesRates</code> hierarchy has been revised.
-
-      The SinglesRates classes assumed that stored singles were rates but in practice
-      were totals-per-time-interval (for both ECAT7 and RDF9). It is convenient
-      to be able to access totals and rates, so `SinglesRates` has now
-      `get_singles` (returning the singles in the time interval) and
-      `get_singles_rates` (returning the rate per second).
-
-      Due to the previous confusion, "client"-code will need to be adapted to use
-      either `get_singles` or `get_singles_rate`, depending on what is needed.
-      Previous results might have been incorrect therefore.
-
-      <strong>WARNING</strong> We no longer have the capability to test ECAT7 normalisation.
-      Therefore, the dead-time correction code might not be correct.
-      </li>
     </ul>
+  </li>
+  <li>The <code>SinglesRates</code> hierarchy has been revised.
+
+    The <code>SinglesRates</code> classes assumed that stored singles were rates but in practice
+    were totals-per-time-interval (for both ECAT7 and RDF9). It is convenient
+    to be able to access totals and rates, so <code>SinglesRates</code> has now
+    <code>get_singles</code> (returning the singles in the time interval) and
+    <code>get_singles_rate</code> (returning the rate per second).
+    See <a href="https://github.com/UCL/STIR/issues/615">#615</a> for more information.
+
+    Due to the previous confusion, "client"-code will need to be adapted to use
+    either <code>get_singles</code> or <code>get_singles_rate</code>, depending on what is needed.<br />
+    <strong>WARNING</strong> Previous results on ECAT7 dead-time correction using sinograms as singles-info might have been incorrect therefore.<br />
+
+    <strong>WARNING</strong> We no longer have the capability to test ECAT7 normalisation.
+    Therefore, the dead-time correction code might still not be correct (due to a scale factor).
   </li>
 
 </ul>
