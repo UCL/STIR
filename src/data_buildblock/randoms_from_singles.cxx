@@ -75,10 +75,10 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
     warning("Assuming F-18 tracer!!!");
     const double isotope_halflife = 6586.2;
     const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
-    const double double_decay_corr_factor = decay_correction_factor(2*isotope_halflife, 0., duration);
+    const double double_decay_corr_factor = decay_correction_factor(isotope_halflife/2, 0., duration);
     const double corr_factor = square(decay_corr_factor) / double_decay_corr_factor / duration;
-    info(boost::format("RFS: decay correction factor: %1%, time frame duration: %2%. total correction factor from (singles_totals)^2 to randoms_totals: %3%")
-         % decay_corr_factor % duration % (1/corr_factor),
+    info(boost::format("RFS: decay correction factor: %1%, time frame duration: %2%. total correction factor from (singles_totals)^2 to randoms_totals: %3%/%4%")
+         % decay_corr_factor % duration % coincidence_time_window % (1/corr_factor),
          2);
 
     multiply_crystal_factors(proj_data, total_singles,
