@@ -2,17 +2,10 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -85,6 +78,14 @@ get_end_time() const {
 // Get the average singles rate for a particular bin.
 float
 SinglesRates::
+get_singles_rate(const int singles_bin_index,
+                 const double start_time, const double end_time) const
+{
+  return static_cast<float>(get_singles(singles_bin_index, start_time, end_time)/(end_time-start_time));
+}
+
+float
+SinglesRates::
 get_singles_rate(const DetectionPosition<>& det_pos,
                  const double start_time, const double end_time) const 
 {
@@ -92,6 +93,14 @@ get_singles_rate(const DetectionPosition<>& det_pos,
   return(get_singles_rate(singles_bin_index, start_time, end_time));
 }
 
+float
+SinglesRates::
+get_singles(const DetectionPosition<>& det_pos,
+            const double start_time, const double end_time) const
+{
+  const int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
+  return(get_singles(singles_bin_index, start_time, end_time));
+}
 
 
 END_NAMESPACE_STIR

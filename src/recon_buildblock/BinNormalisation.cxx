@@ -5,15 +5,7 @@
     Copyright (C) 2014, 2018 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -97,8 +89,6 @@ check(const ExamInfo &exam_info) const
 void 
 BinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -118,8 +108,6 @@ void
 BinNormalisation::
 undo(RelatedViewgrams<float>& viewgrams) const 
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
@@ -141,8 +129,6 @@ BinNormalisation::
 apply(ProjData& proj_data,
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
@@ -190,8 +176,6 @@ BinNormalisation::
 undo(ProjData& proj_data,
      shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
-  const float start_time=exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time=exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))

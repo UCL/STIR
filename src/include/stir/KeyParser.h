@@ -4,15 +4,7 @@
     Copyright (C) 2013, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -162,10 +154,10 @@ public:
   virtual ~KeyParser();
 
   //! parse() returns false if there is some error, true otherwise
-  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
   bool parse(std::istream& f, const bool write_warnings=true);
   //! parse() returns false if there is some error, true otherwise
-  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
   bool parse(const char * const filename, const bool write_warnings=true);
 
   ////// functions to add keys and their actions 

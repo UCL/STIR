@@ -20,6 +20,7 @@
 */
 /*
     Copyright (C) 2000- 2001, IRSL
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 

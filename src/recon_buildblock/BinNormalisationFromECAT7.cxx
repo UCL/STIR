@@ -442,6 +442,9 @@ read_norm_data(const std::string& filename)
   display(efficiency_factors, "eff");
   display(crystal_interference_factors, "crystal_interference_factors");
 #endif
+
+  if (use_dead_time())
+    warning("BinNormalisationFromECAT7: dead-time code might give wrong results");
 }
 
 bool 
@@ -650,7 +653,8 @@ BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& 
   // Get singles rate per block (rate per singles unit / blocks per singles unit).
   const float rate = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time) / 
     num_blocks_per_singles_unit;
-  
+
+  // TODO KT is not sure if the rate (currently returned in s^-1) has the appropriate units for the equation below
   return
     ( 1.0F + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
       axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
