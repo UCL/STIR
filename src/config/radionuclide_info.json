@@ -149,7 +149,7 @@
         {  "properties": [
                  {
                   "kev": 150,
-                  "BRatio": 0.000000014,
+                  "BRatio": 0.99983,
                   "half_life": 230549.76
                  }       ]
         }, 
@@ -157,7 +157,7 @@
         {  "properties": [
                  {
                   "kev": 511,
-                  "BRatio": 0.000000014,
+                  "BRatio": 0.0000319,
                   "half_life": 230549.76
                   }       ]
         }

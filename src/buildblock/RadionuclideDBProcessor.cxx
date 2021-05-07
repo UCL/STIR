@@ -33,6 +33,9 @@
 //#include "stir/ImagingModality.h"
 #include <nlohmann/json.hpp>
 #include "stir/find_STIR_config.h"
+#include <iostream>
+#include <fstream>
+#include "stir/IndexRange2D.h"
 
 START_NAMESPACE_STIR
 
@@ -47,6 +50,7 @@ RadionuclideDBProcessor(ImagingModality rmodality, std::string rname)
  modality(rmodality)
 {
     set_DB_filename(find_STIR_config_file("radionuclide_info.json"));
+    this->isotope_lookup_table_str=find_STIR_config_file("isotope_names.json");
     modality_str=modality.get_name();
 }
 
@@ -57,10 +61,40 @@ set_DB_filename(const std::string& arg)
   this->filename = arg;
 }
 
+void 
+RadionuclideDBProcessor::get_isotope_name_from_lookup_table()
+{
+    if (this->isotope_lookup_table_str.empty())
+        error("Lookup table: no filename set");
+    if (this->filename.empty())
+      error("RadionuclideDB: no filename set for the Radionuclide info");
+    
+    
+    std::string s =this->isotope_lookup_table_str;
+    std::ifstream json_file_stream(s);
+    
+    if(!json_file_stream)
+        error("Could not open Json file!");
+    
+    nlohmann::json table_json;
+    json_file_stream >> table_json;
+    
+    for (int l=0; l<table_json.size(); l++)
+        for (int c=0; c<table_json.at(0).size(); c++)
+        {
+            if(table_json.at(l).at(c)==this->nuclide_name)
+            this->nuclide_name=table_json.at(l).at(0);
+        }
+//    std::cout<<" name " <<nuclide_name<<std::endl;
+
+}
+
 void
 RadionuclideDBProcessor::
 get_record_from_json()
 {
+    get_isotope_name_from_lookup_table();
+    
   if (this->filename.empty())
     error("RadionuclideDB: no filename set for the Radionuclide info");
   if (this->modality_str.empty())

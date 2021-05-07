@@ -91,6 +91,7 @@ private:
   Radionuclide radionuclide;
   
   std::string nuclide_name;
+  std::string isotope_lookup_table_str;
   float energy;
   float branching_ratio;
   float half_life;
@@ -98,6 +99,8 @@ private:
   ImagingModality modality;
 
   void get_record_from_json();
+  
+  void get_isotope_name_from_lookup_table();
 };
 
 END_NAMESPACE_STIR
