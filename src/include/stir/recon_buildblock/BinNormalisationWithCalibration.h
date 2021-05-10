@@ -45,7 +45,7 @@ public:
     
   BinNormalisationWithCalibration();
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
-  float get_calibration_factor() const;
+  float get_calibration_factor() const override;
   float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
@@ -53,10 +53,10 @@ public:
   void set_radionuclide(const Radionuclide&);
   
   // needs to be implemented by derived class
-  virtual float get_uncalibrated_bin_efficiency(const Bin&, const double start_time, const double end_time) const  = 0;
+  virtual float get_uncalibrated_bin_efficiency(const Bin&) const  = 0;
  
-  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const final
-   { return this->get_uncalibrated_bin_efficiency(bin, start_time, end_time)/get_calib_decay_branching_ratio_factor(bin); }
+  virtual float get_bin_efficiency(const Bin& bin) const final
+   { return this->get_uncalibrated_bin_efficiency(bin)/get_calib_decay_branching_ratio_factor(bin); }
   
  protected:
   // parsing stuff

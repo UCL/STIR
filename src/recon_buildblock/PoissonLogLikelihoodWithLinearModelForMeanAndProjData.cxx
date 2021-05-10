@@ -4,15 +4,7 @@
     Copyright (C) 2018, 2019 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -887,11 +879,11 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
             this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
           // TODO add 1 for 1/(y+1) approximation
 
-          this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams);
 
           // smooth TODO
 
-          this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams);
 
           RelatedViewgrams<float> tmp_viewgrams;
           // set tmp_viewgrams to geometric forward projection of input

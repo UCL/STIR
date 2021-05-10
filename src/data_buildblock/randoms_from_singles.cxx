@@ -12,15 +12,7 @@
   Copyright (C) 2020, 2021, University Copyright London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2.0 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -53,34 +45,44 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
     for (int c=0; c<num_detectors_per_ring; ++c)
       {
         const DetectionPosition<> pos(c,r,0);
-        total_singles[r][c]=singles.get_singles_rate(pos,
-                                                     frame_defs.get_start_time(1),
-                                                     frame_defs.get_end_time(1));
+        total_singles[r][c]=singles.get_singles(pos,
+                                                frame_defs.get_start_time(1),
+                                                frame_defs.get_end_time(1));
       }
 
   {
     /* Randoms from singles formula is
 
-       randoms-rate[i,j] = coinc_window * singles-rate[i] * singles-rate[j]
+       randoms-rate[t,i,j] = coinc_window * singles-rate[t,i] * singles-rate[t,j]
 
-       However, we actually have total counts in the singles (despite the current name),
-       and need total counts in the randoms. This gives
+       However, we actually have total counts in the singles for sinograms.
+       and need total counts in the randoms.
+       Assuming there is just decay going on, then we have
 
-       randoms-counts[i,j] * total_to_activity = coinc_window * singles-counts[i] * singles-counts[j] * total_to_activity^2
+       randoms-rate[t,i,j] = coinc_window * singles-rate[0,i] * singles-rate[0,j] exp (-2lambda t)
 
-       That leads to the formula below.
+       randoms-counts[i,j] = int_t1^t2 randoms-rate[t,i,j]
+                 = coinc_window * singles-rate[0,i] * singles-rate[0,j] * int_t1^t2 exp (-2lambda t)
+                   coinc_window * singles-counts[i] * singles-counts[j] *
+                   int_t1^t2 exp (-2lambda t) / (int_t1^t2 exp (-lambda t))^2
+
+       Now we can use that decay_correction_factor(lambda,t1,t2) computes
+          duration/(int_t1^t2 exp (-lambda t))
+
+       That leads to the formula below (as it turns out that the above ratio only depends t2-t1)
     */
     const double duration = frame_defs.get_duration(1);
     warning("Assuming F-18 tracer!!!");
     const double isotope_halflife = 6586.2;
     const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
-    const double total_to_activity = decay_corr_factor / duration;
-    info(boost::format("RFS: decay correction factor: %1%, time frame duration: %2%. total correction factor from activity to counts: %3%")
-         % decay_corr_factor % duration % (1/total_to_activity),
+    const double double_decay_corr_factor = decay_correction_factor(2*isotope_halflife, 0., duration);
+    const double corr_factor = square(decay_corr_factor) / double_decay_corr_factor / duration;
+    info(boost::format("RFS: decay correction factor: %1%, time frame duration: %2%. total correction factor from (singles_totals)^2 to randoms_totals: %3%")
+         % decay_corr_factor % duration % (1/corr_factor),
          2);
 
     multiply_crystal_factors(proj_data, total_singles,
-                             static_cast<float>(coincidence_time_window*total_to_activity));
+                             static_cast<float>(coincidence_time_window*corr_factor));
 
   }
 }

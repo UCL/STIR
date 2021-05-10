@@ -1,7 +1,14 @@
+
 # Reconstructing data from GE SIGNA PET/MR Scanner
 
 Author: Palak Wadwha
 Edits: Kris Thielemans
+
+SPDX-License-Identifier: Apache-2.0
+See STIR/LICENSE.txt for details
+
+WARNING: In this release, the reconstructed images are x,z flipped, rotated and
+shifted w.r.t. to the scanner DICOMS.
 
 These instructions use a  template that was created using the `create_projdata_template` utility using the following inputs:
 ```
@@ -39,9 +46,20 @@ corrects for the crystal efficiency factors and geometric factors.
 ```
 correct_projdata correct_projdata_for_norm.par
 ```
+This uses the `*norm.rdf` (note: `*geo.rdf` is not necessary). In the current
+release, we do not yet use the "well-counter calibration files".
+Therefore, the reconstructed image will only be proportional to the
+console images.
 
-5. Attenuation Correction: In order to conduct the attenuation correction, the MRAC image needs to
-be rotated by 5.23 degrees in (anti-clockwise) direction.
+5. Attenuation Correction:
+You will need to convert the MRAC (including hardware
+such as bed)  obtained from the scanner. Instructions for this are currently
+out-of-scope. This image needs to be converted to mu-values (in units cm^-1).
+You can try the `nm_signa2mu` program of the `pet-rd-tools` for this.
+Unfortunately, in this release, the obtained mu-map needs to be x,z flipped and 
+rotated by 5.23 degrees in (anti-clockwise) direction. We recommend
+reconstructing the data with attenuation correction, and using
+`register_GEAC.sh`.
 
 
 These steps are made somewhat easier by the provided example scripts.

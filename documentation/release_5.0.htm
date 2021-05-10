@@ -117,7 +117,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 </li>
 <li><tt>SSRB</tt> now has the option of taking a template sinogram.
 </li> 
- <li><tt>KOSMAPOSL</tt> (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. This can be set in the parameter file through the keyword "freeze_iterative_kernel_at_subiter_num"
+ <li><tt>KOSMAPOSL</tt> (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. This can be set in the parameter file through the keyword <tt>freeze_iterative_kernel_at_subiter_num</tt>
 </li>     
 <li><code>BinNormalisationWithCalibration</code> is a new class derived from <code>BinNormalisation</code>. This class allows to apply calibration factor from the scanner and save the information into the interfile header. To use this, a specific BinNormalisation class should be derived from BinNormalisationWithCalibration, the information about the calibration factor read, and the function get_uncalibrated_bin_efficiencies() needs to be overwritten. Note that also the isotope name and branching ratio can be set here (the latter will need to be set according to the isotope by reading into a radionuclide database). BinNormalisationSPECT already reads Calibration factor and isotope name and apply the calibration factor read from interfile. Since not all SPECT scanner do quantitative reconstruction an option of setting the calibration factor from the parameter file is added. Factors for BinNormalisationECA8/ECAT7 and GEHDF5 are set to one at the moment as we need to double check on the meaning of cross calibration factor for ECAT and find out hoe to read them for GEHDF5. Documentation for this is pending and will be added in the following PR.
 </li>
@@ -140,8 +140,9 @@ Backward compatibility for reconstructed images can be achieved by setting the <
   In some cases, there could only be a single time frame (start to end of the study).
   </li>
 <li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
-	<li><tt>ROOT</tt> file I/O improvements no longer gets entire entry's tree and instead loads individual branches as needed.
-    ROOT file reading is now up to 4x faster. In addition, there is now an option <tt>check energy window information</tt> (defaulting to on).</li>
+	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
+    ROOT file event processing is now up to 4x faster. In addition, there is now an option to <tt>check energy window information</tt> (defaulting to on).
+    Futhermore, added functionality to exclude true and unscattered event types from list mode processing. </li>
 </ul>
 
 
@@ -210,7 +211,7 @@ from the above):</H2>
 
 <h3>Backward incompatibities</h3>
 <ul>
-    <li>Classes that used<code>InterfilePDFSHeader</code> now contains a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer, removing a memory leak.</li>
+    <li>Classes that use <code>InterfilePDFSHeader</code> now contain a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer, removing a memory leak.</li>
     <li>Changes improving safety of use of <code>shared_ptr</code>:<br />
       In the previous version of STIR, the use of <code>shared_ptr</code> allowed unsafe access to
       the objects (although this never happened in distributed STIR code). We now prevent this with changes to the class interface (although there is still work to do):
@@ -226,7 +227,7 @@ from the above):</H2>
     <li><code>PlasmaData::set_if_decay_corrected</code> and <code>PlasmaData::get_if_decay_corrected</code> renamed to <code>PlasmaData::set_is_decay_corrected</code> and <code>PlasmaData::get_is_decay_corrected</code></li>
     <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
     <li><code>BinNormalisation::set_up()</code> now need exam_info_sptr as input.</li>
-    <li><code>BinNormalisation::apply()</code> now does not need start_time and end_time as they are taken from exam_info. The same will be done with <code>undo()</code></li>
+    <li><code>BinNormalisation::apply()</code> and <code>undo</code> now no longer accept start_time and end_time as they are taken from exam_info. To allow this to happen, class <code>Bin</code> has now an extra member <code>time_frame()</code>. Note that it defaults to 1. If this is incorrect, it has to be initialised explicitly (not via a constructor).</li>
 </ul>
 
 <h3>New functionality</h3>
