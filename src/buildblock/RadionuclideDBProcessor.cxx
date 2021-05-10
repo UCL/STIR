@@ -30,12 +30,7 @@
 #include "stir/info.h"
 #include "stir/round.h"
 #include "stir/error.h"
-//#include "stir/ImagingModality.h"
-#include <nlohmann/json.hpp>
 #include "stir/find_STIR_config.h"
-#include <iostream>
-#include <fstream>
-#include "stir/IndexRange2D.h"
 
 START_NAMESPACE_STIR
 
@@ -52,6 +47,25 @@ RadionuclideDBProcessor(ImagingModality rmodality, std::string rname)
     set_DB_filename(find_STIR_config_file("radionuclide_info.json"));
     this->isotope_lookup_table_str=find_STIR_config_file("isotope_names.json");
     modality_str=modality.get_name();
+    
+    //Read Radionuclide file and set JSON member for DB
+    
+    std::string s =this->filename;
+    std::ifstream json_file_stream(s);
+    
+    if(!json_file_stream)
+        error("Could not open Json file!");
+  
+  //  nlohmann::json radionuclide_json;
+    json_file_stream >> this->radionuclide_json;
+  //  radionuclide_json.parse(json_file_stream);
+  //  
+    
+    if (radionuclide_json.find("nuclide") == radionuclide_json.end())
+    {
+      error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclide\" in file \""
+            + filename + "\")");
+    }
 }
 
 void
@@ -79,6 +93,12 @@ RadionuclideDBProcessor::get_isotope_name_from_lookup_table()
     nlohmann::json table_json;
     json_file_stream >> table_json;
     
+//    Check that lookup table and database have the same numbe of elements
+    if (radionuclide_json["nuclide"].size() != table_json.size())
+        error("The lookup table and the radionuclide database do not have the same number of elements. " 
+              "If you added a radionuclide you also need to add the same in the lookup table");
+//    std::cout<<radionuclide_json["nuclide"].size()<< "   "<<table_json.size();
+    
     for (int l=0; l<table_json.size(); l++)
         for (int c=0; c<table_json.at(0).size(); c++)
         {
@@ -102,30 +122,7 @@ get_record_from_json()
   if (this->nuclide_name.empty())
     error("RadionuclideDB: no nuclide set for the Radionuclide info");
 
-  //Read Radionuclide file
   
-  std::string s =this->filename;
-  std::ifstream json_file_stream(s);
-  
-  if(!json_file_stream)
-      error("Could not open Json file!");
-//  std::string out;
-  
-//  while(json_file_stream >> out)
-//      std::cout << out;
-  
-//  std::cout<<json_file_stream.rdbuf();
-//  json_file_stream.close();
-  nlohmann::json radionuclide_json;
-  json_file_stream >> radionuclide_json;
-//  radionuclide_json.parse(json_file_stream);
-//  std::cout<< radionuclide_json;
-  
-  if (radionuclide_json.find("nuclide") == radionuclide_json.end())
-  {
-    error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclide\" in file \""
-          + filename + "\")");
-  }
   
 
   std::string name = this->nuclide_name;
@@ -134,9 +131,9 @@ get_record_from_json()
   float  keV = this->energy;
   //Get desired kVp  as float value
   float  h_life = this->half_life;
-  info("RadionuclideDB: finding record radionuclide:" + nuclide_name+
-       "in file "+ filename);
-
+  info("RadionuclideDB: finding record radionuclide: " + nuclide_name+
+       " in file "+ filename);
+  
   //Extract appropriate chunk of JSON file for given nuclide.
   nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][modality_str]["properties"];
 //[name]["modality"][modality_str]["properties"]

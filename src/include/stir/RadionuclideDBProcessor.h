@@ -64,6 +64,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Radionuclide.h"
 #include "stir/ImagingModality.h"
+#include <nlohmann/json.hpp>
 
 START_NAMESPACE_STIR
 
@@ -97,6 +98,8 @@ private:
   float half_life;
   std::string modality_str;
   ImagingModality modality;
+  
+  nlohmann::json radionuclide_json;
 
   void get_record_from_json();
   
