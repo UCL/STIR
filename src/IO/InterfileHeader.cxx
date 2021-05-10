@@ -276,8 +276,8 @@ bool InterfileHeader::post_processing()
   
   if (!isotope_name.empty()){
       // here I need to cal the DB and set the Radionuclide memeber
-     RadionuclideDBProcessor radionuclide_processor=RadionuclideDBProcessor(exam_info_sptr->imaging_modality,isotope_name);
-     this->exam_info_sptr->set_radionuclide(radionuclide_processor.get_radionuclide());
+     RadionuclideDBProcessor radionuclide_processor=RadionuclideDBProcessor();
+     this->exam_info_sptr->set_radionuclide(radionuclide_processor.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
   }
   
   if (patient_orientation_index<0 || patient_rotation_index<0)

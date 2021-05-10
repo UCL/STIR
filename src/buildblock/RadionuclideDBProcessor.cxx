@@ -37,16 +37,17 @@ START_NAMESPACE_STIR
 RadionuclideDBProcessor::
 RadionuclideDBProcessor()
 {
-}
-
-RadionuclideDBProcessor::
-RadionuclideDBProcessor(ImagingModality rmodality, std::string rname)
-:nuclide_name(rname),
- modality(rmodality)
-{
     set_DB_filename(find_STIR_config_file("radionuclide_info.json"));
     this->isotope_lookup_table_str=find_STIR_config_file("isotope_names.json");
-    modality_str=modality.get_name();
+}
+
+void
+RadionuclideDBProcessor::
+set_DB_filename(const std::string& arg)
+{
+    this->filename = arg;
+    
+//    modality_str=modality.get_name();
     
     //Read Radionuclide file and set JSON member for DB
     
@@ -68,15 +69,9 @@ RadionuclideDBProcessor(ImagingModality rmodality, std::string rname)
     }
 }
 
-void
+std::string 
 RadionuclideDBProcessor::
-set_DB_filename(const std::string& arg)
-{
-  this->filename = arg;
-}
-
-void 
-RadionuclideDBProcessor::get_isotope_name_from_lookup_table()
+get_isotope_name_from_lookup_table(const std::string& rname)
 {
     if (this->isotope_lookup_table_str.empty())
         error("Lookup table: no filename set");
@@ -97,45 +92,43 @@ RadionuclideDBProcessor::get_isotope_name_from_lookup_table()
     if (radionuclide_json["nuclide"].size() != table_json.size())
         error("The lookup table and the radionuclide database do not have the same number of elements. " 
               "If you added a radionuclide you also need to add the same in the lookup table");
-//    std::cout<<radionuclide_json["nuclide"].size()<< "   "<<table_json.size();
     
     for (int l=0; l<table_json.size(); l++)
         for (int c=0; c<table_json.at(0).size(); c++)
         {
-            if(table_json.at(l).at(c)==this->nuclide_name)
-            this->nuclide_name=table_json.at(l).at(0);
+            if(table_json.at(l).at(c)==rname)
+            nuclide_name=table_json.at(l).at(0);
         }
-//    std::cout<<" name " <<nuclide_name<<std::endl;
-
+return nuclide_name;
 }
 
 void
 RadionuclideDBProcessor::
-get_record_from_json()
+get_record_from_json(ImagingModality rmodality, const std::string &rname)
 {
-    get_isotope_name_from_lookup_table();
+    std::string nuclide_name=get_isotope_name_from_lookup_table(rname);
     
   if (this->filename.empty())
     error("RadionuclideDB: no filename set for the Radionuclide info");
-  if (this->modality_str.empty())
+  if (rmodality.get_name().empty())
     error("RadionuclideDB: no modality set for the Radionuclide info");
-  if (this->nuclide_name.empty())
+  if (nuclide_name.empty())
     error("RadionuclideDB: no nuclide set for the Radionuclide info");
 
   
   
 
-  std::string name = this->nuclide_name;
+  std::string name = nuclide_name;
 
-  //Get desired keV as float value
-  float  keV = this->energy;
-  //Get desired kVp  as float value
-  float  h_life = this->half_life;
+  float  keV ;
+  float  h_life ;
+  float branching_ratio;
+  
   info("RadionuclideDB: finding record radionuclide: " + nuclide_name+
        " in file "+ filename);
   
   //Extract appropriate chunk of JSON file for given nuclide.
-  nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][modality_str]["properties"];
+  nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][rmodality.get_name()]["properties"];
 //[name]["modality"][modality_str]["properties"]
   int location = -1;
   int pos = 0;
@@ -155,18 +148,18 @@ get_record_from_json()
     str << properties.dump(6);
     info("RadionuclideDB: JSON record found:" + str.str(),2);
   }
-  this->energy = properties["kev"];
-  this->branching_ratio = properties["BRatio"];
-  this->half_life = properties["half_life"];
+  keV = properties["kev"];
+  branching_ratio = properties["BRatio"];
+  h_life = properties["half_life"];
   
   //  this->breakPoint = properties["break"];
   
 //Set Radionuclide member
   Radionuclide rnuclide(nuclide_name,
-                        energy,
+                        keV,
                         branching_ratio,
-                        half_life,
-                        modality);
+                        h_life,
+                        rmodality);
   
   this->radionuclide=rnuclide;
 
@@ -174,8 +167,30 @@ get_record_from_json()
 
 Radionuclide 
 RadionuclideDBProcessor::
-get_radionuclide(){
-    get_record_from_json();
+get_radionuclide(ImagingModality rmodality, const std::string& rname){
+#ifdef nlohmann_json_FOUND
+    get_record_from_json(rmodality,rname);
+#else
+    if(rmodality.PT){
+        warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as F-18."
+                " Decay correction and Branching ratio could be wrong!");
+        Radionuclide rnuclide(^18^Fluorine,
+                              511,
+                              0.9686,
+                              6584.04,
+                              rmodality);
+        this->radionuclide=rnuclide;
+    }else if(rmodality.NM){
+        warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as Tc-99m."
+                " Decay correction could be wrong!");
+        Radionuclide rnuclide(^99m^Tecnetium,
+                              511,
+                              0.9686,
+                              6584.04,
+                              rmodality);
+        this->radionuclide=rnuclide;
+    }
+#endif
     return this->radionuclide;
 }
 

@@ -76,13 +76,10 @@ public:
   //! Default constructor
   RadionuclideDBProcessor();
   
-  //! constructor based on information that we already have from the interfile
-  RadionuclideDBProcessor(ImagingModality modality, std::string nuclide_name);
-
   //! set the JSON filename with the radionuclides
   void set_DB_filename(const std::string& filename);
   //! get the radionuclide 
-  Radionuclide get_radionuclide();
+  Radionuclide get_radionuclide(ImagingModality rmodality, const std::string& rname);
   
 protected:
 
@@ -93,17 +90,12 @@ private:
   
   std::string nuclide_name;
   std::string isotope_lookup_table_str;
-  float energy;
-  float branching_ratio;
-  float half_life;
-  std::string modality_str;
-  ImagingModality modality;
   
   nlohmann::json radionuclide_json;
 
-  void get_record_from_json();
+  void get_record_from_json(ImagingModality rmodality, const std::string& rname);
   
-  void get_isotope_name_from_lookup_table();
+  std::string get_isotope_name_from_lookup_table(const std::string& rname);
 };
 
 END_NAMESPACE_STIR
