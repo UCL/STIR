@@ -64,7 +64,10 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Radionuclide.h"
 #include "stir/ImagingModality.h"
+
+#ifdef nlohmann_json_FOUND
 #include <nlohmann/json.hpp>
+#endif
 
 START_NAMESPACE_STIR
 
