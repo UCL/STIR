@@ -94,7 +94,9 @@ private:
   std::string nuclide_name;
   std::string isotope_lookup_table_str;
   
-  nlohmann::json radionuclide_json;
+#ifdef nlohmann_json_FOUND
+nlohmann::json radionuclide_json;
+#endif
 
   void get_record_from_json(ImagingModality rmodality, const std::string& rname);
   

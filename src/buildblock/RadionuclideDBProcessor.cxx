@@ -45,6 +45,7 @@ void
 RadionuclideDBProcessor::
 set_DB_filename(const std::string& arg)
 {
+    #ifdef nlohmann_json_FOUND
     this->filename = arg;
     
 //    modality_str=modality.get_name();
@@ -67,12 +68,14 @@ set_DB_filename(const std::string& arg)
       error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclide\" in file \""
             + filename + "\")");
     }
+#endif
 }
 
 std::string 
 RadionuclideDBProcessor::
 get_isotope_name_from_lookup_table(const std::string& rname)
 {
+    #ifdef nlohmann_json_FOUND
     if (this->isotope_lookup_table_str.empty())
         error("Lookup table: no filename set");
     if (this->filename.empty())
@@ -100,6 +103,9 @@ get_isotope_name_from_lookup_table(const std::string& rname)
             nuclide_name=table_json.at(l).at(0);
         }
 return nuclide_name;
+#else
+    return "default";
+#endif
 }
 
 void
@@ -126,7 +132,7 @@ get_record_from_json(ImagingModality rmodality, const std::string &rname)
   
   info("RadionuclideDB: finding record radionuclide: " + nuclide_name+
        " in file "+ filename);
-  
+  #ifdef nlohmann_json_FOUND
   //Extract appropriate chunk of JSON file for given nuclide.
   nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][rmodality.get_name()]["properties"];
 //[name]["modality"][modality_str]["properties"]
@@ -162,7 +168,7 @@ get_record_from_json(ImagingModality rmodality, const std::string &rname)
                         rmodality);
   
   this->radionuclide=rnuclide;
-
+#endif
 }
 
 Radionuclide 
@@ -171,19 +177,19 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
 #ifdef nlohmann_json_FOUND
     get_record_from_json(rmodality,rname);
 #else
-    if(rmodality.PT){
+    if(rmodality.get_modality()==ImagingModality::PT){
         warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as F-18."
                 " Decay correction and Branching ratio could be wrong!");
-        Radionuclide rnuclide(^18^Fluorine,
+        Radionuclide rnuclide("^18^Fluorine",
                               511,
                               0.9686,
                               6584.04,
                               rmodality);
         this->radionuclide=rnuclide;
-    }else if(rmodality.NM){
+    }else if(rmodality.get_modality()==ImagingModality::NM){
         warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as Tc-99m."
                 " Decay correction could be wrong!");
-        Radionuclide rnuclide(^99m^Tecnetium,
+        Radionuclide rnuclide("^99m^Tecnetium",
                               511,
                               0.9686,
                               6584.04,

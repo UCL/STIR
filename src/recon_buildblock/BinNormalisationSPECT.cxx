@@ -112,8 +112,6 @@ post_processing()
     if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
         error("BinNormalisationSPECT: At least one time frame should be defined");
     
-    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
-    
 //  allow to set your own calibration factor
   if(measured_calibration_factor>0) 
       set_calibration_factor(measured_calibration_factor);
@@ -122,7 +120,7 @@ post_processing()
   
   if (get_exam_info_sptr()->get_radionuclide().get_half_life()){
       half_life=get_exam_info_sptr()->get_radionuclide().get_half_life();
-      info("BinNormalisationSPECT: half life  read from DB");
+      info("BinNormalisationSPECT: half life  read from DB = "+ std::to_string(half_life));
   }
   
   return false;
@@ -141,6 +139,9 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const 
 {
     
     set_num_views(norm_proj_data_info_ptr->get_num_views());
+    
+    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
+    
   return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
