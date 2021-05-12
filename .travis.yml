@@ -77,7 +77,8 @@ matrix:
     apt:
      packages:
      - *addons_apt_packages
-     - [clang-10, libomp-10-dev]
+     # clang, seems to need to downgrade some packages on focal
+     - [libclang1-10=1:10.0.0-4ubuntu1, libllvm10=1:10.0.0-4ubuntu1, clang-10, libomp-10-dev]
    # need -Wno-deprecated-declarations to avoid log-file limit due to tons of warnings about auto_ptr
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON"  CC=clang-10.0 CXX=clang++-10.0
 
