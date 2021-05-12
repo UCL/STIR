@@ -38,7 +38,7 @@
     end :=
      \endcode
 
-  \sa PatlakPlot.h for the \a par_file
+  \sa PatlakPlot for the \a par_file
   \sa extract_single_images_from_parametric_image.cxx to extract the individual frames from the dynamic image
 
 */
