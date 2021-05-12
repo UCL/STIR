@@ -12,6 +12,7 @@ addons:
   packages: &addons_apt_packages
   - libboost-dev
   - libhdf5-serial-dev
+  - libfftw3-dev # not sure why this is needed, but otherwise we get linking errors
   - swig
   - python3-dev
   - python3-numpy
@@ -58,7 +59,7 @@ matrix:
     apt:
      packages:
      - *addons_apt_packages
-     - [g++-9, libinsighttoolkit4-dev, nlohman-json3-dev]
+     - [g++-9, libinsighttoolkit4-dev, nlohmann-json3-dev]
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-9 CXX=g++-9
  - os: linux
    dist: focal
@@ -67,7 +68,7 @@ matrix:
     apt:
      packages:
      - *addons_apt_packages
-     - [g++-10, nlohman-json3-dev]
+     - [g++-10, nlohmann-json3-dev]
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON" CC=gcc-10 CXX=g++-10
  - os: linux
    dist: focal
@@ -161,9 +162,9 @@ before_install:
           *)
               ubuntu_major=`lsb_release -rs| awk -F. '{print $1}'`
               case $ubuntu_major in
-                 18) rootcc=gcc-7.5;;
-                 19) rootcc=gcc-9.2;;
-                 20) rootcc=gcc-9.3;;
+                 18) rootcc=gcc7.5;;
+                 19) rootcc=gcc9.2;;
+                 20) rootcc=gcc9.3;;
               esac
               rootfile=root_v6.24.00.Linux-ubuntu${ubuntu_major}-x86_64-${rootcc}.tar.gz
               wget https://root.cern/download/$rootfile
@@ -177,7 +178,7 @@ before_install:
     fi
     ${PY_EXE} --version  
     BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
-      
+    ${CXX} --version      
 
 
 install:
