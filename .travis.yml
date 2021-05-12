@@ -90,6 +90,7 @@ addons:
       - libroot-tree-dev
       - libroot-tree-treeplayer-dev
       - libroot-io-dev
+      - nlohmann-json-dev
 
 # Actual compilation script
 
