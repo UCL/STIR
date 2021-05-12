@@ -9,8 +9,8 @@
       
 */
 /*
-    Copyright (C) 2021, NPL
-    Copyright (C) 2021, UCL
+    Copyright (C) 2021, National Physical Laboratory
+    Copyright (C) 2021, University Colleg London
     See STIR/LICENSE.txt for details
 */
 
@@ -27,19 +27,21 @@
 
   This file is in JSON format. An example is distributed with STIR.
   \verbatim
-{     "nuclide": 
+{   "nuclide": 
+
+ {  "^18^Fluorine":
 
   {  "modality": 
-    {   :"PET"
+    {   "PET":
       {  "properties": [
                {
                 "kev": 511,
                 "BRatio": 0.9686,
-                "half_life": 6584.04,
+                "half_life": 6584.04
                 }      ]
       }
     }
-  },  
+ },  
 
    "^99m^Technetium":
 
@@ -98,7 +100,7 @@ private:
 nlohmann::json radionuclide_json;
 #endif
 
-  void get_record_from_json(ImagingModality rmodality, const std::string& rname);
+  Radionuclide get_radionuclide_from_json(ImagingModality rmodality, const std::string& rname);
   
   std::string get_isotope_name_from_lookup_table(const std::string& rname);
 };
