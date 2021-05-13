@@ -78,9 +78,9 @@ matrix:
      packages:
      - *addons_apt_packages
      # clang, seems to need to downgrade some packages on focal
-     - [libclang1-10=1:10.0.0-4ubuntu1, libllvm10=1:10.0.0-4ubuntu1, clang-10, libomp-10-dev]
+     #- [libclang1-10=1:10.0.0-4ubuntu1, libllvm10=1:10.0.0-4ubuntu1, clang-10, libomp-10-dev]
    # need -Wno-deprecated-declarations to avoid log-file limit due to tons of warnings about auto_ptr
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON"  CC=clang-10.0 CXX=clang++-10.0
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON"  CC=clang-10 CXX=clang++-10
 
 #   ####  osx
 #   # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
@@ -108,8 +108,8 @@ env:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 
 # No need for sudo
-sudo: false
-
+#sudo: false
+sudo: true
 # Actual compilation script
 
 before_install:
@@ -156,6 +156,16 @@ before_install:
       ${PY_EXE} -m pip install -U pip
       ${PY_EXE} -m pip install pytest numpy
     else
+      # specific handling of clang due to apt package problem in focal
+      case $CXX in
+         clang*)
+           wget https://apt.llvm.org/llvm.sh
+           chmod +x llvm.sh
+           sudo ./llvm.sh 10
+           ;;
+         *)
+           ;;
+      esac
       # Install ROOT, unless disabled
       case "$EXTRA_BUILD_FLAGS" in
           *DISABLE_CERN_ROOT=1*)
