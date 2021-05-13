@@ -1,7 +1,7 @@
 //
 //
 /*
-  Copyright (C) 2018,2020 University College London
+  Copyright (C) 2018, 2020, 2021 University College London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -19,12 +19,14 @@
   \par Usage:
   \code 
   extract_single_images_from_parametric_image output_filename_pattern input_header_filename output_format_parameter_file
+  \endcode
 
-  The output filename should look something like this: param_im_%d_output.file_extension,
+  The output filename should look something like this: `param_im_%d_output.file_extension`,
   so that we can use boost format. In this fashion, you can can specify the output file extension
   should you wish.
-
+  
   An example of an output parameter file is as follows:
+  \code
     OutputFileFormat Parameters:=
     output file format type := interfile
     interfile Output File Format Parameters:=
@@ -34,6 +36,8 @@
     End:=
 
   \endcode
+
+  \sa get_dynamic_images_from_parametric_images.cxx to get dynamic images from parametric images.
 
 */
 
