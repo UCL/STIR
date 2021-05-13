@@ -79,37 +79,36 @@ matrix:
      packages:
      - *addons_apt_packages
      - [clang, libomp-dev]
-   # need -Wno-deprecated-declarations to avoid log-file limit due to tons of warnings about auto_ptr
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON"  CC=clang CXX=clang++
 
-#   ####  osx
-#   # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
-# - os: osx
-#   osx_image: xcode12.2
-#   python: 3
-#   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
-#   # Disable as ROOT is currently failing via brew (as it wants to build it, and which causes a timeout)
-# #- os: osx
-# #  python: 3
-# #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
-# - os: osx
-#   osx_image: xcode11.3
-#   python: 3
-#   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
-#
-#   # osx, OpenMP using llvm clang
-# - os: osx
-#   osx_image: xcode11.3
-#   python: 3
-#   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang"
+   ####  osx
+   # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
+ - os: osx
+   osx_image: xcode12.2
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   # Disable as ROOT is currently failing via brew (as it wants to build it, and which causes a timeout)
+ #- os: osx
+ #  python: 3
+ #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+ - os: osx
+   osx_image: xcode11.3
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
+
+   # osx, OpenMP using llvm clang
+ - os: osx
+   osx_image: xcode11.3
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang"
 
 env:
   global:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 
 # No need for sudo
-#sudo: false
-sudo: true
+sudo: false
+
 # Actual compilation script
 
 before_install:
@@ -156,7 +155,7 @@ before_install:
       ${PY_EXE} -m pip install -U pip
       ${PY_EXE} -m pip install pytest numpy
     else
-      # specific handling of clang due to apt package problem in focal(but fails)
+      ## specific handling of clang due to apt package problem in focal(but fails)
       # case $CXX in
       #  clang*)
       #     wget https://apt.llvm.org/llvm.sh
@@ -165,8 +164,9 @@ before_install:
       #     ;;
       #   *)
       #     ;;
-      #esac
-      # Install ROOT, unless disabled
+      # esac
+      #
+      ## Install ROOT, unless disabled
       case "$EXTRA_BUILD_FLAGS" in
           *DISABLE_CERN_ROOT=1*)
               echo "Not installing ROOT to save some time (and potential time-outs)";;
