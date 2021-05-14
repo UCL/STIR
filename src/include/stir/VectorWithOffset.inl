@@ -572,6 +572,15 @@ VectorWithOffset<T>::apply_lower_threshold(const T &lower)
   this->check_state();
 }
 
+template <class T>
+inline void
+VectorWithOffset<T>::apply_upper_threshold(const T &upper)
+{
+  this->check_state();
+  threshold_upper(this->begin(), this->end(), upper);
+  this->check_state();
+}
+
 
 
 /*! 
