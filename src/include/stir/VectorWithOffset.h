@@ -266,6 +266,8 @@ public:
   //! fill elements with value \a n
   inline void fill(const T &n);
 
+  inline void apply_lower_threshold(const T &lower);
+
   //! \name access to the data via a pointer
   //@{
   //! member function for access to the data via a T*

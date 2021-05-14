@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include "thresholding.h"
 
 START_NAMESPACE_STIR
 
@@ -558,6 +559,16 @@ VectorWithOffset<T>::fill(const T &n)
   //std::fill(begin(), end(), n);
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     num[i] = n;
+  this->check_state();
+}
+
+
+template <class T>
+inline void
+VectorWithOffset<T>::apply_lower_threshold(const T &lower)
+{
+  this->check_state();
+  threshold_lower(this->begin(), this->end(), lower);
   this->check_state();
 }
 
