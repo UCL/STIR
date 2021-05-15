@@ -140,18 +140,25 @@ setup()
 }
 
 
+void LineSearcher::perform_line_search() {
+
+  std::vector<float> alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
+  std::vector<float> Phi;
+
+  std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
+            << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
+  for (auto a = alphas.begin(); a != alphas.end(); ++a)
+  {
+    std::cout << "alpha = " << *a << "\n";
+  }
 }
+
 
 float LineSearcher::
 compute_line_search_value(const float alpha)
 {
   return 0;
 }
-
-void LineSearcher::perform_line_search() {
-
-}
-
 
 int main(int argc, char **argv)
 {
