@@ -70,16 +70,13 @@ public:
     float alpha_max;
     bool use_log_alphas;
 
-
-
+    shared_ptr<DiscretisedDensity<3,float> > image_sptr;
+    shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
 
 protected:
     shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
 
 private:
-    std::string input_filename; // data
-    std::string additive_sinogram_filename;
-//    std::string multiplicative_factors_filename;
     std::string image_filename; //image
 
     void initialise_keymap();
@@ -95,7 +92,6 @@ void
 LineSearcher::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
-  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
   num_evaluations = 10;
   alpha_min = 0.0;
   alpha_max = 1.0;
@@ -128,10 +124,21 @@ post_processing()
 void LineSearcher::
 setup()
 {
+  objective_function_sptr->set_num_subsets(1);
+
   /////// load initial density from file
   shared_ptr<DiscretisedDensity<3,float> > image_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
 
-  /////// Select
+  /////// setup the objective function
+  objective_function_sptr->set_up(image_sptr);
+
+  //////// gradient it copied Density filled with 0's
+  shared_ptr<DiscretisedDensity<3,float> > gradient_sptr(image_sptr->get_empty_copy());
+
+  //////// compute the gradient
+  objective_function_sptr->compute_sub_gradient(*gradient_sptr, *image_sptr, 0);
+}
+
 
 }
 
