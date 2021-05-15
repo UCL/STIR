@@ -28,7 +28,29 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 
-namespace stir {
+
+std::vector<float>
+compute_linear_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
+{
+  std::vector<float> alphas;
+  float alpha;
+  float d_alpha = (alpha_max - alpha_min) / num_evaluations;
+
+  std::cout << "Computing linear alphas:"
+               "\n  alpha_min =   " << alpha_min <<
+            "\n  alpha_max =   " << alpha_max <<
+            "\n  delta_alpha = " << d_alpha << "\n";
+
+  for (int i = 1; i <= num_evaluations; i++)
+  {
+    alpha = i * d_alpha;
+    alphas.push_back(alpha);
+  }
+  return alphas;
+}
+
+
+using namespace stir;
 
 class LineSearcher: public ParsingObject
 {
@@ -123,7 +145,6 @@ void LineSearcher::perform_line_search() {
 
 }
 
-}// end of namespace stir
 
 int main(int argc, char **argv)
 {
