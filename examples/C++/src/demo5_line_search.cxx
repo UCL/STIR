@@ -134,11 +134,11 @@ setup()
   if (image_filename == "")
     error("LineSearcher setup. No image filename has been given.");
   std::cout << "Loading image: \n    " << image_filename << "\n";
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
+  this->image_sptr  = read_from_file<DiscretisedDensity<3,float> >(image_filename);
 
   //////// gradient it copied Density filled with 0's
-  shared_ptr<DiscretisedDensity<3,float> > gradient_sptr(image_sptr->get_empty_copy());
-  shared_ptr<DiscretisedDensity<3,float> > eval_image_sptr(image_sptr->get_empty_copy());
+  this->gradient_sptr.reset(this->image_sptr->get_empty_copy());
+  this->eval_image_sptr.reset(this->image_sptr->get_empty_copy());
 
   /////// setup the objective function
   objective_function_sptr->set_num_subsets(1);
@@ -166,12 +166,15 @@ LineSearcher::perform_line_search() {
   float p = 0.0;
   std::cout << this->image_sptr->find_max();
 
-  for (auto i = alphas.begin(); i != alphas.end(); ++i)
+  for (auto a = alphas.begin(); a != alphas.end(); ++a)
   {
-    const float alpha = *i;
-    p = this->compute_line_search_value(*i);
+    p = this->compute_line_search_value(*a);
     Phi.push_back(p);
-    std::cout << "alpha = " << alpha << ". Phi = " << p << "\n";
+    std::cout << "alpha = " << *a << ". Phi = " << p << "\n";
+  }
+
+  for (int i = 0 ; i < alphas.size() ; ++i){
+    std::cout << "alpha = " << alphas[i] << ". Phi = " << Phi[i] << "\n";
   }
 }
 
