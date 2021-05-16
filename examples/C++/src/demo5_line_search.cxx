@@ -74,13 +74,14 @@ public:
 
     shared_ptr<DiscretisedDensity<3,float> > image_sptr;
     shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
+    shared_ptr<DiscretisedDensity<3,float> > eval_image_sptr;
 
 protected:
     shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
 
 private:
     std::string image_filename; //image
-
+    bool is_setup = false;
     void initialise_keymap();
     bool post_processing();
 };
@@ -98,6 +99,7 @@ LineSearcher::set_defaults()
   alpha_min = 0.0;
   alpha_max = 1.0;
   use_log_alphas = false;
+  is_setup = false;
 }
 
 void
@@ -109,6 +111,7 @@ LineSearcher::initialise_keymap()
   parser.add_key("number of evaluations", &num_evaluations);
   parser.add_key("alpha min", &alpha_min);
   parser.add_key("alpha max", &alpha_max);
+  parser.add_key("use log alphas", &use_log_alphas);
   parser.add_stop_key("End");
 }
 
@@ -126,40 +129,60 @@ post_processing()
 void LineSearcher::
 setup()
 {
-  objective_function_sptr->set_num_subsets(1);
-
+  this->is_setup = false;
   /////// load initial density from file
+  if (image_filename == "")
+    error("LineSearcher setup. No image filename has been given.");
+  std::cout << "Loading image: \n    " << image_filename << "\n";
   shared_ptr<DiscretisedDensity<3,float> > image_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
-
-  /////// setup the objective function
-  objective_function_sptr->set_up(image_sptr);
 
   //////// gradient it copied Density filled with 0's
   shared_ptr<DiscretisedDensity<3,float> > gradient_sptr(image_sptr->get_empty_copy());
+  shared_ptr<DiscretisedDensity<3,float> > eval_image_sptr(image_sptr->get_empty_copy());
+
+  /////// setup the objective function
+  objective_function_sptr->set_num_subsets(1);
+  objective_function_sptr->set_up(image_sptr);
+
 
   //////// compute the gradient
   objective_function_sptr->compute_sub_gradient(*gradient_sptr, *image_sptr, 0);
+
+  this->is_setup = true;
 }
 
 
-void LineSearcher::perform_line_search() {
+void
+LineSearcher::perform_line_search() {
+  if (!is_setup)
+    error("LineSearcher is not setup, please run setup()");
 
   std::vector<float> alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
   std::vector<float> Phi;
 
   std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
             << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
-  for (auto a = alphas.begin(); a != alphas.end(); ++a)
+
+  float p = 0.0;
+  std::cout << this->image_sptr->find_max();
+
+  for (auto i = alphas.begin(); i != alphas.end(); ++i)
   {
-    std::cout << "alpha = " << *a << "\n";
+    const float alpha = *i;
+    p = this->compute_line_search_value(*i);
+    Phi.push_back(p);
+    std::cout << "alpha = " << alpha << ". Phi = " << p << "\n";
   }
 }
 
 
-float LineSearcher::
-compute_line_search_value(const float alpha)
+float
+LineSearcher::compute_line_search_value(const float alpha)
 {
-  return 0;
+  //////// gradient it copied Density filled with 0's
+  eval_image_sptr->fill(0.0);
+  *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
+  return objective_function_sptr->compute_objective_function(*eval_image_sptr);
 }
 
 int main(int argc, char **argv)
@@ -172,11 +195,13 @@ int main(int argc, char **argv)
     std::cerr << "I will now ask you the questions interactively\n";
   }
   LineSearcher my_stuff;
-  my_stuff.set_defaults();
   if (argc!=2)
     my_stuff.ask_parameters();
   else
     my_stuff.parse(argv[1]);
-//  my_stuff.run();
+  my_stuff.setup();
+  my_stuff.perform_line_search();
+
+
   return EXIT_SUCCESS;
 }
