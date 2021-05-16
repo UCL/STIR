@@ -7,4 +7,4 @@
 # files in the STIR developer's Guide.
 
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/examples/src examples/src)
+add_subdirectory(${PROJECT_SOURCE_DIR}/examples/C++/src examples/C++)
