@@ -71,7 +71,7 @@ public:
     int num_evaluations;
     float alpha_min;
     float alpha_max;
-    bool use_log_alphas;
+    bool use_exponential_alphas;
 
     shared_ptr<DiscretisedDensity<3,float> > image_sptr;
     shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
@@ -81,7 +81,7 @@ protected:
     shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
 
 private:
-    std::string image_filename; //image
+    std::string image_filename;
     bool is_setup = false;
     void initialise_keymap();
     bool post_processing();
@@ -99,7 +99,7 @@ LineSearcher::set_defaults()
   num_evaluations = 10;
   alpha_min = 0.0;
   alpha_max = 1.0;
-  use_log_alphas = false;
+  use_exponential_alphas = false;
   is_setup = false;
 }
 
@@ -112,7 +112,7 @@ LineSearcher::initialise_keymap()
   parser.add_key("number of evaluations", &num_evaluations);
   parser.add_key("alpha min", &alpha_min);
   parser.add_key("alpha max", &alpha_max);
-  parser.add_key("use log alphas", &use_log_alphas);
+  parser.add_key("use exponential alphas", &use_exponential_alphas);
   parser.add_stop_key("End");
 }
 
@@ -158,24 +158,38 @@ LineSearcher::perform_line_search() {
   if (!is_setup)
     error("LineSearcher is not setup, please run setup()");
 
-  std::vector<float> alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
+  std::vector<float> alphas;
   std::vector<float> Phi;
 
   std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
             << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
 
-  float p = 0.0;
+
+  /// get alpha values as a vector
+  {
+    if ( this->use_exponential_alphas )
+      error("exponential alphas not yet implemented.");
+    else
+      alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
+  }
+
+
+
+
   std::cout << this->image_sptr->find_max();
 
   for (auto a = alphas.begin(); a != alphas.end(); ++a)
   {
-    p = this->compute_line_search_value(*a);
-    Phi.push_back(p);
-    std::cout << "alpha = " << *a << ". Phi = " << p << "\n";
+    phi = this->compute_line_search_value(*a);
+    Phi.push_back(phi);
+    std::cout << "alpha = " << *a << ". Phi = " << phi << "\n";
   }
 
+  std::cout << "\n\n"
+               "====================================\n"
+               "Alphas and Phi values: \n";
   for (int i = 0 ; i < alphas.size() ; ++i){
-    std::cout << "alpha = " << alphas[i] << ". Phi = " << Phi[i] << "\n";
+    std::cout << "  alpha = " << alphas[i] << ". Phi = " << Phi[i] << "\n";
   }
 }
 
@@ -183,7 +197,6 @@ LineSearcher::perform_line_search() {
 float
 LineSearcher::compute_line_search_value(const float alpha)
 {
-  //////// gradient it copied Density filled with 0's
   eval_image_sptr->fill(0.0);
   *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
   std::cout << "\nimage_max  = " <<  image_sptr->find_max()
