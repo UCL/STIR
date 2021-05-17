@@ -97,6 +97,10 @@ public:
     float alpha_max;
     bool use_exponential_alphas;
 
+    /// Measurements
+    std::vector<float> alphas;
+    std::vector<float> Phis;
+
     shared_ptr<DiscretisedDensity<3,float> > image_sptr;
     shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
     shared_ptr<DiscretisedDensity<3,float> > eval_image_sptr;
@@ -169,8 +173,7 @@ setup()
   objective_function_sptr->set_num_subsets(1);
   objective_function_sptr->set_up(image_sptr);
 
-
-  //////// compute the gradient
+  //////// compute the gradient and store
   objective_function_sptr->compute_sub_gradient(*gradient_sptr, *image_sptr, 0);
 
   this->is_setup = true;
@@ -182,38 +185,31 @@ LineSearcher::perform_line_search() {
   if (!is_setup)
     error("LineSearcher is not setup, please run setup()");
 
-  std::vector<float> alphas;
-  std::vector<float> Phi;
+  float phi;
 
   std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
             << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
 
-
   /// get alpha values as a vector
   {
     if ( this->use_exponential_alphas )
-      error("exponential alphas not yet implemented.");
+      alphas = compute_exponential_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
     else
       alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
   }
 
-
-
-
-  std::cout << this->image_sptr->find_max();
-
   for (auto a = alphas.begin(); a != alphas.end(); ++a)
   {
     phi = this->compute_line_search_value(*a);
-    Phi.push_back(phi);
+    Phis.push_back(phi);
     std::cout << "alpha = " << *a << ". Phi = " << phi << "\n";
   }
 
   std::cout << "\n\n"
                "====================================\n"
-               "Alphas and Phi values: \n";
+               "Alpha and Phi values: \n";
   for (int i = 0 ; i < alphas.size() ; ++i){
-    std::cout << "  alpha = " << alphas[i] << ". Phi = " << Phi[i] << "\n";
+    std::cout << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
   }
 }
 
