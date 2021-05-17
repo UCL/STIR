@@ -185,6 +185,9 @@ LineSearcher::compute_line_search_value(const float alpha)
   //////// gradient it copied Density filled with 0's
   eval_image_sptr->fill(0.0);
   *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
+  std::cout << "\nimage_max  = " <<  image_sptr->find_max()
+            << "\ngrad_max = " << gradient_sptr->find_max()
+            << "\neval_max = " << eval_image_sptr->find_max() << "\n";
   return objective_function_sptr->compute_objective_function(*eval_image_sptr);
 }
 
