@@ -96,6 +96,7 @@ public:
     float alpha_min;
     float alpha_max;
     bool use_exponential_alphas;
+    double image_lower_bound;
 
     /// Measurements
     std::vector<double> alphas;
@@ -129,6 +130,7 @@ LineSearcher::set_defaults()
   alpha_max = 1.0;
   use_exponential_alphas = false;
   is_setup = false;
+  image_lower_bound = 0.0;
 }
 
 void
@@ -141,6 +143,7 @@ LineSearcher::initialise_keymap()
   parser.add_key("alpha min", &alpha_min);
   parser.add_key("alpha max", &alpha_max);
   parser.add_key("use exponential alphas", &use_exponential_alphas);
+  parser.add_key("line search image lower bound", &image_lower_bound);
   parser.add_stop_key("End");
 }
 
@@ -185,8 +188,7 @@ LineSearcher::perform_line_search() {
   if (!is_setup)
     error("LineSearcher is not setup, please run setup()");
 
-  double phi;
-
+  double Phi; // Used to store objective function values of each iterate
   std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
             << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
 
@@ -198,18 +200,21 @@ LineSearcher::perform_line_search() {
       alphas = compute_linear_alphas(this->alpha_min, this->alpha_max, this->num_evaluations);
   }
 
+  /// Iterate over each of the alphas and compute Phi
   for (auto a = alphas.begin(); a != alphas.end(); ++a)
   {
-    phi = this->compute_line_search_value(*a);
-    Phis.push_back(phi);
-    std::cout << "alpha = " << *a << ". Phi = " << phi << "\n";
+    Phi = this->compute_line_search_value(*a);
+    Phis.push_back(Phi);
+    std::cout << "alpha = " << *a << ". Phi = " << Phi << "\n";
   }
 
-  std::cout << "\n\n"
-               "====================================\n"
-               "Alpha and Phi values: \n";
-  for (int i = 0 ; i < alphas.size() ; ++i)
-    std::cout << std::setprecision(10) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
+  /// Output alpha and Phi values to console
+  {
+    std::cout << "\n\n====================================\n"
+                 "Alpha and Phi values: \n";
+    for (int i = 0 ; i < alphas.size() ; ++i)
+      std::cout << std::setprecision(10) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
+  }
 }
 
 
@@ -218,9 +223,11 @@ LineSearcher::compute_line_search_value(const double alpha)
 {
   eval_image_sptr->fill(0.0);
   *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
-  std::cout << "\nimage_max  = " <<  image_sptr->find_max()
-            << "\ngrad_max = " << gradient_sptr->find_max()
-            << "\neval_max = " << eval_image_sptr->find_max() << "\n";
+  eval_image_sptr->apply_lower_threshold(this->image_lower_bound);
+
+  std::cout << "\nimage_min  = " <<  image_sptr->find_min()
+            << "\ngrad_min = " << gradient_sptr->find_min()
+            << "\neval_min = " << eval_image_sptr->find_min() << "\n";
   return objective_function_sptr->compute_objective_function(*eval_image_sptr);
 }
 
