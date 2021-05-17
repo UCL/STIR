@@ -29,10 +29,10 @@
 #include "stir/is_null_ptr.h"
 
 
-std::vector<float>
+std::vector<double>
 compute_linear_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
 {
-  std::vector<float> alphas;
+  std::vector<double> alphas;
   float d_alpha = (alpha_max - alpha_min) / num_evaluations;
 
   std::cout << "\nComputing linear alphas:"
@@ -53,10 +53,10 @@ compute_linear_alphas(const float alpha_min, const float alpha_max, const float 
 }
 
 
-std::vector<float>
+std::vector<double>
 compute_exponential_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
 {
-  std::vector<float> alphas;
+  std::vector<double> alphas;
   float d_alpha = (alpha_max - alpha_min) / num_evaluations;
 
   std::cout << "\nComputing exponential alphas:"
@@ -86,7 +86,7 @@ public:
     ////// Methods
     void set_defaults();
     void setup();
-    float compute_line_search_value(const float alpha);
+    double compute_line_search_value(const double alpha);
     void perform_line_search();
 
     typedef DiscretisedDensity<3,float> target_type;
@@ -98,8 +98,8 @@ public:
     bool use_exponential_alphas;
 
     /// Measurements
-    std::vector<float> alphas;
-    std::vector<float> Phis;
+    std::vector<double> alphas;
+    std::vector<double> Phis;
 
     shared_ptr<DiscretisedDensity<3,float> > image_sptr;
     shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
@@ -185,7 +185,7 @@ LineSearcher::perform_line_search() {
   if (!is_setup)
     error("LineSearcher is not setup, please run setup()");
 
-  float phi;
+  double phi;
 
   std::cout << "Computing objective function values of alphas from "  << this->alpha_min << " to "
             << this->alpha_max << " in increments of " << this->num_evaluations << "\n";
@@ -208,14 +208,13 @@ LineSearcher::perform_line_search() {
   std::cout << "\n\n"
                "====================================\n"
                "Alpha and Phi values: \n";
-  for (int i = 0 ; i < alphas.size() ; ++i){
-    std::cout << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
-  }
+  for (int i = 0 ; i < alphas.size() ; ++i)
+    std::cout << std::setprecision(10) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
 }
 
 
-float
-LineSearcher::compute_line_search_value(const float alpha)
+double
+LineSearcher::compute_line_search_value(const double alpha)
 {
   eval_image_sptr->fill(0.0);
   *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
