@@ -186,6 +186,10 @@ public:
   //! Fill elements with value n (overrides VectorWithOffset::fill)
   inline void fill(const elemT &n);
 
+  inline void apply_lower_threshold(const elemT &l);
+
+  inline void apply_upper_threshold(const elemT &u);
+
   //! checks if the index range is 'regular'
   /*! Implementation note: this works by calling get_index_range().is_regular().
       We cannot rely on remembering if it was a regular range at construction (or
