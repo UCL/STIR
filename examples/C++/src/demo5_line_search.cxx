@@ -33,7 +33,6 @@ std::vector<float>
 compute_linear_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
 {
   std::vector<float> alphas;
-  float alpha;
   float d_alpha = (alpha_max - alpha_min) / num_evaluations;
 
   std::cout << "\nComputing linear alphas:"
@@ -41,13 +40,15 @@ compute_linear_alphas(const float alpha_min, const float alpha_max, const float 
                "\n  alpha_max =   " << alpha_max <<
                "\n  delta_alpha = " << d_alpha << "\n";
 
-  // create a vector from (alpha_min + d_alpha) to alpha_max
-  // assumes general case that alpha_min = 0 and therefore line search does not compute alpha = 0
+  /// Explicitly add alpha = 0.0 and/or alpha_min
+  alphas.push_back(0.0);
+  if (alpha_min != 0.0)
+    alphas.push_back(alpha_min);
+
+  /// create a vector from (alpha_min + d_alpha) to alpha_max
   for (int i = 1; i <= num_evaluations; i++)
-  {
-    alpha = i * d_alpha;
-    alphas.push_back(alpha);
-  }
+    alphas.push_back(i * d_alpha);
+
   return alphas;
 }
 
