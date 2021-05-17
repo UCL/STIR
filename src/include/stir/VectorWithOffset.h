@@ -266,10 +266,10 @@ public:
   //! fill elements with value \a n
   inline void fill(const T &n);
 
-  //! threshold values to min the value
+    //! Sets elements below value to the value
   inline void apply_lower_threshold(const T &lower);
 
-  //! threshold values to max the value
+  //! Sets elements above value to the value
   inline void apply_upper_threshold(const T &upper);
 
   //! \name access to the data via a pointer

@@ -186,8 +186,10 @@ public:
   //! Fill elements with value n (overrides VectorWithOffset::fill)
   inline void fill(const elemT &n);
 
+  //! Sets elements below value to the value (overrides VectorWithOffset::fill)
   inline void apply_lower_threshold(const elemT &l);
 
+  //! Sets elements above value to the value (overrides VectorWithOffset::fill)
   inline void apply_upper_threshold(const elemT &u);
 
   //! checks if the index range is 'regular'
