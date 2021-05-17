@@ -47,7 +47,31 @@ compute_linear_alphas(const float alpha_min, const float alpha_max, const float 
 
   /// create a vector from (alpha_min + d_alpha) to alpha_max
   for (int i = 1; i <= num_evaluations; i++)
-    alphas.push_back(i * d_alpha);
+    alphas.push_back(i * d_alpha + alpha_min);
+
+  return alphas;
+}
+
+
+std::vector<float>
+compute_exponential_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
+{
+  std::vector<float> alphas;
+  float d_alpha = (alpha_max - alpha_min) / num_evaluations;
+
+  std::cout << "\nComputing exponential alphas:"
+               "\n  exponential min =    " << alpha_min <<
+               "\n  exponential max =    " << alpha_max <<
+               "\n  exponential delta  = " << d_alpha << "\n";
+
+
+
+  /// Explicitly add alpha = 0.0 and/or alpha_min
+  alphas.push_back(0.0);
+
+  /// create a vector from (alpha_min + d_alpha) to alpha_max
+  for (int i = 1; i <= num_evaluations; i++)
+    alphas.push_back(pow(10, i * d_alpha + alpha_min));
 
   return alphas;
 }
