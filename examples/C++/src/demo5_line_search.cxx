@@ -76,6 +76,20 @@ compute_exponential_alphas(const float alpha_min, const float alpha_max, const f
   return alphas;
 }
 
+void
+save_doubles_vector_to_file(std::string filename, std::vector<double> vector)
+{
+  /// This function is used to save the line search results (alpha and Phi values) to separate files.
+  std::ofstream myfile (filename);
+  int precision = 40;
+  if (myfile.is_open()){
+    for (double v : vector){
+      myfile << std::fixed << std::setprecision(precision) << v << std::endl;
+    }
+    myfile.close();
+  }
+}
+
 
 using namespace stir;
 
@@ -88,6 +102,7 @@ public:
     void setup();
     double compute_line_search_value(const double alpha);
     void perform_line_search();
+    void save_data();
 
     typedef DiscretisedDensity<3,float> target_type;
 
@@ -213,7 +228,8 @@ LineSearcher::perform_line_search() {
     std::cout << "\n\n====================================\n"
                  "Alpha and Phi values: \n";
     for (int i = 0 ; i < alphas.size() ; ++i)
-      std::cout << std::setprecision(10) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
+      std::cout << std::setprecision(20) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
+
   }
 }
 
@@ -229,6 +245,15 @@ LineSearcher::compute_line_search_value(const double alpha)
             << "\ngrad_min = " << gradient_sptr->find_min()
             << "\neval_min = " << eval_image_sptr->find_min() << "\n";
   return objective_function_sptr->compute_objective_function(*eval_image_sptr);
+}
+
+void
+LineSearcher::save_data()
+{
+  if (alphas.size() != Phis.size())
+    error("Length of alpha and Phi vectors is not equal.");
+  save_doubles_vector_to_file("alphas.dat", this->alphas);
+  save_doubles_vector_to_file("Phis.dat", this->Phis);
 }
 
 int main(int argc, char **argv)
@@ -247,6 +272,7 @@ int main(int argc, char **argv)
     my_stuff.parse(argv[1]);
   my_stuff.setup();
   my_stuff.perform_line_search();
+  my_stuff.save_data();
 
 
   return EXIT_SUCCESS;
