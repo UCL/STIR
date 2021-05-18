@@ -549,8 +549,6 @@ float
 BinNormalisationFromECAT8::
 get_uncalibrated_bin_efficiency(const Bin& bin) const {
 
-  const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-  const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
   // TODO disable when not HR+ or HR++
   /*
   Additional correction for HR+ and HR++
@@ -656,6 +654,11 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	  }
 	if (this->use_dead_time())
 	  {
+	    if (get_exam_info_sptr()->get_time_frame_definitions().get_num_time_frames() == 0)
+	      error("BinNormalisationFromECAT8: projection_data needs to have timing information to compute dead-time");
+	    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+            const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+
 	    lor_efficiency_this_pair *=
 	      get_dead_time_efficiency(pos1, start_time, end_time) * 
 	      get_dead_time_efficiency(pos2, start_time, end_time);
