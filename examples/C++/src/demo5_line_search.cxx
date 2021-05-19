@@ -254,6 +254,11 @@ LineSearcher::save_data()
     error("Length of alpha and Phi vectors is not equal.");
   save_doubles_vector_to_file("alphas.dat", this->alphas);
   save_doubles_vector_to_file("Phis.dat", this->Phis);
+
+  /// Save gradient to file
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+  output_file_format_sptr->write_to_file("LineSearchGradient.hv", *this->gradient_sptr);
 }
 
 int main(int argc, char **argv)
