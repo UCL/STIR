@@ -104,6 +104,7 @@ public:
     void apply_update_step(const double alpha);
     void perform_line_search();
     void save_data();
+    void save_max_line_search_image();
 
     typedef DiscretisedDensity<3,float> target_type;
 
@@ -130,6 +131,7 @@ private:
     bool is_setup = false;
     void initialise_keymap();
     bool post_processing();
+    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
 LineSearcher::LineSearcher()
@@ -147,6 +149,7 @@ LineSearcher::set_defaults()
   use_exponential_alphas = false;
   is_setup = false;
   image_lower_bound = 0.0;
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void
@@ -263,9 +266,34 @@ LineSearcher::save_data()
   save_doubles_vector_to_file("Phis.dat", this->Phis);
 
   /// Save gradient to file
-  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
-  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+  std::cout << "Saving LineSearchGradient.hv\n";
   output_file_format_sptr->write_to_file("LineSearchGradient.hv", *this->gradient_sptr);
+}
+
+void
+LineSearcher::save_max_line_search_image()
+{
+  double max_Phi = Phis[0];
+  double max_alpha = alphas[0];
+
+  /// Find the alpha Phi combination that is max Phi and save that image.
+  for (int i = 0 ; i < alphas.size() ; ++i){
+    if (Phis[i] > max_Phi){
+      max_Phi = Phis[i];
+      max_alpha = alphas[i];
+    }
+  }
+
+  /// Check if alpha == 0 is optimal, otherwise save the image at the maximum evaluation.
+  if (max_alpha != alphas[0])
+  {
+    apply_update_step(max_alpha);
+    std::cout << "Saving max line search value image, computed at alpha = " << max_alpha << "\n"
+              << "and Phi = " << max_Phi << '\n';
+    output_file_format_sptr->write_to_file("MaxObjectiveFunctionImage.hv", *this->eval_image_sptr);
+  } else {
+    std::cout << "Max line search value image is at alpha = 0.0\n";
+  }
 }
 
 int main(int argc, char **argv)
@@ -285,7 +313,6 @@ int main(int argc, char **argv)
   my_stuff.setup();
   my_stuff.perform_line_search();
   my_stuff.save_data();
-
-
+  my_stuff.save_max_line_search_image();
   return EXIT_SUCCESS;
 }
