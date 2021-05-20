@@ -101,6 +101,7 @@ public:
     void set_defaults();
     void setup();
     double compute_line_search_value(const double alpha);
+    void apply_update_step(const double alpha);
     void perform_line_search();
     void save_data();
 
@@ -237,14 +238,20 @@ LineSearcher::perform_line_search() {
 double
 LineSearcher::compute_line_search_value(const double alpha)
 {
-  eval_image_sptr->fill(0.0);
-  *eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
-  eval_image_sptr->apply_lower_threshold(this->image_lower_bound);
+  apply_update_step(alpha);
 
   std::cout << "\nimage_min  = " <<  image_sptr->find_min()
             << "\ngrad_min = " << gradient_sptr->find_min()
             << "\neval_min = " << eval_image_sptr->find_min() << "\n";
   return objective_function_sptr->compute_objective_function(*eval_image_sptr);
+}
+
+void
+LineSearcher::apply_update_step(const double alpha)
+{
+  this->eval_image_sptr->fill(0.0);
+  *this->eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
+  this->eval_image_sptr->apply_lower_threshold(this->image_lower_bound);
 }
 
 void
