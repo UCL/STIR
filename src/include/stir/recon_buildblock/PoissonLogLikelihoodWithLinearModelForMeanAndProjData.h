@@ -217,6 +217,12 @@ public:
                                                           const TargetT &current_estimate, 
                                                           const int subset_num); 
 
+  virtual void
+  actual_compute_sub_gradient_without_penalty(TargetT& gradient,
+                                              const TargetT &current_estimate,
+                                              const int subset_num,
+                                              const bool do_subtraction) override;
+
   virtual std::unique_ptr<ExamInfo>
   get_exam_info_uptr_for_target()  const;
 #if 0

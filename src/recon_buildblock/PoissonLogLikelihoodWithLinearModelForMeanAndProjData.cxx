@@ -614,23 +614,34 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                                       const TargetT &current_estimate, 
                                                       const int subset_num)
 {
+  actual_compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num, false);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_compute_sub_gradient_without_penalty(TargetT& gradient,
+                                            const TargetT &current_estimate,
+                                            const int subset_num,
+                                            const bool do_subtraction)
+{
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
-  distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(), 
-                                 this->projector_pair_ptr->get_back_projector_sptr(), 
+  distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(),
+                                 this->projector_pair_ptr->get_back_projector_sptr(),
                                  this->symmetries_sptr,
                                  gradient,
-                                 current_estimate, 
-                                 this->proj_data_sptr, 
-                                 subset_num, 
-                                 this->num_subsets, 
+                                 current_estimate,
+                                 this->proj_data_sptr,
+                                 subset_num,
+                                 this->num_subsets,
                                  -this->max_segment_num_to_process,
-                                 this->max_segment_num_to_process, 
-                                 this->zero_seg0_end_planes!=0, 
-                                 NULL, 
+                                 this->max_segment_num_to_process,
+                                 this->zero_seg0_end_planes!=0,
+                                 NULL,
                                  this->additive_proj_data_sptr,
                                  caching_info_ptr,
-                                 false);
+                                 do_subtraction);
 }
 
 

@@ -120,18 +120,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   
   //PoissonLogLikelihoodWithLinearModelForMean(); 
 
-  //! Implementation in terms of compute_sub_gradient_without_penalty_plus_sensitivity()
-  /*! \warning If separate subsensitivities are not used, we just subtract the total 
-    sensitivity divided by the number of subsets.
-    This is fine for some algorithms as the sum over all the subsets is 
-    equal to gradient of the objective function (without prior). 
-    Other algorithms do not behave very stable under this approximation
-    however. So, currently setup() will return an error if
-    <code>!subsets_are_approximately_balanced()</code> and subset sensitivities
-    are not used.
-
-    \see get_use_subset_sensitivities()
-  */
+  //! Computes the gradient of the data fit term
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
                                          const TargetT &current_estimate, 
@@ -263,6 +252,13 @@ protected:
       allocated already (and is the correct size).
   */
   void compute_sensitivities();
+
+
+  virtual void
+  actual_compute_sub_gradient_without_penalty(TargetT& gradient,
+                                              const TargetT &current_estimate,
+                                              const int subset_num,
+                                              const bool do_subtraction) = 0;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,
