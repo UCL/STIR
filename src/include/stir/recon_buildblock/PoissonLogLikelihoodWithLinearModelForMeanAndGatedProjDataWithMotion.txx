@@ -419,6 +419,17 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 						      const TargetT &current_estimate, 
 						      const int subset_num)
 {
+  this->actual_compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num, false);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+actual_compute_sub_gradient_without_penalty(TargetT& gradient,
+                                            const TargetT &current_estimate,
+                                            const int subset_num,
+                                            const bool do_subtraction)
+{
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
 
