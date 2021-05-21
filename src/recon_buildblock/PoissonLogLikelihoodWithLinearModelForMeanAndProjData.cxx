@@ -628,11 +628,9 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                  this->max_segment_num_to_process, 
                                  this->zero_seg0_end_planes!=0, 
                                  NULL, 
-                                 this->additive_proj_data_sptr 
-                                 , caching_info_ptr
-                                 );
-  
-
+                                 this->additive_proj_data_sptr,
+                                 caching_info_ptr,
+                                 false);
 }
 
 
@@ -1077,7 +1075,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 
 #else 
 //! Call-back function for compute_gradient
-static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+template<bool do_subtraction> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
@@ -1097,10 +1095,12 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     bool zero_seg0_end_planes,
                                     double* log_likelihood_ptr,
                                     shared_ptr<ProjData> const& additive_binwise_correction,
-                                    DistributedCachingInformation* caching_info_ptr
+                                    DistributedCachingInformation* caching_info_ptr,
+                                    const bool do_subtraction
                                     )
 {
-        
+  if (do_subtraction){
+    // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - 1] )
     distributable_computation(forward_projector_sptr,
                               back_projector_sptr,
                               symmetries_sptr,
@@ -1112,9 +1112,26 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               log_likelihood_ptr,
                               additive_binwise_correction,
                               /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
-                              &RPC_process_related_viewgrams_gradient,
+                              &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr
-                              );
+    );
+  } else {
+    // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
+    distributable_computation(forward_projector_sptr,
+                              back_projector_sptr,
+                              symmetries_sptr,
+                              &output_image, &input_image,
+                              proj_dat, true, //i.e. do read projection data
+                              subset_num, num_subsets,
+                              min_segment, max_segment,
+                              zero_seg0_end_planes,
+                              log_likelihood_ptr,
+                              additive_binwise_correction,
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
+                              &RPC_process_related_viewgrams_gradient<false>,
+                              caching_info_ptr
+    );
+  }
 }
 
 
@@ -1195,7 +1212,7 @@ void distributable_sensitivity_computation(
 
 //////////// RPC functions
 
-
+template <bool do_subtraction>
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
@@ -1233,19 +1250,14 @@ void RPC_process_related_viewgrams_gradient(
         
         
   if (additive_binwise_correction_ptr != NULL)
-  {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
-  }
-  
-
-    
-
-
 
   // for sinogram division
-      
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
-      
+  if (do_subtraction){
+    // subtract ones from estimated data [y/ybar - 1]
+    estimated_viewgrams -= 1;
+  }
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 
