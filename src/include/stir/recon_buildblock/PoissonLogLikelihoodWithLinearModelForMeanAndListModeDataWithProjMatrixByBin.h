@@ -70,7 +70,14 @@ public:
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
                                          const TargetT &current_estimate,  
-                                         const int subset_num);  
+                                         const int subset_num);
+
+    virtual
+    void actual_compute_sub_gradient_without_penalty(TargetT& gradient,
+                                                               const TargetT &current_estimate,
+                                                               const int subset_num,
+                                                               const bool do_subtraction);
+
   virtual TargetT * construct_target_ptr() const;  
 
   int set_num_subsets(const int new_num_subsets);
