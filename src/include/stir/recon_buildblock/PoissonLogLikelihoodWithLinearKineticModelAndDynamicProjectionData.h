@@ -175,7 +175,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                               const TargetT &current_estimate,
                                               const int subset_num,
-                                              const bool do_subtraction) override;
+                                              const bool do_subtraction);
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and

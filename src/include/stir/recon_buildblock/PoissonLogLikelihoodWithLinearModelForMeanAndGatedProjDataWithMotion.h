@@ -88,7 +88,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
     actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                                 const TargetT &current_estimate,
                                                 const int subset_num,
-                                                const bool do_subtraction) override;
+                                                const bool do_subtraction);
 
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
