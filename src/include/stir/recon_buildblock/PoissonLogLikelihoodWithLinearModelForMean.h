@@ -66,14 +66,12 @@ START_NAMESPACE_STIR
   the <i>sensitivity</i> because (if \f$r=0\f$) it is the total
   probability of detecting a count (in any bin) originating from \f$v\f$.
 
-  This class computes the gradient as a sum of these two terms. The
-  sensitivity has to be computed by the virtual function 
-  \c add_subset_sensitivity(). The sum is computed by
-  \c compute_sub_gradient_without_penalty_plus_sensitivity().
+  This class computes the gradient directly, via \c compute_sub_gradient_without_penalty().
+  However, an additional method (\c compute_sub_gradient_without_penalty_plus_sensitivity())
+  is provided that computes the sum of the subset gradient and the sensitivity.
+  This method is used in STIR algorithms such as \c OSMAPOSL.
 
-  The reason for this is that the sensitivity is data-independent, and
-  can be computed only once. See also
-  PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
+  See also \c PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
   
   \par Relation with Kullback-Leibler distance
 
@@ -121,6 +119,10 @@ public  GeneralisedObjectiveFunction<TargetT>
   //PoissonLogLikelihoodWithLinearModelForMean(); 
 
   //! Computes the gradient of the data fit term
+  /*!
+      This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
+      by setting do_subtraction = true
+   */
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
                                          const TargetT &current_estimate, 
@@ -130,12 +132,8 @@ public  GeneralisedObjectiveFunction<TargetT>
   /*! 
     This function is used for instance by OSMAPOSL.
 
-    This computes
-    \f[ {\partial L \over \partial \lambda_v} + P_v =
-      \sum_b P_{bv} {y_b \over Y_b}
-      \f]
-    (see the class general documentation).
-    The sum will however be restricted to a subset.
+    This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
+    by setting do_subtraction = false
    */
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
@@ -253,7 +251,20 @@ protected:
   */
   void compute_sensitivities();
 
+  //! computes the objective function subset gradient without the penalty
+  /*!
+    If do_subtraction is false, this computes
+    \f[ {\partial L \over \partial \lambda_v} + P_v =
+      \sum_b P_{bv} {y_b \over Y_b}
+      \f]
+    (see the class general documentation).
+    The sum will however be restricted to a subset.
 
+    However, if do_subtraction is true, this function will instead compute
+    \f[ {\partial L \over \partial \lambda_v} =
+      \sum_b P_{bv} ({y_b \over Y_b} - 1)
+    \f]
+  */
   virtual void
   actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                               const TargetT &current_estimate,
