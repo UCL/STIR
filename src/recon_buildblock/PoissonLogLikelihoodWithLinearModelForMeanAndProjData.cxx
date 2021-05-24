@@ -640,6 +640,7 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                  this->zero_seg0_end_planes!=0,
                                  NULL,
                                  this->additive_proj_data_sptr,
+                                 this->normalisation_sptr,
                                  caching_info_ptr,
                                  do_subtraction);
 }
@@ -1106,6 +1107,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     bool zero_seg0_end_planes,
                                     double* log_likelihood_ptr,
                                     shared_ptr<ProjData> const& additive_binwise_correction,
+                                    shared_ptr<BinNormalisation> const& normalisation_sptr,
                                     DistributedCachingInformation* caching_info_ptr,
                                     const bool do_subtraction
                                     )
@@ -1122,7 +1124,8 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
+                              normalisation_sptr,
+                              0., 0.,
                               &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr
     );
@@ -1233,8 +1236,6 @@ void RPC_process_related_viewgrams_gradient(
                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {       
   assert(measured_viewgrams_ptr != NULL);
-  if (!is_null_ptr(mult_viewgrams_ptr))
-    error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
   
@@ -1257,17 +1258,21 @@ void RPC_process_related_viewgrams_gradient(
     }
 */
   forward_projector_sptr->forward_project(estimated_viewgrams);
-        
-        
-        
+
   if (additive_binwise_correction_ptr != NULL)
     estimated_viewgrams += (*additive_binwise_correction_ptr);
 
   // for sinogram division
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
   if (do_subtraction){
-    // subtract ones from estimated data [y/ybar - 1]
-    estimated_viewgrams -= 1;
+    if (mult_viewgrams_ptr)
+    {
+      // subtract normalised ones from the data [y/ybar - 1/N]
+      *measured_viewgrams_ptr -= *mult_viewgrams_ptr;
+    } else {
+      // subtract ones from the data [y/ybar - 1]
+      *measured_viewgrams_ptr -= 1;
+    }
   }
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
