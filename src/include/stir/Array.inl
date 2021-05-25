@@ -252,6 +252,26 @@ Array<num_dimensions, elemT>::fill(const elemT &n)
 }
 
 template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::apply_lower_threshold(const elemT &l)
+{
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
+    this->num[i].apply_lower_threshold(l);
+  this->check_state();
+}
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::apply_upper_threshold(const elemT &u)
+{
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
+    this->num[i].apply_upper_threshold(u);
+  this->check_state();
+}
+
+template <int num_dimensions, typename elemT>
 bool
 Array<num_dimensions, elemT>::is_regular() const
 {
