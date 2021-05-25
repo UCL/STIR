@@ -249,7 +249,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
   {
     mult_proj_data_sptr.reset(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
-      mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
+                                                    proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
          ++seg_num)
@@ -271,8 +271,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
 
   // additive term
   add_proj_data_sptr.reset(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
-								
-proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+                                                 proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
