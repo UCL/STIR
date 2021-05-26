@@ -1,0 +1,13 @@
+name: Check
+on:
+- push
+- pull_request
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: pre-commit
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - run: sudo apt-get install -yqq clang-format
+    - uses: pre-commit/action@v2.0.0
