@@ -109,7 +109,7 @@ ccmake .
 # alternative 2: set STIR_LOCAL to this directory
 cd your-build-dir
 # reconfigure your project
-ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
+ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/C++/src  .
 
 # make the examples
 make demo1 demo2 demo3 demo4_obj_fun demo5_line_search
@@ -127,7 +127,7 @@ First you need to create some data.
       forward_project sino.hs image.hv  small.hs
 
 # Run the demos.
-EXE_LOC=/whereever/you/built/STIR/src/examples/src
+EXE_LOC=/whereever/you/built/STIR/src/examples/C++
 	
 # demo1
 	$EXE_LOC/demo1
