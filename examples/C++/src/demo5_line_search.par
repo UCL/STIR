@@ -15,14 +15,16 @@ LineSearcher parameters :=
     alpha max := -2   ; default: 1.0
 
     ; Apply a lower threshold to every voxel in the computed images (default: 0.0)
-    line search image lower bound = 0.0
+    line search image lower bound := 0.0
 
     ; Objective function configuration
     objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
     PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
+        ; Measured sinogram data filename
         input file :=
 
+        ; Additive sinogram data filename
         additive_sinogram :=
 
         projector pair type := Matrix
@@ -50,9 +52,6 @@ LineSearcher parameters :=
             ;kappa filename:= 
             gamma value := 2
         END Quadratic Prior Parameters:=
-
-        use subset sensitivities:= 0
-        recompute sensitivity := 0
 
     end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 End :=
