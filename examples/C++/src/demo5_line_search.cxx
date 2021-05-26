@@ -1,11 +1,20 @@
 /*!
   \file
   \ingroup examples
-  \brief An example of a method to compute a line search evaluation in the direction of the gradient of a given image.
-  All parameters can be parsed from a parameter file.
+  \brief An example of a method to compute a line search evaluation in the direction of
+  the gradient of a given image and objective function.
+  All parameters can be parsed from a parameter file. See `demo5_line_search.par`.
 
-  It illustrates
-    - TODO
+  Give an image and objective function configuration, this script will perform a line search
+  from an minimum to an maximum step size (alpha).
+  Options are included to perform this line search linearly or using exponential step
+  size iterations.
+  Additionally, a lower positivity bound is applied to all computed image.
+
+  The results are saved to files: `alphas.dat` contains the step size values investigated,
+  and `Phis.dat` contains the objective function evaluations.
+  Furthermore, the image corresponding to the maximum objective function and the gradient
+  used in the line search are saved to file.
 
   Note that the same functionality could be provided without deriving
   a new class from stir::ParsingObject. One could have a stir::KeyParser object
@@ -32,6 +41,7 @@
 std::vector<double>
 compute_linear_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
 {
+  /// This function computes a vector (of length num_evaluations) of linear values from alpha_min to alpha_max
   std::vector<double> alphas;
   float d_alpha = (alpha_max - alpha_min) / num_evaluations;
 
@@ -56,6 +66,7 @@ compute_linear_alphas(const float alpha_min, const float alpha_max, const float 
 std::vector<double>
 compute_exponential_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)
 {
+  /// This function computes a vector (of length num_evaluations) of exponential values from 10^alpha_min to 10^alpha_max
   std::vector<double> alphas;
   float d_alpha = (alpha_max - alpha_min) / num_evaluations;
 
@@ -63,8 +74,6 @@ compute_exponential_alphas(const float alpha_min, const float alpha_max, const f
                "\n  exponential min =    " << alpha_min <<
                "\n  exponential max =    " << alpha_max <<
                "\n  exponential delta  = " << d_alpha << "\n";
-
-
 
   /// Explicitly add alpha = 0.0 and/or alpha_min
   alphas.push_back(0.0);
@@ -119,6 +128,7 @@ public:
     std::vector<double> alphas;
     std::vector<double> Phis;
 
+    /// Image volumes
     shared_ptr<DiscretisedDensity<3,float> > image_sptr;
     shared_ptr<DiscretisedDensity<3,float> > gradient_sptr;
     shared_ptr<DiscretisedDensity<3,float> > eval_image_sptr;
@@ -127,10 +137,11 @@ protected:
     shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
 
 private:
-    std::string image_filename;
-    bool is_setup = false;
     void initialise_keymap();
     bool post_processing();
+
+    std::string image_filename;
+    bool is_setup = false;
     shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
@@ -180,22 +191,25 @@ post_processing()
 void LineSearcher::
 setup()
 {
+  /// Setup LineSearcher
   this->is_setup = false;
-  /////// load initial density from file
+
+  /// Load initial density from file
   if (image_filename == "")
     error("LineSearcher setup. No image filename has been given.");
+
   std::cout << "Loading image: \n    " << image_filename << "\n";
   this->image_sptr  = read_from_file<DiscretisedDensity<3,float> >(image_filename);
 
-  //////// gradient it copied Density filled with 0's
+  /// Gradient it copied density filled with 0's
   this->gradient_sptr.reset(this->image_sptr->get_empty_copy());
   this->eval_image_sptr.reset(this->image_sptr->get_empty_copy());
 
-  /////// setup the objective function
+  /// Setup the objective function
   objective_function_sptr->set_num_subsets(1);
   objective_function_sptr->set_up(image_sptr);
 
-  //////// compute the gradient and store
+  /// Compute the gradient
   objective_function_sptr->compute_sub_gradient(*gradient_sptr, *image_sptr, 0);
 
   this->is_setup = true;
@@ -204,6 +218,11 @@ setup()
 
 void
 LineSearcher::perform_line_search() {
+  /// Performs the line search
+  /// Gets the step sizes
+  /// Computes the objective function value of the image at every step size
+  /// Outputs values to console
+
   if (!is_setup)
     error("LineSearcher is not setup, please run setup()");
 
@@ -228,19 +247,18 @@ LineSearcher::perform_line_search() {
   }
 
   /// Output alpha and Phi values to console
-  {
-    std::cout << "\n\n====================================\n"
-                 "Alpha and Phi values: \n";
-    for (int i = 0 ; i < alphas.size() ; ++i)
-      std::cout << std::setprecision(20) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
+  std::cout << "\n\n====================================\n"
+               "Alpha and Phi values: \n";
+  for (int i = 0 ; i < alphas.size() ; ++i)
+    std::cout << std::setprecision(20) << "  alpha = " << alphas[i] << ". Phis = " << Phis[i] << "\n";
 
-  }
 }
 
 
 double
 LineSearcher::compute_line_search_value(const double alpha)
 {
+  /// For a given alpha, computes the objective function value at the update step
   apply_update_step(alpha);
 
   std::cout << "\nimage_min  = " <<  image_sptr->find_min()
@@ -252,6 +270,7 @@ LineSearcher::compute_line_search_value(const double alpha)
 void
 LineSearcher::apply_update_step(const double alpha)
 {
+  /// Computes the update step, applies a lower threshold to the evaluation image
   this->eval_image_sptr->fill(0.0);
   *this->eval_image_sptr += *this->image_sptr + *this->gradient_sptr * alpha;
   this->eval_image_sptr->apply_lower_threshold(this->image_lower_bound);
@@ -260,6 +279,8 @@ LineSearcher::apply_update_step(const double alpha)
 void
 LineSearcher::save_data()
 {
+  /// Saves the alpha and Phi data to separate file
+  /// Saves the line search gradient to file
   if (alphas.size() != Phis.size())
     error("Length of alpha and Phi vectors is not equal.");
   save_doubles_vector_to_file("alphas.dat", this->alphas);
@@ -273,6 +294,7 @@ LineSearcher::save_data()
 void
 LineSearcher::save_max_line_search_image()
 {
+  /// Finds the image with the maximum objective function in the line search and saves it to file
   double max_Phi = Phis[0];
   double max_alpha = alphas[0];
 
