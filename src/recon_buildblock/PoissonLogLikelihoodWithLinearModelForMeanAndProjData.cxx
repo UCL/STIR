@@ -652,7 +652,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                   const int subset_num)
 {
-  double accum=0.;  
+  double accum=0.;
   
   distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                          this->projector_pair_ptr->get_back_projector_sptr(), 
