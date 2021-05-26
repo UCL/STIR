@@ -155,6 +155,7 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
 	# Feel free to alter the objective function, image filename, and the step size configuration in the parameter file.
 	# Try plotting the output `alphas.dat` and `Phis.dat` and visualise how the step size can impact the
 	  objective function value
+	# Now try `use exponential alphas := 1`?
 
 What now ?
 ----------

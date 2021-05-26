@@ -85,6 +85,7 @@ compute_exponential_alphas(const float alpha_min, const float alpha_max, const f
   return alphas;
 }
 
+
 void
 save_doubles_vector_to_file(std::string filename, std::vector<double> vector)
 {
@@ -150,6 +151,7 @@ LineSearcher::LineSearcher()
   set_defaults();
 }
 
+
 void
 LineSearcher::set_defaults()
 {
@@ -162,6 +164,7 @@ LineSearcher::set_defaults()
   image_lower_bound = 0.0;
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
+
 
 void
 LineSearcher::initialise_keymap()
@@ -177,6 +180,7 @@ LineSearcher::initialise_keymap()
   parser.add_stop_key("End");
 }
 
+
 bool LineSearcher::
 post_processing()
 {
@@ -187,6 +191,7 @@ post_processing()
   }
   return false;
 }
+
 
 void LineSearcher::
 setup()
@@ -276,6 +281,7 @@ LineSearcher::apply_update_step(const double alpha)
   this->eval_image_sptr->apply_lower_threshold(this->image_lower_bound);
 }
 
+
 void
 LineSearcher::save_data()
 {
@@ -290,6 +296,7 @@ LineSearcher::save_data()
   std::cout << "Saving LineSearchGradient.hv\n";
   output_file_format_sptr->write_to_file("LineSearchGradient.hv", *this->gradient_sptr);
 }
+
 
 void
 LineSearcher::save_max_line_search_image()
@@ -317,6 +324,7 @@ LineSearcher::save_max_line_search_image()
     std::cout << "Max line search value image is at alpha = 0.0\n";
   }
 }
+
 
 int main(int argc, char **argv)
 {
