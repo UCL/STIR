@@ -1,7 +1,7 @@
 LineSearcher parameters :=
 
     ; The image from which the line search will be performed
-    image filename :=
+    image filename := demo3_density.hv
 
     ; The number of objective function evaluations to perform (default: 10)
     number of evaluations := 2000
@@ -22,10 +22,10 @@ LineSearcher parameters :=
     PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
         ; Measured sinogram data filename
-        input file :=
+        input file := sino.hs	
 
         ; Additive sinogram data filename
-        additive_sinogram :=
+        additive_sinogram := 0
 
         projector pair type := Matrix
         projector pair using matrix parameters :=
