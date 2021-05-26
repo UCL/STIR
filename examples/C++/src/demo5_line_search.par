@@ -1,0 +1,58 @@
+LineSearcher parameters :=
+
+    ; The image from which the line search will be performed
+    image filename :=
+
+    ; The number of objective function evaluations to perform
+    number of evaluations := 2000
+
+    ; The interval between the step sizes (alphas) can be either exponential (1) or linear (default: 0)
+    use exponential alphas := 1
+
+    ; Control the minimum and maximum of alpha values to compute
+    ; `use exponential alphas := 1` then this controls the exponential e.g. 10^(alpha min) to 10^(alpha max)
+    alpha min := -10
+    alpha max := -2
+
+    ; Apply a lower threshold to every voxel in the computed images
+    line search image lower bound = 0.0
+
+    ; Objective function configuration
+    objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+        input file :=
+
+        additive_sinogram :=
+
+        projector pair type := Matrix
+        projector pair using matrix parameters :=
+            matrix type := Ray Tracing
+            ray tracing matrix parameters :=
+                disable caching := 0
+                store only basic bins in cache := 1
+                restrict to cylindrical fov := 0
+                number of rays in tangential direction to trace for each bin := 50
+                use actual detector boundaries := 1
+                do symmetry 90degrees min phi := 0
+                do symmetry 180degrees min phi := 0
+                do symmetry swap segment := 1
+                do symmetry swap s := 1
+                do symmetry shift z := 1
+            end ray tracing matrix parameters :=
+        end projector pair using matrix parameters :=
+
+        prior type := Quadratic
+        Quadratic Prior Parameters:=
+            penalisation factor := 0.0
+            only 2D:= 0
+            ;kappa filename:= 
+            gamma value := 2
+        END Quadratic Prior Parameters:=
+
+        use subset sensitivities:= 0
+        recompute sensitivity := 1
+
+    end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+End :=
+
