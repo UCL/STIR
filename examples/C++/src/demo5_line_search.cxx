@@ -1,7 +1,7 @@
 /*!
   \file
   \ingroup examples
-  \brief An example of a method to compute a line search evaluation in the direction of
+  \brief A class to compute a line search evaluation in the direction of
   the gradient of a given image and objective function.
   All parameters can be parsed from a parameter file. See `demo5_line_search.par`.
 
@@ -106,7 +106,7 @@ class LineSearcher: public ParsingObject
 {
 public:
     LineSearcher();
-    ////// Methods
+    /// Methods
     void set_defaults();
     void setup();
     double compute_line_search_value(const double alpha);
@@ -117,7 +117,7 @@ public:
 
     typedef DiscretisedDensity<3,float> target_type;
 
-    ////// Class variables
+    /// Class variables
     int num_evaluations;
     float alpha_min;
     float alpha_max;
@@ -141,7 +141,7 @@ private:
     bool post_processing();
 
     std::string image_filename;
-    bool is_setup = false;
+    bool is_setup;
     shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
