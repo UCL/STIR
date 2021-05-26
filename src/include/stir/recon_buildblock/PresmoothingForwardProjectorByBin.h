@@ -33,72 +33,64 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/shared_ptr.h"
 
-
 START_NAMESPACE_STIR
 
-template <typename elemT> class Viewgram;
-template <typename DataT> class DataProcessor;
+template <typename elemT>
+class Viewgram;
+template <typename DataT>
+class DataProcessor;
 /*!
   \brief A very preliminary class that first smooths the image, then forward projects.
 
   \warning. It assumes that the DataProcessor does not change
   the size of the image.
 */
-class PresmoothingForwardProjectorByBin : 
-  public 
-    RegisteredParsingObject<PresmoothingForwardProjectorByBin,
-                            ForwardProjectorByBin>
-{
+class PresmoothingForwardProjectorByBin
+    : public RegisteredParsingObject<PresmoothingForwardProjectorByBin, ForwardProjectorByBin> {
 #ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
 public:
 #else
- private:
+private:
 #endif
   typedef ForwardProjectorByBin base_type;
+
 public:
   //! Name which will be used when parsing a PresmoothingForwardProjectorByBin object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
   PresmoothingForwardProjectorByBin();
 
-  ~ PresmoothingForwardProjectorByBin();
-  
-//  void update_filtered_density_image(const DiscretisedDensity<3,float>&);
+  ~PresmoothingForwardProjectorByBin();
+
+  //  void update_filtered_density_image(const DiscretisedDensity<3,float>&);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
-  */
-  virtual void set_up(           
-                      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+   */
+  virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+  );
 
-
-  PresmoothingForwardProjectorByBin(
-                                    const shared_ptr<ForwardProjectorByBin>& original_forward_projector_ptr,
-                                    const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >&);
+  PresmoothingForwardProjectorByBin(const shared_ptr<ForwardProjectorByBin>& original_forward_projector_ptr,
+                                    const shared_ptr<DataProcessor<DiscretisedDensity<3, float>>>&);
 
   // Informs on which symmetries the projector handles
   // It should get data related by at least those symmetries.
   // Otherwise, a run-time error will occur (unless the derived
   // class has other behaviour).
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const;
 
 private:
-
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
 
 #ifdef STIR_PROJECTORS_AS_V3
-  void actual_forward_project(RelatedViewgrams<float>&, 
-                              const DiscretisedDensity<3,float>&,
-                              const int min_axial_pos_num, const int max_axial_pos_num,
-                              const int min_tangential_pos_num, const int max_tangential_pos_num);
+  void actual_forward_project(RelatedViewgrams<float>&, const DiscretisedDensity<3, float>&, const int min_axial_pos_num,
+                              const int max_axial_pos_num, const int min_tangential_pos_num, const int max_tangential_pos_num);
 #endif
-  void actual_forward_project(RelatedViewgrams<float>&,
-                              const int min_axial_pos_num, const int max_axial_pos_num,
+  void actual_forward_project(RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 #if 0 // disabled as currently not used. needs to be written in the new style anyway

@@ -50,20 +50,18 @@ START_NAMESPACE_STIR
 
     \see ListModeData for more info on list mode data.
 */
-class ListRecord
-{
+class ListRecord {
 public:
-
-    virtual ~ListRecord(){}
+  virtual ~ListRecord() {}
 
   virtual bool is_time() const = 0;
 
   virtual bool is_event() const = 0;
 
-  virtual ListEvent&  event() = 0;
-  virtual const ListEvent&  event() const = 0;
-  virtual ListTime&   time() = 0;
-  virtual const ListTime&   time() const = 0;
+  virtual ListEvent& event() = 0;
+  virtual const ListEvent& event() const = 0;
+  virtual ListTime& time() = 0;
+  virtual const ListTime& time() const = 0;
 };
 
 END_NAMESPACE_STIR

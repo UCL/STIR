@@ -4,7 +4,7 @@
   \file
   \ingroup ECAT
 
-  \brief Declaration of routines which convert ECAT things into our 
+  \brief Declaration of routines which convert ECAT things into our
   building blocks and vice versa.
 
   \author Kris Thielemans
@@ -37,31 +37,31 @@
 
 //*************** namespace macros
 #if !defined(STIR_NO_NAMESPACE)
-# define START_NAMESPACE_ECAT namespace ecat {
-# define END_NAMESPACE_ECAT }
-# define USING_NAMESPACE_ECAT using namespace ecat;
+#  define START_NAMESPACE_ECAT namespace ecat {
+#  define END_NAMESPACE_ECAT }
+#  define USING_NAMESPACE_ECAT using namespace ecat;
 
-# define START_NAMESPACE_ECAT6 namespace ecat6 {
-# define END_NAMESPACE_ECAT6 }
-# define USING_NAMESPACE_ECAT6 using namespace ecat6;
+#  define START_NAMESPACE_ECAT6 namespace ecat6 {
+#  define END_NAMESPACE_ECAT6 }
+#  define USING_NAMESPACE_ECAT6 using namespace ecat6;
 
-# define START_NAMESPACE_ECAT7 namespace ecat7 {
-# define END_NAMESPACE_ECAT7 }
-# define USING_NAMESPACE_ECAT7 using namespace ecat7;
+#  define START_NAMESPACE_ECAT7 namespace ecat7 {
+#  define END_NAMESPACE_ECAT7 }
+#  define USING_NAMESPACE_ECAT7 using namespace ecat7;
 
 #else
 
-# define START_NAMESPACE_ECAT 
-# define END_NAMESPACE_ECAT 
-# define USING_NAMESPACE_ECAT 
+#  define START_NAMESPACE_ECAT
+#  define END_NAMESPACE_ECAT
+#  define USING_NAMESPACE_ECAT
 
-# define START_NAMESPACE_ECAT6 
-# define END_NAMESPACE_ECAT6 
-# define USING_NAMESPACE_ECAT6 
+#  define START_NAMESPACE_ECAT6
+#  define END_NAMESPACE_ECAT6
+#  define USING_NAMESPACE_ECAT6
 
-# define START_NAMESPACE_ECAT7
-# define END_NAMESPACE_ECAT7
-# define USING_NAMESPACE_ECAT7 
+#  define START_NAMESPACE_ECAT7
+#  define END_NAMESPACE_ECAT7
+#  define USING_NAMESPACE_ECAT7
 #endif
 
 START_NAMESPACE_STIR
@@ -77,20 +77,19 @@ START_NAMESPACE_ECAT
 /*!
   \ingroup ECAT
   The data_type field is used to indicate how the data are written.
-  Note that the VAX_float type is <i>not</i> the same as 
+  Note that the VAX_float type is <i>not</i> the same as
   IEEE float with little_endian byte order.
 */
 typedef enum {
-    ECAT_unknown_data_type = 0,
-    ECAT_Byte_data_type = 1,
-    ECAT_I2_little_endian_data_type = 2,
-    ECAT_I4_little_endian_data_type = 3,
-    ECAT_R4_VAX_data_type = 4,
-    ECAT_R4_IEEE_big_endian_data_type = 5,
-    ECAT_I2_big_endian_data_type = 6, 
-    ECAT_I4_big_endian_data_type = 7 
+  ECAT_unknown_data_type = 0,
+  ECAT_Byte_data_type = 1,
+  ECAT_I2_little_endian_data_type = 2,
+  ECAT_I4_little_endian_data_type = 3,
+  ECAT_R4_VAX_data_type = 4,
+  ECAT_R4_IEEE_big_endian_data_type = 5,
+  ECAT_I2_big_endian_data_type = 6,
+  ECAT_I4_big_endian_data_type = 7
 } ECATDataType;
-
 
 //! Find out which NumericType and ByteOrder corresponds to a ECAT data type
 /*!
@@ -104,8 +103,7 @@ void find_type_from_ECAT_data_type(NumericType& type, ByteOrder& byte_order, con
   Returns 0 when it does not recognise it */
 short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order);
 
-
-//! Find the value used in the ECAT Main header for a given scanner 
+//! Find the value used in the ECAT Main header for a given scanner
 /*!
   \ingroup ECAT
   Returns 0 if the scanner is not recognised */
@@ -122,8 +120,7 @@ Scanner* find_scanner_from_ECAT_system_type(const short system_type);
   \ingroup ECAT
    ECAT 7,8 always stores segments as 0, -1, +1, ... (numbering is in STIR convention)
  */
-std::vector<int>
-find_segment_sequence(const ProjDataInfo& pdi);
+std::vector<int> find_segment_sequence(const ProjDataInfo& pdi);
 
 END_NAMESPACE_ECAT
 

@@ -36,41 +36,40 @@ namespace GE {
 namespace RDF_HDF5 {
 
 shared_ptr<Scanner>
-GEHDF5Wrapper::get_scanner_sptr() const
-{
-    return this->proj_data_info_sptr->get_scanner_sptr();
+GEHDF5Wrapper::get_scanner_sptr() const {
+  return this->proj_data_info_sptr->get_scanner_sptr();
 }
 
 shared_ptr<const ProjDataInfo>
-GEHDF5Wrapper::get_proj_data_info_sptr() const
-{
+GEHDF5Wrapper::get_proj_data_info_sptr() const {
   return this->proj_data_info_sptr;
 }
 
 shared_ptr<ExamInfo>
-GEHDF5Wrapper::get_exam_info_sptr() const
-{
-    return this->exam_info_sptr;
+GEHDF5Wrapper::get_exam_info_sptr() const {
+  return this->exam_info_sptr;
 }
 
-H5::DataSet* GEHDF5Wrapper::get_dataset_ptr() const
-{
-    return m_dataset_sptr.get();
+H5::DataSet*
+GEHDF5Wrapper::get_dataset_ptr() const {
+  return m_dataset_sptr.get();
 }
 
-hsize_t GEHDF5Wrapper::get_dataset_size() const
-{
-    return m_list_size;
+hsize_t
+GEHDF5Wrapper::get_dataset_size() const {
+  return m_list_size;
 }
 
-unsigned int GEHDF5Wrapper::get_geo_dims() const
-{
-    return geo_dims;
+unsigned int
+GEHDF5Wrapper::get_geo_dims() const {
+  return geo_dims;
 }
 
-const H5::H5File& GEHDF5Wrapper::get_file() const
-{ return file; }
-
-} // namespace
+const H5::H5File&
+GEHDF5Wrapper::get_file() const {
+  return file;
 }
+
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR

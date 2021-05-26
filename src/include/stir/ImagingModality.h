@@ -34,91 +34,75 @@ namespace stir {
 /*! \ingroup buildblock
   Class for encoding the modality
 */
-class ImagingModality
-{
- public:
+class ImagingModality {
+public:
   //! enum with possible values (using DICOM naming)
-  enum ImagingModalityValue
-    { Unknown, PT, NM, MR, CT, US, Optical};
+  enum ImagingModalityValue { Unknown, PT, NM, MR, CT, US, Optical };
 
   //! Construct from enum, set string accordingly
-  ImagingModality(ImagingModalityValue modality_v = Unknown)
-    : modality(modality_v)
-    {
-      this->set_string();
-    }
+  ImagingModality(ImagingModalityValue modality_v = Unknown) : modality(modality_v) { this->set_string(); }
 
   //! Construct from string, set enum accordingly
-  explicit ImagingModality(const std::string& modality_string_v)
-    : modality_string(modality_string_v)
-    {
-      this->set_enum();
-    }
+  explicit ImagingModality(const std::string& modality_string_v) : modality_string(modality_string_v) { this->set_enum(); }
 
-  ImagingModalityValue get_modality() const
-    {
-      return this->modality;
-    }
+  ImagingModalityValue get_modality() const { return this->modality; }
 
-  std::string get_name() const
-    {
-      return this->modality_string;
-    }
+  std::string get_name() const { return this->modality_string; }
 
-  bool operator==(const ImagingModality& mod) const
-    {
-      return this->modality == mod.modality;
-    }
-  bool operator!=(const ImagingModality& mod) const
-    {
-      return !(*this==mod);
-    }
-  bool is_known() const
-    {
-      return this->modality != Unknown;
-    }
-  bool is_unknown() const
-    {
-      return this->modality == Unknown;
-    }
- private:
+  bool operator==(const ImagingModality& mod) const { return this->modality == mod.modality; }
+  bool operator!=(const ImagingModality& mod) const { return !(*this == mod); }
+  bool is_known() const { return this->modality != Unknown; }
+  bool is_unknown() const { return this->modality == Unknown; }
+
+private:
   ImagingModalityValue modality;
   std::string modality_string;
 
-  void set_string()
-  { 
-    switch (this->modality)
-      {
-      case PT: this->modality_string="PT"; break;
-      case NM: this->modality_string="NM"; break;
-      case MR: this->modality_string="MR"; break;
-      case CT: this->modality_string="CT"; break;
-      case US: this->modality_string="US"; break;
-      case Optical: this->modality_string="Optical"; break;
-      default:
-      case Unknown: this->modality_string="Unknown"; break;
-      }
+  void set_string() {
+    switch (this->modality) {
+    case PT:
+      this->modality_string = "PT";
+      break;
+    case NM:
+      this->modality_string = "NM";
+      break;
+    case MR:
+      this->modality_string = "MR";
+      break;
+    case CT:
+      this->modality_string = "CT";
+      break;
+    case US:
+      this->modality_string = "US";
+      break;
+    case Optical:
+      this->modality_string = "Optical";
+      break;
+    default:
+    case Unknown:
+      this->modality_string = "Unknown";
+      break;
+    }
   }
 
-  void set_enum()
-  {
+  void set_enum() {
     const std::string mod = standardise_interfile_keyword(this->modality_string);
-    if (mod=="pt" || mod=="pet")
-      this->modality=PT;
-    else if ( mod=="nm" || mod=="nucmed" || mod=="spect")
-      this->modality=NM;
-    else if ( mod=="mr" || mod=="mri") 
-      this->modality=MR;
-    else if ( mod=="ct" || mod=="cat") 
-      this->modality=CT;
-    else if ( mod=="us" || mod=="ultrasound")
-      this->modality=US;
-    else if ( mod=="optical")
-      this->modality=Optical;
+    if (mod == "pt" || mod == "pet")
+      this->modality = PT;
+    else if (mod == "nm" || mod == "nucmed" || mod == "spect")
+      this->modality = NM;
+    else if (mod == "mr" || mod == "mri")
+      this->modality = MR;
+    else if (mod == "ct" || mod == "cat")
+      this->modality = CT;
+    else if (mod == "us" || mod == "ultrasound")
+      this->modality = US;
+    else if (mod == "optical")
+      this->modality = Optical;
     else
-      this->modality=Unknown;
+      this->modality = Unknown;
   }
 };
 
-} // namespace
+} // namespace stir
 #endif

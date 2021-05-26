@@ -39,24 +39,21 @@ START_NAMESPACE_STIR
   \todo Make sure that the keyword value \c None corresponds to this class.
 
 */
-class TrivialBinNormalisation : 
-   public RegisteredParsingObject<TrivialBinNormalisation, BinNormalisation>
-{
+class TrivialBinNormalisation : public RegisteredParsingObject<TrivialBinNormalisation, BinNormalisation> {
 public:
   //! Name which will be used when parsing a BinNormalisation object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
-  virtual inline void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
-  virtual inline void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
-  
-  virtual inline float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
+  virtual inline void apply(RelatedViewgrams<float>&, const double start_time, const double end_time) const {}
+  virtual inline void undo(RelatedViewgrams<float>&, const double start_time, const double end_time) const {}
 
-  virtual inline bool is_trivial() const { return true;}  
+  virtual inline float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const { return 1; }
+
+  virtual inline bool is_trivial() const { return true; }
 
 private:
   virtual inline void set_defaults() {}
   virtual inline void initialise_keymap() {}
-  
 };
 
 END_NAMESPACE_STIR

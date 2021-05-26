@@ -40,42 +40,28 @@ START_NAMESPACE_STIR
 /*! \ingroup IO
 
 */
-class InterfileImageInputFileFormat :
-public InputFileFormat<DiscretisedDensity<3,float> >
-{
- public:
-  virtual const std::string
-    get_name() const
-  {  return "Interfile"; }
+class InterfileImageInputFileFormat : public InputFileFormat<DiscretisedDensity<3, float>> {
+public:
+  virtual const std::string get_name() const { return "Interfile"; }
 
- protected:
-  virtual 
-    bool 
-    actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
-  {
+protected:
+  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const {
     //. todo should check if it's an image
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
-  {
+  virtual unique_ptr<data_type> read_from_file(std::istream& input) const {
     unique_ptr<data_type> ret(read_interfile_image(input));
-    if (is_null_ptr(ret))
-      {
-	error("failed to read an Interfile image from stream");
-      }
+    if (is_null_ptr(ret)) {
+      error("failed to read an Interfile image from stream");
+    }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
-  {
+  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const {
     unique_ptr<data_type> ret(read_interfile_image(filename));
-    if (is_null_ptr(ret))
-      {
-	error("failed to read an Interfile image from file \"%s\"", filename.c_str());
-      }
+    if (is_null_ptr(ret)) {
+      error("failed to read an Interfile image from file \"%s\"", filename.c_str());
+    }
     return ret;
   }
 };

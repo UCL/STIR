@@ -15,15 +15,15 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
 
-	See STIR/LICENSE.txt for details
+        See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_config_gcc_H__
 #define __stir_config_gcc_H__
 
 /*!
-  \file 
-  \ingroup buildblock 
+  \file
+  \ingroup buildblock
   \brief configuration for gcc
 
   \author Kris Thielemans
@@ -39,10 +39,10 @@
 */
 
 #if defined __GNUC__
-# if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define STIR_NO_NAMESPACES
-#  define STIR_NO_AUTO_PTR
-# endif
+#  if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
+#    define STIR_NO_NAMESPACES
+#    define STIR_NO_AUTO_PTR
+#  endif
 #endif
 
-#endif 
+#endif

@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
   We tend to name this header <tt>something.hroot</tt> but this is not mandatory.
 
   \warning There is currently no check if the scanner information is correct. This
-  is dangerous for the geometry, but can also lead to crashes if the actual number of 
+  is dangerous for the geometry, but can also lead to crashes if the actual number of
   blocks/crystals etc is larger than what is specified in the scanner info.
 
   We currently support only ROOT output using the 'Cylindrical PET' and 'ECAT' systems
@@ -69,7 +69,7 @@ START_NAMESPACE_STIR
   \par Example headers
 If the scanner is known to stir::Scanner, you can use this
 \verbatim
-ROOT header := 
+ROOT header :=
 Originating system := Siemens mMR
 
 ; specify GATE output format (could be GATE_ECAT_PET as well)
@@ -81,11 +81,11 @@ GATE_Cylindrical_PET Parameters :=
   ; See elsewhere for other parameters
 End GATE_Cylindrical_PET Parameters :=
 
-end ROOT header := 
+end ROOT header :=
 \endverbatim
-  Below is an example using a user-defined scanner. 
+  Below is an example using a user-defined scanner.
 \verbatim
-ROOT header := 
+ROOT header :=
 Originating system := User_defined_scanner
 Number of rings                          := 4
 Number of detectors per ring             := 504
@@ -108,98 +108,87 @@ GATE_Cylindrical_PET Parameters :=
   ; See elsewhere for other parameters
 End GATE_Cylindrical_PET Parameters :=
 
-end ROOT header := 
+end ROOT header :=
 \endverbatim
 */
-class CListModeDataROOT : public CListModeData
-{
+class CListModeDataROOT : public CListModeData {
 public:
-    //! construct from the filename of the Interfile header
-    CListModeDataROOT(const std::string& hroot_filename_prefix);
+  //! construct from the filename of the Interfile header
+  CListModeDataROOT(const std::string& hroot_filename_prefix);
 
-    //! returns the header filename
-    virtual std::string
-    get_name() const;
-    //! Set private members default values;
-    void set_defaults();
+  //! returns the header filename
+  virtual std::string get_name() const;
+  //! Set private members default values;
+  void set_defaults();
 
-    virtual
-    shared_ptr <CListRecord> get_empty_record_sptr() const;
+  virtual shared_ptr<CListRecord> get_empty_record_sptr() const;
 
-    virtual
-    Succeeded get_next_record(CListRecord& record) const;
+  virtual Succeeded get_next_record(CListRecord& record) const;
 
-    virtual
-    Succeeded reset();
+  virtual Succeeded reset();
 
-    virtual
-    SavedPosition save_get_position();
+  virtual SavedPosition save_get_position();
 
-    virtual
-    Succeeded set_get_position(const SavedPosition&);
+  virtual Succeeded set_get_position(const SavedPosition&);
 
-    virtual
-    bool has_delayeds() const { return true; }
+  virtual bool has_delayeds() const { return true; }
 
-    virtual inline
-    unsigned long int
-    get_total_number_of_events() const ;
+  virtual inline unsigned long int get_total_number_of_events() const;
 
 private:
-    //! Check if the hroot contains a full scanner description
-    Succeeded check_scanner_definition(std::string& ret);
-    //! Check if the scanner_sptr matches the geometry in root_file_sptr
-    Succeeded check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr);
+  //! Check if the hroot contains a full scanner description
+  Succeeded check_scanner_definition(std::string& ret);
+  //! Check if the scanner_sptr matches the geometry in root_file_sptr
+  Succeeded check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr);
 
-    //! The header file
-    std::string hroot_filename;
+  //! The header file
+  std::string hroot_filename;
 
-    //! Pointer to the listmode data
-    shared_ptr<InputStreamFromROOTFile > root_file_sptr;
+  //! Pointer to the listmode data
+  shared_ptr<InputStreamFromROOTFile> root_file_sptr;
 
-//! \name Variables that can be set in the hroot file to define a scanner's geometry.
-//! They are compared to the Scanner  (if set)  and the InputStreamFromROOTFile
-//! geometry, as given by the repeaters. Can be used to check for inconsistencies.
-//@{
-    //! The name of the originating scanner
-    std::string originating_system;
-    //! Number of rings, set in the hroot file (optional)
-    int num_rings;
-    //! Number of detectors per ring, set in the hroot file (optional)
-    int num_detectors_per_ring;
-    //! Number of non arc corrected bins, set in the hroot file (optional)
-    int max_num_non_arccorrected_bins;
-    //! Default number of arc corrected bins, set in the hroot file (optional)
-    int default_num_arccorrected_bins;
-    //! Angle in degrees corresponding to view offset (optional)
-    float view_offset;
-    //! Inner ring diameter, set in the hroot file (optional)
-    float inner_ring_diameter;
-    //! Average depth of interaction, set in the hroot file (optional)
-    float average_depth_of_interaction;
-    //! Ring spacing, set in the hroot file (optional)
-    float ring_spacing;
-    //! Bin size, set in the hroot file (optional)
-    float bin_size;
+  //! \name Variables that can be set in the hroot file to define a scanner's geometry.
+  //! They are compared to the Scanner  (if set)  and the InputStreamFromROOTFile
+  //! geometry, as given by the repeaters. Can be used to check for inconsistencies.
+  //@{
+  //! The name of the originating scanner
+  std::string originating_system;
+  //! Number of rings, set in the hroot file (optional)
+  int num_rings;
+  //! Number of detectors per ring, set in the hroot file (optional)
+  int num_detectors_per_ring;
+  //! Number of non arc corrected bins, set in the hroot file (optional)
+  int max_num_non_arccorrected_bins;
+  //! Default number of arc corrected bins, set in the hroot file (optional)
+  int default_num_arccorrected_bins;
+  //! Angle in degrees corresponding to view offset (optional)
+  float view_offset;
+  //! Inner ring diameter, set in the hroot file (optional)
+  float inner_ring_diameter;
+  //! Average depth of interaction, set in the hroot file (optional)
+  float average_depth_of_interaction;
+  //! Ring spacing, set in the hroot file (optional)
+  float ring_spacing;
+  //! Bin size, set in the hroot file (optional)
+  float bin_size;
 
-    int max_num_timing_bins;
+  int max_num_timing_bins;
 
-    float size_timing_bin;
+  float size_timing_bin;
 
-    float timing_resolution;
+  float timing_resolution;
 
-    float energy_resolution;
+  float energy_resolution;
 
-    float reference_energy;
-//@}
+  float reference_energy;
+  //@}
 
-    int tof_mash_factor;
+  int tof_mash_factor;
 
-    KeyParser parser;
+  KeyParser parser;
 
-    Succeeded open_lm_file();
+  Succeeded open_lm_file();
 };
-
 
 END_NAMESPACE_STIR
 

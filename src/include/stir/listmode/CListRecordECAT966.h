@@ -20,9 +20,9 @@
   \file
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 966 (aka Exact 3d)
-    
+
   \author Kris Thielemans
-      
+
 */
 
 #ifndef __stir_listmode_CListRecordECAT966_H__
@@ -59,18 +59,14 @@ START_NAMESPACE_ECAT7
      512 values, which is fine for the 966 (which needs only 288).
 
 */
-class CListEventDataECAT966
-{
- public:
-  
+class CListEventDataECAT966 {
+public:
   /*! This routine returns the corresponding tangential_pos_num,view_num,ring_a and ring_b
    */
   void get_sinogram_and_ring_coordinates(int& view, int& tangential_pos_num, unsigned int& ring_a, unsigned int& ring_b) const;
-  
+
   /*! This routine constructs a coincidence event */
-  void set_sinogram_and_ring_coordinates(
-			const int view_num, const int tangential_pos_num, 
-			const int ring_a, const int ring_b);
+  void set_sinogram_and_ring_coordinates(const int view_num, const int tangential_pos_num, const int ring_a, const int ring_b);
 
   /* ring encoding. use as follows:
        #define CRYSTALRINGSPERDETECTOR 8
@@ -79,66 +75,68 @@ class CListEventDataECAT966
 
        This organisation corresponds to physical detector blocks (which
        have 8 crystal rings). Names are not very good probably...
-       */				
-    /* 'random' bit:
-        1 if event is Random (it fell in delayed time window) */
-    /* bin field  is shifted in a funny way, use the following code to find
-       bin_number:
-         if ( bin > NumProjBinsBy2 ) bin -= NumProjBins ;
-	 */
+       */
+  /* 'random' bit:
+      1 if event is Random (it fell in delayed time window) */
+  /* bin field  is shifted in a funny way, use the following code to find
+     bin_number:
+       if ( bin > NumProjBinsBy2 ) bin -= NumProjBins ;
+       */
 
 #if STIRIsNativeByteOrderBigEndian
-  unsigned    type    : 1; /* 0-coincidence event, 1-time tick */
-  unsigned    block_B_ring : 3;
-  unsigned    block_A_ring : 3;
-  unsigned    block_B_detector : 3;
-  unsigned    block_A_detector : 3;
-  unsigned    random  : 1;
-  unsigned    bin : 9;
-  unsigned    view : 9;
+  unsigned type : 1; /* 0-coincidence event, 1-time tick */
+  unsigned block_B_ring : 3;
+  unsigned block_A_ring : 3;
+  unsigned block_B_detector : 3;
+  unsigned block_A_detector : 3;
+  unsigned random : 1;
+  unsigned bin : 9;
+  unsigned view : 9;
 #else
   // Do byteswapping first before using this bit field.
-  unsigned    view : 9;
-  unsigned    bin : 9;
-  unsigned    random  : 1;
-  unsigned    block_A_detector : 3;
-  unsigned    block_B_detector : 3;
-  unsigned    block_A_ring : 3;
-  unsigned    block_B_ring : 3;
-  unsigned    type    : 1; /* 0-coincidence event, 1-time tick */
+  unsigned view : 9;
+  unsigned bin : 9;
+  unsigned random : 1;
+  unsigned block_A_detector : 3;
+  unsigned block_B_detector : 3;
+  unsigned block_A_ring : 3;
+  unsigned block_B_ring : 3;
+  unsigned type : 1; /* 0-coincidence event, 1-time tick */
 
 #endif
 }; /*-coincidence event*/
 
 //! Class for storing and using a coincidence event from a listmode file from the ECAT 966 scanner
-class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>
-{
- private:
- public:
+class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966> {
+private:
+public:
   typedef CListEventDataECAT966 DataType;
   DataType get_data() const { return this->data; }
 
- public:  
-  CListEventECAT966() :
-  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>(shared_ptr<Scanner>(new Scanner(Scanner::E966)))
-    {}
+public:
+  CListEventECAT966()
+      : CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>(
+            shared_ptr<Scanner>(new Scanner(Scanner::E966))) {}
 
-  Succeeded init_from_data_ptr(const void * const ptr)
-    {
-      const char * const data_ptr = reinterpret_cast<const char * const >(ptr);
-      std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
-      return Succeeded::yes;
-    }
+  Succeeded init_from_data_ptr(const void* const ptr) {
+    const char* const data_ptr = reinterpret_cast<const char* const>(ptr);
+    std::copy(data_ptr, data_ptr + sizeof(this->raw), reinterpret_cast<char*>(&this->raw));
+    return Succeeded::yes;
+  }
   inline bool is_prompt() const { return this->data.random == 0; }
-  inline Succeeded set_prompt(const bool prompt = true) 
-  { if (prompt) this->data.random=0; else this->data.random=1; return Succeeded::yes; }
+  inline Succeeded set_prompt(const bool prompt = true) {
+    if (prompt)
+      this->data.random = 0;
+    else
+      this->data.random = 1;
+    return Succeeded::yes;
+  }
 
- private:
-  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966)==4); 
-  union 
-  {
-    CListEventDataECAT966   data;
-    boost::int32_t         raw;
+private:
+  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966) == 4);
+  union {
+    CListEventDataECAT966 data;
+    boost::int32_t raw;
   };
 };
 
@@ -147,102 +145,82 @@ class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRin
      This class just provides the bit-field definitions. You should normally use CListTimeECAT966.
 
  */
-class CListTimeDataECAT966
-{
- public:
-
+class CListTimeDataECAT966 {
+public:
 #if STIRIsNativeByteOrderBigEndian
-  unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
-  unsigned    gating : 4;  /* some info about the gating signals */
-  unsigned    time : 27 ;  /* since scan start */
+  unsigned type : 1;   /* 0-coincidence event, 1-time tick */
+  unsigned gating : 4; /* some info about the gating signals */
+  unsigned time : 27;  /* since scan start */
 #else
   // Do byteswapping first before using this bit field.
-  unsigned    time : 27 ;  /* since scan start */
-  unsigned    gating : 4;  /* some info about the gating signals */
-  unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
+  unsigned time : 27;  /* since scan start */
+  unsigned gating : 4; /* some info about the gating signals */
+  unsigned type : 1;   /* 0-coincidence event, 1-time tick */
 #endif
 };
-
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 966 scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT966 : public ListTime, public ListGatingInput
-{
- public:
-  Succeeded init_from_data_ptr(const void * const ptr)
-    {
-      const char * const data_ptr = reinterpret_cast<const char * const >(ptr);
-      std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
-      return Succeeded::yes;
-    }
-  bool is_time() const
-  { return this->data.type == 1U; }
-  inline unsigned long get_time_in_millisecs() const
-  { return static_cast<unsigned long>(this->data.time);  }
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-  { 
-    this->data.time = ((1U<<28)-1) & static_cast<unsigned>(time_in_millisecs); 
+class CListTimeECAT966 : public ListTime, public ListGatingInput {
+public:
+  Succeeded init_from_data_ptr(const void* const ptr) {
+    const char* const data_ptr = reinterpret_cast<const char* const>(ptr);
+    std::copy(data_ptr, data_ptr + sizeof(this->raw), reinterpret_cast<char*>(&this->raw));
+    return Succeeded::yes;
+  }
+  bool is_time() const { return this->data.type == 1U; }
+  inline unsigned long get_time_in_millisecs() const { return static_cast<unsigned long>(this->data.time); }
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) {
+    this->data.time = ((1U << 28) - 1) & static_cast<unsigned>(time_in_millisecs);
     // TODO return more useful value
     return Succeeded::yes;
   }
-  inline unsigned int get_gating() const
-  { return this->data.gating; }
-  inline Succeeded set_gating(unsigned int g)
-  { this->data.gating = g & 0xf; return this->data.gating==g ? Succeeded::yes : Succeeded::no;}
+  inline unsigned int get_gating() const { return this->data.gating; }
+  inline Succeeded set_gating(unsigned int g) {
+    this->data.gating = g & 0xf;
+    return this->data.gating == g ? Succeeded::yes : Succeeded::no;
+  }
 
- private:
-  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT966)==4); 
-  union 
-  {
-    CListTimeDataECAT966   data;
-    boost::int32_t         raw;
+private:
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT966) == 4);
+  union {
+    CListTimeDataECAT966 data;
+    boost::int32_t raw;
   };
 };
 
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 966 it's either a coincidence event, or a timing flag.*/
-class CListRecordECAT966 : public CListRecordWithGatingInput
-{
+class CListRecordECAT966 : public CListRecordWithGatingInput {
 
-  //public:
+  // public:
 
-  bool is_time() const
-  { return this->time_data.is_time(); }
-  bool is_gating_input() const
-  { return this->is_time(); }
-  bool is_event() const
-  { return !this->is_time(); }
-  virtual CListEventECAT966&  event() 
-    { return this->event_data; }
-  virtual const CListEventECAT966&  event() const
-    { return this->event_data; }
-  virtual CListTimeECAT966&   time()
-    { return this->time_data; }
-  virtual const CListTimeECAT966&   time() const
-    { return this->time_data; }
-  virtual CListTimeECAT966&  gating_input()
-    { return this->time_data; }
-  virtual const CListTimeECAT966&  gating_input() const
-  { return this->time_data; }
+  bool is_time() const { return this->time_data.is_time(); }
+  bool is_gating_input() const { return this->is_time(); }
+  bool is_event() const { return !this->is_time(); }
+  virtual CListEventECAT966& event() { return this->event_data; }
+  virtual const CListEventECAT966& event() const { return this->event_data; }
+  virtual CListTimeECAT966& time() { return this->time_data; }
+  virtual const CListTimeECAT966& time() const { return this->time_data; }
+  virtual CListTimeECAT966& gating_input() { return this->time_data; }
+  virtual const CListTimeECAT966& gating_input() const { return this->time_data; }
 
-  bool operator==(const CListRecord& e2) const
-  {
-    return dynamic_cast<CListRecordECAT966 const *>(&e2) != 0 &&
-      raw == dynamic_cast<CListRecordECAT966 const &>(e2).raw;
-  }	 
+  bool operator==(const CListRecord& e2) const {
+    return dynamic_cast<CListRecordECAT966 const*>(&e2) != 0 && raw == dynamic_cast<CListRecordECAT966 const&>(e2).raw;
+  }
 
- public:     
-  virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
+public:
+  virtual Succeeded init_from_data_ptr(const char* const data_ptr,
                                        const std::size_t
 #ifndef NDEBUG
-                                       size // only use within assert
+                                           size // only use within assert
 #endif
-                                       , const bool do_byte_swap)
-  {
+                                       ,
+                                       const bool do_byte_swap) {
     assert(size >= 4);
-    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));// TODO necessary for operator==
+    std::copy(data_ptr, data_ptr + 4, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==
     if (do_byte_swap)
       ByteOrder::swap_order(raw);
     this->time_data.init_from_data_ptr(&raw);
@@ -253,17 +231,16 @@ class CListRecordECAT966 : public CListRecordWithGatingInput
       return Succeeded::yes;
   }
 
-  virtual std::size_t size_of_record_at_ptr(const char * const /*data_ptr*/, const std::size_t /*size*/, 
-                                            const bool /*do_byte_swap*/) const
-  { return 4; }
+  virtual std::size_t size_of_record_at_ptr(const char* const /*data_ptr*/, const std::size_t /*size*/,
+                                            const bool /*do_byte_swap*/) const {
+    return 4;
+  }
 
- private:
-  CListEventECAT966  event_data;
-  CListTimeECAT966   time_data; 
-  boost::int32_t         raw;
-
+private:
+  CListEventECAT966 event_data;
+  CListTimeECAT966 time_data;
+  boost::int32_t raw;
 };
-
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT

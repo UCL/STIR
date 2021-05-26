@@ -34,18 +34,14 @@
 
 START_NAMESPACE_STIR
 
-void 
-SymmetryOperation::
-transform_proj_matrix_elems_for_one_bin(
-					ProjMatrixElemsForOneBin& lor) const 
-{
+void
+SymmetryOperation::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
   lor.set_bin(bin);
-  
+
   ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
-  while (element_ptr != lor.end()) 
-  {
+  while (element_ptr != lor.end()) {
     Coordinate3D<int> c(element_ptr->get_coords());
     transform_image_coordinates(c);
     *element_ptr = ProjMatrixElemsForOneBin::value_type(c, element_ptr->get_value());
@@ -53,25 +49,19 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
-
-void 
-SymmetryOperation::
-transform_proj_matrix_elems_for_one_densel(
-				       ProjMatrixElemsForOneDensel& probs) const
-{
+void
+SymmetryOperation::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
   probs.set_densel(densel);
-  
+
   ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
-  while (element_ptr != probs.end()) 
-  {
+  while (element_ptr != probs.end()) {
     Bin c(*element_ptr);
     transform_bin_coordinates(c);
     *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
     ++element_ptr;
   }
-} 
-
+}
 
 END_NAMESPACE_STIR

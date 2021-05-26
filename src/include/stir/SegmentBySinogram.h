@@ -26,7 +26,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  \author Claire Labbe  
+  \author Claire Labbe
   \author PARAPET project
 
 
@@ -40,9 +40,9 @@
 
 START_NAMESPACE_STIR
 
-//forward declaration for use in convertion 
-template <typename elemT> class SegmentByView;
-
+// forward declaration for use in convertion
+template <typename elemT>
+class SegmentByView;
 
 /*!
   \ingroup projdata
@@ -51,11 +51,10 @@ template <typename elemT> class SegmentByView;
   Storage order is as follows:
   \code
   segment_by_sino[view_num][axial_pos_num][tangential_pos_num]
-  \endcode  
+  \endcode
 */
 template <typename elemT>
-class SegmentBySinogram : public Segment<elemT>, public Array<3,elemT>
-{
+class SegmentBySinogram : public Segment<elemT>, public Array<3, elemT> {
 private:
   typedef SegmentBySinogram<elemT> self_type;
 
@@ -64,18 +63,16 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
-  SegmentBySinogram(const Array<3,elemT>& v, 
-            const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num, const int timing_pos_num = 0);
-  
-  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num, const int timing_pos_num = 0);
+  SegmentBySinogram(const Array<3, elemT>& v, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num,
+                    const int timing_pos_num = 0);
 
-  
+  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
+  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num,
+                    const int timing_pos_num = 0);
+
   //! Conversion from 1 storage order to the other
-  SegmentBySinogram (const SegmentByView<elemT>& );
-  //! Get storage order 
+  SegmentBySinogram(const SegmentByView<elemT>&);
+  //! Get storage order
   inline StorageOrder get_storage_order() const;
   //! Get number of axial positions
   inline int get_num_axial_poss() const;
@@ -92,9 +89,9 @@ public:
   //! Get maximum view number
   inline int get_max_view_num() const;
   //! Get minimum tangetial position number
-  inline int get_min_tangential_pos_num()  const;
+  inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
-  inline int get_max_tangential_pos_num()  const;
+  inline int get_max_tangential_pos_num() const;
   //! Get sinogram
   inline Sinogram<elemT> get_sinogram(int axial_pos_num) const;
   //! Get viewgram
@@ -102,7 +99,7 @@ public:
   //! Set viewgram
   void set_viewgram(const Viewgram<elemT>&);
   //! Set sinogram
-  inline void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);
+  inline void set_sinogram(Sinogram<elemT> const& s, int axial_pos_num);
   inline void set_sinogram(const Sinogram<elemT>& s);
 
   //! Overloading Array::grow
@@ -110,7 +107,7 @@ public:
   //! Overloading Array::resize
   void resize(const IndexRange<3>& range);
 
-  virtual bool operator ==(const Segment<elemT>&) const;
+  virtual bool operator==(const Segment<elemT>&) const;
 };
 
 END_NAMESPACE_STIR

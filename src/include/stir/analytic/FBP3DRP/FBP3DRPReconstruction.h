@@ -18,8 +18,8 @@
 
     See STIR/LICENSE.txt for details
 */
-/*! 
-  \file 
+/*!
+  \file
   \ingroup FBP3DRP
   \brief Declaration of class stir::FBP3DRPReconstruction
   \author Claire LABBE
@@ -29,8 +29,6 @@
 
 #ifndef __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
 #define __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
-
-
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/ProjDataInfoCylindrical.h"
@@ -43,11 +41,16 @@
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class RelatedViewgrams;
-template <typename elemT> class Sinogram;
-template <typename elemT> class SegmentBySinogram;
-template <typename elemT> class VoxelsOnCartesianGrid;
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <typename elemT>
+class RelatedViewgrams;
+template <typename elemT>
+class Sinogram;
+template <typename elemT>
+class SegmentBySinogram;
+template <typename elemT>
+class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class Succeeded;
 
 /* KT 180899 forget about PETAnalyticReconstruction for the moment
@@ -59,7 +62,7 @@ class Succeeded;
   \brief This class contains the implementation of the FBP3DRP algorithm.
 
   This class implements the 3DRP algorithm (Kinahan and Rogers) as a specific
-  case of a 3D FBP reconstruction algorithm. 
+  case of a 3D FBP reconstruction algorithm.
 
   Some care is taken to achieve
   a fairly general implementation. For instance, the number of sinograms
@@ -69,8 +72,8 @@ class Succeeded;
   the same scale independent of the number of segments that is used.
 
   Nevertheless, this is an analytic algorithm, and it implements a discrete
-  version of a continuous inversion formula. This will work best (but of 
-  course slowest) when the number of segments is large. 
+  version of a continuous inversion formula. This will work best (but of
+  course slowest) when the number of segments is large.
 
   This implementation is specific for data using sampling corresponding
   to cylindrical PET scanners.
@@ -80,47 +83,37 @@ class Succeeded;
   to make a version that works on e.g. spherical sampling.
 
   \par About zooming (rescaling + offset):
-  1) The 2D FBP process  works at full resolution, i.e on the original 
+  1) The 2D FBP process  works at full resolution, i.e on the original
      number of bins, and with a pixel size equal to the bin size.
   2) For the process of oblique sinograms:
-	  - Forward projection works at full resolution i.e forward projection works
-	  from images without zooming and complete missing projection data on normal sinograms
-	  - Colsher filter is then applied on complete data
-	  - 3D backprojection then puts this data into an image with 
-	  appropriate voxel sizes, i.e. it is up to the backprojector to perform
-	  the zooming.
-	  - So, no zooming is needed on the final image.
-     
+          - Forward projection works at full resolution i.e forward projection works
+          from images without zooming and complete missing projection data on normal sinograms
+          - Colsher filter is then applied on complete data
+          - 3D backprojection then puts this data into an image with
+          appropriate voxel sizes, i.e. it is up to the backprojector to perform
+          the zooming.
+          - So, no zooming is needed on the final image.
+
 
 */
-class FBP3DRPReconstruction: public
-        RegisteredParsingObject<
-            FBP3DRPReconstruction,
-                Reconstruction<DiscretisedDensity<3,float> >,
-                AnalyticReconstruction
-             >
-{
-  //typedef AnalyticReconstruction base_type;
-    typedef RegisteredParsingObject<
-        FBP3DRPReconstruction,
-            Reconstruction<DiscretisedDensity<3,float> >,
-            AnalyticReconstruction
-         > base_type;
+class FBP3DRPReconstruction : public RegisteredParsingObject<FBP3DRPReconstruction, Reconstruction<DiscretisedDensity<3, float>>,
+                                                             AnalyticReconstruction> {
+  // typedef AnalyticReconstruction base_type;
+  typedef RegisteredParsingObject<FBP3DRPReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction>
+      base_type;
+
 public:
-
-    //! Name which will be used when parsing a ProjectorByBinPair object
-    static const char * const registered_name;
-
+  //! Name which will be used when parsing a ProjectorByBinPair object
+  static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
-  FBP3DRPReconstruction (); 
+  FBP3DRPReconstruction();
 
   /*!
     \brief Constructor, initialises everything from parameter file, or (when
     parameter_filename == "") by calling ask_parameters().
   */
-  explicit 
-    FBP3DRPReconstruction(const std::string& parameter_filename);
+  explicit FBP3DRPReconstruction(const std::string& parameter_filename);
 
   // explicitly implement destructor (NOT inline) to avoid funny problems with
   // the shared_ptr<DiscretisedDensity<3,float> > destructor with gcc.
@@ -128,96 +121,80 @@ public:
   // because it doesn't know ~DiscretisedDensity.
   ~FBP3DRPReconstruction();
 
-//! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
+  //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
   virtual std::string method_info() const;
 
-  Succeeded
-    set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr);
+  Succeeded set_up(shared_ptr<DiscretisedDensity<3, float>> const& target_image_sptr);
 
 protected:
-/*!
-  \brief Implementation of the reconstruction
-  
-  This method implements the reconstruction by giving as input the emission sinogram data corrected for attenuation,
-  scatter, dead time,
-  and returns the output reconstructed image
-*/
+  /*!
+    \brief Implementation of the reconstruction
 
-   virtual Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&);
-    
-//! Best fit of forward projected sinograms
-    void do_best_fit(const Sinogram<float> &sino_measured, const Sinogram<float> &sino_calculated);
+    This method implements the reconstruction by giving as input the emission sinogram data corrected for attenuation,
+    scatter, dead time,
+    and returns the output reconstructed image
+  */
 
+  virtual Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const&);
 
-//!  2D FBP implementation.
-    void do_2D_reconstruction();
-    
-//!  Save image data.
-    void do_save_img(const char *file, const VoxelsOnCartesianGrid<float> &data) const;
+  //! Best fit of forward projected sinograms
+  void do_best_fit(const Sinogram<float>& sino_measured, const Sinogram<float>& sino_calculated);
 
-//!  Read image estimated from 2D FBP 
-    void do_read_image2D();
+  //!  2D FBP implementation.
+  void do_2D_reconstruction();
 
-    
-//!  3D reconstruction implementation.       
-  void do_3D_Reconstruction(  VoxelsOnCartesianGrid<float> &image);
+  //!  Save image data.
+  void do_save_img(const char* file, const VoxelsOnCartesianGrid<float>& data) const;
 
-//!  Arc-correction viewgrams
-  void do_arc_correction(RelatedViewgrams<float> & viewgrams) const;
-   
-//!  Growing 8 viewgrams in both ring and bin directions.
-    void do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams, 
-                            int rmin, int rmax);
-//!  3D forward projection implentation by view.
-    void do_forward_project_view(RelatedViewgrams<float> & viewgrams,
-                                 int rmin, int rmax,
-                                 int orig_min_ring, int orig_max_ring) const; 
-//!  Apply Colsher filter to 8 viewgrams.
-    void do_colsher_filter_view( RelatedViewgrams<float> & viewgrams);
-//!  3D backprojection implentation for 8 viewgrams.
-    void do_3D_backprojection_view(RelatedViewgrams<float> const & viewgrams,
-                                   int rmin, int rmax);
-//!  Saving CPU timing and values of reconstruction parameters into a log file.    
-    void do_log_file(const VoxelsOnCartesianGrid<float> &image);
+  //!  Read image estimated from 2D FBP
+  void do_read_image2D();
 
+  //!  3D reconstruction implementation.
+  void do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image);
 
+  //!  Arc-correction viewgrams
+  void do_arc_correction(RelatedViewgrams<float>& viewgrams) const;
 
+  //!  Growing 8 viewgrams in both ring and bin directions.
+  void do_grow3D_viewgram(RelatedViewgrams<float>& viewgrams, int rmin, int rmax);
+  //!  3D forward projection implentation by view.
+  void do_forward_project_view(RelatedViewgrams<float>& viewgrams, int rmin, int rmax, int orig_min_ring,
+                               int orig_max_ring) const;
+  //!  Apply Colsher filter to 8 viewgrams.
+  void do_colsher_filter_view(RelatedViewgrams<float>& viewgrams);
+  //!  3D backprojection implentation for 8 viewgrams.
+  void do_3D_backprojection_view(RelatedViewgrams<float> const& viewgrams, int rmin, int rmax);
+  //!  Saving CPU timing and values of reconstruction parameters into a log file.
+  void do_log_file(const VoxelsOnCartesianGrid<float>& image);
 
-    virtual void do_byview_initialise(const VoxelsOnCartesianGrid<float>& image) const
-    {};
+  virtual void do_byview_initialise(const VoxelsOnCartesianGrid<float>& image) const {};
 
-    virtual void do_byview_finalise(VoxelsOnCartesianGrid<float>& image) {};
+  virtual void do_byview_finalise(VoxelsOnCartesianGrid<float>& image){};
+
 public:
-      // KT 230899 this has to be public to let the Para stuff access it (sadly)
+  // KT 230899 this has to be public to let the Para stuff access it (sadly)
 
-    virtual void do_process_viewgrams(
-                                  RelatedViewgrams<float> & viewgrams,
-                                  int rmin, int rmax,
-                                  int orig_min_ring, int orig_max_ring);
+  virtual void do_process_viewgrams(RelatedViewgrams<float>& viewgrams, int rmin, int rmax, int orig_min_ring, int orig_max_ring);
 
-    // parameters stuff
- public:
-
-   
+  // parameters stuff
+public:
   void ask_parameters();
 
- 
 protected:
-
   //! Switch to display intermediate images, 0,1,2
   int display_level;
 
   //! Switch to save files after each segment, 0 or 1
   int save_intermediate_files;
-   
-  //! Filename of image used in the reprojection step (default is empty)
-  /*! If the filename is empty, FBP is used (with filter parameters as 
-    specified further). 
 
-    \warning This image must have the correct scale. That is, if you use the 
-    forward projector on it, you get sinograms of the same scale as the 
+  //! Filename of image used in the reprojection step (default is empty)
+  /*! If the filename is empty, FBP is used (with filter parameters as
+    specified further).
+
+    \warning This image must have the correct scale. That is, if you use the
+    forward projector on it, you get sinograms of the same scale as the
     input sinograms. There is NO check on this.
-  */  
+  */
   std::string image_for_reprojection_filename;
 
   //! Number of segments to combine with SSRB before calling FBP
@@ -225,58 +202,55 @@ protected:
   int num_segments_to_combine;
 
   //! Transaxial extension for FFT
-  int PadS; 
+  int PadS;
   //! Axial extension for FFT
   int PadZ;
   //! Ramp filter: Alpha value
   double alpha_ramp;
   //! Ramp filter: Cut off frequency
-  double fc_ramp;  
+  double fc_ramp;
 
   //! Alpha parameter for Colsher filter in axial direction
   double alpha_colsher_axial;
   //! Cut-off frequency for Colsher filter in axial direction
   double fc_colsher_axial;
   //! Alpha parameter for Colsher filter in planar direction
-  double alpha_colsher_planar; 
+  double alpha_colsher_planar;
   //! Cut-off frequency for Colsher filter in planar direction
-  double fc_colsher_planar; 
+  double fc_colsher_planar;
   //! Define Colsher at larger size than used for filtering, axial direction
   int colsher_stretch_factor_axial;
   //! Define Colsher at larger size than used for filtering, planar direction
   int colsher_stretch_factor_planar;
- 
 
   //! =1 => apply additional fitting procedure to forward projected data (DISABLED)
-  int fit_projections; 
-private:
+  int fit_projections;
 
+private:
   virtual void set_defaults();
   virtual void initialise_keymap();
-
 
   //! access to input proj_data_info cast to cylindrical type
   const ProjDataInfoCylindrical& input_proj_data_info_cyl() const;
   //! Size info for the projection data with missing data filled in
   shared_ptr<ProjDataInfo> proj_data_info_with_missing_data_sptr;
 
-  shared_ptr<DiscretisedDensity<3,float> > image_estimate_density_ptr;
+  shared_ptr<DiscretisedDensity<3, float>> image_estimate_density_ptr;
   // convenience access functions to the above member
-  inline VoxelsOnCartesianGrid<float>&  estimated_image();
-  inline const VoxelsOnCartesianGrid<float>&  estimated_image() const;
+  inline VoxelsOnCartesianGrid<float>& estimated_image();
+  inline const VoxelsOnCartesianGrid<float>& estimated_image() const;
 
-  shared_ptr<ForwardProjectorByBin> forward_projector_sptr; 
+  shared_ptr<ForwardProjectorByBin> forward_projector_sptr;
   shared_ptr<BackProjectorByBin> back_projector_sptr;
 #ifndef NRFFT
   ColsherFilter colsher_filter;
 #endif
   float alpha_fit;
   float beta_fit;
-  
+
   shared_ptr<ArcCorrection> arc_correction_sptr;
 };
 
 END_NAMESPACE_STIR
 
 #endif
-

@@ -21,9 +21,9 @@
 /*!
   \file
   \ingroup numerics
-  
+
   \brief Declaration of stir::determinant() function for matrices
-    
+
   \author Kris Thielemans
 
 */
@@ -31,18 +31,18 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, class elemT> class Array;
+template <int num_dimensions, class elemT>
+class Array;
 
 /*! \ingroup numerics
   \brief Compute the determinant of a matrix
-  
+
   Matrix indices can start from any number.
 
   \todo Only works for low dimensions for now.
 */
 template <class elemT>
-elemT
-determinant(const Array<2,elemT>& m);
+elemT determinant(const Array<2, elemT>& m);
 
 END_NAMESPACE_STIR
 #endif

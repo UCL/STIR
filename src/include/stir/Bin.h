@@ -6,7 +6,7 @@
   \ingroup projdata
 
   \brief Declaration of class stir::Bin
-  
+
   \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -35,9 +35,7 @@
 #ifndef __stir_Bin_H__
 #define __stir_Bin_H__
 
-
 #include "stir/common.h"
-
 
 START_NAMESPACE_STIR
 /*!   \ingroup projdata
@@ -54,80 +52,70 @@ START_NAMESPACE_STIR
     Until were are actually able to cache LORs based on timing location this could be let off.
 */
 
-class Bin
-{
-public: 
+class Bin {
+public:
   //! default constructor
   inline Bin();
 
   //!  A constructor : constructs a bin with value (defaulting to 0)
-  inline Bin(int segment_num,int view_num, int axial_pos_num,
-    int tangential_pos_num,float bin_value);
+  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, float bin_value);
 
-  inline Bin(int segment_num, int view_num, int axial_pos_num,
-             int tangential_pos_num);
+  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num);
 
-  inline Bin(int segment_num, int view_num, int axial_pos_num,
-             int tangential_pos_num, int timing_pos_num, float bin_value);
+  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, int timing_pos_num, float bin_value);
 
-  inline Bin(int segment_num, int view_num, int axial_pos_num,
-             int tangential_pos_num, int timing_pos_num);
-  
-  //!get axial position number
-  inline int axial_pos_num()const;
+  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, int timing_pos_num);
+
+  //! get axial position number
+  inline int axial_pos_num() const;
   //! get segmnet number
-  inline int segment_num()const; 
+  inline int segment_num() const;
   //! get tangential position number
-  inline int tangential_pos_num()  const; 
+  inline int tangential_pos_num() const;
   //! get view number
-  inline int view_num() const; 
+  inline int view_num() const;
   //! get timing position number
   inline int timing_pos_num() const;
-  
-  inline int& axial_pos_num(); 
-  inline int& segment_num(); 
-  inline int& tangential_pos_num(); 
-  inline int& view_num(); 
+
+  inline int& axial_pos_num();
+  inline int& segment_num();
+  inline int& tangential_pos_num();
+  inline int& view_num();
   inline int& timing_pos_num();
-  
+
   //! get an empty copy
   inline Bin get_empty_copy() const;
-  
-  //! get the value after forward projection 
-  inline float get_bin_value()const; 
-  //! set the value to be back projected 
-  inline void set_bin_value( float v );
-  
-  //! accumulate voxel's contribution during forward projection 
-  inline Bin&  operator+=(const float dx);
+
+  //! get the value after forward projection
+  inline float get_bin_value() const;
+  //! set the value to be back projected
+  inline void set_bin_value(float v);
+
+  //! accumulate voxel's contribution during forward projection
+  inline Bin& operator+=(const float dx);
   //! multiply bin values
   inline Bin& operator*=(const float dx);
   //! divide bin values
   //! \todo It is zero division proof in a similar way to divide<,,>(), though I am
   //! not sure if it should be.
   inline Bin& operator/=(const float dx);
-  
+
   //! comparison operators
   inline bool operator==(const Bin&) const;
   inline bool operator!=(const Bin&) const;
-  
-private :
-  // shared_ptr<ProjDataInfo> proj_data_info_ptr; 
-  
-  int  segment;
-  int  view; 
-  int  axial_pos; 
-  int  tangential_pos;
-  int  timing_pos;
+
+private:
+  // shared_ptr<ProjDataInfo> proj_data_info_ptr;
+
+  int segment;
+  int view;
+  int axial_pos;
+  int tangential_pos;
+  int timing_pos;
   float bin_value;
-  
-  
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #include "stir/Bin.inl"
 

@@ -1,9 +1,9 @@
 /*!
-  \file 
+  \file
   \ingroup listmode
 
   \brief Implementation of class stir::LmToProjDataAbstract
- 
+
   \author Richard Brown
 */
 /*
@@ -26,6 +26,5 @@
 #include "stir/listmode/LmToProjDataAbstract.h"
 
 START_NAMESPACE_STIR
-
 
 END_NAMESPACE_STIR

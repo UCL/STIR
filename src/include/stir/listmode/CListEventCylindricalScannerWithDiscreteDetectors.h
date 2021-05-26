@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Declarations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -40,16 +40,13 @@ START_NAMESPACE_STIR
     in some way. This class provides access mechanisms to those detection positions, and
     also provides more efficient implementations of some virtual members of CListEvent.
 */
-class CListEventCylindricalScannerWithDiscreteDetectors : public CListEvent
-{
+class CListEventCylindricalScannerWithDiscreteDetectors : public CListEvent {
 public:
-  inline explicit 
-    CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
+  inline explicit CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
-  const Scanner * get_scanner_ptr() const
-    { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
+  const Scanner* get_scanner_ptr() const { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
 
-  //! This routine returns the corresponding detector pair   
+  //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
 
   //! This routine sets in a coincidence event from detector "indices"
@@ -65,7 +62,7 @@ public:
   /*! Overrides the default implementation to use get_detection_position()
     which should be faster.
 
-    \warning This implementation is only valid for \c proj_data_info of 
+    \warning This implementation is only valid for \c proj_data_info of
     type ProjDataInfoCylindricalNoArcCorr. However, because of efficiency reasons
     this is only checked in debug mode (NDEBUG not defined).
   */
@@ -78,18 +75,14 @@ public:
    */
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
 
- protected:
-   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-    get_uncompressed_proj_data_info_sptr() const
-     {
-       return uncompressed_proj_data_info_sptr;
-     }
+protected:
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> get_uncompressed_proj_data_info_sptr() const {
+    return uncompressed_proj_data_info_sptr;
+  }
 
-   //shared_ptr<Scanner> scanner_sptr;
+  // shared_ptr<Scanner> scanner_sptr;
 
-   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-     uncompressed_proj_data_info_sptr;
-
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> uncompressed_proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

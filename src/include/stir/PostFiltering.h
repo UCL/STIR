@@ -36,29 +36,26 @@
 START_NAMESPACE_STIR
 
 template <class DataT>
-        class PostFiltering : public ParsingObject
-{
+class PostFiltering : public ParsingObject {
 public:
+  //! Default constructor
+  PostFiltering();
 
-    //! Default constructor
-    PostFiltering();
+  virtual ~PostFiltering() {}
 
-    virtual ~PostFiltering(){}
+  void set_filter_sptr(shared_ptr<DataProcessor<DataT>> filter_sptr);
+  Succeeded process_data(DataT& arg);
 
-    void set_filter_sptr(shared_ptr<DataProcessor< DataT > > filter_sptr);
-    Succeeded process_data(DataT& arg);
-
-    //! Check if filter exists
-    bool is_filter_null();
+  //! Check if filter exists
+  bool is_filter_null();
 
 protected:
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
 private:
-    shared_ptr<DataProcessor< DataT > > filter_sptr;
-
+  shared_ptr<DataProcessor<DataT>> filter_sptr;
 };
 
 END_NAMESPACE_STIR

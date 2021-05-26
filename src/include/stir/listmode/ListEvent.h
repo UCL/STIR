@@ -52,11 +52,10 @@ START_NAMESPACE_STIR
 
     \see ListModeData for more info on list mode data.
 */
-class ListEvent
-{
+class ListEvent {
 public:
   virtual ~ListEvent() {}
- virtual bool is_prompt() const =0;// {return helper_is_prompt();}
+  virtual bool is_prompt() const = 0; // {return helper_is_prompt();}
 
   //! Finds the LOR between the coordinates where the detection took place
   /*! Obviously, these coordinates are only estimates which depend on the
@@ -70,8 +69,7 @@ public:
 
       \todo This function might need time info or so for rotating scanners.
   */
-  virtual LORAs2Points<float>
-    get_LOR() const = 0;
+  virtual LORAs2Points<float> get_LOR() const = 0;
 
   //! Finds the bin coordinates of this event for some characteristics of the projection data
   /*! bin.get_bin_value() will be <=0 when the event corresponds to
@@ -90,18 +88,14 @@ public:
 
     \todo get_bin() might need time info or so for rotating scanners.
   */
-  virtual
-    void
-    get_bin(Bin& bin, const ProjDataInfo&) const;
+  virtual void get_bin(Bin& bin, const ProjDataInfo&) const;
 
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
-  virtual
-  bool
-  is_valid_template(const ProjDataInfo&) const =0;
+  virtual bool is_valid_template(const ProjDataInfo&) const = 0;
 
 }; /*-coincidence event*/
 

@@ -29,10 +29,8 @@
  \author Zeljko Kereta
  */
 
-
 #ifndef __stir_recon_buildblock_LogcoshPrior_H__
 #define __stir_recon_buildblock_LogcoshPrior_H__
-
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
@@ -42,7 +40,6 @@
 #include <string>
 
 START_NAMESPACE_STIR
-
 
 /*!
  \ingroup priors
@@ -89,163 +86,148 @@ START_NAMESPACE_STIR
 
  */
 template <typename elemT>
-class LogcoshPrior:  public
-                     RegisteredParsingObject<
-                        LogcoshPrior<elemT>,
-                        GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                        PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
-                     >
-{
+class LogcoshPrior : public RegisteredParsingObject<LogcoshPrior<elemT>, GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                    PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>> {
 private:
-    typedef
-    RegisteredParsingObject< LogcoshPrior<elemT>,
-            GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-            PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
-            base_type;
+  typedef RegisteredParsingObject<LogcoshPrior<elemT>, GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                  PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>>
+      base_type;
 
 public:
-    //! Name which will be used when parsing a GeneralisedPrior object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a GeneralisedPrior object
+  static const char* const registered_name;
 
-    //! Default constructor
-    LogcoshPrior();
+  //! Default constructor
+  LogcoshPrior();
 
-    //! Constructs it explicitly
-    LogcoshPrior(const bool only_2D, float penalization_factor);
+  //! Constructs it explicitly
+  LogcoshPrior(const bool only_2D, float penalization_factor);
 
-    //! Constructs it explicitly with scalar
-    LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
+  //! Constructs it explicitly with scalar
+  LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
-    virtual bool
-    parabolic_surrogate_curvature_depends_on_argument() const
-    { return false; }
+  virtual bool parabolic_surrogate_curvature_depends_on_argument() const { return false; }
 
-    //! compute the value of the function
-    double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+  //! compute the value of the function
+  double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate);
 
-    //! compute gradient
-    void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                          const DiscretisedDensity<3,elemT> &current_image_estimate);
+  //! compute gradient
+  void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient, const DiscretisedDensity<3, elemT>& current_image_estimate);
 
-    //! compute the parabolic surrogate for the prior
-    void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
-                                       const DiscretisedDensity<3,elemT> &current_image_estimate);
+  //! compute the parabolic surrogate for the prior
+  void parabolic_surrogate_curvature(DiscretisedDensity<3, elemT>& parabolic_surrogate_curvature,
+                                     const DiscretisedDensity<3, elemT>& current_image_estimate);
 
-    //! compute Hessian
-    void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
-                         const BasicCoordinate<3,int>& coords,
-                         const DiscretisedDensity<3,elemT> &current_image_estimate);
+  //! compute Hessian
+  void compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel, const BasicCoordinate<3, int>& coords,
+                       const DiscretisedDensity<3, elemT>& current_image_estimate);
 
-    //! Compute the multiplication of the hessian of the prior multiplied by the input.
-    virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
-                                                     const DiscretisedDensity<3,elemT>& current_estimate,
-                                                     const DiscretisedDensity<3,elemT>& input) const;
+  //! Compute the multiplication of the hessian of the prior multiplied by the input.
+  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
+                                                   const DiscretisedDensity<3, elemT>& current_estimate,
+                                                   const DiscretisedDensity<3, elemT>& input) const;
 
-    //! get penalty weights for the neigbourhood
-    Array<3,float> get_weights() const;
+  //! get penalty weights for the neigbourhood
+  Array<3, float> get_weights() const;
 
-    //! set penalty weights for the neigbourhood
-    void set_weights(const Array<3,float>&);
+  //! set penalty weights for the neigbourhood
+  void set_weights(const Array<3, float>&);
 
-    //! get current kappa image
-    /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-     modify the image by manipulating the image referred to by this pointer.
-     Unpredictable results will occur.
-     */
-    shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+  //! get current kappa image
+  /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
+   modify the image by manipulating the image referred to by this pointer.
+   Unpredictable results will occur.
+   */
+  shared_ptr<DiscretisedDensity<3, elemT>> get_kappa_sptr() const;
 
-    //! set kappa image
-    void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  //! set kappa image
+  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3, elemT>>&);
 
-    //! Get the scalar value
-    float get_scalar() const;
+  //! Get the scalar value
+  float get_scalar() const;
 
-    //! Set the scalar value
-    void set_scalar(float scalar_v);
+  //! Set the scalar value
+  void set_scalar(float scalar_v);
 
 protected:
-    //! can be set during parsing to restrict the weights to the 2D case
-    bool only_2D;
+  //! can be set during parsing to restrict the weights to the 2D case
+  bool only_2D;
 
-    //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
-    float scalar;
+  //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
+  float scalar;
 
-    //! filename prefix for outputting the gradient whenever compute_gradient() is called.
-    /*! An internal counter is used to keep track of the number of times the
-     gradient is computed. The filename will be constructed by concatenating
-     gradient_filename_prefix and the counter.
-     */
-    std::string gradient_filename_prefix;
+  //! filename prefix for outputting the gradient whenever compute_gradient() is called.
+  /*! An internal counter is used to keep track of the number of times the
+   gradient is computed. The filename will be constructed by concatenating
+   gradient_filename_prefix and the counter.
+   */
+  std::string gradient_filename_prefix;
 
-    //! penalty weights
-    /*!
-     \todo This member is mutable at present because some const functions initialise it.
-     That initialisation should be moved to a new set_up() function.
-     */
-    mutable Array<3,float> weights;
+  //! penalty weights
+  /*!
+   \todo This member is mutable at present because some const functions initialise it.
+   That initialisation should be moved to a new set_up() function.
+   */
+  mutable Array<3, float> weights;
 
-    //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
-    std::string kappa_filename;
+  //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
+  std::string kappa_filename;
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
 private:
-    //! Spatially variant penalty penalty image ptr
-    shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+  //! Spatially variant penalty penalty image ptr
+  shared_ptr<DiscretisedDensity<3, elemT>> kappa_ptr;
 
-    //! The Log(cosh()) function and its approximation
-    /*!
-     Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
-     Make the approximation:
-     log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
-    */
-    static inline float logcosh(const float d)
-    {
-      const float x = fabs(d);
-      if ( x < 30.f ){
-        return log(cosh(x));
-      } else {
-        return x + log(0.5f);
-      }
+  //! The Log(cosh()) function and its approximation
+  /*!
+   Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
+   Make the approximation:
+   log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
+  */
+  static inline float logcosh(const float d) {
+    const float x = fabs(d);
+    if (x < 30.f) {
+      return log(cosh(x));
+    } else {
+      return x + log(0.5f);
     }
+  }
 
-    //! The surrogate of the logcosh function is tanh(x)/x
-    /*!
-     * @param d should be the difference between the ith and jth voxel.
-     However, it will use the taylor expansion if the x is too small (to prevent division by 0).
-     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
-     * @return the surrogate of the log-cosh function
-    */
-    static inline float surrogate(const float d, const float scalar)
-    {
-      const float eps = 0.01;
-      const float x = d * scalar;
-      // If abs(x) is less than eps,
-      // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
-      // Prevents divide by zeros
-      if (fabs(x)<eps)
-      { return 1- square(x)/3; }
-      else
-      { return tanh(x)/x; }
+  //! The surrogate of the logcosh function is tanh(x)/x
+  /*!
+   * @param d should be the difference between the ith and jth voxel.
+   However, it will use the taylor expansion if the x is too small (to prevent division by 0).
+   * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
+   * @return the surrogate of the log-cosh function
+  */
+  static inline float surrogate(const float d, const float scalar) {
+    const float eps = 0.01;
+    const float x = d * scalar;
+    // If abs(x) is less than eps,
+    // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
+    // Prevents divide by zeros
+    if (fabs(x) < eps) {
+      return 1 - square(x) / 3;
+    } else {
+      return tanh(x) / x;
     }
+  }
 
-    //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
-    /*!
-     This function returns the hessian of the logcosh function
-     * @param d the difference between the ith and jth voxel.
-     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
-     * @return the second derivative of the log-cosh function
-     */
-    static inline float Hessian(const float d, const float scalar)
-    {
-      const float x = d * scalar;
-      return square((1/ cosh(x)));
-    }
+  //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
+  /*!
+   This function returns the hessian of the logcosh function
+   * @param d the difference between the ith and jth voxel.
+   * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
+   * @return the second derivative of the log-cosh function
+   */
+  static inline float Hessian(const float d, const float scalar) {
+    const float x = d * scalar;
+    return square((1 / cosh(x)));
+  }
 };
-
 
 END_NAMESPACE_STIR
 

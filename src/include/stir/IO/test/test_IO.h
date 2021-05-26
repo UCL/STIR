@@ -11,7 +11,7 @@
   \author Richard Brown
 
 
-  
+
   To run the test, you should use a command line argument with the name of a file.
   This should contain a test par file.
   See stir::IOTests class documentation for file contents.
@@ -48,7 +48,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/read_from_file.h"
 #ifdef HAVE_LLN_MATRIX
-#include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
+#  include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
 #endif
 #include <fstream>
 
@@ -63,236 +63,235 @@ START_NAMESPACE_STIR
 
   \verbatim
   Test OutputFileFormat Parameters:=
-  output file format type := 
+  output file format type :=
   ; here are parameters specific for the file format
   End:=
   \endverbatim
 
   \warning Overwrites files STIRtmp.* in the current directory
-  \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones 
+  \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones
   are written.
 */
 
 template <class A>
-class IOTests : public RunTests
-{
+class IOTests : public RunTests {
 public:
-    IOTests(std::istream& in);
+  IOTests(std::istream& in);
 
-    void run_tests();
+  void run_tests();
+
 protected:
+  void set_up();
+  virtual void create_image() = 0;
+  virtual void write_image();
+  virtual void read_image();
+  virtual void check_result() = 0;
+  shared_ptr<VoxelsOnCartesianGrid<float>> create_single_image();
+  void compare_images(const VoxelsOnCartesianGrid<float>& im_1, const VoxelsOnCartesianGrid<float>& im_2);
+  void check_exam_info(const ExamInfo& exm_inf_1, const ExamInfo& exm_inf_2);
 
-    void         set_up();
-    virtual void create_image() = 0;
-    virtual void write_image();
-    virtual void read_image();
-    virtual void check_result() = 0;
-    shared_ptr<VoxelsOnCartesianGrid<float> > create_single_image();
-    void         compare_images(const VoxelsOnCartesianGrid<float> &im_1,
-                                const VoxelsOnCartesianGrid<float> &im_2);
-    void         check_exam_info(const ExamInfo &exm_inf_1,
-                                 const ExamInfo &exm_inf_2);
-
-    std::istream&                               _in;
-    shared_ptr<OutputFileFormat<A> >            _output_file_format_sptr;
-    KeyParser                                   _parser;
-    std::string                                 _filename;
-    shared_ptr<A>                               _image_to_write_sptr;
-    shared_ptr<A>                               _image_to_read_sptr;
+  std::istream& _in;
+  shared_ptr<OutputFileFormat<A>> _output_file_format_sptr;
+  KeyParser _parser;
+  std::string _filename;
+  shared_ptr<A> _image_to_write_sptr;
+  shared_ptr<A> _image_to_read_sptr;
 };
 
 template <class A>
-IOTests<A>::
-IOTests(std::istream& in) :
-    _in(in)
-{ }
+IOTests<A>::IOTests(std::istream& in) : _in(in) {}
 
 template <class A>
-void IOTests<A>::set_up()
-{
-    _filename = "STIRtmp";
+void
+IOTests<A>::set_up() {
+  _filename = "STIRtmp";
 
-    _output_file_format_sptr.reset();
-    _parser.add_start_key("Test OutputFileFormat Parameters");
-    _parser.add_parsing_key("output file format type", &_output_file_format_sptr);
-    _parser.add_stop_key("END");
+  _output_file_format_sptr.reset();
+  _parser.add_start_key("Test OutputFileFormat Parameters");
+  _parser.add_parsing_key("output file format type", &_output_file_format_sptr);
+  _parser.add_stop_key("END");
 
-    std::cerr << "Testing OutputFileFormat parsing function..." << std::endl;
-    std::cerr << "WARNING: will overwite files called STIRtmp*\n";
+  std::cerr << "Testing OutputFileFormat parsing function..." << std::endl;
+  std::cerr << "WARNING: will overwite files called STIRtmp*\n";
 
-    if (!check(_parser.parse(_in), "parsing failed"))
-        return;
+  if (!check(_parser.parse(_in), "parsing failed"))
+    return;
 
-    if (!check(!is_null_ptr(_output_file_format_sptr),
-               "parsing failed to set _output_file_format_sptr"))
-        return;
+  if (!check(!is_null_ptr(_output_file_format_sptr), "parsing failed to set _output_file_format_sptr"))
+    return;
 }
 
 template <class A>
-shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
-{
-    // construct density image
+shared_ptr<VoxelsOnCartesianGrid<float>>
+IOTests<A>::create_single_image() {
+  // construct density image
 #ifdef HAVE_LLN_MATRIX
-    USING_NAMESPACE_ECAT
-    USING_NAMESPACE_ECAT6
-    // TODO get next info from OutputFileFormat class instead of hard-wiring
-    // this in here
-    const bool supports_different_xy_pixel_sizes =
-        dynamic_cast<ECAT6OutputFileFormat const * const>(_output_file_format_sptr.get()) == 0
-            ? true : false;
-    const bool supports_origin_z_shift =
-        dynamic_cast<ECAT6OutputFileFormat const * const>(_output_file_format_sptr.get()) == 0
-            ? true : false;
-    const bool supports_origin_xy_shift = true;
+  USING_NAMESPACE_ECAT
+  USING_NAMESPACE_ECAT6
+  // TODO get next info from OutputFileFormat class instead of hard-wiring
+  // this in here
+  const bool supports_different_xy_pixel_sizes =
+      dynamic_cast<ECAT6OutputFileFormat const* const>(_output_file_format_sptr.get()) == 0 ? true : false;
+  const bool supports_origin_z_shift =
+      dynamic_cast<ECAT6OutputFileFormat const* const>(_output_file_format_sptr.get()) == 0 ? true : false;
+  const bool supports_origin_xy_shift = true;
 #else
-    const bool supports_different_xy_pixel_sizes = true;
-    const bool supports_origin_z_shift = true;
-    const bool supports_origin_xy_shift = true;
+  const bool supports_different_xy_pixel_sizes = true;
+  const bool supports_origin_z_shift = true;
+  const bool supports_origin_xy_shift = true;
 #endif
 
-    CartesianCoordinate3D<float> origin (0.F,0.F,0.F);
-    if (supports_origin_xy_shift)
-        {  origin.x()=2.4F; origin.y() = -3.5F; }
-    if (supports_origin_z_shift)
-        {  origin.z()=6.4F; }
+  CartesianCoordinate3D<float> origin(0.F, 0.F, 0.F);
+  if (supports_origin_xy_shift) {
+    origin.x() = 2.4F;
+    origin.y() = -3.5F;
+  }
+  if (supports_origin_z_shift) {
+    origin.z() = 6.4F;
+  }
 
-    CartesianCoordinate3D<float> grid_spacing (3.F,4.F,supports_different_xy_pixel_sizes?5.F:4.F);
+  CartesianCoordinate3D<float> grid_spacing(3.F, 4.F, supports_different_xy_pixel_sizes ? 5.F : 4.F);
 
-    IndexRange<3>
-        range(CartesianCoordinate3D<int>(0,-15,-14),
-        CartesianCoordinate3D<int>(4,14,14));
+  IndexRange<3> range(CartesianCoordinate3D<int>(0, -15, -14), CartesianCoordinate3D<int>(4, 14, 14));
 
-    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-    exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
-    exam_info_sptr->time_frame_definitions.set_time_frame(1,10,100);
-    exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
-    exam_info_sptr->set_high_energy_thres(100.);
-    exam_info_sptr->set_low_energy_thres(5.);
-    
-    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr
-      (new VoxelsOnCartesianGrid<float> (exam_info_sptr, range,origin, grid_spacing));
-    // make reference for convenience
-    VoxelsOnCartesianGrid<float> & single_image = *single_image_sptr;
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
+  exam_info_sptr->time_frame_definitions.set_time_frame(1, 10, 100);
+  exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
+  exam_info_sptr->set_high_energy_thres(100.);
+  exam_info_sptr->set_low_energy_thres(5.);
 
-    // fill with some data
-    for (int z=single_image.get_min_z(); z<=single_image.get_max_z(); ++z)
-        for (int y=single_image.get_min_y(); y<=single_image.get_max_y(); ++y)
-            for (int x=single_image.get_min_x(); x<=single_image.get_max_x(); ++x)
-                single_image[z][y][x]=
-                    3*sin(static_cast<float>(x*_PI)/single_image.get_max_x())
-                    *sin(static_cast<float>(y+10*_PI)/single_image.get_max_y())
-                    *cos(static_cast<float>(z*_PI/3)/single_image.get_max_z());
-    
-    return single_image_sptr;
+  shared_ptr<VoxelsOnCartesianGrid<float>> single_image_sptr(
+      new VoxelsOnCartesianGrid<float>(exam_info_sptr, range, origin, grid_spacing));
+  // make reference for convenience
+  VoxelsOnCartesianGrid<float>& single_image = *single_image_sptr;
+
+  // fill with some data
+  for (int z = single_image.get_min_z(); z <= single_image.get_max_z(); ++z)
+    for (int y = single_image.get_min_y(); y <= single_image.get_max_y(); ++y)
+      for (int x = single_image.get_min_x(); x <= single_image.get_max_x(); ++x)
+        single_image[z][y][x] = 3 * sin(static_cast<float>(x * _PI) / single_image.get_max_x()) *
+                                sin(static_cast<float>(y + 10 * _PI) / single_image.get_max_y()) *
+                                cos(static_cast<float>(z * _PI / 3) / single_image.get_max_z());
+
+  return single_image_sptr;
 }
 
 template <class A>
-void IOTests<A>::write_image()
-{
-    // write to file
-    const Succeeded success = _output_file_format_sptr->write_to_file(_filename,*_image_to_write_sptr);
+void
+IOTests<A>::write_image() {
+  // write to file
+  const Succeeded success = _output_file_format_sptr->write_to_file(_filename, *_image_to_write_sptr);
 
-    check(success == Succeeded::yes, "failed writing");
+  check(success == Succeeded::yes, "failed writing");
 }
 
 template <class A>
-void IOTests<A>::read_image()
-{
-    // now read it back
-    _image_to_read_sptr = read_from_file<A>(_filename);
+void
+IOTests<A>::read_image() {
+  // now read it back
+  _image_to_read_sptr = read_from_file<A>(_filename);
 
-    check(!is_null_ptr(_image_to_read_sptr), "failed reading");
+  check(!is_null_ptr(_image_to_read_sptr), "failed reading");
 }
 
 template <class A>
-void IOTests<A>::compare_images(const VoxelsOnCartesianGrid<float> &im_1,
-                                const VoxelsOnCartesianGrid<float> &im_2)
-{
-    set_tolerance(.000001);
+void
+IOTests<A>::compare_images(const VoxelsOnCartesianGrid<float>& im_1, const VoxelsOnCartesianGrid<float>& im_2) {
+  set_tolerance(.000001);
 
-    if (_output_file_format_sptr->get_type_of_numbers().integer_type()) {
-        set_tolerance(10.*im_1.find_max()/
-                  pow(2.,static_cast<double>(_output_file_format_sptr->get_type_of_numbers().size_in_bits())));
-    }
+  if (_output_file_format_sptr->get_type_of_numbers().integer_type()) {
+    set_tolerance(10. * im_1.find_max() /
+                  pow(2., static_cast<double>(_output_file_format_sptr->get_type_of_numbers().size_in_bits())));
+  }
 
-    check_if_equal(im_1.get_voxel_size(), im_2.get_voxel_size(), "test on read and written file via image voxel size");
-    check_if_equal(im_1.get_length(), im_2.get_length(), "test on read and written file via image length");
-    check_if_equal(im_1.get_lengths(), im_2.get_lengths(), "test on read and written file via image lengths");
-    check_if_equal(im_1.get_max_index(), im_2.get_max_index(), "test on read and written file via image max index");
-    check_if_equal(im_1.get_max_indices(), im_2.get_max_indices(), "test on read and written file via image max indices");
-    check_if_equal(im_1.get_max_x(), im_2.get_max_x(), "test on read and written file via image max x");
-    check_if_equal(im_1.get_max_y(), im_2.get_max_y(), "test on read and written file via image max y");
-    check_if_equal(im_1.get_max_z(), im_2.get_max_z(), "test on read and written file via image max z");
-    check_if_equal(im_1.get_min_index(), im_2.get_min_index(), "test on read and written file via image min index");
-    check_if_equal(im_1.get_min_indices(), im_2.get_min_indices(), "test on read and written file via image min indices");
-    check_if_equal(im_1.get_min_x(), im_2.get_min_x(), "test on read and written file via image min x");
-    check_if_equal(im_1.get_min_y(), im_2.get_min_y(), "test on read and written file via image min y");
-    check_if_equal(im_1.get_min_z(), im_2.get_min_z(), "test on read and written file via image min z");
-    check_if_equal(im_1.get_x_size(), im_2.get_x_size(), "test on read and written file via image x size");
-    check_if_equal(im_1.get_y_size(), im_2.get_y_size(), "test on read and written file via image y size");
-    check_if_equal(im_1.get_z_size(), im_2.get_z_size(), "test on read and written file via image z size");
-    check_if_equal(im_1.find_max(), im_2.find_max(), "test on read and written file via image max");
-    check_if_equal(im_1.find_min(), im_2.find_min(), "test on read and written file via image min");
-    
-    check_if_equal(im_1, im_2, "test on read and written file");
+  check_if_equal(im_1.get_voxel_size(), im_2.get_voxel_size(), "test on read and written file via image voxel size");
+  check_if_equal(im_1.get_length(), im_2.get_length(), "test on read and written file via image length");
+  check_if_equal(im_1.get_lengths(), im_2.get_lengths(), "test on read and written file via image lengths");
+  check_if_equal(im_1.get_max_index(), im_2.get_max_index(), "test on read and written file via image max index");
+  check_if_equal(im_1.get_max_indices(), im_2.get_max_indices(), "test on read and written file via image max indices");
+  check_if_equal(im_1.get_max_x(), im_2.get_max_x(), "test on read and written file via image max x");
+  check_if_equal(im_1.get_max_y(), im_2.get_max_y(), "test on read and written file via image max y");
+  check_if_equal(im_1.get_max_z(), im_2.get_max_z(), "test on read and written file via image max z");
+  check_if_equal(im_1.get_min_index(), im_2.get_min_index(), "test on read and written file via image min index");
+  check_if_equal(im_1.get_min_indices(), im_2.get_min_indices(), "test on read and written file via image min indices");
+  check_if_equal(im_1.get_min_x(), im_2.get_min_x(), "test on read and written file via image min x");
+  check_if_equal(im_1.get_min_y(), im_2.get_min_y(), "test on read and written file via image min y");
+  check_if_equal(im_1.get_min_z(), im_2.get_min_z(), "test on read and written file via image min z");
+  check_if_equal(im_1.get_x_size(), im_2.get_x_size(), "test on read and written file via image x size");
+  check_if_equal(im_1.get_y_size(), im_2.get_y_size(), "test on read and written file via image y size");
+  check_if_equal(im_1.get_z_size(), im_2.get_z_size(), "test on read and written file via image z size");
+  check_if_equal(im_1.find_max(), im_2.find_max(), "test on read and written file via image max");
+  check_if_equal(im_1.find_min(), im_2.find_min(), "test on read and written file via image min");
 
-    set_tolerance(.00001);
+  check_if_equal(im_1, im_2, "test on read and written file");
 
-    check_if_equal(im_1.get_origin(), im_2.get_origin(), "test on read and written file via image origin");
+  set_tolerance(.00001);
+
+  check_if_equal(im_1.get_origin(), im_2.get_origin(), "test on read and written file via image origin");
 }
 
 template <class A>
-void IOTests<A>::check_exam_info(const ExamInfo &exm_inf_1, const ExamInfo &exm_inf_2)
-{
-    // Start time isn't currently written or read, so can't check it...
-    //check_if_equal(exm_inf_1.get_high_energy_thres(), exm_inf_2.get_high_energy_thres(), "test on read and written file via ExamInfo::get_high_energy_thresh");
-    //check_if_equal(exm_inf_1.get_low_energy_thres(), exm_inf_2.get_low_energy_thres(), "test on read and written file via ExamInfo::get_low_energy_thres");
-    //check_if_equal(exm_inf_1.start_time_in_secs_since_1970, exm_inf_2.start_time_in_secs_since_1970, "test on read and written file via ExamInfo::start_time_in_secs_since_1970");
-    
-    // Check time frames
-    const TimeFrameDefinitions &im_1_time_frames = exm_inf_1.get_time_frame_definitions();
-    const TimeFrameDefinitions &im_2_time_frames = exm_inf_2.get_time_frame_definitions();
-    if(!check_if_equal(im_1_time_frames.get_num_time_frames(), im_2_time_frames.get_num_time_frames(), "test on read and written file via TimeFrameDefinitions::get_num_time_frames"))
-        return;
+void
+IOTests<A>::check_exam_info(const ExamInfo& exm_inf_1, const ExamInfo& exm_inf_2) {
+  // Start time isn't currently written or read, so can't check it...
+  // check_if_equal(exm_inf_1.get_high_energy_thres(), exm_inf_2.get_high_energy_thres(), "test on read and written file via
+  // ExamInfo::get_high_energy_thresh"); check_if_equal(exm_inf_1.get_low_energy_thres(), exm_inf_2.get_low_energy_thres(), "test
+  // on read and written file via ExamInfo::get_low_energy_thres"); check_if_equal(exm_inf_1.start_time_in_secs_since_1970,
+  // exm_inf_2.start_time_in_secs_since_1970, "test on read and written file via ExamInfo::start_time_in_secs_since_1970");
 
-    // Loop over each one and compare them
-    for (unsigned i=1; i<=im_1_time_frames.get_num_frames(); i++) {
-        check_if_equal(im_1_time_frames.get_end_time(i),   im_2_time_frames.get_end_time(i),        "test on read and written file via TimeFrameDefinitions::get_end_time");
-        check_if_equal(im_1_time_frames.get_start_time(i), im_2_time_frames.get_start_time(i),      "test on read and written file via TimeFrameDefinitions::get_start_time");
-    }
+  // Check time frames
+  const TimeFrameDefinitions& im_1_time_frames = exm_inf_1.get_time_frame_definitions();
+  const TimeFrameDefinitions& im_2_time_frames = exm_inf_2.get_time_frame_definitions();
+  if (!check_if_equal(im_1_time_frames.get_num_time_frames(), im_2_time_frames.get_num_time_frames(),
+                      "test on read and written file via TimeFrameDefinitions::get_num_time_frames"))
+    return;
+
+  // Loop over each one and compare them
+  for (unsigned i = 1; i <= im_1_time_frames.get_num_frames(); i++) {
+    check_if_equal(im_1_time_frames.get_end_time(i), im_2_time_frames.get_end_time(i),
+                   "test on read and written file via TimeFrameDefinitions::get_end_time");
+    check_if_equal(im_1_time_frames.get_start_time(i), im_2_time_frames.get_start_time(i),
+                   "test on read and written file via TimeFrameDefinitions::get_start_time");
+  }
 }
 
 template <class A>
-void IOTests<A>::run_tests()
-{
-    try {
-        this->set_up();
-        if (!everything_ok) return;
+void
+IOTests<A>::run_tests() {
+  try {
+    this->set_up();
+    if (!everything_ok)
+      return;
 
-        this->create_single_image();
-        if (!everything_ok) return;
+    this->create_single_image();
+    if (!everything_ok)
+      return;
 
-        this->create_image();
-        if (!everything_ok) return;
+    this->create_image();
+    if (!everything_ok)
+      return;
 
-        std::cerr << "\nAbout to write the image to disk...\n";
-        this->write_image();
-        if (!everything_ok) return;
-        std::cerr << "OK!\n";
+    std::cerr << "\nAbout to write the image to disk...\n";
+    this->write_image();
+    if (!everything_ok)
+      return;
+    std::cerr << "OK!\n";
 
-        std::cerr << "\nAbout to read the image back from disk...\n";
-        this->read_image();
-        if (!everything_ok) return;
-        std::cerr << "OK!\n";
+    std::cerr << "\nAbout to read the image back from disk...\n";
+    this->read_image();
+    if (!everything_ok)
+      return;
+    std::cerr << "OK!\n";
 
-        std::cerr << "\nAbout to check the consistency between the two images...\n";
-        this->check_result();
-        if (!everything_ok) return;
-        std::cerr << "OK!\n";
-    }
-    catch(...) {
-        everything_ok = false;
-    }
+    std::cerr << "\nAbout to check the consistency between the two images...\n";
+    this->check_result();
+    if (!everything_ok)
+      return;
+    std::cerr << "OK!\n";
+  } catch (...) {
+    everything_ok = false;
+  }
 }
 
 END_NAMESPACE_STIR

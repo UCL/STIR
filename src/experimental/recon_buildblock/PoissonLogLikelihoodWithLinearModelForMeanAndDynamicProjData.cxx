@@ -36,137 +36,129 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 // include the following to set defaults
 #ifndef USE_PMRT
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#  include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#  include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #else
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#  include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#  include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#  include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #include "stir/Succeeded.h"
 //#include "stir/IO/OutputFileFormat.h"
 //#include <algorithm>
-#include <string> 
+#include <string>
 
 #include "stir_experimental/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.h"
 
 START_NAMESPACE_STIR
 
-template<typename TargetT>
-const char * const 
-PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::
-registered_name = 
-"PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData";
+template <typename TargetT>
+const char* const PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::registered_name =
+    "PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData";
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::
-set_defaults()
-{
+PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::set_defaults() {
   base_type::set_defaults();
 
-  this->_input_filename="";
-  this->_max_segment_num_to_process=0;
-  //num_views_to_add=1;    // KT 20/06/2001 disabled
-  this->_dyn_proj_data_sptr=NULL; 
+  this->_input_filename = "";
+  this->_max_segment_num_to_process = 0;
+  // num_views_to_add=1;    // KT 20/06/2001 disabled
+  this->_dyn_proj_data_sptr = NULL;
   this->_zero_seg0_end_planes = 0;
   this->_additive_dyn_proj_data_filename = "0";
-  this->_additive_dyn_proj_data_sptr=NULL;
+  this->_additive_dyn_proj_data_sptr = NULL;
 
 #ifndef USE_PMRT // set default for _projector_pair_ptr
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing();
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation();
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr = new ForwardProjectorByBinUsingRayTracing();
+  shared_ptr<BackProjectorByBin> back_projector_ptr = new BackProjectorByBinUsingInterpolation();
 #else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
+  shared_ptr<ProjMatrixByBin> PM = new ProjMatrixByBinUsingRayTracing();
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr = new ForwardProjectorByBinUsingProjMatrixByBin(PM);
+  shared_ptr<BackProjectorByBin> back_projector_ptr = new BackProjectorByBinUsingProjMatrixByBin(PM);
 #endif
 
-  this->_projector_pair_ptr = 
-    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr);
+  this->_projector_pair_ptr = new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr);
   this->_normalisation_sptr = new TrivialBinNormalisation;
 
   // image stuff
-  this->_output_image_size_xy=-1;
-  this->_output_image_size_z=-1;
-  this->_zoom=1.F;
-  this->_Xoffset=0.F;
-  this->_Yoffset=0.F;
-  this->_Zoffset=0.F;   // KT 20/06/2001 new
+  this->_output_image_size_xy = -1;
+  this->_output_image_size_z = -1;
+  this->_zoom = 1.F;
+  this->_Xoffset = 0.F;
+  this->_Yoffset = 0.F;
+  this->_Zoffset = 0.F; // KT 20/06/2001 new
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::
-initialise_keymap()
-{
+PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::initialise_keymap() {
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData Parameters");
-  this->parser.add_key("input file",&this->_input_filename);
+  this->parser.add_key("input file", &this->_input_filename);
 
-// parser.add_key("mash x views", &num_views_to_add);   // KT 20/06/2001 disabled
+  // parser.add_key("mash x views", &num_views_to_add);   // KT 20/06/2001 disabled
   this->parser.add_key("maximum absolute segment number to process", &this->_max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->_zero_seg0_end_planes);
 
-// image stuff
+  // image stuff
   this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
+  this->parser.add_key("XY output image size (in pixels)", &this->_output_image_size_xy);
+  this->parser.add_key("Z output image size (in pixels)", &this->_output_image_size_z);
 
-// parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-// parser.add_key("Y offset (in mm)", &this->Yoffset);
+  // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
+  // parser.add_key("Y offset (in mm)", &this->Yoffset);
   this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
   this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
 
-// Scatter correction
-  this->parser.add_key("additive sinograms",&this->_additive_dyn_proj_data_filename);
+  // Scatter correction
+  this->parser.add_key("additive sinograms", &this->_additive_dyn_proj_data_filename);
 
-// normalisation (and attenuation correction)
+  // normalisation (and attenuation correction)
   this->parser.add_parsing_key("Bin Normalisation type", &this->_normalisation_sptr);
 }
 
-template<typename TargetT>
+template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::
-post_processing()
-{
+PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::post_processing() {
   if (base_type::post_processing() == true)
     return true;
-  if (this->_input_filename.length() == 0)
-  { warning("You need to specify an input file"); return true; }
-  
+  if (this->_input_filename.length() == 0) {
+    warning("You need to specify an input file");
+    return true;
+  }
+
 #if 0 // KT 20/06/2001 disabled as not functional yet
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
-#endif 
-  this->_dyn_proj_data_sptr=DynamicProjData::read_from_file(_input_filename);
+#endif
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
 
- // image stuff
-  if (this->_zoom <= 0)
-    { warning("zoom should be positive"); return true; }
-  
-  if (this->_output_image_size_xy!=-1 && this->_output_image_size_xy<1) // KT 10122001 appended_xy
-  { warning("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->_output_image_size_z!=-1 && this->_output_image_size_z<1) // KT 10122001 new
-  { warning("output image size z must be positive (or -1 as default)"); return true; }
-
-   if (this->_additive_dyn_proj_data_filename != "0")
-  {
-    cerr << "\nReading additive projdata data "
-	 << this->_additive_dyn_proj_data_filename 
-	 << endl;
-    this->_additive_dyn_proj_data_sptr = 
-      DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
+  // image stuff
+  if (this->_zoom <= 0) {
+    warning("zoom should be positive");
+    return true;
   }
-return false;
+
+  if (this->_output_image_size_xy != -1 && this->_output_image_size_xy < 1) // KT 10122001 appended_xy
+  {
+    warning("output image size xy must be positive (or -1 as default)");
+    return true;
+  }
+  if (this->_output_image_size_z != -1 && this->_output_image_size_z < 1) // KT 10122001 new
+  {
+    warning("output image size z must be positive (or -1 as default)");
+    return true;
+  }
+
+  if (this->_additive_dyn_proj_data_filename != "0") {
+    cerr << "\nReading additive projdata data " << this->_additive_dyn_proj_data_filename << endl;
+    this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
+  }
+  return false;
 }
 #if 0 // ChT::ToDo
 template <typename TargetT>
@@ -180,8 +172,8 @@ template <typename TargetT>
 TargetT *
 PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>::
 construct_target_ptr() const
-{ 
-#if 0 
+{
+#  if 0 
   const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr = 
     (*(this->_dyn_proj_data_sptr->get_proj_data_info_sptr()),
      static_cast<float>(this->_zoom),
@@ -196,9 +188,9 @@ construct_target_ptr() const
   
   return
     new DynamicDiscretisedDensity(this->_frame_defs(),scanner_sptr,density_template_sptr);
-#else
+#  else
   return 0;
-#endif 
+#  endif 
 }
 /***************************************************************
   subset balancing
@@ -393,11 +385,11 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 }
 #endif // ChT::ToDo
 
-#  ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class 
-#  pragma warning(disable:4661)
-#  endif
+#ifdef _MSC_VER
+// prevent warning message on instantiation of abstract class
+#  pragma warning(disable : 4661)
+#endif
 
-template class PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<DynamicDiscretisedDensity >;
+template class PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<DynamicDiscretisedDensity>;
 
 END_NAMESPACE_STIR

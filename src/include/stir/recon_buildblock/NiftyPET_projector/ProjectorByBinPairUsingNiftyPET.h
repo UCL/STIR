@@ -39,22 +39,16 @@ class Succeeded;
   \ingroup projection
   \brief A projector pair based on NiftyPET projectors
 */
-class ProjectorByBinPairUsingNiftyPET :
-  public RegisteredParsingObject<ProjectorByBinPairUsingNiftyPET,
-                                 ProjectorByBinPair,
-                                 ProjectorByBinPair> 
-{ 
- private:
-  typedef
-    RegisteredParsingObject<ProjectorByBinPairUsingNiftyPET,
-                            ProjectorByBinPair,
-                            ProjectorByBinPair> 
-    base_type;
+class ProjectorByBinPairUsingNiftyPET
+    : public RegisteredParsingObject<ProjectorByBinPairUsingNiftyPET, ProjectorByBinPair, ProjectorByBinPair> {
+private:
+  typedef RegisteredParsingObject<ProjectorByBinPairUsingNiftyPET, ProjectorByBinPair, ProjectorByBinPair> base_type;
+
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
-  //! Default constructor 
+  //! Default constructor
   ProjectorByBinPairUsingNiftyPET();
 
   /// Set verbosity
@@ -65,7 +59,6 @@ public:
   void set_use_truncation(const bool use_truncation);
 
 private:
-
   void set_defaults();
   void initialise_keymap();
   bool post_processing();
@@ -74,6 +67,5 @@ private:
 };
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_recon_buildblock_ProjectorByBinPairUsingNiftyPET_h_

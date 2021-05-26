@@ -1,9 +1,9 @@
 //
 //
 /*!
-  \file 
+  \file
   \ingroup utilities
- 
+
   \brief This program rescales planes of an image according to a file with
   scale factors
 
@@ -34,52 +34,41 @@ using std::vector;
 
 USING_NAMESPACE_STIR
 
-
-int main(int argc, char **argv)
-{
-  if(argc!=4) {
-    cerr<<"Usage: " << argv[0] << " <output filename> <input image filename> <rescale factors filename>\n";
+int
+main(int argc, char** argv) {
+  if (argc != 4) {
+    cerr << "Usage: " << argv[0] << " <output filename> <input image filename> <rescale factors filename>\n";
     exit(EXIT_FAILURE);
   }
-  
+
   // get parameters from command line
 
-  char const * const output_filename = argv[1];
-  char const * const input_filename = argv[2];
-  char const * const rescale_factors_filename = argv[3];
-  
-  // read image 
+  char const* const output_filename = argv[1];
+  char const* const input_filename = argv[2];
+  char const* const rescale_factors_filename = argv[3];
 
-  shared_ptr<DiscretisedDensity<3,float> >  density_ptr
-    (read_from_file<DiscretisedDensity<3,float> >(input_filename));
+  // read image
+
+  shared_ptr<DiscretisedDensity<3, float>> density_ptr(read_from_file<DiscretisedDensity<3, float>>(input_filename));
 
   // read factors
   vector<double> rescale_factors;
   {
     ifstream factors(rescale_factors_filename);
     factors >> rescale_factors;
-    if (rescale_factors.size() != static_cast<unsigned>(density_ptr->get_length()))
-    {
-      warning("%s: wrong number of scale factors (%d) found in file %s, should be %d\n",
-            argv[0], rescale_factors.size(), 
-            rescale_factors_filename, density_ptr->get_length());
-      return(EXIT_FAILURE);
+    if (rescale_factors.size() != static_cast<unsigned>(density_ptr->get_length())) {
+      warning("%s: wrong number of scale factors (%d) found in file %s, should be %d\n", argv[0], rescale_factors.size(),
+              rescale_factors_filename, density_ptr->get_length());
+      return (EXIT_FAILURE);
     }
   }
 
   {
-    multiply_plane_scale_factorsImageProcessor<float> 
-      image_processor(rescale_factors);
+    multiply_plane_scale_factorsImageProcessor<float> image_processor(rescale_factors);
     image_processor.apply(*density_ptr);
   }
-      
 
   Succeeded res = write_basic_interfile(output_filename, *density_ptr);
 
-  return res==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-
+  return res == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-
-
-

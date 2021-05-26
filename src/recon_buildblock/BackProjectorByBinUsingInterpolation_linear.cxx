@@ -6,10 +6,10 @@
   \ingroup projection
 
   \brief This file defines two private static functions from
-  stir::BackProjectorByBinUsingInterpolation, for the case of piecewise 
+  stir::BackProjectorByBinUsingInterpolation, for the case of piecewise
   linear interpolation.
 
-  \warning This #includes BackProjectorByBinUsingInterpolation_3DCho.cxx 
+  \warning This #includes BackProjectorByBinUsingInterpolation_3DCho.cxx
 
   This very ugly way of including a .cxx file is used to avoid replication of
   a lot of (difficult) code.

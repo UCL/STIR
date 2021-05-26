@@ -2,28 +2,28 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd 
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2016, 2018, 2019 University College London
-    This file is part of STIR. 
- 
-    This file is free software; you can redistribute it and/or modify 
-    it under the terms of the GNU Lesser General Public License as published by 
-    the Free Software Foundation; either version 2.1 of the License, or 
-    (at your option) any later version. 
- 
-    This file is distributed in the hope that it will be useful, 
-    but WITHOUT ANY WARRANTY; without even the implied warranty of 
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-    GNU Lesser General Public License for more details. 
- 
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_AnalyticReconstruction_H__
 #define __stir_recon_buildblock_AnalyticReconstruction_H__
 /*!
-  \file 
+  \file
   \ingroup recon_buildblock
- 
+
   \brief declares the stir::AnalyticReconstruction class
 
   \author Kris Thielemans
@@ -43,7 +43,6 @@
 
 START_NAMESPACE_STIR
 
-
 class Succeeded;
 
 /*!
@@ -56,28 +55,25 @@ class Succeeded;
   because of conversion problems with stir::shared_ptr. Maybe it will be
   possible to correct this once we use boost:shared_ptr.
   */
-class AnalyticReconstruction :
-        public       Reconstruction<DiscretisedDensity<3,float> >
-{
+class AnalyticReconstruction : public Reconstruction<DiscretisedDensity<3, float>> {
 public:
-  typedef DiscretisedDensity<3,float> TargetT;
-private:
-  typedef Reconstruction<TargetT > base_type;
-public:
+  typedef DiscretisedDensity<3, float> TargetT;
 
+private:
+  typedef Reconstruction<TargetT> base_type;
+
+public:
   //! construct an image from parameters set (e.g. during parsing)
-  virtual DiscretisedDensity<3,float>*  
-    construct_target_image_ptr() const;
+  virtual DiscretisedDensity<3, float>* construct_target_image_ptr() const;
 
   //! reconstruct and write to file
   /*!
     Calls construct_target_image_ptr() and then actual_reconstruct(target_image_sptr).
-    At the end of the reconstruction, the final image is saved to file as given in 
-    Reconstruction::output_filename_prefix. 
+    At the end of the reconstruction, the final image is saved to file as given in
+    Reconstruction::output_filename_prefix.
     \return Succeeded::yes if everything was alright.
    */
-  virtual Succeeded 
-    reconstruct(); 
+  virtual Succeeded reconstruct();
 
   //! executes the reconstruction storing result in \c target_image_sptr
   /*!
@@ -87,11 +83,10 @@ public:
    \par Developer\'s note
 
    Because of C++ rules, overloading one of the reconstruct() functions
-   in a derived class, hides the other. So, we need an implementation for 
+   in a derived class, hides the other. So, we need an implementation for
    this function. This is the reason to use the actual_reconstruct function.
-  */     
-  virtual Succeeded 
-    reconstruct(shared_ptr<TargetT> const& target_image_sptr);
+  */
+  virtual Succeeded reconstruct(shared_ptr<TargetT> const& target_image_sptr);
 
   virtual void set_input_data(const shared_ptr<ExamData>&);
   virtual const ProjData& get_input_data() const;
@@ -109,8 +104,7 @@ public:
   void set_offset(const CartesianCoordinate3D<float>&);
   //@}
 
- protected:
-
+protected:
   //! the input projection data file name
   std::string input_filename;
   //! the maximum absolute ring difference number to use in the reconstruction
@@ -125,28 +119,21 @@ public:
   int num_views_to_add;
 #endif
 
-
-
 protected:
   ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
 
   //! executes the reconstruction storing result in \c target_image_sptr
   /*!
     \return Succeeded::yes if everything was alright.
-  */     
-  virtual Succeeded 
-    actual_reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
- 
+  */
+  virtual Succeeded actual_reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
+
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();  
+  virtual bool post_processing();
   virtual void set_defaults();
   virtual void initialise_keymap();
-
-
 };
 
 END_NAMESPACE_STIR
 
-    
 #endif
-

@@ -30,40 +30,29 @@
 START_NAMESPACE_STIR
 
 DataSymmetriesForViewSegmentNumbers*
-TrivialDataSymmetriesForViewSegmentNumbers::
-clone() const
-{
+TrivialDataSymmetriesForViewSegmentNumbers::clone() const {
   return new TrivialDataSymmetriesForViewSegmentNumbers;
 }
 
-
 void
-TrivialDataSymmetriesForViewSegmentNumbers::
-get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& all, const ViewSegmentNumbers& v_s) const
-{
+TrivialDataSymmetriesForViewSegmentNumbers::get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& all,
+                                                                             const ViewSegmentNumbers& v_s) const {
   all.resize(1);
   all[0] = v_s;
 }
 
-
 int
-TrivialDataSymmetriesForViewSegmentNumbers::
-num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const
-{
+TrivialDataSymmetriesForViewSegmentNumbers::num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const {
   return 1;
 }
 
 bool
-TrivialDataSymmetriesForViewSegmentNumbers::
-find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const
-{
+TrivialDataSymmetriesForViewSegmentNumbers::find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const {
   return false;
 }
 
-bool 
-TrivialDataSymmetriesForViewSegmentNumbers::
-blindly_equals(const root_type * const) const
-{
+bool
+TrivialDataSymmetriesForViewSegmentNumbers::blindly_equals(const root_type* const) const {
   return true;
 }
 

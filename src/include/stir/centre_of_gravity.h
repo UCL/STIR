@@ -17,9 +17,9 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
+  \file
   \ingroup Array
- 
+
   \brief This file contains functions to compute the centre of gravity of
   arrays and images.
   \author Kris Thielemans
@@ -30,11 +30,16 @@
 START_NAMESPACE_STIR
 // predeclerations to avoid having to include the files and create unnecessary
 // dependencies
-template <int num_dimensions, class T> class BasicCoordinate;
-template <int num_dimensions, class T> class Array;
-template <class elemT> class VectorWithOffset;
-template <class coordT> class CartesianCoordinate3D;
-template <class elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, class T>
+class BasicCoordinate;
+template <int num_dimensions, class T>
+class Array;
+template <class elemT>
+class VectorWithOffset;
+template <class coordT>
+class CartesianCoordinate3D;
+template <class elemT>
+class VoxelsOnCartesianGrid;
 
 //! Compute centre of gravity of a vector but without dividing by its sum
 /*! \ingroup Array
@@ -44,8 +49,7 @@ template <class elemT> class VoxelsOnCartesianGrid;
    \f]
 */
 template <class T>
-T
-find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row);
+T find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row);
 
 //! Compute centre of gravity of an Array but without dividing by its sum
 /*! \ingroup Array
@@ -55,24 +59,22 @@ find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row);
    \f]
 */
 template <int num_dimensions, class T>
-BasicCoordinate<num_dimensions,T> 
-find_unweighted_centre_of_gravity(const Array<num_dimensions,T>& );
+BasicCoordinate<num_dimensions, T> find_unweighted_centre_of_gravity(const Array<num_dimensions, T>&);
 
 //! Compute centre of gravity of a 1D Array but without dividing by its sum
 /*! \ingroup Array
   Conceptually the same as the n-dimensional version, but returns a \c T, not a
   BasicCoordinate\<1,T\>.
-*/   
+*/
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class T>
 #else
-#define T float
+#  define T float
 #endif
-T 
-find_unweighted_centre_of_gravity(const Array<1,T>& );
+T find_unweighted_centre_of_gravity(const Array<1, T>&);
 
 #ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef T
+#  undef T
 #endif
 
 //! Compute centre of gravity of an Array
@@ -84,8 +86,7 @@ find_unweighted_centre_of_gravity(const Array<1,T>& );
     \todo better error handling
 */
 template <int num_dimensions, class T>
-BasicCoordinate<num_dimensions,T> 
-find_centre_of_gravity(const Array<num_dimensions,T>& );
+BasicCoordinate<num_dimensions, T> find_centre_of_gravity(const Array<num_dimensions, T>&);
 
 //! Computes centre of gravity for each plane
 /*! \ingroup Array
@@ -100,17 +101,14 @@ find_centre_of_gravity(const Array<num_dimensions,T>& );
   simply set to 0.
  */
 template <class T>
-void
-find_centre_of_gravity_in_mm_per_plane(  VectorWithOffset< CartesianCoordinate3D<float> >& allCoG,
-					 VectorWithOffset<T>& weights,
-					 const VoxelsOnCartesianGrid<T>& image);
+void find_centre_of_gravity_in_mm_per_plane(VectorWithOffset<CartesianCoordinate3D<float>>& allCoG, VectorWithOffset<T>& weights,
+                                            const VoxelsOnCartesianGrid<T>& image);
 
 //! Computes centre of gravity of an image
 /*! \ingroup Array
   The result is in mm in STIR physical coordinates, i.e. taking the origin into account.
 */
 template <class T>
-CartesianCoordinate3D<float>
-find_centre_of_gravity_in_mm(const VoxelsOnCartesianGrid<T>& image);
+CartesianCoordinate3D<float> find_centre_of_gravity_in_mm(const VoxelsOnCartesianGrid<T>& image);
 
 END_NAMESPACE_STIR

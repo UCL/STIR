@@ -29,19 +29,17 @@
 
 START_NAMESPACE_STIR
 
-CListEventCylindricalScannerWithDiscreteDetectors::
-CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
-{
-    this->uncompressed_proj_data_info_sptr = std::dynamic_pointer_cast< const ProjDataInfoCylindricalNoArcCorr >(proj_data_info_sptr->create_shared_clone());
+CListEventCylindricalScannerWithDiscreteDetectors::CListEventCylindricalScannerWithDiscreteDetectors(
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) {
+  this->uncompressed_proj_data_info_sptr =
+      std::dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr->create_shared_clone());
 
-    if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
-        error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abord.");
+  if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
+    error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abord.");
 }
 
 LORAs2Points<float>
-CListEventCylindricalScannerWithDiscreteDetectors::
-get_LOR() const
-{
+CListEventCylindricalScannerWithDiscreteDetectors::get_LOR() const {
   LORAs2Points<float> lor;
   // provide somewhat shorter names for the 2 coordinates
   CartesianCoordinate3D<float>& coord_1 = lor.p1();
@@ -49,19 +47,16 @@ get_LOR() const
 
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  assert(det_pos.pos1().radial_coord()==0);
-  assert(det_pos.pos2().radial_coord()==0);
+  assert(det_pos.pos1().radial_coord() == 0);
+  assert(det_pos.pos2().radial_coord() == 0);
 
   // TODO we're using an obsolete function here which uses a different coordinate system
-  this->get_uncompressed_proj_data_info_sptr()->
-    find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
-                                                         det_pos.pos1().axial_coord(),
-                                                         det_pos.pos2().axial_coord(),
-                                                         det_pos.pos1().tangential_coord(),
-                                                         det_pos.pos2().tangential_coord());
+  this->get_uncompressed_proj_data_info_sptr()->find_cartesian_coordinates_given_scanner_coordinates(
+      coord_1, coord_2, det_pos.pos1().axial_coord(), det_pos.pos2().axial_coord(), det_pos.pos1().tangential_coord(),
+      det_pos.pos2().tangential_coord());
   // find shift in z
-  const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing()*
-    (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1)/2.F;
+  const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing() *
+                      (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings() - 1) / 2.F;
   coord_1.z() -= shift;
   coord_2.z() -= shift;
 
@@ -69,29 +64,24 @@ get_LOR() const
 }
 
 void
-CListEventCylindricalScannerWithDiscreteDetectors::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-{
+CListEventCylindricalScannerWithDiscreteDetectors::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const {
   assert(dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).
-      get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
+  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos) ==
+      Succeeded::no)
     bin.set_bin_value(0);
-  else
-  {
+  else {
     bin.set_bin_value(1);
   }
 }
 
 bool
-CListEventCylindricalScannerWithDiscreteDetectors::
-is_valid_template(const ProjDataInfo& proj_data_info) const
-{
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
-        return true;
+CListEventCylindricalScannerWithDiscreteDetectors::is_valid_template(const ProjDataInfo& proj_data_info) const {
+  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0)
+    return true;
 
-    return false;
+  return false;
 }
 
 END_NAMESPACE_STIR

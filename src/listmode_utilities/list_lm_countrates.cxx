@@ -31,74 +31,60 @@
 #include <iomanip>
 #include <string>
 
-
 USING_NAMESPACE_STIR
 
-int main(int argc, char * argv[])
-{
-  if (argc<3 || argc>4) {
+int
+main(int argc, char* argv[]) {
+  if (argc < 3 || argc > 4) {
     std::cerr << "Usage: " << argv[0] << " output_filename listmode_file [time_interval_in_secs]\n"
-	 << "time_interval_in_secs defaults to 1\n"
-	 << "Output is a file with the count-rates per time interval in CSV format as in\n"
-	 << "start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds\n";
+              << "time_interval_in_secs defaults to 1\n"
+              << "Output is a file with the count-rates per time interval in CSV format as in\n"
+              << "start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds\n";
     exit(EXIT_FAILURE);
   }
-  shared_ptr<ListModeData> lm_data_ptr
-    (read_from_file<ListModeData>(argv[2]));
+  shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[2]));
   const std::string hc_filename = argv[1];
   std::ofstream headcurve(hc_filename.c_str());
-  if (!headcurve)
-    {
-      warning("Error opening headcurve file %s\n", hc_filename.c_str());
-      exit(EXIT_FAILURE);
-    }
+  if (!headcurve) {
+    warning("Error opening headcurve file %s\n", hc_filename.c_str());
+    exit(EXIT_FAILURE);
+  }
 
-  const double interval = argc>3 ? atof(argv[3]) : 1;
+  const double interval = argc > 3 ? atof(argv[3]) : 1;
 
-  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  shared_ptr<ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   ListRecord& record = *record_sptr;
 
   double current_time = 0;
-  bool first_timing_event_read=false;
+  bool first_timing_event_read = false;
   unsigned long num_prompts = 0UL;
   unsigned long num_delayeds = 0UL;
-  while (true)
-  {
-    if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
-	{
-	  // no more events in file for some reason
-	  break; //get out of while loop
-	}
-    if (record.is_time())
-	{
-	  const double new_time = record.time().get_time_in_secs();
-	  if (!first_timing_event_read)
-	    {
-	      current_time = new_time;
-	      num_prompts=0UL;
-	      num_delayeds=0UL;
-	      first_timing_event_read = true;
-	    }
-	  else if (new_time >= current_time+interval) 
-	    {
-	      headcurve <<  std::fixed << std::setprecision(3)
-			<< current_time
-			<< " , " << current_time+interval
-			<< " , " << num_prompts
-			<< " , " << num_delayeds
-			<< '\n';
-	      num_prompts=0UL;
-	      num_delayeds=0UL;
-	      current_time += interval;
-	    }
-	}
-    if (record.is_event())
-	{
-	  if (record.event() .is_prompt())
-	    ++num_prompts;
-	  else
-	    ++num_delayeds;
-	}
+  while (true) {
+    if (lm_data_ptr->get_next_record(record) == Succeeded::no) {
+      // no more events in file for some reason
+      break; // get out of while loop
+    }
+    if (record.is_time()) {
+      const double new_time = record.time().get_time_in_secs();
+      if (!first_timing_event_read) {
+        current_time = new_time;
+        num_prompts = 0UL;
+        num_delayeds = 0UL;
+        first_timing_event_read = true;
+      } else if (new_time >= current_time + interval) {
+        headcurve << std::fixed << std::setprecision(3) << current_time << " , " << current_time + interval << " , "
+                  << num_prompts << " , " << num_delayeds << '\n';
+        num_prompts = 0UL;
+        num_delayeds = 0UL;
+        current_time += interval;
+      }
+    }
+    if (record.is_event()) {
+      if (record.event().is_prompt())
+        ++num_prompts;
+      else
+        ++num_delayeds;
+    }
   }
   return EXIT_SUCCESS;
 }

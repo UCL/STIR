@@ -1,11 +1,11 @@
 /*!
 
   \file
-  \ingroup ImageProcessor 
+  \ingroup ImageProcessor
   \brief Declaration of class stir::HUToMuImageProcessor
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2020, UCL
@@ -14,7 +14,6 @@
 
 #ifndef __stir_HUToMuImageProcessor_H__
 #define __stir_HUToMuImageProcessor_H__
-
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
@@ -75,28 +74,17 @@ This implements the following transformation for every voxel in the image:
 \f]
 with \f$a=a1, b=b1\f$ if \f$\mathrm{HI} < \mathrm{break}\f$, and $a2,b2$ otherwise.
 
-When adding your own entries, you want avoid a discontinuity at the break point.  
+When adding your own entries, you want avoid a discontinuity at the break point.
 */
 template <typename TargetT>
-class HUToMuImageProcessor : 
-  public 
-    RegisteredParsingObject<
-        HUToMuImageProcessor<TargetT>,
-        DataProcessor<TargetT >,
-        DataProcessor<TargetT >
-    >
-{
- private:
-  typedef
-    RegisteredParsingObject<
-        HUToMuImageProcessor<TargetT>,
-        DataProcessor<TargetT >,
-        DataProcessor<TargetT >
-    >
-    base_type;
+class HUToMuImageProcessor
+    : public RegisteredParsingObject<HUToMuImageProcessor<TargetT>, DataProcessor<TargetT>, DataProcessor<TargetT>> {
+private:
+  typedef RegisteredParsingObject<HUToMuImageProcessor<TargetT>, DataProcessor<TargetT>, DataProcessor<TargetT>> base_type;
+
 public:
-  static constexpr const char * const registered_name = "HUToMu"; 
-  
+  static constexpr const char* const registered_name = "HUToMu";
+
   //! Default constructor
   HUToMuImageProcessor();
 
@@ -110,11 +98,9 @@ public:
   void set_target_photon_energy(const float gamma_energy);
 
   //! same as apply
-  void apply_scaling_to_HU(TargetT& output_image,
-                           const TargetT& input_image) const;
-  
-protected:
+  void apply_scaling_to_HU(TargetT& output_image, const TargetT& input_image) const;
 
+protected:
   // parsing functions
   //! sets default values
   /*! Sets \c manufacturer_name to "GENERIC", \c kilovoltage_peak to 120.F, \c target_photon_energy to 511.F
@@ -127,8 +113,8 @@ protected:
   /*! \todo could get manufacturer name, kVp from the image later on, when these become available */
   Succeeded virtual_set_up(const TargetT& image);
 
-  void  virtual_apply(TargetT& out_density, const TargetT& in_density) const;
-  void  virtual_apply(TargetT& density) const ;
+  void virtual_apply(TargetT& out_density, const TargetT& in_density) const;
+  void virtual_apply(TargetT& density) const;
 
 private:
   std::string filename;
@@ -150,5 +136,3 @@ private:
 END_NAMESPACE_STIR
 
 #endif
-
-

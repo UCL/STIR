@@ -7,18 +7,17 @@
   \author Monica Vieira Martins
   \author Christian Morel
   \author Kris Thielemans
-      
+
 */
 /*
     Crystal Clear Collaboration
     Copyright (C) 2003 IPHE/UNIL, CH-1015 Lausanne
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
-    This software is distributed under the terms 
+    This software is distributed under the terms
     of the GNU Lesser General  Public Licence (LGPL)
     See STIR/LICENSE.txt for details
 */
-
 
 #include "stir_experimental/listmode/CListModeDataLMF.h"
 #include "stir_experimental/listmode/CListRecordLMF.h"
@@ -34,68 +33,57 @@ using std::streampos;
 
 START_NAMESPACE_STIR
 
-CListModeDataLMF::
-CListModeDataLMF(const string& listmode_filename)
-  : listmode_filename(listmode_filename)
-{
-  //opening and reading file.cch, filling in structure LMF_cch  
+CListModeDataLMF::CListModeDataLMF(const string& listmode_filename) : listmode_filename(listmode_filename) {
+  // opening and reading file.cch, filling in structure LMF_cch
 
   // string::c_str() returns a "const char *", but LMFcchReader takes a "char*"
   // (which is a bad idea, unless you really want to modify the string)
   // at the moment, I gamble that LMFcchReader does not modify the string
   // TODO check (and ideally change argument types of LMFcchReader)
-  if(LMFcchReader(const_cast<char *>(listmode_filename.c_str()))) 
+  if (LMFcchReader(const_cast<char*>(listmode_filename.c_str())))
     exit(EXIT_FAILURE);
-  
-  //opening file.ccs
-  pfCCS = open_CCS_file2(listmode_filename.c_str());  /* open the LMF binary file */    
-  if(pfCCS==NULL) 
-    error("Cannot open list mode file %s",listmode_filename.c_str());
 
-  fseek(pfCCS,0L,0);                      /* find the begin of file */
-  //allocate and fill in the encoding header structure 
+  // opening file.ccs
+  pfCCS = open_CCS_file2(listmode_filename.c_str()); /* open the LMF binary file */
+  if (pfCCS == NULL)
+    error("Cannot open list mode file %s", listmode_filename.c_str());
+
+  fseek(pfCCS, 0L, 0); /* find the begin of file */
+  // allocate and fill in the encoding header structure
   pEncoH = readHead(pfCCS);
 
   // TODO set scanner_ptr somehow
-  //fill scanner check list
+  // fill scanner check list
   // scanCheckList = fill_ScannerCheckList(scanCheckList, pEncoH);
 }
 
-CListModeDataLMF::
-~CListModeDataLMF()
-{
-  if(pfCCS) {
+CListModeDataLMF::~CListModeDataLMF() {
+  if (pfCCS) {
     fclose(pfCCS);
   }
 
   LMFcchReaderDestructor();
-  destroyReadHead();//ccsReadHeadDestructor
+  destroyReadHead(); // ccsReadHeadDestructor
   destroy_findXYZinLMFfile(pEncoH);
 }
 
-shared_ptr <CListRecord> 
-CListModeDataLMF::
-get_empty_record_sptr() const
-{
+shared_ptr<CListRecord>
+CListModeDataLMF::get_empty_record_sptr() const {
   return new CListRecordLMF;
 }
 
 Succeeded
-CListModeDataLMF::
-get_next_record(CListRecord& record) const
-{
+CListModeDataLMF::get_next_record(CListRecord& record) const {
   if (is_null_ptr(pfCCS))
     return Succeeded::no;
   // check type
-  assert(dynamic_cast<CListRecordLMF *>(&record) != 0);
+  assert(dynamic_cast<CListRecordLMF*>(&record) != 0);
 
-  // TODO ignores time    
+  // TODO ignores time
 
   double x1, y1, z1, x2, y2, z2;
-  if (!findXYZinLMFfile(pfCCS,
-		        &x1, &y1, &z1, &x2, &y2, &z2,
-			pEncoH))
-     return Succeeded::no;
+  if (!findXYZinLMFfile(pfCCS, &x1, &y1, &z1, &x2, &y2, &z2, pEncoH))
+    return Succeeded::no;
 
   CListEventDataLMF event_data;
   event_data.pos1().x() = static_cast<float>(x1);
@@ -112,13 +100,11 @@ get_next_record(CListRecord& record) const
 }
 
 Succeeded
-CListModeDataLMF::
-reset()
-{
+CListModeDataLMF::reset() {
   if (is_null_ptr(pfCCS))
     return Succeeded::no;
 
-  if (!fseek(pfCCS,0L,0))                      /* find the begin of file */
+  if (!fseek(pfCCS, 0L, 0)) /* find the begin of file */
     return Succeeded::no;
   else
     return Succeeded::yes;
@@ -127,20 +113,16 @@ reset()
 // TODO do ftell and fseek really tell/change about the current listmode event
 // or is there another LMF function?
 CListModeData::SavedPosition
-CListModeDataLMF::
-save_get_position() 
-{
+CListModeDataLMF::save_get_position() {
   assert(!is_null_ptr(pfCCS));
   // TODO should somehow check if ftell() worked and return an error if it didn't
   const unsigned long pos = ftell(pfCCS);
   saved_get_positions.push_back(pos);
-  return saved_get_positions.size()-1;
-} 
+  return saved_get_positions.size() - 1;
+}
 
 Succeeded
-CListModeDataLMF::
-set_get_position(const CListModeDataLMF::SavedPosition& pos)
-{
+CListModeDataLMF::set_get_position(const CListModeDataLMF::SavedPosition& pos) {
   if (is_null_ptr(pfCCS))
     return Succeeded::no;
 

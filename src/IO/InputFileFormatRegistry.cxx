@@ -27,17 +27,17 @@
 #include "stir/IO/InputFileFormatRegistry.txx"
 
 #include "stir/DiscretisedDensity.h"
-#include "stir/modelling/ParametricDiscretisedDensity.h"  
-#include "stir/DynamicDiscretisedDensity.h" 
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/listmode/ListModeData.h"
 
 START_NAMESPACE_STIR
 
 // instantiations
-template class InputFileFormatRegistry<DiscretisedDensity<3,float> >;
-template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid >;
+template class InputFileFormatRegistry<DiscretisedDensity<3, float>>;
+template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid>;
 template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
 template class InputFileFormatRegistry<ListModeData>;
-template class InputFileFormatRegistry<DiscretisedDensity<3,CartesianCoordinate3D<float> > >;
+template class InputFileFormatRegistry<DiscretisedDensity<3, CartesianCoordinate3D<float>>>;
 
 END_NAMESPACE_STIR

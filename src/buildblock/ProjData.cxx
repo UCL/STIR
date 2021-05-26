@@ -20,7 +20,7 @@
 */
 /*!
   \file
-  \ingroup projdata  
+  \ingroup projdata
 
   \brief Implementations for non-inline functions of class stir::ProjData
 
@@ -43,20 +43,20 @@
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 
 #ifndef STIR_USE_GE_IO
-#include "stir/ProjDataGEAdvance.h"
+#  include "stir/ProjDataGEAdvance.h"
 #else
-#include "stir_experimental/IO/GE/ProjDataVOLPET.h"
-#ifdef HAVE_RDF
-#include "stir_experimental/IO/GE/stir_RDF.h"
-#include "stir_experimental/IO/GE/ProjDataRDF.h"
-#endif
+#  include "stir_experimental/IO/GE/ProjDataVOLPET.h"
+#  ifdef HAVE_RDF
+#    include "stir_experimental/IO/GE/stir_RDF.h"
+#    include "stir_experimental/IO/GE/ProjDataRDF.h"
+#  endif
 #endif // STIR_USE_GE_IO
 #ifdef HAVE_IE
-#include "stir_experimental/IO/GE/ProjDataIE.h"
+#  include "stir_experimental/IO/GE/ProjDataIE.h"
 #endif
 #ifdef HAVE_HDF5
-#include "stir/ProjDataGEHDF5.h"
-#include "stir/IO/GEHDF5Wrapper.h"
+#  include "stir/ProjDataGEHDF5.h"
+#  include "stir/IO/GEHDF5Wrapper.h"
 #endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -75,9 +75,9 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-/*! 
+/*!
    This function will attempt to determine the type of projection data in the file,
-   construct an object of the appropriate type, and return a pointer to 
+   construct an object of the appropriate type, and return a pointer to
    the object.
 
    The return value is a shared_ptr, to make sure that the caller will
@@ -92,102 +92,86 @@ START_NAMESPACE_STIR
    <ul>
    <li> GE VOLPET data (via class ProjDataVOLPET)
    <li> Interfile (using  read_interfile_PDFS())
-   <li> ECAT 7 3D sinograms and attenuation files 
+   <li> ECAT 7 3D sinograms and attenuation files
    </ul>
 
    Developer's note: ideally the return value would be an stir::unique_ptr.
 */
 
-shared_ptr<ProjData> 
-ProjData::
-read_from_file(const string& filename,
-	       const std::ios::openmode openmode)
-{
+shared_ptr<ProjData>
+ProjData::read_from_file(const string& filename, const std::ios::openmode openmode) {
   std::string actual_filename = filename;
   // parse filename to see if it's like filename,options
   {
     const std::size_t comma_pos = filename.find(',');
-    if (comma_pos != std::string::npos)
-      {
-	actual_filename.resize(comma_pos);
-      }
+    if (comma_pos != std::string::npos) {
+      actual_filename.resize(comma_pos);
+    }
   }
 
-  fstream * input = new fstream(actual_filename.c_str(), openmode | ios::binary);
-  if (! *input)
+  fstream* input = new fstream(actual_filename.c_str(), openmode | ios::binary);
+  if (!*input)
     error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
   const FileSignature file_signature(actual_filename);
-  const char * signature = file_signature.get_signature();
+  const char* signature = file_signature.get_signature();
 
   // GE Advance
-  if (strncmp(signature, "2D3D", 4) == 0)
-  {
+  if (strncmp(signature, "2D3D", 4) == 0) {
 //    if (ask("Read with old code (Y) or new (N)?",false))
-#ifndef STIR_USE_GE_IO 
-      {
-#ifndef NDEBUG
-	warning("ProjData::read_from_file trying to read %s as GE Advance file", 
-		filename.c_str());
-#endif
-	return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
-      }
-      //else
+#ifndef STIR_USE_GE_IO
+    {
+#  ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE Advance file", filename.c_str());
+#  endif
+      return shared_ptr<ProjData>(new ProjDataGEAdvance(input));
+    }
+    // else
 #else // use VOLPET
-      {
-#ifndef NDEBUG
-	warning("ProjData::read_from_file trying to read %s as GE VOLPET file", 
-		filename.c_str());
-#endif
-	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
-	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename, openmode) );
-      }
+    {
+#  ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE VOLPET file", filename.c_str());
+#  endif
+      delete input; // TODO no longer use pointer after getting rid of ProjDataGEAdvance
+      return shared_ptr<ProjData>(new GE_IO::ProjDataVOLPET(filename, openmode));
+    }
 #endif // STIR_USE_GE_IO to differentiate between Advance and VOLPET code
   }
 
-  delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
+  delete input; // TODO no longer use pointer after getting rid of ProjDataGEAdvance
 
 #ifdef HAVE_IE
-  // GE IE file format 
-  if (GE_IO::is_IE_signature(signature))
-    {
-#ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as GE IE file", 
-	      filename.c_str());
-#endif
-      return shared_ptr<ProjData>( new GE_IO::ProjDataIE(filename) );
-    }
+  // GE IE file format
+  if (GE_IO::is_IE_signature(signature)) {
+#  ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as GE IE file", filename.c_str());
+#  endif
+    return shared_ptr<ProjData>(new GE_IO::ProjDataIE(filename));
+  }
 #endif // HAVE_IE
-      
 
 #ifdef HAVE_LLN_MATRIX
   // ECAT 7
-  if (strncmp(signature, "MATRIX", 6) == 0)
-  {
-#ifndef NDEBUG
+  if (strncmp(signature, "MATRIX", 6) == 0) {
+#  ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as ECAT7", filename.c_str());
-#endif
+#  endif
     USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT7;
 
-    if (is_ECAT7_emission_file(actual_filename) || is_ECAT7_attenuation_file(actual_filename))
-    {
-      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s",
-	      actual_filename.c_str());
-      shared_ptr<ProjData> proj_data_sptr(ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0));
+    if (is_ECAT7_emission_file(actual_filename) || is_ECAT7_attenuation_file(actual_filename)) {
+      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s", actual_filename.c_str());
+      shared_ptr<ProjData> proj_data_sptr(ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/ 1, 1, 0, 0));
       return proj_data_sptr;
-    }
-    else
-    {
+    } else {
       if (is_ECAT7_file(actual_filename))
-	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", actual_filename.c_str());
+        warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", actual_filename.c_str());
     }
   }
 #endif // HAVE_LLN_MATRIX
 
   // Interfile
-  if (is_interfile_signature(signature))
-  {
+  if (is_interfile_signature(signature)) {
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as Interfile", filename.c_str());
 #endif
@@ -196,124 +180,96 @@ read_from_file(const string& filename,
       return ptr;
   }
 
-
 #if defined(STIR_USE_GE_IO) && defined(HAVE_RDF)
-  if (GE_IO::is_RDF_file(actual_filename))
-    {
-#ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as RDF", filename.c_str());
-#endif
-      shared_ptr<ProjData> ptr(new GE_IO::ProjDataRDF(filename));
-      if (!is_null_ptr(ptr))
-	return ptr;
+  if (GE_IO::is_RDF_file(actual_filename)) {
+#  ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as RDF", filename.c_str());
+#  endif
+    shared_ptr<ProjData> ptr(new GE_IO::ProjDataRDF(filename));
+    if (!is_null_ptr(ptr))
+      return ptr;
   }
 #endif // RDF
-      
+
 #ifdef HAVE_HDF5
-  if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))
-    {
-#ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
-#endif
-      shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
-      if (!is_null_ptr(ptr))
-	return ptr;
+  if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename)) {
+#  ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
+#  endif
+    shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
+    if (!is_null_ptr(ptr))
+      return ptr;
   }
 #endif // GE HDF5
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
-	"Unsupported file format? Aborting.",
-	  filename.c_str());
+        "Unsupported file format? Aborting.",
+        filename.c_str());
   // need to return something to satisfy the compiler, but we never get here
   shared_ptr<ProjData> null_ptr;
   return null_ptr;
 }
 
-//void
-//ProjData::set_exam_info(ExamInfo const& new_exam_info)
+// void
+// ProjData::set_exam_info(ExamInfo const& new_exam_info)
 //{
 //  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
 //}
 
-  
-Viewgram<float> 
-ProjData::get_empty_viewgram(const int view_num, const int segment_num, 
-			     const bool make_num_tangential_poss_odd,
-				 const int timing_pos) const
-{
-  return
-    proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd, timing_pos);
+Viewgram<float>
+ProjData::get_empty_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd,
+                             const int timing_pos) const {
+  return proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd, timing_pos);
 }
 
 Sinogram<float>
-ProjData::get_empty_sinogram(const int ax_pos_num, const int segment_num,
-			     const bool make_num_tangential_poss_odd,
-				 const int timing_pos) const
-{
-  return
-    proj_data_info_sptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd, timing_pos);
+ProjData::get_empty_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd,
+                             const int timing_pos) const {
+  return proj_data_info_sptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd, timing_pos);
 }
-
 
 SegmentBySinogram<float>
-ProjData::get_empty_segment_by_sinogram(const int segment_num, 
-      const bool make_num_tangential_poss_odd,
-	  const int timing_pos) const
-{
-  return
-    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd, timing_pos);
-}  
-
+ProjData::get_empty_segment_by_sinogram(const int segment_num, const bool make_num_tangential_poss_odd,
+                                        const int timing_pos) const {
+  return proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd, timing_pos);
+}
 
 SegmentByView<float>
-ProjData::get_empty_segment_by_view(const int segment_num, 
-				   const bool make_num_tangential_poss_odd,
-				   const int timing_pos) const
-{
-  return
-    proj_data_info_sptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd, timing_pos);
+ProjData::get_empty_segment_by_view(const int segment_num, const bool make_num_tangential_poss_odd, const int timing_pos) const {
+  return proj_data_info_sptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd, timing_pos);
 }
 
-RelatedViewgrams<float> 
+RelatedViewgrams<float>
 ProjData::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-                   //const int view_num, const int segment_num,
-		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_tangential_poss_odd,
-		   const int timing_pos) const
-{
-  return
-    proj_data_info_sptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd, timing_pos);
+                                      // const int view_num, const int segment_num,
+                                      const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
+                                      const bool make_num_tangential_poss_odd, const int timing_pos) const {
+  return proj_data_info_sptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd,
+                                                          timing_pos);
 }
 
-
-RelatedViewgrams<float> 
+RelatedViewgrams<float>
 ProjData::get_related_viewgrams(const ViewSegmentNumbers& view_segment_num,
-                   //const int view_num, const int segment_num,
-		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_bins_odd,
-		   const int timing_pos) const
-{
+                                // const int view_num, const int segment_num,
+                                const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
+                                const bool make_num_bins_odd, const int timing_pos) const {
   vector<ViewSegmentNumbers> pairs;
   symmetries_used->get_related_view_segment_numbers(
-    pairs, 
-    ViewSegmentNumbers(view_segment_num.view_num(),view_segment_num.segment_num())
-    );
+      pairs, ViewSegmentNumbers(view_segment_num.view_num(), view_segment_num.segment_num()));
 
-  vector<Viewgram<float> > viewgrams;
+  vector<Viewgram<float>> viewgrams;
   viewgrams.reserve(pairs.size());
 
-  for (unsigned int i=0; i<pairs.size(); i++)
-  {
+  for (unsigned int i = 0; i < pairs.size(); i++) {
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_bins_odd,timing_pos));
+    viewgrams.push_back(get_viewgram(pairs[i].view_num(), pairs[i].segment_num(), make_num_bins_odd, timing_pos));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);
 }
 
-//std::vector<float>
-//ProjData::get_related_bin_values(const std::vector<Bin>& r_bins) const
+// std::vector<float>
+// ProjData::get_related_bin_values(const std::vector<Bin>& r_bins) const
 //{
 
 //    std::vector<float> values;
@@ -328,15 +284,12 @@ ProjData::get_related_viewgrams(const ViewSegmentNumbers& view_segment_num,
 //    return values;
 //}
 
-
-Succeeded 
-ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams) 
-{
+Succeeded
+ProjData::set_related_viewgrams(const RelatedViewgrams<float>& viewgrams) {
 
   RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
-  while( r_viewgrams_iter!=viewgrams.end())
-  {
-    if (set_viewgram(*r_viewgrams_iter)== Succeeded::no)
+  while (r_viewgrams_iter != viewgrams.end()) {
+    if (set_viewgram(*r_viewgrams_iter) == Succeeded::no)
       return Succeeded::no;
     ++r_viewgrams_iter;
   }
@@ -353,195 +306,147 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
 }
 #endif
 
-SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num, const int timing_pos) const
-{
-  SegmentBySinogram<float> segment =
-    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num,false,timing_pos);
+SegmentBySinogram<float>
+ProjData::get_segment_by_sinogram(const int segment_num, const int timing_pos) const {
+  SegmentBySinogram<float> segment = proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, false, timing_pos);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-	  segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 
-SegmentByView<float> ProjData::get_segment_by_view(const int segment_num, const int timing_pos) const
-{
-  SegmentByView<float> segment =
-    proj_data_info_sptr->get_empty_segment_by_view(segment_num,false,timing_pos);
+SegmentByView<float>
+ProjData::get_segment_by_view(const int segment_num, const int timing_pos) const {
+  SegmentByView<float> segment = proj_data_info_sptr->get_empty_segment_by_view(segment_num, false, timing_pos);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-	  segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 
-Succeeded 
-ProjData::set_segment(const SegmentBySinogram<float>& segment)
-{
-  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-  {
-    if(set_viewgram(segment.get_viewgram(view_num))
-        == Succeeded::no)
-	return Succeeded::no;
+Succeeded
+ProjData::set_segment(const SegmentBySinogram<float>& segment) {
+  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num) {
+    if (set_viewgram(segment.get_viewgram(view_num)) == Succeeded::no)
+      return Succeeded::no;
   }
   return Succeeded::yes;
 }
 
-Succeeded 
-ProjData::set_segment(const SegmentByView<float>& segment)
-{
-  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-  {
-    if(set_viewgram(segment.get_viewgram(view_num))
-        == Succeeded::no)
-	return Succeeded::no;
+Succeeded
+ProjData::set_segment(const SegmentByView<float>& segment) {
+  for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num) {
+    if (set_viewgram(segment.get_viewgram(view_num)) == Succeeded::no)
+      return Succeeded::no;
   }
   return Succeeded::yes;
 }
 
-
-void 
-ProjData::fill(const float value)
-{
-  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)  
-  {
-	  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
-	  {
-		  SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num, false, timing_pos_num));
-		segment.fill(value);
-		if(this->set_segment(segment) == Succeeded::no)
-		  error("Error setting segment of projection data");
-	  }
+void
+ProjData::fill(const float value) {
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num) {
+    for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num) {
+      SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num, false, timing_pos_num));
+      segment.fill(value);
+      if (this->set_segment(segment) == Succeeded::no)
+        error("Error setting segment of projection data");
+    }
   }
 }
 
-void 
-ProjData::fill(const ProjData& proj_data)
-{
+void
+ProjData::fill(const ProjData& proj_data) {
   shared_ptr<ProjDataInfo> source_proj_data_info_sptr = proj_data.get_proj_data_info_sptr()->create_shared_clone();
   source_proj_data_info_sptr->reduce_segment_range(std::max(this->get_min_segment_num(), proj_data.get_min_segment_num()),
                                                    std::min(this->get_max_segment_num(), proj_data.get_max_segment_num()));
   if ((*this->get_proj_data_info_sptr()) != (*source_proj_data_info_sptr))
-      error("Filling projection data from incompatible  source");
+    error("Filling projection data from incompatible  source");
 
-  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
-  {
-	  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
-	  {
-		if(this->set_segment(proj_data.get_segment_by_view(segment_num, timing_pos_num))
-		   == Succeeded::no)
-		  error("Error setting segment of projection data");
-	  }
+  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num) {
+    for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num) {
+      if (this->set_segment(proj_data.get_segment_by_view(segment_num, timing_pos_num)) == Succeeded::no)
+        error("Error setting segment of projection data");
+    }
   }
 }
 
-ProjData:: ProjData()
-    :ExamData()
-{}
+ProjData::ProjData() : ExamData() {}
 
-ProjData::ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
-		   const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
-  :ExamData(exam_info_sptr), proj_data_info_sptr(proj_data_info_sptr)
-{}
+ProjData::ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+    : ExamData(exam_info_sptr), proj_data_info_sptr(proj_data_info_sptr) {}
 
 Succeeded
-ProjData::
-write_to_file(const string& output_filename) const
-{
+ProjData::write_to_file(const string& output_filename) const {
 
-  ProjDataInterfile out_projdata(get_exam_info_sptr(),
-                 this->proj_data_info_sptr, output_filename, ios::out);
+  ProjDataInterfile out_projdata(get_exam_info_sptr(), this->proj_data_info_sptr, output_filename, ios::out);
 
-  Succeeded success=Succeeded::yes;
-  for (int segment_num = proj_data_info_sptr->get_min_segment_num();
-       segment_num <= proj_data_info_sptr->get_max_segment_num();
-       ++segment_num)
-  {
-    Succeeded success_this_segment =
-      out_projdata.set_segment(get_segment_by_view(segment_num));
-    if (success==Succeeded::yes)
+  Succeeded success = Succeeded::yes;
+  for (int segment_num = proj_data_info_sptr->get_min_segment_num(); segment_num <= proj_data_info_sptr->get_max_segment_num();
+       ++segment_num) {
+    Succeeded success_this_segment = out_projdata.set_segment(get_segment_by_view(segment_num));
+    if (success == Succeeded::yes)
       success = success_this_segment;
   }
   return success;
-
 }
 
 void
-ProjData::
-axpby( const float a, const ProjData& x,
-       const float b, const ProjData& y)
-{
-  xapyb(x,a,y,b);
+ProjData::axpby(const float a, const ProjData& x, const float b, const ProjData& y) {
+  xapyb(x, a, y, b);
 }
 
 void
-ProjData::
-xapyb(const ProjData& x, const float a,
-      const ProjData& y, const float b)
-{
-    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
-            *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
-        error("ProjData::xapyb: ProjDataInfo don't match");
+ProjData::xapyb(const ProjData& x, const float a, const ProjData& y, const float b) {
+  if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
+    error("ProjData::xapyb: ProjDataInfo don't match");
 
-    const int n_min = get_min_segment_num();
-    const int n_max = get_max_segment_num();
+  const int n_min = get_min_segment_num();
+  const int n_max = get_max_segment_num();
 
-    for (int s=n_min; s<=n_max; ++s)
-    {
-        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
-        seg.xapyb(sx, a, sy, b);
-        set_segment(seg);
-    }
+  for (int s = n_min; s <= n_max; ++s) {
+    SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+    seg.xapyb(sx, a, sy, b);
+    set_segment(seg);
+  }
 }
 
 void
-ProjData::
-xapyb(const ProjData& x, const ProjData& a,
-      const ProjData& y, const ProjData& b)
-{
-    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
-        error("ProjData::xapyb: ProjDataInfo don't match");
+ProjData::xapyb(const ProjData& x, const ProjData& a, const ProjData& y, const ProjData& b) {
+  if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
+      *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
+    error("ProjData::xapyb: ProjDataInfo don't match");
 
-    const int n_min = get_min_segment_num();
-    const int n_max = get_max_segment_num();
+  const int n_min = get_min_segment_num();
+  const int n_max = get_max_segment_num();
 
-    for (int s=n_min; s<=n_max; ++s)
-    {
-        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sa = a.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sb = b.get_segment_by_sinogram(s);
+  for (int s = n_min; s <= n_max; ++s) {
+    SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sa = a.get_segment_by_sinogram(s);
+    const SegmentBySinogram<float> sb = b.get_segment_by_sinogram(s);
 
-        seg.xapyb(sx, sa, sy, sb);
-        set_segment(seg);
-    }
+    seg.xapyb(sx, sa, sy, sb);
+    set_segment(seg);
+  }
 }
 
 void
-ProjData::
-sapyb(const float a, const ProjData& y, const float b)
-{
-  this->xapyb(*this,a,y,b);
+ProjData::sapyb(const float a, const ProjData& y, const float b) {
+  this->xapyb(*this, a, y, b);
 }
 
 void
-ProjData::
-sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
-{
-  this->xapyb(*this,a,y,b);
+ProjData::sapyb(const ProjData& a, const ProjData& y, const ProjData& b) {
+  this->xapyb(*this, a, y, b);
 }
-
 
 std::vector<int>
-ProjData::
-standard_segment_sequence(const ProjDataInfo& pdi)
-{
+ProjData::standard_segment_sequence(const ProjDataInfo& pdi) {
   std::vector<int> segment_sequence(pdi.get_num_segments());
-  if (pdi.get_num_segments()==0)
+  if (pdi.get_num_segments() == 0)
     return segment_sequence;
 
   const int max_segment_num = pdi.get_max_segment_num();
@@ -549,11 +454,10 @@ standard_segment_sequence(const ProjDataInfo& pdi)
   segment_sequence[0] = 0;
   unsigned idx = 1;
   int segment_num = 1;
-  while (idx < segment_sequence.size())
-  {
-    if (segment_num<=max_segment_num)
+  while (idx < segment_sequence.size()) {
+    if (segment_num <= max_segment_num)
       segment_sequence[idx++] = segment_num;
-    if (-segment_num>=min_segment_num)
+    if (-segment_num >= min_segment_num)
       segment_sequence[idx++] = -segment_num;
     ++segment_num;
   }

@@ -7,12 +7,12 @@
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
   (at your option) any later version.
-  
+
   This file is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU Lesser General Public License for more details.
-  
+
   See STIR/LICENSE.txt for details
 */
 /*!
@@ -43,40 +43,37 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup GeneralisedObjectiveFunction
-  \brief a base class for LogLikelihood of independent Poisson variables 
+  \brief a base class for LogLikelihood of independent Poisson variables
   where the mean values are linear combinations of the gated images.
 
  \f[
  \begin{array}{lcl}
- \Lambda_{\nu}^{(s+1)}&&=\Lambda_{\nu}^{(s)} \frac{1}{ \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'} \hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu' b}A_{bg}+\beta \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)}}\\
- &&\times \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'}\left(\hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu' b}\frac{Y_{bg}}{\sum\limits_{\tilde{\nu}}P_{b\tilde{\nu}}\sum\limits_{\tilde{\nu}'}\hat{W} _{\tilde{\nu}'\rightarrow \tilde{\nu}g}\Lambda_{\tilde{\nu}'}^{(s)}+\frac{B_{bg}}{A_{bg}}}\right)
- \end{array}
-\f] 
-  \par Parameters for parsing
- 
+ \Lambda_{\nu}^{(s+1)}&&=\Lambda_{\nu}^{(s)} \frac{1}{ \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'} \hat{W}^{-1}
+_{\nu'g\rightarrow \nu}P_{\nu' b}A_{bg}+\beta \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)}}\\
+ &&\times \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'}\left(\hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu'
+b}\frac{Y_{bg}}{\sum\limits_{\tilde{\nu}}P_{b\tilde{\nu}}\sum\limits_{\tilde{\nu}'}\hat{W} _{\tilde{\nu}'\rightarrow
+\tilde{\nu}g}\Lambda_{\tilde{\nu}'}^{(s)}+\frac{B_{bg}}{A_{bg}}}\right) \end{array} \f] \par Parameters for parsing
+
  For more information: Tsoumpas et al (2013) Physics in Medicine and Biology
 
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion: 
-public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
-{
- private:
-  typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
-    GeneralisedObjectiveFunction<TargetT>,
-    PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
-  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleGateObjFunc ;
+class PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>> {
+private:
+  typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>,
+                                  GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
+      base_type;
+  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>> SingleGateObjFunc;
   VectorWithOffset<SingleGateObjFunc> _single_gate_obj_funcs;
 
   TimeGateDefinitions _time_gate_definitions;
 
- public:
-  
+public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion();
 
@@ -84,38 +81,28 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   /*! Dimensions etc are set from the \a gated_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
+  virtual TargetT* construct_target_ptr() const;
 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-							  const TargetT &current_estimate, 
-							  const int subset_num); 
+  virtual void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, const TargetT& current_estimate,
+                                                                     const int subset_num);
 
-  virtual double
-    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						      const int subset_num);
+  virtual double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num);
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
+  virtual Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr);
 
   //! Add subset sensitivity to existing data
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  virtual void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
-  virtual Succeeded 
-    actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                           const TargetT& input,
-                                                                           const int subset_num) const;
-  virtual Succeeded
-    actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT &output,
-            const TargetT &current_image_estimate,
-            const TargetT &input,
-            const int subset_num) const;
+  virtual Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output, const TargetT& input,
+                                                                                           const int subset_num) const;
+  virtual Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                              const TargetT& current_image_estimate,
+                                                                              const TargetT& input, const int subset_num) const;
 
-  void set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions); 
+  void set_time_gate_definitions(const TimeGateDefinitions& time_gate_definitions);
 
   /*! \name Functions to get parameters
-    \warning Be careful with changing shared pointers. If you modify the objects in 
+    \warning Be careful with changing shared pointers. If you modify the objects in
     one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -134,7 +121,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
     \warning After using any of these, you have to call set_up().
-    \warning Be careful with setting shared pointers. If you modify the objects in 
+    \warning Be careful with setting shared pointers. If you modify the objects in
     one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -145,10 +132,10 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual void set_input_data(const shared_ptr<ExamData>&);
   virtual const GatedProjData& get_input_data() const;
   //@}
- protected:
+protected:
   //! Filename with input projection data
   std::string _input_filename;
   std::string _motion_vectors_filename_prefix;
@@ -162,8 +149,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   /*! convention: if -1, use get_max_segment_num()*/
   int _max_segment_num_to_process;
 
-  const TimeGateDefinitions & 
-    get_time_gate_definitions() const ;
+  const TimeGateDefinitions& get_time_gate_definitions() const;
 
   /**********************/
   ParseAndCreateFrom<TargetT, GatedProjData> target_parameter_parser;
@@ -185,7 +171,8 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   //! signals whether to zero the data in the end planes of the projection data
   bool _zero_seg0_end_planes;
   /*! the motion vectors where all information is stored */
-  int _motion_correction_type; // This could be set up in a more generic way in order to choose how motion correction will be applied//
+  int _motion_correction_type; // This could be set up in a more generic way in order to choose how motion correction will be
+                               // applied//
   GatedSpatialTransformation _motion_vectors;
   GatedSpatialTransformation _reverse_motion_vectors;
 
@@ -193,11 +180,10 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   GatedDiscretisedDensity _gated_image_template;
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
-  //! Sets defaults before parsing 
+  //! Sets defaults before parsing
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
 };
 
 END_NAMESPACE_STIR

@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 /*!
   \ingroup GeneralisedObjectiveFunction
   \ingroup modelling
-  \brief a base class for LogLikelihood of independent Poisson variables 
+  \brief a base class for LogLikelihood of independent Poisson variables
   where the mean values are linear combinations of the kinetic parameters.
 
   \par Parameters for parsing
@@ -54,21 +54,19 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData: 
-public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
-{
- private:
-  typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
-  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleFrameObjFunc ;
+class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>> {
+private:
+  typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
+                                  GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
+      base_type;
+  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>> SingleFrameObjFunc;
   VectorWithOffset<SingleFrameObjFunc> _single_frame_obj_funcs;
- public:
-  
+
+public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData();
 
@@ -76,42 +74,32 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /*! Dimensions etc are set from the \a dyn_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
+  virtual TargetT* construct_target_ptr() const;
+  virtual void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, const TargetT& current_estimate,
+                                                                     const int subset_num);
 
-  virtual std::unique_ptr<ExamInfo>
-  get_exam_info_uptr_for_target()  const;
- protected:
-  virtual double
-    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num);
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
+protected:
+  virtual double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num);
+
+  virtual Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr);
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
    */
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  virtual void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
-  virtual Succeeded 
-      actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                             const TargetT& input,
-                                                                             const int subset_num) const;
+  virtual Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output, const TargetT& input,
+                                                                                           const int subset_num) const;
 
-  virtual Succeeded
-    actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT &output,
-                                                              const TargetT &current_image_estimate,
-                                                              const TargetT &input,
-                                                              const int subset_num) const;
+  virtual Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                              const TargetT& current_image_estimate,
+                                                                              const TargetT& input, const int subset_num) const;
 
- public:
+public:
   /*! \name Functions to get parameters
-   \warning Be careful with changing shared pointers. If you modify the objects in 
+   \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -130,7 +118,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning After using any of these, you have to call set_up().
-   \warning Be careful with setting shared pointers. If you modify the objects in 
+   \warning Be careful with setting shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -141,10 +129,10 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual void set_input_data(const shared_ptr<ExamData>&);
   virtual const DynamicProjData& get_input_data() const;
   //@}
- protected:
+protected:
   //! Filename with input projection data
   std::string _input_filename;
 
@@ -161,7 +149,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /********************************/
   //! name of file in which additive projection data are stored
   std::string _additive_dyn_proj_data_filename;
- //! points to the additive projection data
+  //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
@@ -178,14 +166,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
 
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
-  //! Sets defaults for parsing 
+  //! Sets defaults for parsing
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
      \c recompute_sensitivity to \c false.
   */
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
 };
 
 END_NAMESPACE_STIR

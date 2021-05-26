@@ -29,8 +29,6 @@
 
 START_NAMESPACE_STIR
 
-const char * const 
-TrivialBinNormalisation::registered_name = "None";
+const char* const TrivialBinNormalisation::registered_name = "None";
 
 END_NAMESPACE_STIR
-

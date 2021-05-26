@@ -21,30 +21,26 @@
 
 #ifdef __STIR_REGISTRY_NOT_INLINE
 
-#pragma message("instantiating RegisteredObject<SinglesRates>")
-#include "stir_experimental/SinglesRates.h"
+#  pragma message("instantiating RegisteredObject<SinglesRates>")
+#  include "stir_experimental/SinglesRates.h"
 // add here all roots of hierarchies based on RegisteredObject
 
-#pragma message("instantiating RegisteredObject<RigidObject3DMotion>")
-#include "stir_experimental/motion/RigidObject3DMotion.h"
-
+#  pragma message("instantiating RegisteredObject<RigidObject3DMotion>")
+#  include "stir_experimental/motion/RigidObject3DMotion.h"
 
 START_NAMESPACE_STIR
 
 template <typename Root>
-RegisteredObject<Root>::RegistryType& 
-RegisteredObject<Root>::registry ()
-{
+RegisteredObject<Root>::RegistryType&
+RegisteredObject<Root>::registry() {
   static RegistryType the_registry("None", 0);
   return the_registry;
 }
 
-
-//template RegisteredObject<SinglesRates>;
+// template RegisteredObject<SinglesRates>;
 
 template RegisteredObject<RigidObject3DMotion>;
 // add here all roots of hierarchies based on RegisteredObject
-
 
 END_NAMESPACE_STIR
 

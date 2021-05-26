@@ -7,7 +7,7 @@
   \brief Declaration of class stir::RegisteredObjectBase
 
   \author Kris Thielemans
-  
+
 
 */
 /*
@@ -32,11 +32,11 @@
 #include <string>
 
 #ifndef __stir_RegisteredObjectBase_H__
-#define __stir_RegisteredObjectBase_H__
+#  define __stir_RegisteredObjectBase_H__
 
 START_NAMESPACE_STIR
 
-/*! \brief Base class for all classes that can parse .par files (and more?) 
+/*! \brief Base class for all classes that can parse .par files (and more?)
   \ingroup buildblock
   The only reason that this class exists is such that KeyParser can store
   different types of objects, and get some basic info from it.
@@ -45,8 +45,7 @@ START_NAMESPACE_STIR
   for parsing..
 */
 
-class RegisteredObjectBase : public ParsingObject
-{
+class RegisteredObjectBase : public ParsingObject {
 public:
   virtual ~RegisteredObjectBase() {}
 
@@ -57,8 +56,7 @@ public:
   KeyParser::parameter_info() needs to know this
   name such that it can fill it in.
   */
-  virtual std::string get_registered_name() const= 0;
+  virtual std::string get_registered_name() const = 0;
 };
 END_NAMESPACE_STIR
 #endif
-

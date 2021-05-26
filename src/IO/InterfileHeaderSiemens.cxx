@@ -19,8 +19,8 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
-  \ingroup InterfileIO 
+  \file
+  \ingroup InterfileIO
   \brief implementations for the stir::InterfileHeaderSiemens class
 
   \author Kris Thielemans
@@ -50,33 +50,30 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-InterfileHeaderSiemens::InterfileHeaderSiemens()
-     : InterfileHeader()
-{
+InterfileHeaderSiemens::InterfileHeaderSiemens() : InterfileHeader() {
   // always PET
   exam_info_sptr->imaging_modality = ImagingModality::PT;
-  
+
   byte_order_values.push_back("LITTLEENDIAN");
   byte_order_values.push_back("BIGENDIAN");
-  
+
   PET_data_type_values.push_back("Emission");
   PET_data_type_values.push_back("Transmission");
   PET_data_type_values.push_back("Blank");
   PET_data_type_values.push_back("AttenuationCorrection");
   PET_data_type_values.push_back("Normalisation");
   PET_data_type_values.push_back("Image");
-  
-  for (int patient_position_idx = 0; patient_position_idx <= PatientPosition::unknown_position; ++patient_position_idx)
-    {
-      PatientPosition pos((PatientPosition::PositionValue)patient_position_idx);
-      patient_position_values.push_back(pos.get_position_as_string());
-    }
-  patient_position_index = static_cast<int>(patient_position_values.size()); //unknown
-  byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
+
+  for (int patient_position_idx = 0; patient_position_idx <= PatientPosition::unknown_position; ++patient_position_idx) {
+    PatientPosition pos((PatientPosition::PositionValue)patient_position_idx);
+    patient_position_values.push_back(pos.get_position_as_string());
+  }
+  patient_position_index = static_cast<int>(patient_position_values.size()); // unknown
+  byte_order_index = 1;                                                      //  file_byte_order = ByteOrder::big_endian;
 
   // need to default to PET for backwards compatibility
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-  //type_of_data_index = 6; // PET
+  // type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
 
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
@@ -88,23 +85,15 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 
   data_offset = 0UL;
 
-
   // use this as opposed to InterfileHeader::set_type_of_data() to cope with specifics for Siemens
   remove_key("type of data");
-  add_key("type of data",
-          KeyArgument::ASCIIlist,
-          (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
-          &type_of_data_index, 
-          &type_of_data_values);
+  add_key("type of data", KeyArgument::ASCIIlist, (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
+          &type_of_data_index, &type_of_data_values);
 
-  add_key("%patient orientation",
-	  &patient_position_index,
-	  &patient_position_values);
-  
-  add_key("image data byte order", 
-    &byte_order_index, 
-    &byte_order_values);
-  
+  add_key("%patient orientation", &patient_position_index, &patient_position_values);
+
+  add_key("image data byte order", &byte_order_index, &byte_order_values);
+
   add_vectorised_key("scale factor (mm/pixel)", &pixel_sizes);
 
   // only a single time frame supported by Siemens currently
@@ -119,8 +108,8 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   add_key("image duration (sec)", &image_durations[0]);
 }
 
-bool InterfileHeaderSiemens::post_processing()
-{
+bool
+InterfileHeaderSiemens::post_processing() {
 
   if (InterfileHeader::post_processing() == true)
     return true;
@@ -131,20 +120,19 @@ bool InterfileHeaderSiemens::post_processing()
       return true;
     }*/
 
-  if (patient_position_index<0 )
+  if (patient_position_index < 0)
     return true;
 
   // note: has to be done after InterfileHeader::post_processing as that sets it as well
   exam_info_sptr->patient_position = PatientPosition((PatientPosition::PositionValue)patient_position_index);
 
-  file_byte_order = byte_order_index==0 ? 
-    ByteOrder::little_endian : ByteOrder::big_endian;
+  file_byte_order = byte_order_index == 0 ? ByteOrder::little_endian : ByteOrder::big_endian;
 
   return false;
 }
 
-void InterfileHeaderSiemens::set_type_of_data()
-{
+void
+InterfileHeaderSiemens::set_type_of_data() {
   set_variable();
 
   if (this->type_of_data_index == -1)
@@ -152,9 +140,8 @@ void InterfileHeaderSiemens::set_type_of_data()
 
   const string type_of_data = this->type_of_data_values[this->type_of_data_index];
 
-  if (type_of_data == "PET")
-    {
-      // already done in constructor
+  if (type_of_data == "PET") {
+    // already done in constructor
 #if 0
       add_key("PET data type",
               &PET_data_type_index,
@@ -162,19 +149,14 @@ void InterfileHeaderSiemens::set_type_of_data()
       ignore_key("process status");
       ignore_key("IMAGE DATA DESCRIPTION");
 #endif
-    }
-  else
-    {
-      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
-    }
+  } else {
+    warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+  }
 }
-
 
 /**********************************************************************/
 
-InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
-     : InterfileHeaderSiemens()
-{
+InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens() : InterfileHeaderSiemens() {
   // first set to some crazy values
   num_segments = -1;
   num_rings = -1;
@@ -183,19 +165,17 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("number of rings", &num_rings);
 
   add_key("%axial compression", &axial_compression);
-  add_key("%maximum ring difference", &maximum_ring_difference);  
+  add_key("%maximum ring difference", &maximum_ring_difference);
   add_key("%number of segments", &num_segments);
   add_key("%segment table", &segment_table);
   add_key("%number of tof time bins", &num_tof_bins);
-  
+
   add_vectorised_key("%energy window lower level (keV)", &lower_en_window_thresholds);
 
   add_vectorised_key("%energy window upper level (keV)", &upper_en_window_thresholds);
 
   remove_key("PET data type");
-  add_key("PET data type",
-	  &PET_data_type_index,
-	  &PET_data_type_values);
+  add_key("PET data type", &PET_data_type_index, &PET_data_type_values);
 
   // TODO should add data format:=CoincidenceList|sinogram and then check its value
   remove_key("process status");
@@ -245,47 +225,39 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("%pdr loss fraction");
   ignore_key("%detector block singles");
   ignore_key("%total uncorrected singles rate");
-
 }
 
-bool InterfileRawDataHeaderSiemens::post_processing()
-{
+bool
+InterfileRawDataHeaderSiemens::post_processing() {
   if (InterfileHeaderSiemens::post_processing() == true)
     return true;
 
-  const std::string PET_data_type =
-    standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
-  if (PET_data_type != "emission" && PET_data_type != "transmission")
-    { error("Interfile error: expecting emission or transmission for 'PET data type'"); }
+  const std::string PET_data_type = standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
+  if (PET_data_type != "emission" && PET_data_type != "transmission") {
+    error("Interfile error: expecting emission or transmission for 'PET data type'");
+  }
 
   // handle scanner
 
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
-  if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
-    {
-      error("scanner not recognised from originating system");
-    }
+  if (scanner_sptr->get_type() == Scanner::Unknown_scanner) {
+    error("scanner not recognised from originating system");
+  }
   // consistency check with values of the scanner
-  if ((num_rings >= 0) && (num_rings != scanner_sptr->get_num_rings()))
-    {
-      error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
-            num_rings, scanner_sptr->get_num_rings());
-    }
+  if ((num_rings >= 0) && (num_rings != scanner_sptr->get_num_rings())) {
+    error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n", num_rings, scanner_sptr->get_num_rings());
+  }
 
-  data_info_ptr =
-    ProjDataInfo::construct_proj_data_info(scanner_sptr,
-      axial_compression, maximum_ring_difference,
-      num_views, num_bins,
-      is_arccorrected);
+  data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_sptr, axial_compression, maximum_ring_difference, num_views,
+                                                         num_bins, is_arccorrected);
 
   // handle segments
   {
-    if (static_cast<std::size_t>(num_segments) != segment_table.size())
-      {
-        error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
-      }
+    if (static_cast<std::size_t>(num_segments) != segment_table.size()) {
+      error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
+    }
     segment_sequence = ecat::find_segment_sequence(*data_info_ptr);
-    //XXX check if order here and segment_table are consistent
+    // XXX check if order here and segment_table are consistent
   }
 
   // Set the bed position
@@ -295,16 +267,12 @@ bool InterfileRawDataHeaderSiemens::post_processing()
   return false;
 }
 
-
-
 /**********************************************************************/
 
-InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
-  : InterfileRawDataHeaderSiemens()
-{
+InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens() : InterfileRawDataHeaderSiemens() {
   remove_key("scan data type description");
-  add_key("number of scan data types",
-    KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types, &num_scan_data_types);
+  add_key("number of scan data types", KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types,
+          &num_scan_data_types);
   // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
@@ -324,104 +292,81 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   // add_key(%tof mashing factor", &tof_mashing_factor);
   ignore_key("total number of data sets");
 
-  add_key("%number of buckets",
-    KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
+  add_key("%number of buckets", KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates,
+          &num_buckets);
   add_vectorised_key("%bucket singles rate", &bucket_singles_rates);
-  
-  
 }
 
-
-void InterfilePDFSHeaderSiemens::read_scan_data_types()
-{
+void
+InterfilePDFSHeaderSiemens::read_scan_data_types() {
   set_variable();
 
   scan_data_types.resize(num_scan_data_types);
   data_offset_each_dataset.resize(num_scan_data_types);
-
 }
 
-void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
-{
+void
+InterfilePDFSHeaderSiemens::read_bucket_singles_rates() {
   set_variable();
 
   bucket_singles_rates.resize(num_buckets);
 }
 
-int InterfilePDFSHeaderSiemens::find_storage_order()
-{
+int
+InterfilePDFSHeaderSiemens::find_storage_order() {
 
-  if (num_dimensions != 3)
-    {
+  if (num_dimensions != 3) {
     warning("Interfile error: expecting 3D data ");
     stop_parsing();
     return true;
-    }
+  }
 
-  if ((matrix_size[0].size() != 1) ||
-    (matrix_size[1].size() != 1) ||
-    (matrix_size[2].size() != 1))
-    {
+  if ((matrix_size[0].size() != 1) || (matrix_size[1].size() != 1) || (matrix_size[2].size() != 1)) {
     error("Interfile error: strange values for the matrix_size keyword(s)");
-    }
+  }
   if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
-    {
+  {
     // use error message with index [1] as that is what the user sees.
     error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
-    }
+  }
   num_bins = matrix_size[0][0];
 
-  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") ||                // used for emission
       (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
-      )
-    {
+  ) {
     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     num_views = matrix_size[1][0];
-    }
-  else
-    {
+  } else {
     error("Interfile error: matrix labels not in expected (or supported) format");
-    }
+  }
 
   return false;
-
 }
 
-
-bool InterfilePDFSHeaderSiemens::post_processing()
-{
+bool
+InterfilePDFSHeaderSiemens::post_processing() {
   // check for arc-correction
-  if (applied_corrections.size() == 0)
-    {
+  if (applied_corrections.size() == 0) {
     warning("Parsing Interfile header for projection data: \n"
-      "\t'applied corrections' keyword not found or empty. Assuming non-arc-corrected data");
+            "\t'applied corrections' keyword not found or empty. Assuming non-arc-corrected data");
     is_arccorrected = false;
-    }
-  else
-    {
+  } else {
     is_arccorrected = false;
-    for (
-      std::vector<string>::const_iterator iter = applied_corrections.begin();
-      iter != applied_corrections.end();
-      ++iter)
-      {
-        const string correction = standardise_keyword(*iter);
-        if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected")
-          {
-            is_arccorrected = true;
-            break;
-          }
-        else if (correction != "none")
-          warning("\nParsing Interfile header for projection data: \n"
-            "\t value '%s' for keyword 'applied corrections' ignored\n",
-            correction.c_str());
-      }
+    for (std::vector<string>::const_iterator iter = applied_corrections.begin(); iter != applied_corrections.end(); ++iter) {
+      const string correction = standardise_keyword(*iter);
+      if (correction == "radial arc-correction" || correction == "arc correction" || correction == "arc corrected") {
+        is_arccorrected = true;
+        break;
+      } else if (correction != "none")
+        warning("\nParsing Interfile header for projection data: \n"
+                "\t value '%s' for keyword 'applied corrections' ignored\n",
+                correction.c_str());
     }
+  }
 
-  if (find_storage_order())
-    {
-      error("Interfile error determining storage order");
-    }
+  if (find_storage_order()) {
+    error("Interfile error determining storage order");
+  }
 
   // can only do this now after the previous things were set
   if (InterfileRawDataHeaderSiemens::post_processing() == true)
@@ -434,49 +379,46 @@ bool InterfilePDFSHeaderSiemens::post_processing()
 
 /**********************************************************************/
 
-InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
-  : InterfileRawDataHeaderSiemens()
-{
+InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens() : InterfileRawDataHeaderSiemens() {
   // need to set this to construct the correct proj_data_info
   is_arccorrected = false;
   // need to set this for InterfileHeader::post_processing()
   // but will otherwise be ignored
   bytes_per_pixel = 4;
-  for (unsigned int dim = 0; dim != matrix_size.size(); ++dim)
-    {
-      matrix_size[dim].resize(1, 1);
-    }
-/*
- keywords different from a sinogram header (in alphabetical order)
-< %LM event and tag words format (bits):=32
-< %SMS-MI header name space:=PETLINK bin address
+  for (unsigned int dim = 0; dim != matrix_size.size(); ++dim) {
+    matrix_size[dim].resize(1, 1);
+  }
+  /*
+   keywords different from a sinogram header (in alphabetical order)
+  < %LM event and tag words format (bits):=32
+  < %SMS-MI header name space:=PETLINK bin address
 
-< %number of projections:=344
-< %number of views:=252
-< %preset type:=time
-< %preset unit:=seconds
-< %preset value:=900
-< %singles polling interval (sec):=2
-< %singles polling method:=instantaneous
-< %singles scale factor:=8
-< %time_sync:=25934299
-< %timing tagwords interval (msec):=1
-< %total listmode word counts:=331257106
-< %total number of singles blocks:=224
-< PET scanner type:=cylindrical
-< bin size (cm):=0.20445
+  < %number of projections:=344
+  < %number of views:=252
+  < %preset type:=time
+  < %preset unit:=seconds
+  < %preset value:=900
+  < %singles polling interval (sec):=2
+  < %singles polling method:=instantaneous
+  < %singles scale factor:=8
+  < %time_sync:=25934299
+  < %timing tagwords interval (msec):=1
+  < %total listmode word counts:=331257106
+  < %total number of singles blocks:=224
+  < PET scanner type:=cylindrical
+  < bin size (cm):=0.20445
 
-< data format:=CoincidenceList
+  < data format:=CoincidenceList
 
-< distance between rings (cm):=0.40625
-< end horizontal bed position (mm):=0
-< gantry crystal radius (cm):=32.8
-< gantry tilt angle (degrees):=0
+  < distance between rings (cm):=0.40625
+  < end horizontal bed position (mm):=0
+  < gantry crystal radius (cm):=32.8
+  < gantry tilt angle (degrees):=0
 
-> gantry tilt angle (degrees):=0.0
-< septa state:=none
-< transaxial FOV diameter (cm):=59.6
-*/
+  > gantry tilt angle (degrees):=0.0
+  < septa state:=none
+  < transaxial FOV diameter (cm):=59.6
+  */
 
   add_key("%number of projections", &num_bins);
   add_key("%number of views", &num_views);
@@ -505,32 +447,38 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   ignore_key("%total number of singles blocks");
   ignore_key("%time sync");
   ignore_key("%comment");
-  }
+}
 
-int InterfileListmodeHeaderSiemens::find_storage_order()
-{
+int
+InterfileListmodeHeaderSiemens::find_storage_order() {
   // always...
   storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
-    
+
   return false;
 }
 
-int InterfileListmodeHeaderSiemens::get_axial_compression() const
-{return axial_compression;}
-int InterfileListmodeHeaderSiemens::get_maximum_ring_difference() const
-{return maximum_ring_difference;}
-int InterfileListmodeHeaderSiemens::get_num_views() const
-{return num_views;}
-int InterfileListmodeHeaderSiemens::get_num_projections() const
-{return num_bins;}
+int
+InterfileListmodeHeaderSiemens::get_axial_compression() const {
+  return axial_compression;
+}
+int
+InterfileListmodeHeaderSiemens::get_maximum_ring_difference() const {
+  return maximum_ring_difference;
+}
+int
+InterfileListmodeHeaderSiemens::get_num_views() const {
+  return num_views;
+}
+int
+InterfileListmodeHeaderSiemens::get_num_projections() const {
+  return num_bins;
+}
 
-
-bool InterfileListmodeHeaderSiemens::post_processing()
-{
-  if (find_storage_order())
-    {
-      error("Interfile error determining storage order");
-    }
+bool
+InterfileListmodeHeaderSiemens::post_processing() {
+  if (find_storage_order()) {
+    error("Interfile error determining storage order");
+  }
 
   // can only do this now after the previous things were set
   if (InterfileRawDataHeaderSiemens::post_processing() == true)
@@ -538,6 +486,5 @@ bool InterfileListmodeHeaderSiemens::post_processing()
 
   return false;
 }
-
 
 END_NAMESPACE_STIR

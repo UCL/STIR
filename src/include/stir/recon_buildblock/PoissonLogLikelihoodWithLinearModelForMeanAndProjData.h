@@ -36,7 +36,7 @@
 //#include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
 #ifdef STIR_MPI
-#include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
+#  include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
 #endif
 
 START_NAMESPACE_STIR
@@ -46,8 +46,6 @@ class DistributedCachingInformation;
 //#ifdef STIR_MPI_CLASS_DEFINITION
 //#define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
 //#endif
-
-
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -72,7 +70,7 @@ class DistributedCachingInformation;
   \f[ P' y = F' D y \f]
 
   This can be generalised by using a different matrix \f$B\f$ to perform
-  the backprojection.  
+  the backprojection.
 
   The expression for the gradient becomes
 
@@ -92,7 +90,7 @@ class DistributedCachingInformation;
 
   In this class, the operation of multiplying with \f$F\f$ is performed
   by the forward projector, and with \f$B\f$ by the back projector.
-  Multiplying with \f$D\f$ corresponds to the BinNormalisation::undo() 
+  Multiplying with \f$D\f$ corresponds to the BinNormalisation::undo()
   function. Finally, the background term \f$a\f$ is stored in
   \c additive_proj_data_sptr (note: this is <strong>not</strong> \f$r\f$).
 
@@ -109,9 +107,9 @@ class DistributedCachingInformation;
 
   ; see ProjectorByBinPair hierarchy for possible values
   Projector pair type :=
-  
+
   ; reserved value: 0 means none
-  ; see PoissonLogLikelihoodWithLinearModelForMeanAndProjData 
+  ; see PoissonLogLikelihoodWithLinearModelForMeanAndProjData
   ; class documentation
   additive sinogram :=
 
@@ -128,33 +126,29 @@ class DistributedCachingInformation;
   \endverbatim
 */
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndProjData: 
-public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
-{
- private:
+class PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>> {
+private:
   typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
-    base_type;
+                                  GeneralisedObjectiveFunction<TargetT>, PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
+      base_type;
 
 public:
-
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   //
   /*! \name Variables for STIR_MPI
 
-  Only used when STIR_MPI is enabled. 
+  Only used when STIR_MPI is enabled.
   \todo move to protected area
   */
   //@{
   //! points to the information object needed to support distributed caching
-  DistributedCachingInformation * caching_info_ptr;
+  DistributedCachingInformation* caching_info_ptr;
   //#ifdef STIR_MPI
-  //!enable/disable key for distributed caching 
+  //! enable/disable key for distributed caching
   bool distributed_cache_enabled;
   bool distributed_tests_enabled;
   bool message_timings_enabled;
@@ -162,7 +156,6 @@ public:
   bool rpc_timings_enabled;
   //#endif
   //@}
-
 
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
@@ -176,11 +169,10 @@ public:
   /*! Dimensions etc are set from the \a proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
+  virtual TargetT* construct_target_ptr() const;
 
   /*! \name Functions to get parameters
-   \warning Be careful with changing shared pointers. If you modify the objects in 
+   \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -201,7 +193,7 @@ public:
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning After using any of these, you have to call set_up().
-   \warning Be careful with changing shared pointers. If you modify the objects in 
+   \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
 
   */
@@ -211,38 +203,31 @@ public:
   void set_max_segment_num_to_process(const int);
   void set_max_timing_pos_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  //N.E. Changed to ExamData
+  // N.E. Changed to ExamData
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
-  void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
+  void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&);
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual void set_input_data(const shared_ptr<ExamData>&);
   virtual const ProjData& get_input_data() const;
-//@}
-  
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
+  //@}
 
-  virtual std::unique_ptr<ExamInfo>
-  get_exam_info_uptr_for_target()  const;
+  virtual void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, const TargetT& current_estimate,
+                                                                     const int subset_num);
+
+  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
 #if 0
   // currently not used
   float sum_projection_data() const;
 #endif
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  virtual void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
- protected:
-  virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
+protected:
+  virtual Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr);
 
-  virtual double
-    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num);
+  virtual double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num);
 
   /*!
     The Hessian (without penalty) is approximately given by:
@@ -256,15 +241,15 @@ public:
     Hence
     \f[ H_{jk} =  \sum_i P_{ij}(1/y_i) P_{ik} \f]
 
-    In the above, we've used the plug-in approximation by replacing 
+    In the above, we've used the plug-in approximation by replacing
     forward projection of the true image by the measured data. However, the
-    later are noisy and this can create problems. 
+    later are noisy and this can create problems.
 
-    \todo Two work-arounds for the noisy estimate of the Hessian are listed below, 
+    \todo Two work-arounds for the noisy estimate of the Hessian are listed below,
     but they are currently not implemented.
 
-    One could smooth the data before performing the quotient. This should be done 
-    after normalisation to avoid problems with the high-frequency components in 
+    One could smooth the data before performing the quotient. This should be done
+    after normalisation to avoid problems with the high-frequency components in
     the normalisation factors:
     \f[ H_{jk} =  \sum_i G_{ij}{1 \over n_i \mathrm{smooth}( n_i y_i)} G_{ik} \f]
     where the probability matrix is factorised in a detection efficiency part (i.e. the
@@ -273,10 +258,8 @@ public:
 
     It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson).
   */
-  virtual Succeeded 
-      actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                             const TargetT& input,
-                                                                             const int subset_num) const;
+  virtual Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output, const TargetT& input,
+                                                                                           const int subset_num) const;
 
   /*!
     The Hessian (without penalty) is approximately given by:
@@ -291,11 +274,9 @@ public:
     This function is computationally expensive and can be approximated, see
     add_multiplication_with_approximate_sub_Hessian_without_penalty()
   */
-  virtual Succeeded
-        actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
-                const TargetT& current_image_estimate,
-                const TargetT& input,
-                const int subset_num) const;
+  virtual Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                              const TargetT& current_image_estimate,
+                                                                              const TargetT& input, const int subset_num) const;
 
 protected:
   //! Filename with input projection data
@@ -313,9 +294,8 @@ protected:
   int max_timing_pos_num_to_process;
 
   /**********************/
-   ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
+  ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
-
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
@@ -332,18 +312,17 @@ protected:
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;
 
-
   shared_ptr<ProjData> additive_proj_data_sptr;
 
   shared_ptr<BinNormalisation> normalisation_sptr;
 
- // TODO doc
+  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
 
-//Loglikelihood computation parameters
- // TODO rename and move higher up in the hierarchy 
+  // Loglikelihood computation parameters
+  // TODO rename and move higher up in the hierarchy
   //! subiteration interval at which the loglikelihood function is evaluated
   int loglikelihood_computation_interval;
 
@@ -360,17 +339,18 @@ protected:
   /*! Has to be called by initialise_keymap in the leaf-class */
   virtual void initialise_keymap();
   //! checks values after parsing
-  /*! Has to be called by post_processing in the leaf-class */  
+  /*! Has to be called by post_processing in the leaf-class */
   virtual bool post_processing();
 
   //! Checks of the current subset scheme is approximately balanced
-  /*! For this class, this means that the sub-sensitivities are 
+  /*! For this class, this means that the sub-sensitivities are
       approximately the same. The test simply looks at the number
       of views etc. It ignores unbalancing caused by normalisation_sptr
       (e.g. for instance when using asymmetric attenuation).
   */
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
- private:
+
+private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
 #if 0
   void
@@ -379,7 +359,7 @@ protected:
 };
 
 #ifdef STIR_MPI
-//made available to be called from DistributedWorker object
+// made available to be called from DistributedWorker object
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;

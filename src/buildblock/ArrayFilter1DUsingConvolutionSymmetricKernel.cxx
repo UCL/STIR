@@ -8,7 +8,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-  
+
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
@@ -36,39 +36,28 @@ using std::min;
 
 START_NAMESPACE_STIR
 template <typename elemT>
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
-ArrayFilter1DUsingConvolutionSymmetricKernel(const VectorWithOffset<elemT> &filter_coefficients_v)
-: filter_coefficients(filter_coefficients_v)
-{
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::ArrayFilter1DUsingConvolutionSymmetricKernel(
+    const VectorWithOffset<elemT>& filter_coefficients_v)
+    : filter_coefficients(filter_coefficients_v) {
   // TODO: remove 0 elements at the outside
 
-  assert(filter_coefficients.get_length() == 0 ||
-         filter_coefficients.get_min_index()==0);
+  assert(filter_coefficients.get_length() == 0 || filter_coefficients.get_min_index() == 0);
 }
 
-
 template <typename elemT>
-bool 
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
-is_trivial() const
-{
-  return
-    filter_coefficients.get_length() == 0 ||
-    (filter_coefficients.get_length()==1 &&
-     filter_coefficients[0] == 1);
+bool
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::is_trivial() const {
+  return filter_coefficients.get_length() == 0 || (filter_coefficients.get_length() == 1 && filter_coefficients[0] == 1);
 }
 
 // TODO generalise to arbitrary index ranges
 template <typename elemT>
 void
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
-do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
-{
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const {
   assert(out_array.get_min_index() == in_array.get_min_index());
   assert(out_array.get_max_index() == in_array.get_max_index());
 
-  if (is_trivial())
-  {
+  if (is_trivial()) {
     out_array = in_array;
     return;
   }
@@ -77,29 +66,27 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
   const int in_max = in_array.get_max_index();
   const int j_max = filter_coefficients.get_max_index();
 
-  for (int i=in_array.get_min_index(); 
-       i<=in_array.get_max_index(); i++) 
-  {
-    out_array[i] = filter_coefficients[0]*in_array[i];
-    int j=1;
+  for (int i = in_array.get_min_index(); i <= in_array.get_max_index(); i++) {
+    out_array[i] = filter_coefficients[0] * in_array[i];
+    int j = 1;
     // first do range where both i-j and i+j indices are valid for in_array
-    for (; j<=min(j_max,min(in_max-i, i-in_min)); j++) 
-      out_array[i] += filter_coefficients[j]*(in_array[i-j]+in_array[i+j]);  
-    //if (j>j_max) return;
+    for (; j <= min(j_max, min(in_max - i, i - in_min)); j++)
+      out_array[i] += filter_coefficients[j] * (in_array[i - j] + in_array[i + j]);
+    // if (j>j_max) return;
 
     // now do rest of i+j separate
     // next conditional is not necessary
-    //if (i-in_min < in_max-i)
+    // if (i-in_min < in_max-i)
     {
-      for (; j<=min(j_max,in_max-i); j++) 
-        out_array[i] += filter_coefficients[j]*(in_array[i+j]);    
+      for (; j <= min(j_max, in_max - i); j++)
+        out_array[i] += filter_coefficients[j] * (in_array[i + j]);
     }
     // now do rest of i-j separate
     // next conditional is not necessary
-    //else
+    // else
     {
-      for (; j<=min(j_max,i-in_min); j++) 
-        out_array[i] += filter_coefficients[j]*(in_array[i-j]);    
+      for (; j <= min(j_max, i - in_min); j++)
+        out_array[i] += filter_coefficients[j] * (in_array[i - j]);
     }
   }
 #if 0
@@ -161,7 +148,6 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
 #endif
 }
 
-
 #if 0
 template <typename elemT>
 static void
@@ -179,4 +165,3 @@ cir_shift_to_right(VectorWithOffset<elemT>&output,const VectorWithOffset<elemT>&
 template class ArrayFilter1DUsingConvolutionSymmetricKernel<float>;
 
 END_NAMESPACE_STIR
-

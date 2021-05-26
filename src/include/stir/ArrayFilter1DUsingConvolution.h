@@ -30,30 +30,30 @@
 #ifndef __stir_ArrayFilter1DUsingConvolution_H__
 #define __stir_ArrayFilter1DUsingConvolution_H__
 
-
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 #include "stir/BoundaryConditions.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class VectorWithOffset;
+template <typename elemT>
+class VectorWithOffset;
 
 /*!
   \ingroup Array
-  \brief This class implements convolution of a 1D array with an 
+  \brief This class implements convolution of a 1D array with an
   arbitrary (i.e. potentially non-symmetric) kernel.
 
   Convolution is non-periodic:
 
-  \f[ out_i = \sum_j kernel_j in_{i-j} \f] 
+  \f[ out_i = \sum_j kernel_j in_{i-j} \f]
 
   Note that for most kernels, the above convention means that the zero-
-  index of the kernel corresponds to the peak in the kernel. 
+  index of the kernel corresponds to the peak in the kernel.
 
-  By default, zero boundary conditions are used, i.e. elements of the input array 
-  that are outside its index range are considered to be 0.   
+  By default, zero boundary conditions are used, i.e. elements of the input array
+  that are outside its index range are considered to be 0.
 
-  Currently, "constant" boundary conditions are also implemented, i.e. elements of the input array 
+  Currently, "constant" boundary conditions are also implemented, i.e. elements of the input array
   that are outside its index range are considered to the same as the nearest element in the array
   (i.e. first element on the "left" and last element on the "right").
 
@@ -82,45 +82,33 @@ template <typename elemT> class VectorWithOffset;
   \todo implement other boundary conditions
   */
 template <typename elemT>
-class ArrayFilter1DUsingConvolution : 
-  public ArrayFunctionObject_2ArgumentImplementation<1,elemT>
-{
+class ArrayFilter1DUsingConvolution : public ArrayFunctionObject_2ArgumentImplementation<1, elemT> {
 public:
-
   //! Construct a trivial filter
   ArrayFilter1DUsingConvolution();
 
   //! Construct the filter given the kernel coefficients
-  /*! Currently \a bc has to be BoundaryConditions::zero or 
+  /*! Currently \a bc has to be BoundaryConditions::zero or
       BoundaryConditions::constant
   */
-  ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel, const BoundaryConditions::BC bc= BoundaryConditions::zero);
+  ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT>& filter_kernel,
+                                const BoundaryConditions::BC bc = BoundaryConditions::zero);
   //! checks if the kernel corresponds to a trivial filter operation
-  /*! 
+  /*!
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
   bool is_trivial() const;
 
-  virtual Succeeded 
-    get_influencing_indices(IndexRange<1>& influencing_indices, 
-                            const IndexRange<1>& output_indices) const;
+  virtual Succeeded get_influencing_indices(IndexRange<1>& influencing_indices, const IndexRange<1>& output_indices) const;
 
-  virtual Succeeded 
-    get_influenced_indices(IndexRange<1>& influenced_indices, 
-                           const IndexRange<1>& input_indices) const;
+  virtual Succeeded get_influenced_indices(IndexRange<1>& influenced_indices, const IndexRange<1>& input_indices) const;
 
 private:
-  VectorWithOffset< elemT> filter_coefficients;
+  VectorWithOffset<elemT> filter_coefficients;
   BoundaryConditions::BC _bc;
-  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
-
+  void do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const;
 };
-
-
 
 END_NAMESPACE_STIR
 
-
-#endif //ArrayFilter1DUsingConvolution
-
-
+#endif // ArrayFilter1DUsingConvolution

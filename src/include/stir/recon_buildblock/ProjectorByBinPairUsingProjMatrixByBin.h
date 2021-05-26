@@ -39,22 +39,16 @@ class Succeeded;
   \ingroup projection
   \brief A projector pair based on a single matrix
 */
-class ProjectorByBinPairUsingProjMatrixByBin : 
-  public RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
-                                 ProjectorByBinPair,
-                                 ProjectorByBinPair> 
-{ 
- private:
-  typedef
-    RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
-                            ProjectorByBinPair,
-                            ProjectorByBinPair> 
-    base_type;
+class ProjectorByBinPairUsingProjMatrixByBin
+    : public RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin, ProjectorByBinPair, ProjectorByBinPair> {
+private:
+  typedef RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin, ProjectorByBinPair, ProjectorByBinPair> base_type;
+
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
-  //! Default constructor 
+  //! Default constructor
   ProjectorByBinPairUsingProjMatrixByBin();
 
   //! Constructor that sets the projection matrix
@@ -62,20 +56,17 @@ public:
 
   //! Stores all necessary geometric info
   /*! First constructs forward and back projectors and then calls base_type::setup */
-  virtual Succeeded set_up(		 
-    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                           const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
+  );
 
-  ProjMatrixByBin const * 
-    get_proj_matrix_ptr() const;
+  ProjMatrixByBin const* get_proj_matrix_ptr() const;
 
   shared_ptr<ProjMatrixByBin> get_proj_matrix_sptr() const;
 
   void set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr);
 
 private:
-
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
   void set_defaults();
   void initialise_keymap();
@@ -83,6 +74,5 @@ private:
 };
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_recon_buildblock_ProjectorByBinPairUsingProjMatrixByBin_h_

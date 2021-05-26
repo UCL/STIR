@@ -38,12 +38,10 @@
 
 START_NAMESPACE_STIR
 
-InputStreamFromROOTFile::
-InputStreamFromROOTFile()
-{
-    set_defaults();
-    reset();
-    least_significant_clock_bit = 1.0e+12; // TODO remove cst or rename
+InputStreamFromROOTFile::InputStreamFromROOTFile() {
+  set_defaults();
+  reset();
+  least_significant_clock_bit = 1.0e+12; // TODO remove cst or rename
 }
 
 #if 0 // disabled as unused and incorrect
@@ -64,131 +62,117 @@ InputStreamFromROOTFile(std::string filename,
 #endif
 
 void
-InputStreamFromROOTFile::set_defaults()
-{
-    starting_stream_position = 0;
-    singles_readout_depth = -1;
-    exclude_scattered = false;
-    exclude_randoms = false;
-    low_energy_window = 0.f;
-    up_energy_window = 1000.f;
-    read_optional_root_fields=false;
-    crystal_repeater_x = -1;
-    crystal_repeater_y = -1;
-    crystal_repeater_z = -1;
-    num_virtual_axial_crystals_per_block = 0;
-    num_virtual_transaxial_crystals_per_block = 0;
+InputStreamFromROOTFile::set_defaults() {
+  starting_stream_position = 0;
+  singles_readout_depth = -1;
+  exclude_scattered = false;
+  exclude_randoms = false;
+  low_energy_window = 0.f;
+  up_energy_window = 1000.f;
+  read_optional_root_fields = false;
+  crystal_repeater_x = -1;
+  crystal_repeater_y = -1;
+  crystal_repeater_z = -1;
+  num_virtual_axial_crystals_per_block = 0;
+  num_virtual_transaxial_crystals_per_block = 0;
 }
 
 void
-InputStreamFromROOTFile::initialise_keymap()
-{
-    this->parser.add_key("name of data file", &this->filename);
-    this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
-    this->parser.add_key("name of input TChain", &this->chain_name);
-    this->parser.add_key("exclude scattered events", &this->exclude_scattered);
-    this->parser.add_key("exclude random events", &this->exclude_randoms);
-    this->parser.add_key("offset (num of detectors)", &this->offset_dets);
-    this->parser.add_key("low energy window (keV)", &this->low_energy_window);
-    this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
-    this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
+InputStreamFromROOTFile::initialise_keymap() {
+  this->parser.add_key("name of data file", &this->filename);
+  this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
+  this->parser.add_key("name of input TChain", &this->chain_name);
+  this->parser.add_key("exclude scattered events", &this->exclude_scattered);
+  this->parser.add_key("exclude random events", &this->exclude_randoms);
+  this->parser.add_key("offset (num of detectors)", &this->offset_dets);
+  this->parser.add_key("low energy window (keV)", &this->low_energy_window);
+  this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
+  this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
 
-    this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
-    this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
-    this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
+  this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
+  this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
+  this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
 }
 
 bool
-InputStreamFromROOTFile::post_processing()
-{
-    return false;
+InputStreamFromROOTFile::post_processing() {
+  return false;
 }
 
 Succeeded
-InputStreamFromROOTFile::set_up(const std::string & header_path)
-{
-    // check types, really should be compile time assert
-    if (!std::is_same<Int_t, std::int32_t>::value ||
-        !std::is_same<Float_t, float>::value ||
-        !std::is_same<Double_t, double>::value)
-      error("Internal error: ROOT types are not what we think they are.");
+InputStreamFromROOTFile::set_up(const std::string& header_path) {
+  // check types, really should be compile time assert
+  if (!std::is_same<Int_t, std::int32_t>::value || !std::is_same<Float_t, float>::value || !std::is_same<Double_t, double>::value)
+    error("Internal error: ROOT types are not what we think they are.");
 
-    FilePath f(filename,false);
-    f.prepend_directory_name(header_path);
+  FilePath f(filename, false);
+  f.prepend_directory_name(header_path);
 
-    const std::string fullfilename = f.get_as_string();
-    // Read the 4 bytes to check whether this is a ROOT file.
-    FileSignature signature(fullfilename.c_str());
-    if ( strncmp(signature.get_signature(), "root", 4) != 0)
-    {
-        error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
-              filename.c_str());
-    }
+  const std::string fullfilename = f.get_as_string();
+  // Read the 4 bytes to check whether this is a ROOT file.
+  FileSignature signature(fullfilename.c_str());
+  if (strncmp(signature.get_signature(), "root", 4) != 0) {
+    error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')", filename.c_str());
+  }
 
-    stream_ptr = new TChain(this->chain_name.c_str());
-    stream_ptr->Add(fullfilename.c_str());
-    stream_ptr->SetBranchAddress("time1", &time1);
-    stream_ptr->SetBranchAddress("time2", &time2);
-    stream_ptr->SetBranchAddress("eventID1",&eventID1);
-    stream_ptr->SetBranchAddress("eventID2",&eventID2);
-    stream_ptr->SetBranchAddress("energy1", &energy1);
-    stream_ptr->SetBranchAddress("energy2", &energy2);
-    stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
-    stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
+  stream_ptr = new TChain(this->chain_name.c_str());
+  stream_ptr->Add(fullfilename.c_str());
+  stream_ptr->SetBranchAddress("time1", &time1);
+  stream_ptr->SetBranchAddress("time2", &time2);
+  stream_ptr->SetBranchAddress("eventID1", &eventID1);
+  stream_ptr->SetBranchAddress("eventID2", &eventID2);
+  stream_ptr->SetBranchAddress("energy1", &energy1);
+  stream_ptr->SetBranchAddress("energy2", &energy2);
+  stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
+  stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
 
-    if (read_optional_root_fields)
-    {
-        stream_ptr->SetBranchAddress("axialPos",&axialPos);
-        stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
-        stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
-        stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
-        stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
-        stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
-        stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
-        stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle);
-        stream_ptr->SetBranchAddress("runID",&runID);
-        stream_ptr->SetBranchAddress("sinogramS",&sinogramS);
-        stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta);
-        stream_ptr->SetBranchAddress("sourceID1",&sourceID1);
-        stream_ptr->SetBranchAddress("sourceID2",&sourceID2);
-        stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
-        stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
-        stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
-        stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
-        stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
-        stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
-    }
+  if (read_optional_root_fields) {
+    stream_ptr->SetBranchAddress("axialPos", &axialPos);
+    stream_ptr->SetBranchAddress("globalPosX1", &globalPosX1);
+    stream_ptr->SetBranchAddress("globalPosX2", &globalPosX2);
+    stream_ptr->SetBranchAddress("globalPosY1", &globalPosY1);
+    stream_ptr->SetBranchAddress("globalPosY2", &globalPosY2);
+    stream_ptr->SetBranchAddress("globalPosZ1", &globalPosZ1);
+    stream_ptr->SetBranchAddress("globalPosZ2", &globalPosZ2);
+    stream_ptr->SetBranchAddress("rotationAngle", &rotation_angle);
+    stream_ptr->SetBranchAddress("runID", &runID);
+    stream_ptr->SetBranchAddress("sinogramS", &sinogramS);
+    stream_ptr->SetBranchAddress("sinogramTheta", &sinogramTheta);
+    stream_ptr->SetBranchAddress("sourceID1", &sourceID1);
+    stream_ptr->SetBranchAddress("sourceID2", &sourceID2);
+    stream_ptr->SetBranchAddress("sourcePosX1", &sourcePosX1);
+    stream_ptr->SetBranchAddress("sourcePosX2", &sourcePosX2);
+    stream_ptr->SetBranchAddress("sourcePosY1", &sourcePosY1);
+    stream_ptr->SetBranchAddress("sourcePosY2", &sourcePosY2);
+    stream_ptr->SetBranchAddress("sourcePosZ1", &sourcePosZ1);
+    stream_ptr->SetBranchAddress("sourcePosZ2", &sourcePosZ2);
+  }
 
-    return Succeeded::yes;
+  return Succeeded::yes;
 }
 
 void
-InputStreamFromROOTFile::set_crystal_repeater_x(int val)
-{
-    crystal_repeater_x = val;
+InputStreamFromROOTFile::set_crystal_repeater_x(int val) {
+  crystal_repeater_x = val;
 }
 
 void
-InputStreamFromROOTFile::set_crystal_repeater_y(int val)
-{
-    crystal_repeater_y = val;
+InputStreamFromROOTFile::set_crystal_repeater_y(int val) {
+  crystal_repeater_y = val;
 }
 
 void
-InputStreamFromROOTFile::set_crystal_repeater_z(int val)
-{
-    crystal_repeater_z = val;
+InputStreamFromROOTFile::set_crystal_repeater_z(int val) {
+  crystal_repeater_z = val;
 }
 
 void
-InputStreamFromROOTFile::set_num_virtual_axial_crystals_per_block(int val)
-{
+InputStreamFromROOTFile::set_num_virtual_axial_crystals_per_block(int val) {
   num_virtual_axial_crystals_per_block = val;
 }
 
 void
-InputStreamFromROOTFile::set_num_virtual_transaxial_crystals_per_block(int val)
-{
+InputStreamFromROOTFile::set_num_virtual_transaxial_crystals_per_block(int val) {
   num_virtual_transaxial_crystals_per_block = val;
 }
 

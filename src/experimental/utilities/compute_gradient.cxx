@@ -18,10 +18,10 @@
 */
 
 /*!
-  \file 
+  \file
   \ingroup utilities
- 
-  \brief 
+
+  \brief
 
 
   \author Kris Thielemans
@@ -32,7 +32,6 @@
 #include "stir/KeyParser.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-
 
 /*
 example
@@ -86,49 +85,41 @@ output filename:=
 end:=
 
 */
-int main(int argc, char **argv)
-{
+int
+main(int argc, char** argv) {
   USING_NAMESPACE_STIR;
-  typedef DiscretisedDensity<3,float> data_type;
+  typedef DiscretisedDensity<3, float> data_type;
 
-  shared_ptr<GeneralisedObjectiveFunction<data_type > 
-    obj_function_sptr;
+  shared_ptr < GeneralisedObjectiveFunction<data_type> obj_function_sptr;
   std::string input_filename;
   std::string output_filename;
-  shared_ptr<data_type > density_sptr, gradient_sptr;
+  shared_ptr<data_type> density_sptr, gradient_sptr;
 
-   KeyParser parser;
-   parser.add_start_key("compute gradient parameters");
-   parser.add_parsing_key("objective function type", &obj_function_sptr);
-   parser.add_key("input filename", &input_filename);
-   parser.add_key("output filename", &output_filename);
-   parser.add_stop_key("END"); 
-   if (parser.parse(argv[1]) == false || is_null_ptr(obj_function_sptr))
-     {
-       std::cerr << "Error parsing output file format from " << argv[1]<<endl;
-       exit(EXIT_FAILURE); 
-     }
+  KeyParser parser;
+  parser.add_start_key("compute gradient parameters");
+  parser.add_parsing_key("objective function type", &obj_function_sptr);
+  parser.add_key("input filename", &input_filename);
+  parser.add_key("output filename", &output_filename);
+  parser.add_stop_key("END");
+  if (parser.parse(argv[1]) == false || is_null_ptr(obj_function_sptr)) {
+    std::cerr << "Error parsing output file format from " << argv[1] << endl;
+    exit(EXIT_FAILURE);
+  }
 
-   density_sptr = data_type::read_from_file(input_filename);
+  density_sptr = data_type::read_from_file(input_filename);
 
-   if (obj_function_sptr->set_up(density_sptr) != Succeeded::yes)
-     {
-       error();
-     }
+  if (obj_function_sptr->set_up(density_sptr) != Succeeded::yes) {
+    error();
+  }
 
-   PoissonLogLikelihoodWithLinearModelForMean<data_type >&
-     obj_func =
-     dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<data_type >&>
-     (*obj_function_sptr);
+  PoissonLogLikelihoodWithLinearModelForMean<data_type>& obj_func =
+      dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<data_type>&>(*obj_function_sptr);
 
-   gradient_sptr = density_sptr->get_empty_copy();
+  gradient_sptr = density_sptr->get_empty_copy();
 
-   obj_func.compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr,
-								  *density_sptr,
-								  0);
+  obj_func.compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, *density_sptr, 0);
 
-   OutputFileFormat<data_type>::default_sptr()->
-     write_to_file(*gradient_sptr, output_filename);
+  OutputFileFormat<data_type>::default_sptr()->write_to_file(*gradient_sptr, output_filename);
 
-   return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

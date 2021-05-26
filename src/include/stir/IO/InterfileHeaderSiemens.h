@@ -15,11 +15,11 @@
 
     See STIR/LICENSE.txt for details
 */
-/*! 
+/*!
   \file
   \ingroup InterfileIO
   \brief  This file declares the classes stir::InterfileHeaderSiemens,
-          stir::InterfileImageHeader, stir::InterfilePDFSHeader  
+          stir::InterfileImageHeader, stir::InterfilePDFSHeader
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -28,7 +28,6 @@
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
 */
-
 
 #ifndef __stir_InterfileHeaderSiemens_H__
 #define __stir_InterfileHeaderSiemens_H__
@@ -44,12 +43,11 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a class for Interfile keywords (and parsing) common to 
+  \brief a class for Interfile keywords (and parsing) common to
   all types of data
   \ingroup InterfileIO
   */
-class InterfileHeaderSiemens : public InterfileHeader
-{
+class InterfileHeaderSiemens : public InterfileHeader {
 public:
   //! A value that can be used to signify that a variable has not been set during parsing.
   static const double double_value_not_set;
@@ -63,25 +61,22 @@ protected:
   virtual bool post_processing();
 
 private:
-
   // TODO the next few ones should be made static members
   // Lists of possible values for some keywords
-  //ASCIIlist_type number_format_values;	
+  // ASCIIlist_type number_format_values;
   ASCIIlist_type byte_order_values;
   ASCIIlist_type patient_position_values;
-  
+
   // Corresponding variables here
 
-  //int number_format_index;
+  // int number_format_index;
   int byte_order_index;
   int patient_position_index;
 
   void set_type_of_data();
 
- protected:
+protected:
   void read_scan_data_types();
-
-
 };
 
 #if 0 // probably not necessary
@@ -112,110 +107,98 @@ protected:
 Siemens PET projection or list mode data
 \ingroup InterfileIO
 */
-class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
-  {
-  public:
-    InterfileRawDataHeaderSiemens();
+class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens {
+public:
+  InterfileRawDataHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  virtual bool post_processing();
+  // need this to be false for the listmode data
+  bool is_arccorrected;
 
-    //! Returns false if OK, true if not.
-    virtual bool post_processing();
-    // need this to be false for the listmode data
-    bool is_arccorrected;
-  public:
+public:
+  ProjDataFromStream::StorageOrder storage_order;
+  std::vector<int> segment_sequence;
+  shared_ptr<ProjDataInfo> data_info_ptr;
 
-    ProjDataFromStream::StorageOrder storage_order;
-    std::vector<int> segment_sequence;
-    shared_ptr<ProjDataInfo> data_info_ptr;
+private:
+  void resize_segments_and_set();
+  // void read_frames_info();
 
-  private:
-    void resize_segments_and_set();
-    //void read_frames_info();
+  // int find_storage_order();
 
-    //int find_storage_order();
+protected:
+  int axial_compression;
+  int maximum_ring_difference;
 
-  protected:
-
-    int axial_compression;
-    int maximum_ring_difference;
-
-    std::vector<int> segment_table;
-    int num_segments;
-    int num_rings;
-    int num_views;
-    int num_bins;
-    int num_tof_bins;
-  };
-
+  std::vector<int> segment_table;
+  int num_segments;
+  int num_rings;
+  int num_views;
+  int num_bins;
+  int num_tof_bins;
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
 projection data (i.e. ProjDataFromStream)
 \ingroup InterfileIO
 */
-class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
-  {
-  public:
-    InterfilePDFSHeaderSiemens();
+class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens {
+public:
+  InterfilePDFSHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  virtual bool post_processing();
 
-    //! Returns false if OK, true if not.
-    virtual bool post_processing();
+public:
+  std::vector<std::string> applied_corrections;
+  bool compression;
 
-  public:
+private:
+  void resize_segments_and_set();
 
-    std::vector<std::string> applied_corrections;
-    bool compression;
+  int find_storage_order();
 
-  private:
-    void resize_segments_and_set();
+  int num_scan_data_types;
+  std::vector<std::string> scan_data_types;
+  void read_scan_data_types();
+  int total_num_sinograms;
+  std::string compression_as_string;
 
-    int find_storage_order();
-
-    int num_scan_data_types;
-    std::vector<std::string> scan_data_types;
-    void read_scan_data_types();
-    int total_num_sinograms;
-    std::string compression_as_string;
-
-    int num_buckets;
-    std::vector<int> bucket_singles_rates;
-    void read_bucket_singles_rates();
-  };
+  int num_buckets;
+  std::vector<int> bucket_singles_rates;
+  void read_bucket_singles_rates();
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
 Siemesn listmode data (in PETLINK format)
 \ingroup InterfileIO
 */
-class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
-  {
-  public:
-    InterfileListmodeHeaderSiemens();
+class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens {
+public:
+  InterfileListmodeHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  virtual bool post_processing();
 
-    //! Returns false if OK, true if not.
-    virtual bool post_processing();
+public:
+  //! Get axial compression
+  int get_axial_compression() const;
+  //! Get the maximum ring difference
+  int get_maximum_ring_difference() const;
+  //! Get the num of views
+  int get_num_views() const;
+  //! Gat the num of projections
+  int get_num_projections() const;
 
-  public:
-    //! Get axial compression
-    int get_axial_compression() const ;
-    //! Get the maximum ring difference
-    int get_maximum_ring_difference() const;
-    //! Get the num of views
-    int get_num_views() const;
-    //! Gat the num of projections
-    int get_num_projections() const;
-
- 
-  private:
-
-    int find_storage_order();
-
-  };
+private:
+  int find_storage_order();
+};
 
 END_NAMESPACE_STIR
 

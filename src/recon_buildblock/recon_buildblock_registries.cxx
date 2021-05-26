@@ -68,31 +68,32 @@
 #include "stir/OSSPS/OSSPSReconstruction.h"
 
 #ifdef HAVE_LLN_MATRIX
-#include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
+#  include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
 #include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 
 #ifdef HAVE_HDF5
-#include "stir/recon_buildblock/BinNormalisationFromGEHDF5.h"
+#  include "stir/recon_buildblock/BinNormalisationFromGEHDF5.h"
 #endif
 
 #include "stir/recon_buildblock/FourierRebinning.h"
 
 #ifdef STIR_WITH_NiftyPET_PROJECTOR
-#include "stir/recon_buildblock/NiftyPET_projector/ForwardProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/NiftyPET_projector/BackProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.h"
+#  include "stir/recon_buildblock/NiftyPET_projector/ForwardProjectorByBinNiftyPET.h"
+#  include "stir/recon_buildblock/NiftyPET_projector/BackProjectorByBinNiftyPET.h"
+#  include "stir/recon_buildblock/NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.h"
 #endif
 
 //#include "stir/IO/InputFileFormatRegistry.h"
 
 START_NAMESPACE_STIR
-//static RegisterInputFileFormat<InterfileProjMatrixByBinInputFileFormat> idummy0(0);
+// static RegisterInputFileFormat<InterfileProjMatrixByBinInputFileFormat> idummy0(0);
 
-static PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3,float> >::RegisterIt dummy1;
-static PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3,float> >::RegisterIt dummy2;
+static PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>::RegisterIt dummy1;
+static PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3, float>>::RegisterIt
+    dummy2;
 
-static FilterRootPrior<DiscretisedDensity<3,float> >::RegisterIt dummy4;
+static FilterRootPrior<DiscretisedDensity<3, float>>::RegisterIt dummy4;
 static QuadraticPrior<float>::RegisterIt dummy5;
 static PLSPrior<float>::RegisterIt dummyPLS;
 static RelativeDifferencePrior<float>::RegisterIt dummyRelativeDifference;
@@ -120,14 +121,14 @@ static BinNormalisationFromProjData::RegisterIt dummy93;
 static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
 static BinNormalisationSPECT::RegisterIt dummy95;
 static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
-static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3, float>>::RegisterIt Dummyxxxzz;
 
 static FBP2DReconstruction::RegisterIt dummy601;
 static FBP3DRPReconstruction::RegisterIt dummy602;
 
-static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603;
-static KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummyK ;
-static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
+static OSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummy603;
+static KOSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummyK;
+static OSSPSReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummy604;
 
 #ifdef STIR_WITH_NiftyPET_PROJECTOR
 static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;

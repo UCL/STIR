@@ -40,50 +40,45 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-
 /*!
   \brief Test class for ByteOrder and the preprocessor defines from
   ByteOrderDefine.h
   \ingroup test
 */
-class ByteOrderTests : public RunTests
-{
+class ByteOrderTests : public RunTests {
 public:
   void run_tests();
 };
 
 void
-ByteOrderTests::run_tests()
-{
+ByteOrderTests::run_tests() {
   cerr << "Tests for ByteOrder\n"
        << "Everythings is fine if the program runs without any output." << endl;
   // if any of these is wrong, check ByteOrderDefine.h
 
 #if STIRIsNativeByteOrderBigEndian
   check(ByteOrder::get_native_order() == ByteOrder::big_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #else
   check(ByteOrder::get_native_order() == ByteOrder::little_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #endif
 
 #if STIRIsNativeByteOrderLittleEndian
   check(ByteOrder::get_native_order() == ByteOrder::little_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #else
   check(ByteOrder::get_native_order() == ByteOrder::big_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #endif
-
 }
-
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
-{
+int
+main() {
   ByteOrderTests tests;
   tests.run_tests();
   return tests.main_return_value();

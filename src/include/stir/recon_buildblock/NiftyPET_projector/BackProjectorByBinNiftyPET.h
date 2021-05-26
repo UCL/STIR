@@ -56,13 +56,10 @@ Current limitations:
  - Projects all of the data in one go
  - Only debugged for span 11.
 */
-class BackProjectorByBinNiftyPET :
-  public RegisteredParsingObject<BackProjectorByBinNiftyPET,
-        BackProjectorByBin>
-{ 
+class BackProjectorByBinNiftyPET : public RegisteredParsingObject<BackProjectorByBinNiftyPET, BackProjectorByBin> {
 public:
-    //! Name which will be used when parsing a BackProjectorByBin object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a BackProjectorByBin object
+  static const char* const registered_name;
 
   //! Default constructor calls reset_timers()
   BackProjectorByBinNiftyPET();
@@ -73,23 +70,21 @@ public:
   virtual void initialise_keymap();
 
   //! Stores all necessary geometric info
- /*!
-  If necessary, set_up() can be called more than once.
-  */
- virtual void set_up(		 
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+  /*!
+   If necessary, set_up() can be called more than once.
+   */
+  virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
+  );
 
   //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
- virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const;
 
   /// Back project
   void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 
- /// Get output
- virtual void get_output(DiscretisedDensity<3,float> &) const;
-
+  /// Get output
+  virtual void get_output(DiscretisedDensity<3, float>&) const;
 
   /*! \brief tell the back projector to start accumulating into a new target.
     This function has to be called before any back-projection is initiated.*/
@@ -103,12 +98,10 @@ public:
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
 protected:
+  virtual void actual_back_project(const RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
+                                   const int min_tangential_pos_num, const int max_tangential_pos_num);
 
- virtual void actual_back_project(const RelatedViewgrams<float>&,
-                          const int min_axial_pos_num, const int max_axial_pos_num,
-                          const int min_tangential_pos_num, const int max_tangential_pos_num);
-
- private:
+private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   NiftyPETHelper _helper;
   int _cuda_device;
@@ -118,6 +111,5 @@ protected:
 };
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_gpu_BackProjectorByBinNiftyPET_h__

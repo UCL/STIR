@@ -30,12 +30,10 @@
 
 START_NAMESPACE_STIR
 
-const char * const 
-Box3D::registered_name = "Box3D";
+const char* const Box3D::registered_name = "Box3D";
 
-void 
-Box3D::initialise_keymap()
-{
+void
+Box3D::initialise_keymap() {
   parser.add_start_key("box parameters");
   parser.add_key("length-x (in mm)", &length_x);
   parser.add_key("length-y (in mm)", &length_y);
@@ -45,58 +43,42 @@ Box3D::initialise_keymap()
 }
 
 void
-Box3D::set_defaults()
-{  
+Box3D::set_defaults() {
   Shape3DWithOrientation::set_defaults();
-  length_x=0;
-  length_y=0;
-  length_z=0;
+  length_x = 0;
+  length_y = 0;
+  length_z = 0;
 }
 
 bool
-Box3D::
-post_processing()
-{
-  if (Shape3DWithOrientation::post_processing()==true)
+Box3D::post_processing() {
+  if (Shape3DWithOrientation::post_processing() == true)
     return true;
 
-  if (length_x <= 0)
-    {
-      warning("length_x should be positive, but is %g\n", length_x);
-      return true;
-    }
-  if (length_y <= 0)
-    {
-      warning("length_y should be positive, but is %g\n", length_y);
-      return true;
-    }
-  if (length_z <= 0)
-    {
-      warning("length_z should be positive, but is %g\n", length_z);
-      return true;
-    }
+  if (length_x <= 0) {
+    warning("length_x should be positive, but is %g\n", length_x);
+    return true;
+  }
+  if (length_y <= 0) {
+    warning("length_y should be positive, but is %g\n", length_y);
+    return true;
+  }
+  if (length_z <= 0) {
+    warning("length_z should be positive, but is %g\n", length_z);
+    return true;
+  }
   return false;
 }
 
-Box3D::Box3D()
-{
-  set_defaults(); 
-}
+Box3D::Box3D() { set_defaults(); }
 
-Box3D::Box3D(const float length_xv, 
-	     const float length_yv,
-	     const float length_zv,
-	     const CartesianCoordinate3D<float>& centre_v,
-	     const Array<2,float>& direction_vectors) 
-  :
-  length_x(length_xv),
-  length_y(length_yv),
-  length_z(length_zv)
-{
+Box3D::Box3D(const float length_xv, const float length_yv, const float length_zv, const CartesianCoordinate3D<float>& centre_v,
+             const Array<2, float>& direction_vectors)
+    : length_x(length_xv), length_y(length_yv), length_z(length_zv) {
   this->set_origin(centre_v);
   if (this->set_direction_vectors(direction_vectors) == Succeeded::no)
     error("Box3D constructor called with wrong direction_vectors");
-}  
+}
 #if 0
 
 Box3D::Box3D(const float length_xv,
@@ -117,28 +99,22 @@ Box3D::Box3D(const float length_xv,
 
 #endif
 
-bool Box3D::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
-{
-  const CartesianCoordinate3D<float> r = 
-    this->transform_to_shape_coords(coord);
-  
-  const float distance_along_x_axis= r.x();
-  const float distance_along_y_axis= r.y();
-  const float distance_along_z_axis= r.z();
-  
-  return
-    fabs(distance_along_x_axis)<length_x/2
-    && fabs(distance_along_y_axis)<length_y/2
-    && fabs(distance_along_z_axis)<length_z/2;
+bool
+Box3D::is_inside_shape(const CartesianCoordinate3D<float>& coord) const {
+  const CartesianCoordinate3D<float> r = this->transform_to_shape_coords(coord);
+
+  const float distance_along_x_axis = r.x();
+  const float distance_along_y_axis = r.y();
+  const float distance_along_z_axis = r.z();
+
+  return fabs(distance_along_x_axis) < length_x / 2 && fabs(distance_along_y_axis) < length_y / 2 &&
+         fabs(distance_along_z_axis) < length_z / 2;
 }
 
-float 
-Box3D:: 
-get_geometric_volume()const
-{
-   return static_cast<float>(length_x*length_y*length_z) / this->get_volume_of_unit_cell();
+float
+Box3D::get_geometric_volume() const {
+  return static_cast<float>(length_x * length_y * length_z) / this->get_volume_of_unit_cell();
 }
-
 
 #if 0
 // doesn't take scaling into account
@@ -151,34 +127,22 @@ get_geometric_area()const
 }
 #endif
 
-Shape3D* 
-Box3D:: 
-clone() const
-{
-  return static_cast<Shape3D *>(new Box3D(*this));
+Shape3D*
+Box3D::clone() const {
+  return static_cast<Shape3D*>(new Box3D(*this));
 }
 
 bool
-Box3D:: 
-operator==(const Box3D& box) const
-{
-  const float tolerance = 
-    std::min(length_z, std::min(length_x, length_y))/1000;
-  return
-    std::fabs(this->length_x - box.length_x) < tolerance
-    && std::fabs(this->length_y - box.length_y) < tolerance
-    && std::fabs(this->length_z - box.length_z) < tolerance
-    && Shape3DWithOrientation::operator==(box);
+Box3D::operator==(const Box3D& box) const {
+  const float tolerance = std::min(length_z, std::min(length_x, length_y)) / 1000;
+  return std::fabs(this->length_x - box.length_x) < tolerance && std::fabs(this->length_y - box.length_y) < tolerance &&
+         std::fabs(this->length_z - box.length_z) < tolerance && Shape3DWithOrientation::operator==(box);
 }
 
 bool
-Box3D:: 
-operator==(const Shape3D& shape) const
-{
-  Box3D const * box_ptr =
-    dynamic_cast<Box3D const *>(&shape);
-  return
-    box_ptr != 0 && (*this == *box_ptr);
+Box3D::operator==(const Shape3D& shape) const {
+  Box3D const* box_ptr = dynamic_cast<Box3D const*>(&shape);
+  return box_ptr != 0 && (*this == *box_ptr);
 }
 
 END_NAMESPACE_STIR

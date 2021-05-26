@@ -33,31 +33,21 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
-class GatedProjData :
- public MultipleProjData
-{
+class GatedProjData : public MultipleProjData {
 public:
-  static
-  unique_ptr<GatedProjData>
-    read_from_file(const std::string& filename);
+  static unique_ptr<GatedProjData> read_from_file(const std::string& filename);
 
-  GatedProjData() {};
+  GatedProjData(){};
 
-  GatedProjData(const MultipleProjData& m):
-    MultipleProjData(m)
-  {}
+  GatedProjData(const MultipleProjData& m) : MultipleProjData(m) {}
 
-  unsigned int get_num_gates() const
-  {
-    return this->get_num_proj_data();
-  }
+  unsigned int get_num_gates() const { return this->get_num_proj_data(); }
 
-  Succeeded   
-    write_to_ecat7(const std::string& filename) const;
-  //Succeeded
+  Succeeded write_to_ecat7(const std::string& filename) const;
+  // Succeeded
   //  write_to_files(const std::string& filename) const;
 
- private:
+private:
   TimeGateDefinitions _time_gate_definitions;
   static GatedProjData* read_from_gdef(const std::string& filename);
 };

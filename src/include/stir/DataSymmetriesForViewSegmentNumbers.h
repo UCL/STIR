@@ -41,7 +41,6 @@ class ViewSegmentNumbers;
 class ViewSegmentIndexRange;
 #endif
 
-
 /*!
   \ingroup projdata
   \brief A class for encoding/finding symmetries. Works only on
@@ -51,25 +50,23 @@ class ViewSegmentIndexRange;
   is useful to store and use all information on symmetries
   common between the image representation and the projection data.
 
-  The class mainly defines members to find \c basic ViewSegmentNumbers. These form a 
+  The class mainly defines members to find \c basic ViewSegmentNumbers. These form a
   'basis' for all ViewSegmentNumbers in the sense that all ViewSegmentNumbers
   can be obtained by using symmetry operations on the 'basic' ones.
 */
-class DataSymmetriesForViewSegmentNumbers
-{
+class DataSymmetriesForViewSegmentNumbers {
 public:
-
   virtual ~DataSymmetriesForViewSegmentNumbers();
 
-  virtual DataSymmetriesForViewSegmentNumbers * clone() const = 0;
+  virtual DataSymmetriesForViewSegmentNumbers* clone() const = 0;
 
   //! Check equality
   /*! Implemented in terms of blindly_equals, after checking the type */
-  bool operator ==(const DataSymmetriesForViewSegmentNumbers&) const;
+  bool operator==(const DataSymmetriesForViewSegmentNumbers&) const;
 
   //! Check inequality
   /*! Implemented in terms of operator==() */
-  bool operator !=(const DataSymmetriesForViewSegmentNumbers&) const;
+  bool operator!=(const DataSymmetriesForViewSegmentNumbers&) const;
 
 #if 0
   // TODO
@@ -79,37 +76,32 @@ public:
 #endif
 
   //! fills in a vector with all the view/segments that are related to 'v_s' (including itself)
-  virtual void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
+  virtual void get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
 
   //! returns the number of view_segment_numbers related to 'v_s'
-  /*! The default implementation is in terms of get_related_view_segment_numbers, which will be 
+  /*! The default implementation is in terms of get_related_view_segment_numbers, which will be
       slow of course */
-  virtual int
-    num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
+  virtual int num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
-  
+
   sets 'v_s' to the corresponding 'basic' view/segment and returns true if
   'v_s' is changed (i.e. it was NOT a basic view/segment).
-  */  
-  virtual bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const = 0;
+  */
+  virtual bool find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const = 0;
 
-  /*! \brief test if a view/segment is 'basic' 
+  /*! \brief test if a view/segment is 'basic'
 
   The default implementation uses find_basic_view_segment_numbers
   */
-  virtual bool
-    is_basic(const ViewSegmentNumbers& v_s) const;
+  virtual bool is_basic(const ViewSegmentNumbers& v_s) const;
 
- protected:
+protected:
   typedef DataSymmetriesForViewSegmentNumbers root_type;
 
-  virtual bool blindly_equals(const root_type * const) const = 0;
+  virtual bool blindly_equals(const root_type* const) const = 0;
 };
 
 END_NAMESPACE_STIR
 
 #endif
-

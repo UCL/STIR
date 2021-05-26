@@ -33,44 +33,46 @@
 
   \warning There is no check that the data sizes and other info are compatible.
   Hence, lots of funny effects can happen if data are not compatible.
-  \author Kris Thielemans 
+  \author Kris Thielemans
 */
 
 #include "stir/MultipleDataSetHeader.h"
 #include <vector>
-#include <fstream> 
-#include <iostream> 
+#include <fstream>
+#include <iostream>
 
 USING_NAMESPACE_STIR
 
-int 
-main(int argc, char **argv)
-{
-  if(argc<3)
-    {
-      std::cerr<< "Usage: " << argv[0] << "\n\t"
-               << "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n";
-      exit(EXIT_FAILURE);
-    }
+int
+main(int argc, char** argv) {
+  if (argc < 3) {
+    std::cerr << "Usage: " << argv[0] << "\n\t"
+              << "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n";
+    exit(EXIT_FAILURE);
+  }
   // skip program name
   --argc;
   ++argv;
 
-
-  if (argc==0)
-    { std::cerr << "No output file (nor input files) on command line\n"; exit(EXIT_FAILURE); }
+  if (argc == 0) {
+    std::cerr << "No output file (nor input files) on command line\n";
+    exit(EXIT_FAILURE);
+  }
 
   // find output filename
   const std::string output_file_name = *argv;
-    {
-      --argc; ++argv;
-    }
+  {
+    --argc;
+    ++argv;
+  }
 
   const int num_files = argc;
-  if (num_files==0)
-    { std::cerr << "No input files on command line\n"; exit(EXIT_FAILURE); }
+  if (num_files == 0) {
+    std::cerr << "No input files on command line\n";
+    exit(EXIT_FAILURE);
+  }
 
-  MultipleDataSetHeader::write_header(output_file_name, std::vector<char*>(argv, argv+argc));
+  MultipleDataSetHeader::write_header(output_file_name, std::vector<char*>(argv, argv + argc));
 
   return EXIT_SUCCESS;
 }

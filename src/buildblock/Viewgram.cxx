@@ -35,89 +35,56 @@
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating
-#pragma warning(disable: 4661)
+#  pragma warning(disable : 4661)
 #endif // _MSC_VER
 
 using std::string;
 
 START_NAMESPACE_STIR
 
-template<typename elemT>
+template <typename elemT>
 bool
-Viewgram<elemT>::
-has_same_characteristics(self_type const& other,
-			 string& explanation) const
-{
+Viewgram<elemT>::has_same_characteristics(self_type const& other, string& explanation) const {
   using boost::format;
   using boost::str;
 
-  if (*this->get_proj_data_info_sptr() !=
-      *other.get_proj_data_info_sptr())
-    {
-      explanation = 
-	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-	    % this->get_proj_data_info_sptr()->parameter_info()
-	    % other.get_proj_data_info_sptr()->parameter_info()
-	    );
-      return false;
-    }
-  if (this->get_view_num() !=
-      other.get_view_num())
-    {
-      explanation = 
-	str(format("Differing view number: %1% vs %2%")
-	    % this->get_view_num()
-	    % other.get_view_num()
-	    );
-      return false;
-    }
-  if (this->get_segment_num() !=
-      other.get_segment_num())
-    {
-      explanation = 
-	str(format("Differing segment number: %1% vs %2%")
-	    % this->get_segment_num()
-	    % other.get_segment_num()
-	    );
-      return false;
-    }
-  if (this->get_timing_pos_num() !=
-      other.get_timing_pos_num())
-    {
-      explanation =
-	str(format("Differing timing position index: %1% vs %2%")
-	    % this->get_timing_pos_num()
-	    % other.get_timing_pos_num()
-	    );
-      return false;
-    }
+  if (*this->get_proj_data_info_sptr() != *other.get_proj_data_info_sptr()) {
+    explanation = str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%") %
+                      this->get_proj_data_info_sptr()->parameter_info() % other.get_proj_data_info_sptr()->parameter_info());
+    return false;
+  }
+  if (this->get_view_num() != other.get_view_num()) {
+    explanation = str(format("Differing view number: %1% vs %2%") % this->get_view_num() % other.get_view_num());
+    return false;
+  }
+  if (this->get_segment_num() != other.get_segment_num()) {
+    explanation = str(format("Differing segment number: %1% vs %2%") % this->get_segment_num() % other.get_segment_num());
+    return false;
+  }
+  if (this->get_timing_pos_num() != other.get_timing_pos_num()) {
+    explanation =
+        str(format("Differing timing position index: %1% vs %2%") % this->get_timing_pos_num() % other.get_timing_pos_num());
+    return false;
+  }
   return true;
 }
 
-template<typename elemT>
+template <typename elemT>
 bool
-Viewgram<elemT>::
-has_same_characteristics(self_type const& other) const
-{
+Viewgram<elemT>::has_same_characteristics(self_type const& other) const {
   std::string explanation;
   return this->has_same_characteristics(other, explanation);
 }
 
-template<typename elemT>
-bool 
-Viewgram<elemT>::
-operator ==(const self_type& that) const
-{
-  return
-    this->has_same_characteristics(that) &&
-    base_type::operator==(that);
+template <typename elemT>
+bool
+Viewgram<elemT>::operator==(const self_type& that) const {
+  return this->has_same_characteristics(that) && base_type::operator==(that);
 }
-  
-template<typename elemT>
-bool 
-Viewgram<elemT>::
-operator !=(const self_type& that) const
-{
+
+template <typename elemT>
+bool
+Viewgram<elemT>::operator!=(const self_type& that) const {
   return !((*this) == that);
 }
 
@@ -126,18 +93,16 @@ operator !=(const self_type& that) const
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-Viewgram<elemT>::
-resize(const IndexRange<2>& range)
-{   
+void
+Viewgram<elemT>::resize(const IndexRange<2>& range) {
   if (range == this->get_index_range())
     return;
 
-  assert(range.is_regular()==true);
+  assert(range.is_regular() == true);
 
   const int ax_min = range.get_min_index();
   const int ax_max = range.get_max_index();
-  
+
   shared_ptr<ProjDataInfo> pdi_sptr(proj_data_info_sptr->clone());
 
   pdi_sptr->set_min_axial_pos_num(ax_min, get_segment_num());
@@ -147,23 +112,18 @@ resize(const IndexRange<2>& range)
 
   proj_data_info_sptr = pdi_sptr;
 
-  Array<2,elemT>::resize(range);
-	
+  Array<2, elemT>::resize(range);
 }
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-Viewgram<elemT>::
-grow(const IndexRange<2>& range)
-{
+void
+Viewgram<elemT>::grow(const IndexRange<2>& range) {
   resize(range);
 }
-
 
 /******************************
  instantiations

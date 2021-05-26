@@ -1,10 +1,10 @@
 //
 //
-/*! 
-  \file 
+/*!
+  \file
   \ingroup FBP2D
   \ingroup main_programs
-  \brief Main program for FBP2D reconstruction 
+  \brief Main program for FBP2D reconstruction
   \author Kris Thielemans
 */
 /*
@@ -28,21 +28,16 @@
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/Succeeded.h"
 #ifndef PARALLEL
-#define Main  main
+#  define Main main
 #else
-#define Main  master_main
+#  define Main master_main
 #endif
 
 USING_NAMESPACE_STIR
-    
-int Main(int argc, char **argv)
-{
-    FBP2DReconstruction 
-      reconstruction_object(argc>1?argv[1]:"");
 
+int
+Main(int argc, char** argv) {
+  FBP2DReconstruction reconstruction_object(argc > 1 ? argv[1] : "");
 
-  return reconstruction_object.reconstruct() == Succeeded::yes ?
-           EXIT_SUCCESS : EXIT_FAILURE;
-} 
-  
-
+  return reconstruction_object.reconstruct() == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+}

@@ -33,66 +33,103 @@
 START_NAMESPACE_STIR
 
 shared_ptr<const ProjDataInfo>
-ProjData::get_proj_data_info_sptr() const
-{
+ProjData::get_proj_data_info_sptr() const {
   return proj_data_info_sptr;
 }
 
-int ProjData::get_num_segments() const
-{ return proj_data_info_sptr->get_num_segments(); }
+int
+ProjData::get_num_segments() const {
+  return proj_data_info_sptr->get_num_segments();
+}
 
-int ProjData::get_num_axial_poss(const int segment_num) const
-{ return proj_data_info_sptr->get_num_axial_poss(segment_num); }
+int
+ProjData::get_num_axial_poss(const int segment_num) const {
+  return proj_data_info_sptr->get_num_axial_poss(segment_num);
+}
 
-int ProjData::get_num_views() const
-{ return proj_data_info_sptr->get_num_views(); }
+int
+ProjData::get_num_views() const {
+  return proj_data_info_sptr->get_num_views();
+}
 
-int ProjData::get_num_tangential_poss() const
-{ return proj_data_info_sptr->get_num_tangential_poss(); }
+int
+ProjData::get_num_tangential_poss() const {
+  return proj_data_info_sptr->get_num_tangential_poss();
+}
 
-int ProjData::get_num_tof_poss() const
-{ return proj_data_info_sptr->get_num_tof_poss(); }
+int
+ProjData::get_num_tof_poss() const {
+  return proj_data_info_sptr->get_num_tof_poss();
+}
 
-int ProjData::get_tof_mash_factor() const
-{ return proj_data_info_sptr->get_tof_mash_factor(); }
+int
+ProjData::get_tof_mash_factor() const {
+  return proj_data_info_sptr->get_tof_mash_factor();
+}
 
-int ProjData::get_min_segment_num() const
-{ return proj_data_info_sptr->get_min_segment_num(); }
+int
+ProjData::get_min_segment_num() const {
+  return proj_data_info_sptr->get_min_segment_num();
+}
 
-int ProjData::get_max_segment_num() const
-{ return proj_data_info_sptr->get_max_segment_num(); }
+int
+ProjData::get_max_segment_num() const {
+  return proj_data_info_sptr->get_max_segment_num();
+}
 
-int ProjData::get_min_axial_pos_num(const int segment_num) const
-{ return proj_data_info_sptr->get_min_axial_pos_num(segment_num); }
+int
+ProjData::get_min_axial_pos_num(const int segment_num) const {
+  return proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+}
 
-int ProjData::get_max_axial_pos_num(const int segment_num) const
-{ return proj_data_info_sptr->get_max_axial_pos_num(segment_num); }
+int
+ProjData::get_max_axial_pos_num(const int segment_num) const {
+  return proj_data_info_sptr->get_max_axial_pos_num(segment_num);
+}
 
-int ProjData::get_min_view_num() const
-{ return proj_data_info_sptr->get_min_view_num(); }
+int
+ProjData::get_min_view_num() const {
+  return proj_data_info_sptr->get_min_view_num();
+}
 
-int ProjData::get_max_view_num() const
-{ return proj_data_info_sptr->get_max_view_num(); }
+int
+ProjData::get_max_view_num() const {
+  return proj_data_info_sptr->get_max_view_num();
+}
 
-int ProjData::get_min_tangential_pos_num() const
-{ return proj_data_info_sptr->get_min_tangential_pos_num(); }
+int
+ProjData::get_min_tangential_pos_num() const {
+  return proj_data_info_sptr->get_min_tangential_pos_num();
+}
 
-int ProjData::get_max_tangential_pos_num() const
-{ return proj_data_info_sptr->get_max_tangential_pos_num(); }
+int
+ProjData::get_max_tangential_pos_num() const {
+  return proj_data_info_sptr->get_max_tangential_pos_num();
+}
 
-int ProjData::get_min_tof_pos_num() const
-{ return proj_data_info_sptr->get_min_tof_pos_num(); }
+int
+ProjData::get_min_tof_pos_num() const {
+  return proj_data_info_sptr->get_min_tof_pos_num();
+}
 
-int ProjData::get_max_tof_pos_num() const
-{ return proj_data_info_sptr->get_max_tof_pos_num(); }
+int
+ProjData::get_max_tof_pos_num() const {
+  return proj_data_info_sptr->get_max_tof_pos_num();
+}
 
-int ProjData::get_num_non_tof_sinograms() const
-{ return proj_data_info_sptr->get_num_non_tof_sinograms(); }
+int
+ProjData::get_num_non_tof_sinograms() const {
+  return proj_data_info_sptr->get_num_non_tof_sinograms();
+}
 
-int ProjData::get_num_sinograms() const
-{ return proj_data_info_sptr->get_num_sinograms(); }
+int
+ProjData::get_num_sinograms() const {
+  return proj_data_info_sptr->get_num_sinograms();
+}
 
-std::size_t ProjData::size_all() const
-{ return proj_data_info_sptr->size_all(); }
+std::size_t
+ProjData::size_all() const {
+  return proj_data_info_sptr->size_all();
+}
 
 END_NAMESPACE_STIR

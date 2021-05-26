@@ -63,9 +63,9 @@ using std::vector;
 
 #ifdef _MSC_VER
 // work-around for compiler bug: VC messes up std namespace
-#define FIND std::find
+#  define FIND std::find
 #else
-#define FIND find
+#  define FIND find
 #endif
 
 START_NAMESPACE_STIR
@@ -74,411 +74,315 @@ START_NAMESPACE_STIR
 //---------------------------------------------------------
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_info_sptr,
-                       shared_ptr<const ProjDataInfo> const& proj_data_info_sptr,
-                                       shared_ptr<iostream> const& s, const streamoff offs,
-                                       const vector<int>& segment_sequence_in_stream_v,
-                                       StorageOrder o,
-                                       NumericType data_type,
-                                       ByteOrder byte_order,
-                                       float scale_factor)
+                                       shared_ptr<const ProjDataInfo> const& proj_data_info_sptr, shared_ptr<iostream> const& s,
+                                       const streamoff offs, const vector<int>& segment_sequence_in_stream_v, StorageOrder o,
+                                       NumericType data_type, ByteOrder byte_order, float scale_factor)
 
-                                       :
-                                       ProjData(exam_info_sptr, proj_data_info_sptr),
-                                       sino_stream(s), offset(offs),
-                                       segment_sequence(segment_sequence_in_stream_v),
-                                       storage_order(o),
-                                       on_disk_data_type(data_type),
-                                       on_disk_byte_order(byte_order),
-                                       scale_factor(scale_factor)
-{
+    : ProjData(exam_info_sptr, proj_data_info_sptr), sino_stream(s), offset(offs), segment_sequence(segment_sequence_in_stream_v),
+      storage_order(o), on_disk_data_type(data_type), on_disk_byte_order(byte_order), scale_factor(scale_factor) {
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 
   if (proj_data_info_sptr->get_num_tof_poss() > 1)
-      activate_TOF();
-
+    activate_TOF();
 }
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_info_sptr,
-                       shared_ptr<const ProjDataInfo> const& proj_data_info_sptr,
-                                       shared_ptr<iostream> const& s, const streamoff offs,
-                                       StorageOrder o,
-                                       NumericType data_type,
-                                       ByteOrder byte_order,
+                                       shared_ptr<const ProjDataInfo> const& proj_data_info_sptr, shared_ptr<iostream> const& s,
+                                       const streamoff offs, StorageOrder o, NumericType data_type, ByteOrder byte_order,
                                        float scale_factor)
-                                       :
-                                       ProjData(exam_info_sptr, proj_data_info_sptr),
-                                       sino_stream(s), offset(offs),
-                                       storage_order(o),
-                                       on_disk_data_type(data_type),
-                                       on_disk_byte_order(byte_order),
-                                       scale_factor(scale_factor)
-{
+    : ProjData(exam_info_sptr, proj_data_info_sptr), sino_stream(s), offset(offs), storage_order(o), on_disk_data_type(data_type),
+      on_disk_byte_order(byte_order), scale_factor(scale_factor) {
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 
   segment_sequence.resize(proj_data_info_sptr->get_num_segments());
 
-  //N.E. Take this opportunity to calculate the size of the complete -full- 3D sinogram.
+  // N.E. Take this opportunity to calculate the size of the complete -full- 3D sinogram.
   // We will need that to skip timing positions
   int segment_num, i;
 
-  for (i= 0, segment_num = proj_data_info_sptr->get_min_segment_num();
-       segment_num<=proj_data_info_sptr->get_max_segment_num();
-       ++i, ++segment_num)
-  {
-    segment_sequence[i] =segment_num;
+  for (i = 0, segment_num = proj_data_info_sptr->get_min_segment_num(); segment_num <= proj_data_info_sptr->get_max_segment_num();
+       ++i, ++segment_num) {
+    segment_sequence[i] = segment_num;
   }
 
   if (proj_data_info_sptr->get_num_tof_poss() > 1)
     activate_TOF();
-
 }
 
 void
-ProjDataFromStream::activate_TOF()
-{
-    int sum = 0;
-    for (int segment_num = proj_data_info_sptr->get_min_segment_num();
-         segment_num<=proj_data_info_sptr->get_max_segment_num();
-         ++segment_num)
-    {
-      sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
-    }
+ProjDataFromStream::activate_TOF() {
+  int sum = 0;
+  for (int segment_num = proj_data_info_sptr->get_min_segment_num(); segment_num <= proj_data_info_sptr->get_max_segment_num();
+       ++segment_num) {
+    sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
+  }
 
-    offset_3d_data = static_cast<streamoff> (sum * on_disk_data_type.size_in_bytes());
+  offset_3d_data = static_cast<streamoff>(sum * on_disk_data_type.size_in_bytes());
 
-    // Now, lets initialise a TOF stream - Similarly to segments
-    storage_order = Timing_Segment_View_AxialPos_TangPos;
+  // Now, lets initialise a TOF stream - Similarly to segments
+  storage_order = Timing_Segment_View_AxialPos_TangPos;
 
-    timing_poss_sequence.resize(proj_data_info_sptr->get_num_tof_poss());
+  timing_poss_sequence.resize(proj_data_info_sptr->get_num_tof_poss());
 
-    for (int i= 0, timing_pos_num = proj_data_info_sptr->get_min_tof_pos_num();
-         timing_pos_num<=proj_data_info_sptr->get_max_tof_pos_num();
-         ++i, ++timing_pos_num)
-    {
-        timing_poss_sequence[i] = timing_pos_num;
-    }
-
+  for (int i = 0, timing_pos_num = proj_data_info_sptr->get_min_tof_pos_num();
+       timing_pos_num <= proj_data_info_sptr->get_max_tof_pos_num(); ++i, ++timing_pos_num) {
+    timing_poss_sequence[i] = timing_pos_num;
+  }
 }
 
 Viewgram<float>
-ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
-                                 const bool make_num_tangential_poss_odd, const int timing_pos) const
-{
-  if (is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd,
+                                 const int timing_pos) const {
+  if (is_null_ptr(sino_stream)) {
     error("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     error("ProjDataFromStream::get_viewgram: error in stream state before reading\n");
   }
 
-  vector<streamoff> offsets = get_offsets(view_num,segment_num, timing_pos);
+  vector<streamoff> offsets = get_offsets(view_num, segment_num, timing_pos);
 
   const streamoff segment_offset = offsets[0];
   const streamoff beg_view_offset = offsets[1];
   const streamoff intra_views_offset = offsets[2];
-  
+
   Viewgram<float> viewgram(proj_data_info_sptr, view_num, segment_num, timing_pos);
   float scale = float(1);
   Succeeded succeeded = Succeeded::yes;
-  
+
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
   {
-    sino_stream->seekg(segment_offset, ios::beg); // start of segment
+    sino_stream->seekg(segment_offset, ios::beg);  // start of segment
     sino_stream->seekg(beg_view_offset, ios::cur); // start of view within segment
-  
-    if (! *sino_stream)
-      {
-        warning("ProjDataFromStream::get_viewgram: error after seekg");
+
+    if (!*sino_stream) {
+      warning("ProjDataFromStream::get_viewgram: error after seekg");
+      succeeded = Succeeded::no;
+    } else if (get_storage_order() ==
+               Segment_AxialPos_View_TangPos) //|| get_storage_order() == Timing_Segment_AxialPos_View_TangPos)
+    {
+      for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++) {
+        if (read_data(*sino_stream, viewgram[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no) {
+          succeeded = Succeeded::no;
+          break;
+        } else if (scale != 1) {
+          warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
+          succeeded = Succeeded::no;
+          break;
+        }
+        // seek to next line unless it was the last we need to read
+        if (ax_pos_num != get_max_axial_pos_num(segment_num))
+          sino_stream->seekg(intra_views_offset, ios::cur);
+      }
+    } else if (get_storage_order() == Segment_View_AxialPos_TangPos ||
+               get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+      if (read_data(*sino_stream, viewgram, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no) {
+        succeeded = Succeeded::no;
+      } else if (scale != 1) {
+        warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
         succeeded = Succeeded::no;
       }
-    else if (get_storage_order() == Segment_AxialPos_View_TangPos) //|| get_storage_order() == Timing_Segment_AxialPos_View_TangPos)
-      {    
-        for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
-          {
-            if (read_data(*sino_stream, viewgram[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order)
-                == Succeeded::no)
-              {
-                succeeded = Succeeded::no;
-                break;
-              }
-            else if(scale != 1)
-              {
-                warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
-                succeeded = Succeeded::no;
-                break;
-              }
-            // seek to next line unless it was the last we need to read
-            if(ax_pos_num != get_max_axial_pos_num(segment_num))
-              sino_stream->seekg(intra_views_offset, ios::cur);
-          }
-      }  
-	else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-      {
-        if(read_data(*sino_stream, viewgram, on_disk_data_type, scale, on_disk_byte_order)
-           == Succeeded::no)
-          {
-            succeeded = Succeeded::no;
-          }
-        else if(scale != 1)
-          {
-            warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
-            succeeded = Succeeded::no;
-          }
-      }
+    }
   } // end of critical section
   if (succeeded == Succeeded::no)
     error("ProjDataFromStream: error reading data");
 
   viewgram *= scale_factor;
 
-  if (make_num_tangential_poss_odd &&(get_num_tangential_poss()%2==0))
+  if (make_num_tangential_poss_odd && (get_num_tangential_poss() % 2 == 0))
 
-    {
-      const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
+  {
+    const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
 
-      viewgram.grow(
-                    IndexRange2D(get_min_axial_pos_num(segment_num),
-                                 get_max_axial_pos_num(segment_num),
-                               
-                                 get_min_tangential_pos_num(),
-                                 new_max_tangential_pos));   
-    }
-  return viewgram;    
+    viewgram.grow(IndexRange2D(get_min_axial_pos_num(segment_num), get_max_axial_pos_num(segment_num),
+
+                               get_min_tangential_pos_num(), new_max_tangential_pos));
+  }
+  return viewgram;
 }
 
 float
-ProjDataFromStream::get_bin_value(const Bin& this_bin) const
-{
-    if (is_null_ptr(sino_stream))
-    {
-        error("ProjDataFromStream::get_bin_value: stream ptr is 0\n");
-    }
-    if (! *sino_stream)
-    {
-        error("ProjDataFromStream::get_bin_value: error in stream state before reading\n");
-    }
+ProjDataFromStream::get_bin_value(const Bin& this_bin) const {
+  if (is_null_ptr(sino_stream)) {
+    error("ProjDataFromStream::get_bin_value: stream ptr is 0\n");
+  }
+  if (!*sino_stream) {
+    error("ProjDataFromStream::get_bin_value: error in stream state before reading\n");
+  }
 
-    vector<streamoff> offsets = get_offsets_bin(this_bin);
+  vector<streamoff> offsets = get_offsets_bin(this_bin);
 
-    const streamoff total_offset = offsets[0];
+  const streamoff total_offset = offsets[0];
 
-    sino_stream->seekg(0 , ios::beg); // reset file
-    sino_stream->seekg(total_offset, ios::cur); // start of view within segment
+  sino_stream->seekg(0, ios::beg);            // reset file
+  sino_stream->seekg(total_offset, ios::cur); // start of view within segment
 
-    if (! *sino_stream)
-    {
-        error("ProjDataFromStream::get_bin_value: error after seekg.");
-    }
+  if (!*sino_stream) {
+    error("ProjDataFromStream::get_bin_value: error after seekg.");
+  }
 
-   Array< 1,  float>  value(1);
-    float scale = float(1);
+  Array<1, float> value(1);
+  float scale = float(1);
 
-    // Now the storage order is not more important. Just read.
-    if (read_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no)
-        error("ProjDataFromStream: error reading data\n");
-    if(scale != 1.f)
-        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
+  // Now the storage order is not more important. Just read.
+  if (read_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no)
+    error("ProjDataFromStream: error reading data\n");
+  if (scale != 1.f)
+    error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
 
-    value *= scale_factor;
+  value *= scale_factor;
 
-    return value[0];
+  return value[0];
 }
 
 void
-ProjDataFromStream::set_bin_value(const Bin& this_bin) 
-{
-    if (is_null_ptr(sino_stream))
-    {
-        error("ProjDataFromStream::set_bin_value: stream ptr is 0\n");
-    }
-    if (! *sino_stream)
-    {
-        error("ProjDataFromStream::set_bin_value: error in stream state before writing");
-    }
+ProjDataFromStream::set_bin_value(const Bin& this_bin) {
+  if (is_null_ptr(sino_stream)) {
+    error("ProjDataFromStream::set_bin_value: stream ptr is 0\n");
+  }
+  if (!*sino_stream) {
+    error("ProjDataFromStream::set_bin_value: error in stream state before writing");
+  }
 
-    vector<streamoff> offsets = get_offsets_bin(this_bin);
+  vector<streamoff> offsets = get_offsets_bin(this_bin);
 
-    const streamoff total_offset = offsets[0];
+  const streamoff total_offset = offsets[0];
 
-    sino_stream->seekp(0 , ios::beg); // reset file
-    sino_stream->seekp(total_offset, ios::cur); // start of view within segment
+  sino_stream->seekp(0, ios::beg);            // reset file
+  sino_stream->seekp(total_offset, ios::cur); // start of view within segment
 
-    if (! *sino_stream)
-    {
-        error("ProjDataFromStream::set_bin_value: error after seekp.");
-    }
+  if (!*sino_stream) {
+    error("ProjDataFromStream::set_bin_value: error after seekp.");
+  }
 
-    Array< 1,  float>  value(1);
-    value[0]=this_bin.get_bin_value();
-    float scale = float(1);
-    // Now the storage order is not more important. Just read.
-    if (write_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no)
-        error("ProjDataFromStream: error writing data\n");
-    if(scale != 1.f)
-        error("ProjDataFromStream: error writing data: scale factor returned by write_data should be 1\n");
+  Array<1, float> value(1);
+  value[0] = this_bin.get_bin_value();
+  float scale = float(1);
+  // Now the storage order is not more important. Just read.
+  if (write_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no)
+    error("ProjDataFromStream: error writing data\n");
+  if (scale != 1.f)
+    error("ProjDataFromStream: error writing data: scale factor returned by write_data should be 1\n");
 }
 
 vector<streamoff>
-ProjDataFromStream::get_offsets(const int view_num, const int segment_num,
-                                const int timing_num) const
+ProjDataFromStream::get_offsets(const int view_num, const int segment_num, const int timing_num) const
 
 {
-  if (!(segment_num >= get_min_segment_num() &&
-        segment_num <=  get_max_segment_num()))
+  if (!(segment_num >= get_min_segment_num() && segment_num <= get_max_segment_num()))
     error("ProjDataFromStream::get_offsets: segment_num out of range : %d", segment_num);
 
-  if (!(view_num >= get_min_view_num() &&
-        view_num <=  get_max_view_num()))
-    error("ProjDataFromStream::get_offsets: view_num out of range : %d", view_num); 
+  if (!(view_num >= get_min_view_num() && view_num <= get_max_view_num()))
+    error("ProjDataFromStream::get_offsets: view_num out of range : %d", view_num);
 
- // cout<<"get_offsets"<<endl;
- // for (int i = 0;i<segment_sequence.size();i++)
- // {
- //   cout<< segment_sequence[i]<<" ";
- // }
+  // cout<<"get_offsets"<<endl;
+  // for (int i = 0;i<segment_sequence.size();i++)
+  // {
+  //   cout<< segment_sequence[i]<<" ";
+  // }
 
-
- const  int index =
-    static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) -
-                     segment_sequence.begin());
+  const int index =
+      static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - segment_sequence.begin());
 
   streamoff num_axial_pos_offset = 0;
-  for (int i=0; i<index; i++)
-    num_axial_pos_offset +=
-      get_num_axial_poss(segment_sequence[i]);
+  for (int i = 0; i < index; i++)
+    num_axial_pos_offset += get_num_axial_poss(segment_sequence[i]);
 
-  streamoff segment_offset =
-    offset +
-    static_cast<streamoff>(num_axial_pos_offset*
-                           get_num_tangential_poss() *
-                           get_num_views() *
-                           on_disk_data_type.size_in_bytes());
+  streamoff segment_offset = offset + static_cast<streamoff>(num_axial_pos_offset * get_num_tangential_poss() * get_num_views() *
+                                                             on_disk_data_type.size_in_bytes());
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)
-  {
-
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
 
     const streamoff beg_view_offset =
-      (view_num - get_min_view_num()) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+        (view_num - get_min_view_num()) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-    const streamoff intra_views_offset =
-      (get_num_views() -1) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+    const streamoff intra_views_offset = (get_num_views() - 1) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
     vector<streamoff> temp(3);
     temp[0] = segment_offset;
     temp[1] = beg_view_offset;
     temp[2] = intra_views_offset;
 
     return temp;
-  }
-  else if (get_storage_order() == Segment_View_AxialPos_TangPos)
-  {
-    const streamoff beg_view_offset =
-      (view_num - get_min_view_num())
-      * get_num_axial_poss(segment_num)
-      * get_num_tangential_poss()
-      * on_disk_data_type.size_in_bytes();
-
+  } else if (get_storage_order() == Segment_View_AxialPos_TangPos) {
+    const streamoff beg_view_offset = (view_num - get_min_view_num()) * get_num_axial_poss(segment_num) *
+                                      get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
     vector<streamoff> temp(3);
-    temp[0] =segment_offset;
-    temp[1]= beg_view_offset;
+    temp[0] = segment_offset;
+    temp[1] = beg_view_offset;
     temp[2] = 0;
     return temp;
-  }
-  else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-  {
-      // The timing offset will be added to the segment offset. This approach we minimise the
-      // changes
-      if (!(timing_num >= get_min_tof_pos_num() &&
-            timing_num <=  get_max_tof_pos_num()))
-          error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
+  } else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+    // The timing offset will be added to the segment offset. This approach we minimise the
+    // changes
+    if (!(timing_num >= get_min_tof_pos_num() && timing_num <= get_max_tof_pos_num()))
+      error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
 
-      const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
-                                                timing_poss_sequence.begin());
+    const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
+                                              timing_poss_sequence.begin());
 
-      assert(offset_3d_data > 0);
-      segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
+    assert(offset_3d_data > 0);
+    segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
 
-      const streamoff beg_view_offset =
-        (view_num - get_min_view_num())
-        * get_num_axial_poss(segment_num)
-        * get_num_tangential_poss()
-        * on_disk_data_type.size_in_bytes();
+    const streamoff beg_view_offset = (view_num - get_min_view_num()) * get_num_axial_poss(segment_num) *
+                                      get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-
-      vector<streamoff> temp(3);
-      temp[0] = segment_offset;
-      temp[1] = beg_view_offset;
-      temp[2] = 0;
-      return temp;
-  }
-  else
-  {
+    vector<streamoff> temp(3);
+    temp[0] = segment_offset;
+    temp[1] = beg_view_offset;
+    temp[2] = 0;
+    return temp;
+  } else {
     error("ProjDataFromStream::get_offsets: unsupported storage_order");
     return vector<streamoff>(); // return something to avoid compiler warning
   }
 }
 
 Succeeded
-ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
-{
-  if (is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::set_viewgram(const Viewgram<float>& v) {
+  if (is_null_ptr(sino_stream)) {
     warning("ProjDataFromStream::set_viewgram: stream ptr is 0\n");
     return Succeeded::no;
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     warning("ProjDataFromStream::set_viewgram: error in stream state before writing\n");
     return Succeeded::no;
   }
 
   // KT 03/07/2001 modified handling of scale_factor etc.
-  if (on_disk_data_type.id != NumericType::FLOAT)
-  {
+  if (on_disk_data_type.id != NumericType::FLOAT) {
     warning("ProjDataFromStream::set_viewgram: non-float output uses original "
             "scale factor %g which might not be appropriate for the current data\n",
             scale_factor);
   }
 
-   if (get_num_tangential_poss() != v.get_proj_data_info_sptr()->get_num_tangential_poss())
-  {
+  if (get_num_tangential_poss() != v.get_proj_data_info_sptr()->get_num_tangential_poss()) {
     warning("ProjDataFromStream::set_viewgram: num_bins is not correct\n");
     return Succeeded::no;
   }
 
-  if (get_num_axial_poss(v.get_segment_num()) != v.get_num_axial_poss())
-  {
+  if (get_num_axial_poss(v.get_segment_num()) != v.get_num_axial_poss()) {
     warning("ProjDataFromStream::set_viewgram: number of axial positions is not correct\n");
     return Succeeded::no;
   }
 
-
-  if (*get_proj_data_info_sptr() != *(v.get_proj_data_info_sptr()))
-  {
+  if (*get_proj_data_info_sptr() != *(v.get_proj_data_info_sptr())) {
     warning("ProjDataFromStream::set_viewgram: viewgram has incompatible ProjDataInfo member\n"
             "Original ProjDataInfo: %s\n"
             "ProjDataInfo From viewgram: %s",
-            this->get_proj_data_info_sptr()->parameter_info().c_str(),
-            v.get_proj_data_info_sptr()->parameter_info().c_str()
-            );
+            this->get_proj_data_info_sptr()->parameter_info().c_str(), v.get_proj_data_info_sptr()->parameter_info().c_str());
 
-   return Succeeded::no;
+    return Succeeded::no;
   }
   int segment_num = v.get_segment_num();
   int view_num = v.get_view_num();
   int timing_pos = v.get_timing_pos_num();
 
-
-  vector<streamoff> offsets = get_offsets(view_num,segment_num, timing_pos);
+  vector<streamoff> offsets = get_offsets(view_num, segment_num, timing_pos);
   const streamoff segment_offset = offsets[0];
   const streamoff beg_view_offset = offsets[1];
   const streamoff intra_views_offset = offsets[2];
@@ -486,242 +390,174 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   Succeeded succeeded = Succeeded::yes;
 
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
   {
-    sino_stream->seekp(segment_offset, ios::beg); // start of segment
+    sino_stream->seekp(segment_offset, ios::beg);  // start of segment
     sino_stream->seekp(beg_view_offset, ios::cur); // start of view within segment
-  
-    if (! *sino_stream)
-      {
-        warning("ProjDataFromStream::set_viewgram: error after seekp");
-        succeeded = Succeeded::no;
-      }  
-    else if (get_storage_order() == Segment_AxialPos_View_TangPos)
-      {
-        for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
-          {
-      
-            if (write_data(*sino_stream, v[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order) 
-                == Succeeded::no
-                || scale != scale_factor)
-              {
-                warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-                        " corrupted due to problems with writing or the scale factor \n",
-                        view_num, segment_num);
-                succeeded = Succeeded::no;
-                break;
-              }
-            // seek to next line unless it was the last we need to read
-            if(ax_pos_num != get_max_axial_pos_num(segment_num))
-              sino_stream->seekp(intra_views_offset, ios::cur);
-          }
-        // flush the stream, see the class documentation
-        sino_stream->flush();
+
+    if (!*sino_stream) {
+      warning("ProjDataFromStream::set_viewgram: error after seekp");
+      succeeded = Succeeded::no;
+    } else if (get_storage_order() == Segment_AxialPos_View_TangPos) {
+      for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++) {
+
+        if (write_data(*sino_stream, v[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no ||
+            scale != scale_factor) {
+          warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+                  " corrupted due to problems with writing or the scale factor \n",
+                  view_num, segment_num);
+          succeeded = Succeeded::no;
+          break;
+        }
+        // seek to next line unless it was the last we need to read
+        if (ax_pos_num != get_max_axial_pos_num(segment_num))
+          sino_stream->seekp(intra_views_offset, ios::cur);
       }
-    else if (get_storage_order() == Segment_View_AxialPos_TangPos)
-      {
-        if (write_data(*sino_stream, v, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no
-            || scale != scale_factor)
-          {
-            warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-                    " corrupted due to problems with writing or the scale factor \n",
-                    view_num, segment_num);
-            succeeded = Succeeded::no;
-          }
-	    // flush the stream, see the class documentation
-	    sino_stream->flush();
-      }
-    else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-      {
-        if (write_data(*sino_stream, v, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no
-              || scale != scale_factor)
-          {
-            warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-                    " corrupted due to problems with writing or the scale factor \n",
-                    view_num, segment_num);
-            succeeded = Succeeded::no;
-          }
-  	  // flush the stream, see the class documentation
-  	  sino_stream->flush();
-      }
-    else
-      {
-        warning("ProjDataFromStream::set_viewgram: unsupported storage order\n"); 
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } else if (get_storage_order() == Segment_View_AxialPos_TangPos) {
+      if (write_data(*sino_stream, v, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no || scale != scale_factor) {
+        warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                view_num, segment_num);
         succeeded = Succeeded::no;
       }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+      if (write_data(*sino_stream, v, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no || scale != scale_factor) {
+        warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                view_num, segment_num);
+        succeeded = Succeeded::no;
+      }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } else {
+      warning("ProjDataFromStream::set_viewgram: unsupported storage order\n");
+      succeeded = Succeeded::no;
+    }
   } // end of critical section
   return succeeded;
 }
 
-
 std::vector<std::streamoff>
-ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
-{
+ProjDataFromStream::get_offsets_bin(const Bin this_bin) const {
 
-    if (!(this_bin.segment_num() >= get_min_segment_num() &&
-              this_bin.segment_num() <=  get_max_segment_num()))
-            error("ProjDataFromStream::get_offsets: segment_num out of range : %d", this_bin.segment_num());
+  if (!(this_bin.segment_num() >= get_min_segment_num() && this_bin.segment_num() <= get_max_segment_num()))
+    error("ProjDataFromStream::get_offsets: segment_num out of range : %d", this_bin.segment_num());
 
-    if (!(this_bin.axial_pos_num() >= get_min_axial_pos_num(this_bin.segment_num()) &&
-              this_bin.axial_pos_num() <=  get_max_axial_pos_num(this_bin.segment_num())))
-            error("ProjDataFromStream::get_offsets: axial_pos_num out of range : %d", this_bin.axial_pos_num());
+  if (!(this_bin.axial_pos_num() >= get_min_axial_pos_num(this_bin.segment_num()) &&
+        this_bin.axial_pos_num() <= get_max_axial_pos_num(this_bin.segment_num())))
+    error("ProjDataFromStream::get_offsets: axial_pos_num out of range : %d", this_bin.axial_pos_num());
 
+  const int index =
+      static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) - segment_sequence.begin());
 
-    const int index =
-            static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
-                             segment_sequence.begin());
+  streamoff num_axial_pos_offset = 0;
 
-    streamoff num_axial_pos_offset = 0;
+  for (int i = 0; i < index; i++)
+    num_axial_pos_offset += get_num_axial_poss(segment_sequence[i]);
 
-    for (int i=0; i<index; i++)
-        num_axial_pos_offset +=
-                get_num_axial_poss(segment_sequence[i]);
+  streamoff segment_offset = offset + static_cast<streamoff>(num_axial_pos_offset * get_num_tangential_poss() * get_num_views() *
+                                                             on_disk_data_type.size_in_bytes());
 
-    streamoff segment_offset =
-            offset +
-            static_cast<streamoff>(num_axial_pos_offset*
-                                   get_num_tangential_poss() *
-                                   get_num_views() *
-                                   on_disk_data_type.size_in_bytes());
+  // Now we are just in front of  the correct segment
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
+    // skip axial positions
+    const streamoff ax_pos_offset = (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) * get_num_views() *
+                                    get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-    // Now we are just in front of  the correct segment
-    if (get_storage_order() == Segment_AxialPos_View_TangPos)
-    {
-        // skip axial positions
-        const streamoff ax_pos_offset =
-                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num()))*
-                get_num_views() *
-                get_num_tangential_poss()*
-                on_disk_data_type.size_in_bytes();
+    // sinogram location
 
-        // sinogram location
+    // find view
+    const streamoff view_offset =
+        (this_bin.view_num() - get_min_view_num()) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-        //find view
-        const streamoff view_offset =
-                (this_bin.view_num() - get_min_view_num())
-                * get_num_tangential_poss()
-                * on_disk_data_type.size_in_bytes();
+    // find tang pos
+    const streamoff tang_offset =
+        (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
 
-        // find tang pos
-        const streamoff tang_offset =
-                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
+    vector<streamoff> temp(1);
+    temp[0] = segment_offset + ax_pos_offset + view_offset + tang_offset;
 
-        vector<streamoff> temp(1);
-        temp[0] = segment_offset + ax_pos_offset + view_offset +tang_offset;
+    return temp;
+  } else if (get_storage_order() == Segment_View_AxialPos_TangPos) {
 
-        return temp;
-    }
-    else if (get_storage_order() == Segment_View_AxialPos_TangPos)
-    {
+    // Skip views
+    const streamoff view_offset = (this_bin.view_num() - get_min_view_num()) * get_num_axial_poss(this_bin.segment_num()) *
+                                  get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-        // Skip views
-        const streamoff view_offset =
-                (this_bin.view_num() - get_min_view_num())*
-                get_num_axial_poss(this_bin.segment_num()) *
-                get_num_tangential_poss()*
-                on_disk_data_type.size_in_bytes();
+    // find axial pos
+    const streamoff ax_pos_offset = (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
+                                    get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
+    // find tang pos
+    const streamoff tang_offset =
+        (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
 
-        // find axial pos
-        const streamoff ax_pos_offset =
-                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
-                get_num_tangential_poss()*
-                on_disk_data_type.size_in_bytes();
+    vector<streamoff> temp(1);
+    temp[0] = segment_offset + ax_pos_offset + view_offset + tang_offset;
 
-        // find tang pos
-        const streamoff tang_offset =
-                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
+    return temp;
+  } else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+    // The timing offset will be added to the segment offset. This approach we minimise the
+    // changes
+    if (!(this_bin.timing_pos_num() >= get_min_tof_pos_num() && this_bin.timing_pos_num() <= get_max_tof_pos_num()))
+      error("ProjDataFromStream::get_offsets_bin: timing_num out of range : %d", this_bin.timing_pos_num());
 
-        vector<streamoff> temp(1);
-        temp[0] = segment_offset + ax_pos_offset +view_offset + tang_offset;
+    const int timing_index = static_cast<int>(
+        FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) - timing_poss_sequence.begin());
 
-        return temp;
-    }
-    else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-    {
-        // The timing offset will be added to the segment offset. This approach we minimise the
-        // changes
-        if (!(this_bin.timing_pos_num() >= get_min_tof_pos_num() &&
-              this_bin.timing_pos_num() <=  get_max_tof_pos_num()))
-            error("ProjDataFromStream::get_offsets_bin: timing_num out of range : %d", this_bin.timing_pos_num());
+    assert(offset_3d_data > 0);
+    segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
 
-        const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
-                                                  timing_poss_sequence.begin());
+    // Skip views
+    const streamoff view_offset = (this_bin.view_num() - get_min_view_num()) * get_num_axial_poss(this_bin.segment_num()) *
+                                  get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-        assert(offset_3d_data > 0);
-        segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
+    // find axial pos
+    const streamoff ax_pos_offset = (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
+                                    get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-        // Skip views
-        const streamoff view_offset =
-                (this_bin.view_num() - get_min_view_num())*
-                get_num_axial_poss(this_bin.segment_num()) *
-                get_num_tangential_poss()*
-                on_disk_data_type.size_in_bytes();
+    // find tang pos
+    const streamoff tang_offset =
+        (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
 
+    vector<streamoff> temp(1);
+    temp[0] = segment_offset + ax_pos_offset + view_offset + tang_offset;
 
-        // find axial pos
-        const streamoff ax_pos_offset =
-                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
-                get_num_tangential_poss()*
-                on_disk_data_type.size_in_bytes();
-
-        // find tang pos
-        const streamoff tang_offset =
-                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
-
-        vector<streamoff> temp(1);
-        temp[0] = segment_offset + ax_pos_offset +view_offset + tang_offset;
-
-        return temp;
-    }
-    else
-    {
-      error("ProjDataFromStream::get_offsets_bin: unsupported storage order");
-      return vector<streamoff>(); // return something to avoid compiler warning
-    }
+    return temp;
+  } else {
+    error("ProjDataFromStream::get_offsets_bin: unsupported storage order");
+    return vector<streamoff>(); // return something to avoid compiler warning
+  }
 }
 
 // get offsets for the sino data
 vector<streamoff>
-ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num, const int timing_num) const
-{
-  if (!(segment_num >= get_min_segment_num() &&
-        segment_num <=  get_max_segment_num()))
+ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num, const int timing_num) const {
+  if (!(segment_num >= get_min_segment_num() && segment_num <= get_max_segment_num()))
     error("ProjDataFromStream::get_offsets: segment_num out of range : %d", segment_num);
 
-  if (!(ax_pos_num >= get_min_axial_pos_num(segment_num) &&
-        ax_pos_num <=  get_max_axial_pos_num(segment_num)))
+  if (!(ax_pos_num >= get_min_axial_pos_num(segment_num) && ax_pos_num <= get_max_axial_pos_num(segment_num)))
     error("ProjDataFromStream::get_offsets: axial_pos_num out of range : %d", ax_pos_num);
 
   const int index =
-    static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) -
-                     segment_sequence.begin());
-
+      static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - segment_sequence.begin());
 
   streamoff num_axial_pos_offset = 0;
-  for (int i=0; i<index; i++)
-    num_axial_pos_offset +=
-      get_num_axial_poss(segment_sequence[i]);
+  for (int i = 0; i < index; i++)
+    num_axial_pos_offset += get_num_axial_poss(segment_sequence[i]);
 
+  streamoff segment_offset = offset + static_cast<streamoff>(num_axial_pos_offset * get_num_tangential_poss() * get_num_views() *
+                                                             on_disk_data_type.size_in_bytes());
 
-   streamoff segment_offset =
-    offset +
-    static_cast<streamoff>(num_axial_pos_offset*
-                           get_num_tangential_poss() *
-                           get_num_views() *
-                           on_disk_data_type.size_in_bytes());
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)
-  {
-
-    const streamoff beg_ax_pos_offset =
-      (ax_pos_num - get_min_axial_pos_num(segment_num))*
-           get_num_views() *
-           get_num_tangential_poss()*
-           on_disk_data_type.size_in_bytes();
+    const streamoff beg_ax_pos_offset = (ax_pos_num - get_min_axial_pos_num(segment_num)) * get_num_views() *
+                                        get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
     vector<streamoff> temp(3);
     temp[0] = segment_offset;
@@ -729,74 +565,61 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
     temp[2] = 0;
 
     return temp;
-  }
-  else if (get_storage_order() == Segment_View_AxialPos_TangPos)
-  {
-
+  } else if (get_storage_order() == Segment_View_AxialPos_TangPos) {
 
     const streamoff beg_ax_pos_offset =
-      (ax_pos_num - get_min_axial_pos_num(segment_num)) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+        (ax_pos_num - get_min_axial_pos_num(segment_num)) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
     const streamoff intra_ax_pos_offset =
-      (get_num_axial_poss(segment_num) -1) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
-
+        (get_num_axial_poss(segment_num) - 1) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
     vector<streamoff> temp(3);
-    temp[0] =segment_offset;
-    temp[1]= beg_ax_pos_offset;
-    temp[2] =intra_ax_pos_offset;
+    temp[0] = segment_offset;
+    temp[1] = beg_ax_pos_offset;
+    temp[2] = intra_ax_pos_offset;
     return temp;
-  }
-  else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-  {
-      // The timing offset will be added to the segment offset. This approach we minimise the
-      // changes
-      if (!(timing_num >= get_min_tof_pos_num() &&
-            timing_num <=  get_max_tof_pos_num()))
-          error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
+  } else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+    // The timing offset will be added to the segment offset. This approach we minimise the
+    // changes
+    if (!(timing_num >= get_min_tof_pos_num() && timing_num <= get_max_tof_pos_num()))
+      error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
 
-      const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
-                                                timing_poss_sequence.begin());
+    const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
+                                              timing_poss_sequence.begin());
 
-      assert(offset_3d_data > 0);
-      segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
+    assert(offset_3d_data > 0);
+    segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
 
-      const streamoff beg_ax_pos_offset =
-        (ax_pos_num - get_min_axial_pos_num(segment_num)) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+    const streamoff beg_ax_pos_offset =
+        (ax_pos_num - get_min_axial_pos_num(segment_num)) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-      const streamoff intra_ax_pos_offset =
-        (get_num_axial_poss(segment_num) -1) *get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+    const streamoff intra_ax_pos_offset =
+        (get_num_axial_poss(segment_num) - 1) * get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
 
-
-      vector<streamoff> temp(3);
-      temp[0] =segment_offset;
-      temp[1]= beg_ax_pos_offset;
-      temp[2] =intra_ax_pos_offset;
-      return temp;
-  }
-  else
-  {
-     error("ProjDataFromStream::get_offsets_sino: unsupported storage order");
-     return vector<streamoff>(); // return something to avoid compiler warning
+    vector<streamoff> temp(3);
+    temp[0] = segment_offset;
+    temp[1] = beg_ax_pos_offset;
+    temp[2] = intra_ax_pos_offset;
+    return temp;
+  } else {
+    error("ProjDataFromStream::get_offsets_sino: unsupported storage order");
+    return vector<streamoff>(); // return something to avoid compiler warning
   }
 }
 
 Sinogram<float>
-ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
-                                 const bool make_num_tangential_poss_odd, const int timing_pos) const
-{
-  if (is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd,
+                                 const int timing_pos) const {
+  if (is_null_ptr(sino_stream)) {
     error("ProjDataFromStream::get_sinogram: stream ptr is 0\n");
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     error("ProjDataFromStream::get_sinogram: error in stream state before reading\n");
   }
 
   // Call the get_offset to calculate the offsets, e.g
   // segment offset + view_offset + intra_view_offsets
-  vector<streamoff> offsets = get_offsets_sino(ax_pos_num,segment_num, timing_pos);
+  vector<streamoff> offsets = get_offsets_sino(ax_pos_num, segment_num, timing_pos);
 
   const streamoff segment_offset = offsets[0];
   const streamoff beg_ax_pos_offset = offsets[1];
@@ -806,109 +629,87 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   float scale = float(1);
   Succeeded succeeded = Succeeded::yes;
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)
-    {    
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
-      {
-        sino_stream->seekg(segment_offset, ios::beg); // start of segment
-        sino_stream->seekg(beg_ax_pos_offset, ios::cur); // start of view within segment  
-        if (! *sino_stream)
-          {
-            warning("ProjDataFromStream::get_sinogram: error after seekg");
-            succeeded = Succeeded::no;
-          }
-        else
-          {
-            succeeded = read_data(*sino_stream, sinogram, on_disk_data_type, scale, on_disk_byte_order);
-          }
-      } // end of critical section
-      if (succeeded == Succeeded::no)
-        error("ProjDataFromStream: error reading data");
-      if(scale != 1)
-        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
-    }  
-    else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-      {
-#ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
-#endif
-        {
-          sino_stream->seekg(segment_offset, ios::beg); // start of segment
-          sino_stream->seekg(beg_ax_pos_offset, ios::cur); // start of view within segment
-          if (! *sino_stream)
-            {
-              warning("ProjDataFromStream::get_sinogram: error after seekg");
-              succeeded = Succeeded::no;              
-            }
-          for (int view = get_min_view_num(); view <= get_max_view_num(); view++)
-            {
-              if (read_data(*sino_stream, sinogram[view], on_disk_data_type, scale, on_disk_byte_order)
-                == Succeeded::no)
-                {
-                  succeeded = Succeeded::no;
-                  break;
-                }
-              else if(scale != 1)
-                {
-                  warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
-                  succeeded = Succeeded::no;
-                  break;
-                }
-              // seek to next line unless it was the last we need to read
-              if(view != get_max_view_num())
-                sino_stream->seekg(intra_ax_pos_offset, ios::cur);
-            }    
-        } // end of critical section
+    {
+      sino_stream->seekg(segment_offset, ios::beg);    // start of segment
+      sino_stream->seekg(beg_ax_pos_offset, ios::cur); // start of view within segment
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::get_sinogram: error after seekg");
+        succeeded = Succeeded::no;
+      } else {
+        succeeded = read_data(*sino_stream, sinogram, on_disk_data_type, scale, on_disk_byte_order);
       }
+    } // end of critical section
+    if (succeeded == Succeeded::no)
+      error("ProjDataFromStream: error reading data");
+    if (scale != 1)
+      error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
+  } else if (get_storage_order() == Segment_View_AxialPos_TangPos ||
+             get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+#ifdef STIR_OPENMP
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
+#endif
+    {
+      sino_stream->seekg(segment_offset, ios::beg);    // start of segment
+      sino_stream->seekg(beg_ax_pos_offset, ios::cur); // start of view within segment
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::get_sinogram: error after seekg");
+        succeeded = Succeeded::no;
+      }
+      for (int view = get_min_view_num(); view <= get_max_view_num(); view++) {
+        if (read_data(*sino_stream, sinogram[view], on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no) {
+          succeeded = Succeeded::no;
+          break;
+        } else if (scale != 1) {
+          warning("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1");
+          succeeded = Succeeded::no;
+          break;
+        }
+        // seek to next line unless it was the last we need to read
+        if (view != get_max_view_num())
+          sino_stream->seekg(intra_ax_pos_offset, ios::cur);
+      }
+    } // end of critical section
+  }
   if (succeeded == Succeeded::no)
     error("ProjDataFromStream: error reading data");
 
   sinogram *= scale_factor;
 
-  if (make_num_tangential_poss_odd&&(get_num_tangential_poss()%2==0))
-    {
-      int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
+  if (make_num_tangential_poss_odd && (get_num_tangential_poss() % 2 == 0)) {
+    int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
 
-      sinogram.grow(IndexRange2D(get_min_view_num(),
-                                 get_max_view_num(),
-                                 get_min_tangential_pos_num(),
-                                 new_max_tangential_pos));    
-    }
+    sinogram.grow(IndexRange2D(get_min_view_num(), get_max_view_num(), get_min_tangential_pos_num(), new_max_tangential_pos));
+  }
 
   return sinogram;
 }
 
 Succeeded
-ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
-{
-  if (is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::set_sinogram(const Sinogram<float>& s) {
+  if (is_null_ptr(sino_stream)) {
     warning("ProjDataFromStream::set_sinogram: stream ptr is 0\n");
     return Succeeded::no;
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     warning("ProjDataFromStream::set_sinogram: error in stream state before writing\n");
     return Succeeded::no;
   }
   // KT 03/07/2001 modified handling of scale_factor etc.
-  if (on_disk_data_type.id != NumericType::FLOAT)
-  {
+  if (on_disk_data_type.id != NumericType::FLOAT) {
     warning("ProjDataFromStream::set_sinogram: non-float output uses original "
             "scale factor %g which might not be appropriate for the current data\n",
             scale_factor);
   }
 
-  if (*get_proj_data_info_sptr() != *(s.get_proj_data_info_sptr()))
-  {
+  if (*get_proj_data_info_sptr() != *(s.get_proj_data_info_sptr())) {
     warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member.\n"
             "Original ProjDataInfo: %s\n"
             "ProjDataInfo from sinogram: %s",
-            this->get_proj_data_info_sptr()->parameter_info().c_str(),
-            s.get_proj_data_info_sptr()->parameter_info().c_str()
-            );
+            this->get_proj_data_info_sptr()->parameter_info().c_str(), s.get_proj_data_info_sptr()->parameter_info().c_str());
 
     return Succeeded::no;
   }
@@ -916,8 +717,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   int ax_pos_num = s.get_axial_pos_num();
   int timing_pos = s.get_timing_pos_num();
 
-
-  vector<streamoff> offsets = get_offsets_sino(ax_pos_num,segment_num, timing_pos);
+  vector<streamoff> offsets = get_offsets_sino(ax_pos_num, segment_num, timing_pos);
   const streamoff segment_offset = offsets[0];
   const streamoff beg_ax_pos_offset = offsets[1];
   const streamoff intra_ax_pos_offset = offsets[2];
@@ -925,239 +725,191 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
 
   Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
   {
-    sino_stream->seekp(segment_offset, ios::beg); // start of segment
+    sino_stream->seekp(segment_offset, ios::beg);    // start of segment
     sino_stream->seekp(beg_ax_pos_offset, ios::cur); // start of view within segment
-  
-    if (! *sino_stream)
-      {
-        warning("ProjDataFromStream::set_sinogram: error after seekg\n");
-        succeeded = Succeeded::no;
-      }  
-  
-    if (get_storage_order() == Segment_AxialPos_View_TangPos)
-      {
-        if (write_data(*sino_stream, s, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no
-            || scale != scale_factor)
-          {
-            warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-                    " corrupted due to problems with writing or the scale factor \n",
-                    ax_pos_num, segment_num);
-            succeeded = Succeeded::no;
-          }
-        // flush the stream, see the class documentation
-        sino_stream->flush();
-      }
-    
-    else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-      {
-        for (int view = get_min_view_num();view <= get_max_view_num(); view++)
-          {
-            if (write_data(*sino_stream, s[view], on_disk_data_type, scale, on_disk_byte_order)
-                == Succeeded::no
-                || scale != scale_factor)
-              {
-                warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-                        " corrupted due to problems with writing or the scale factor \n",
-                        ax_pos_num, segment_num);
-                succeeded = Succeeded::no;
-                break;
-              }
-            // seek to next line unless it was the last we need to read
-            if(view != get_max_view_num())
-              sino_stream->seekp(intra_ax_pos_offset, ios::cur);
-          }
-        // flush the stream, see the class documentation
-        sino_stream->flush();
-      }
-    else
-      {
-        warning("ProjDataFromStream::set_sinogram: unsupported storage order"); 
+
+    if (!*sino_stream) {
+      warning("ProjDataFromStream::set_sinogram: error after seekg\n");
+      succeeded = Succeeded::no;
+    }
+
+    if (get_storage_order() == Segment_AxialPos_View_TangPos) {
+      if (write_data(*sino_stream, s, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no || scale != scale_factor) {
+        warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                ax_pos_num, segment_num);
         succeeded = Succeeded::no;
       }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    }
+
+    else if (get_storage_order() == Segment_View_AxialPos_TangPos ||
+             get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+      for (int view = get_min_view_num(); view <= get_max_view_num(); view++) {
+        if (write_data(*sino_stream, s[view], on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no ||
+            scale != scale_factor) {
+          warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+                  " corrupted due to problems with writing or the scale factor \n",
+                  ax_pos_num, segment_num);
+          succeeded = Succeeded::no;
+          break;
+        }
+        // seek to next line unless it was the last we need to read
+        if (view != get_max_view_num())
+          sino_stream->seekp(intra_ax_pos_offset, ios::cur);
+      }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } else {
+      warning("ProjDataFromStream::set_sinogram: unsupported storage order");
+      succeeded = Succeeded::no;
+    }
   } // end of critical section
   return succeeded;
 }
 
 streamoff
-ProjDataFromStream::get_offset_segment(const int segment_num) const
-{
- assert(segment_num >= get_min_segment_num() &&
-  segment_num <=  get_max_segment_num());
+ProjDataFromStream::get_offset_segment(const int segment_num) const {
+  assert(segment_num >= get_min_segment_num() && segment_num <= get_max_segment_num());
   {
-      const int index =
-        static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) -
-                         segment_sequence.begin());
+    const int index =
+        static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - segment_sequence.begin());
 
-      streamoff num_axial_pos_offset = 0;
-      for (int i=0; i<index; i++)
-      num_axial_pos_offset +=
-      get_num_axial_poss(segment_sequence[i]);
+    streamoff num_axial_pos_offset = 0;
+    for (int i = 0; i < index; i++)
+      num_axial_pos_offset += get_num_axial_poss(segment_sequence[i]);
 
-      const streamoff segment_offset =
-        offset +
-        num_axial_pos_offset *
-        get_num_tangential_poss() *
-        get_num_views()*
-        on_disk_data_type.size_in_bytes();
-       return segment_offset;
+    const streamoff segment_offset =
+        offset + num_axial_pos_offset * get_num_tangential_poss() * get_num_views() * on_disk_data_type.size_in_bytes();
+    return segment_offset;
   }
-
 }
 
 std::streamoff
-ProjDataFromStream::get_offset_timing(const int timing_num) const
-{
+ProjDataFromStream::get_offset_timing(const int timing_num) const {
 
-    const int index =
-            static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
-                             timing_poss_sequence.begin());
+  const int index =
+      static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) - timing_poss_sequence.begin());
 
-    assert (timing_num >= get_min_tof_pos_num() &&
-            timing_num <= get_max_tof_pos_num());
+  assert(timing_num >= get_min_tof_pos_num() && timing_num <= get_max_tof_pos_num());
+  {
+    if (offset_3d_data < 0) // Calculate the full 3D sinogram size - Very slow
     {
-        if(offset_3d_data < 0 ) // Calculate the full 3D sinogram size - Very slow
-        {
-            long long sum = 0;
+      long long sum = 0;
 
-            for (int segment_num = proj_data_info_sptr->get_min_segment_num();
-                 segment_num<=proj_data_info_sptr->get_max_segment_num();
-                 ++segment_num)
-            {
-                sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
-            }
-            return static_cast<streamoff> (sum * index *  on_disk_data_type.size_in_bytes());
-        }
-        else
-            return static_cast<std::streamoff>(offset_3d_data * index);
-    }
+      for (int segment_num = proj_data_info_sptr->get_min_segment_num();
+           segment_num <= proj_data_info_sptr->get_max_segment_num(); ++segment_num) {
+        sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
+      }
+      return static_cast<streamoff>(sum * index * on_disk_data_type.size_in_bytes());
+    } else
+      return static_cast<std::streamoff>(offset_3d_data * index);
+  }
 }
-
 
 // TODO the segment version could be written in terms of the above.
 // -> No need for get_offset_segment
 
 SegmentBySinogram<float>
-ProjDataFromStream::get_segment_by_sinogram(const int segment_num, const int timing_num) const
-{
-  if(is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::get_segment_by_sinogram(const int segment_num, const int timing_num) const {
+  if (is_null_ptr(sino_stream)) {
     error("ProjDataFromStream::get_segment_by_sinogram: stream ptr is 0\n");
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     error("ProjDataFromStream::get_segment_by_sinogram: error in stream state before reading\n");
   }
-    
-  streamoff segment_offset = get_offset_segment(segment_num);  
+
+  streamoff segment_offset = get_offset_segment(segment_num);
   // Go to the right timing full 3D sinogram
-  segment_offset += get_offset_timing(timing_num) ;
+  segment_offset += get_offset_timing(timing_num);
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)
-    {
-      SegmentBySinogram<float> segment(proj_data_info_sptr,segment_num, timing_num);
-      float scale = float(1);
-      Succeeded succeeded = Succeeded::yes;
-#ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
-#endif
-      {
-        sino_stream->seekg(segment_offset, ios::beg);
-        if (! *sino_stream)
-          {
-            warning("ProjDataFromStream::get_segment_by_sinogram: error after seekg");
-            succeeded = Succeeded::no;
-          }
-        else
-          {
-            succeeded = read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order);
-          }
-      } // end of critical section
-    if (succeeded == Succeeded::no)
-      error("ProjDataFromStream: error reading data\n");
-    if(scale != 1)
-      error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-
-    segment *= scale_factor;    
-    return  segment;
-    }
-  else
-    {
-      // TODO rewrite in terms of get_viewgram
-      return SegmentBySinogram<float> (get_segment_by_view(segment_num, timing_num));
-    }
-}
-
-SegmentByView<float>
-ProjDataFromStream::get_segment_by_view(const int segment_num, const int timing_pos) const
-{
-  if(is_null_ptr(sino_stream))
-  {
-    error("ProjDataFromStream::get_segment_by_view: stream ptr is 0\n");
-  }
-  if (! *sino_stream)
-  {
-    error("ProjDataFromStream::get_segment_by_view: error in stream state before reading\n");
-  }
-
-  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-  {    
-    SegmentByView<float> segment(proj_data_info_sptr,segment_num, timing_pos);
-    streamoff segment_offset = get_offset_segment(segment_num);
-	// Go to the right timing full 3D sinogram
-    segment_offset += get_offset_timing(timing_pos) ;
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
+    SegmentBySinogram<float> segment(proj_data_info_sptr, segment_num, timing_num);
     float scale = float(1);
-    Succeeded succeeded = Succeeded::yes;  
+    Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
     {
-      sino_stream->seekg(segment_offset, ios::beg); 
-      if (! *sino_stream)
-        {
-          warning("ProjDataFromStream::get_segment_by_sinogram: error after seekg");
-          succeeded = Succeeded::no;
-        }
-      else
-        {
-          succeeded = read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order);
-        }
+      sino_stream->seekg(segment_offset, ios::beg);
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::get_segment_by_sinogram: error after seekg");
+        succeeded = Succeeded::no;
+      } else {
+        succeeded = read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order);
+      }
     } // end of critical section
     if (succeeded == Succeeded::no)
-      error("ProjDataFromStream: error reading data");
-    if(scale != 1)
+      error("ProjDataFromStream: error reading data\n");
+    if (scale != 1)
       error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
 
     segment *= scale_factor;
     return segment;
+  } else {
+    // TODO rewrite in terms of get_viewgram
+    return SegmentBySinogram<float>(get_segment_by_view(segment_num, timing_num));
   }
- else
+}
+
+SegmentByView<float>
+ProjDataFromStream::get_segment_by_view(const int segment_num, const int timing_pos) const {
+  if (is_null_ptr(sino_stream)) {
+    error("ProjDataFromStream::get_segment_by_view: stream ptr is 0\n");
+  }
+  if (!*sino_stream) {
+    error("ProjDataFromStream::get_segment_by_view: error in stream state before reading\n");
+  }
+
+  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+    SegmentByView<float> segment(proj_data_info_sptr, segment_num, timing_pos);
+    streamoff segment_offset = get_offset_segment(segment_num);
+    // Go to the right timing full 3D sinogram
+    segment_offset += get_offset_timing(timing_pos);
+    float scale = float(1);
+    Succeeded succeeded = Succeeded::yes;
+#ifdef STIR_OPENMP
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
+#endif
+    {
+      sino_stream->seekg(segment_offset, ios::beg);
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::get_segment_by_sinogram: error after seekg");
+        succeeded = Succeeded::no;
+      } else {
+        succeeded = read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order);
+      }
+    } // end of critical section
+    if (succeeded == Succeeded::no)
+      error("ProjDataFromStream: error reading data");
+    if (scale != 1)
+      error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
+
+    segment *= scale_factor;
+    return segment;
+  } else
     // TODO rewrite in terms of get_sinogram as this doubles memory temporarily
-    return SegmentByView<float> (get_segment_by_sinogram(segment_num, timing_pos));
+    return SegmentByView<float>(get_segment_by_sinogram(segment_num, timing_pos));
 }
 
 Succeeded
-ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogram_v)
-{
-  if(is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogram_v) {
+  if (is_null_ptr(sino_stream)) {
     error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     error("ProjDataFromStream::set_segment: error in stream state before writing\n");
   }
 
-  if (get_num_tangential_poss() != segmentbysinogram_v.get_num_tangential_poss())
-  {
+  if (get_num_tangential_poss() != segmentbysinogram_v.get_num_tangential_poss()) {
     warning("ProjDataFromStream::set_segmen: num_bins is not correct\n");
     return Succeeded::no;
   }
-  if (get_num_views() != segmentbysinogram_v.get_num_views())
-  {
+  if (get_num_views() != segmentbysinogram_v.get_num_views()) {
     warning("ProjDataFromStream::set_segment: num_views is not correct\n");
     return Succeeded::no;
   }
@@ -1165,74 +917,58 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
   int segment_num = segmentbysinogram_v.get_segment_num();
   streamoff segment_offset = get_offset_segment(segment_num);
   // Go to the right timing full 3D sinogram
-  segment_offset += get_offset_timing(segmentbysinogram_v.get_timing_pos_num()) ;
+  segment_offset += get_offset_timing(segmentbysinogram_v.get_timing_pos_num());
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)    
-    {
-      // KT 03/07/2001 handle scale_factor appropriately
-      if (on_disk_data_type.id != NumericType::FLOAT)
-        {
-          warning("ProjDataFromStream::set_segment: non-float output uses original "
-                  "scale factor %g which might not be appropriate for the current data\n",
-                  scale_factor); 
-        }
-      float scale = scale_factor;
-      Succeeded succeeded = Succeeded::yes;
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) {
+    // KT 03/07/2001 handle scale_factor appropriately
+    if (on_disk_data_type.id != NumericType::FLOAT) {
+      warning("ProjDataFromStream::set_segment: non-float output uses original "
+              "scale factor %g which might not be appropriate for the current data\n",
+              scale_factor);
+    }
+    float scale = scale_factor;
+    Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
-      {
-        sino_stream->seekp(segment_offset,ios::beg);        
-        if (! *sino_stream)
-          {
-            warning("ProjDataFromStream::set_segment: error after seekp\n");
-            succeeded = Succeeded::no;
-          }  
-        else if (write_data(*sino_stream, segmentbysinogram_v, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no
-            || scale != scale_factor)
-          {
-            warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
-                    " corrupted due to problems with writing or the scale factor \n",
-                    segment_num, segmentbysinogram_v.get_timing_pos_num());
-            succeeded = Succeeded::no;
-          }
-	    // flush the stream, see the class documentation
-	    sino_stream->flush();
-      } // end of critical section
-      return succeeded;
-    }
-  else 
     {
-      // TODO rewrite in terms of set_viewgram
-      const SegmentByView<float> segmentbyview=
-        SegmentByView<float>(segmentbysinogram_v);
+      sino_stream->seekp(segment_offset, ios::beg);
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::set_segment: error after seekp\n");
+        succeeded = Succeeded::no;
+      } else if (write_data(*sino_stream, segmentbysinogram_v, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no ||
+                 scale != scale_factor) {
+        warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                segment_num, segmentbysinogram_v.get_timing_pos_num());
+        succeeded = Succeeded::no;
+      }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } // end of critical section
+    return succeeded;
+  } else {
+    // TODO rewrite in terms of set_viewgram
+    const SegmentByView<float> segmentbyview = SegmentByView<float>(segmentbysinogram_v);
 
-      return set_segment(segmentbyview);   
-    }
+    return set_segment(segmentbyview);
+  }
 }
 
-
 Succeeded
-ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
-{
-  if(is_null_ptr(sino_stream))
-  {
+ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v) {
+  if (is_null_ptr(sino_stream)) {
     error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
-  if (! *sino_stream)
-  {
+  if (!*sino_stream) {
     error("ProjDataFromStream::set_segment: error in stream state before writing\n");
   }
 
-
-  if (get_num_tangential_poss() != segmentbyview_v.get_num_tangential_poss())
-  {
+  if (get_num_tangential_poss() != segmentbyview_v.get_num_tangential_poss()) {
     warning("ProjDataFromStream::set_segment: num_bins is not correct\n");
     return Succeeded::no;
   }
-  if (get_num_views() != segmentbyview_v.get_num_views())
-  {
+  if (get_num_views() != segmentbyview_v.get_num_views()) {
     warning("ProjDataFromStream::set_segment: num_views is not correct\n");
     return Succeeded::no;
   }
@@ -1240,52 +976,42 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
   int segment_num = segmentbyview_v.get_segment_num();
   streamoff segment_offset = get_offset_segment(segment_num);
   // Go to the right timing full 3D sinogram
-  segment_offset += get_offset_timing(segmentbyview_v.get_timing_pos_num()) ;
+  segment_offset += get_offset_timing(segmentbyview_v.get_timing_pos_num());
 
-  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)    
-    {
-      // KT 03/07/2001 handle scale_factor appropriately
-      if (on_disk_data_type.id != NumericType::FLOAT)
-        {
-          warning("ProjDataFromStream::set_segment: non-float output uses original "
-                  "scale factor %g which might not be appropriate for the current data\n",
-                  scale_factor); 
-        }
-        float scale = scale_factor;
-        Succeeded succeeded = Succeeded::yes;
+  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos) {
+    // KT 03/07/2001 handle scale_factor appropriately
+    if (on_disk_data_type.id != NumericType::FLOAT) {
+      warning("ProjDataFromStream::set_segment: non-float output uses original "
+              "scale factor %g which might not be appropriate for the current data\n",
+              scale_factor);
+    }
+    float scale = scale_factor;
+    Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJDATAFROMSTREAMIO)
+#  pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
-        {
-          sino_stream->seekp(segment_offset,ios::beg);
-          if (! *sino_stream)
-            {
-              warning("ProjDataFromStream::set_segment: error after seekp");
-              succeeded = Succeeded::no;
-            }
-          else if (write_data(*sino_stream, segmentbyview_v, on_disk_data_type, scale, on_disk_byte_order)
-            == Succeeded::no
-            || scale != scale_factor)
-            {
-			  warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
-                      " corrupted due to problems with writing or the scale factor \n",
-                      segment_num, segmentbyview_v.get_timing_pos_num());
-              succeeded = Succeeded::no;
-            }
-          // flush the stream, see the class documentation
-          sino_stream->flush();
-        } // end of critical section
-        return succeeded;
-    }
-  else 
     {
-      // TODO rewrite in terms of set_sinogram    
-      const SegmentBySinogram<float> segmentbysinogram = 
-        SegmentBySinogram<float>(segmentbyview_v);
-      return set_segment(segmentbysinogram);
-    }
+      sino_stream->seekp(segment_offset, ios::beg);
+      if (!*sino_stream) {
+        warning("ProjDataFromStream::set_segment: error after seekp");
+        succeeded = Succeeded::no;
+      } else if (write_data(*sino_stream, segmentbyview_v, on_disk_data_type, scale, on_disk_byte_order) == Succeeded::no ||
+                 scale != scale_factor) {
+        warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                segment_num, segmentbyview_v.get_timing_pos_num());
+        succeeded = Succeeded::no;
+      }
+      // flush the stream, see the class documentation
+      sino_stream->flush();
+    } // end of critical section
+    return succeeded;
+  } else {
+    // TODO rewrite in terms of set_sinogram
+    const SegmentBySinogram<float> segmentbysinogram = SegmentBySinogram<float>(segmentbyview_v);
+    return set_segment(segmentbysinogram);
+  }
 }
-
 
 #if 0
 ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
@@ -1332,7 +1058,7 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
         memory = (char *)read_stream_in_memory(input, file_size);
       }
 
-#ifdef BOOST_NO_STRINGSTREAM
+#  ifdef BOOST_NO_STRINGSTREAM
       // This is the old implementation of the strstream class.
       // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
       //strstream in_stream(memory, file_size, ios::in | ios::binary);
@@ -1342,14 +1068,14 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 
       strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
       p_in_stream.reset(new iostream(buffer));
-#else
+#  else
       // TODO this does allocate and copy 2 times
           // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
       p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)),
                                            open_mode | ios::binary));
 
       delete[] memory;
-#endif
+#  endif
 
     } // else 'on_disk'
 
@@ -1454,18 +1180,8 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 #endif
 
 float
-ProjDataFromStream::get_scale_factor() const
-{
-  return scale_factor;}
-
-
+ProjDataFromStream::get_scale_factor() const {
+  return scale_factor;
+}
 
 END_NAMESPACE_STIR
-
-
-
-
-
-
-
-

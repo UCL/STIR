@@ -31,18 +31,14 @@
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
 START_NAMESPACE_STIR
-                          
+
 /*!
    \ingroup buildblock
    \brief  extracts a line from an array in the direction of the specified dimension.
    \todo make n-dimensional version
-*/ 
+*/
 template <class elemT>
-Array<1,elemT>
-inline
-extract_line(const Array<3,elemT> &,   
-             const BasicCoordinate<3,int>& index, 
-             const int dimension); 
+Array<1, elemT> inline extract_line(const Array<3, elemT>&, const BasicCoordinate<3, int>& index, const int dimension);
 END_NAMESPACE_STIR
 
 #include "stir/extract_line.inl"

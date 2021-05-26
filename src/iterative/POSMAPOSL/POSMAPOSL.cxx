@@ -26,22 +26,17 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/recon_buildblock/distributable_main.h"
 
-
-
 #ifdef STIR_MPI
-int stir::distributable_main(int argc, char **argv)
+int
+stir::distributable_main(int argc, char** argv)
 #else
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 #endif
 {
   using namespace stir;
 
-  OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >
-    reconstruction_object(argc>1?argv[1]:"");
-  
-  return reconstruction_object.reconstruct() == Succeeded::yes ?
-           EXIT_SUCCESS : EXIT_FAILURE;
+  OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid> reconstruction_object(argc > 1 ? argv[1] : "");
 
-
+  return reconstruction_object.reconstruct() == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

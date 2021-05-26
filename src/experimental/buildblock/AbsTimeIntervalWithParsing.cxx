@@ -19,30 +19,20 @@
 
 START_NAMESPACE_STIR
 
-const char * const
-AbsTimeIntervalWithParsing::registered_name = "secs since 1970";
+const char* const AbsTimeIntervalWithParsing::registered_name = "secs since 1970";
 
-static const double time_not_yet_determined=-4321;
+static const double time_not_yet_determined = -4321;
 
-AbsTimeIntervalWithParsing::
-AbsTimeIntervalWithParsing()
-{
-  set_defaults();
+AbsTimeIntervalWithParsing::AbsTimeIntervalWithParsing() { set_defaults(); }
+
+void
+AbsTimeIntervalWithParsing::set_defaults() {
+  _start_time_in_secs_since_1970 = time_not_yet_determined;
+  _end_time_in_secs_since_1970 = time_not_yet_determined;
 }
 
-
-void 
-AbsTimeIntervalWithParsing::
-set_defaults()
-{ 
-  _start_time_in_secs_since_1970=time_not_yet_determined;
-  _end_time_in_secs_since_1970=time_not_yet_determined;
-}
-
-void 
-AbsTimeIntervalWithParsing::
-initialise_keymap()
-{ 
+void
+AbsTimeIntervalWithParsing::initialise_keymap() {
   parser.add_start_key("Absolute Time Interval");
   parser.add_stop_key("end Absolute Time Interval");
 
@@ -51,21 +41,15 @@ initialise_keymap()
 }
 
 bool
-AbsTimeIntervalWithParsing::
-post_processing()
-{
-  if (this->get_start_time_in_secs_since_1970() < 10000.)
-    {
-      warning("AbsTimeInterval: start time (%g) too small", 
-	      this->get_start_time_in_secs_since_1970());
-      return true;
-    }
-  if (this->get_duration_in_secs() <= 0.)
-    {
-      warning("AbsTimeInterval: duration (%g) should be > 0", 
-	      this->get_duration_in_secs());
-      return true;
-    }
+AbsTimeIntervalWithParsing::post_processing() {
+  if (this->get_start_time_in_secs_since_1970() < 10000.) {
+    warning("AbsTimeInterval: start time (%g) too small", this->get_start_time_in_secs_since_1970());
+    return true;
+  }
+  if (this->get_duration_in_secs() <= 0.) {
+    warning("AbsTimeInterval: duration (%g) should be > 0", this->get_duration_in_secs());
+    return true;
+  }
 
   return false;
 }

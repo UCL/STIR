@@ -3,12 +3,12 @@
 #ifndef __Coordinate4D_H__
 #define __Coordinate4D_H__
 /*!
-  \file 
-  \ingroup Coordinate 
-  \brief defines the stir::Coordinate4D<coordT> class 
+  \file
+  \ingroup Coordinate
+  \brief defines the stir::Coordinate4D<coordT> class
 
-  \author Sanida Mustafovic 
-  \author Kris Thielemans 
+  \author Sanida Mustafovic
+  \author Kris Thielemans
   \author PARAPET project
 
 
@@ -32,23 +32,20 @@
     See STIR/LICENSE.txt for details
 */
 
-
-
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 /*!
-  \ingroup Coordinate 
+  \ingroup Coordinate
   \brief a templated class for 4-dimensional coordinates.
 
    The only new method is a constructor Coordinate4D<coordT>(c1,c2,c3,c4)
 
-   \warning Indices run from 1 to 4. 
+   \warning Indices run from 1 to 4.
 
 */
 template <typename coordT>
-class Coordinate4D : public BasicCoordinate<4, coordT>
-{
+class Coordinate4D : public BasicCoordinate<4, coordT> {
 protected:
   typedef BasicCoordinate<4, coordT> base_type;
 
@@ -64,4 +61,3 @@ END_NAMESPACE_STIR
 #include "stir/Coordinate4D.inl"
 
 #endif
-

@@ -13,10 +13,9 @@
   \author Kris Thielemans
 */
 
-
 #if 0
-#include "stir_experimental/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
-#include "stir_experimental/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
+#  include "stir_experimental/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
+#  include "stir_experimental/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
 #endif
 
 //#include "stir_experimental/recon_buildblock/BackProjectorByBinDistanceDriven.h"
@@ -27,13 +26,13 @@
 //#include "stir_experimental/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
 #include "stir_experimental/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
 #if 0
-#include "stir_experimental/recon_buildblock/BinNormalisationUsingProfile.h"
-#include "stir_experimental/recon_buildblock/BinNormalisationSinogramRescaling.h"
+#  include "stir_experimental/recon_buildblock/BinNormalisationUsingProfile.h"
+#  include "stir_experimental/recon_buildblock/BinNormalisationSinogramRescaling.h"
 //#include "stir/recon_buildblock/FilterRootPrior.h"
-#include "stir_experimental/recon_buildblock/ParametricQuadraticPrior.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
-#include "stir/modelling/ParametricDiscretisedDensity.h"
-#include "stir/DynamicDiscretisedDensity.h"
+#  include "stir_experimental/recon_buildblock/ParametricQuadraticPrior.h"
+#  include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#  include "stir/modelling/ParametricDiscretisedDensity.h"
+#  include "stir/DynamicDiscretisedDensity.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -47,15 +46,15 @@ static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<Parame
 static ParametricQuadraticPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dummy5;
 #endif
 
-//static PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<DynamicDiscretisedDensity>::RegisterIt Dummyyyy;
-//static BackProjectorByBinDistanceDriven::RegisterIt dummy1001;
-//static ForwardProjectorByBinDistanceDriven::RegisterIt dummy1002;
+// static PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<DynamicDiscretisedDensity>::RegisterIt Dummyyyy;
+// static BackProjectorByBinDistanceDriven::RegisterIt dummy1001;
+// static ForwardProjectorByBinDistanceDriven::RegisterIt dummy1002;
 
-//static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
+// static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 
-//static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
+// static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
 static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
-//static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
+// static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
 
 #if 0
 

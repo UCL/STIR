@@ -27,24 +27,20 @@
 
 START_NAMESPACE_STIR
 
-
 template <class VectorOfStringsT>
 void
-MultipleDataSetHeader::
-write_header(const std::string& filename, const VectorOfStringsT& individual_filenames)
-{
+MultipleDataSetHeader::write_header(const std::string& filename, const VectorOfStringsT& individual_filenames) {
   std::ofstream multi_file(filename.c_str());
   if (!multi_file.is_open())
     error("MultiDynamicDiscretisedDensity error: Failed to write \"" + filename + "\".\n");
 
   multi_file << "Multi :=\n";
   multi_file << "\ttotal number of data sets := " << individual_filenames.size() << "\n";
-  int i=1;
-  for (auto&& individual_filename : individual_filenames)
-    {
-      multi_file << "\tdata set["<<i<<"] := "<<individual_filename <<"\n";
-      ++i;
-    }
+  int i = 1;
+  for (auto&& individual_filename : individual_filenames) {
+    multi_file << "\tdata set[" << i << "] := " << individual_filename << "\n";
+    ++i;
+  }
   multi_file << "end :=\n";
   multi_file.close();
 }

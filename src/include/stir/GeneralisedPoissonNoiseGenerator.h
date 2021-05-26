@@ -17,7 +17,7 @@
 
 /*!
   \file
-  \ingroup buildblock 
+  \ingroup buildblock
   \brief Declares stir::GeneralisedPoissonNoiseGenerator
   \author Kris Thielemans
 */
@@ -30,11 +30,10 @@
 #include <boost/bind.hpp>
 // boost::serialization::make_array was moved in boost 1.64
 #if BOOST_VERSION == 106400
-#include <boost/serialization/array_wrapper.hpp>
+#  include <boost/serialization/array_wrapper.hpp>
 #endif
 
 START_NAMESPACE_STIR
-
 
 /*!
   \ingroup buildblock
@@ -49,13 +48,12 @@ START_NAMESPACE_STIR
   will be equal to mean_of_input, but then the output is no longer Poisson
   distributed.
 */
-class GeneralisedPoissonNoiseGenerator
-{
+class GeneralisedPoissonNoiseGenerator {
   // try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
   typedef boost::mt19937 base_generator_type;
   typedef base_generator_type::result_type poisson_result_type;
 
- public:
+public:
   //! Constructor intialises the andom number generator with a fixed seed
   GeneralisedPoissonNoiseGenerator(const float scaling_factor = 1.0F, const bool preserve_mean = false);
 
@@ -64,29 +62,22 @@ class GeneralisedPoissonNoiseGenerator
 
   //! generate a random number according to a distribution with mean mu
   float generate_random(const float mu);
-     
+
   template <int num_dimensions, class elemTout, class elemTin>
-    void generate_random(Array<num_dimensions, elemTout>& array_out,
-                         const Array<num_dimensions, elemTin>& array_in)
-    {
-      std::transform(array_in.begin_all(), array_in.end_all(),
-                     array_out.begin_all(),
-                     boost::bind(generate_scaled_poisson_random, _1, this->scaling_factor, this->preserve_mean));
-    }
+  void generate_random(Array<num_dimensions, elemTout>& array_out, const Array<num_dimensions, elemTin>& array_in) {
+    std::transform(array_in.begin_all(), array_in.end_all(), array_out.begin_all(),
+                   boost::bind(generate_scaled_poisson_random, _1, this->scaling_factor, this->preserve_mean));
+  }
 
-  void
-    generate_random(ProjData& output_projdata, 
-                    const ProjData& input_projdata);
+  void generate_random(ProjData& output_projdata, const ProjData& input_projdata);
 
- private:
+private:
   static base_generator_type generator;
   const float scaling_factor;
   const bool preserve_mean;
 
   static unsigned int generate_poisson_random(const float mu);
   static float generate_scaled_poisson_random(const float mu, const float scaling_factor, const bool preserve_mean);
-
 };
 
 END_NAMESPACE_STIR
-

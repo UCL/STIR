@@ -19,7 +19,7 @@
   \file
   \ingroup projection
 
-  \brief stir::ProjMatrixByBinSPECTUB's definition 
+  \brief stir::ProjMatrixByBinSPECTUB's definition
 
   \author Berta Marti Fuster
   \author Kris Thielemans
@@ -35,28 +35,28 @@
 #include "stir/shared_ptr.h"
 #include <iostream>
 
-
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class Bin;
 /*!
   \ingroup projection
   \brief generates projection matrix for SPECT studies
 
   This functionality is described in
-  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
-  <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>,
-  Med. Phys. 40, 092502 (2013); http://dx.doi.org/10.1118/1.4816676
+  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris
+Thielemans, <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>, Med. Phys. 40, 092502 (2013);
+http://dx.doi.org/10.1118/1.4816676
 
-  \warning this class currently only works with VoxelsOnCartesianGrid. 
+  \warning this class currently only works with VoxelsOnCartesianGrid.
 
   \par Sample parameter file
 
 \verbatim
-  Projection Matrix By Bin SPECT UB Parameters:=				
+  Projection Matrix By Bin SPECT UB Parameters:=
     ; width of PSF
     maximum number of sigmas:= 2.0
 
@@ -69,8 +69,8 @@ class Bin;
     collimator sigma 0(cm) := 0.1466
 
     ;Attenuation correction { Simple // Full // No }
-    attenuation type := Simple	
-    ;Values in attenuation map in cm-1			
+    attenuation type := Simple
+    ;Values in attenuation map in cm-1
     attenuation map := attMapRec.hv
 
     ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
@@ -84,17 +84,11 @@ End Projection Matrix By Bin SPECT UB Parameters:=
 \endverbatim
 */
 
-class ProjMatrixByBinSPECTUB : 
-  public RegisteredParsingObject<
-	      ProjMatrixByBinSPECTUB,
-              ProjMatrixByBin,
-              ProjMatrixByBin
-	       >
-{
- public :
+class ProjMatrixByBinSPECTUB : public RegisteredParsingObject<ProjMatrixByBinSPECTUB, ProjMatrixByBin, ProjMatrixByBin> {
+public:
   //! Name which will be used when parsing a ProjMatrixByBin object
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Default constructor (calls set_defaults())
   ProjMatrixByBinSPECTUB();
 
@@ -102,10 +96,9 @@ class ProjMatrixByBinSPECTUB :
   ~ProjMatrixByBinSPECTUB();
 
   //! Checks all necessary geometric info
-  virtual void set_up(		 
-		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-                      );
+  virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+  );
 
   bool get_keep_all_views_in_cache() const;
   //! Enable keeping the matrix in memory
@@ -122,8 +115,7 @@ class ProjMatrixByBinSPECTUB :
     You have to call set_up() after this (unless the value didn't change).
   */
   void set_attenuation_type(const std::string& value);
-  shared_ptr<const DiscretisedDensity<3,float> >
-    get_attenuation_image_sptr() const;
+  shared_ptr<const DiscretisedDensity<3, float>> get_attenuation_image_sptr() const;
   //! Sets attenuation image
   /*!
     The image has to have same characteristics as the emission image currently.
@@ -132,10 +124,8 @@ class ProjMatrixByBinSPECTUB :
 
     You have to call set_up() after this.
   */
-  void
-    set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
-  void
-    set_attenuation_image_sptr(const std::string& value);
+  void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>> value);
+  void set_attenuation_image_sptr(const std::string& value);
   //! Set the parameters for the depth-dependent resolution model
   /*!
     The detector and collimator blurring is modelled as a Gaussian with sigma dependent on the
@@ -152,17 +142,15 @@ class ProjMatrixByBinSPECTUB :
     You have to call set_up() after this.
   */
 
-  void
-    set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D = true);
-    
-    //Alex
-    //Fix to compile, missing function definition in header
-    ProjMatrixByBinSPECTUB * clone() const;
+  void set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D = true);
 
- private:
+  // Alex
+  // Fix to compile, missing function definition in header
+  ProjMatrixByBinSPECTUB* clone() const;
 
+private:
   // parameters that will be parsed
- 
+
   float minimum_weight;
   float maximum_number_of_sigmas;
   float spatial_resolution_PSF;
@@ -177,47 +165,43 @@ class ProjMatrixByBinSPECTUB :
 
   // explicitly list necessary members for image details (should use an Info object instead)
   CartesianCoordinate3D<float> voxel_size;
-  CartesianCoordinate3D<float> origin;  
+  CartesianCoordinate3D<float> origin;
   IndexRange<3> densel_range;
 
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   bool already_setup;
 
-
-  virtual void 
-    calculate_proj_matrix_elems_for_one_bin(
-                                            ProjMatrixElemsForOneBin&) const;
+  virtual void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
+  shared_ptr<const DiscretisedDensity<3, float>> attenuation_image_sptr;
 
   // wm_SPECT starts here ---------------------------------------------------------------------------------------------
-  bool *msk_3d; //!< voxels to be included in matrix (no weight calculated outside the mask) 
-  bool *msk_2d; //!< 2d collapse of msk_3d.
+  bool* msk_3d; //!< voxels to be included in matrix (no weight calculated outside the mask)
+  bool* msk_2d; //!< 2d collapse of msk_3d.
 
   //... variables for estimated sizes of arrays to allocate ................................
-  int **NITEMS;           //!< number of non-zero elements for each weight matrix row
+  int** NITEMS; //!< number of non-zero elements for each weight matrix row
 
   //... user defined structures (types defined in SPECTUB_Tools.h) .....................................
 
-  SPECTUB::volume_type vol;       //!< structure with volume (image) information
-  SPECTUB::proj_type prj;         //!< structure with projection information
+  SPECTUB::volume_type vol; //!< structure with volume (image) information
+  SPECTUB::proj_type prj;   //!< structure with projection information
 
-  SPECTUB::voxel_type vox;        //!< structure with voxel information
-  SPECTUB::bin_type bin;          //!< structure with bin information
+  SPECTUB::voxel_type vox; //!< structure with voxel information
+  SPECTUB::bin_type bin;   //!< structure with bin information
 
-  SPECTUB::angle_type * ang;      //!< structure with angle indices, values, ratios and voxel projections
-  float *attmap;         //!< attenuation map (copied as float array)
+  SPECTUB::angle_type* ang; //!< structure with angle indices, values, ratios and voxel projections
+  float* attmap;            //!< attenuation map (copied as float array)
 
-  SPECTUB::discrf_type gaussdens; //!< structure with gaussian density function 
+  SPECTUB::discrf_type gaussdens; //!< structure with gaussian density function
 
   int maxszb;
 
-	
   void compute_one_subset(const int kOS) const;
   void delete_UB_SPECT_arrays();
   mutable std::vector<bool> subset_already_processed;
@@ -226,6 +210,3 @@ class ProjMatrixByBinSPECTUB :
 END_NAMESPACE_STIR
 
 #endif
-
-
-

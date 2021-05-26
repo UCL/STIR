@@ -27,18 +27,17 @@
 */
 START_NAMESPACE_STIR
 
-float EllipsoidalCylinder:: get_geometric_volume()const
- {
-   return (radius_a*radius_b*_PI*length);
- }
-
-Shape3D* EllipsoidalCylinder:: clone() const
-{
-  return static_cast<Shape3D *>(new EllipsoidalCylinder(*this));
+float
+EllipsoidalCylinder::get_geometric_volume() const {
+  return (radius_a * radius_b * _PI * length);
 }
-void 
-EllipsoidalCylinder::scale(const CartesianCoordinate3D<float>& scale3D)
-{
+
+Shape3D*
+EllipsoidalCylinder::clone() const {
+  return static_cast<Shape3D*>(new EllipsoidalCylinder(*this));
+}
+void
+EllipsoidalCylinder::scale(const CartesianCoordinate3D<float>& scale3D) {
   origin *= scale3D;
   length *= scale3D.z();
   radius_b *= scale3D.y();

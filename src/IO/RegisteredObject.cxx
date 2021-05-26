@@ -33,16 +33,15 @@
 
 #ifdef __STIR_REGISTRY_NOT_INLINE
 
-#pragma message("instantiating RegisteredObject<OutputFileFormat >")
-#include "stir/IO/OutputFileFormat.h"
+#  pragma message("instantiating RegisteredObject<OutputFileFormat >")
+#  include "stir/IO/OutputFileFormat.h"
 // add here all roots of hierarchies based on RegisteredObject
 
 START_NAMESPACE_STIR
 
 template <typename Root>
-RegisteredObject<Root>::RegistryType& 
-RegisteredObject<Root>::registry ()
-{
+RegisteredObject<Root>::RegistryType&
+RegisteredObject<Root>::registry() {
   static RegistryType the_registry("None", 0);
   return the_registry;
 }
@@ -50,10 +49,10 @@ RegisteredObject<Root>::registry ()
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation,
 // note that we get a linking error if we don't have the explicit instantiation below
-#  pragma warning(disable:4660)
+#    pragma warning(disable : 4660)
 #  endif
 
-template RegisteredObject<OutputFileFormat >;
+template RegisteredObject<OutputFileFormat>;
 // add here all roots of hierarchies based on RegisteredObject
 
 END_NAMESPACE_STIR

@@ -1,7 +1,7 @@
 //
 //
 /*!
-  \file  
+  \file
   \ingroup buildblock
   \brief This file initialises ByteOrder::native_order.
 
@@ -37,7 +37,6 @@
 
 START_NAMESPACE_STIR
 
-
 /* A somewhat complicated way to determine the byteorder.
    The advantage is that it doesn't need ntohs (and so any
    compiler specific definitions, libraries or whatever).
@@ -45,22 +44,19 @@ START_NAMESPACE_STIR
    by casting its address as a char *.
    The reinterpret_cash is to make it typesafe for C++.
 
-   First we do a (paranoid) check : 
+   First we do a (paranoid) check :
       sizeof(unsigned long) - sizeof(unsigned char) > 0
-   This is done via a 'compile-time assertion', i.e. it breaks 
+   This is done via a 'compile-time assertion', i.e. it breaks
    at compile time when the assertion is false. The line below
    relies on the fact that you cannot have an array with
    zero (or less) elements.
  */
 
-typedef char 
-  assert_unsigned_long_size[sizeof(unsigned long) - sizeof(unsigned char)];
+typedef char assert_unsigned_long_size[sizeof(unsigned long) - sizeof(unsigned char)];
 
 static const unsigned long magic = 1;
 
 const ByteOrder::Order ByteOrder::native_order =
-  *(reinterpret_cast<const unsigned char*>(&magic) ) == 1 ?
-      little_endian : big_endian;
-
+    *(reinterpret_cast<const unsigned char*>(&magic)) == 1 ? little_endian : big_endian;
 
 END_NAMESPACE_STIR

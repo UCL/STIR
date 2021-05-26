@@ -30,56 +30,38 @@
 
 START_NAMESPACE_STIR
 
-SinglesRatesForTimeFrames::
-SinglesRatesForTimeFrames()
-{}
+SinglesRatesForTimeFrames::SinglesRatesForTimeFrames() {}
 
-
-float 
-SinglesRatesForTimeFrames::
-get_singles_rate(const int singles_bin_index, 
-		 const unsigned int time_frame_num) const
-{ 
-  return(this->_singles[time_frame_num][singles_bin_index]);
+float
+SinglesRatesForTimeFrames::get_singles_rate(const int singles_bin_index, const unsigned int time_frame_num) const {
+  return (this->_singles[time_frame_num][singles_bin_index]);
 }
 
-void 
-SinglesRatesForTimeFrames::
-set_singles_rate(const int singles_bin_index, 
-		 const unsigned time_frame_num, 
-		 const float new_rate)
+void
+SinglesRatesForTimeFrames::set_singles_rate(const int singles_bin_index, const unsigned time_frame_num, const float new_rate)
 
 {
   this->_singles[time_frame_num][singles_bin_index] = new_rate;
 }
 
-
 float
-SinglesRatesForTimeFrames::
-get_singles_rate(const int singles_bin_index,
-		 const double start_time,
-		 const double end_time) const
-{
-  const unsigned frame_number = 
-    this->_time_frame_defs.get_time_frame_num(start_time, end_time);
+SinglesRatesForTimeFrames::get_singles_rate(const int singles_bin_index, const double start_time, const double end_time) const {
+  const unsigned frame_number = this->_time_frame_defs.get_time_frame_num(start_time, end_time);
   if (frame_number == 0)
     return -1.F;
   else
-  return(get_singles_rate(singles_bin_index, frame_number));
+    return (get_singles_rate(singles_bin_index, frame_number));
 }
 
-unsigned int 
+unsigned int
 SinglesRatesForTimeFrames::get_num_frames() const {
-  return(this->_time_frame_defs.get_num_frames());
+  return (this->_time_frame_defs.get_num_frames());
 }
 
 const TimeFrameDefinitions&
-SinglesRatesForTimeFrames:: 
-get_time_frame_definitions() const
-{
+SinglesRatesForTimeFrames::get_time_frame_definitions() const {
   return this->_time_frame_defs;
 }
-
 
 #if 0
 double 
@@ -106,5 +88,3 @@ get_frame_end(unsigned int frame_number) const {
 
 #endif
 END_NAMESPACE_STIR
-
-

@@ -23,15 +23,15 @@
   \brief File that registers all stir::RegisterObject children in data_buildblock
 
   \author Kris Thielemans
-  
+
 */
 #include "stir/common.h"
 #ifdef HAVE_LLN_MATRIX
-#include "stir/data/SinglesRatesFromECAT7.h"
-#include "stir/data/SinglesRatesFromSglFile.h"
+#  include "stir/data/SinglesRatesFromECAT7.h"
+#  include "stir/data/SinglesRatesFromSglFile.h"
 #endif
 #ifdef HAVE_HDF5
-#include "stir/data/SinglesRatesFromGEHDF5.h"
+#  include "stir/data/SinglesRatesFromGEHDF5.h"
 #endif
 START_NAMESPACE_STIR
 #ifdef HAVE_LLN_MATRIX
@@ -47,4 +47,3 @@ static GE::RDF_HDF5::SinglesRatesFromGEHDF5::RegisterIt dummy300;
 #endif
 
 END_NAMESPACE_STIR
-

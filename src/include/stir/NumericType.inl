@@ -1,11 +1,11 @@
 //
 //
 /*!
-  \file 
-  \ingroup buildblock 
+  \file
+  \ingroup buildblock
   \brief Implementation of inline methods of class stir::NumericType.
 
-  \author Kris Thielemans 
+  \author Kris Thielemans
   \author PARAPET project
 
 
@@ -30,18 +30,16 @@
 
 START_NAMESPACE_STIR
 
-NumericType::NumericType(Type t)
-: id(t)
-{}
+NumericType::NumericType(Type t) : id(t) {}
 
-bool NumericType::operator==(NumericType type) const
-{ 
-  return id == type.id; 
+bool
+NumericType::operator==(NumericType type) const {
+  return id == type.id;
 }
 
-bool NumericType::operator!=(NumericType type) const
-{ 
-  return !(*this == type); 
+bool
+NumericType::operator!=(NumericType type) const {
+  return !(*this == type);
 }
 
 END_NAMESPACE_STIR

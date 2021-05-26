@@ -71,98 +71,97 @@ START_NAMESPACE_STIR
   \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones
   are written.
 */
-class IOTests_DynamicDiscretisedDensity : public IOTests<DynamicDiscretisedDensity>
-{
+class IOTests_DynamicDiscretisedDensity : public IOTests<DynamicDiscretisedDensity> {
 public:
-    explicit IOTests_DynamicDiscretisedDensity(istream& in) : IOTests(in) {}
+  explicit IOTests_DynamicDiscretisedDensity(istream& in) : IOTests(in) {}
 
 protected:
-
-    void create_image();
-    void check_result();
+  void create_image();
+  void check_result();
 };
 
-void IOTests_DynamicDiscretisedDensity::create_image()
-{
-    double im_1_start = 20;
-    double im_1_end   = 45;
-    double im_2_start = 50;
-    double im_2_end   = 93;
+void
+IOTests_DynamicDiscretisedDensity::create_image() {
+  double im_1_start = 20;
+  double im_1_end = 45;
+  double im_2_start = 50;
+  double im_2_end = 93;
 
-    shared_ptr<VoxelsOnCartesianGrid<float> > dyn_im_1_sptr = create_single_image();
-    shared_ptr<VoxelsOnCartesianGrid<float> > dyn_im_2_sptr = create_single_image();
-    shared_ptr<VoxelsOnCartesianGrid<float> > dummy_im_sptr = create_single_image();
-    
-    dyn_im_1_sptr->fill(2.);
-    dyn_im_2_sptr->fill(1.);
-    ExamInfo exam_info = dyn_im_1_sptr->get_exam_info();
-    exam_info.time_frame_definitions.set_time_frame(1,im_1_start, im_1_end);
-    dyn_im_1_sptr->set_exam_info(exam_info);
-    exam_info.time_frame_definitions.set_time_frame(1,im_2_start, im_2_end);
-    dyn_im_2_sptr->set_exam_info(exam_info);
-    
-    // Create a scanner (any will do)
-    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
-    
-    TimeFrameDefinitions tdefs;
-    tdefs.set_num_time_frames(2);
-    tdefs.set_time_frame(1,im_1_start,im_1_end);
-    tdefs.set_time_frame(2,im_2_start,im_2_end);
+  shared_ptr<VoxelsOnCartesianGrid<float>> dyn_im_1_sptr = create_single_image();
+  shared_ptr<VoxelsOnCartesianGrid<float>> dyn_im_2_sptr = create_single_image();
+  shared_ptr<VoxelsOnCartesianGrid<float>> dummy_im_sptr = create_single_image();
 
-    _image_to_write_sptr.reset(new DynamicDiscretisedDensity(tdefs,dummy_im_sptr->get_exam_info().start_time_in_secs_since_1970,scanner_sptr,dummy_im_sptr));
-    _image_to_write_sptr->set_density(*dyn_im_1_sptr,1);
-    _image_to_write_sptr->set_density(*dyn_im_2_sptr,2);
-    exam_info = _image_to_write_sptr->get_exam_info();
-    exam_info.set_high_energy_thres(dummy_im_sptr->get_exam_info().get_high_energy_thres());
-    exam_info.set_low_energy_thres(dummy_im_sptr->get_exam_info().get_low_energy_thres());
-    _image_to_write_sptr->set_exam_info(exam_info);
+  dyn_im_1_sptr->fill(2.);
+  dyn_im_2_sptr->fill(1.);
+  ExamInfo exam_info = dyn_im_1_sptr->get_exam_info();
+  exam_info.time_frame_definitions.set_time_frame(1, im_1_start, im_1_end);
+  dyn_im_1_sptr->set_exam_info(exam_info);
+  exam_info.time_frame_definitions.set_time_frame(1, im_2_start, im_2_end);
+  dyn_im_2_sptr->set_exam_info(exam_info);
+
+  // Create a scanner (any will do)
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
+
+  TimeFrameDefinitions tdefs;
+  tdefs.set_num_time_frames(2);
+  tdefs.set_time_frame(1, im_1_start, im_1_end);
+  tdefs.set_time_frame(2, im_2_start, im_2_end);
+
+  _image_to_write_sptr.reset(new DynamicDiscretisedDensity(tdefs, dummy_im_sptr->get_exam_info().start_time_in_secs_since_1970,
+                                                           scanner_sptr, dummy_im_sptr));
+  _image_to_write_sptr->set_density(*dyn_im_1_sptr, 1);
+  _image_to_write_sptr->set_density(*dyn_im_2_sptr, 2);
+  exam_info = _image_to_write_sptr->get_exam_info();
+  exam_info.set_high_energy_thres(dummy_im_sptr->get_exam_info().get_high_energy_thres());
+  exam_info.set_low_energy_thres(dummy_im_sptr->get_exam_info().get_low_energy_thres());
+  _image_to_write_sptr->set_exam_info(exam_info);
 }
 
-void IOTests_DynamicDiscretisedDensity::check_result()
-{
-    set_tolerance(.00001);
+void
+IOTests_DynamicDiscretisedDensity::check_result() {
+  set_tolerance(.00001);
 
-    check_if_equal(_image_to_read_sptr->get_densities().size(),_image_to_write_sptr->get_densities().size(), "test number of dynamic images");
-    
-    // Check the exam info
-    std::cerr << "\tChecking the exam info...\n";
-    check_exam_info(_image_to_write_sptr->get_exam_info(),_image_to_read_sptr->get_exam_info());
+  check_if_equal(_image_to_read_sptr->get_densities().size(), _image_to_write_sptr->get_densities().size(),
+                 "test number of dynamic images");
 
-    for (int i=1; i<=_image_to_read_sptr->get_densities().size(); ++i) {
+  // Check the exam info
+  std::cerr << "\tChecking the exam info...\n";
+  check_exam_info(_image_to_write_sptr->get_exam_info(), _image_to_read_sptr->get_exam_info());
 
-        std::cerr << "\t\tChecking dynamic image " << i << "...\n";
-        
-        // Cast the discretised density to voxels on cartesian grids to check grid spacing
-        VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_write_sptr->get_density(i));
-        VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_read_sptr->get_density(i));
+  for (int i = 1; i <= _image_to_read_sptr->get_densities().size(); ++i) {
 
-        if (is_null_ptr(image_to_write_ptr) || is_null_ptr(image_to_read_ptr)) {
-            everything_ok = false;
-            return;
-        }
+    std::cerr << "\t\tChecking dynamic image " << i << "...\n";
 
-        compare_images(*image_to_write_ptr, *image_to_read_ptr);
+    // Cast the discretised density to voxels on cartesian grids to check grid spacing
+    VoxelsOnCartesianGrid<float>* image_to_write_ptr =
+        dynamic_cast<VoxelsOnCartesianGrid<float>*>(&_image_to_write_sptr->get_density(i));
+    VoxelsOnCartesianGrid<float>* image_to_read_ptr =
+        dynamic_cast<VoxelsOnCartesianGrid<float>*>(&_image_to_read_sptr->get_density(i));
+
+    if (is_null_ptr(image_to_write_ptr) || is_null_ptr(image_to_read_ptr)) {
+      everything_ok = false;
+      return;
     }
+
+    compare_images(*image_to_write_ptr, *image_to_read_ptr);
+  }
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main(int argc, char **argv)
-{
-  if (argc != 2)
-  {
+int
+main(int argc, char** argv) {
+  if (argc != 2) {
     cerr << "Usage : " << argv[0] << " filename\n"
          << "See source file for the format of this file.\n\n";
     return EXIT_FAILURE;
   }
 
   ifstream in(argv[1]);
-  if (!in)
-  {
-    cerr << argv[0]
-         << ": Error opening input file " << argv[1] << "\nExiting.\n";
+  if (!in) {
+    cerr << argv[0] << ": Error opening input file " << argv[1] << "\nExiting.\n";
 
     return EXIT_FAILURE;
   }

@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c INFO, then \c string
-  and then another newline to std::cerr. 
+  and then another newline to std::cerr.
 
   \todo At a later stage, it will also write to a log-file.
 
@@ -56,13 +56,12 @@ START_NAMESPACE_STIR
 */
 template <class STRING>
 void
-info(const STRING& string, const int verbosity_level = 1)
-{
-	if (Verbosity::get() >= verbosity_level) {
-		std::stringstream ss;
-		ss <<  "\nINFO: " << string << std::endl;
-		writeText(ss.str().c_str(), INFORMATION_CHANNEL);
-	}
+info(const STRING& string, const int verbosity_level = 1) {
+  if (Verbosity::get() >= verbosity_level) {
+    std::stringstream ss;
+    ss << "\nINFO: " << string << std::endl;
+    writeText(ss.str().c_str(), INFORMATION_CHANNEL);
+  }
 }
 
 END_NAMESPACE_STIR

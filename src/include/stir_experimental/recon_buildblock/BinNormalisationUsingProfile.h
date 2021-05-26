@@ -24,25 +24,23 @@
 
 START_NAMESPACE_STIR
 
-class BinNormalisationUsingProfile : 
-  public RegisteredParsingObject<BinNormalisationUsingProfile, BinNormalisation>
-{
+class BinNormalisationUsingProfile : public RegisteredParsingObject<BinNormalisationUsingProfile, BinNormalisation> {
 public:
   //! Name which will be used when parsing a BinNormalisation object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   BinNormalisationUsingProfile();
 
   BinNormalisationUsingProfile(const std::string& filename);
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
- 
+  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const { return 1; }
+
 private:
-  mutable Array<1,float> profile;
+  mutable Array<1, float> profile;
   std::string profile_filename;
 
   virtual void set_defaults();
@@ -53,4 +51,3 @@ private:
 END_NAMESPACE_STIR
 
 #endif
-  

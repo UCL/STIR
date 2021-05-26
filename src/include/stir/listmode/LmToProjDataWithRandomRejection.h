@@ -5,7 +5,7 @@
   \file
   \ingroup listmode
   \brief Class for binning list mode files with the bootstrap method
-    
+
   \author Kris Thielemans\author Daniel Deidda
 
 */
@@ -31,7 +31,6 @@
 #ifndef __stir_listmode_LmToProjDataWithRandomRejection_H__
 #define __stir_listmode_LmToProjDataWithRandomRejection_H__
 
-
 #include "stir/listmode/LmToProjData.h"
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -39,13 +38,13 @@
 START_NAMESPACE_STIR
 
 /*! \ingroup listmode
-  \brief Class for binning list mode data into projection data using the 
+  \brief Class for binning list mode data into projection data using the
   bootstrap procedure.
 
   The bootstrap method allows estimating the variance of an estimator
   based on a single data-set (magic!). This class can be used to
   generate multiple equivalent projdata, which can then be reconstructed.
-  The sample variance computed on these images will be an estimate of 
+  The sample variance computed on these images will be an estimate of
   the variance on the reconstructions.
 
   For list mode data, bootstrapping works by selecting random events
@@ -73,19 +72,17 @@ START_NAMESPACE_STIR
   bootstrapping mechanism does not depend on how LmToProjData actually works.
 
 */
-template< typename LmToProjDataT>
-class LmToProjDataWithRandomRejection : public LmToProjDataT
-{
+template <typename LmToProjDataT>
+class LmToProjDataWithRandomRejection : public LmToProjDataT {
 
 public:
-     
   //! Constructor that parses from a file
-  LmToProjDataWithRandomRejection(const char * const par_filename);
+  LmToProjDataWithRandomRejection(const char* const par_filename);
   //! Constructor that parses from a file but with explicit seed
   /*! The \a seed argument will override any value found in the par file */
-  LmToProjDataWithRandomRejection(const char * const par_filename, const unsigned int seed);
+  LmToProjDataWithRandomRejection(const char* const par_filename, const unsigned int seed);
 
-  //void set_seed(const unsigned int seed);
+  // void set_seed(const unsigned int seed);
   float set_reject_if_above(const float);
 
 protected:
@@ -94,7 +91,6 @@ protected:
   virtual void start_new_time_frame(const unsigned int new_frame_num);
 
   virtual void get_bin_from_event(Bin& bin, const ListEvent&) const;
-
 
   // \name parsing variables
   //@{
@@ -107,17 +103,13 @@ protected:
 private:
   typedef LmToProjDataT base_type;
   typedef boost::mt19937 random_generator_type;
-  random_generator_type random_generator;    
-
+  random_generator_type random_generator;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
-  
 };
 
 END_NAMESPACE_STIR
-
 
 #endif

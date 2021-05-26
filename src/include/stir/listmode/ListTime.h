@@ -37,7 +37,7 @@
 #include "stir/round.h"
 
 START_NAMESPACE_STIR
-//class Succeeded;
+// class Succeeded;
 
 //! A class for storing and using a timing record from a listmode file
 /*! \ingroup listmode
@@ -51,23 +51,19 @@ START_NAMESPACE_STIR
     (and actual?) number of gates would be useful.
     \see ListModeData for more info on list mode data.
 */
-class ListTime
-{
+class ListTime {
 public:
   virtual ~ListTime() {}
 
   virtual unsigned long get_time_in_millisecs() const = 0;
-  inline double get_time_in_secs() const
-    { return get_time_in_millisecs()/1000.; }
+  inline double get_time_in_secs() const { return get_time_in_millisecs() / 1000.; }
 
   virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
-  inline Succeeded set_time_in_secs(const double time_in_secs)
-    {
-      unsigned long time_in_millisecs;
-      round_to(time_in_millisecs, time_in_secs/1000.);
-      return set_time_in_millisecs(time_in_millisecs);
-    }
-
+  inline Succeeded set_time_in_secs(const double time_in_secs) {
+    unsigned long time_in_millisecs;
+    round_to(time_in_millisecs, time_in_secs / 1000.);
+    return set_time_in_millisecs(time_in_millisecs);
+  }
 };
 
 END_NAMESPACE_STIR

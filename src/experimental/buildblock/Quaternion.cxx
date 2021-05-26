@@ -15,24 +15,15 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir_experimental/Quaternion.h"
-
 
 START_NAMESPACE_STIR
 
 template <class coordT>
-Quaternion<coordT>::Quaternion()
-  : base_type()
-{}
+Quaternion<coordT>::Quaternion() : base_type() {}
 
 template <class coordT>
-Quaternion<coordT>::Quaternion(const coordT& c1, 
-			       const coordT& c2, 
-			       const coordT& c3,
-			       const coordT& c4)
-  : base_type()
-{
+Quaternion<coordT>::Quaternion(const coordT& c1, const coordT& c2, const coordT& c3, const coordT& c4) : base_type() {
   (*this)[1] = c1;
   (*this)[2] = c2;
   (*this)[3] = c3;
@@ -40,9 +31,7 @@ Quaternion<coordT>::Quaternion(const coordT& c1,
 }
 
 template <class coordT>
-Quaternion<coordT>::Quaternion(const base_type& c)
-  : base_type(c)
-{}
+Quaternion<coordT>::Quaternion(const base_type& c) : base_type(c) {}
 
 #if 0
 template <class coordT>
@@ -74,7 +63,6 @@ Quaternion<coordT>:: component_4() const
 }
 
 #endif
-   
 
 template class Quaternion<float>;
 END_NAMESPACE_STIR

@@ -16,31 +16,26 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "Reconstruction.h"
 
-
 START_NAMESPACE_STIR
 
 class Succeeded;
 
-class General_Reconstruction : public ParsingObject
-{
+class General_Reconstruction : public ParsingObject {
 public:
-    //!
-    //! \brief General_Reconstuction
-    //! \details Default constructor
-    General_Reconstruction();
+  //!
+  //! \brief General_Reconstuction
+  //! \details Default constructor
+  General_Reconstruction();
 
-    virtual Succeeded process_data();
+  virtual Succeeded process_data();
+
 protected:
-
-    void set_defaults();
-    void initialise_keymap();
-    bool post_processing();
+  void set_defaults();
+  void initialise_keymap();
+  bool post_processing();
 
 private:
-
-    shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
-        reconstruction_method_sptr;
-
+  shared_ptr<Reconstruction<DiscretisedDensity<3, float>>> reconstruction_method_sptr;
 };
 
 END_NAMESPACE_STIR

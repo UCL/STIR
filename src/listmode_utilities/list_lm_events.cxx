@@ -18,15 +18,14 @@
 
 */
 /*!
-  \file 
+  \file
   \ingroup listmode_utilities
 
   \brief Program to show info about listmode data
- 
+
   \author Kris Thielemans
   \author Daniel Deidda
 */
-
 
 #include "stir/listmode/ListRecord.h"
 #include "stir/listmode/ListEvent.h"
@@ -49,168 +48,127 @@ using std::endl;
 using std::vector;
 #endif
 
-
-
 USING_NAMESPACE_STIR
 
-int main(int argc, char *argv[])
-{
-  const char * const program_name = argv[0];
+int
+main(int argc, char* argv[]) {
+  const char* const program_name = argv[0];
   // skip program name
   --argc;
   ++argv;
 
-  bool list_time=true;
-  bool list_coincidence=false;
-  bool list_SPECT_event=false;
-  bool list_gating=true;
-  bool list_unknown=false;
+  bool list_time = true;
+  bool list_coincidence = false;
+  bool list_SPECT_event = false;
+  bool list_gating = true;
+  bool list_unknown = false;
   unsigned long num_events_to_list = 0;
-  while (argc>1 && argv[0][0]=='-')
-    {
-      if (strcmp(argv[0], "--num-events-to-list")==0)
-	{
-	  num_events_to_list = atol(argv[1]);
-	} 
-      else if (strcmp(argv[0], "--time")==0)
-        {
-          list_time = atoi(argv[1])!=0;
-        }
-      else if (strcmp(argv[0], "--gating")==0)
-        {
-          list_gating = atoi(argv[1])!=0;
-        }
-      else if (strcmp(argv[0], "--coincidence")==0)
-        {
-          list_coincidence = atoi(argv[1])!=0;
-        }
-      else if (strcmp(argv[0], "--SPECT-event")==0)
-        {
-          list_SPECT_event = atoi(argv[1])!=0;
-        }
-      else if (strcmp(argv[0], "--unknown")==0)
-        {
-          list_unknown = atoi(argv[1])!=0;
-        }
-      else
-        { 
-          cerr << "Unrecognised option\n";
-          return EXIT_FAILURE;
-        }
-      argc-=2; argv+=2;
-    }
-
-  if (argc!=1)
-    {
-      cerr << "Usage: " << program_name << "[options] lm_filename\n"
-           << "Options:\n"
-           << "--time 0|1 : list time events or not (default: 1)\n"
-           << "--gating 0|1 : list gating events or not (default: 1)\n"
-           << "--coincidence 0|1 : list coincidence events or not (default: 0)\n"
-           << "--unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
-           << "--num-events-to-list <num> : limit number of events written to stdout\n";
+  while (argc > 1 && argv[0][0] == '-') {
+    if (strcmp(argv[0], "--num-events-to-list") == 0) {
+      num_events_to_list = atol(argv[1]);
+    } else if (strcmp(argv[0], "--time") == 0) {
+      list_time = atoi(argv[1]) != 0;
+    } else if (strcmp(argv[0], "--gating") == 0) {
+      list_gating = atoi(argv[1]) != 0;
+    } else if (strcmp(argv[0], "--coincidence") == 0) {
+      list_coincidence = atoi(argv[1]) != 0;
+    } else if (strcmp(argv[0], "--SPECT-event") == 0) {
+      list_SPECT_event = atoi(argv[1]) != 0;
+    } else if (strcmp(argv[0], "--unknown") == 0) {
+      list_unknown = atoi(argv[1]) != 0;
+    } else {
+      cerr << "Unrecognised option\n";
       return EXIT_FAILURE;
     }
+    argc -= 2;
+    argv += 2;
+  }
+
+  if (argc != 1) {
+    cerr << "Usage: " << program_name << "[options] lm_filename\n"
+         << "Options:\n"
+         << "--time 0|1 : list time events or not (default: 1)\n"
+         << "--gating 0|1 : list gating events or not (default: 1)\n"
+         << "--coincidence 0|1 : list coincidence events or not (default: 0)\n"
+         << "--unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
+         << "--num-events-to-list <num> : limit number of events written to stdout\n";
+    return EXIT_FAILURE;
+  }
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
   cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
 
   unsigned long num_listed_events = 0;
-  {      
+  {
     // loop over all events in the listmode file
-    shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+    shared_ptr<ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
     ListRecord& record = *record_sptr;
 
-    while (num_events_to_list==0 || num_events_to_list!=num_listed_events)
-      {
-        bool recognised = false;
-        bool listed = false;
-//      std::cout<<"ciao"<<std::endl;
-    if (lm_data_ptr->get_next_record(record) == Succeeded::no)
-      {
-	    // no more events in file for some reason
-	    break; //get out of while loop
+    while (num_events_to_list == 0 || num_events_to_list != num_listed_events) {
+      bool recognised = false;
+      bool listed = false;
+      //      std::cout<<"ciao"<<std::endl;
+      if (lm_data_ptr->get_next_record(record) == Succeeded::no) {
+        // no more events in file for some reason
+        break; // get out of while loop
       }
-	if (record.is_time())
+      if (record.is_time()) {
+        recognised = true;
+        if (list_time) {
+          cout << "Time " << record.time().get_time_in_millisecs();
+          listed = true;
+        }
+      }
       {
-            recognised=true;
-            if (list_time)
-              {
-                cout << "Time " << record.time().get_time_in_millisecs();
-                listed = true; 
-              }
-       }
-        {
-          ListRecordWithGatingInput * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
-          if (record_ptr!=0 && record_ptr->is_gating_input())
-            {
-              recognised=true;
-              if (list_gating)
-                {
-                  cout << "Gating " << std::hex << record_ptr->gating_input().get_gating() << std::dec;
-                  listed = true; 
-                }
-            }
-        }
-        if (record.is_event())
-        {
-          recognised=true;
-          if (list_coincidence)
-            {CListEventCylindricalScannerWithDiscreteDetectors * event_ptr = 
-                dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event());
-              if (event_ptr!=0)
-                {
-                  DetectionPositionPair<> det_pos;
-                  event_ptr->get_detection_position(det_pos);
-                  cout << "Coincidence " << (event_ptr->is_prompt() ? "p " : "d ")
-                       << "(c:" << det_pos.pos1().tangential_coord()
-                       << ",r:" << det_pos.pos1().axial_coord()
-                       << ",l:" << det_pos.pos1().radial_coord()
-                       << ")-"
-                   << "(c:" << det_pos.pos2().tangential_coord()
-                       << ",r:" << det_pos.pos2().axial_coord()
-                       << ",l:" << det_pos.pos2().radial_coord()
-                       << ")";
-                  cout << " delta time: " << event_ptr->get_delta_time();
-                  listed = true; 
-                }
-            }
-          if (list_SPECT_event)
-            {ListEvent * event_ptr =
-                dynamic_cast<ListEvent *>(&record.event());
-              if (event_ptr!=0)
-                {
-                  LORAs2Points<float> lor;
-                  lor=event_ptr->get_LOR();
-                  cout << "Gamma event: LOR as two points "
-                       << "(x1:" << lor.p1().x()
-                       << ",y1:" << lor.p1().y()
-                       << ",z1:" << lor.p1().z()
-                       << ")-"
-                   << "(x2:" << lor.p2().x()
-                       << ",y2:" << lor.p2().y()
-                       << ",z2:" << lor.p2().z()
-                       << ")";
-                  listed = true;
-                }
-            }
-        }
-        if (!recognised && list_unknown)
-        {
-          cout << "Unknown type";
-          listed = true; 
-        }
-        if (listed)
-          {
-            ++num_listed_events;	    
-            cout << '\n';
+        ListRecordWithGatingInput* record_ptr = dynamic_cast<ListRecordWithGatingInput*>(&record);
+        if (record_ptr != 0 && record_ptr->is_gating_input()) {
+          recognised = true;
+          if (list_gating) {
+            cout << "Gating " << std::hex << record_ptr->gating_input().get_gating() << std::dec;
+            listed = true;
           }
+        }
       }
+      if (record.is_event()) {
+        recognised = true;
+        if (list_coincidence) {
+          CListEventCylindricalScannerWithDiscreteDetectors* event_ptr =
+              dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors*>(&record.event());
+          if (event_ptr != 0) {
+            DetectionPositionPair<> det_pos;
+            event_ptr->get_detection_position(det_pos);
+            cout << "Coincidence " << (event_ptr->is_prompt() ? "p " : "d ") << "(c:" << det_pos.pos1().tangential_coord()
+                 << ",r:" << det_pos.pos1().axial_coord() << ",l:" << det_pos.pos1().radial_coord() << ")-"
+                 << "(c:" << det_pos.pos2().tangential_coord() << ",r:" << det_pos.pos2().axial_coord()
+                 << ",l:" << det_pos.pos2().radial_coord() << ")";
+            cout << " delta time: " << event_ptr->get_delta_time();
+            listed = true;
+          }
+        }
+        if (list_SPECT_event) {
+          ListEvent* event_ptr = dynamic_cast<ListEvent*>(&record.event());
+          if (event_ptr != 0) {
+            LORAs2Points<float> lor;
+            lor = event_ptr->get_LOR();
+            cout << "Gamma event: LOR as two points "
+                 << "(x1:" << lor.p1().x() << ",y1:" << lor.p1().y() << ",z1:" << lor.p1().z() << ")-"
+                 << "(x2:" << lor.p2().x() << ",y2:" << lor.p2().y() << ",z2:" << lor.p2().z() << ")";
+            listed = true;
+          }
+        }
+      }
+      if (!recognised && list_unknown) {
+        cout << "Unknown type";
+        listed = true;
+      }
+      if (listed) {
+        ++num_listed_events;
+        cout << '\n';
+      }
+    }
     cout << '\n';
-
   }
 
   return EXIT_SUCCESS;
 }
-

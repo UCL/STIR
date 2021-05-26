@@ -1,13 +1,13 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup buildblock
   \brief Declaration of class stir::SeparableGaussianImageFilter
-    
+
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Ludovica Brusaferri
-      
+
 */
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet
@@ -18,12 +18,10 @@
 #ifndef __stir_SeparableGaussianImageFilter_H__
 #define __stir_SeparableGaussianImageFilter_H__
 
-
 #include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
-
 
 START_NAMESPACE_STIR
 
@@ -50,55 +48,47 @@ START_NAMESPACE_STIR
  */
 
 template <typename elemT>
-class SeparableGaussianImageFilter : 
-  public 
-    RegisteredParsingObject<
-        SeparableGaussianImageFilter<elemT>,
-        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
-        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
-    >
-{
- private:
-  typedef
-    RegisteredParsingObject<
-        SeparableGaussianImageFilter<elemT>,
-        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
-        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
-    >
-    base_type;
+class SeparableGaussianImageFilter : public RegisteredParsingObject<SeparableGaussianImageFilter<elemT>,
+                                                                    DataProcessor<DiscretisedDensity<num_dimensions, elemT>>,
+                                                                    DataProcessor<DiscretisedDensity<num_dimensions, elemT>>> {
+private:
+  typedef RegisteredParsingObject<SeparableGaussianImageFilter<elemT>, DataProcessor<DiscretisedDensity<num_dimensions, elemT>>,
+                                  DataProcessor<DiscretisedDensity<num_dimensions, elemT>>>
+      base_type;
+
 public:
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Default constructor
   SeparableGaussianImageFilter();
 
-  BasicCoordinate< num_dimensions,float> get_fwhms();
-  BasicCoordinate< num_dimensions,int> get_max_kernel_sizes();
+  BasicCoordinate<num_dimensions, float> get_fwhms();
+  BasicCoordinate<num_dimensions, int> get_max_kernel_sizes();
   bool get_normalised_filter();
-  
-    void set_fwhms(const BasicCoordinate< num_dimensions,float>&);
-    void set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>&);
-    void set_normalise(const bool);
-    
+
+  void set_fwhms(const BasicCoordinate<num_dimensions, float>&);
+  void set_max_kernel_sizes(const BasicCoordinate<num_dimensions, int>&);
+  void set_normalise(const bool);
+
 private:
-  BasicCoordinate< num_dimensions,float> fwhms;
+  BasicCoordinate<num_dimensions, float> fwhms;
 
 protected:
-
-  BasicCoordinate< num_dimensions,int> max_kernel_sizes;
+  BasicCoordinate<num_dimensions, int> max_kernel_sizes;
   bool normalise;
-  
-  SeparableGaussianArrayFilter<num_dimensions,elemT> gaussian_filter;
+
+  SeparableGaussianArrayFilter<num_dimensions, elemT> gaussian_filter;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
 
-  //virtual bool post_processing();
-  
-  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
+  // virtual bool post_processing();
+
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions, elemT>& image);
   // new
-  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
-  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+  void virtual_apply(DiscretisedDensity<num_dimensions, elemT>& out_density,
+                     const DiscretisedDensity<num_dimensions, elemT>& in_density) const;
+  void virtual_apply(DiscretisedDensity<num_dimensions, elemT>& density) const;
 };
 
 #undef num_dimensions
@@ -106,5 +96,3 @@ protected:
 END_NAMESPACE_STIR
 
 #endif
-
-

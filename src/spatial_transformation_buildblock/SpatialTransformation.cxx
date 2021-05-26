@@ -15,30 +15,27 @@
 
     See STIR/LICENSE.txt for details
  */
- /*!
-  \file
-  \ingroup spatial_transformation
-  \brief Implementations of inline functions of class stir::SpatialTransformation
+/*!
+ \file
+ \ingroup spatial_transformation
+ \brief Implementations of inline functions of class stir::SpatialTransformation
 
-  \author Charalampos Tsoumpas
+ \author Charalampos Tsoumpas
 
-  This is the most basic class for including Motion Fields. 
+ This is the most basic class for including Motion Fields.
 
 */
 
-
 #include "stir/spatial_transformation/SpatialTransformation.h"
-
 
 START_NAMESPACE_STIR
 
-const char * const 
-SpatialTransformation::registered_name = "Motion Field Type";
+const char* const SpatialTransformation::registered_name = "Motion Field Type";
 
-SpatialTransformation::SpatialTransformation()    //!< default constructor
-{ }
+SpatialTransformation::SpatialTransformation() //!< default constructor
+{}
 
-SpatialTransformation::~SpatialTransformation()   //!< default destructor
-{ }
+SpatialTransformation::~SpatialTransformation() //!< default destructor
+{}
 
 END_NAMESPACE_STIR

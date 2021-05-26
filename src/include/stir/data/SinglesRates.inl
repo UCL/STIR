@@ -25,23 +25,16 @@
   \author Kris Thielemans and Sanida Mustafovic
 */
 
-
 START_NAMESPACE_STIR
 
-
-const 
-Scanner* SinglesRates::get_scanner_ptr() const
-{ 
+const Scanner*
+SinglesRates::get_scanner_ptr() const {
   return scanner_sptr.get();
 }
 
-
-
-const Scanner *
-FrameSinglesRates::
-get_scanner_ptr() const {
+const Scanner*
+FrameSinglesRates::get_scanner_ptr() const {
   return _scanner_sptr.get();
 }
-
 
 END_NAMESPACE_STIR

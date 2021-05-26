@@ -37,8 +37,8 @@ START_NAMESPACE_STIR
   \details The ECAT system is a simplified version of CylindricalPET.
 Such scanners are based on the block detector principle.
  The blocks are organized along an annular geometry to yield multi-ring detectors.
-From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ) a ECAT PET scanner has
-  two levels
+From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ) a ECAT PET scanner
+has two levels
     * block
     * crystal
 
@@ -72,23 +72,17 @@ From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defin
 
   \author Nikos Efthimiou
 */
-class InputStreamFromROOTFileForECATPET : public
-        RegisteredParsingObject < InputStreamFromROOTFileForECATPET,
-        InputStreamFromROOTFile,
-        InputStreamFromROOTFile >
-{
+class InputStreamFromROOTFileForECATPET
+    : public RegisteredParsingObject<InputStreamFromROOTFileForECATPET, InputStreamFromROOTFile, InputStreamFromROOTFile> {
 private:
-    typedef RegisteredParsingObject< InputStreamFromROOTFileForECATPET ,
-    InputStreamFromROOTFile,
-    InputStreamFromROOTFile > base_type;
+  typedef RegisteredParsingObject<InputStreamFromROOTFileForECATPET, InputStreamFromROOTFile, InputStreamFromROOTFile> base_type;
 
 public:
+  //! Name which will be used when parsing a OSMAPOSLReconstruction object
+  static const char* const registered_name;
 
-    //! Name which will be used when parsing a OSMAPOSLReconstruction object
-    static const char * const registered_name;
-
-    //! Default constructor
-    InputStreamFromROOTFileForECATPET();
+  //! Default constructor
+  InputStreamFromROOTFileForECATPET();
 
 #if 0 // not used, so commented out
     InputStreamFromROOTFileForECATPET(std::string filename,
@@ -100,53 +94,49 @@ public:
                                       int offset_dets);
 #endif
 
-    virtual ~InputStreamFromROOTFileForECATPET() {}
+  virtual ~InputStreamFromROOTFileForECATPET() {}
 
-    virtual
-    Succeeded get_next_record(CListRecordROOT& record);
+  virtual Succeeded get_next_record(CListRecordROOT& record);
 
-    //! gives method information
-    virtual std::string method_info() const;
-    //! Must be called before calling for the first event.
-    virtual Succeeded set_up(const std::string & header_path);
+  //! gives method information
+  virtual std::string method_info() const;
+  //! Must be called before calling for the first event.
+  virtual Succeeded set_up(const std::string& header_path);
 
-    //! Calculate the number of rings based on the crystals and blocks
-    inline virtual int get_num_rings() const;
-    //! Calculate the number of detectors per ring based on the crystals blocks
-    inline virtual int get_num_dets_per_ring() const;
-    //! Get the number of axial blocks
-    inline virtual int get_num_axial_blocks_per_bucket_v() const;
-    //! Get the number of transaxial blocks
-    inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
-    //! Get the number of crystals per block
-    inline virtual int get_num_axial_crystals_per_singles_unit() const;
-    //! Get the number of crystals per block
-    inline virtual int get_num_trans_crystals_per_singles_unit() const;
+  //! Calculate the number of rings based on the crystals and blocks
+  inline virtual int get_num_rings() const;
+  //! Calculate the number of detectors per ring based on the crystals blocks
+  inline virtual int get_num_dets_per_ring() const;
+  //! Get the number of axial blocks
+  inline virtual int get_num_axial_blocks_per_bucket_v() const;
+  //! Get the number of transaxial blocks
+  inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
+  //! Get the number of crystals per block
+  inline virtual int get_num_axial_crystals_per_singles_unit() const;
+  //! Get the number of crystals per block
+  inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
-    inline void set_block_repeater_y(int);
-    inline void set_block_repeater_z(int);
-
+  inline void set_block_repeater_y(int);
+  inline void set_block_repeater_z(int);
 
 protected:
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  std::int32_t blockID1, blockID2;
+  std::int32_t crystalID1, crystalID2;
 
-    std::int32_t blockID1, blockID2;
-    std::int32_t crystalID1, crystalID2;
+  int block_repeater_y;
+  int block_repeater_z;
 
-    int block_repeater_y;
-    int block_repeater_z;
-
-    //! In GATE, inside a block, the indeces start from the lower
-    //! unit counting upwards. Therefore in order to align the
-    //! crystals, between STIR and GATE we have to move half block more.
-    int half_block;
+  //! In GATE, inside a block, the indeces start from the lower
+  //! unit counting upwards. Therefore in order to align the
+  //! crystals, between STIR and GATE we have to move half block more.
+  int half_block;
 
 private:
-    bool check_all_required_keywords_are_set(std::string& ret) const;
-
+  bool check_all_required_keywords_are_set(std::string& ret) const;
 };
 END_NAMESPACE_STIR
 #include "stir/IO/InputStreamFromROOTFileForECATPET.inl"

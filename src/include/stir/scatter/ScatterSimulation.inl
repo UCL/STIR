@@ -38,53 +38,43 @@ START_NAMESPACE_STIR
 /**************** Functions to set images ****************/
 
 float
-ScatterSimulation::
-dif_Compton_cross_section(const float cos_theta, float energy)
-{
-    const double Re = 2.818E-13;   // aktina peristrofis electroniou gia to atomo tou H
-    const double sin_theta_2= 1-cos_theta*cos_theta ;
-    const double P= 1.0/(1.0+(energy/511.0)*(1.0-cos_theta));
-    return static_cast<float>( (Re*Re/2) * P * (1 - P * sin_theta_2 + P * P));
+ScatterSimulation::dif_Compton_cross_section(const float cos_theta, float energy) {
+  const double Re = 2.818E-13; // aktina peristrofis electroniou gia to atomo tou H
+  const double sin_theta_2 = 1 - cos_theta * cos_theta;
+  const double P = 1.0 / (1.0 + (energy / 511.0) * (1.0 - cos_theta));
+  return static_cast<float>((Re * Re / 2) * P * (1 - P * sin_theta_2 + P * P));
 }
 
 float
-ScatterSimulation::
-photon_energy_after_Compton_scatter(const float cos_theta, const float energy)
-{
-    return static_cast<float>(energy/(1+(energy/511.0f)*(1-cos_theta)));   // For an arbitrary energy
+ScatterSimulation::photon_energy_after_Compton_scatter(const float cos_theta, const float energy) {
+  return static_cast<float>(energy / (1 + (energy / 511.0f) * (1 - cos_theta))); // For an arbitrary energy
 }
 
 float
-ScatterSimulation::
-photon_energy_after_Compton_scatter_511keV(const float cos_theta)
-{
-    return 511.f/(2.f-cos_theta); // for a given energy, energy := 511 keV
+ScatterSimulation::photon_energy_after_Compton_scatter_511keV(const float cos_theta) {
+  return 511.f / (2.f - cos_theta); // for a given energy, energy := 511 keV
 }
 
 float
-ScatterSimulation::
-total_Compton_cross_section(const float energy)
-{
-    const double a= energy/511.0;
-    const double l= log(1.0+2.0*a);
-    const double sigma0= 6.65E-25;   // sigma0=8*pi*a*a/(3*m*m)
-    return static_cast<float>( 0.75*sigma0  * ( (1.0+a)/(a*a)*( 2.0*(1.0+a)/(1.0+2.0*a)- l/a ) + l/(2.0*a) - (1.0+3.0*a)/(1.0+2.0*a)/(1.0+2.0*a) ) ); // Klein - Nishina formula = sigma / sigma0
+ScatterSimulation::total_Compton_cross_section(const float energy) {
+  const double a = energy / 511.0;
+  const double l = log(1.0 + 2.0 * a);
+  const double sigma0 = 6.65E-25; // sigma0=8*pi*a*a/(3*m*m)
+  return static_cast<float>(0.75 * sigma0 *
+                            ((1.0 + a) / (a * a) * (2.0 * (1.0 + a) / (1.0 + 2.0 * a) - l / a) + l / (2.0 * a) -
+                             (1.0 + 3.0 * a) / (1.0 + 2.0 * a) / (1.0 + 2.0 * a))); // Klein - Nishina formula = sigma / sigma0
 }
 
-
 float
-ScatterSimulation::
-total_Compton_cross_section_relative_to_511keV(const float energy)
-{
-    const double a= energy/511.0;
-    static const double prefactor = 9.0/(-40 + 27*log(3.)); //Klein-Nishina formula for a=1 & devided with 0.75 == (40 - 27*log(3)) / 9
+ScatterSimulation::total_Compton_cross_section_relative_to_511keV(const float energy) {
+  const double a = energy / 511.0;
+  static const double prefactor =
+      9.0 / (-40 + 27 * log(3.)); // Klein-Nishina formula for a=1 & devided with 0.75 == (40 - 27*log(3)) / 9
 
-    return //checked this in Mathematica
-            static_cast<float>
-            (prefactor*
-             (((-4 - a*(16 + a*(18 + 2*a)))/square(1 + 2*a) +
-               ((2 + (2 - a)*a)*log(1 + 2*a))/a)/square(a)
-              ));
+  return // checked this in Mathematica
+      static_cast<float>(
+          prefactor *
+          (((-4 - a * (16 + a * (18 + 2 * a))) / square(1 + 2 * a) + ((2 + (2 - a) * a) * log(1 + 2 * a)) / a) / square(a)));
 }
 
 END_NAMESPACE_STIR

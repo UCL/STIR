@@ -20,7 +20,7 @@
   \file
   \ingroup projdata
   \brief declaration of stir::scale_sinograms and stir::get_scale_factors_per_sinogram
-  
+
   \author Charalampos Tsoumpas
   \author Kris Thielemans
 
@@ -39,9 +39,8 @@ class Succeeded;
        corresponds to segments, the second to axial positions.
   \return indicates if writing failed or not
 */
-Succeeded scale_sinograms(ProjData& output_proj_data, 		
-			  const ProjData& input_proj_data, 
-			  const Array<2,float> scale_factors_per_sinogram);
+Succeeded scale_sinograms(ProjData& output_proj_data, const ProjData& input_proj_data,
+                          const Array<2, float> scale_factors_per_sinogram);
 
 //! find scale factors between two different sinograms
 /*! \ingroup projdata
@@ -59,9 +58,7 @@ Succeeded scale_sinograms(ProjData& output_proj_data,
   Currently this function sets the scale factor or a sinogram to 1 (and calls warning())
   when the denominator gets too small.
 */
-Array<2,float>
-  get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
-				 const ProjData& denominator_proj_data,
-				 const ProjData& weights_proj_data);
+Array<2, float> get_scale_factors_per_sinogram(const ProjData& numerator_proj_data, const ProjData& denominator_proj_data,
+                                               const ProjData& weights_proj_data);
 
 END_NAMESPACE_STIR

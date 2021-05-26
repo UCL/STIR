@@ -26,7 +26,7 @@
 */
 #ifndef __stir_Densel__H_
 #define __stir_Densel__H_
-//TODO
+// TODO
 #include "stir/Coordinate3D.h"
 
 START_NAMESPACE_STIR
@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
 
 The name is a generalisation of pixel/voxel.
 
-\todo This might at some point evolve into a class, similar to Bin. 
+\todo This might at some point evolve into a class, similar to Bin.
 \warning At the moment,
 Bin includes a value, while Densel does not.
 

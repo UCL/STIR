@@ -25,10 +25,13 @@
 #include <string>
 #include <ctime>
 
-# ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::time_t; using ::tm; using ::localtime; }
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std {
+using ::time_t;
+using ::tm;
+using ::localtime;
+} // namespace std
 #endif
-
 
 START_NAMESPACE_STIR
 
@@ -49,7 +52,7 @@ START_NAMESPACE_STIR
       Tool Number (as a character)
       Q0, Qx, Qy, Qz
       Tx, Ty, Tz
-      RMS Error 
+      RMS Error
   \endverbatim
   or something like
   \verbatim
@@ -59,55 +62,54 @@ START_NAMESPACE_STIR
 
   \warning All times are in local time, and are hence subject to the
   settings of your TZ environment variable. This means that if the
-  data is processed in a different time zone, you will run into 
+  data is processed in a different time zone, you will run into
   trouble.
 */
-class Polaris_MT_File
-{
+class Polaris_MT_File {
 
 public:
-  struct Record
-  {
-   double sample_time;
-   unsigned int frame_num;
-   unsigned int rand_num;
-   char total_num;
-   Quaternion<float> quat;
-   CartesianCoordinate3D<float> trans;
-   float rms ;
-   unsigned int out_of_FOV;
-   };
+  struct Record {
+    double sample_time;
+    unsigned int frame_num;
+    unsigned int rand_num;
+    char total_num;
+    Quaternion<float> quat;
+    CartesianCoordinate3D<float> trans;
+    float rms;
+    unsigned int out_of_FOV;
+  };
 
   typedef std::vector<Record>::const_iterator const_iterator;
 
-   ~Polaris_MT_File () {};
-   Polaris_MT_File(const std::string& filename);   
-   
-   //! get the \a n-th complete record
-   /*! \warning This skips the 'missing data' records*/
-   Record operator[](unsigned int n) const;
+  ~Polaris_MT_File(){};
+  Polaris_MT_File(const std::string& filename);
 
-   //! iterators that go through complete records
-   const_iterator begin() const { return vector_of_records.begin();}
-   const_iterator end() const { return vector_of_records.end();}
-   unsigned long num_samples() const { return vector_of_records.size(); }
+  //! get the \a n-th complete record
+  /*! \warning This skips the 'missing data' records*/
+  Record operator[](unsigned int n) const;
 
-   //! iterators that go through all tags recorded by the Polaris
-   const_iterator begin_all_tags() const { return vector_of_tags.begin();}
-   const_iterator end_all_tags() const { return vector_of_tags.end();}
-   unsigned long num_tags() const { return vector_of_tags.size(); }
+  //! iterators that go through complete records
+  const_iterator begin() const { return vector_of_records.begin(); }
+  const_iterator end() const { return vector_of_records.end(); }
+  unsigned long num_samples() const { return vector_of_records.size(); }
 
-   //! start of acquisition as would have been returned by std::time()
-   std::time_t get_start_time_in_secs_since_1970();
+  //! iterators that go through all tags recorded by the Polaris
+  const_iterator begin_all_tags() const { return vector_of_tags.begin(); }
+  const_iterator end_all_tags() const { return vector_of_tags.end(); }
+  unsigned long num_tags() const { return vector_of_tags.size(); }
+
+  //! start of acquisition as would have been returned by std::time()
+  std::time_t get_start_time_in_secs_since_1970();
+
 private:
-   std::time_t start_time_in_secs_since_1970;
+  std::time_t start_time_in_secs_since_1970;
 
-   std::vector<Record> vector_of_records;
-   // this contains all tags and times (even those with 'missing data')
-   std::vector<Record> vector_of_tags;
+  std::vector<Record> vector_of_records;
+  // this contains all tags and times (even those with 'missing data')
+  std::vector<Record> vector_of_tags;
 
-   void read_Peter_Bloomfield_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char * const first_line);
-   void read_NDI_Toolviewer_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char * const first_line);
+  void read_Peter_Bloomfield_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char* const first_line);
+  void read_NDI_Toolviewer_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char* const first_line);
 };
 
 END_NAMESPACE_STIR

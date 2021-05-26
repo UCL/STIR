@@ -21,9 +21,9 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
+  \file
   \ingroup FBP2D
- 
+
   \brief declares the stir::FBP2DReconstruction class
 
   \author Kris Thielemans
@@ -39,7 +39,8 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class Succeeded;
 class ProjData;
 
@@ -67,7 +68,7 @@ xy output image size (in pixels) := 180
 alpha parameter for ramp filter := 1
 cut-off for ramp filter (in cycles) := 0.5
 
-; allow less padding. DO NOT USE 
+; allow less padding. DO NOT USE
 ; (unless you're sure that the object occupies only half the FOV)
 ;Transaxial extension for FFT:=1
 
@@ -76,73 +77,59 @@ cut-off for ramp filter (in cycles) := 0.5
 
 ; display data during processing for debugging purposes
 ; Display level := 0
-end := 
+end :=
   \endverbatim
 
-  alpha specifies the usual Hamming window (although I'm not so sure about the terminology here). So, 
+  alpha specifies the usual Hamming window (although I'm not so sure about the terminology here). So,
   for the "ramp filter" alpha =1. In frequency space, something like (from RampFilter.cxx)
 
   \code
    (alpha + (1 - alpha) * cos(_PI * f / fc))
   \endcode
- 
+
 */
-class FBP2DReconstruction :
-        public
-            RegisteredParsingObject<
-                FBP2DReconstruction,
-                    Reconstruction < DiscretisedDensity < 3,float> >,
-                    AnalyticReconstruction
-                 >
-{
-  //typedef AnalyticReconstruction base_type;
-    typedef
-    RegisteredParsingObject<
-        FBP2DReconstruction,
-            Reconstruction < DiscretisedDensity < 3,float> >,
-            AnalyticReconstruction
-         > base_type;
+class FBP2DReconstruction
+    : public RegisteredParsingObject<FBP2DReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction> {
+  // typedef AnalyticReconstruction base_type;
+  typedef RegisteredParsingObject<FBP2DReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction>
+      base_type;
 #ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
  public:
 #else
- private: 
-#endif  
-    typedef DiscretisedDensity < 3,float> TargetT;
+private:
+#endif
+  typedef DiscretisedDensity<3, float> TargetT;
+
 public:
-    //! Name which will be used when parsing a ProjectorByBinPair object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a ProjectorByBinPair object
+  static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
-  FBP2DReconstruction (); 
+  FBP2DReconstruction();
   /*!
     \brief Constructor, initialises everything from parameter file, or (when
     parameter_filename == "") by calling ask_parameters().
   */
-  explicit 
-    FBP2DReconstruction(const std::string& parameter_filename);
+  explicit FBP2DReconstruction(const std::string& parameter_filename);
 
-  FBP2DReconstruction(const shared_ptr<ProjData>&, 
-		      const double alpha_ramp=1.,
-		      const double fc_ramp=.5,
-		      const int pad_in_s=2,
-		      const int num_segments_to_combine=-1
-		      );
-  
+  FBP2DReconstruction(const shared_ptr<ProjData>&, const double alpha_ramp = 1., const double fc_ramp = .5,
+                      const int pad_in_s = 2, const int num_segments_to_combine = -1);
+
   virtual std::string method_info() const;
 
   virtual void ask_parameters();
 
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_sptr);
+  virtual Succeeded set_up(shared_ptr<TargetT> const& target_data_sptr);
 
- protected: // make parameters protected such that doc shows always up in doxygen
+protected: // make parameters protected such that doc shows always up in doxygen
   // parameters used for parsing
 
   //! Ramp filter: Alpha value
   double alpha_ramp;
   //! Ramp filter: Cut off frequency
-  double fc_ramp;  
+  double fc_ramp;
   //! amount of padding for the filter (has to be 0,1 or 2)
   int pad_in_s;
   //! number of segments to combine (with SSRB) before starting 2D reconstruction
@@ -153,25 +140,21 @@ public:
   */
   int num_segments_to_combine;
   //! potentially display data
-  /*! allowed values: \c display_level=0 (no display), 1 (only final image), 
+  /*! allowed values: \c display_level=0 (no display), 1 (only final image),
       2 (filtered-viewgrams). Defaults to 0.
    */
   int display_level;
- private:
-  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
+
+private:
+  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& target_image_ptr);
 
   shared_ptr<BackProjectorByBin> back_projector_sptr;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
-  virtual bool post_processing(); 
+  virtual bool post_processing();
 };
-
-
-
 
 END_NAMESPACE_STIR
 
-    
 #endif
-

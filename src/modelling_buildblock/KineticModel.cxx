@@ -22,22 +22,19 @@
 
   \author Charalampos Tsoumpas
 
-  This is the most basic class for including kinetic models. 
+  This is the most basic class for including kinetic models.
 
 */
 
-
 #include "stir/modelling/KineticModel.h"
-
 
 START_NAMESPACE_STIR
 
-const char * const 
-KineticModel::registered_name = "Kinetic Model Type";
+const char* const KineticModel::registered_name = "Kinetic Model Type";
 
-KineticModel::KineticModel()    //!< default constructor
-{ }
-KineticModel::~KineticModel()   //!< default destructor
-{ }
+KineticModel::KineticModel() //!< default constructor
+{}
+KineticModel::~KineticModel() //!< default destructor
+{}
 
 END_NAMESPACE_STIR

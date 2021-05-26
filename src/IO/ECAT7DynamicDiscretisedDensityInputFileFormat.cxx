@@ -34,9 +34,8 @@
 #include <fstream>
 #include <string>
 
-
 #ifndef HAVE_LLN_MATRIX
-#error HAVE_LLN_MATRIX not defined: you need the lln ecat library.
+#  error HAVE_LLN_MATRIX not defined: you need the lln ecat library.
 #endif
 
 #include "stir/IO/stir_ecat7.h"
@@ -49,11 +48,8 @@ START_NAMESPACE_ECAT7
     \preliminary
 
 */
-bool 
-ECAT7DynamicDiscretisedDensityInputFileFormat::
-actual_can_read(const FileSignature& signature,
-		std::istream& input) const
-{
+bool
+ECAT7DynamicDiscretisedDensityInputFileFormat::actual_can_read(const FileSignature& signature, std::istream& input) const {
   if (strncmp(signature.get_signature(), "MATRIX", 6) != 0)
     return false;
 
@@ -63,70 +59,53 @@ actual_can_read(const FileSignature& signature,
 }
 
 unique_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
-ECAT7DynamicDiscretisedDensityInputFileFormat::
-read_from_file(std::istream& input) const
-{
-  //TODO
-  error("read_from_file for ECAT7 with istream not implemented %s:%s. Sorry",
-	__FILE__, __LINE__);
-  return
-    unique_ptr<data_type>();
+ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file(std::istream& input) const {
+  // TODO
+  error("read_from_file for ECAT7 with istream not implemented %s:%s. Sorry", __FILE__, __LINE__);
+  return unique_ptr<data_type>();
 }
 
 unique_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
-ECAT7DynamicDiscretisedDensityInputFileFormat::
-read_from_file(const std::string& filename) const
-{
-  if (is_ECAT7_image_file(filename))
-    {
-      Main_header mhead;
-      if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
-	{
-	  error("ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file cannot read %s as ECAT7 (failed to read main header)", filename.c_str());
-	  return unique_ptr<data_type>();
-	}
-
-      TimeFrameDefinitions time_frame_definitions(filename);
-      shared_ptr<Scanner> scanner_sptr(find_scanner_from_ECAT_system_type(mhead.system_type));
-
-      unique_ptr<data_type> 
-	dynamic_image_ptr
-	(new DynamicDiscretisedDensity(time_frame_definitions,
-				       static_cast<double>(mhead.scan_start_time),
-				       scanner_sptr)
-	 );
-
-      dynamic_image_ptr->set_calibration_factor(mhead.calibration_factor);
-
-      dynamic_image_ptr->set_isotope_halflife(mhead.isotope_halflife);
-
-      // TODO get this from the subheader fields or so
-      // dynamic_image_ptr->_is_decay_corrected =
-      //  shead.processing_code & DecayPrc
-      dynamic_image_ptr->set_if_decay_corrected(false);
-
-      for (unsigned int frame_num=1; frame_num <= dynamic_image_ptr->get_num_time_frames(); ++ frame_num)
-	{
-	  shared_ptr<DynamicDiscretisedDensity::singleDiscDensT> dens_sptr
-	    (ECAT7_to_VoxelsOnCartesianGrid(filename,
-					    frame_num, 
-					    /* gate_num, data_num, bed_num */ 1,0,0)
-	     );
-	  if (is_null_ptr(dens_sptr))
-	    error("read_from_file for DynamicDiscretisedDensity: No frame %d available", frame_num);
-	  dynamic_image_ptr->set_density(*dens_sptr, frame_num );
-	}
-      return dynamic_image_ptr;
-    }
-  else
-    {
-      error("read_from_file for DynamicDiscretisedDensity: ECAT7 file %s is not an image file", filename.c_str());
-      // return something to satisfy compilers
+ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file(const std::string& filename) const {
+  if (is_ECAT7_image_file(filename)) {
+    Main_header mhead;
+    if (read_ECAT7_main_header(mhead, filename) == Succeeded::no) {
+      error("ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file cannot read %s as ECAT7 (failed to read main header)",
+            filename.c_str());
       return unique_ptr<data_type>();
     }
+
+    TimeFrameDefinitions time_frame_definitions(filename);
+    shared_ptr<Scanner> scanner_sptr(find_scanner_from_ECAT_system_type(mhead.system_type));
+
+    unique_ptr<data_type> dynamic_image_ptr(
+        new DynamicDiscretisedDensity(time_frame_definitions, static_cast<double>(mhead.scan_start_time), scanner_sptr));
+
+    dynamic_image_ptr->set_calibration_factor(mhead.calibration_factor);
+
+    dynamic_image_ptr->set_isotope_halflife(mhead.isotope_halflife);
+
+    // TODO get this from the subheader fields or so
+    // dynamic_image_ptr->_is_decay_corrected =
+    //  shead.processing_code & DecayPrc
+    dynamic_image_ptr->set_if_decay_corrected(false);
+
+    for (unsigned int frame_num = 1; frame_num <= dynamic_image_ptr->get_num_time_frames(); ++frame_num) {
+      shared_ptr<DynamicDiscretisedDensity::singleDiscDensT> dens_sptr(
+          ECAT7_to_VoxelsOnCartesianGrid(filename, frame_num,
+                                         /* gate_num, data_num, bed_num */ 1, 0, 0));
+      if (is_null_ptr(dens_sptr))
+        error("read_from_file for DynamicDiscretisedDensity: No frame %d available", frame_num);
+      dynamic_image_ptr->set_density(*dens_sptr, frame_num);
+    }
+    return dynamic_image_ptr;
+  } else {
+    error("read_from_file for DynamicDiscretisedDensity: ECAT7 file %s is not an image file", filename.c_str());
+    // return something to satisfy compilers
+    return unique_ptr<data_type>();
+  }
 }
 
 END_NAMESPACE_ECAT
 END_NAMESPACE_ECAT7
 END_NAMESPACE_STIR
-

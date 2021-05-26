@@ -16,10 +16,10 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
+  \file
   \ingroup test
   \ingroup buildblock
- 
+
   \brief tests for the stir::GeneralisedPoissonNoiseGenerator class
 
   \author Kris Thielemans
@@ -36,56 +36,51 @@
 
 START_NAMESPACE_STIR
 
-
 /*!
   \brief Tests GeneralisedPoissonNoiseGenerator functionality
   \ingroup test
   Currently contains only simple tests to check mean and variance.
 */
-class GeneralisedPoissonNoiseGeneratorTests : public RunTests
-{
+class GeneralisedPoissonNoiseGeneratorTests : public RunTests {
 private:
-  void
-  run_one_test(const int size, const float mu, const float scaling_factor, const bool preserve_mean);
-    
+  void run_one_test(const int size, const float mu, const float scaling_factor, const bool preserve_mean);
+
 public:
   void run_tests();
 };
 
 void
-GeneralisedPoissonNoiseGeneratorTests::
-run_one_test(const int size, const float mu, const float scaling_factor, const bool preserve_mean)
-{
-  Array<1,float> input(size);
-  Array<1,float> output(size);
+GeneralisedPoissonNoiseGeneratorTests::run_one_test(const int size, const float mu, const float scaling_factor,
+                                                    const bool preserve_mean) {
+  Array<1, float> input(size);
+  Array<1, float> output(size);
   input.fill(mu);
 
   GeneralisedPoissonNoiseGenerator generator(scaling_factor, preserve_mean);
 
   generator.generate_random(output, input);
-    
+
   using namespace boost::accumulators;
-    
-  // The accumulator set which will calculate the properties for us:    
-  accumulator_set< float, features< tag::variance, tag::mean > > acc;
+
+  // The accumulator set which will calculate the properties for us:
+  accumulator_set<float, features<tag::variance, tag::mean>> acc;
 
   // Use std::for_each to accumulate the statistical properties:
-  acc = std::for_each( output.begin(), output.end(), acc );
+  acc = std::for_each(output.begin(), output.end(), acc);
   set_tolerance(.1);
 
-  const float actual_mean = preserve_mean? mu : mu*scaling_factor;
-  const float actual_variance = preserve_mean? mu/scaling_factor : actual_mean;
+  const float actual_mean = preserve_mean ? mu : mu * scaling_factor;
+  const float actual_variance = preserve_mean ? mu / scaling_factor : actual_mean;
 
   boost::format formatter("size %1%, mu %2%, scaling_factor %3%, preserve_mean %4%");
   formatter % size % mu % scaling_factor % preserve_mean;
-    
+
   check_if_equal(mean(acc), actual_mean, "test mean with " + formatter.str());
   check_if_equal(variance(acc), actual_variance, "test variance with " + formatter.str());
 }
 
 void
-GeneralisedPoissonNoiseGeneratorTests::run_tests()
-{
+GeneralisedPoissonNoiseGeneratorTests::run_tests() {
 
   std::cerr << "Testing GeneralisedPoissonNoiseGenerator\n";
 
@@ -102,8 +97,8 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
-{
+int
+main() {
   GeneralisedPoissonNoiseGeneratorTests tests;
   tests.run_tests();
   return tests.main_return_value();

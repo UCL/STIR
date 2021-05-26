@@ -4,14 +4,14 @@
 /*!
   \file
   \ingroup boost
-  
+
   \brief Documentation for some boost functions
-    
+
   \author Kris Thielemans
   \author PARAPET project
-      
-        
-*/         
+
+
+*/
 
 /*
     Copyright (C) 2000 PARAPET project
@@ -32,7 +32,7 @@
 */
 
 /*! \namespace boost
-  \brief Namespace for the boost library 
+  \brief Namespace for the boost library
 
   see http://www.boost.org
 */
@@ -46,33 +46,31 @@
   See http://www.boost.org for more info.
 */
 
-namespace boost
-{
-  namespace detail {
-  /*! \ingroup boost
-  \brief Boost class for chaining of operators (see operators.hpp)
-  */
-    class empty_base {};
-  }
+namespace boost {
+namespace detail {
+/*! \ingroup boost
+\brief Boost class for chaining of operators (see operators.hpp)
+*/
+class empty_base {};
+} // namespace detail
 
 /*! \ingroup boost
   \brief Boost class to define all comparison operators given only 2 (see operators.hpp)
   */
 template <class T, class B = ::boost::detail::empty_base>
-  struct partially_ordered  {};
+struct partially_ordered {};
 
 /*! \ingroup boost
   \brief Boost class to define operator!= in terms of operator== (see operators.hpp)
   */
 template <class T, class B = ::boost::detail::empty_base>
-  struct equality_comparable {};
-
+struct equality_comparable {};
 
 /*! \ingroup boost
   \brief A smart pointer class: multiple shared_ptr's refer to one object
 
   This class keeps a reference counter to see how many shared_ptr's refer
-  to the object. When a shared_ptr is deleted, the reference counter is 
+  to the object. When a shared_ptr is deleted, the reference counter is
   decremented and if the object is longer referenced, it is deleted.
 
   \par Advantages: (it's easy)
@@ -84,7 +82,7 @@ template <class T, class B = ::boost::detail::empty_base>
 
   \par Disadvantages: (you have to be careful)
   <ul>
-  <li> If the object which a shared_ptr refers to gets modified, it affects all 
+  <li> If the object which a shared_ptr refers to gets modified, it affects all
   shared_ptrs sharing the object.
   <li> Constructing 2 shared_ptr's from the same ordinary pointer gives trouble.
   </ul>
@@ -92,8 +90,8 @@ template <class T, class B = ::boost::detail::empty_base>
   \par Example:
 
   \code
-  
-  { 
+
+  {
     // ok
     shared_ptr<int> i_ptr1(new int (2));
     shared_ptr<int> i_ptr2(i_ptr1);
@@ -106,7 +104,7 @@ template <class T, class B = ::boost::detail::empty_base>
       // now never use i_ptr anymore
     }
   }
-  { 
+  {
     // trouble! *i_ptr will be deleted twice !
     int * i_ptr = new int (2);
     shared_ptr<int> i_ptr1 (i_ptr);
@@ -115,7 +113,6 @@ template <class T, class B = ::boost::detail::empty_base>
   \endcode
 */
 template <class T>
-  class shared_ptr {};
+class shared_ptr {};
 
-
-}
+} // namespace boost

@@ -42,12 +42,9 @@ START_NAMESPACE_STIR
   object (e.g. for RelatedViewgrams), but do not need/have projectors.
 
 */
-class TrivialDataSymmetriesForViewSegmentNumbers : public DataSymmetriesForViewSegmentNumbers
-{
+class TrivialDataSymmetriesForViewSegmentNumbers : public DataSymmetriesForViewSegmentNumbers {
 public:
-
-  virtual inline DataSymmetriesForViewSegmentNumbers * clone() const;
-
+  virtual inline DataSymmetriesForViewSegmentNumbers* clone() const;
 
 #if 0
   // TODO
@@ -56,23 +53,19 @@ public:
     get_basic_view_segment_index_range() const;
 #endif
 
-  virtual inline void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const;
+  virtual inline void get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const;
 
-  virtual inline int
-    num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
+  virtual inline int num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
-  
+
   in this class, \a v_s is unchanged, and the return value is always false.
   'v_s' is changed (i.e. it was NOT a basic view/segment).
-  */  
-  virtual inline bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
+  */
+  virtual inline bool find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
 
 private:
-  virtual bool blindly_equals(const root_type * const) const;
-
+  virtual bool blindly_equals(const root_type* const) const;
 };
 
 END_NAMESPACE_STIR
@@ -80,4 +73,3 @@ END_NAMESPACE_STIR
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.inl"
 
 #endif
-

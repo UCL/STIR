@@ -25,7 +25,7 @@
   \brief File that registers all stir::RegisterObject children in buildblock
 
   \author Kris Thielemans
-  
+
 */
 
 #include "stir/SeparableCartesianMetzImageFilter.h"
@@ -38,7 +38,7 @@
 #include "stir/NonseparableConvolutionUsingRealDFTImageFilter.h"
 #include "stir/TruncateToCylindricalFOVImageProcessor.h"
 #ifdef HAVE_JSON
-#include "stir/HUToMuImageProcessor.h"
+#  include "stir/HUToMuImageProcessor.h"
 #endif
 START_NAMESPACE_STIR
 
@@ -48,9 +48,9 @@ static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
 static SeparableGaussianImageFilter<float>::RegisterIt dummySGF;
 static SeparableConvolutionImageFilter<float>::RegisterIt dummy5;
 static NonseparableConvolutionUsingRealDFTImageFilter<float>::RegisterIt dummy7;
-static TruncateToCylindricalFOVImageProcessor<float> ::RegisterIt dummy6;
-static ChainedDataProcessor<DiscretisedDensity<3,float> >::RegisterIt dummy3;
-static ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3,float> >::RegisterIt dummy4;
+static TruncateToCylindricalFOVImageProcessor<float>::RegisterIt dummy6;
+static ChainedDataProcessor<DiscretisedDensity<3, float>>::RegisterIt dummy3;
+static ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3, float>>::RegisterIt dummy4;
 
 #ifdef HAVE_JSON
 static HUToMuImageProcessor<DiscretisedDensity<3, float>>::RegisterIt dummyHUToMu;

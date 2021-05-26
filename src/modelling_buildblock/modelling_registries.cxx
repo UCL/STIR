@@ -27,7 +27,7 @@
   \brief File that registers all stir::RegisterObject children in modelling
 
   \author Charalampos Tsoumpas
-  
+
 */
 #include "stir/modelling/PatlakPlot.h"
 
@@ -36,4 +36,3 @@ START_NAMESPACE_STIR
 static PatlakPlot::RegisterIt dummy113;
 
 END_NAMESPACE_STIR
-

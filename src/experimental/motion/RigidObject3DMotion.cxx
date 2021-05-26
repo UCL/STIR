@@ -23,17 +23,13 @@
 
 START_NAMESPACE_STIR
 
-
-
-void 
-RigidObject3DMotion::set_defaults()
-{ 
-  //time_offset=time_not_yet_determined;
+void
+RigidObject3DMotion::set_defaults() {
+  // time_offset=time_not_yet_determined;
 }
 
-void 
-RigidObject3DMotion::initialise_keymap()
-{ 
+void
+RigidObject3DMotion::initialise_keymap() {
 #if 0
   parser.add_key("reference_quaternion", &reference_quaternion);
   parser.add_key("reference_translation", &reference_translation);
@@ -41,15 +37,12 @@ RigidObject3DMotion::initialise_keymap()
 }
 
 bool
-RigidObject3DMotion::
-post_processing()
-{
+RigidObject3DMotion::post_processing() {
 
-  if (!is_synchronised())
-    {
-      warning("RigidObject3DMotion object not synchronised.");
-      return true;
-    }
+  if (!is_synchronised()) {
+    warning("RigidObject3DMotion object not synchronised.");
+    return true;
+  }
 #if 0
   else 
     {
@@ -85,40 +78,26 @@ compute_average_motion_rel_time(const double start_time, const double end_time) 
 #endif
 
 RigidObject3DTransformation
-RigidObject3DMotion::
-compute_average_motion_in_tracker_coords(const AbsTimeInterval& interval) const
-{
-  return 
-    this->compute_average_motion_in_tracker_coords_rel_time
-    (this->secs_since_1970_to_rel_time(interval.get_start_time_in_secs_since_1970()),
-     this->secs_since_1970_to_rel_time(interval.get_end_time_in_secs_since_1970()));
+RigidObject3DMotion::compute_average_motion_in_tracker_coords(const AbsTimeInterval& interval) const {
+  return this->compute_average_motion_in_tracker_coords_rel_time(
+      this->secs_since_1970_to_rel_time(interval.get_start_time_in_secs_since_1970()),
+      this->secs_since_1970_to_rel_time(interval.get_end_time_in_secs_since_1970()));
 }
 
 RigidObject3DTransformation
-RigidObject3DMotion::
-compute_average_motion_in_scanner_coords(const AbsTimeInterval& interval) const
-{
-  return 
-    compose(this->compute_average_motion_in_tracker_coords(interval),
-	    this->get_transformation_from_scanner_coords());
+RigidObject3DMotion::compute_average_motion_in_scanner_coords(const AbsTimeInterval& interval) const {
+  return compose(this->compute_average_motion_in_tracker_coords(interval), this->get_transformation_from_scanner_coords());
 }
 
 RigidObject3DTransformation
-RigidObject3DMotion::
-compute_average_motion_in_scanner_coords_rel_time(const double start_time, const double end_time) const
-{
-  return 
-    compose(this->compute_average_motion_in_tracker_coords_rel_time(start_time, end_time),
-	    this->get_transformation_from_scanner_coords());
+RigidObject3DMotion::compute_average_motion_in_scanner_coords_rel_time(const double start_time, const double end_time) const {
+  return compose(this->compute_average_motion_in_tracker_coords_rel_time(start_time, end_time),
+                 this->get_transformation_from_scanner_coords());
 }
 
-RigidObject3DTransformation 
-RigidObject3DMotion::
-get_motion_in_scanner_coords_rel_time(const double time) const
-{
-  return 
-    compose(this->get_motion_in_tracker_coords_rel_time(time),
-	    this->get_transformation_from_scanner_coords());
+RigidObject3DTransformation
+RigidObject3DMotion::get_motion_in_scanner_coords_rel_time(const double time) const {
+  return compose(this->get_motion_in_tracker_coords_rel_time(time), this->get_transformation_from_scanner_coords());
 }
 
 #if 0
@@ -141,7 +120,7 @@ RigidObject3DMotion::
 is_synchronised() const
 {
   return time_offset!=time_not_yet_determined;
-}  
+}
 #endif
 
 END_NAMESPACE_STIR

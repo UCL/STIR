@@ -43,8 +43,7 @@ class Succeeded;
 
    If your scanner has more data available, you can provide it in the derived class.
 */
-class ListGatingInput
-{
+class ListGatingInput {
 public:
   virtual ~ListGatingInput() {}
 

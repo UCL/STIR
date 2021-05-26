@@ -23,7 +23,7 @@
   \file
   \ingroup projdata
 
-  \brief Implementation of non-inline functions of class 
+  \brief Implementation of non-inline functions of class
   stir::ProjDataInfoCylindricalNoArcCorr
 
   \author Nikos Efthimiou
@@ -38,9 +38,9 @@
 #include "stir/round.h"
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
+#  include <strstream.h>
 #else
-#include <sstream>
+#  include <sstream>
 #endif
 
 #include <boost/static_assert.hpp>
@@ -54,90 +54,63 @@ using std::vector;
 #endif
 
 START_NAMESPACE_STIR
-ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr()
-{}
+ProjDataInfoCylindricalNoArcCorr::ProjDataInfoCylindricalNoArcCorr() {}
 
-ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                                 const float ring_radius_v, const float angular_increment_v,
-				 const  VectorWithOffset<int>& num_axial_pos_per_segment,
-                                 const  VectorWithOffset<int>& min_ring_diff_v, 
-                                 const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,const int num_tangential_poss,
-                                 const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
-                          num_axial_pos_per_segment,
-                          min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss),
-  ring_radius(ring_radius_v),
-  angular_increment(angular_increment_v)
-{
+ProjDataInfoCylindricalNoArcCorr::ProjDataInfoCylindricalNoArcCorr(
+    const shared_ptr<Scanner> scanner_ptr, const float ring_radius_v, const float angular_increment_v,
+    const VectorWithOffset<int>& num_axial_pos_per_segment, const VectorWithOffset<int>& min_ring_diff_v,
+    const VectorWithOffset<int>& max_ring_diff_v, const int num_views, const int num_tangential_poss, const int tof_mash_factor)
+    : ProjDataInfoCylindrical(scanner_ptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views,
+                              num_tangential_poss),
+      ring_radius(ring_radius_v), angular_increment(angular_increment_v) {
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  if(scanner_ptr->is_tof_ready())
+  if (scanner_ptr->is_tof_ready())
     set_tof_mash_factor(tof_mash_factor);
-  //this->initialise_uncompressed_view_tangpos_to_det1det2();
-  //this->initialise_det1det2_to_uncompressed_view_tangpos();
+  // this->initialise_uncompressed_view_tangpos_to_det1det2();
+  // this->initialise_det1det2_to_uncompressed_view_tangpos();
 }
 
-ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                                 const  VectorWithOffset<int>& num_axial_pos_per_segment,
-                                 const  VectorWithOffset<int>& min_ring_diff_v,
-                                 const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views, const int num_tangential_poss,
-                                 const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
-                          num_axial_pos_per_segment,
-                          min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss)
-{
+ProjDataInfoCylindricalNoArcCorr::ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+                                                                   const VectorWithOffset<int>& num_axial_pos_per_segment,
+                                                                   const VectorWithOffset<int>& min_ring_diff_v,
+                                                                   const VectorWithOffset<int>& max_ring_diff_v,
+                                                                   const int num_views, const int num_tangential_poss,
+                                                                   const int tof_mash_factor)
+    : ProjDataInfoCylindrical(scanner_ptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views,
+                              num_tangential_poss) {
   assert(!is_null_ptr(scanner_ptr));
   ring_radius = scanner_ptr->get_effective_ring_radius();
-  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
+  angular_increment = static_cast<float>(_PI / scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 
-  if(scanner_ptr->is_tof_ready())
+  if (scanner_ptr->is_tof_ready())
     set_tof_mash_factor(tof_mash_factor);
-  //this->initialise_uncompressed_view_tangpos_to_det1det2();
-  //this->initialise_det1det2_to_uncompressed_view_tangpos();
+  // this->initialise_uncompressed_view_tangpos_to_det1det2();
+  // this->initialise_det1det2_to_uncompressed_view_tangpos();
 }
 
-
-
-
 ProjDataInfo*
-ProjDataInfoCylindricalNoArcCorr::clone() const
-{
+ProjDataInfoCylindricalNoArcCorr::clone() const {
   return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalNoArcCorr(*this));
 }
 
 bool
-ProjDataInfoCylindricalNoArcCorr::
-operator==(const self_type& that) const
-{
+ProjDataInfoCylindricalNoArcCorr::operator==(const self_type& that) const {
   if (!base_type::blindly_equals(&that))
     return false;
-  return
-    fabs(this->ring_radius - that.ring_radius) < 0.05F &&
-    fabs(this->angular_increment - that.angular_increment) < 0.05F;
+  return fabs(this->ring_radius - that.ring_radius) < 0.05F && fabs(this->angular_increment - that.angular_increment) < 0.05F;
 }
 
 bool
-ProjDataInfoCylindricalNoArcCorr::
-blindly_equals(const root_type * const that_ptr) const
-{
-  assert(dynamic_cast<const self_type * const>(that_ptr) != 0);
-  return
-    this->operator==(static_cast<const self_type&>(*that_ptr));
+ProjDataInfoCylindricalNoArcCorr::blindly_equals(const root_type* const that_ptr) const {
+  assert(dynamic_cast<const self_type* const>(that_ptr) != 0);
+  return this->operator==(static_cast<const self_type&>(*that_ptr));
 }
 
-
 string
-ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
-{
+ProjDataInfoCylindricalNoArcCorr::parameter_info() const {
 
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
@@ -145,7 +118,7 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
   ostrstream s(str, 50000);
 #else
   std::ostringstream s;
-#endif  
+#endif
   s << "ProjDataInfoCylindricalNoArcCorr := \n";
   s << ProjDataInfoCylindrical::parameter_info();
   s << "End :=\n";
@@ -181,87 +154,71 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
   - angles have to be defined modulo 2 Pi (so num_detectors)
   - interleaving
 */
-void 
-ProjDataInfoCylindricalNoArcCorr::
-initialise_uncompressed_view_tangpos_to_det1det2() const
-{
+void
+ProjDataInfoCylindricalNoArcCorr::initialise_uncompressed_view_tangpos_to_det1det2() const {
   BOOST_STATIC_ASSERT(-1 >> 1 == -1);
   BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
-  const int num_detectors =
-    get_scanner_ptr()->get_num_detectors_per_ring();
+  const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
 
-  assert(num_detectors%2 == 0);
+  assert(num_detectors % 2 == 0);
   // check views range from 0 to Pi
-  assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - _PI) < 1.E-4);
-  const int min_tang_pos_num = -(num_detectors/2)+1;
-  const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
-  
-  if (this->get_min_tangential_pos_num() < min_tang_pos_num ||
-      this->get_max_tangential_pos_num() > max_tang_pos_num)
-    {
-      error("The tangential_pos range (%d to %d) for this projection data is too large.\n"
-	    "Maximum supported range is from %d to %d",  
-	    this->get_min_tangential_pos_num(), this->get_max_tangential_pos_num(),
-	    min_tang_pos_num, max_tang_pos_num);
-    }
+  assert(fabs(get_phi(Bin(0, 0, 0, 0))) < 1.E-4);
+  assert(fabs(get_phi(Bin(0, get_num_views(), 0, 0)) - _PI) < 1.E-4);
+  const int min_tang_pos_num = -(num_detectors / 2) + 1;
+  const int max_tang_pos_num = -(num_detectors / 2) + num_detectors;
 
-  uncompressed_view_tangpos_to_det1det2.grow(0,num_detectors/2-1);
-  for (int v_num=0; v_num<=num_detectors/2-1; ++v_num)
-  {
+  if (this->get_min_tangential_pos_num() < min_tang_pos_num || this->get_max_tangential_pos_num() > max_tang_pos_num) {
+    error("The tangential_pos range (%d to %d) for this projection data is too large.\n"
+          "Maximum supported range is from %d to %d",
+          this->get_min_tangential_pos_num(), this->get_max_tangential_pos_num(), min_tang_pos_num, max_tang_pos_num);
+  }
+
+  uncompressed_view_tangpos_to_det1det2.grow(0, num_detectors / 2 - 1);
+  for (int v_num = 0; v_num <= num_detectors / 2 - 1; ++v_num) {
     uncompressed_view_tangpos_to_det1det2[v_num].grow(min_tang_pos_num, max_tang_pos_num);
 
-    for (int tp_num=min_tang_pos_num; tp_num<=max_tang_pos_num; ++tp_num)
-    {
+    for (int tp_num = min_tang_pos_num; tp_num <= max_tang_pos_num; ++tp_num) {
       /*
          adapted from CTI code
          Note for implementation: avoid using % with negative numbers
          so add num_detectors before doing modulo num_detectors)
         */
-      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det1_num = 
-        (v_num + (tp_num >> 1) + num_detectors) % num_detectors;
-      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det2_num = 
-        (v_num - ( (tp_num + 1) >> 1 ) + num_detectors/2) % num_detectors;
+      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det1_num = (v_num + (tp_num >> 1) + num_detectors) % num_detectors;
+      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det2_num =
+          (v_num - ((tp_num + 1) >> 1) + num_detectors / 2) % num_detectors;
     }
   }
   uncompressed_view_tangpos_to_det1det2_initialised = true;
 }
 
-void 
-ProjDataInfoCylindricalNoArcCorr::
-initialise_det1det2_to_uncompressed_view_tangpos() const
-{
+void
+ProjDataInfoCylindricalNoArcCorr::initialise_det1det2_to_uncompressed_view_tangpos() const {
   BOOST_STATIC_ASSERT(-1 >> 1 == -1);
   BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
-  const int num_detectors =
-    get_scanner_ptr()->get_num_detectors_per_ring();
+  const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
 
-  if (num_detectors%2 != 0)
-    {
-      error("Number of detectors per ring should be even but is %d", num_detectors);
-    }
-  if (this->get_min_view_num() != 0)
-    {
-      error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
-    }
+  if (num_detectors % 2 != 0) {
+    error("Number of detectors per ring should be even but is %d", num_detectors);
+  }
+  if (this->get_min_view_num() != 0) {
+    error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
+  }
   // check views range from 0 to Pi
-  assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - _PI) < 1.E-4);
-  //const int min_tang_pos_num = -(num_detectors/2);
-  //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
-  const int max_num_views = num_detectors/2;
+  assert(fabs(get_phi(Bin(0, 0, 0, 0))) < 1.E-4);
+  assert(fabs(get_phi(Bin(0, get_max_view_num() + 1, 0, 0)) - _PI) < 1.E-4);
+  // const int min_tang_pos_num = -(num_detectors/2);
+  // const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
+  const int max_num_views = num_detectors / 2;
 
-  det1det2_to_uncompressed_view_tangpos.grow(0,num_detectors-1);
-  for (int det1_num=0; det1_num<num_detectors; ++det1_num)
-  {
-    det1det2_to_uncompressed_view_tangpos[det1_num].grow(0, num_detectors-1);
+  det1det2_to_uncompressed_view_tangpos.grow(0, num_detectors - 1);
+  for (int det1_num = 0; det1_num < num_detectors; ++det1_num) {
+    det1det2_to_uncompressed_view_tangpos[det1_num].grow(0, num_detectors - 1);
 
-    for (int det2_num=0; det2_num<num_detectors; ++det2_num)
-    {            
+    for (int det2_num = 0; det2_num < num_detectors; ++det2_num) {
       if (det1_num == det2_num)
-	  continue;
+        continue;
       /*
        This somewhat obscure formula was obtained by inverting the code for
        get_det_num_pair_for_view_tangential_pos_num()
@@ -273,13 +230,13 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
       Note for implementation: avoid using % with negative numbers
       so add num_detectors before doing modulo num_detectors
       */
-      int tang_pos_num = (det1_num - det2_num +  3*num_detectors/2) % num_detectors;
-      int view_num = (det1_num - (tang_pos_num >> 1) +  num_detectors) % num_detectors;
-      
+      int tang_pos_num = (det1_num - det2_num + 3 * num_detectors / 2) % num_detectors;
+      int view_num = (det1_num - (tang_pos_num >> 1) + num_detectors) % num_detectors;
+
       /* Now adjust ranges for view_num, tang_pos_num.
       The next lines go only wrong in the singular (and irrelevant) case
       det_num1 == det_num2 (when tang_pos_num == num_detectors - tang_pos_num)
-      
+
         We use the combinations of the following 'symmetries' of
         (tang_pos_num, view_num) == (tang_pos_num+2*num_views, view_num + num_views)
         == (-tang_pos_num, view_num + num_views)
@@ -288,116 +245,86 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
         as well. So, we keep track of this in swap_detectors, and return its final
         value.
       */
-      if (view_num <  max_num_views)
-      {
-        if (tang_pos_num >=  max_num_views)
-        {
+      if (view_num < max_num_views) {
+        if (tang_pos_num >= max_num_views) {
           tang_pos_num = num_detectors - tang_pos_num;
           swap_detectors = 1;
-        }
-        else
-        {
+        } else {
           swap_detectors = 0;
         }
-      }
-      else
-      {
+      } else {
         view_num -= max_num_views;
-        if (tang_pos_num >=  max_num_views)
-        {
+        if (tang_pos_num >= max_num_views) {
           tang_pos_num -= num_detectors;
           swap_detectors = 0;
-        }
-        else
-        {
+        } else {
           tang_pos_num *= -1;
           swap_detectors = 1;
         }
       }
-      
+
       det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num = view_num;
       det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].tang_pos_num = tang_pos_num;
-      det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].swap_detectors = swap_detectors==0;     
+      det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].swap_detectors = swap_detectors == 0;
     }
   }
   det1det2_to_uncompressed_view_tangpos_initialised = true;
 }
 
 unsigned int
-ProjDataInfoCylindricalNoArcCorr::
-get_num_det_pos_pairs_for_bin(const Bin& bin) const
-{
-  return
-    get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-						 bin.axial_pos_num())*
-    get_view_mashing_factor()*
-    std::max(1,get_tof_mash_factor());
+ProjDataInfoCylindricalNoArcCorr::get_num_det_pos_pairs_for_bin(const Bin& bin) const {
+  return get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(), bin.axial_pos_num()) * get_view_mashing_factor() *
+         std::max(1, get_tof_mash_factor());
 }
 
 void
-ProjDataInfoCylindricalNoArcCorr::
-get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
-			      const Bin& bin) const
-{
+ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<>>& dps, const Bin& bin) const {
   this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
 
   dps.resize(get_num_det_pos_pairs_for_bin(bin));
 
   const ProjDataInfoCylindrical::RingNumPairs& ring_pairs =
-    get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-						 bin.axial_pos_num());
+      get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(), bin.axial_pos_num());
   // not sure how to handle mashing with non-zero view offset...
-  assert(get_min_view_num()==0);
+  assert(get_min_view_num() == 0);
   // not sure how to handle even tof mashing
   assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1));
-  unsigned int current_dp_num=0;
-  for (int uncompressed_view_num=bin.view_num()*get_view_mashing_factor();
-       uncompressed_view_num<(bin.view_num()+1)*get_view_mashing_factor();
-       ++uncompressed_view_num)
-    {
-      const int det1_num =
-	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
-      const int det2_num = 
-	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-        rings_iter != ring_pairs.end();
-        ++rings_iter)
-        {
-          for (int uncompressed_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
-               uncompressed_timing_pos_num <= bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
-               ++uncompressed_timing_pos_num)
-            {
-              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
-              dps[current_dp_num].pos1().tangential_coord() = det1_num;
-              dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
-              dps[current_dp_num].pos2().tangential_coord() = det2_num;
-              dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-              // need to keep dp.timing_pos positive
-              if (uncompressed_timing_pos_num > 0)
-                {
-                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
-                }
-              else
-                {
-                  std::swap(dps[current_dp_num].pos1(), dps[current_dp_num].pos2());
-                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(-uncompressed_timing_pos_num);
-                }
-              ++current_dp_num;
-            }
+  unsigned int current_dp_num = 0;
+  for (int uncompressed_view_num = bin.view_num() * get_view_mashing_factor();
+       uncompressed_view_num < (bin.view_num() + 1) * get_view_mashing_factor(); ++uncompressed_view_num) {
+    const int det1_num = uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
+    const int det2_num = uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
+    for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin(); rings_iter != ring_pairs.end();
+         ++rings_iter) {
+      for (int uncompressed_timing_pos_num = bin.timing_pos_num() * get_tof_mash_factor() - (get_tof_mash_factor() / 2);
+           uncompressed_timing_pos_num <= bin.timing_pos_num() * get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+           ++uncompressed_timing_pos_num) {
+        assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
+        dps[current_dp_num].pos1().tangential_coord() = det1_num;
+        dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
+        dps[current_dp_num].pos2().tangential_coord() = det2_num;
+        dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
+        // need to keep dp.timing_pos positive
+        if (uncompressed_timing_pos_num > 0) {
+          dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
+        } else {
+          std::swap(dps[current_dp_num].pos1(), dps[current_dp_num].pos2());
+          dps[current_dp_num].timing_pos() = static_cast<unsigned>(-uncompressed_timing_pos_num);
         }
+        ++current_dp_num;
+      }
     }
+  }
   assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin));
 }
 
 Succeeded
-ProjDataInfoCylindricalNoArcCorr::
-find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
-					             const CartesianCoordinate3D<float>& c1,
-						     const CartesianCoordinate3D<float>& c2) const
-{
-  const int num_detectors=get_scanner_ptr()->get_num_detectors_per_ring();
-  const float ring_spacing=get_scanner_ptr()->get_ring_spacing();
-  const float ring_radius=get_scanner_ptr()->get_effective_ring_radius();
+ProjDataInfoCylindricalNoArcCorr::find_scanner_coordinates_given_cartesian_coordinates(
+    int& det1, int& det2, int& ring1, int& ring2, const CartesianCoordinate3D<float>& c1,
+    const CartesianCoordinate3D<float>& c2) const {
+  const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
+  const float ring_spacing = get_scanner_ptr()->get_ring_spacing();
+  const float ring_radius = get_scanner_ptr()->get_effective_ring_radius();
 
 #if 0
   const CartesianCoordinate3D<float> d = c2 - c1;
@@ -433,77 +360,60 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   ring2 = round(coord_det2.z()/ring_spacing);
 #else
   LORInCylinderCoordinates<float> cyl_coords;
-  if (find_LOR_intersections_with_cylinder(cyl_coords,
-					   LORAs2Points<float>(c1, c2),
-					   ring_radius)
-      == Succeeded::no)
+  if (find_LOR_intersections_with_cylinder(cyl_coords, LORAs2Points<float>(c1, c2), ring_radius) == Succeeded::no)
     return Succeeded::no;
 
-  det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors)), num_detectors);
-  det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)), num_detectors);
-  ring1 = round(cyl_coords.p1().z()/ring_spacing);
-  ring2 = round(cyl_coords.p2().z()/ring_spacing);
+  det1 = modulo(round(cyl_coords.p1().psi() / (2. * _PI / num_detectors)), num_detectors);
+  det2 = modulo(round(cyl_coords.p2().psi() / (2. * _PI / num_detectors)), num_detectors);
+  ring1 = round(cyl_coords.p1().z() / ring_spacing);
+  ring2 = round(cyl_coords.p2().z() / ring_spacing);
 
 #endif
 
-  assert(det1 >=0 && det1<get_scanner_ptr()->get_num_detectors_per_ring());
-  assert(det2 >=0 && det2<get_scanner_ptr()->get_num_detectors_per_ring());
+  assert(det1 >= 0 && det1 < get_scanner_ptr()->get_num_detectors_per_ring());
+  assert(det2 >= 0 && det2 < get_scanner_ptr()->get_num_detectors_per_ring());
 
-  return 
-    (ring1 >=0 && ring1<get_scanner_ptr()->get_num_rings() &&
-     ring2 >=0 && ring2<get_scanner_ptr()->get_num_rings()) 
-     ? Succeeded::yes : Succeeded::no;
+  return (ring1 >= 0 && ring1 < get_scanner_ptr()->get_num_rings() && ring2 >= 0 && ring2 < get_scanner_ptr()->get_num_rings())
+             ? Succeeded::yes
+             : Succeeded::no;
 }
 
-
-void 
-ProjDataInfoCylindricalNoArcCorr::
-find_cartesian_coordinates_of_detection(
-					CartesianCoordinate3D<float>& coord_1,
-					CartesianCoordinate3D<float>& coord_2,
-					const Bin& bin) const
-{
- // find detectors
+void
+ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
+                                                                          CartesianCoordinate3D<float>& coord_2,
+                                                                          const Bin& bin) const {
+  // find detectors
   int det_num_a;
   int det_num_b;
   int ring_a;
   int ring_b;
-  get_det_pair_for_bin(det_num_a, ring_a,
-                       det_num_b, ring_b, bin);
-  
+  get_det_pair_for_bin(det_num_a, ring_a, det_num_b, ring_b, bin);
+
   // find corresponding cartesian coordinates
-  find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
-    ring_a,ring_b,det_num_a,det_num_b);
+  find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2, ring_a, ring_b, det_num_a, det_num_b);
 }
 
-
 void
-ProjDataInfoCylindricalNoArcCorr::
-find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-				 CartesianCoordinate3D<float>& coord_2,
-				 const int Ring_A,const int Ring_B, 
-				 const int det1, const int det2) const
-{
-  const int num_detectors_per_ring = 
-    get_scanner_ptr()->get_num_detectors_per_ring();
+ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
+                                                                                       CartesianCoordinate3D<float>& coord_2,
+                                                                                       const int Ring_A, const int Ring_B,
+                                                                                       const int det1, const int det2) const {
+  const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
 
   int d1, d2, r1, r2;
 
   this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
 
-  if (!det1det2_to_uncompressed_view_tangpos[det1][det2].swap_detectors)
-  {
-      d1 = det2;
-      d2 = det1;
-      r1 = Ring_B;
-      r2 = Ring_A;
-  }
-  else
-  {
-      d1 = det1;
-      d2 = det2;
-      r1 = Ring_A;
-      r2 = Ring_B;
+  if (!det1det2_to_uncompressed_view_tangpos[det1][det2].swap_detectors) {
+    d1 = det2;
+    d2 = det1;
+    r1 = Ring_B;
+    r2 = Ring_A;
+  } else {
+    d1 = det1;
+    d2 = det2;
+    r1 = Ring_A;
+    r2 = Ring_B;
   }
 
 #if 0
@@ -522,175 +432,141 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
 
   coord_2.z() = z2;
   coord_2.y() = -x2;
-  coord_2.x() = y2; 
+  coord_2.x() = y2;
 #else
-  // although code maybe doesn't really need the following, 
+  // although code maybe doesn't really need the following,
   // asserts in the LOR code will break if these conditions are not satisfied.
-  assert(0<=det1);
-  assert(det1<num_detectors_per_ring);
-  assert(0<=det2);
-  assert(det2<num_detectors_per_ring);
+  assert(0 <= det1);
+  assert(det1 < num_detectors_per_ring);
+  assert(0 <= det2);
+  assert(det2 < num_detectors_per_ring);
 
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_effective_ring_radius());
-  cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(d1));
-  cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(d2));
-  cyl_coords.p1().z() = r1*get_scanner_ptr()->get_ring_spacing();
-  cyl_coords.p2().z() = r2*get_scanner_ptr()->get_ring_spacing();
-  LORAs2Points<float> lor(cyl_coords);  
+  cyl_coords.p1().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (d1));
+  cyl_coords.p2().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (d2));
+  cyl_coords.p1().z() = r1 * get_scanner_ptr()->get_ring_spacing();
+  cyl_coords.p2().z() = r2 * get_scanner_ptr()->get_ring_spacing();
+  LORAs2Points<float> lor(cyl_coords);
   coord_1 = lor.p1();
   coord_2 = lor.p2();
-  
+
 #endif
 }
 
-
 //! \obsolete I don't see any reason why to keep having this function.
 void
-ProjDataInfoCylindricalNoArcCorr::
-find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface (
-        CartesianCoordinate3D<float>& coord_1,
-        CartesianCoordinate3D<float>& coord_2,
-        const int Ring_A,const int Ring_B,
-        const int det1, const int det2) const
-{
-    const int num_detectors_per_ring =
-            get_scanner_ptr()->get_num_detectors_per_ring();
+ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface(
+    CartesianCoordinate3D<float>& coord_1, CartesianCoordinate3D<float>& coord_2, const int Ring_A, const int Ring_B,
+    const int det1, const int det2) const {
+  const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
 
-//    float h_scanner_height = ( (get_scanner_ptr()->get_ring_spacing() -1) * get_scanner_ptr()->get_num_rings())/2.F;
+  //    float h_scanner_height = ( (get_scanner_ptr()->get_ring_spacing() -1) * get_scanner_ptr()->get_num_rings())/2.F;
 
-    // although code maybe doesn't really need the following,
-    // asserts in the LOR code will break if these conditions are not satisfied.
-    assert(0<=det1);
-    assert(det1<num_detectors_per_ring);
-    assert(0<=det2);
-    assert(det2<num_detectors_per_ring);
+  // although code maybe doesn't really need the following,
+  // asserts in the LOR code will break if these conditions are not satisfied.
+  assert(0 <= det1);
+  assert(det1 < num_detectors_per_ring);
+  assert(0 <= det2);
+  assert(det2 < num_detectors_per_ring);
 
-    LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_inner_ring_radius());
+  LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_inner_ring_radius());
 
-    cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
-    cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
+  cyl_coords.p1().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (det1));
+  cyl_coords.p2().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (det2));
 
-//    cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
-//    cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+  //    cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+  //    cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
 
-    LORAs2Points<float> lor(cyl_coords);
-    coord_1 = lor.p1();
-    coord_2 = lor.p2();
+  LORAs2Points<float> lor(cyl_coords);
+  coord_1 = lor.p1();
+  coord_2 = lor.p2();
 }
 
-
-void 
-ProjDataInfoCylindricalNoArcCorr::
-find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
-						  const CartesianCoordinate3D<float>& coord_1,
-						  const CartesianCoordinate3D<float>& coord_2) const
-{
+void
+ProjDataInfoCylindricalNoArcCorr::find_bin_given_cartesian_coordinates_of_detection(
+    Bin& bin, const CartesianCoordinate3D<float>& coord_1, const CartesianCoordinate3D<float>& coord_2) const {
   int det_num_a;
   int det_num_b;
   int ring_a;
   int ring_b;
-  
-  // given two CartesianCoordinates find the intersection     
-  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a,det_num_b,
-							   ring_a, ring_b,
-							   coord_1,
-							   coord_2) ==
-      Succeeded::no)
-  {
+
+  // given two CartesianCoordinates find the intersection
+  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a, det_num_b, ring_a, ring_b, coord_1, coord_2) ==
+      Succeeded::no) {
     bin.set_bin_value(-1);
     return;
   }
 
   // check rings are in valid range
   // this should have been done by find_scanner_coordinates_given_cartesian_coordinates
-  assert(!(ring_a<0 ||
-	   ring_a>=get_scanner_ptr()->get_num_rings() ||
-	   ring_b<0 ||
-	   ring_b>=get_scanner_ptr()->get_num_rings()));
+  assert(!(ring_a < 0 || ring_a >= get_scanner_ptr()->get_num_rings() || ring_b < 0 ||
+           ring_b >= get_scanner_ptr()->get_num_rings()));
 
-  if (get_bin_for_det_pair(bin,
-			   det_num_a, ring_a,
-			   det_num_b, ring_b) == Succeeded::no ||
-      bin.tangential_pos_num() < get_min_tangential_pos_num() ||
-      bin.tangential_pos_num() > get_max_tangential_pos_num())
+  if (get_bin_for_det_pair(bin, det_num_a, ring_a, det_num_b, ring_b) == Succeeded::no ||
+      bin.tangential_pos_num() < get_min_tangential_pos_num() || bin.tangential_pos_num() > get_max_tangential_pos_num())
     bin.set_bin_value(-1);
 }
 
 Bin
-ProjDataInfoCylindricalNoArcCorr::
-get_bin(const LOR<float>& lor,const double delta_time) const
-{
+ProjDataInfoCylindricalNoArcCorr::get_bin(const LOR<float>& lor, const double delta_time) const {
   Bin bin;
 #ifndef STIR_DEVEL
   // find nearest bin by going to nearest detectors first
   LORInCylinderCoordinates<float> cyl_coords;
-  if (lor.change_representation(cyl_coords, get_ring_radius()) == Succeeded::no)
-    {
-      bin.set_bin_value(-1);
-      return bin;
-    }
-  const int num_detectors_per_ring = 
-    get_scanner_ptr()->get_num_detectors_per_ring();
-  const int num_rings = 
-    get_scanner_ptr()->get_num_rings();
+  if (lor.change_representation(cyl_coords, get_ring_radius()) == Succeeded::no) {
+    bin.set_bin_value(-1);
+    return bin;
+  }
+  const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
+  const int num_rings = get_scanner_ptr()->get_num_rings();
 
-  const int det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
-  const int det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det1 = modulo(round(cyl_coords.p1().psi() / (2. * _PI / num_detectors_per_ring)), num_detectors_per_ring);
+  const int det2 = modulo(round(cyl_coords.p2().psi() / (2. * _PI / num_detectors_per_ring)), num_detectors_per_ring);
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
-  const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
-  const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
+  const int ring1 = round(cyl_coords.p1().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
+  const int ring2 = round(cyl_coords.p2().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
 
-  assert(det1 >=0 && det1<num_detectors_per_ring);
-  assert(det2 >=0 && det2<num_detectors_per_ring);
+  assert(det1 >= 0 && det1 < num_detectors_per_ring);
+  assert(det2 >= 0 && det2 < num_detectors_per_ring);
 
-  if (ring1 >=0 && ring1<num_rings &&
-      ring2 >=0 && ring2<num_rings &&
-      get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2, (cyl_coords.is_swapped() ? -1: 1)*get_tof_bin(delta_time)) == Succeeded::yes &&
-      bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
-      bin.tangential_pos_num() <= get_max_tangential_pos_num())
-    {
-      bin.set_bin_value(1);
-      return bin;
-    }
-  else
-    {
-      bin.set_bin_value(-1);
-      return bin;
-    }
-
+  if (ring1 >= 0 && ring1 < num_rings && ring2 >= 0 && ring2 < num_rings &&
+      get_bin_for_det_pair(bin, det1, ring1, det2, ring2, (cyl_coords.is_swapped() ? -1 : 1) * get_tof_bin(delta_time)) ==
+          Succeeded::yes &&
+      bin.tangential_pos_num() >= get_min_tangential_pos_num() && bin.tangential_pos_num() <= get_max_tangential_pos_num()) {
+    bin.set_bin_value(1);
+    return bin;
+  } else {
+    bin.set_bin_value(-1);
+    return bin;
+  }
 
 #else
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_coords;
-  if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no)
-    {
-      bin.set_bin_value(-1);
-      return bin;
-    }
+  if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no) {
+    bin.set_bin_value(-1);
+    return bin;
+  }
 
-  // first find view 
+  // first find view
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
   bin.view_num() = round(lor_coords.phi() / get_azimuthal_angle_sampling());
-  assert(bin.view_num()>=0);
-  assert(bin.view_num()<=get_num_views());
-  const bool swap_direction =
-    bin.view_num() > get_max_view_num();
+  assert(bin.view_num() >= 0);
+  assert(bin.view_num() <= get_num_views());
+  const bool swap_direction = bin.view_num() > get_max_view_num();
   if (swap_direction)
-    bin.view_num()-=get_num_views();
+    bin.view_num() -= get_num_views();
 
   bin.tangential_pos_num() = round(lor_coords.beta() / angular_increment);
   if (swap_direction)
     bin.tangential_pos_num() *= -1;
 
-  if (bin.tangential_pos_num() < get_min_tangential_pos_num() ||
-      bin.tangential_pos_num() > get_max_tangential_pos_num())
-    {
-      bin.set_bin_value(-1);
-      return bin;
-    }
+  if (bin.tangential_pos_num() < get_min_tangential_pos_num() || bin.tangential_pos_num() > get_max_tangential_pos_num()) {
+    bin.set_bin_value(-1);
+    return bin;
+  }
 
-#if 0
+#  if 0
   const int num_rings = 
     get_scanner_ptr()->get_num_rings();
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
@@ -717,79 +593,64 @@ get_bin(const LOR<float>& lor,const double delta_time) const
       bin.set_bin_value(-1);
       return bin;
     }
-#else
+#  else
   // find nearest segment
   {
-    if (delta_time!=0)
-      {
-        error("TODO TOF");
-      }
+    if (delta_time != 0) {
+      error("TODO TOF");
+    }
     const float delta =
-      (swap_direction 
-       ? lor_coords.z1()-lor_coords.z2()
-       : lor_coords.z2()-lor_coords.z1()
-       )/get_ring_spacing();
+        (swap_direction ? lor_coords.z1() - lor_coords.z2() : lor_coords.z2() - lor_coords.z1()) / get_ring_spacing();
     // check if out of acquired range
     // note the +1 or -1, which takes the size of the rings into account
-    if (delta>get_max_ring_difference(get_max_segment_num())+1 ||
-	delta<get_min_ring_difference(get_min_segment_num())-1)
-      {
-	bin.set_bin_value(-1);
-	return bin;
-      } 
-    if (delta>=0)
-      {
-	for (bin.segment_num()=0; bin.segment_num()<get_max_segment_num(); ++bin.segment_num())
-	  {
-	    if (delta < get_max_ring_difference(bin.segment_num())+.5)
-	      break;
-	  }
+    if (delta > get_max_ring_difference(get_max_segment_num()) + 1 ||
+        delta < get_min_ring_difference(get_min_segment_num()) - 1) {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+    if (delta >= 0) {
+      for (bin.segment_num() = 0; bin.segment_num() < get_max_segment_num(); ++bin.segment_num()) {
+        if (delta < get_max_ring_difference(bin.segment_num()) + .5)
+          break;
       }
-    else
-      {
-	// delta<0
-	for (bin.segment_num()=0; bin.segment_num()>get_min_segment_num(); --bin.segment_num())
-	  {
-	    if (delta > get_min_ring_difference(bin.segment_num())-.5)
-	      break;
-	  }
+    } else {
+      // delta<0
+      for (bin.segment_num() = 0; bin.segment_num() > get_min_segment_num(); --bin.segment_num()) {
+        if (delta > get_min_ring_difference(bin.segment_num()) - .5)
+          break;
       }
+    }
   }
   // now find nearest axial position
   {
-    const float m = (lor_coords.z2()+lor_coords.z1())/2;
-#if 0
+    const float m = (lor_coords.z2() + lor_coords.z1()) / 2;
+#    if 0
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
     initialise_ring_diff_arrays_if_not_done_yet();
 
-#ifndef NDEBUG
+#      ifndef NDEBUG
     bin.axial_pos_num()=0;
     assert(get_m(bin)==- m_offset[bin.segment_num()]);
-#endif
+#      endif
     bin.axial_pos_num() =
       round((m + m_offset[bin.segment_num()])/
 	    get_axial_sampling(bin.segment_num()));
-#else
-    bin.axial_pos_num()=0;
-    bin.axial_pos_num() =
-      round((m - get_m(bin))/
-	    get_axial_sampling(bin.segment_num()));
-#endif
+#    else
+    bin.axial_pos_num() = 0;
+    bin.axial_pos_num() = round((m - get_m(bin)) / get_axial_sampling(bin.segment_num()));
+#    endif
     if (bin.axial_pos_num() < get_min_axial_pos_num(bin.segment_num()) ||
-	bin.axial_pos_num() > get_max_axial_pos_num(bin.segment_num()))
-      {
-	bin.set_bin_value(-1);
-	return bin;
-      }
+        bin.axial_pos_num() > get_max_axial_pos_num(bin.segment_num())) {
+      bin.set_bin_value(-1);
+      return bin;
+    }
   }
-#endif
+#  endif
 
   bin.set_bin_value(1);
   return bin;
 #endif
 }
 
- 
 END_NAMESPACE_STIR
-

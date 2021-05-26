@@ -34,40 +34,29 @@
 START_NAMESPACE_STIR
 
 template <int num_dim, typename elemT>
-SeparableArrayFunctionObject<num_dim, elemT>::
-SeparableArrayFunctionObject()
-: all_1d_array_filters(VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >(num_dim))
-{}
+SeparableArrayFunctionObject<num_dim, elemT>::SeparableArrayFunctionObject()
+    : all_1d_array_filters(VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>(num_dim)) {}
 
 template <int num_dim, typename elemT>
-SeparableArrayFunctionObject<num_dim, elemT>::
-SeparableArrayFunctionObject(const VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >& array_filters)
-: all_1d_array_filters(array_filters)
-{
+SeparableArrayFunctionObject<num_dim, elemT>::SeparableArrayFunctionObject(
+    const VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>& array_filters)
+    : all_1d_array_filters(array_filters) {
   assert(all_1d_array_filters.get_length() == num_dim);
 }
 
-
 template <int num_dim, typename elemT>
-void 
-SeparableArrayFunctionObject<num_dim, elemT>::
-do_it(Array<num_dim,elemT>& array) const
-{
-  if (!is_trivial())
-    {
+void
+SeparableArrayFunctionObject<num_dim, elemT>::do_it(Array<num_dim, elemT>& array) const {
+  if (!is_trivial()) {
 #ifndef NDEBUG
-      // currently in_place_apply_array_functions_on_each_index doesn't handle 0 
-      // pointers gracefully, so we check here that there aren't any
-      for (typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
-	      iter=all_1d_array_filters.begin();
-	    iter!=all_1d_array_filters.end();
-	    ++iter)
-	assert(!is_null_ptr(*iter));
+    // currently in_place_apply_array_functions_on_each_index doesn't handle 0
+    // pointers gracefully, so we check here that there aren't any
+    for (typename VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>::const_iterator iter = all_1d_array_filters.begin();
+         iter != all_1d_array_filters.end(); ++iter)
+      assert(!is_null_ptr(*iter));
 #endif
-       in_place_apply_array_functions_on_each_index(array, 
-						    all_1d_array_filters.begin(), 
-						    all_1d_array_filters.end());
-    }
+    in_place_apply_array_functions_on_each_index(array, all_1d_array_filters.begin(), all_1d_array_filters.end());
+  }
 }
 
 #if 0
@@ -80,7 +69,7 @@ do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>&
    
   //if (!is_trivial())
   {
-#ifndef NDEBUG
+#  ifndef NDEBUG
     // currently apply_array_functions_on_each_index doesn't handle 0 
     // pointers gracefully, so we check here that there aren't any
     for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
@@ -88,7 +77,7 @@ do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>&
 	  iter!=all_1d_array_filters.end();
 	    ++iter)
       assert(!is_null_ptr(*iter));
-#endif
+#  endif
     apply_array_functions_on_each_index(out_array, in_array,
 					all_1d_array_filters.begin(), 
 					all_1d_array_filters.end());
@@ -100,26 +89,17 @@ do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>&
 #endif
 
 template <int num_dim, typename elemT>
-bool 
-SeparableArrayFunctionObject<num_dim, elemT>::
-is_trivial() const
-{
-  for (typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator 
-	  iter=all_1d_array_filters.begin();
-        iter!=all_1d_array_filters.end();
-	++iter)
-   {
-     if (!is_null_ptr(*iter) && !(*iter)->is_trivial())
-       return false;
-   }
-   return true;
+bool
+SeparableArrayFunctionObject<num_dim, elemT>::is_trivial() const {
+  for (typename VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>::const_iterator iter = all_1d_array_filters.begin();
+       iter != all_1d_array_filters.end(); ++iter) {
+    if (!is_null_ptr(*iter) && !(*iter)->is_trivial())
+      return false;
+  }
+  return true;
 }
-
 
 // instantiation
 template class SeparableArrayFunctionObject<3, float>;
 
 END_NAMESPACE_STIR
-
-
-

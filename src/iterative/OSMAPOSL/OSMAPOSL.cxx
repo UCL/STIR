@@ -39,9 +39,11 @@ using std::cout;
 using std::endl;
 
 #ifdef STIR_MPI
-int stir::distributable_main(int argc, char **argv)
+int
+stir::distributable_main(int argc, char** argv)
 #else
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 #endif
 {
 
@@ -50,23 +52,17 @@ int main(int argc, char **argv)
   HighResWallClockTimer t;
   t.reset();
   t.start();
-   
-      OSMAPOSLReconstruction<DiscretisedDensity<3,float> >
-        reconstruction_object(argc>1?argv[1]:"");
 
-        
-      //return reconstruction_object.reconstruct() == Succeeded::yes ?
-      //    EXIT_SUCCESS : EXIT_FAILURE;
-      if (reconstruction_object.reconstruct() == Succeeded::yes) 
-        {       
-          t.stop();
-          cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
-          return EXIT_SUCCESS;
-        }
-      else      
-        {
-          t.stop();
-          return EXIT_FAILURE;
-        }
-            
+  OSMAPOSLReconstruction<DiscretisedDensity<3, float>> reconstruction_object(argc > 1 ? argv[1] : "");
+
+  // return reconstruction_object.reconstruct() == Succeeded::yes ?
+  //    EXIT_SUCCESS : EXIT_FAILURE;
+  if (reconstruction_object.reconstruct() == Succeeded::yes) {
+    t.stop();
+    cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
+    return EXIT_SUCCESS;
+  } else {
+    t.stop();
+    return EXIT_FAILURE;
+  }
 }

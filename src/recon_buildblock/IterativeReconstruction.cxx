@@ -23,13 +23,13 @@
   \file
   \ingroup recon_buildblock
 
-  \brief  implementation of the stir::IterativeReconstruction class 
-    
+  \brief  implementation of the stir::IterativeReconstruction class
+
   \author Matthew Jacobson
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-      
+
 */
 #include <algorithm>
 // for time(), used as seed for random stuff
@@ -55,118 +55,100 @@ using std::endl;
 using std::string;
 #endif
 
-
 START_NAMESPACE_STIR
 
 //********* parameters ****************
 template <typename TargetT>
-void 
-IterativeReconstruction<TargetT>::set_defaults()
-{
+void
+IterativeReconstruction<TargetT>::set_defaults() {
   base_type::set_defaults();
   this->objective_function_sptr.reset();
   this->num_subsets = 1;
   this->start_subset_num = 0;
   this->num_subiterations = 1;
-  this->start_subiteration_num =1;
+  this->start_subiteration_num = 1;
   // default to all 1's
   this->initial_data_filename = "1";
 
-  this->max_num_full_iterations=NumericInfo<int>().max_value();
+  this->max_num_full_iterations = NumericInfo<int>().max_value();
   this->save_interval = 1;
   this->inter_iteration_filter_interval = 0;
   this->inter_iteration_filter_ptr.reset();
-//MJ 02/08/99 added subset randomization
+  // MJ 02/08/99 added subset randomization
   this->randomise_subset_order = false;
   this->report_objective_function_values_interval = 0;
-
 }
 
 template <typename TargetT>
-void 
-IterativeReconstruction<TargetT>::initialise_keymap()
-{
+void
+IterativeReconstruction<TargetT>::initialise_keymap() {
   base_type::initialise_keymap();
   this->parser.add_parsing_key("objective function type", &objective_function_sptr);
-  this->parser.add_key("number of subiterations",  &num_subiterations);
-  this->parser.add_key("start at subiteration number",  &start_subiteration_num);
-  this->parser.add_key("save estimates at subiteration intervals",  &save_interval);
+  this->parser.add_key("number of subiterations", &num_subiterations);
+  this->parser.add_key("start at subiteration number", &start_subiteration_num);
+  this->parser.add_key("save estimates at subiteration intervals", &save_interval);
   this->parser.add_key("initial estimate", &initial_data_filename);
   this->parser.add_key("number of subsets", &this->num_subsets);
   this->parser.add_key("start at subset", &start_subset_num);
   this->parser.add_key("uniformly randomise subset order", &randomise_subset_order);
-  this->parser.add_key("inter-iteration filter subiteration interval",&inter_iteration_filter_interval);
+  this->parser.add_key("inter-iteration filter subiteration interval", &inter_iteration_filter_interval);
   this->parser.add_parsing_key("inter-iteration filter type", &inter_iteration_filter_ptr);
-  this->parser.add_key("report objective function values interval",
-		       &this->report_objective_function_values_interval);
+  this->parser.add_key("report objective function values interval", &this->report_objective_function_values_interval);
 }
 
 template <typename TargetT>
-void IterativeReconstruction<TargetT>::
-ask_parameters()
-{
+void
+IterativeReconstruction<TargetT>::ask_parameters() {
 
   base_type::ask_parameters();
- 
 
   char initial_data_filename_char[max_filename_length];
 
-  
   // KT 21/10/98 use new order of arguments
-  ask_filename_with_extension(initial_data_filename_char,
-    "Get initial estimate from which file (1 = 1's): ", "");
-  
-  this->initial_data_filename=initial_data_filename_char;
-  
-  this->num_subsets= ask_num("Number of ordered sets: ", 1,100000000,1);
-  this->num_subiterations=ask_num("Number of subiterations",
-				  1,NumericInfo<int>().max_value(),this->num_subsets);
-  
-  this->start_subiteration_num=ask_num("Start at what subiteration number : ", 1,NumericInfo<int>().max_value(),1);
-  
-  this->start_subset_num=ask_num("Start with which ordered set : ",
-    0,this->num_subsets-1,0);
-  
-  this->save_interval=ask_num("Save estimates at sub-iteration intervals of: ", 
-			      1,this->num_subiterations,this->num_subiterations);  
-  
-  
-  this->inter_iteration_filter_interval=
-    ask_num("Do inter-iteration filtering at sub-iteration intervals of: ",
-	    0, this->num_subiterations, 0);
-  
-  if(this->inter_iteration_filter_interval>0 )
-  {
-    cerr<<endl<<"Supply inter-iteration filter type:\nPossible values:\n";
+  ask_filename_with_extension(initial_data_filename_char, "Get initial estimate from which file (1 = 1's): ", "");
+
+  this->initial_data_filename = initial_data_filename_char;
+
+  this->num_subsets = ask_num("Number of ordered sets: ", 1, 100000000, 1);
+  this->num_subiterations = ask_num("Number of subiterations", 1, NumericInfo<int>().max_value(), this->num_subsets);
+
+  this->start_subiteration_num = ask_num("Start at what subiteration number : ", 1, NumericInfo<int>().max_value(), 1);
+
+  this->start_subset_num = ask_num("Start with which ordered set : ", 0, this->num_subsets - 1, 0);
+
+  this->save_interval =
+      ask_num("Save estimates at sub-iteration intervals of: ", 1, this->num_subiterations, this->num_subiterations);
+
+  this->inter_iteration_filter_interval =
+      ask_num("Do inter-iteration filtering at sub-iteration intervals of: ", 0, this->num_subiterations, 0);
+
+  if (this->inter_iteration_filter_interval > 0) {
+    cerr << endl << "Supply inter-iteration filter type:\nPossible values:\n";
     DataProcessor<TargetT>::list_registered_names(cerr);
-    
+
     const string inter_iteration_filter_type = ask_string("");
-    
-    this->inter_iteration_filter_ptr.
-      reset(DataProcessor<TargetT>::read_registered_object(0, inter_iteration_filter_type));      
-  } 
-  
-  
-  
-  this->randomise_subset_order=
-    ask("Randomly generate subset order?", false);
-  
-  
+
+    this->inter_iteration_filter_ptr.reset(DataProcessor<TargetT>::read_registered_object(0, inter_iteration_filter_type));
+  }
+
+  this->randomise_subset_order = ask("Randomly generate subset order?", false);
 }
 
-
 template <typename TargetT>
-bool IterativeReconstruction<TargetT>::
-post_processing() 
-{
+bool
+IterativeReconstruction<TargetT>::post_processing() {
   if (base_type::post_processing())
     return true;
 
-  if (is_null_ptr(this->objective_function_sptr))
-    { warning("You have to specify an objective function"); return true; }
+  if (is_null_ptr(this->objective_function_sptr)) {
+    warning("You have to specify an objective function");
+    return true;
+  }
 
-  if (this->initial_data_filename.length() == 0)
-  { warning("You need to specify an initial estimate file"); return true; }
+  if (this->initial_data_filename.length() == 0) {
+    warning("You need to specify an initial estimate file");
+    return true;
+  }
 
   return false;
 }
@@ -174,188 +156,159 @@ post_processing()
 //************ get_ functions ****************
 template <typename TargetT>
 GeneralisedObjectiveFunction<TargetT> const&
-IterativeReconstruction<TargetT>::
-get_objective_function() const
-{ return *this->objective_function_sptr; }
-
-template <typename TargetT>
-shared_ptr<GeneralisedObjectiveFunction<TargetT> > 
-IterativeReconstruction<TargetT>::
-get_objective_function_sptr() const
-{ return this->objective_function_sptr; }
-
-template <typename TargetT>
-const int
-IterativeReconstruction<TargetT>::
-get_max_num_full_iterations() const
-{ return this->max_num_full_iterations; }
-
-template <typename TargetT>
-const int 
-IterativeReconstruction<TargetT>::
-get_num_subsets() const
-{ return this->num_subsets; }
-
-template <typename TargetT>
-const int 
-IterativeReconstruction<TargetT>::
-get_num_subiterations() const
-{ return this->num_subiterations; }
-
-template <typename TargetT>
-const int
-IterativeReconstruction<TargetT>::
-get_start_subiteration_num() const
-{ return this->start_subiteration_num; }
-
-template <typename TargetT>
-const int 
-IterativeReconstruction<TargetT>::
-get_start_subset_num() const
-{ return this->start_subset_num; }
-
-template <typename TargetT>
-const int
-IterativeReconstruction<TargetT>::
-get_save_interval() const
-{ return this->save_interval; }
-
-template <typename TargetT>
-const bool
-IterativeReconstruction<TargetT>::
-get_randomise_subset_order() const
-{ return this->randomise_subset_order; }
-
-template <typename TargetT>
-const DataProcessor<TargetT>& 
-IterativeReconstruction<TargetT>::
-get_inter_iteration_filter() const
-{ return *this->inter_iteration_filter_ptr; }
-
-template <typename TargetT>
-shared_ptr<DataProcessor<TargetT> >
-IterativeReconstruction<TargetT>::
-get_inter_iteration_filter_sptr()
-{
-	return this->inter_iteration_filter_ptr;
+IterativeReconstruction<TargetT>::get_objective_function() const {
+  return *this->objective_function_sptr;
 }
 
 template <typename TargetT>
-const int 
-IterativeReconstruction<TargetT>::
-get_inter_iteration_filter_interval() const
-{ return this->inter_iteration_filter_interval; }
+shared_ptr<GeneralisedObjectiveFunction<TargetT>>
+IterativeReconstruction<TargetT>::get_objective_function_sptr() const {
+  return this->objective_function_sptr;
+}
 
 template <typename TargetT>
-const int 
-IterativeReconstruction<TargetT>::
-get_report_objective_function_values_interval() const
-{ return this->report_objective_function_values_interval; }
+const int
+IterativeReconstruction<TargetT>::get_max_num_full_iterations() const {
+  return this->max_num_full_iterations;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_num_subsets() const {
+  return this->num_subsets;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_num_subiterations() const {
+  return this->num_subiterations;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_start_subiteration_num() const {
+  return this->start_subiteration_num;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_start_subset_num() const {
+  return this->start_subset_num;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_save_interval() const {
+  return this->save_interval;
+}
+
+template <typename TargetT>
+const bool
+IterativeReconstruction<TargetT>::get_randomise_subset_order() const {
+  return this->randomise_subset_order;
+}
+
+template <typename TargetT>
+const DataProcessor<TargetT>&
+IterativeReconstruction<TargetT>::get_inter_iteration_filter() const {
+  return *this->inter_iteration_filter_ptr;
+}
+
+template <typename TargetT>
+shared_ptr<DataProcessor<TargetT>>
+IterativeReconstruction<TargetT>::get_inter_iteration_filter_sptr() {
+  return this->inter_iteration_filter_ptr;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_inter_iteration_filter_interval() const {
+  return this->inter_iteration_filter_interval;
+}
+
+template <typename TargetT>
+const int
+IterativeReconstruction<TargetT>::get_report_objective_function_values_interval() const {
+  return this->report_objective_function_values_interval;
+}
 
 //************ set_ functions ****************
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > >& arg)
-{
-  this->objective_function_sptr  = arg;
+IterativeReconstruction<TargetT>::set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT>>& arg) {
+  this->objective_function_sptr = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_max_num_full_iterations(const int arg)
-{
-  this->max_num_full_iterations  = arg;
+IterativeReconstruction<TargetT>::set_max_num_full_iterations(const int arg) {
+  this->max_num_full_iterations = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_num_subsets(const int arg)
-{
+IterativeReconstruction<TargetT>::set_num_subsets(const int arg) {
   this->_already_set_up = false;
-  this->num_subsets  = arg;
+  this->num_subsets = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_num_subiterations(const int arg)
-{
-  this->num_subiterations  = arg;
+IterativeReconstruction<TargetT>::set_num_subiterations(const int arg) {
+  this->num_subiterations = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_start_subiteration_num(const int arg)
-{
-  this->start_subiteration_num  = arg;
+IterativeReconstruction<TargetT>::set_start_subiteration_num(const int arg) {
+  this->start_subiteration_num = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_start_subset_num(const int arg)
-{
-  if (arg<0 || arg>= this->num_subsets)
+IterativeReconstruction<TargetT>::set_start_subset_num(const int arg) {
+  if (arg < 0 || arg >= this->num_subsets)
     error("set_start_subset_num out-of-range error");
-  this->start_subset_num  = arg;
+  this->start_subset_num = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_save_interval(const int arg)
-{
-  this->save_interval  = arg;
+IterativeReconstruction<TargetT>::set_save_interval(const int arg) {
+  this->save_interval = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_randomise_subset_order(const bool arg)
-{
-  this->randomise_subset_order  = arg;
+IterativeReconstruction<TargetT>::set_randomise_subset_order(const bool arg) {
+  this->randomise_subset_order = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_inter_iteration_filter_ptr(const shared_ptr<DataProcessor<TargetT> >& arg)
-{
-  this->inter_iteration_filter_ptr  = arg;
+IterativeReconstruction<TargetT>::set_inter_iteration_filter_ptr(const shared_ptr<DataProcessor<TargetT>>& arg) {
+  this->inter_iteration_filter_ptr = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_inter_iteration_filter_interval(const int arg)
-{
-  this->inter_iteration_filter_interval  = arg;
+IterativeReconstruction<TargetT>::set_inter_iteration_filter_interval(const int arg) {
+  this->inter_iteration_filter_interval = arg;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_report_objective_function_values_interval(const int arg)
-{
+IterativeReconstruction<TargetT>::set_report_objective_function_values_interval(const int arg) {
   this->report_objective_function_values_interval = arg;
 }
 
 //************ other functions ****************
 template <typename TargetT>
-IterativeReconstruction<TargetT>::
-IterativeReconstruction()
-{
-}
+IterativeReconstruction<TargetT>::IterativeReconstruction() {}
 
 template <typename TargetT>
 std::string
-IterativeReconstruction<TargetT>::
-make_filename_prefix_subiteration_num(const std::string& filename_prefix) const
-{
+IterativeReconstruction<TargetT>::make_filename_prefix_subiteration_num(const std::string& filename_prefix) const {
   char num[50];
   sprintf(num, "_%d", subiteration_num);
   return filename_prefix + num;
@@ -363,39 +316,31 @@ make_filename_prefix_subiteration_num(const std::string& filename_prefix) const
 
 template <typename TargetT>
 std::string
-IterativeReconstruction<TargetT>::
-make_filename_prefix_subiteration_num() const
-{
-  return 
-    this->make_filename_prefix_subiteration_num(this->output_filename_prefix);
+IterativeReconstruction<TargetT>::make_filename_prefix_subiteration_num() const {
+  return this->make_filename_prefix_subiteration_num(this->output_filename_prefix);
 }
 
 template <typename TargetT>
-TargetT *
-IterativeReconstruction<TargetT>::get_initial_data_ptr() const
-{
+TargetT*
+IterativeReconstruction<TargetT>::get_initial_data_ptr() const {
   if (is_null_ptr(this->objective_function_sptr))
     error("objective function needs to be set before calling get_initial_data_ptr");
 
-  TargetT * result;
+  TargetT* result;
 
-  if(this->initial_data_filename=="0")
-  {
+  if (this->initial_data_filename == "0") {
     result = this->objective_function_sptr->construct_target_ptr();
-  }
-  else if(this->initial_data_filename=="1")
-  {
+  } else if (this->initial_data_filename == "1") {
     result = this->objective_function_sptr->construct_target_ptr();
     std::fill(result->begin_all(), result->end_all(), 1.F);
+  } else {
+    result = TargetT::read_from_file(this->initial_data_filename);
+    result->set_exam_info(*this->get_input_data().get_exam_info_sptr());
   }
-  else
-    {
-      result = TargetT::read_from_file(this->initial_data_filename);
-      result->set_exam_info(*this->get_input_data().get_exam_info_sptr());
-    }
   if (this->_already_set_up)
     if (!this->target_data_sptr->has_same_characteristics(*result))
-      error("IterativeReconstruction::get_initial_data_ptr() results in different characteristics than what was used for set_up()");
+      error(
+          "IterativeReconstruction::get_initial_data_ptr() results in different characteristics than what was used for set_up()");
 
   return result;
 }
@@ -403,18 +348,15 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 // KT 10122001 new
 // NE Updated to be able to define the dataset to reconstruct.
 template <typename TargetT>
-Succeeded 
-IterativeReconstruction<TargetT>::
-reconstruct()
-{
+Succeeded
+IterativeReconstruction<TargetT>::reconstruct() {
   this->start_timers();
 
   this->target_data_sptr.reset(this->get_initial_data_ptr());
-  if (this->set_up(this->target_data_sptr) == Succeeded::no)
-    {
-      this->stop_timers();
-      return Succeeded::no;
-    }
+  if (this->set_up(this->target_data_sptr) == Succeeded::no) {
+    this->stop_timers();
+    return Succeeded::no;
+  }
 
   this->stop_timers();
 
@@ -422,10 +364,8 @@ reconstruct()
 }
 
 template <typename TargetT>
-Succeeded 
-IterativeReconstruction<TargetT>::
-reconstruct(shared_ptr<TargetT > const& target_data_sptr)
-{
+Succeeded
+IterativeReconstruction<TargetT>::reconstruct(shared_ptr<TargetT> const& target_data_sptr) {
   this->start_timers();
   this->check(*target_data_sptr);
 #if 0
@@ -436,75 +376,80 @@ reconstruct(shared_ptr<TargetT > const& target_data_sptr)
     }
 #endif
 
-  for(subiteration_num=start_subiteration_num;subiteration_num<=num_subiterations && this->terminate_iterations==false; subiteration_num++)
-  {
+  for (subiteration_num = start_subiteration_num; subiteration_num <= num_subiterations && this->terminate_iterations == false;
+       subiteration_num++) {
     this->update_estimate(*target_data_sptr);
     this->end_of_iteration_processing(*target_data_sptr);
   }
 
   this->stop_timers();
 
-  cerr << "Total CPU Time " << this->get_CPU_timer_value() << "secs"<<endl;
+  cerr << "Total CPU Time " << this->get_CPU_timer_value() << "secs" << endl;
 
   // currently, if there was something wrong, the programme is just aborted
   // so, if we get here, everything was fine
   return Succeeded::yes;
-
 }
-
 
 template <typename TargetT>
 Succeeded
-IterativeReconstruction<TargetT>::
-set_up(shared_ptr<TargetT > const& target_data_sptr)
-{
+IterativeReconstruction<TargetT>::set_up(shared_ptr<TargetT> const& target_data_sptr) {
   if (base_type::set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
 
-  //initialize iteration loop terminator
-  this->terminate_iterations=false;
+  // initialize iteration loop terminator
+  this->terminate_iterations = false;
 
+  if (this->num_subsets < 1) {
+    warning("number of subsets should be positive");
+    return Succeeded::no;
+  }
 
-  if (this->num_subsets<1 )
-    { warning("number of subsets should be positive"); return Succeeded::no; }
+  if (is_null_ptr(this->objective_function_sptr)) {
+    warning("You have to specify an objective function");
+    return Succeeded::no;
+  }
 
-  if (is_null_ptr(this->objective_function_sptr))
-    { warning("You have to specify an objective function"); return Succeeded::no; }
-
-  const int new_num_subsets =
-    this->objective_function_sptr->set_num_subsets(this->num_subsets);
-  if (new_num_subsets!=this->num_subsets)
-    {
-      warning("Number of subsets requested : %d, but actual number used is %d\n",
-	      this->num_subsets, new_num_subsets);
-      this->num_subsets = new_num_subsets;
-    }
+  const int new_num_subsets = this->objective_function_sptr->set_num_subsets(this->num_subsets);
+  if (new_num_subsets != this->num_subsets) {
+    warning("Number of subsets requested : %d, but actual number used is %d\n", this->num_subsets, new_num_subsets);
+    this->num_subsets = new_num_subsets;
+  }
 
   if (this->objective_function_sptr->set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
 
-  if (this->num_subiterations<1)
-    { warning("Range error in number of subiterations"); return Succeeded::no; }
-  
-  if(this->start_subset_num<0 || this->start_subset_num>=this->num_subsets) 
-    { warning("Range error in starting subset"); return Succeeded::no; }
+  if (this->num_subiterations < 1) {
+    warning("Range error in number of subiterations");
+    return Succeeded::no;
+  }
 
-  if(this->save_interval<1 || this->save_interval>this->num_subiterations) 
-    { warning("Range error in iteration save interval"); return Succeeded::no;}
- 
-  if (this->inter_iteration_filter_interval<0)
-    { warning("Range error in inter-iteration filter interval "); return Succeeded::no; }
+  if (this->start_subset_num < 0 || this->start_subset_num >= this->num_subsets) {
+    warning("Range error in starting subset");
+    return Succeeded::no;
+  }
 
-  if (this->start_subiteration_num<1)
-    { warning("Range error in starting subiteration number"); return Succeeded::no; }
-  
+  if (this->save_interval < 1 || this->save_interval > this->num_subiterations) {
+    warning("Range error in iteration save interval");
+    return Succeeded::no;
+  }
+
+  if (this->inter_iteration_filter_interval < 0) {
+    warning("Range error in inter-iteration filter interval ");
+    return Succeeded::no;
+  }
+
+  if (this->start_subiteration_num < 1) {
+    warning("Range error in starting subiteration number");
+    return Succeeded::no;
+  }
+
   ////////////////// subset order
 
   // KT 05/07/2000 made randomise_subset_order int
-  if (this->randomise_subset_order!=0){
-    srand((unsigned int) (time(NULL)) ); //seed the rand() function
+  if (this->randomise_subset_order != 0) {
+    srand((unsigned int)(time(NULL))); // seed the rand() function
   }
-
 
   // Building filters
   // This is not really necessary, as apply would call this anyway.
@@ -533,101 +478,80 @@ set_up(shared_ptr<TargetT > const& target_data_sptr)
 	error("Error building inter iteration filter\n");
     }
 #endif
- 
+
   return Succeeded::yes;
 }
 
 template <typename TargetT>
-void IterativeReconstruction<TargetT>::
-end_of_iteration_processing(TargetT &current_estimate)
-{
-	std::stringstream cerr;
+void
+IterativeReconstruction<TargetT>::end_of_iteration_processing(TargetT& current_estimate) {
+  std::stringstream cerr;
 
-  if (this->report_objective_function_values_interval>0 &&
-      (this->subiteration_num%this->report_objective_function_values_interval == 0
-       || this->subiteration_num==this->num_subiterations))      
-    {
-      /*std::*/cerr << "Objective function values (before any additional filtering):\n"
-		<< this->objective_function_sptr->
-	             get_objective_function_values_report(current_estimate);
-    }
-  
-  if(this->inter_iteration_filter_interval>0 && 
-     !is_null_ptr(this->inter_iteration_filter_ptr) &&
-     this->subiteration_num%this->inter_iteration_filter_interval==0)
-    {
-      cerr<<endl<<"Applying inter-iteration filter"<<endl;
-      this->inter_iteration_filter_ptr->apply(current_estimate);
-    }
- 
-
-  cerr<< this->method_info()
-      << " subiteration #"<<subiteration_num<<" completed"<<endl;
-  cerr << "  min and max in current estimate " 
-       <<    *std::min_element(current_estimate.begin_all(), current_estimate.end_all())
-       << " " 
-       <<     *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
-  
-  if(this->subiteration_num==this->num_subiterations &&
-     !is_null_ptr(this->post_filter_sptr) )
-  {
-    cerr<<endl<<"Applying post-filter"<<endl;
-    this->post_filter_sptr->apply(current_estimate);
-    
-    cerr << "  min and max after post-filtering " 
-       <<    *std::min_element(current_estimate.begin_all(), current_estimate.end_all())
-       << " " 
-       <<    *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
+  if (this->report_objective_function_values_interval > 0 &&
+      (this->subiteration_num % this->report_objective_function_values_interval == 0 ||
+       this->subiteration_num == this->num_subiterations)) {
+    /*std::*/ cerr << "Objective function values (before any additional filtering):\n"
+                   << this->objective_function_sptr->get_objective_function_values_report(current_estimate);
   }
-  
+
+  if (this->inter_iteration_filter_interval > 0 && !is_null_ptr(this->inter_iteration_filter_ptr) &&
+      this->subiteration_num % this->inter_iteration_filter_interval == 0) {
+    cerr << endl << "Applying inter-iteration filter" << endl;
+    this->inter_iteration_filter_ptr->apply(current_estimate);
+  }
+
+  cerr << this->method_info() << " subiteration #" << subiteration_num << " completed" << endl;
+  cerr << "  min and max in current estimate " << *std::min_element(current_estimate.begin_all(), current_estimate.end_all())
+       << " " << *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
+
+  if (this->subiteration_num == this->num_subiterations && !is_null_ptr(this->post_filter_sptr)) {
+    cerr << endl << "Applying post-filter" << endl;
+    this->post_filter_sptr->apply(current_estimate);
+
+    cerr << "  min and max after post-filtering " << *std::min_element(current_estimate.begin_all(), current_estimate.end_all())
+         << " " << *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
+  }
+
   writeText(cerr.str().c_str(), INFORMATION_CHANNEL);
 
   // Save intermediate (or last) iteration -- if the output is not disabled
-  if((!(this->subiteration_num%this->save_interval) ||
-     this->subiteration_num==this->num_subiterations) && !this->_disable_output)
-    {      	         
-      this->output_file_format_ptr->
-	write_to_file(this->make_filename_prefix_subiteration_num(), 
-		      current_estimate);
-    }
+  if ((!(this->subiteration_num % this->save_interval) || this->subiteration_num == this->num_subiterations) &&
+      !this->_disable_output) {
+    this->output_file_format_ptr->write_to_file(this->make_filename_prefix_subiteration_num(), current_estimate);
+  }
 }
 
 template <typename TargetT>
-VectorWithOffset<int> 
-IterativeReconstruction<TargetT>::
-randomly_permute_subset_order() const
-{
+VectorWithOffset<int>
+IterativeReconstruction<TargetT>::randomly_permute_subset_order() const {
 
-  VectorWithOffset<int> temp_array(this->num_subsets),final_array(this->num_subsets);
+  VectorWithOffset<int> temp_array(this->num_subsets), final_array(this->num_subsets);
   int index;
 
- for(int i=0;i<this->num_subsets;i++) temp_array[i]=i;
+  for (int i = 0; i < this->num_subsets; i++)
+    temp_array[i] = i;
 
- for (int i=0;i<this->num_subsets;i++)
-   {
+  for (int i = 0; i < this->num_subsets; i++) {
 
-   index = (int) (((float)rand()/(float)RAND_MAX)*(this->num_subsets-i));
-   if (index==this->num_subsets-i) index--;
-   final_array[i]=temp_array[index];
- 
+    index = (int)(((float)rand() / (float)RAND_MAX) * (this->num_subsets - i));
+    if (index == this->num_subsets - i)
+      index--;
+    final_array[i] = temp_array[index];
 
-   for (int j=index;j<this->num_subsets-(i+1);j++) 
-     temp_array[j]=temp_array[j+1];
+    for (int j = index; j < this->num_subsets - (i + 1); j++)
+      temp_array[j] = temp_array[j + 1];
+  }
 
-   }
+  cerr << endl << "Generating new subset sequence: ";
+  for (int i = 0; i < this->num_subsets; i++)
+    cerr << final_array[i] << " ";
 
- cerr<<endl<<"Generating new subset sequence: ";
- for(int i=0;i<this->num_subsets;i++) cerr<<final_array[i]<<" ";
-
- return final_array;
-
+  return final_array;
 }
 
 template <typename TargetT>
 void
-IterativeReconstruction<TargetT>::
-set_input_data(const shared_ptr<ExamData> &arg)
-{
+IterativeReconstruction<TargetT>::set_input_data(const shared_ptr<ExamData>& arg) {
   this->_already_set_up = false;
   if (is_null_ptr(this->objective_function_sptr))
     error("objective function needs to be set before calling set_input_data");
@@ -636,41 +560,30 @@ set_input_data(const shared_ptr<ExamData> &arg)
 
 template <typename TargetT>
 const ExamData&
-IterativeReconstruction<TargetT>::
-get_input_data() const
-{
+IterativeReconstruction<TargetT>::get_input_data() const {
   if (is_null_ptr(this->objective_function_sptr))
     error("objective function needs to be set before calling get_input_data");
   return this->objective_function_sptr->get_input_data();
 }
 
-
 template <typename TargetT>
 int
-IterativeReconstruction<TargetT>::
-get_subset_num()
-{
-  if(this->randomise_subset_order && (this->subiteration_num-1)%this->num_subsets==0)
-  {
-    this->_current_subset_array = this->randomly_permute_subset_order();    
+IterativeReconstruction<TargetT>::get_subset_num() {
+  if (this->randomise_subset_order && (this->subiteration_num - 1) % this->num_subsets == 0) {
+    this->_current_subset_array = this->randomly_permute_subset_order();
   };
-  
-  return
-    this->randomise_subset_order 
-    ? this->_current_subset_array[(this->subiteration_num-1)%this->num_subsets] 
-    : (this->subiteration_num+this->start_subset_num-1)%this->num_subsets;  
+
+  return this->randomise_subset_order ? this->_current_subset_array[(this->subiteration_num - 1) % this->num_subsets]
+                                      : (this->subiteration_num + this->start_subset_num - 1) % this->num_subsets;
 }
 
-#  ifdef _MSC_VER
-// prevent warning message on reinstantiation, 
+#ifdef _MSC_VER
+// prevent warning message on reinstantiation,
 // note that we get a linking error if we don't have the explicit instantiation below
-#  pragma warning(disable:4660)
-#  endif
+#  pragma warning(disable : 4660)
+#endif
 
-template class IterativeReconstruction<DiscretisedDensity<3,float> >;
-template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid >; 
+template class IterativeReconstruction<DiscretisedDensity<3, float>>;
+template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR
-
-
-

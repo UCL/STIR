@@ -33,64 +33,55 @@
 
 START_NAMESPACE_STIR
 
-Bin 
-ProjMatrixElemsForOneBin::
-get_bin() const
-{
+Bin
+ProjMatrixElemsForOneBin::get_bin() const {
   return bin;
 }
 
 Bin*
-ProjMatrixElemsForOneBin::
-get_bin_ptr()
-{
+ProjMatrixElemsForOneBin::get_bin_ptr() {
   return &bin;
 }
 
 void
-ProjMatrixElemsForOneBin::
-set_bin(const Bin& new_bin)
-{
+ProjMatrixElemsForOneBin::set_bin(const Bin& new_bin) {
   bin = new_bin;
 }
 
-void ProjMatrixElemsForOneBin::push_back( const ProjMatrixElemsForOneBin::value_type& el)
-{  
-  elements.push_back(el); 
+void
+ProjMatrixElemsForOneBin::push_back(const ProjMatrixElemsForOneBin::value_type& el) {
+  elements.push_back(el);
 }
 
-
-ProjMatrixElemsForOneBin::size_type 
-ProjMatrixElemsForOneBin::
-size() const 
-{
+ProjMatrixElemsForOneBin::size_type
+ProjMatrixElemsForOneBin::size() const {
   return elements.size();
 }
 
-ProjMatrixElemsForOneBin::iterator  
-ProjMatrixElemsForOneBin::begin()   
-  {  return elements.begin(); }
+ProjMatrixElemsForOneBin::iterator
+ProjMatrixElemsForOneBin::begin() {
+  return elements.begin();
+}
 
-ProjMatrixElemsForOneBin::const_iterator  
-ProjMatrixElemsForOneBin::
-begin() const  
-  {  return elements.begin(); };
+ProjMatrixElemsForOneBin::const_iterator
+ProjMatrixElemsForOneBin::begin() const {
+  return elements.begin();
+};
 
-ProjMatrixElemsForOneBin::iterator 
-ProjMatrixElemsForOneBin::
-end()
-  {  return elements.end();	};
+ProjMatrixElemsForOneBin::iterator
+ProjMatrixElemsForOneBin::end() {
+  return elements.end();
+};
 
-ProjMatrixElemsForOneBin::const_iterator 
-ProjMatrixElemsForOneBin::
-end() const
-  {  return elements.end();	};
+ProjMatrixElemsForOneBin::const_iterator
+ProjMatrixElemsForOneBin::end() const {
+  return elements.end();
+};
 
-ProjMatrixElemsForOneBin::iterator 
-ProjMatrixElemsForOneBin::
-erase(iterator it){
-    return elements.erase(it);
-  }
+ProjMatrixElemsForOneBin::iterator
+ProjMatrixElemsForOneBin::erase(iterator it) {
+  return elements.erase(it);
+}
 
 #if 0
 unsigned int  ProjMatrixElemsForOneBin::make_key(int X,int Y,int Z) 	

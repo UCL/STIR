@@ -41,7 +41,7 @@
 #include <string>
 
 #ifndef HAVE_LLN_MATRIX
-#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
+#  error This file can only be compiled when HAVE_LLN_MATRIX is #defined
 #endif
 
 START_NAMESPACE_STIR
@@ -75,18 +75,17 @@ START_NAMESPACE_ECAT7
   ; use_crystal_interference_factors:=1
   End Bin Normalisation From ECAT7:=
   \endverbatim
- 
+
 */
-class BinNormalisationFromECAT7 :
-   public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration>
-{
+class BinNormalisationFromECAT7
+    : public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration> {
 public:
   //! Name which will be used when parsing a BinNormalisation object
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Default constructor
-  /*! 
-    \warning You should not call any member functions for any object just 
+  /*!
+    \warning You should not call any member functions for any object just
     constructed with this constructor. Initialise the object properly first
     by parsing.
   */
@@ -95,7 +94,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT7(const std::string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&);
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
@@ -104,19 +103,19 @@ public:
   bool use_crystal_interference_factors() const;
 
 private:
-  Array<1,float> axial_t1_array;
-  Array<1,float> axial_t2_array;
-  Array<1,float> trans_t1_array;
+  Array<1, float> axial_t1_array;
+  Array<1, float> axial_t2_array;
+  Array<1, float> trans_t1_array;
   shared_ptr<SinglesRates> singles_rates_ptr;
-  Array<2,float> geometric_factors;
-  Array<2,float> efficiency_factors;
-  Array<2,float> crystal_interference_factors;
+  Array<2, float> geometric_factors;
+  Array<2, float> efficiency_factors;
+  Array<2, float> crystal_interference_factors;
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
-  ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
+  ProjDataInfoCylindricalNoArcCorr const* proj_data_info_cyl_ptr;
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
@@ -128,8 +127,7 @@ private:
   bool _use_crystal_interference_factors;
 
   void read_norm_data(const std::string& filename);
-  float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
-				  const double start_time, const double end_time) const;
+  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 
   // parsing stuff
   virtual void set_defaults();

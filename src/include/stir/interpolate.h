@@ -20,9 +20,9 @@
 #ifndef __interpolate_H__
 #define __interpolate_H__
 /*!
-  \file 
+  \file
   \ingroup buildblock
- 
+
   \brief declares functions for interpolation
 
   \warning will be moved to numerics
@@ -30,7 +30,6 @@
   \author PARAPET project
 
 */
-
 
 #include "stir/numerics/overlap_interpolate.h"
 

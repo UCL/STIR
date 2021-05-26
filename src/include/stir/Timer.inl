@@ -30,56 +30,50 @@
 */
 START_NAMESPACE_STIR
 
-Timer::Timer()
-{  
+Timer::Timer() {
   running = false;
   previous_total_value = 0.;
-  
 }
 
-Timer::~Timer()
-{}
+Timer::~Timer() {}
 
-void Timer::start() 
-{ 
-  if (!running)
-  {
+void
+Timer::start() {
+  if (!running) {
     running = true;
     previous_value = get_current_value();
   }
 }
 
-void Timer::stop()
-{ 
-  if (running)
-  {
+void
+Timer::stop() {
+  if (running) {
     previous_total_value += get_current_value() - previous_value;
     running = false;
   }
 }
 
 #ifdef OLDDESIGN
-void Timer::restart() 
-{ 
+void
+Timer::restart() {
   previous_total_value = 0.;
   running = false;
   start();
 }
 #endif
 
-void Timer::reset() 
-{ 
+void
+Timer::reset() {
   assert(running == false);
   previous_total_value = 0.;
 }
 
-double Timer::value() const
-{ 
-  double tmp = previous_total_value;  
+double
+Timer::value() const {
+  double tmp = previous_total_value;
   if (running)
     tmp += get_current_value() - previous_value;
   return tmp;
 }
-
 
 END_NAMESPACE_STIR

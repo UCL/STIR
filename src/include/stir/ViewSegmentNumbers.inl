@@ -7,7 +7,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-  
+
 
 */
 /*
@@ -28,62 +28,53 @@
     See STIR/LICENSE.txt for details
 */
 
-
 START_NAMESPACE_STIR
 
-ViewSegmentNumbers::ViewSegmentNumbers()
-:segment(0),view(0)
-  {}
+ViewSegmentNumbers::ViewSegmentNumbers() : segment(0), view(0) {}
 
-ViewSegmentNumbers::ViewSegmentNumbers( const int view_num,const int segment_num,
-                                        const int tof_num)
-    : segment(segment_num),view(view_num),tof(tof_num)
-  {}
+ViewSegmentNumbers::ViewSegmentNumbers(const int view_num, const int segment_num, const int tof_num)
+    : segment(segment_num), view(view_num), tof(tof_num) {}
 
 int
-ViewSegmentNumbers::segment_num() const
-{
-  return segment;}
-int 
-ViewSegmentNumbers::view_num() const
-{
-  return view;}
-
+ViewSegmentNumbers::segment_num() const {
+  return segment;
+}
 int
-ViewSegmentNumbers::tof_pos_num() const
-{
-  return tof;}
-
-int&
-ViewSegmentNumbers::segment_num() 
-{  return segment;}
-int& 
-ViewSegmentNumbers::view_num() 
-{ return view;}
-
-int&
-ViewSegmentNumbers::tof_pos_num()
-{ return tof;}
-
-bool 
-ViewSegmentNumbers::
-operator<(const ViewSegmentNumbers& other) const
-{
-  return (view< other.view) ||
-    ((view == other.view) && (segment > other.segment));
+ViewSegmentNumbers::view_num() const {
+  return view;
 }
 
-bool 
-ViewSegmentNumbers::
-operator==(const ViewSegmentNumbers& other) const
-{
+int
+ViewSegmentNumbers::tof_pos_num() const {
+  return tof;
+}
+
+int&
+ViewSegmentNumbers::segment_num() {
+  return segment;
+}
+int&
+ViewSegmentNumbers::view_num() {
+  return view;
+}
+
+int&
+ViewSegmentNumbers::tof_pos_num() {
+  return tof;
+}
+
+bool
+ViewSegmentNumbers::operator<(const ViewSegmentNumbers& other) const {
+  return (view < other.view) || ((view == other.view) && (segment > other.segment));
+}
+
+bool
+ViewSegmentNumbers::operator==(const ViewSegmentNumbers& other) const {
   return (view == other.view) && (segment == other.segment) && (tof == other.tof);
 }
 
-bool 
-ViewSegmentNumbers::
-operator!=(const ViewSegmentNumbers& other) const
-{
+bool
+ViewSegmentNumbers::operator!=(const ViewSegmentNumbers& other) const {
   return !(*this == other);
 }
 END_NAMESPACE_STIR

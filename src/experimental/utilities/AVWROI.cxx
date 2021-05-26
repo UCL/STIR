@@ -1,4 +1,4 @@
-x//
+x //
 //
 /*
     Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
@@ -20,7 +20,7 @@ x//
 \file
 \ingroup utilities
 \brief convert AVW ROI files to images. Images are read using the AVW library.
-\author Kris Thielemans 
+\author Kris Thielemans
 
 */
 #include "stir/IO/stir_AVW.h"
@@ -35,10 +35,10 @@ x//
 #include "stir/shared_ptr.h"
 #include <iostream>
 
-USING_NAMESPACE_STIR
+    USING_NAMESPACE_STIR
 
-void print_usage_and_exit( const char * const program_name)
-{
+    void
+    print_usage_and_exit(const char* const program_name) {
   {
     std::cerr << "Usage : " << program_name << " [ --flip_z ] Analyzeobjectfile.obj\n";
 
@@ -47,9 +47,8 @@ void print_usage_and_exit( const char * const program_name)
 }
 
 int
-main(int argc, char **argv)
-{
-  const char * const program_name = argv[0];
+main(int argc, char** argv) {
+  const char* const program_name = argv[0];
   // skip program name
   --argc;
   ++argv;
@@ -57,88 +56,77 @@ main(int argc, char **argv)
   bool flip_z = false;
 
   // first process command line options
-  while (argc>0 && argv[0][0]=='-')
-  {
-    if (strcmp(argv[0], "--flip_z")==0)
-      {
-	flip_z = true;
-	argc-=1; argv+=1;
-      }
-    else
-    { 
-      std::cerr << "Unknown option '" << argv[0] <<"'\n"; 
-      print_usage_and_exit(program_name); 
+  while (argc > 0 && argv[0][0] == '-') {
+    if (strcmp(argv[0], "--flip_z") == 0) {
+      flip_z = true;
+      argc -= 1;
+      argv += 1;
+    } else {
+      std::cerr << "Unknown option '" << argv[0] << "'\n";
+      print_usage_and_exit(program_name);
     }
   }
 
   if (argc != 1)
-      print_usage_and_exit(program_name); 
+    print_usage_and_exit(program_name);
 
-  char *objectfile = argv[0];
-  stir::shared_ptr<stir::OutputFileFormat<stir::DiscretisedDensity<3,float> > > 
-    output_file_format_sptr =
-    stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >::default_sptr();
+  char* objectfile = argv[0];
+  stir::shared_ptr<stir::OutputFileFormat<stir::DiscretisedDensity<3, float>>> output_file_format_sptr =
+      stir::OutputFileFormat<stir::DiscretisedDensity<3, float>>::default_sptr();
   {
     // open non-existent file first
     // this is necessary to get AVW_LoadObjectMap to work
-    AVW_ImageFile *avw_file= AVW_OpenImageFile("xxx non-existent I hope","r");
+    AVW_ImageFile* avw_file = AVW_OpenImageFile("xxx non-existent I hope", "r");
   }
-  
-  AVW_ObjectMap *object_map = AVW_LoadObjectMap(objectfile);
-  if(!object_map) { AVW_Error("AVW_LoadObjectMap"); exit(EXIT_FAILURE); }
 
-  std::cerr << "Number of objects: " << object_map->NumberOfObjects << '\n';  
+  AVW_ObjectMap* object_map = AVW_LoadObjectMap(objectfile);
+  if (!object_map) {
+    AVW_Error("AVW_LoadObjectMap");
+    exit(EXIT_FAILURE);
+  }
+
+  std::cerr << "Number of objects: " << object_map->NumberOfObjects << '\n';
   {
-    AVW_Volume *volume = NULL;
-    for (int object_num=0; object_num<object_map->NumberOfObjects; ++object_num)
-    {
-      const char * const object_name = object_map->Object[object_num]->Name;
-      std::cerr << "Object " <<  object_num << ": " << object_name << '\n';
-          
-      if (ask("Write this one?",true))
-      {
-        volume = AVW_GetObject(object_map, object_num, volume);
-	if(!volume) 
-	  { 
-	    AVW_Error("AVW_GetObject"); 
-	    stir::warning("Error in object. Skipping...");//, AVW_ErrorMessage);
-	    continue; 
-	  }
-	
-        shared_ptr<VoxelsOnCartesianGrid<float> > stir_volume_sptr =
-          stir::AVW::AVW_Volume_to_VoxelsOnCartesianGrid(volume, flip_z);
-	if (stir::is_null_ptr(stir_volume_sptr))
-	  { 
-	    stir::warning("Error converting object to STIR format. Skipping...", object_num);
-	    continue;
-	  }
-	char *header_filename = new char[strlen(objectfile) + strlen(object_name) + 10];
-	{
-	  strcpy(header_filename, objectfile);
-	  // append object_name, but after getting rid of the extension in objectfile
-	  replace_extension(header_filename, "_");
-	  strcat(header_filename, object_name);
-	}
-	//warning("Setting voxel size to 962 defaults\n");
-	//stir_volume_sptr->set_voxel_size(Coordinate3D<float>(2.425F,2.25F,2.25F));
-	if (output_file_format_sptr->write_to_file(header_filename, *stir_volume_sptr)
-	    == stir::Succeeded::no)
-	  {
-	    stir::warning("Error writing %s", header_filename);
-	  }
-	else
-	  {
-	    std::cout << "Wrote " << header_filename << '\n';
-	  }
+    AVW_Volume* volume = NULL;
+    for (int object_num = 0; object_num < object_map->NumberOfObjects; ++object_num) {
+      const char* const object_name = object_map->Object[object_num]->Name;
+      std::cerr << "Object " << object_num << ": " << object_name << '\n';
 
-	delete[] header_filename;
+      if (ask("Write this one?", true)) {
+        volume = AVW_GetObject(object_map, object_num, volume);
+        if (!volume) {
+          AVW_Error("AVW_GetObject");
+          stir::warning("Error in object. Skipping..."); //, AVW_ErrorMessage);
+          continue;
+        }
+
+        shared_ptr<VoxelsOnCartesianGrid<float>> stir_volume_sptr =
+            stir::AVW::AVW_Volume_to_VoxelsOnCartesianGrid(volume, flip_z);
+        if (stir::is_null_ptr(stir_volume_sptr)) {
+          stir::warning("Error converting object to STIR format. Skipping...", object_num);
+          continue;
+        }
+        char* header_filename = new char[strlen(objectfile) + strlen(object_name) + 10];
+        {
+          strcpy(header_filename, objectfile);
+          // append object_name, but after getting rid of the extension in objectfile
+          replace_extension(header_filename, "_");
+          strcat(header_filename, object_name);
+        }
+        // warning("Setting voxel size to 962 defaults\n");
+        // stir_volume_sptr->set_voxel_size(Coordinate3D<float>(2.425F,2.25F,2.25F));
+        if (output_file_format_sptr->write_to_file(header_filename, *stir_volume_sptr) == stir::Succeeded::no) {
+          stir::warning("Error writing %s", header_filename);
+        } else {
+          std::cout << "Wrote " << header_filename << '\n';
+        }
+
+        delete[] header_filename;
       }
     }
     AVW_DestroyVolume(volume);
   }
   AVW_DestroyObjectMap(object_map);
 
-  return(EXIT_SUCCESS);
+  return (EXIT_SUCCESS);
 }
-
-

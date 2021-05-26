@@ -43,9 +43,7 @@ START_NAMESPACE_STIR
 
   \deprecated (use 1 argument version instead)
 */
-void
-warning(const char *const s, ...);
-
+void warning(const char* const s, ...);
 
 //! Use this function for writing warning messages
 /*! \ingroup buildblock
@@ -54,7 +52,7 @@ warning(const char *const s, ...);
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c WARNING:, then \c string
-  and then another newline to std::cerr. 
+  and then another newline to std::cerr.
 
   \todo At a later stage, it will also write to a log-file.
 
@@ -70,11 +68,8 @@ warning(const char *const s, ...);
 
 template <class STRING>
 inline void
-warning(const STRING& string)
-{
-  std::cerr << "\nWARNING: "
-	    << string
-	    << std::endl;
+warning(const STRING& string) {
+  std::cerr << "\nWARNING: " << string << std::endl;
 }
 END_NAMESPACE_STIR
 #endif

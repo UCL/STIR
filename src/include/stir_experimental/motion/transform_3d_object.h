@@ -10,7 +10,7 @@
 
   \file
   \ingroup motion
-  \brief Declaration of functions to re-interpolate an image or projection data 
+  \brief Declaration of functions to re-interpolate an image or projection data
   to a new coordinate system.
 
   \author Kris Thielemans
@@ -29,13 +29,12 @@ START_NAMESPACE_STIR
 
 class RigidObject3DTransformation;
 template <int num_dimensions, class elemT>
-  class ObjectTransformation;
+class ObjectTransformation;
 
-template <int num_dimensions, typename elemT> 
-  class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class ProjData;
 class Succeeded;
-
 
 //! transform image data
 /*! \ingroup motion
@@ -48,13 +47,10 @@ class Succeeded;
  This function is inline to avoid template instantiation problems.
  */
 template <class ObjectTransformationT, class PushInterpolatorT>
-inline
-Succeeded 
-transform_3d_object_push_interpolation(DiscretisedDensity<3,float>& out_density, 
-				       const DiscretisedDensity<3,float>& in_density, 
-				       const ObjectTransformationT& transformation_in_to_out,
-				       const PushInterpolatorT& interpolator,
-				       const bool do_jacobian);
+inline Succeeded transform_3d_object_push_interpolation(DiscretisedDensity<3, float>& out_density,
+                                                        const DiscretisedDensity<3, float>& in_density,
+                                                        const ObjectTransformationT& transformation_in_to_out,
+                                                        const PushInterpolatorT& interpolator, const bool do_jacobian);
 
 //! transform image data
 /*! \ingroup motion
@@ -67,13 +63,10 @@ transform_3d_object_push_interpolation(DiscretisedDensity<3,float>& out_density,
  This function is inline to avoid template instantiation problems.
  */
 template <class ObjectTransformationT, class PullInterpolatorT>
-inline
-Succeeded 
-transform_3d_object_pull_interpolation(DiscretisedDensity<3,float>& out_density, 
-				       const DiscretisedDensity<3,float>& in_density, 
-				       const ObjectTransformationT& transformation_out_to_in,
-				       const PullInterpolatorT& interpolator,
-				       const bool do_jacobian);
+inline Succeeded transform_3d_object_pull_interpolation(DiscretisedDensity<3, float>& out_density,
+                                                        const DiscretisedDensity<3, float>& in_density,
+                                                        const ObjectTransformationT& transformation_out_to_in,
+                                                        const PullInterpolatorT& interpolator, const bool do_jacobian);
 
 //! transform image data
 /*! \ingroup motion
@@ -82,69 +75,59 @@ transform_3d_object_pull_interpolation(DiscretisedDensity<3,float>& out_density,
 
     \todo cannot use ObjectTransformation yet as it needs the inverse transformation
 */
-Succeeded
-transform_3d_object(DiscretisedDensity<3,float>& out_density, 
-		    const DiscretisedDensity<3,float>& in_density, 
-		    const RigidObject3DTransformation& transformation_in_to_out);
-		    //		    const ObjectTransformation<3,float>& transformation_in_to_out);
-
+Succeeded transform_3d_object(DiscretisedDensity<3, float>& out_density, const DiscretisedDensity<3, float>& in_density,
+                              const RigidObject3DTransformation& transformation_in_to_out);
+//		    const ObjectTransformation<3,float>& transformation_in_to_out);
 
 // ugly functions for storing transformed points.
 // TODO clean up at some point
 
-Array<3, BasicCoordinate<3,float> >
-find_grid_coords_of_transformed_centres(const DiscretisedDensity<3,float>& source_density, 
-					const DiscretisedDensity<3,float>& target_density, 
-					const ObjectTransformation<3,float>& transformation_source_to_target);
+Array<3, BasicCoordinate<3, float>>
+find_grid_coords_of_transformed_centres(const DiscretisedDensity<3, float>& source_density,
+                                        const DiscretisedDensity<3, float>& target_density,
+                                        const ObjectTransformation<3, float>& transformation_source_to_target);
 
 // TODO need this for now to get Array<std::pair<>> to work
 template <class T2>
-  inline 
-  void assign(std::pair<BasicCoordinate<3,float>, float>& x, T2 y)
-{
-  BasicCoordinate<3,float> tmp;
-  assign(tmp,y);
-  x = std::make_pair(tmp,float(y));
+inline void
+assign(std::pair<BasicCoordinate<3, float>, float>& x, T2 y) {
+  BasicCoordinate<3, float> tmp;
+  assign(tmp, y);
+  x = std::make_pair(tmp, float(y));
 }
 
-Array<3, std::pair<BasicCoordinate<3,float>, float> >
-find_grid_coords_of_transformed_centres_and_jacobian(const DiscretisedDensity<3,float>& source_density, 
-						     const DiscretisedDensity<3,float>& target_density, 
-						     const ObjectTransformation<3,float>& transformation_source_to_target);
+Array<3, std::pair<BasicCoordinate<3, float>, float>>
+find_grid_coords_of_transformed_centres_and_jacobian(const DiscretisedDensity<3, float>& source_density,
+                                                     const DiscretisedDensity<3, float>& target_density,
+                                                     const ObjectTransformation<3, float>& transformation_source_to_target);
 
 //! transform projection data
 /*! \ingroup motion
     Currently only supports non-arccorrected data.
-    
+
     Uses all available input segments
 */
-Succeeded
-transform_3d_object(ProjData& out_proj_data,
-		    const ProjData& in_proj_data,
-		    const RigidObject3DTransformation& object_transformation);
+Succeeded transform_3d_object(ProjData& out_proj_data, const ProjData& in_proj_data,
+                              const RigidObject3DTransformation& object_transformation);
 
 //! transform image data using transposed matrix
 /*! \ingroup motion
-    Implements the transpose (not the inverse) of 
+    Implements the transpose (not the inverse) of
     transform_3d_object(DiscretisedDensity<3,float>&, const DiscretisedDensity<3,float>&,const RigidObject3DTransformation&)
     \todo cannot use ObjectTransformation yet as it needs the inverse transformation
 */
-Succeeded
-transpose_of_transform_3d_object(DiscretisedDensity<3,float>& out_density, 
-				 const DiscretisedDensity<3,float>& in_density, 
-				 const RigidObject3DTransformation& transformation_in_to_out);
+Succeeded transpose_of_transform_3d_object(DiscretisedDensity<3, float>& out_density,
+                                           const DiscretisedDensity<3, float>& in_density,
+                                           const RigidObject3DTransformation& transformation_in_to_out);
 //		    const ObjectTransformation<3,float>& transformation_in_to_out);
 
 //! transform projection data
 /*! \ingroup motion
     Currently only supports non-arccorrected data.
 */
-Succeeded
-transform_3d_object(ProjData& out_proj_data,
-		    const ProjData& in_proj_data,
-		    const RigidObject3DTransformation& rigid_object_transformation,
-		    const int min_in_segment_num_to_process,
-		    const int max_in_segment_num_to_process);
+Succeeded transform_3d_object(ProjData& out_proj_data, const ProjData& in_proj_data,
+                              const RigidObject3DTransformation& rigid_object_transformation,
+                              const int min_in_segment_num_to_process, const int max_in_segment_num_to_process);
 
 END_NAMESPACE_STIR
 

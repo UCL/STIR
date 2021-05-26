@@ -23,7 +23,7 @@
   \brief Declaration of class stir::KineticParameters
 
   \author Charalampos Tsoumpas
- 
+
 */
 
 #ifndef __stir_modelling_KineticParameters_H__
@@ -35,25 +35,19 @@
 START_NAMESPACE_STIR
 
 template <int num_param, typename elemT>
-class KineticParameters:public BasicCoordinate<num_param,elemT>
-{
-  typedef BasicCoordinate<num_param,elemT>  base_type;
- public:
-  KineticParameters()
-    {}
+class KineticParameters : public BasicCoordinate<num_param, elemT> {
+  typedef BasicCoordinate<num_param, elemT> base_type;
 
-  KineticParameters(const base_type& c)
-    : base_type(c)
-    {}
+public:
+  KineticParameters() {}
 
+  KineticParameters(const base_type& c) : base_type(c) {}
 };
 
 template <int num_dimensions, class T, class T2>
-inline 
-void assign(KineticParameters<num_dimensions,T>& v, const T2& y)
-{
-  for (typename KineticParameters<num_dimensions,T>::iterator iter = v.begin(); 
-       iter != v.end(); ++iter)
+inline void
+assign(KineticParameters<num_dimensions, T>& v, const T2& y) {
+  for (typename KineticParameters<num_dimensions, T>::iterator iter = v.begin(); iter != v.end(); ++iter)
     assign(*iter, y);
 }
 

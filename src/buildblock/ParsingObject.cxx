@@ -35,81 +35,56 @@ using std::ifstream;
 
 START_NAMESPACE_STIR
 
-ParsingObject::ParsingObject() 
-:
-  keymap_is_initialised(false)
-{}
+ParsingObject::ParsingObject() : keymap_is_initialised(false) {}
 
-  
-  
-
-ParsingObject::ParsingObject(const ParsingObject& par)
-:
-  keymap_is_initialised(false)
-  {}
-
+ParsingObject::ParsingObject(const ParsingObject& par) : keymap_is_initialised(false) {}
 
 ParsingObject&
-ParsingObject::operator =(const ParsingObject& par)
-{
-  if (&par == this) return *this;
+ParsingObject::operator=(const ParsingObject& par) {
+  if (&par == this)
+    return *this;
   keymap_is_initialised = false;
   return *this;
 }
 
-void 
-ParsingObject::
-set_defaults()
-{}
+void
+ParsingObject::set_defaults() {}
 
 void
-ParsingObject::
-initialise_keymap()
-{}
+ParsingObject::initialise_keymap() {}
 
-bool 
-ParsingObject::
-post_processing()
-{ return false; }
-
-void 
-ParsingObject::
-set_key_values()
-{}
-
-//void
 bool
-ParsingObject:: parse(std::istream& in) 
-{ 
+ParsingObject::post_processing() {
+  return false;
+}
+
+void
+ParsingObject::set_key_values() {}
+
+// void
+bool
+ParsingObject::parse(std::istream& in) {
   // potentially remove the if() and always call initialise_keymap
-  if (!keymap_is_initialised)
-  {
-    initialise_keymap(); 
+  if (!keymap_is_initialised) {
+    initialise_keymap();
     keymap_is_initialised = true;
   }
   set_key_values();
-  if (!parser.parse(in))
-  {
-    warning("Error parsing.\n"); 
+  if (!parser.parse(in)) {
+    warning("Error parsing.\n");
     return false;
-  }
-  else if (post_processing()==true)
-    {
-      warning("Error post processing keyword values.\n"); 
-      return false;
-    }
-  else
+  } else if (post_processing() == true) {
+    warning("Error post processing keyword values.\n");
+    return false;
+  } else
     return true;
 }
 
-
-//void
+// void
 bool
-ParsingObject::parse(const char * const filename)
-{
+ParsingObject::parse(const char* const filename) {
   ifstream hdr_stream(filename);
-  if (!hdr_stream)
-  { 
+  if (!hdr_stream) {
     error("ParsingObject::parse: couldn't open file %s\n", filename);
     return false;
   }
@@ -117,41 +92,34 @@ ParsingObject::parse(const char * const filename)
 }
 
 void
-ParsingObject::ask_parameters()
-{
+ParsingObject::ask_parameters() {
   // potentially remove the if() and always call initialise_keymap
-  if (!keymap_is_initialised)
-  {
-    initialise_keymap(); 
+  if (!keymap_is_initialised) {
+    initialise_keymap();
     keymap_is_initialised = true;
   }
   // TODO drop next line
   set_defaults();
   set_key_values();
 
-  while(true)
-  {
+  while (true) {
     parser.ask_parameters();
 
-    if (post_processing()==true)
-    {
-      warning("\nError post processing keyword values. Doing it all over again...\n"); 
-    }
-    else
+    if (post_processing() == true) {
+      warning("\nError post processing keyword values. Doing it all over again...\n");
+    } else
       return;
   }
 }
 
 std::string
-ParsingObject::parameter_info()
-{ 
-  if (!keymap_is_initialised)
-  {
-    initialise_keymap(); 
+ParsingObject::parameter_info() {
+  if (!keymap_is_initialised) {
+    initialise_keymap();
     keymap_is_initialised = true;
   }
   set_key_values();
-  return parser.parameter_info(); 
+  return parser.parameter_info();
 }
 
 END_NAMESPACE_STIR

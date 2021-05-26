@@ -5,7 +5,7 @@
     Copyright (C) 2016, University of Hull
     Copyright (C) 2016, 2019, UCL
     Copyright (C 2017-2018, University of Leeds
- 
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -57,13 +57,13 @@ class Succeeded;
   \par information on blocks, buckets etc
   This class gives some informations on crystals, blocks etc. However, this
   is currently (i.e. at least up to STIR 2.1) used in very few places.
-  For ECAT scanners, this information is used to read the normalisation .n 
+  For ECAT scanners, this information is used to read the normalisation .n
   files and computed dead-time correction etc. For all other scanners, STIR
   currently ignores this info. This might change in the future of course.
-  
+
   At present, these functions follow CTI terminology, but the concepts
       are similar for other scanners.
-   
+
       \li \c crystal the smallest detection unit
       \li \c block several crystals are grouped in a block, this can be in
           3 dimensions (see layer). This information could be useful for finding the
@@ -78,11 +78,11 @@ class Succeeded;
       \li \c singles_unit (non-standard terminology)
           Most scanners report the singles detected during the acquisition.
           Some scanners (such as GE scanners) report singles for every crystal,
-          while others (such as CTI scanners) give only singles for a 
+          while others (such as CTI scanners) give only singles for a
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
 
-      A further complication is that some scanners (including many Siemens scanners) 
+      A further complication is that some scanners (including many Siemens scanners)
       insert virtual crystals in the sinogram data (corresponding to gaps between
       detector blocks). We currently define the blocks as the "virtual" ones,
       but provide extra members to find out how many of these virtual crystals there are.
@@ -96,19 +96,17 @@ class Succeeded;
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
-  \todo  
+  \todo
     a hierarchy distinguishing between different types of scanners
   \todo derive from ParsingObject
 */
-class Scanner 
-{
- public:
-
-   /************* static members*****************************/
-  static Scanner * ask_parameters();
+class Scanner {
+public:
+  /************* static members*****************************/
+  static Scanner* ask_parameters();
 
   //! get the scanner pointer from the name
-  static Scanner * get_scanner_from_name(const std::string& name);
+  static Scanner* get_scanner_from_name(const std::string& name);
   //! get the list of all names for the particular scanner
   static std::string list_all_names();
 
@@ -119,65 +117,79 @@ class Scanner
   // 08-3-2004, zlong, add user defined scanner
   //! enum for all predefined scanners
   /* \a Userdefined_scanner can be used to set arbitrary scanner geometry info.
-     \a Unknown_scanner will be used when parsing (e.g. from an Interfile header) 
-     to flag up an error and do some guess work in trying to recognise the scanner from 
+     \a Unknown_scanner will be used when parsing (e.g. from an Interfile header)
+     to flag up an error and do some guess work in trying to recognise the scanner from
      any given parameters.
   */
 
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
-         Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoverySTE_nonTOF, DiscoveryRX, Discovery600, Discovery690, PETMR_Signa, PETMR_Signa_nonTOF, DiscoveryMI3ring, DiscoveryMI4ring,
-	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50, 
-	     Unknown_scanner};
-  
+  enum Type {
+    E931,
+    E951,
+    E953,
+    E921,
+    E925,
+    E961,
+    E962,
+    E966,
+    E1080,
+    test_scanner,
+    Siemens_mMR,
+    Siemens_mCT,
+    RPT,
+    HiDAC,
+    Advance,
+    DiscoveryLS,
+    DiscoveryST,
+    DiscoverySTE,
+    DiscoverySTE_nonTOF,
+    DiscoveryRX,
+    Discovery600,
+    Discovery690,
+    PETMR_Signa,
+    PETMR_Signa_nonTOF,
+    DiscoveryMI3ring,
+    DiscoveryMI4ring,
+    HZLR,
+    RATPET,
+    PANDA,
+    HYPERimage,
+    nanoPET,
+    HRRT,
+    Allegro,
+    GeminiTF,
+    User_defined_scanner,
+    ntest_TOF_50,
+    Unknown_scanner
+  };
+
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
 
-
   //! constructor -(list of names)
-    /*! size info is in mm
-        \param intrinsic_tilt_v value in radians, \see get_default_intrinsic_tilt()
-        \warning calls error() when block/bucket info are inconsistent
-     */
-    Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
-            int num_detectors_per_ring_v, int num_rings_v,
-            int max_num_non_arccorrected_bins_v,
-            int default_num_arccorrected_bins_v,
-            float inner_ring_radius_v, float average_depth_of_interaction_v,
-            float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-            int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-            int num_axial_crystals_per_singles_unit_v,
-            int num_transaxial_crystals_per_singles_unit_v,
-            int num_detector_layers_v,
-            float energy_resolution_v,
-            float reference_energy_v,
-            short int max_num_of_timing_poss,
-            float size_timing_pos,
-            float timing_resolution);
+  /*! size info is in mm
+      \param intrinsic_tilt_v value in radians, \see get_default_intrinsic_tilt()
+      \warning calls error() when block/bucket info are inconsistent
+   */
+  Scanner(Type type_v, const std::list<std::string>& list_of_names_v, int num_detectors_per_ring_v, int num_rings_v,
+          int max_num_non_arccorrected_bins_v, int default_num_arccorrected_bins_v, float inner_ring_radius_v,
+          float average_depth_of_interaction_v, float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, int num_axial_crystals_per_block_v,
+          int num_transaxial_crystals_per_block_v, int num_axial_crystals_per_singles_unit_v,
+          int num_transaxial_crystals_per_singles_unit_v, int num_detector_layers_v, float energy_resolution_v,
+          float reference_energy_v, short int max_num_of_timing_poss, float size_timing_pos, float timing_resolution);
 
-
-    //! constructor ( a single name)
-    /*! size info is in mm
-        \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
-        \warning calls error() when block/bucket info are inconsistent
-     */
-    Scanner(Type type_v, const std::string& name,
-            int num_detectors_per_ring_v, int num_rings_v,
-            int max_num_non_arccorrected_bins_v,
-            int default_num_arccorrected_bins_v,
-            float inner_ring_radius_v, float average_depth_of_interaction_v,
-            float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-            int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-            int num_axial_crystals_per_singles_unit_v,
-            int num_transaxial_crystals_per_singles_unit_v,
-            int num_detector_layers_v,
-            float energy_resolution_v,
-            float reference_energy_v,
-            short int max_num_of_timing_poss,
-            float size_timing_pos,
-            float timing_resolution);
-
+  //! constructor ( a single name)
+  /*! size info is in mm
+      \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
+      \warning calls error() when block/bucket info are inconsistent
+   */
+  Scanner(Type type_v, const std::string& name, int num_detectors_per_ring_v, int num_rings_v,
+          int max_num_non_arccorrected_bins_v, int default_num_arccorrected_bins_v, float inner_ring_radius_v,
+          float average_depth_of_interaction_v, float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, int num_axial_crystals_per_block_v,
+          int num_transaxial_crystals_per_block_v, int num_axial_crystals_per_singles_unit_v,
+          int num_transaxial_crystals_per_singles_unit_v, int num_detector_layers_v, float energy_resolution_v,
+          float reference_energy_v, short int max_num_of_timing_poss, float size_timing_pos, float timing_resolution);
 
   //! get scanner parameters as a std::string
   std::string parameter_info() const;
@@ -189,12 +201,12 @@ class Scanner
   std::string list_names() const;
 
   //! comparison operator
-  bool operator ==(const Scanner& scanner) const;
-  inline bool operator !=(const Scanner& scanner) const;
+  bool operator==(const Scanner& scanner) const;
+  inline bool operator!=(const Scanner& scanner) const;
 
   //! get scanner type
   inline Type get_type() const;
-  //! checks consistency 
+  //! checks consistency
   /*! Calls warning() with diagnostics when there are problems
    * N.E: Should something check be added for TOF information?
    */
@@ -220,7 +232,7 @@ class Scanner
   //! get the default number of arccorrected tangential positions
   /*! \warning name is not in standard STIR terminology. Should be
       \c get_max_default_num_arccorrected_tangential_poss() or so.
-      \todo change name, mabe refering to the fan of detectors 
+      \todo change name, mabe refering to the fan of detectors
       in coincidence or so
   */
   inline int get_default_num_arccorrected_bins() const;
@@ -233,7 +245,7 @@ class Scanner
   inline float get_effective_ring_radius() const;
   //! get average depth of interaction
   inline float get_average_depth_of_interaction() const;
-  //! get ring spacing 
+  //! get ring spacing
   inline float get_ring_spacing() const;
   //! get default arc-corrected bin size
   inline float get_default_bin_size() const;
@@ -243,7 +255,7 @@ class Scanner
       image will be rotated when this tilt is ignored in the reconstruction
       algorithm. It uses the same coordinate system as ProjDataInfo::get_phi().
 
-      \todo we still have to decide if ProjDataInfo::get_phi() will take 
+      \todo we still have to decide if ProjDataInfo::get_phi() will take
       this tilt into account or not. At present, STIR ignores the intrinsic tilt.
   */
   inline float get_default_intrinsic_tilt() const;
@@ -252,25 +264,25 @@ class Scanner
   //! get number of transaxial blocks per bucket
   inline int get_num_transaxial_blocks_per_bucket() const;
   //! get number of axial blocks per bucket
-  inline int get_num_axial_blocks_per_bucket() const;   
+  inline int get_num_axial_blocks_per_bucket() const;
   //! get number of crystals in the axial direction
-  inline int get_num_axial_crystals_per_block() const;  
-  //! get number of transaxial crystals 
+  inline int get_num_axial_crystals_per_block() const;
+  //! get number of transaxial crystals
   inline int get_num_transaxial_crystals_per_block() const;
   //! get crystals in a bucket
   inline int get_num_transaxial_crystals_per_bucket() const;
   //! get crystals in a bucket
   inline int get_num_axial_crystals_per_bucket() const;
   //! get number of crystal layers (for DOI)
-  inline int get_num_detector_layers() const;   
+  inline int get_num_detector_layers() const;
   //! get number of axial blocks
-  inline int get_num_axial_blocks() const;      
+  inline int get_num_axial_blocks() const;
   //! get number of axial blocks
-  inline int get_num_transaxial_blocks() const; 
+  inline int get_num_transaxial_blocks() const;
   //! get number of axial buckets
-  inline int get_num_axial_buckets() const;     
+  inline int get_num_axial_buckets() const;
   //! get number of axial buckets
-  inline int get_num_transaxial_buckets() const;        
+  inline int get_num_transaxial_buckets() const;
 
   //! get number of axial crystals per singles unit
   inline int get_num_axial_crystals_per_singles_unit() const;
@@ -296,7 +308,7 @@ class Scanner
     The other members of the class return the size of the "virtual" block. With these
     functions you can find its true size (or set it).
   */
-  //@{! 
+  //@{!
   int get_num_virtual_axial_crystals_per_block() const;
   int get_num_virtual_transaxial_crystals_per_block() const;
   void set_num_virtual_axial_crystals_per_block(int);
@@ -307,7 +319,7 @@ class Scanner
 
   //@} (end of get geometrical info)
 
-   //! \name Functions to get detector responce info
+  //! \name Functions to get detector responce info
   //@{
 
   //! get the energy resolution of the system
@@ -322,41 +334,41 @@ class Scanner
   //@{
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
-  inline void set_type(const Type & new_type);
+  inline void set_type(const Type& new_type);
   //! set number of rings
-  inline void set_num_rings(const int & new_num);
+  inline void set_num_rings(const int& new_num);
   //! set the namber of detectors per ring
-  inline void set_num_detectors_per_ring(const int & new_num) ;
+  inline void set_num_detectors_per_ring(const int& new_num);
   //! set the  maximum number of arccorrected bins
-  inline void set_max_num_non_arccorrected_bins(const int & new_num) ;
+  inline void set_max_num_non_arccorrected_bins(const int& new_num);
   //! set the default number of arccorrected_bins
-  inline void set_default_num_arccorrected_bins(const int & new_num) ;
+  inline void set_default_num_arccorrected_bins(const int& new_num);
   //! set inner ring radius
-  inline void set_inner_ring_radius(const float & new_radius);
+  inline void set_inner_ring_radius(const float& new_radius);
   //! set average depth of interaction
   inline void set_average_depth_of_interaction(const float& new_depth_of_interaction);
-  //! set ring spacing 
-  inline void set_ring_spacing(const float & new_spacing);
+  //! set ring spacing
+  inline void set_ring_spacing(const float& new_spacing);
   //! set default arc-corrected bin size
-  inline void set_default_bin_size(const float &new_size);
+  inline void set_default_bin_size(const float& new_size);
   //! in degrees
-  inline void set_default_intrinsic_tilt(const float & new_tilt);
+  inline void set_default_intrinsic_tilt(const float& new_tilt);
   //! \name Info on crystals per block etc.
   //@{
   //! set number of transaxial blocks per bucket
-  inline void set_num_transaxial_blocks_per_bucket(const int & new_num);
+  inline void set_num_transaxial_blocks_per_bucket(const int& new_num);
   //! set number of axial blocks per bucket
-  inline void set_num_axial_blocks_per_bucket(const int & new_num);     
+  inline void set_num_axial_blocks_per_bucket(const int& new_num);
   //! set number of crystals in the axial direction
-  inline void set_num_axial_crystals_per_block(const int & new_num);    
-  //! set number of transaxial crystals 
-  inline void set_num_transaxial_crystals_per_block(const int & new_num);
+  inline void set_num_axial_crystals_per_block(const int& new_num);
+  //! set number of transaxial crystals
+  inline void set_num_transaxial_crystals_per_block(const int& new_num);
   //! set number of crystal layers (for DOI)
-  inline void set_num_detector_layers(const int& new_num);      
+  inline void set_num_detector_layers(const int& new_num);
   //! set number of axial crystals per singles unit
-  inline void set_num_axial_crystals_per_singles_unit(const int & new_num);     
+  inline void set_num_axial_crystals_per_singles_unit(const int& new_num);
   //! set number of transaxial crystals per singles unit
-  inline void set_num_transaxial_crystals_per_singles_unit(const int & new_num);
+  inline void set_num_transaxial_crystals_per_singles_unit(const int& new_num);
   // TODO accomodate more complex geometries of singles units.
 
   //@} (end of block/bucket info)
@@ -375,14 +387,13 @@ class Scanner
   //@} (end of set info)
 
   inline bool has_energy_information() const;
-  
+
   //! Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
 
   //! Method used to calculate a singles bin index from
   //! a detection position.
-  inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const; 
- 
+  inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const;
 
   //! Get the axial singles bin coordinate from a singles bin.
   inline int get_axial_singles_unit(int singles_bin_index) const;
@@ -396,21 +407,21 @@ class Scanner
 private:
   Type type;
   std::list<std::string> list_of_names;
-  int num_rings;                /* number of direct planes */
-  int max_num_non_arccorrected_bins; 
+  int num_rings; /* number of direct planes */
+  int max_num_non_arccorrected_bins;
   int default_num_arccorrected_bins; /* default number of bins */
-  int num_detectors_per_ring;   
+  int num_detectors_per_ring;
 
-  float inner_ring_radius;      /*! detector inner radius in mm*/
+  float inner_ring_radius;            /*! detector inner radius in mm*/
   float average_depth_of_interaction; /*! Average interaction depth in detector crystal */
-  float ring_spacing;   /*! ring separation in mm*/
-  float bin_size;               /*! arc-corrected bin size in mm (spacing of transaxial elements) */
-  float intrinsic_tilt;         /*! intrinsic tilt in radians*/
+  float ring_spacing;                 /*! ring separation in mm*/
+  float bin_size;                     /*! arc-corrected bin size in mm (spacing of transaxial elements) */
+  float intrinsic_tilt;               /*! intrinsic tilt in radians*/
 
-  int num_transaxial_blocks_per_bucket; /* transaxial blocks per bucket */
-  int num_axial_blocks_per_bucket;      /* axial blocks per bucket */
-  int num_axial_crystals_per_block;     /* number of crystals in the axial direction */
-  int num_transaxial_crystals_per_block;/* number of transaxial crystals */
+  int num_transaxial_blocks_per_bucket;  /* transaxial blocks per bucket */
+  int num_axial_blocks_per_bucket;       /* axial blocks per bucket */
+  int num_axial_crystals_per_block;      /* number of crystals in the axial direction */
+  int num_transaxial_crystals_per_block; /* number of transaxial crystals */
   int num_detector_layers;
 
   int num_axial_crystals_per_singles_unit;
@@ -430,26 +441,14 @@ private:
   //! This number corresponds the the least significant clock digit.
   float size_timing_pos;
 
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int default_num_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+  void set_params(Type type_v, const std::list<std::string>& list_of_names_v, int num_rings_v,
+                  int max_num_non_arccorrected_bins_v, int default_num_arccorrected_bins_v, int num_detectors_per_ring_v,
+                  float inner_ring_radius_v, float average_depth_of_interaction_v, float ring_spacing_v, float bin_size_v,
+                  float intrinsic_tilt_v, int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v,
-                  float energy_resolution_v,
-                  float reference_energy,
-                  short int max_num_of_timing_poss_v,
-                  float size_timing_pos_v,
-                  float timing_resolution_v);
-
+                  int num_axial_crystals_per_singles_unit_v, int num_transaxial_crystals_per_singles_unit_v,
+                  int num_detector_layers_v, float energy_resolution_v, float reference_energy,
+                  short int max_num_of_timing_poss_v, float size_timing_pos_v, float timing_resolution_v);
 };
 
 END_NAMESPACE_STIR
@@ -457,4 +456,3 @@ END_NAMESPACE_STIR
 #include "stir/Scanner.inl"
 
 #endif
- 

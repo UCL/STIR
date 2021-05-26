@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Implementations of class stir::CListEvent.
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -25,7 +25,6 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/listmode/CListRecord.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
@@ -34,11 +33,9 @@
 
 START_NAMESPACE_STIR
 
-Succeeded 
-CListEvent::
-set_prompt(const bool)
-{
-  return Succeeded::no; 
+Succeeded
+CListEvent::set_prompt(const bool) {
+  return Succeeded::no;
 }
 
 END_NAMESPACE_STIR

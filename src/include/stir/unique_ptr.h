@@ -1,8 +1,8 @@
 /*!
   \file
   \ingroup buildblock
-  
-  \brief Import of std::unique_ptr into the stir namespace, together with 
+
+  \brief Import of std::unique_ptr into the stir namespace, together with
   work-arounds for other compilers.
 
   If std::unique doesn't exist, we will define unique_ptr to auto_ptr. This is
@@ -10,7 +10,7 @@
   (normally by adding the -std=c++11 flag)
 
   \author Kris Thielemans
-*/         
+*/
 /*
     Copyright (C) 2016, University College London
     This file is part of STIR.
@@ -37,7 +37,7 @@
 #if !defined(STIR_NO_UNIQUE_PTR)
 // simply use std::unique_ptr
 namespace stir {
-  using std::unique_ptr;
+using std::unique_ptr;
 }
 #else
 // we need to replace it with something else
@@ -46,16 +46,16 @@ namespace stir {
 // std::unique_ptr but even for Cxx03 compilers. However, end 2016 this still generated errors on OSX Sierra
 // with CLang (it could not return a unique_ptr).
 // So, this is attempt is now disabled.
-#if 0
-#include <boost/version.hpp>
-#if (BOOST_VERSION >= 105700)
+#  if 0
+#    include <boost/version.hpp>
+#    if (BOOST_VERSION >= 105700)
 // Boost is recent enough to have a drop-in replacement
-#include <boost/move/unique_ptr.hpp>
+#      include <boost/move/unique_ptr.hpp>
 namespace stir {
   using boost::movelib::unique_ptr;
 }
-#endif
-#endif
+#    endif
+#  endif
 
 // desperate measures. We will use a #define to auto_ptr.
 // Caveat:
@@ -67,21 +67,21 @@ namespace stir {
 
 // We first include a bunch of system files which use std::unique_ptr such that we don't have a conflict.
 // You might have to add a few more...
-#include <map>
-#include <vector>
-#include <string>
-#include <list>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <deque>
-#include <boost/functional/hash/extensions.hpp>
-#include <boost/get_pointer.hpp>
-#include <boost/smart_ptr/detail/shared_count.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
+#  include <map>
+#  include <vector>
+#  include <string>
+#  include <list>
+#  include <iostream>
+#  include <fstream>
+#  include <sstream>
+#  include <algorithm>
+#  include <deque>
+#  include <boost/functional/hash/extensions.hpp>
+#  include <boost/get_pointer.hpp>
+#  include <boost/smart_ptr/detail/shared_count.hpp>
+#  include <boost/smart_ptr/shared_ptr.hpp>
 
-#define unique_ptr auto_ptr
+#  define unique_ptr auto_ptr
 using std::auto_ptr;
 #endif
 

@@ -1,4 +1,4 @@
-// 
+//
 //
 /*
     Copyright (C) 2000 PARAPET partners
@@ -54,14 +54,13 @@ START_NAMESPACE_STIR
   // etc
   \endcode
 
-  Derived classes simply have to implement the virtual function 
+  Derived classes simply have to implement the virtual function
    double get_current_value()
 */
-class Timer
-{  
+class Timer {
 public:
   inline Timer();
-  inline virtual ~Timer();  
+  inline virtual ~Timer();
   inline void start();
   inline void stop();
   inline void reset();
@@ -72,12 +71,11 @@ protected:
   bool running;
   double previous_value;
   double previous_total_value;
-  
+
   virtual double get_current_value() const = 0;
 };
 
 END_NAMESPACE_STIR
-
 
 #include "stir/Timer.inl"
 

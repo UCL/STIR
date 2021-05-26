@@ -15,8 +15,8 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
-  \ingroup SimSET 
+  \file
+  \ingroup SimSET
   \brief  This program converts SimSET 3D sinograms to STIR format
 
   This program should normally be called from the conv_SimSET_projdata_to_STIR.sh script.
@@ -24,7 +24,7 @@
 
   \author Pablo Aguiar
   \author Charalampos Tsoumpas
-  \author Kris Thielemans 
+  \author Kris Thielemans
 */
 
 #include "stir/ProjDataInterfile.h"
@@ -42,50 +42,48 @@
 #include <stdio.h>
 #define NUMARG 12
 
-
-int main(int argc,char **argv)
-{
+int
+main(int argc, char** argv) {
   using namespace stir;
 
-  static const char * const options[]={
-    "argv[1]  SimSET file\n",
-    "argv[2]  SimSET file format\n",
-    "argv[3]  Angles in SimSET file\n",
-    "argv[4]  Bins in SimSET filele\n",
-    "argv[5]  Axial slices in SimSET file\n",
-    "argv[6]  FOV_radius in cm as given to simset binning module (max_td)\n",
-    "argv[7]  range on Z value in cm as given to simset binning module\n",
-    "argv[8]  STIR scanner name\n",
-    "argv[9]  maximum ring difference to use for writing\n",
-    "argv[10]  index of 3d-sinogram in file (0-based)\n",
-    "argv[11] STIR file name\n"
-  };
-  if (argc!=NUMARG){
+  static const char* const options[] = {"argv[1]  SimSET file\n",
+                                        "argv[2]  SimSET file format\n",
+                                        "argv[3]  Angles in SimSET file\n",
+                                        "argv[4]  Bins in SimSET filele\n",
+                                        "argv[5]  Axial slices in SimSET file\n",
+                                        "argv[6]  FOV_radius in cm as given to simset binning module (max_td)\n",
+                                        "argv[7]  range on Z value in cm as given to simset binning module\n",
+                                        "argv[8]  STIR scanner name\n",
+                                        "argv[9]  maximum ring difference to use for writing\n",
+                                        "argv[10]  index of 3d-sinogram in file (0-based)\n",
+                                        "argv[11] STIR file name\n"};
+  if (argc != NUMARG) {
     std::cerr << "\n\nConvert SimSET to STIR\n\n";
     std::cerr << "Not enough arguments !!! ..\n";
-    for (int i=1;i<NUMARG;i++) std::cerr << options[i-1];
+    for (int i = 1; i < NUMARG; i++)
+      std::cerr << options[i - 1];
     exit(EXIT_FAILURE);
   }
 
-  const char * const simset_filename = argv[1];
-  const char * const input_data_type = argv[2];
-  const int num_views=atoi(argv[3]);
-  const int num_tangential_poss=atoi(argv[4]);
-  const int num_rings=atoi(argv[5]);
-  const float FOV_radius = static_cast<float>(atof(argv[6])*10); // times 10 for mm
-  const float scanner_length = static_cast<float>(atof(argv[7])*10); // times 10 for mm
-  const char * const scanner_name = argv[8];
-  const int max_ring_difference=atoi(argv[9]);
+  const char* const simset_filename = argv[1];
+  const char* const input_data_type = argv[2];
+  const int num_views = atoi(argv[3]);
+  const int num_tangential_poss = atoi(argv[4]);
+  const int num_rings = atoi(argv[5]);
+  const float FOV_radius = static_cast<float>(atof(argv[6]) * 10);     // times 10 for mm
+  const float scanner_length = static_cast<float>(atof(argv[7]) * 10); // times 10 for mm
+  const char* const scanner_name = argv[8];
+  const int max_ring_difference = atoi(argv[9]);
   const int dataset_num = atoi(argv[10]);
-  const char * const stir_filename = argv[11];
-  const int nitems=num_views*num_tangential_poss;
+  const char* const stir_filename = argv[11];
+  const int nitems = num_views * num_tangential_poss;
 
-  if (num_tangential_poss%2 != 1)
+  if (num_tangential_poss % 2 != 1)
     warning("STIR can at present not handle simset data with an even "
-	    "number of tangential positions.\n"
-	    "Proceed at your own risk (but you will get artifacts in the images");
-  FILE *file;
-  if( (file=fopen(simset_filename,"rb")) ==NULL){
+            "number of tangential positions.\n"
+            "Proceed at your own risk (but you will get artifacts in the images");
+  FILE* file;
+  if ((file = fopen(simset_filename, "rb")) == NULL) {
     error("Cannot open the simset file %s", simset_filename);
   }
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));
@@ -93,100 +91,75 @@ int main(int argc,char **argv)
     error("Scanner '%s' is not a valid name", scanner_name);
 
   {
-    const float STIR_scanner_length = 
-      scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
-    if (fabs(STIR_scanner_length - scanner_length)>1.0)
-      {
-	warning("scanner length from SimSET %g does not match STIR scanner length %g.\n"
-		"Continuing anyway, but this is bad.",
-		scanner_length, STIR_scanner_length);
-      }
+    const float STIR_scanner_length = scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
+    if (fabs(STIR_scanner_length - scanner_length) > 1.0) {
+      warning("scanner length from SimSET %g does not match STIR scanner length %g.\n"
+              "Continuing anyway, but this is bad.",
+              scanner_length, STIR_scanner_length);
+    }
   }
   scanner_sptr->set_num_rings(num_rings);
-  scanner_sptr->set_ring_spacing(scanner_length/num_rings);
-  scanner_sptr->set_num_detectors_per_ring(num_views*2);
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(
-    ProjDataInfo::ProjDataInfoCTI( scanner_sptr,
-				   /*span=*/1, 
-				   /*max_delta=*/max_ring_difference,
-				   num_views,
-				   num_tangential_poss,
-				   /*arc_corrected =*/ true));
-  dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr).
-    set_tangential_sampling(2*FOV_radius/num_tangential_poss);
+  scanner_sptr->set_ring_spacing(scanner_length / num_rings);
+  scanner_sptr->set_num_detectors_per_ring(num_views * 2);
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                                                             /*span=*/1,
+                                                                             /*max_delta=*/max_ring_difference, num_views,
+                                                                             num_tangential_poss,
+                                                                             /*arc_corrected =*/true));
+  dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr)
+      .set_tangential_sampling(2 * FOV_radius / num_tangential_poss);
 
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
-			      stir_filename, std::ios::out); 
+  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr, stir_filename, std::ios::out);
 
-
-  if(strncmp(input_data_type,"fl",2)==0)
-    {
-    }
-  else 
-    {
-      error("file format %s not valid. Only fl at present", input_data_type);
-    }
-
+  if (strncmp(input_data_type, "fl", 2) == 0) {
+  } else {
+    error("file format %s not valid. Only fl at present", input_data_type);
+  }
 
   // skip simset header
-  const long offset = 32768 + dataset_num*num_rings*(long(num_rings*nitems*4));
+  const long offset = 32768 + dataset_num * num_rings * (long(num_rings * nitems * 4));
   if (fseek(file, offset, SEEK_SET) != 0)
-    error("Error while skipping simset header and data sets (%ld). Maybe file too short?", offset); 
-  Array<1,float> seq(0,(num_rings*num_rings*nitems)-1);
+    error("Error while skipping simset header and data sets (%ld). Maybe file too short?", offset);
+  Array<1, float> seq(0, (num_rings * num_rings * nitems) - 1);
   read_data(file, seq /*, byteorder */);
 
-  int i_ring_difference=0;
-  int n=0;
-  while(i_ring_difference<=max_ring_difference)
+  int i_ring_difference = 0;
+  int n = 0;
+  while (i_ring_difference <= max_ring_difference) {
+    int lim_down = 0;
+    int lim_up = lim_down + ((num_rings - i_ring_difference - 1) * (num_rings + 1));
+    for (n = lim_down; n <= lim_up;) // Extraccion de los sinogramas de una serie !!!
     {
-      int lim_down=0;
-      int lim_up=lim_down+((num_rings-i_ring_difference-1)*(num_rings+1));
-      for(n=lim_down;n<=lim_up;) //Extraccion de los sinogramas de una serie !!!
-	{
 
-	  Sinogram<float> pos_sino = proj_data.get_empty_sinogram((n-lim_down)/(num_rings+1), i_ring_difference);
-	  Sinogram<float> neg_sino = proj_data.get_empty_sinogram((n-lim_down)/(num_rings+1), -i_ring_difference);
-	  Sinogram<float>::full_iterator pos_sino_iter = pos_sino.begin_all();
-	  Sinogram<float>::full_iterator neg_sino_iter = neg_sino.begin_all();
+      Sinogram<float> pos_sino = proj_data.get_empty_sinogram((n - lim_down) / (num_rings + 1), i_ring_difference);
+      Sinogram<float> neg_sino = proj_data.get_empty_sinogram((n - lim_down) / (num_rings + 1), -i_ring_difference);
+      Sinogram<float>::full_iterator pos_sino_iter = pos_sino.begin_all();
+      Sinogram<float>::full_iterator neg_sino_iter = neg_sino.begin_all();
 
-	  int ii=nitems-1;
-	  const int i_r1r2=(n + i_ring_difference)*nitems;
-	  const int i_r2r1=(n + i_ring_difference*num_rings)*nitems;
-     
-	  // get 2 sinograms from simset data
-	  for(int i=0;i<nitems/2;++i)  
-	    {
-	      *pos_sino_iter++ = seq[i_r1r2+ii];
-	      *neg_sino_iter++ = seq[i_r2r1+ii];
-	      ii=ii-1;  
-	    }
-	  for(int i=nitems/2;i<nitems;++i)   
-	    {
-	      *neg_sino_iter++ = seq[i_r1r2+ii];
-	      *pos_sino_iter++ = seq[i_r2r1+ii];
-	      ii=ii-1;  
-	    }
-	  n=n+num_rings+1;
-	  proj_data.set_sinogram(pos_sino);
-	  proj_data.set_sinogram(neg_sino);
-	}
-      i_ring_difference=i_ring_difference+1;
+      int ii = nitems - 1;
+      const int i_r1r2 = (n + i_ring_difference) * nitems;
+      const int i_r2r1 = (n + i_ring_difference * num_rings) * nitems;
+
+      // get 2 sinograms from simset data
+      for (int i = 0; i < nitems / 2; ++i) {
+        *pos_sino_iter++ = seq[i_r1r2 + ii];
+        *neg_sino_iter++ = seq[i_r2r1 + ii];
+        ii = ii - 1;
+      }
+      for (int i = nitems / 2; i < nitems; ++i) {
+        *neg_sino_iter++ = seq[i_r1r2 + ii];
+        *pos_sino_iter++ = seq[i_r2r1 + ii];
+        ii = ii - 1;
+      }
+      n = n + num_rings + 1;
+      proj_data.set_sinogram(pos_sino);
+      proj_data.set_sinogram(neg_sino);
     }
+    i_ring_difference = i_ring_difference + 1;
+  }
 
   fclose(file);
 
   return EXIT_SUCCESS;
 }
-
-
-
-
-
-
-
-
-
-
-
-

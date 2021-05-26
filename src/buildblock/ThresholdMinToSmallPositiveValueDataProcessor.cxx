@@ -28,94 +28,70 @@
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
 #include "stir/thresholding.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/modelling/ParametricDiscretisedDensity.h"  
-#include "stir/modelling/KineticParameters.h"  
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 
 START_NAMESPACE_STIR
 
-  
 template <typename DataT>
 Succeeded
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-virtual_set_up(const DataT& density)
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::virtual_set_up(const DataT& density)
 
 {
-  return Succeeded::yes;  
+  return Succeeded::yes;
 }
-
 
 template <typename DataT>
 void
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-virtual_apply(DataT& data) const
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::virtual_apply(DataT& data) const
 
-{     
+{
   threshold_min_to_small_positive_value(data.begin_all(), data.end_all(), 0.000001F);
-  //threshold_min_to_small_positive_value_and_truncate_rim(data, 0);
+  // threshold_min_to_small_positive_value_and_truncate_rim(data, 0);
 }
-
 
 template <typename DataT>
 void
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-virtual_apply(DataT& out_data, 
-	  const DataT& in_data) const
-{
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::virtual_apply(DataT& out_data, const DataT& in_data) const {
   out_data = in_data;
   threshold_min_to_small_positive_value(out_data.begin_all(), out_data.end_all(), 0.000001F);
 }
 
 template <typename DataT>
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-ThresholdMinToSmallPositiveValueDataProcessor()
-{
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::ThresholdMinToSmallPositiveValueDataProcessor() {
   set_defaults();
 }
 
 template <typename DataT>
 void
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-set_defaults()
-{
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::set_defaults() {
   base_type::set_defaults();
 }
 
 template <typename DataT>
-void 
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-initialise_keymap()
-{
+void
+ThresholdMinToSmallPositiveValueDataProcessor<DataT>::initialise_keymap() {
   base_type::initialise_keymap();
   this->parser.add_start_key("Threshold Min To Small Positive Value Parameters");
   this->parser.add_stop_key("END Threshold Min To Small Positive Value Parameters");
 }
 
+template <class DataT>
+const char* const ThresholdMinToSmallPositiveValueDataProcessor<DataT>::registered_name = "Threshold Min To Small Positive Value";
 
-
-template<class DataT>
-const char * const 
-ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
-  registered_name =
-  "Threshold Min To Small Positive Value";
-
-
-#  ifdef _MSC_VER
-// prevent warning message on reinstantiation, 
+#ifdef _MSC_VER
+// prevent warning message on reinstantiation,
 // note that we get a linking error if we don't have the explicit instantiation below
-#  pragma warning(disable:4660)
-#  endif
+#  pragma warning(disable : 4660)
+#endif
 
 // Register this class in the DataProcessor registry
 // static ThresholdMinToSmallPositiveValueDataProcessor<float>::RegisterIt dummy;
 // have the above variable in a separate file, which you need to pass at link time
 
-template class ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3,float> >;
-template class ThresholdMinToSmallPositiveValueDataProcessor< ParametricVoxelsOnCartesianGrid >;
-//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<1,float> > >;
-//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<2,float> > >;
-//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<3,float> > >;
+template class ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3, float>>;
+template class ThresholdMinToSmallPositiveValueDataProcessor<ParametricVoxelsOnCartesianGrid>;
+// template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<1,float> > >;
+// template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<2,float> > >;
+// template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<3,float> > >;
 END_NAMESPACE_STIR
-
-
-
-

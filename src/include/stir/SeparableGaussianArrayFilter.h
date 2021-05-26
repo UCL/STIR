@@ -44,42 +44,33 @@ START_NAMESPACE_STIR
  */
 
 template <int num_dimensions, typename elemT>
-class SeparableGaussianArrayFilter:
-      public SeparableArrayFunctionObject <num_dimensions,elemT> 
-{
-public:  
-
+class SeparableGaussianArrayFilter : public SeparableArrayFunctionObject<num_dimensions, elemT> {
+public:
   //! Default constructor
-  SeparableGaussianArrayFilter();  
-  
+  SeparableGaussianArrayFilter();
+
   //! Constructor
   /*!
   \param fwhms: the FWHM of the Gaussian 1D filters (in mm)
   \param max_kernel_sizes maximum number of elements in the kernels.
-          -1 means that the size will be determined such that the smallest element is approximately 1E-6 times the largest (in each dimension)
+          -1 means that the size will be determined such that the smallest element is approximately 1E-6 times the largest (in
+  each dimension)
   */
 
-  SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  fwhm,
-                               const BasicCoordinate< num_dimensions,int>&  max_kernel_sizes,
-                               bool normalise = true);
-  
-  SeparableGaussianArrayFilter(const float fwhm,
-                               const float  max_kernel_sizes,
-                               bool normalise = true);
-private:
+  SeparableGaussianArrayFilter(const BasicCoordinate<num_dimensions, float>& fwhm,
+                               const BasicCoordinate<num_dimensions, int>& max_kernel_sizes, bool normalise = true);
 
+  SeparableGaussianArrayFilter(const float fwhm, const float max_kernel_sizes, bool normalise = true);
+
+private:
   void construct_filter(bool normalise = true);
 
-  void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients,
-                const int max_kernel_sizes,
-                const float fwhm, bool normalise);
+  void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int max_kernel_sizes, const float fwhm,
+                              bool normalise);
 
-
-  BasicCoordinate< num_dimensions,float> fwhms;
-  BasicCoordinate< num_dimensions,int> max_kernel_sizes;
- 
+  BasicCoordinate<num_dimensions, float> fwhms;
+  BasicCoordinate<num_dimensions, int> max_kernel_sizes;
 };
-
 
 END_NAMESPACE_STIR
 

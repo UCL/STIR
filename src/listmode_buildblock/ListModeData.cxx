@@ -31,37 +31,27 @@
 
 START_NAMESPACE_STIR
 
-ListModeData::
-ListModeData()
-{
-}
+ListModeData::ListModeData() {}
 
-ListModeData::
-~ListModeData()
-{}
+ListModeData::~ListModeData() {}
 
 shared_ptr<const Scanner>
-ListModeData::
-get_scanner_ptr() const
-{
-    if(is_null_ptr(proj_data_info_sptr))
-        error("ListModeData: ProjDataInfo has not been set.");
+ListModeData::get_scanner_ptr() const {
+  if (is_null_ptr(proj_data_info_sptr))
+    error("ListModeData: ProjDataInfo has not been set.");
   return proj_data_info_sptr->get_scanner_sptr();
 }
 
 void
-ListModeData::
-set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr)
-{
-    proj_data_info_sptr = new_proj_data_info_sptr->create_shared_clone();
+ListModeData::set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr) {
+  proj_data_info_sptr = new_proj_data_info_sptr->create_shared_clone();
 }
 
 shared_ptr<const ProjDataInfo>
-ListModeData::get_proj_data_info_sptr() const
-{
-    if(is_null_ptr(proj_data_info_sptr))
-        error("ListModeData: ProjDataInfo has not been set.");
-    return proj_data_info_sptr;
+ListModeData::get_proj_data_info_sptr() const {
+  if (is_null_ptr(proj_data_info_sptr))
+    error("ListModeData: ProjDataInfo has not been set.");
+  return proj_data_info_sptr;
 }
 
 #if 0

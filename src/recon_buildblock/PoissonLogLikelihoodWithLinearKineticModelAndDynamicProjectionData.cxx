@@ -30,12 +30,11 @@
 
 START_NAMESPACE_STIR
 
+#ifdef _MSC_VER
+// prevent warning message on instantiation of abstract class
+#  pragma warning(disable : 4661)
+#endif // _MSC_VER
 
-#  ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class 
-#  pragma warning(disable:4661)
-#  endif // _MSC_VER
-
-template class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid >;
+template class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

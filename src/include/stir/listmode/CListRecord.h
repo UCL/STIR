@@ -5,7 +5,7 @@
   \ingroup listmode
   \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
-    
+
 
   \author Nikos Efthimiou
   \author Daniel Deidda
@@ -41,8 +41,10 @@ START_NAMESPACE_STIR
 class Bin;
 class ProjDataInfo;
 class Succeeded;
-template <typename coordT> class CartesianCoordinate3D;
-template <typename coordT> class LORAs2Points;
+template <typename coordT>
+class CartesianCoordinate3D;
+template <typename coordT>
+class LORAs2Points;
 
 //! Class for storing and using a coincidence event from a list mode file
 /*! \ingroup listmode
@@ -53,47 +55,40 @@ template <typename coordT> class LORAs2Points;
     energy windows and time-of-flight info. Also, get_bin() would need
     time info or so for rotating scanners.
 
-    \see CListModeData for more info on list mode data. 
+    \see CListModeData for more info on list mode data.
 */
-class CListEvent : public ListEvent
-{
+class CListEvent : public ListEvent {
 public:
-
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */
-  virtual 
-    Succeeded
-    set_prompt(const bool prompt = true);
+  virtual Succeeded set_prompt(const bool prompt = true);
 
-    //! Returns true is the delta_time has been swapped.
-    bool
-    get_swapped() const
-    {return swapped;}
+  //! Returns true is the delta_time has been swapped.
+  bool get_swapped() const { return swapped; }
 
-    double get_delta_time() const { return delta_time; }
+  double get_delta_time() const { return delta_time; }
+
 protected:
-    //! The detection time difference, between the two photons.
-    //! This will work for ROOT files, but not so sure about acquired data.
-    double delta_time;
+  //! The detection time difference, between the two photons.
+  //! This will work for ROOT files, but not so sure about acquired data.
+  double delta_time;
 
-    //! Indicates if the detectors' order has been swapped.
-    bool swapped;
+  //! Indicates if the detectors' order has been swapped.
+  bool swapped;
 
 }; /*-coincidence event*/
 
-class CListRecord : public ListRecord
-{
+class CListRecord : public ListRecord {
 public:
-  
   //! Used in TOF reconstruction to get both the geometric and the timing
   //!  component of the event
-  virtual void full_event(Bin&, const ProjDataInfo&) const
-  {error("CListRecord::full_event() is implemented only for records which "
-         "hold timing and spatial information.");}
+  virtual void full_event(Bin&, const ProjDataInfo&) const {
+    error("CListRecord::full_event() is implemented only for records which "
+          "hold timing and spatial information.");
+  }
 };
 
-class CListRecordWithGatingInput : public CListRecord
-{};
+class CListRecordWithGatingInput : public CListRecord {};
 
 END_NAMESPACE_STIR
 

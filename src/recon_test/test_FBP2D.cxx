@@ -24,41 +24,33 @@
 
 START_NAMESPACE_STIR
 
-typedef DiscretisedDensity<3,float> target_type;
+typedef DiscretisedDensity<3, float> target_type;
 /*!
   \ingroup recon_test
   \ingroup FBP2D
   \brief Test class for FBP2D
 */
-class TestFBP2D : public ReconstructionTests<target_type>
-{
+class TestFBP2D : public ReconstructionTests<target_type> {
 private:
   typedef ReconstructionTests<target_type> base_type;
+
 public:
   //! Constructor that can take some input data to run the test with
-  TestFBP2D(const std::string &proj_data_filename = "",
-            const std::string & density_filename = "")
-    : base_type(proj_data_filename, density_filename)
-  {}
+  TestFBP2D(const std::string& proj_data_filename = "", const std::string& density_filename = "")
+      : base_type(proj_data_filename, density_filename) {}
   virtual ~TestFBP2D() {}
 
-  
   virtual void construct_reconstructor();
   void run_tests();
 };
 
-
 void
-TestFBP2D::
-construct_reconstructor()
-{
+TestFBP2D::construct_reconstructor() {
   this->_recon_sptr.reset(new FBP2DReconstruction);
 }
 
 void
-TestFBP2D::
-run_tests()
-{
+TestFBP2D::run_tests() {
   std::cerr << "Tests for FBP2D\n";
 
   try {
@@ -67,54 +59,45 @@ run_tests()
     shared_ptr<target_type> output_sptr(this->_input_density_sptr->get_empty_copy());
     this->reconstruct(output_sptr);
     this->compare(output_sptr);
+  } catch (const std::exception& error) {
+    std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
+    everything_ok = false;
+  } catch (...) {
+    everything_ok = false;
   }
-  catch(const std::exception &error)
-    {
-      std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
-      everything_ok = false;
-    }
-  catch(...)
-    {
-      everything_ok = false;
-    }
 
   // see if it checks input parameters
   {
     FBP2DReconstruction fbp(this->_proj_data_sptr, /*alpha*/ -1.F);
-    try
-      {
-        std::cerr << "\nYou should now see an error about a wrong setting for alpha" << std::endl;
-        fbp.set_up(this->_input_density_sptr);
-        // we shouldn't get here
-        everything_ok = false;
-      }
-    catch (...)
-      {
-      }
+    try {
+      std::cerr << "\nYou should now see an error about a wrong setting for alpha" << std::endl;
+      fbp.set_up(this->_input_density_sptr);
+      // we shouldn't get here
+      everything_ok = false;
+    } catch (...) {
+    }
   }
 }
 
 END_NAMESPACE_STIR
 
-
 USING_NAMESPACE_STIR
 
+int
+main(int argc, char** argv) {
+  if (argc < 1 || argc > 3) {
+    std::cerr << "\n\tUsage: " << argv[0] << " [template_proj_data [image]]\n"
+              << "template_proj_data (optional) will serve as a template, but is otherwise not used.\n"
+              << "Image (optional) has to be compatible with projection data and currently at zoom=1\n";
+    return EXIT_FAILURE;
+  }
 
-int main(int argc, char **argv)
-{
-    if (argc < 1 || argc > 3) {
-        std::cerr << "\n\tUsage: " << argv[0] << " [template_proj_data [image]]\n"
-                  << "template_proj_data (optional) will serve as a template, but is otherwise not used.\n"
-                  << "Image (optional) has to be compatible with projection data and currently at zoom=1\n";
-        return EXIT_FAILURE;
-    }
+  // set_default_num_threads();
 
-    //set_default_num_threads();
+  TestFBP2D test(argc > 1 ? argv[1] : "", argc > 2 ? argv[2] : "");
 
-    TestFBP2D test(argc>1 ? argv[1] : "", argc > 2 ? argv[2] : "");
+  if (test.is_everything_ok())
+    test.run_tests();
 
-    if (test.is_everything_ok())
-        test.run_tests();
-
-    return test.main_return_value();
+  return test.main_return_value();
 }

@@ -52,12 +52,9 @@ START_NAMESPACE_STIR
 
     \see SPECTListModeData for more info on list mode data.
 */
-class SPECTListEvent: public ListEvent
-{
+class SPECTListEvent : public ListEvent {
 public:
-    virtual
-      bool
-      is_prompt() const {return true;}
+  virtual bool is_prompt() const { return true; }
 
 }; /*-gamma event*/
 
