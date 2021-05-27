@@ -26,3 +26,11 @@ search the internet and tell us
 cd /whereever/STIR
 pre-commit install
 ```
+
+If you need to work with a branch that was forked prior to in inclusion of clang-format, you will need to temporarily disable/uninstall pre-commit again:
+
+    pre-commit uninstall
+
+or once-off with
+
+    git commit --no-verify
