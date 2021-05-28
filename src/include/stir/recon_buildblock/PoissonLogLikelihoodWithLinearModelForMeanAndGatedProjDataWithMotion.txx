@@ -418,7 +418,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                             const TargetT &current_estimate,
                                             const int subset_num,
-                                            const bool do_subtraction)
+                                            const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -439,7 +439,7 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
       actual_compute_sub_gradient_without_penalty(gated_gradient[gate_num],
                                                             gated_image_estimate[gate_num], 
                                                             subset_num,
-                                                            do_subtraction);
+                                                            add_sensitivity);
   }	
   //	if(this->_motion_correction_type==-1)
   this->_reverse_motion_vectors.warp_image(gradient,gated_gradient) ; 

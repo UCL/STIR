@@ -613,7 +613,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                             const TargetT &current_estimate,
                                             const int subset_num,
-                                            const bool do_subtraction)
+                                            const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -632,7 +632,7 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                  this->additive_proj_data_sptr,
                                  this->normalisation_sptr,
                                  caching_info_ptr,
-                                 do_subtraction);
+                                 add_sensitivity);
 }
 
 
@@ -1077,7 +1077,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 
 #else 
 //! Call-back function for compute_gradient
-template<bool do_subtraction> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+template<bool add_sensitivity> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
@@ -1099,10 +1099,10 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     shared_ptr<ProjData> const& additive_binwise_correction,
                                     shared_ptr<BinNormalisation> const& normalisation_sptr,
                                     DistributedCachingInformation* caching_info_ptr,
-                                    const bool do_subtraction
+                                    const bool add_sensitivity
                                     )
 {
-  if (do_subtraction){
+  if (add_sensitivity){
     // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - 1] )
     distributable_computation(forward_projector_sptr,
                               back_projector_sptr,
@@ -1116,10 +1116,10 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               additive_binwise_correction,
                               normalisation_sptr,
                               0., 0.,
-                              &RPC_process_related_viewgrams_gradient<true>,
+                              &RPC_process_related_viewgrams_gradient<false>,
                               caching_info_ptr
     );
-  } else {
+  } else if (!add_sensitivity){
     // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
     distributable_computation(forward_projector_sptr,
                               back_projector_sptr,
@@ -1132,7 +1132,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               log_likelihood_ptr,
                               additive_binwise_correction,
                               /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
-                              &RPC_process_related_viewgrams_gradient<false>,
+                              &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr
     );
   }
@@ -1216,7 +1216,7 @@ void distributable_sensitivity_computation(
 
 //////////// RPC functions
 
-template <bool do_subtraction>
+template <bool add_sensitivity>
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
@@ -1256,8 +1256,8 @@ void RPC_process_related_viewgrams_gradient(
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
 
 
-  if (do_subtraction){
-    // do_subtraction that will compute [y/ybar - 1]
+  if (!add_sensitivity){
+    // not adding the sensitivity computes the gradient [y/ybar - 1]
     if (mult_viewgrams_ptr)
     {
       // subtract normalised ones from the data [y/ybar - 1/N]

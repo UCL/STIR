@@ -121,7 +121,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   //! Computes the gradient of the data fit term
   /*!
       This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
-      by setting <code>do_subtraction = true</code>
+      by setting <code>add_sensitivity = false</code>
    */
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
@@ -133,7 +133,7 @@ public  GeneralisedObjectiveFunction<TargetT>
     This function is used for instance by OSMAPOSL.
 
     This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
-    by setting <code>do_subtraction = false</code>
+    by setting <code>add_sensitivity = true</code>
    */
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
@@ -253,14 +253,14 @@ protected:
 
   //! computes the objective function subset gradient without the penalty
   /*!
-    If \c do_subtraction is \c false, this computes
+    If \c add_sensitivity is \c true, this computes
     \f[ {\partial L \over \partial \lambda_v} + P_v =
       \sum_b P_{bv} {y_b \over Y_b}
       \f]
     (see the class general documentation).
     The sum will however be restricted to a subset.
 
-    However, if \c do_subtraction is \c true, this function will instead compute
+    However, if \c add_sensitivity is \c false, this function will instead compute
     \f[ {\partial L \over \partial \lambda_v} =
       \sum_b P_{bv} ({y_b \over Y_b} - 1)
     \f]
@@ -269,7 +269,7 @@ protected:
   actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                               const TargetT &current_estimate,
                                               const int subset_num,
-                                              const bool do_subtraction) = 0;
+                                              const bool add_sensitivity) = 0;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,

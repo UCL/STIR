@@ -427,10 +427,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                                       const TargetT &current_estimate,
                                                       const int subset_num,
-                                                      const bool do_subtraction)
+                                                      const bool add_sensitivity)
 {
-  if (do_subtraction)
-    error("List mode cannot currently do subtraction on the gradient computation.");
+    if (add_sensitivity)
+      error("List mode cannot currently add sensitivity on the gradient computation.");
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
 
