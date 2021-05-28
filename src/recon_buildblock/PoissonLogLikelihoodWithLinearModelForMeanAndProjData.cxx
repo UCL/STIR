@@ -610,10 +610,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-actual_compute_sub_gradient_without_penalty(TargetT& gradient,
-                                            const TargetT &current_estimate,
-                                            const int subset_num,
-                                            const bool add_sensitivity)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);

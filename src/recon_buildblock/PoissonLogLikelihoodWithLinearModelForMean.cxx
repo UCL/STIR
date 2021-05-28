@@ -358,7 +358,7 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
                                      const TargetT &current_estimate, 
                                      const int subset_num)
 {
-  this->actual_compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num, false);
+  this->actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, false);
 }
 
 template<typename TargetT>
@@ -368,7 +368,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                                       const TargetT &current_estimate,
                                                       const int subset_num)
 {
-  actual_compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num, true);
+  actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, true);
 }
 
 template<typename TargetT>

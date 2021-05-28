@@ -120,7 +120,7 @@ public  GeneralisedObjectiveFunction<TargetT>
 
   //! Computes the gradient of the data fit term
   /*!
-      This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
+      This function is implemented in terms of \c actual_compute_subset_gradient_without_penalty()
       by setting <code>add_sensitivity = false</code>
    */
   virtual void 
@@ -132,7 +132,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   /*! 
     This function is used for instance by OSMAPOSL.
 
-    This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
+    This function is implemented in terms of \c actual_compute_subset_gradient_without_penalty()
     by setting <code>add_sensitivity = true</code>
    */
   virtual void 
@@ -266,10 +266,10 @@ protected:
     \f]
   */
   virtual void
-  actual_compute_sub_gradient_without_penalty(TargetT& gradient,
-                                              const TargetT &current_estimate,
-                                              const int subset_num,
-                                              const bool add_sensitivity) = 0;
+  actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                 const TargetT &current_estimate,
+                                                 const int subset_num,
+                                                 const bool add_sensitivity) = 0;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,

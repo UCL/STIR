@@ -424,10 +424,10 @@ construct_target_ptr() const
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-actual_compute_sub_gradient_without_penalty(TargetT& gradient,
-                                                      const TargetT &current_estimate,
-                                                      const int subset_num,
-                                                      const bool add_sensitivity)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
@@ -537,7 +537,7 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
     {
       if (!this->get_use_subset_sensitivities())
         error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
-              "actual_compute_sub_gradient_without_penalty(): cannot subtract subset sensitivity because "
+              "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
               "use_subset_sensitivities is false.");
 
       // subtract the subset sensitivity
