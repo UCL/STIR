@@ -1255,9 +1255,10 @@ void RPC_process_related_viewgrams_gradient(
   // for sinogram division
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
 
-
+  // adding the sensitivity:  backproj[y/ybar] *
+  // not adding the sensitivity computes the gradient:  backproj[y/ybar - 1] *
+  // * ignoring normalisation *
   if (!add_sensitivity){
-    // not adding the sensitivity computes the gradient [y/ybar - 1]
     if (mult_viewgrams_ptr)
     {
       // subtract normalised ones from the data [y/ybar - 1/N]
@@ -1267,6 +1268,8 @@ void RPC_process_related_viewgrams_gradient(
       *measured_viewgrams_ptr -= 1;
     }
   }
+
+  // back project
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 
