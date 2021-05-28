@@ -70,10 +70,6 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   */
   virtual TargetT *
     construct_target_ptr() const; 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
 
   virtual std::unique_ptr<ExamInfo>
   get_exam_info_uptr_for_target()  const;

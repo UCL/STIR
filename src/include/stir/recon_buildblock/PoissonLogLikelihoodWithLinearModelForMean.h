@@ -138,7 +138,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
                                                           const TargetT &current_estimate, 
-                                                          const int subset_num) =0; 
+                                                          const int subset_num);
 
   //! set-up sensitivity etc if possible
   /*! If \c recompute_sensitivity is \c false, we will try to

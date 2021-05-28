@@ -79,11 +79,6 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   virtual TargetT *
     construct_target_ptr() const; 
 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-							  const TargetT &current_estimate, 
-							  const int subset_num);
-
   virtual void
     actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                                 const TargetT &current_estimate,

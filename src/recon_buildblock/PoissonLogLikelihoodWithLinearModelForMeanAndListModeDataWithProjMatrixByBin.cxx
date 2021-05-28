@@ -421,16 +421,6 @@ construct_target_ptr() const
    this->target_parameter_parser.create(this->get_input_data());
 } 
  
-template <typename TargetT> 
-void 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>:: 
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
-                                                      const TargetT &current_estimate,
-                                                      const int subset_num)
-{
-  this->actual_compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num, false);
-}
-
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
