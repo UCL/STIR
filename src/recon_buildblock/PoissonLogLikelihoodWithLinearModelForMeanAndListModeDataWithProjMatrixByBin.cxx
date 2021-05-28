@@ -429,8 +429,6 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
                                                       const int subset_num,
                                                       const bool add_sensitivity)
 {
-    if (add_sensitivity)
-      error("List mode cannot currently add sensitivity on the gradient computation.");
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
 
@@ -534,6 +532,28 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
         }
     }
     info(boost::format("Number of used events: %1%") % num_used_events);
+
+  if (!add_sensitivity)
+    {
+      if (!this->get_use_subset_sensitivities())
+        error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
+              "actual_compute_sub_gradient_without_penalty(): cannot subtract subset sensitivity because "
+              "use_subset_sensitivities is false.");
+
+      // subtract the subset sensitivity
+      // compute gradient -= sub_sensitivity
+      typename TargetT::full_iterator gradient_iter =
+              gradient.begin_all();
+      const typename TargetT::full_iterator gradient_end =
+              gradient.end_all();
+      typename TargetT::const_full_iterator sensitivity_iter =
+              this->get_subset_sensitivity(subset_num).begin_all_const();
+      while (gradient_iter != gradient_end)
+      {
+        *gradient_iter -= (*sensitivity_iter);
+        ++gradient_iter; ++sensitivity_iter;
+      }
+    }
 }
 
 #  ifdef _MSC_VER
