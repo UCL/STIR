@@ -1114,7 +1114,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              normalisation_sptr,
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(),
                               0., 0.,
                               &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr
@@ -1131,7 +1131,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
+                              normalisation_sptr, 0., 0.,
                               &RPC_process_related_viewgrams_gradient<false>,
                               caching_info_ptr
     );
