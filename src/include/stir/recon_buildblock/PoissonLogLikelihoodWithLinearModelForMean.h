@@ -121,7 +121,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   //! Computes the gradient of the data fit term
   /*!
       This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
-      by setting do_subtraction = true
+      by setting <code>do_subtraction = true</code>
    */
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
@@ -133,7 +133,7 @@ public  GeneralisedObjectiveFunction<TargetT>
     This function is used for instance by OSMAPOSL.
 
     This function is implemented in terms of \c actual_compute_sub_gradient_without_penalty()
-    by setting do_subtraction = false
+    by setting <code>do_subtraction = false</code>
    */
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
@@ -253,14 +253,14 @@ protected:
 
   //! computes the objective function subset gradient without the penalty
   /*!
-    If do_subtraction is false, this computes
+    If \c do_subtraction is \c false, this computes
     \f[ {\partial L \over \partial \lambda_v} + P_v =
       \sum_b P_{bv} {y_b \over Y_b}
       \f]
     (see the class general documentation).
     The sum will however be restricted to a subset.
 
-    However, if do_subtraction is true, this function will instead compute
+    However, if \c do_subtraction is \c true, this function will instead compute
     \f[ {\partial L \over \partial \lambda_v} =
       \sum_b P_{bv} ({y_b \over Y_b} - 1)
     \f]
