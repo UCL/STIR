@@ -1264,13 +1264,16 @@ void RPC_process_related_viewgrams_gradient(
 
   // for sinogram division
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
+
+
   if (do_subtraction){
+    // do_subtraction that will compute [y/ybar - 1]
     if (mult_viewgrams_ptr)
     {
       // subtract normalised ones from the data [y/ybar - 1/N]
       *measured_viewgrams_ptr -= *mult_viewgrams_ptr;
     } else {
-      // subtract ones from the data [y/ybar - 1]
+      // No mult_viewgrams_ptr, subtract ones [y/ybar - 1]
       *measured_viewgrams_ptr -= 1;
     }
   }
