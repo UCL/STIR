@@ -453,9 +453,10 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
 
 
       this->_single_frame_obj_funcs[frame_num].
-        compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
+        actual_compute_sub_gradient_without_penalty(dyn_gradient[frame_num],
                                                               dyn_image_estimate[frame_num], 
-                                                              subset_num);
+                                                              subset_num,
+                                                              do_subtraction);
     }
 
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(gradient,

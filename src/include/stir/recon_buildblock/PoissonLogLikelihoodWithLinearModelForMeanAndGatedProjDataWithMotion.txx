@@ -436,9 +436,10 @@ actual_compute_sub_gradient_without_penalty(TargetT& gradient,
               gated_gradient[gate_num].end_all(),
               0.F);
     this->_single_gate_obj_funcs[gate_num].
-      compute_sub_gradient_without_penalty_plus_sensitivity(gated_gradient[gate_num], 
+      actual_compute_sub_gradient_without_penalty(gated_gradient[gate_num],
                                                             gated_image_estimate[gate_num], 
-                                                            subset_num);
+                                                            subset_num,
+                                                            do_subtraction);
   }	
   //	if(this->_motion_correction_type==-1)
   this->_reverse_motion_vectors.warp_image(gradient,gated_gradient) ; 
