@@ -66,8 +66,11 @@ public:
   
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
 
-  //! This should compute the gradient of the objective function at the \a current_estimate overwriting \a gradient,
-  /*!  <code>add_sensitivity</code> needs to be <code>true</code> for list mode computation */
+  //! Computes the gradient of the objective function at the \a current_estimate overwriting \a gradient.
+  /*!
+   \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
+   because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
+   */
     virtual
     void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                                         const TargetT &current_estimate,

@@ -121,13 +121,14 @@ public  GeneralisedObjectiveFunction<TargetT>
 
     //! Compute the subset gradient of the (unregularised) objective function
     /*!
-     Implementation in terms of actual_compute_sub_gradient_without_penalty().
-     This function is used for instance by OSSPS
+     Implementation in terms of actual_compute_sub_gradient_without_penalty()
+     This function is used by OSSPS may be used by other gradient ascent/descent algorithms
 
       This computes
-      \f[ {\partial L \over \partial \lambda_v}=
-        \sum_b P_{bv} {y_b \over Y_b  - 1}
-        \f]
+      \f[
+      {\partial L \over \partial \lambda_v} =
+        \sum_b P_{bv} ({y_b \over Y_b} - 1)
+      \f]
       (see the class general documentation).
       The sum will however be restricted to a subset.
     */
@@ -274,8 +275,9 @@ protected:
     The sum will however be restricted to a subset.
 
     However, if \c add_sensitivity is \c false, this function will instead compute only the gradient
-    \f[ {\partial L \over \partial \lambda_v} =
-      \sum_b P_{bv} ({y_b \over Y_b - 1})
+    \f[
+        {\partial L \over \partial \lambda_v} =
+            \sum_b P_{bv} ({y_b \over Y_b} - 1)
     \f]
   */
   virtual void

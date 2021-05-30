@@ -431,6 +431,10 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 {
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
+    if (!add_sensitivity && !this->get_use_subset_sensitivities())
+        error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
+              "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
+              "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
     const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
     const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
@@ -535,11 +539,6 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
   if (!add_sensitivity)
     {
-      if (!this->get_use_subset_sensitivities())
-        error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
-              "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
-              "use_subset_sensitivities is false.");
-
       // subtract the subset sensitivity
       // compute gradient -= sub_sensitivity
       typename TargetT::full_iterator gradient_iter =
