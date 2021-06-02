@@ -45,6 +45,8 @@ START_NAMESPACE_STIR
 
   \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
+  
+  Warning: the operator == does not check that originating system is consistent!
   */
 class ExamInfo
 {
