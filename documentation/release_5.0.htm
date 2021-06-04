@@ -143,6 +143,12 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
     ROOT file event processing is now up to 4x faster. In addition, there is now an option to <tt>check energy window information</tt> (defaulting to on).
     Futhermore, added functionality to exclude true and unscattered event types from list mode processing. </li>
+    <li>
+        Poisson log-likelihood gradient methods now use <tt>actual_compute_subset_gradient_without_penalty</tt>
+        to properly handle the objective function gradient computation at the distributable level.
+        Removes the subtraction of the subset sensitivity, which lead to a inconsistency between log-likelihood function
+        and gradient when <tt>use_subset_sensitivities</tt> was false.
+    </li>
 </ul>
 
 
