@@ -6,10 +6,11 @@
   All parameters can be parsed from a parameter file. See `demo5_line_search.par`.
 
   Give an image and objective function configuration, this script will perform a line search
-  from an minimum to an maximum step size (alpha).
+```suggestion
+  from a minimum to a maximum step size (alpha).
   Options are included to perform this line search linearly or using exponential step
-  size iterations.
-  Additionally, a lower positivity bound is applied to all computed image.
+  sizes.
+  Additionally, a lower positivity bound is applied to all computed images.
 
   The results are saved to files: `alphas.dat` contains the step size values investigated,
   and `Phis.dat` contains the objective function evaluations.
