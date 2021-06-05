@@ -78,10 +78,6 @@ public:
   virtual Succeeded
    set_up(shared_ptr <TargetT > const& target_sptr);
  
-  virtual  
-  void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
-	    				 const TargetT &current_estimate,  
-					 const int subset_num)=0;  
   //! time frame definitions
   /*! \todo This is currently used to be able to compute the gradient for 
     one time frame. However, it probably does not belong here.

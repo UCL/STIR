@@ -245,6 +245,21 @@ echo There were problems here!;
 ThereWereErrors=1;
 fi
 
+${MPIRUN} ${INSTALL_DIR}OSSPS OSSPS_test_PM_QP_subsens1.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stderr.log
+
+echo '---- Comparing output of OSSPS subiter 8 using subset sensitivity (should be identical up to tolerance)'
+echo Running ${INSTALL_DIR}compare_image
+# relax test for the outer-rim voxels as these turn out to be more unstable than the internal ones
+if ${INSTALL_DIR}compare_image -t 0.002 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_subsens_8.hv -a
+   ${INSTALL_DIR}compare_image -r 1 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_subsens_8.hv
+then
+  echo ---- This test seems to be ok !;
+  else
+  echo There were problems here!;
+  ThereWereErrors=1;
+fi
+
+
 echo
 echo ------------- tests on stir_math and correct_projdata ---------
   echo "first make up some randoms (just a projdata full of 1)"

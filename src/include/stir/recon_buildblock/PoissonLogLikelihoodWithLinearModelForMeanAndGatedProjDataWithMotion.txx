@@ -415,9 +415,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -435,9 +436,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
               gated_gradient[gate_num].end_all(),
               0.F);
     this->_single_gate_obj_funcs[gate_num].
-      compute_sub_gradient_without_penalty_plus_sensitivity(gated_gradient[gate_num], 
-                                                            gated_image_estimate[gate_num], 
-                                                            subset_num);
+            actual_compute_subset_gradient_without_penalty(gated_gradient[gate_num],
+                                                           gated_image_estimate[gate_num],
+                                                           subset_num,
+                                                           add_sensitivity);
   }	
   //	if(this->_motion_correction_type==-1)
   this->_reverse_motion_vectors.warp_image(gradient,gated_gradient) ; 

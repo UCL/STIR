@@ -421,16 +421,20 @@ construct_target_ptr() const
    this->target_parameter_parser.create(this->get_input_data());
 } 
  
-template <typename TargetT> 
-void 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>:: 
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
-                                                      const TargetT &current_estimate,
-                                                      const int subset_num)
-{ 
-
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
+{
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
+    if (!add_sensitivity && !this->get_use_subset_sensitivities())
+        error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
+              "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
+              "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
     const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
     const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
@@ -532,6 +536,23 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         }
     }
     info(boost::format("Number of used events: %1%") % num_used_events);
+
+  if (!add_sensitivity)
+    {
+      // subtract the subset sensitivity
+      // compute gradient -= sub_sensitivity
+      typename TargetT::full_iterator gradient_iter =
+              gradient.begin_all();
+      const typename TargetT::full_iterator gradient_end =
+              gradient.end_all();
+      typename TargetT::const_full_iterator sensitivity_iter =
+              this->get_subset_sensitivity(subset_num).begin_all_const();
+      while (gradient_iter != gradient_end)
+      {
+        *gradient_iter -= (*sensitivity_iter);
+        ++gradient_iter; ++sensitivity_iter;
+      }
+    }
 }
 
 #  ifdef _MSC_VER

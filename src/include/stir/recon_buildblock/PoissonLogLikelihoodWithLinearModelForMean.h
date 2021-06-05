@@ -66,14 +66,13 @@ START_NAMESPACE_STIR
   the <i>sensitivity</i> because (if \f$r=0\f$) it is the total
   probability of detecting a count (in any bin) originating from \f$v\f$.
 
-  This class computes the gradient as a sum of these two terms. The
-  sensitivity has to be computed by the virtual function 
-  \c add_subset_sensitivity(). The sum is computed by
-  \c compute_sub_gradient_without_penalty_plus_sensitivity().
+  This class computes the gradient directly, via \c compute_sub_gradient_without_penalty().
+  This method is utilised by the \c OSSPS algorithm in STIR.
+  However, an additional method (\c compute_sub_gradient_without_penalty_plus_sensitivity())
+  is provided that computes the sum of the subset gradient (without penalty) and the sensitivity.
+  This method is utilised by the \c OSMAPOSL algorithm.
 
-  The reason for this is that the sensitivity is data-independent, and
-  can be computed only once. See also
-  PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
+  See also \c PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
   
   \par Relation with Kullback-Leibler distance
 
@@ -120,38 +119,40 @@ public  GeneralisedObjectiveFunction<TargetT>
   
   //PoissonLogLikelihoodWithLinearModelForMean(); 
 
-  //! Implementation in terms of compute_sub_gradient_without_penalty_plus_sensitivity()
-  /*! \warning If separate subsensitivities are not used, we just subtract the total 
-    sensitivity divided by the number of subsets.
-    This is fine for some algorithms as the sum over all the subsets is 
-    equal to gradient of the objective function (without prior). 
-    Other algorithms do not behave very stable under this approximation
-    however. So, currently setup() will return an error if
-    <code>!subsets_are_approximately_balanced()</code> and subset sensitivities
-    are not used.
+    //! Compute the subset gradient of the (unregularised) objective function
+    /*!
+     Implementation in terms of actual_compute_sub_gradient_without_penalty()
+     This function is used by OSSPS may be used by other gradient ascent/descent algorithms
 
-    \see get_use_subset_sensitivities()
-  */
+      This computes
+      \f[
+      {\partial L \over \partial \lambda_v} =
+        \sum_b P_{bv} ({y_b \over Y_b} - 1)
+      \f]
+      (see the class general documentation).
+      The sum will however be restricted to a subset.
+    */
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
                                          const TargetT &current_estimate, 
                                          const int subset_num); 
 
-  //! This should compute the gradient of the (unregularised) objective function plus the (sub)sensitivity
-  /*! 
-    This function is used for instance by OSMAPOSL.
+    //! This should compute the subset gradient of the (unregularised) objective function plus the subset sensitivity
+    /*!
+     Implementation in terms of actual_compute_sub_gradient_without_penalty().
+     This function is used for instance by OSMAPOSL.
 
-    This computes
-    \f[ {\partial L \over \partial \lambda_v} + P_v =
-      \sum_b P_{bv} {y_b \over Y_b}
-      \f]
-    (see the class general documentation).
-    The sum will however be restricted to a subset.
-   */
+      This computes
+      \f[ {\partial L \over \partial \lambda_v} + P_v =
+        \sum_b P_{bv} {y_b \over Y_b}
+        \f]
+      (see the class general documentation).
+      The sum will however be restricted to a subset.
+     */
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
                                                           const TargetT &current_estimate, 
-                                                          const int subset_num) =0; 
+                                                          const int subset_num);
 
   //! set-up sensitivity etc if possible
   /*! If \c recompute_sensitivity is \c false, we will try to
@@ -263,6 +264,27 @@ protected:
       allocated already (and is the correct size).
   */
   void compute_sensitivities();
+
+  //! computes the subset gradient of the objective function without the penalty (optional: add subset sensitivity)
+  /*!
+    If \c add_sensitivity is \c true, this computes
+    \f[ {\partial L \over \partial \lambda_v} + P_v =
+      \sum_b P_{bv} {y_b \over Y_b}
+      \f]
+    (see the class general documentation).
+    The sum will however be restricted to a subset.
+
+    However, if \c add_sensitivity is \c false, this function will instead compute only the gradient
+    \f[
+        {\partial L \over \partial \lambda_v} =
+            \sum_b P_{bv} ({y_b \over Y_b} - 1)
+    \f]
+  */
+  virtual void
+  actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                 const TargetT &current_estimate,
+                                                 const int subset_num,
+                                                 const bool add_sensitivity) = 0;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,
