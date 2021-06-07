@@ -126,6 +126,11 @@ class RelativeDifferencePrior:  public
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
+    //! Compute the multiplication of the hessian of the prior multiplied by the input.
+  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                                                   const DiscretisedDensity<3,elemT>& current_estimate,
+                                                   const DiscretisedDensity<3,elemT>& input) const;
+
   //! get the gamma value used in RDP
   float get_gamma() const;
   //! set the gamma value used in the RDP
@@ -189,6 +194,27 @@ protected:
   virtual bool post_processing();
  private:
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+
+  //! The Hessian of the Relative Difference Prior
+  /*!
+   This function returns the hessian (second derivative) of the RDP.
+   It is assumed that the diagonal elements of the Hessian are 0, or the weighing is, and thus only compute the partial
+   derivative w.r.t \c x and \c y.
+   * @param x is the target voxel.
+   * @param y is the neighbourhood voxel.
+   * @param gamma is the edge preservation value controlling the transition between the quadratic and linear behaviour
+   * @param eps is a small non-negative value included to prevent division by zero, see epsilon.
+   * @return the second derivative of the Relative Difference Prior
+
+   */
+  static inline float Hessian(const float x, const float y, const float gamma, const float eps)
+  {
+    if (x > 0.0 && y > 0.0 && eps > 0.0)
+      return 2 * (2 * x + eps)*(2 * y + eps) /
+        pow(x + y + gamma * abs(x - y) + eps, 3);
+    else
+      return 0.0;
+  }
 };
 
 
