@@ -209,7 +209,7 @@ protected:
    */
   static inline float Hessian(const float x, const float y, const float gamma, const float eps)
   {
-    if (x > 0.0 && y > 0.0 && eps > 0.0)
+    if (x > 0.0 || y > 0.0 || eps > 0.0)
       return 2 * (2 * x + eps)*(2 * y + eps) /
         pow(x + y + gamma * abs(x - y) + eps, 3);
     else
