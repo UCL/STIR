@@ -83,6 +83,10 @@ protected:
   void test_gradient(const std::string& test_name,
                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+
+    void test_Hessian(const std::string& test_name,
+                       GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                       shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
 };
 
 GeneralisedPriorTests::
@@ -101,6 +105,7 @@ run_tests_for_objective_function(const std::string& test_name,
     return;
 
   test_gradient(test_name, objective_function, target_sptr);
+  test_Hessian(test_name, objective_function, target_sptr);
 }
 
 
@@ -149,7 +154,51 @@ test_gradient(const std::string& test_name,
     write_to_file("gradient" + test_name + ".hv", *gradient_sptr);
     write_to_file("numerical_gradient" + test_name + ".hv", *gradient_2_sptr);
   }
+}
 
+void
+GeneralisedPriorTests::
+test_Hessian(const std::string& test_name,
+              GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+              shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+{
+
+  // setup images
+  target_type& target(*target_sptr);
+  shared_ptr<target_type> output(target.get_empty_copy());
+  shared_ptr<target_type> input(target.get_empty_copy());
+
+//  std::cout << ". max = " << input->find_max() << ". min = " << input->find_min() << "\n";
+
+  {
+    /// Construct an input with negative values by subtracting 0.5 from the input target
+    target_type::full_iterator input_iter=input->begin_all();
+    target_type::full_iterator target_iter=target.begin_all();
+    while(input_iter!=input->end_all())// && testOK)
+    {
+      *input_iter = *target_iter - 0.5;
+      ++input_iter; ++target_iter;
+    }
+  }
+
+  objective_function.accumulate_Hessian_times_input(*output, target, *input);
+//  std::cout << "accumulate_Hessian_times_input output -> max = " << output->find_max() << ". min = " << output->find_min() << "\n";
+
+  {
+    /// Construct an input with negative values by subtracting 0.5 from the input target
+    target_type::full_iterator input_iter=input->begin_all();
+    target_type::full_iterator output_iter=output->begin_all();
+    float my_sum = 0.0;
+    while(input_iter!=input->end_all())// && testOK)
+    {
+      my_sum += *output_iter * *input_iter;
+      ++input_iter; ++output_iter;
+    }
+//    std::cout << "my_sum = " << my_sum << "\n";
+    if (this->check_if_less(0, my_sum))
+      info("Computation of (x^T H x < 0) " + test_name);
+  }
+//  std::cout << ". max = " << input->find_max() << ". min = " << input->find_min() << "\n";
 }
 
 void
