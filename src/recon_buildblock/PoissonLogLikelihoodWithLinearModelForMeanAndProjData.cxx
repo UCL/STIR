@@ -1052,10 +1052,10 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 
   shared_ptr<TargetT> tmp(output.get_empty_copy());
   this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
-  // output += tmp;
+  // output -= tmp;
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
-                 std::plus<typename TargetT::full_value_type>());
+                 std::minus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
