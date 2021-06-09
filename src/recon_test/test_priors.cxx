@@ -53,6 +53,8 @@ START_NAMESPACE_STIR
   This test compares the result of GeneralisedPrior::compute_gradient()
   with a numerical gradient computed by using the 
   GeneralisedPrior::compute_value() function.
+  Additionally, the Hessian is tested, via GeneralisedPrior::accumulate_Hessian_times_input(),
+  by evaluating the x^T Hx > 0 constraint.
 
 */
 class GeneralisedPriorTests : public RunTests
@@ -84,9 +86,26 @@ protected:
                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
 
-    void test_Hessian(const std::string& test_name,
-                       GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                       shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+  //! Test various configurations of the prior's Hessian via accumulate_Hessian_times_input()
+  /*!
+    Tests the concave function condition
+    \f[ x^T \cdot H_{\lambda}x >= 0 \f]
+    for all non-negative \c x and non-zero \c \lambda (Relative Difference Penalty conditions).
+    This function constructs an array of configurations to test this condition and calls \c test_Hessian_configuration().
+  */
+  void test_Hessian(const std::string& test_name,
+                     GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                     shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+
+private:
+  //! Hessian test for a particular configuration of the Hessian concave condition
+  void
+  test_Hessian_configuration(const std::string& test_name,
+                             GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                             shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                             float beta,
+                             float input_multiplication, float input_addition,
+                             float current_image_multiplication, float current_image_addition);
 };
 
 GeneralisedPriorTests::
@@ -104,7 +123,9 @@ run_tests_for_objective_function(const std::string& test_name,
   if (!check(objective_function.set_up(target_sptr)==Succeeded::yes, "set-up of objective function"))
     return;
 
+  std::cerr << "----- test " << test_name << "  --> Gradient\n";
   test_gradient(test_name, objective_function, target_sptr);
+  std::cerr << "----- test " << test_name << "  --> Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_Hessian(test_name, objective_function, target_sptr);
 }
 
@@ -162,43 +183,94 @@ test_Hessian(const std::string& test_name,
               GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
               shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
 {
+  /// Construct configurations
+  float beta_array[] = {0.01, 1, 100};  // Penalty strength should only affect scale
+  // Modifications to the input image
+  float input_multiplication_array[] = {-100, -1, 0.01, 1, 100}; // Test negative, small and large values
+  float input_addition_array[] = {-10, -1, -0.5, 0.0, 1, 10};
+  // Modifications to the current image (Hessian computation)
+  float current_image_multiplication_array[] = {0.01, 1, 100};
+  float current_image_addition_array[] = {0.0, 0.5, 1, 10}; // RDP has constraint that current_image is non-negative
 
-  // setup images
+  float initial_beta = objective_function.get_penalisation_factor();
+  for (float beta : beta_array) {
+    for (float input_multiplication : input_multiplication_array) {
+      for (float input_addition : input_addition_array) {
+        for (float current_image_multiplication : current_image_multiplication_array) {
+          for (float current_image_addition : current_image_addition_array) {
+            test_Hessian_configuration(test_name, objective_function, target_sptr,
+                                       beta,
+                                       input_multiplication, input_addition,
+                                       current_image_multiplication, current_image_addition);
+          }
+        }
+      }
+    }
+  }
+  /// Reset beta to original value
+  objective_function.set_penalisation_factor(initial_beta);
+}
+
+void
+GeneralisedPriorTests::
+test_Hessian_configuration(const std::string& test_name,
+                           GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                           shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                           const float beta,
+                           const float input_multiplication, const float input_addition,
+                           const float current_image_multiplication, const float current_image_addition)
+{
+  /// setup images
   target_type& target(*target_sptr);
   shared_ptr<target_type> output(target.get_empty_copy());
+  shared_ptr<target_type> current_image(target.get_empty_copy());
   shared_ptr<target_type> input(target.get_empty_copy());
-
-//  std::cout << ". max = " << input->find_max() << ". min = " << input->find_min() << "\n";
-
+  objective_function.set_penalisation_factor(beta);
   {
-    /// Construct an input with negative values by subtracting 0.5 from the input target
-    target_type::full_iterator input_iter=input->begin_all();
-    target_type::full_iterator target_iter=target.begin_all();
-    while(input_iter!=input->end_all())// && testOK)
+    /// Construct an current_image & input with various values that are variations of the target
+    target_type::full_iterator input_iter = input->begin_all();
+    target_type::full_iterator current_image_iter = current_image->begin_all();
+    target_type::full_iterator target_iter = target.begin_all();
+    while (input_iter != input->end_all())// && testOK)
     {
-      *input_iter = *target_iter - 0.5;
-      ++input_iter; ++target_iter;
+      *input_iter = input_multiplication * *target_iter + input_addition;
+      *current_image_iter = current_image_multiplication * *target_iter + current_image_addition;
+      ++input_iter; ++target_iter; ++current_image_iter;
     }
   }
 
-  objective_function.accumulate_Hessian_times_input(*output, target, *input);
-//  std::cout << "accumulate_Hessian_times_input output -> max = " << output->find_max() << ". min = " << output->find_min() << "\n";
+  /// Compute H x
+  objective_function.accumulate_Hessian_times_input(*output, *current_image, *input);
 
+  /// Compute x \cdot (H x)
+  float my_sum = 0.0;
   {
-    /// Construct an input with negative values by subtracting 0.5 from the input target
-    target_type::full_iterator input_iter=input->begin_all();
-    target_type::full_iterator output_iter=output->begin_all();
-    float my_sum = 0.0;
-    while(input_iter!=input->end_all())// && testOK)
+    target_type::full_iterator input_iter = input->begin_all();
+    target_type::full_iterator output_iter = output->begin_all();
+    while (input_iter != input->end_all())// && testOK)
     {
       my_sum += *output_iter * *input_iter;
-      ++input_iter; ++output_iter;
+      ++input_iter;
+      ++output_iter;
     }
-//    std::cout << "my_sum = " << my_sum << "\n";
-    if (this->check_if_less(0, my_sum))
-      info("Computation of (x^T H x < 0) " + test_name);
   }
-//  std::cout << ". max = " << input->find_max() << ". min = " << input->find_min() << "\n";
+
+  if (this->check_if_less(0, my_sum)) {
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0");
+  } else {
+    // print to console the FAILED configuration
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" +
+         "\ntest_name=" + test_name +
+         "\nbeta=" + std::to_string(beta) +
+         "\ninput_multiplication=" + std::to_string(input_multiplication) +
+         "\ninput_addition=" + std::to_string(input_addition) +
+         "\ncurrent_image_multiplication=" + std::to_string(current_image_multiplication) +
+         "\ncurrent_image_addition=" + std::to_string(current_image_addition) +
+         "\n >input image max=" + std::to_string(input->find_max()) +
+         "\n >input image min=" + std::to_string(input->find_min()) +
+         "\n >target image max=" + std::to_string(target.find_max()) +
+         "\n >target image min=" + std::to_string(target.find_min()));
+  }
 }
 
 void
