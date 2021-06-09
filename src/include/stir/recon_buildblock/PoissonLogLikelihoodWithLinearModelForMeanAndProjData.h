@@ -272,11 +272,11 @@ public:
     The Hessian (without penalty) is approximately given by:
     \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
     where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2; \f]
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = - y_i / ((P \lambda)_i + a_i)^2; \f]
     and \f$P_{ij} \f$ is the probability matrix.
 
     Hence
-    \f[ H_{jk} =  \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
+    \f[ H_{jk} = - \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
 
     This function is computationally expensive and can be approximated, see
     add_multiplication_with_approximate_sub_Hessian_without_penalty()

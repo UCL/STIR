@@ -211,10 +211,10 @@ test_objective_function_Hessian(GeneralisedObjectiveFunction<target_type> &objec
   }
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
-//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0");
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" and is therefore concave);
   } else {
     // print to console the FAILED configuration
-    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" +
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore NOT concave" +
          "\n >target image max=" + std::to_string(target.find_max()) +
          "\n >target image min=" + std::to_string(target.find_min()));
   }
