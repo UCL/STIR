@@ -53,7 +53,7 @@ START_NAMESPACE_STIR
   This test compares the result of GeneralisedPrior::compute_gradient()
   with a numerical gradient computed by using the 
   GeneralisedPrior::compute_value() function.
-  Additionally, the Hessian is tested, via GeneralisedPrior::accumulate_Hessian_times_input(),
+  Additionally, the Hessian's convexity is tested, via GeneralisedPrior::accumulate_Hessian_times_input(),
   by evaluating the x^T Hx > 0 constraint.
 
 */
@@ -99,13 +99,12 @@ protected:
 
 private:
   //! Hessian test for a particular configuration of the Hessian concave condition
-  void
-  test_Hessian_configuration(const std::string& test_name,
-                             GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                             shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
-                             float beta,
-                             float input_multiplication, float input_addition,
-                             float current_image_multiplication, float current_image_addition);
+  void test_Hessian_configuration(const std::string& test_name,
+                                  GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                  shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                                  float beta,
+                                  float input_multiplication, float input_addition,
+                                  float current_image_multiplication, float current_image_addition);
 };
 
 GeneralisedPriorTests::
@@ -255,11 +254,12 @@ test_Hessian_configuration(const std::string& test_name,
     }
   }
 
+  // test for a CONVEX function
   if (this->check_if_less(0, my_sum)) {
-//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0");
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore convex");
   } else {
     // print to console the FAILED configuration
-    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" +
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " < 0 and is therefore NOT convex" +
          "\ntest_name=" + test_name +
          "\nbeta=" + std::to_string(beta) +
          "\ninput_multiplication=" + std::to_string(input_multiplication) +
