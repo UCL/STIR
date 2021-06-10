@@ -8,7 +8,7 @@
   See STIR/LICENSE.txt for details
   \file
   \ingroup utilities
-  \brief Print configuration directory
+  \brief Prints configuration directory and STIR version
   
   \author Daniel Deidda
   */

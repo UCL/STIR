@@ -77,14 +77,9 @@ set_calibration_factor(const float calib){
 float
 BinNormalisationWithCalibration::
 get_branching_ratio() const {
-   return this->branching_ratio;
+   return this->radionuclide.get_branching_ratio();
 }
 
-void
-BinNormalisationWithCalibration::
-set_branching_ratio(const float br){
-    this->branching_ratio=br;
-}
 
 void
 BinNormalisationWithCalibration::

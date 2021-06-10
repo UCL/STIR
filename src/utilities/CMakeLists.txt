@@ -57,7 +57,7 @@ set(${dir_EXE_SOURCES}
         conv_gipl_to_interfile.cxx
         conv_interfile_to_gipl.cxx
         shift_image.cxx
-        stir_config_dir
+        stir_config.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx

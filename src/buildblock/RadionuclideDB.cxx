@@ -2,7 +2,7 @@
 
   \file
   \ingroup projdata
-  \brief Implementation of class stir::RadionuclideDBProcessor
+  \brief Implementation of class stir::RadionuclideDB
   
   \author Daniel Deidda
   \author Kris Thielemans
@@ -18,7 +18,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/RadionuclideDBProcessor.h"
+#include "stir/RadionuclideDB.h"
 #include "stir/info.h"
 #include "stir/round.h"
 #include "stir/error.h"
@@ -26,16 +26,16 @@
 
 START_NAMESPACE_STIR
 
-RadionuclideDBProcessor::
-RadionuclideDBProcessor()
+RadionuclideDB::
+RadionuclideDB()
 {
-    set_DB_filename(find_STIR_config_file("radionuclide_info.json"));
-    this->isotope_lookup_table_str=find_STIR_config_file("isotope_names.json");
+    read_from_file(find_STIR_config_file("radionuclide_info.json"));
+    this->radionuclide_lookup_table_str=find_STIR_config_file("radionuclide_names.json");
 }
 
 void
-RadionuclideDBProcessor::
-set_DB_filename(const std::string& arg)
+RadionuclideDB::
+read_from_file(const std::string& arg)
 {
     #ifdef nlohmann_json_FOUND
     this->filename = arg;
@@ -64,17 +64,17 @@ set_DB_filename(const std::string& arg)
 }
 
 std::string 
-RadionuclideDBProcessor::
-get_isotope_name_from_lookup_table(const std::string& rname)
+RadionuclideDB::
+get_radionuclide_name_from_lookup_table(const std::string& rname)
 {
     #ifdef nlohmann_json_FOUND
-    if (this->isotope_lookup_table_str.empty())
+    if (this->radionuclide_lookup_table_str.empty())
         error("Lookup table: no filename set");
     if (this->filename.empty())
       error("RadionuclideDB: no filename set for the Radionuclide info");
     
     
-    std::string s =this->isotope_lookup_table_str;
+    std::string s =this->radionuclide_lookup_table_str;
     std::ifstream json_file_stream(s);
     
     if(!json_file_stream)
@@ -104,10 +104,10 @@ return nuclide_name;
 }
 
 Radionuclide
-RadionuclideDBProcessor::
+RadionuclideDB::
 get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname)
 {
-    std::string nuclide_name=get_isotope_name_from_lookup_table(rname);
+//    std::string nuclide_name=get_radionuclide_name_from_lookup_table(rname);
     
   if (this->filename.empty())
     error("RadionuclideDB: no filename set for the Radionuclide info");
@@ -167,10 +167,11 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname)
 }
 
 Radionuclide 
-RadionuclideDBProcessor::
+RadionuclideDB::
 get_radionuclide(ImagingModality rmodality, const std::string& rname){
+    std::string nuclide_name = get_radionuclide_name_from_lookup_table(rname);
 #ifdef nlohmann_json_FOUND
-   return get_radionuclide_from_json(rmodality,rname);
+   return get_radionuclide_from_json(rmodality,nuclide_name);
 #else
     if(rmodality.get_modality()==ImagingModality::PT){
         warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as F-18."
@@ -189,9 +190,8 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
                               0.885,
                               21624.12,
                               rmodality);
-        this->radionuclide=rnuclide;
     }
-    return this->radionuclide;
+    return rnuclide;
     #endif
 }
 

@@ -8,6 +8,7 @@
 
 START_NAMESPACE_STIR
 
+//! the following returns the path of the configuration file "filename we are looking for
 std::string find_STIR_config_file(const std::string& filename){
     
     std::string dir;
@@ -21,7 +22,7 @@ std::string find_STIR_config_file(const std::string& filename){
     return dir+"/"+filename;
 
 }
-
+//! The following finds the STIR configuration director and prints it out 
 void find_STIR_config_dir(){
     
     std::string dir;

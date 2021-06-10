@@ -49,7 +49,6 @@ public:
   float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
-  void set_branching_ratio(const float);
   void set_radionuclide(const Radionuclide&);
   
   // needs to be implemented by derived class
@@ -71,7 +70,6 @@ private:
 //  bool use_calibration_factor; // default to true
 //  bool use_branching_ratio; // default to true
   float calibration_factor;
-  float branching_ratio;
   Radionuclide radionuclide;
 };
 
