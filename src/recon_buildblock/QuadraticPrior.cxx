@@ -704,13 +704,27 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
               const int min_dx = max(weights[0][0].get_min_index(), min_x-x); 
               const int max_dx = min(weights[0][0].get_max_index(), max_x-x); 
                 
+              /// At this point, we have j = [z][y][x]
+              // The next for loops will have k = [z+dz][y+dy][x+dx]
+              // The following computes
+              //(H_{wf} y)_j =
+              //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
+              //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
+
                 elemT result = 0;
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
-                        elemT current =
-                          weights[dz][dy][dx] * input[z+dz][y+dy][x+dx];
+                        elemT current = 0.0;
+                        if (dz != 0 || dy != 0 || dz != 0)
+                        {
+                          current = weights[dz][dy][dx] *
+                                  ( (1.0) * input[z][y][x] + (-1.0) * input[z+dz][y+dy][x+dx]) ;
+                        } else {
+                          // The j == k case
+                          current = weights[dz][dy][dx] * (1.0) * input[z][y][x];
+                        }
 
                          if (do_kappa)
                           current *= 
