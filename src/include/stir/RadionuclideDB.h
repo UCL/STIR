@@ -93,7 +93,7 @@ private:
   std::string filename;
   Radionuclide radionuclide;
   
-  std::string nuclide_name;
+//  std::string nuclide_name;
   std::string radionuclide_lookup_table_str;
   
 #ifdef nlohmann_json_FOUND

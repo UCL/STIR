@@ -65,7 +65,7 @@ read_from_file(const std::string& arg)
 
 std::string 
 RadionuclideDB::
-get_radionuclide_name_from_lookup_table(const std::string& rname)
+get_radionuclide_name_from_lookup_table(const std::string& rname) const
 {
     #ifdef nlohmann_json_FOUND
     if (this->radionuclide_lookup_table_str.empty())
@@ -92,9 +92,8 @@ get_radionuclide_name_from_lookup_table(const std::string& rname)
         for (int c=0; c<table_json.at(0).size(); c++)
         {
             if(table_json.at(l).at(c)==rname)
-            nuclide_name=table_json.at(l).at(0);
+            return table_json.at(l).at(0);
         }
-return nuclide_name;
 #else
     if (rname.empty())
         return "default";
@@ -105,7 +104,7 @@ return nuclide_name;
 
 Radionuclide
 RadionuclideDB::
-get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname)
+get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) const
 {
 //    std::string nuclide_name=get_radionuclide_name_from_lookup_table(rname);
     
@@ -113,19 +112,19 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname)
     error("RadionuclideDB: no filename set for the Radionuclide info");
   if (rmodality.get_name().empty())
     error("RadionuclideDB: no modality set for the Radionuclide info");
-  if (nuclide_name.empty())
+  if (rname.empty())
     error("RadionuclideDB: no nuclide set for the Radionuclide info");
 
   
   
 
-  std::string name = nuclide_name;
+  std::string name = rname;
 
   float  keV ;
   float  h_life ;
   float branching_ratio;
   
-  info("RadionuclideDB: finding record radionuclide: " + nuclide_name+
+  info("RadionuclideDB: finding record radionuclide: " + rname+
        " in file "+ filename);
   #ifdef nlohmann_json_FOUND
   //Extract appropriate chunk of JSON file for given nuclide.
@@ -156,7 +155,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname)
   //  this->breakPoint = properties["break"];
   
 //Set Radionuclide member
-  Radionuclide rnuclide(nuclide_name,
+  Radionuclide rnuclide(rname,
                         keV,
                         branching_ratio,
                         h_life,
