@@ -22,7 +22,7 @@ std::string find_STIR_config_file(const std::string& filename){
     return dir+"/"+filename;
 
 }
-//! The following finds the STIR configuration director and prints it out 
+//! The following finds the STIR configuration directory and prints it out 
 void find_STIR_config_dir(){
     
     std::string dir;
