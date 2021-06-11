@@ -123,6 +123,7 @@ void
 QuadraticPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
+  this->_is_convex = true;
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();

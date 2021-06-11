@@ -102,6 +102,9 @@ protected:
   virtual void check(DataT const& current_estimate) const;
 
   bool _already_set_up;
+
+  //! Variable to indicate that the prior is a convex function
+  bool _is_convex;
 };
 
 END_NAMESPACE_STIR

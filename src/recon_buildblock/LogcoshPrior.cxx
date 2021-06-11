@@ -108,6 +108,7 @@ void
 LogcoshPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
+  this->_is_convex = true;
   this->only_2D = false;
   this->scalar = 1.0;
   this->kappa_ptr.reset();

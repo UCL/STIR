@@ -40,6 +40,7 @@ GeneralisedPrior<TargetT>::set_defaults()
 {
   _already_set_up = false;
   this->penalisation_factor = 0;  
+  this->_is_convex = false;
 }
 
 template <typename TargetT>
