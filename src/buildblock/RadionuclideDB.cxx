@@ -189,8 +189,9 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
                               0.885,
                               21624.12,
                               rmodality);
+        this->radionuclide=rnuclide;
     }
-    return rnuclide;
+    return this->radionuclide;
     #endif
 }
 
