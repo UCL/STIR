@@ -243,16 +243,7 @@ test_Hessian_configuration(const std::string& test_name,
 
   /// Compute x \cdot (H x)
   float my_sum = 0.0;
-  {
-    target_type::full_iterator input_iter = input->begin_all();
-    target_type::full_iterator output_iter = output->begin_all();
-    while (input_iter != input->end_all())// && testOK)
-    {
-      my_sum += *output_iter * *input_iter;
-      ++input_iter;
-      ++output_iter;
-    }
-  }
+  my_sum = std::inner_product(input->begin_all(), input->end_all(), output->begin_all(), my_sum);
 
   // test for a CONVEX function
   if (this->check_if_less(0, my_sum)) {
