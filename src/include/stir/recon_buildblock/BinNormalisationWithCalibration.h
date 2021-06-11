@@ -68,7 +68,6 @@ private:
   // provide facility to switch off things?
   //  need to be added to the parsing keywords
 //  bool use_calibration_factor; // default to true
-//  bool use_branching_ratio; // default to true
   float calibration_factor;
   Radionuclide radionuclide;
 };
