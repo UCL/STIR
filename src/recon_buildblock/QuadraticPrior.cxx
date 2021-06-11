@@ -720,7 +720,8 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                         if (dz != 0 || dy != 0 || dz != 0)
                         {
                           current = weights[dz][dy][dx] *
-                                  ( (1.0) * input[z][y][x] + (-1.0) * input[z+dz][y+dy][x+dx]) ;
+                                    ( (1.0) * input[z][y][x] + // diagonal Hessian terms
+                                      (-1.0) * input[z+dz][y+dy][x+dx] ); // off-diagonal Hessian terms
                         } else {
                           // The j == k case
                           current = weights[dz][dy][dx] * (1.0) * input[z][y][x];
