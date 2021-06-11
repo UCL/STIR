@@ -73,7 +73,7 @@
 
 START_NAMESPACE_STIR
 
-class RadionuclideDB//: public Radionuclide
+class RadionuclideDB
 {
 public:
 //  static constexpr const char * const registered_name = "nuclideDB"; 
