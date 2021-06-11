@@ -101,7 +101,7 @@ nlohmann::json radionuclide_json;
 #endif
 
 //! the following extracts the radionuclide information from the JSON file and returns a radionculide object 
-  Radionuclide get_radionuclide_from_json(ImagingModality rmodality, const std::string& rname);
+  Radionuclide get_radionuclide_from_json(ImagingModality rmodality, const std::string& rname) const;
   
 //! the following looks at the radionuclide name in input and converts it if necessary to the Dicom format
   std::string get_radionuclide_name_from_lookup_table(const std::string& rname);
