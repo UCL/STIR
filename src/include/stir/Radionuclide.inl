@@ -53,8 +53,9 @@ ImagingModality
 
 bool  
 Radionuclide::operator==(const Radionuclide& r) const{ 
-    return name==r.name && abs(energy-r.energy)<= 10e-5 && abs(branching_ratio-r.branching_ratio)<= 10e-5 &&
-           abs(half_life-r.half_life)<= 10e-5 && modality==r.modality;
+   /* Note: note checking on `name` in case it is not standardised */
+    return abs(energy-r.energy)<= 0.1 && abs(branching_ratio-r.branching_ratio)<= .001 &&
+           abs(half_life-r.half_life)<= .1 && modality==r.modality;
 }
 
 END_NAMESPACE_STIR
