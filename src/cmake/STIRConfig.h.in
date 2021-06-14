@@ -72,6 +72,10 @@ namespace stir {
 
 #cmakedefine STIR_MPI
 
+#cmakedefine STIR_CONFIG_DIR "@STIR_CONFIG_DIR@"
+
+#cmakedefine nlohmann_json_FOUND "@nlohmann_json_FOUND@"
+
 #cmakedefine STIR_USE_BOOST_SHARED_PTR
 
 #cmakedefine STIR_NO_UNIQUE_PTR

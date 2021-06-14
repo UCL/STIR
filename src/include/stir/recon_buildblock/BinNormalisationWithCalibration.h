@@ -21,6 +21,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Bin.h"
+#include "stir/Radionuclide.h"
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/decay_correction_factor.h"
@@ -48,8 +49,7 @@ public:
   float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
-  void set_branching_ratio(const float);
-  void set_radionuclide(const std::string&);
+  void set_radionuclide(const Radionuclide&);
   
   // needs to be implemented by derived class
   virtual float get_uncalibrated_bin_efficiency(const Bin&) const  = 0;
@@ -68,10 +68,8 @@ private:
   // provide facility to switch off things?
   //  need to be added to the parsing keywords
 //  bool use_calibration_factor; // default to true
-//  bool use_branching_ratio; // default to true
   float calibration_factor;
-  float branching_ratio;
-  std::string radionuclide;
+  Radionuclide radionuclide;
 };
 
 END_NAMESPACE_STIR

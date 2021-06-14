@@ -15,6 +15,7 @@ set(dir utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
+
   manip_image.cxx
   stir_write_pgm.cxx
 	manip_projdata.cxx
@@ -56,6 +57,7 @@ set(${dir_EXE_SOURCES}
         conv_gipl_to_interfile.cxx
         conv_interfile_to_gipl.cxx
         shift_image.cxx
+        stir_config.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx
