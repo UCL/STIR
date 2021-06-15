@@ -195,20 +195,18 @@ protected:
  private:
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 
-  //! The Hessian of the Relative Difference Prior
+  //! The second partial derivatives of the Relative Difference Prior
   /*!
-   This function returns the hessian (second derivative) of the RDP.
-   It is assumed that the diagonal elements of the Hessian are 0, or the weighing is, and thus only compute the partial
-   derivative w.r.t \c x and \c y.
-   * @param x is the target voxel.
-   * @param y is the neighbourhood voxel.
-   * @param gamma is the edge preservation value controlling the transition between the quadratic and linear behaviour
-   * @param eps is a small non-negative value included to prevent division by zero, see epsilon.
-   * @return the second derivative of the Relative Difference Prior
-
+   Diagonal refers to the second derivative w.r.t. x_j only (i.e. diagonal of the Hessian)
+   Off-diagonal refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal of the Hessian)
+   * @param x_j is the target voxel.
+   * @param x_k is the voxel in the neighbourhood.
+   * @return the second partial derivative of the Relative Difference Prior
    */
+  //@{
   float diagonal_second_derivative(const float x_j, const float x_k) const;
   float off_diagonal_second_derivative(const float x_j, const float x_k) const;
+  //@}
 };
 
 

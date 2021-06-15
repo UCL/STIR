@@ -489,21 +489,24 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
         //(H_{wf} y)_j =
         //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
         //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
+        // Note the condition in the second sum that i is not equal to j
 
         elemT result = 0;
         for (int dz=min_dz;dz<=max_dz;++dz)
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT current = 0.0;
-              if (dz != 0 || dy != 0 || dz != 0)
-              {
-                current = weights[dz][dy][dx] *
-                          (diagonal_second_derivative(current_estimate[z][y][x], current_estimate[z+dz][y+dy][x+dx]) * input[z][y][x] +
-                           off_diagonal_second_derivative(current_estimate[z][y][x], current_estimate[z+dz][y+dy][x+dx])* input[z+dz][y+dy][x+dx] );
-              } else {
+              elemT current = weights[dz][dy][dx];
+              if (dz == dy == dz == 0) {
                 // The j == k case
-                current = weights[dz][dy][dx] * (1.0) * input[z][y][x];
+                current *= diagonal_second_derivative(current_estimate[z][y][x],
+                                                      current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
+              } else {
+                current *= (diagonal_second_derivative(current_estimate[z][y][x],
+                                                       current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x] +
+                            off_diagonal_second_derivative(current_estimate[z][y][x],
+                                                           current_estimate[z + dz][y + dy][x + dx]) *
+                            input[z + dz][y + dy][x + dx]);
               }
 
               if (do_kappa)
