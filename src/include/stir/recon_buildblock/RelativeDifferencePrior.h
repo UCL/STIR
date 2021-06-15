@@ -207,14 +207,8 @@ protected:
    * @return the second derivative of the Relative Difference Prior
 
    */
-  static inline float Hessian(const float x, const float y, const float gamma, const float eps)
-  {
-    if (x > 0.0 || y > 0.0 || eps > 0.0)
-      return 2 * (2 * x + eps)*(2 * y + eps) /
-        pow(x + y + gamma * abs(x - y) + eps, 3);
-    else
-      return 0.0;
-  }
+  float diagonal_second_derivative(const float x_j, const float x_k) const;
+  float off_diagonal_second_derivative(const float x_j, const float x_k) const;
 };
 
 

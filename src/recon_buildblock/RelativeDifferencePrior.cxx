@@ -483,15 +483,28 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
         const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
         const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
 
+        /// At this point, we have j = [z][y][x]
+        // The next for loops will have k = [z+dz][y+dy][x+dx]
+        // The following computes
+        //(H_{wf} y)_j =
+        //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
+        //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
+
         elemT result = 0;
         for (int dz=min_dz;dz<=max_dz;++dz)
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT current = weights[dz][dy][dx] *
-                      Hessian(current_estimate[z][y][x], current_estimate[z+dz][y+dy][x+dx],
-                              this->get_gamma(), this->get_epsilon()) *
-                      input[z+dz][y+dy][x+dx];
+              elemT current = 0.0;
+              if (dz != 0 || dy != 0 || dz != 0)
+              {
+                current = weights[dz][dy][dx] *
+                          (diagonal_second_derivative(current_estimate[z][y][x], current_estimate[z+dz][y+dy][x+dx]) * input[z][y][x] +
+                           off_diagonal_second_derivative(current_estimate[z][y][x], current_estimate[z+dz][y+dy][x+dx])* input[z+dz][y+dy][x+dx] );
+              } else {
+                // The j == k case
+                current = weights[dz][dy][dx] * (1.0) * input[z][y][x];
+              }
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -504,6 +517,32 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
     }
   }
   return Succeeded::yes;
+}
+
+template <typename elemT>
+float
+RelativeDifferencePrior<elemT>::
+diagonal_second_derivative(const float x_j, const float x_k) const
+{
+  // THIS MATH IS WRONG!!!
+  if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
+    return 2 * (2 * x_j + this->epsilon)*(2 * x_k + this->epsilon) /
+           pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+  else
+    return 0.0;
+}
+
+template <typename elemT>
+float
+RelativeDifferencePrior<elemT>::
+off_diagonal_second_derivative(const float x_j, const float x_k) const
+{
+  // Not sure if math is correct
+  if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
+    return 2 * (2 * x_j + this->epsilon)*(2 * x_k + this->epsilon) /
+           pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+  else
+    return 0.0;
 }
 
 #  ifdef _MSC_VER
