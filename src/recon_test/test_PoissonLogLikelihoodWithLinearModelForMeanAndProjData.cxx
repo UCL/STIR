@@ -113,8 +113,8 @@ protected:
                                         target_type& target);
 
   //! Test the Hessian of the objective function by testing the (x^T Hx > 0) condition
-  void test_objective_function_Hessian(GeneralisedObjectiveFunction<target_type>& objective_function,
-                                       target_type& target);
+  void test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
+                                                 target_type& target);
 };
 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
@@ -131,8 +131,8 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
                                    target);
 
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_objective_function_Hessian(objective_function,
-                                  target);
+  test_objective_function_Hessian_concavity(objective_function,
+                                            target);
 }
 
 void
@@ -190,8 +190,8 @@ test_objective_function_gradient(GeneralisedObjectiveFunction<target_type> &obje
 }
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
-test_objective_function_Hessian(GeneralisedObjectiveFunction<target_type> &objective_function,
-                                 target_type &target){
+test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type> &objective_function,
+                                          target_type &target){
   /// setup images
   shared_ptr<target_type> output(target.get_empty_copy());
 
