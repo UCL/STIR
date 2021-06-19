@@ -121,6 +121,10 @@ class RelativeDifferencePrior:  public
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  //! compute Hessian
+  virtual Succeeded compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                                    const BasicCoordinate<3,int>& coords,
+                                    const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
@@ -199,9 +203,10 @@ protected:
   /*!
    Diagonal refers to the second derivative w.r.t. x_j only (i.e. diagonal of the Hessian)
    Off-diagonal refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal of the Hessian)
+   See J. Nuyts, et al., 2002, Equation 7.
    * @param x_j is the target voxel.
    * @param x_k is the voxel in the neighbourhood.
-   * @return the second partial derivative of the Relative Difference Prior
+   * @return the second order partial derivatives of the Relative Difference Prior
    */
   //@{
   float diagonal_second_derivative(const float x_j, const float x_k) const;

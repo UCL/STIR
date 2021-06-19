@@ -34,6 +34,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
+#include "stir/Verbosity.h"
 #include "stir/Succeeded.h"
 #include "stir/num_threads.h"
 #include <iostream>
@@ -86,25 +87,34 @@ protected:
                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
 
-  //! Test various configurations of the prior's Hessian via accumulate_Hessian_times_input()
+  //! Test various configurations of the Hessian of the prior via accumulate_Hessian_times_input() for convexity
   /*!
-    Tests the concave function condition
+    Tests the convexity condition:
     \f[ x^T \cdot H_{\lambda}x >= 0 \f]
-    for all non-negative \c x and non-zero \c \lambda (Relative Difference Penalty conditions).
-    This function constructs an array of configurations to test this condition and calls \c test_Hessian_configuration().
+    for all non-negative \c x and non-zero \c \lambda (Relative Difference Prior conditions).
+    This function constructs an array of configurations to test this condition and calls
+    \c test_Hessian_convexity_configuration().
   */
-  void test_Hessian(const std::string& test_name,
-                     GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                     shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+  void test_Hessian_convexity(const std::string& test_name,
+                              GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                              shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+
+  //! Tests the compute_Hessian method implemented into convex priors
+  /*! Performs a perturbation response using compute_gradient to determine if the compute_Hessian (for a single densel)
+      is within tolerance.
+  */
+  void test_Hessian_against_numerical(const std::string& test_name,
+                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
 
 private:
   //! Hessian test for a particular configuration of the Hessian concave condition
-  void test_Hessian_configuration(const std::string& test_name,
-                                  GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                  shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
-                                  float beta,
-                                  float input_multiplication, float input_addition,
-                                  float current_image_multiplication, float current_image_addition);
+  bool test_Hessian_convexity_configuration(const std::string& test_name,
+                                            GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                            shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                                            const float beta,
+                                            const float input_multiplication, const float input_addition,
+                                            const float current_image_multiplication, const float current_image_addition);
 };
 
 GeneralisedPriorTests::
@@ -122,10 +132,19 @@ run_tests_for_objective_function(const std::string& test_name,
   if (!check(objective_function.set_up(target_sptr)==Succeeded::yes, "set-up of objective function"))
     return;
 
+  // Gradient tests
   std::cerr << "----- test " << test_name << "  --> Gradient\n";
   test_gradient(test_name, objective_function, target_sptr);
-  std::cerr << "----- test " << test_name << "  --> Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_Hessian(test_name, objective_function, target_sptr);
+
+  if (objective_function.get_is_convex())
+  {
+    // The Hessian tests can only be performed on convex priors
+    std::cerr << "----- test " << test_name << "  --> Hessian-vector product for convexity\n";
+    test_Hessian_convexity(test_name, objective_function, target_sptr);
+
+    std::cerr << "----- test " << test_name << "  --> Hessian against numerical\n";
+    test_Hessian_against_numerical(test_name, objective_function, target_sptr);
+  }
 }
 
 
@@ -141,7 +160,10 @@ test_gradient(const std::string& test_name,
   shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
 
   info("Computing gradient",3);
+  const int verbosity_default = Verbosity::get();
+  Verbosity::set(0);
   objective_function.compute_gradient(*gradient_sptr, target);
+  Verbosity::set(verbosity_default);
   this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), fabs(double(gradient_sptr->find_max()))) /1000);
 
   info("Computing objective function at target",3);
@@ -170,6 +192,7 @@ test_gradient(const std::string& test_name,
   }
   if (!testOK)
   {
+    std::cerr << "Numerical gradient test failed with for " + test_name + " prior\n";
     info("Writing diagnostic files gradient" + test_name + ".hv, numerical_gradient" + test_name + ".hv");
     write_to_file("gradient" + test_name + ".hv", *gradient_sptr);
     write_to_file("numerical_gradient" + test_name + ".hv", *gradient_2_sptr);
@@ -178,10 +201,12 @@ test_gradient(const std::string& test_name,
 
 void
 GeneralisedPriorTests::
-test_Hessian(const std::string& test_name,
-              GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-              shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+test_Hessian_convexity(const std::string& test_name,
+                       GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                       shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
 {
+  if (!objective_function.get_is_convex())
+    return;
   /// Construct configurations
   float beta_array[] = {0.01, 1, 100};  // Penalty strength should only affect scale
   // Modifications to the input image
@@ -191,35 +216,33 @@ test_Hessian(const std::string& test_name,
   float current_image_multiplication_array[] = {0.01, 1, 100};
   float current_image_addition_array[] = {0.0, 0.5, 1, 10}; // RDP has constraint that current_image is non-negative
 
+  bool testOK = true;
   float initial_beta = objective_function.get_penalisation_factor();
-  for (float beta : beta_array) {
-    for (float input_multiplication : input_multiplication_array) {
-      for (float input_addition : input_addition_array) {
-        for (float current_image_multiplication : current_image_multiplication_array) {
+  for (float beta : beta_array)
+    for (float input_multiplication : input_multiplication_array)
+      for (float input_addition : input_addition_array)
+        for (float current_image_multiplication : current_image_multiplication_array)
           for (float current_image_addition : current_image_addition_array) {
-            test_Hessian_configuration(test_name, objective_function, target_sptr,
-                                       beta,
-                                       input_multiplication, input_addition,
-                                       current_image_multiplication, current_image_addition);
+            if (testOK)  // only compute configuration if testOK from previous tests
+              testOK = test_Hessian_convexity_configuration(test_name, objective_function, target_sptr,
+                                                            beta,
+                                                            input_multiplication, input_addition,
+                                                            current_image_multiplication, current_image_addition);
           }
-        }
-      }
-    }
-  }
   /// Reset beta to original value
   objective_function.set_penalisation_factor(initial_beta);
 }
 
-void
+bool
 GeneralisedPriorTests::
-test_Hessian_configuration(const std::string& test_name,
-                           GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                           shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
-                           const float beta,
-                           const float input_multiplication, const float input_addition,
-                           const float current_image_multiplication, const float current_image_addition)
+test_Hessian_convexity_configuration(const std::string& test_name,
+                                     GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                     shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                                     const float beta,
+                                     const float input_multiplication, const float input_addition,
+                                     const float current_image_multiplication, const float current_image_addition)
 {
-  /// setup images
+  /// setup targets
   target_type& target(*target_sptr);
   shared_ptr<target_type> output(target.get_empty_copy());
   shared_ptr<target_type> current_image(target.get_empty_copy());
@@ -230,7 +253,7 @@ test_Hessian_configuration(const std::string& test_name,
     target_type::full_iterator input_iter = input->begin_all();
     target_type::full_iterator current_image_iter = current_image->begin_all();
     target_type::full_iterator target_iter = target.begin_all();
-    while (input_iter != input->end_all())// && testOK)
+    while (input_iter != input->end_all())
     {
       *input_iter = input_multiplication * *target_iter + input_addition;
       *current_image_iter = current_image_multiplication * *target_iter + current_image_addition;
@@ -248,6 +271,7 @@ test_Hessian_configuration(const std::string& test_name,
   // test for a CONVEX function
   if (this->check_if_less(0, my_sum)) {
 //    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore convex");
+    return true;
   } else {
     // print to console the FAILED configuration
     info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " < 0 and is therefore NOT convex" +
@@ -261,7 +285,100 @@ test_Hessian_configuration(const std::string& test_name,
          "\n >input image min=" + std::to_string(input->find_min()) +
          "\n >target image max=" + std::to_string(target.find_max()) +
          "\n >target image min=" + std::to_string(target.find_min()));
+    return false;
   }
+}
+
+
+void
+GeneralisedPriorTests::
+test_Hessian_against_numerical(const std::string &test_name,
+                               GeneralisedPrior<GeneralisedPriorTests::target_type> &objective_function,
+                               shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+{
+  if (!objective_function.get_is_convex())
+    return;
+
+  /// Setup
+  const float eps = 1e-3F;
+  bool testOK = true;
+  const int verbosity_default = Verbosity::get();
+
+  // setup images
+  target_type& input(*target_sptr->get_empty_copy());
+  input += *target_sptr;  // make input have same values as target_sptr
+  shared_ptr<target_type> gradient_sptr(target_sptr->get_empty_copy());
+  shared_ptr<target_type> pert_grad_and_numerical_Hessian_sptr(target_sptr->get_empty_copy());
+  shared_ptr<target_type> Hessian_sptr(target_sptr->get_empty_copy());
+
+  Verbosity::set(0);
+  objective_function.compute_gradient(*gradient_sptr, input);
+  Verbosity::set(verbosity_default);
+//  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), fabs(double(gradient_sptr->find_max()))) /10);
+
+  // Setup coordinates (z,y,x) for perturbation test (Hessian will also be computed w.r.t this voxel, j)
+  BasicCoordinate<3, int> perturbation_coords;
+
+  // Get min/max indices
+  const int min_z = input.get_min_index();
+  const int max_z = input.get_max_index();
+  const int min_y = input[min_z].get_min_index();
+  const int max_y = input[min_z].get_max_index();
+  const int min_x = input[min_z][min_y].get_min_index();
+  const int max_x = input[min_z][min_y].get_max_index();
+
+  // Loop over each voxel j in the input and check perturbation response.
+  for (int z=min_z;z<= max_z;z++)
+    for (int y=min_y;y<= max_y;y++)
+      for (int x=min_x;x<= max_x;x++)
+        if (testOK)
+        {
+          perturbation_coords[1] = z; perturbation_coords[2] = y; perturbation_coords[3] = x;
+
+          //  Compute H(x)_j (row of the Hessian at the jth voxel)
+          objective_function.compute_Hessian(*Hessian_sptr, perturbation_coords, input);
+          this->set_tolerance(std::max(fabs(double(Hessian_sptr->find_min())), fabs(double(Hessian_sptr->find_max()))) /500);
+
+          // Compute g(x + eps)
+          Verbosity::set(0);
+          // Perturb target at jth voxel, compute perturbed gradient, and reset voxel to original value
+          float perturbed_voxels_original_value = input[perturbation_coords[1]][perturbation_coords[2]][perturbation_coords[3]];
+          input[perturbation_coords[1]][perturbation_coords[2]][perturbation_coords[3]] += eps;
+          objective_function.compute_gradient(*pert_grad_and_numerical_Hessian_sptr, input);
+          input[perturbation_coords[1]][perturbation_coords[2]][perturbation_coords[3]] = perturbed_voxels_original_value;
+
+          // Now compute the numerical-Hessian = (g(x+eps) - g(x))/eps
+          *pert_grad_and_numerical_Hessian_sptr -= *gradient_sptr;
+          *pert_grad_and_numerical_Hessian_sptr /= eps;
+
+          Verbosity::set(verbosity_default);
+          // Test if pert_grad_and_numerical_Hessian_sptr is all zeros.
+          // This can happen if the eps is too small. This is a quick test that allows for easier debugging.
+          if (pert_grad_and_numerical_Hessian_sptr->sum_positive() == 0.0)
+          {
+            this->everything_ok = false;
+            testOK = false;
+            info("test_Hessian_against_numerical: failed because all values are 0 in numerical Hessian");
+          }
+
+          // Loop over each of the voxels and compare the numerical-Hessian with Hessian
+          target_type::full_iterator numerical_Hessian_iter = pert_grad_and_numerical_Hessian_sptr->begin_all();
+          target_type::full_iterator Hessian_iter = Hessian_sptr->begin_all();
+          while(numerical_Hessian_iter != pert_grad_and_numerical_Hessian_sptr->end_all() && testOK)
+          {
+            testOK = testOK && this->check_if_equal(*Hessian_iter, *numerical_Hessian_iter, "Hessian");
+            ++numerical_Hessian_iter; ++ Hessian_iter;
+          }
+
+          if (!testOK)
+          {
+            std::cerr << "Numerical-Hessian test failed with for " + test_name + " prior\n";
+            info("Writing diagnostic files `Hessian_" + test_name + ".hv` and `numerical_Hessian_" + test_name + ".hv`");
+            write_to_file("Hessian_" + test_name + ".hv", *Hessian_sptr);
+            write_to_file("numerical_Hessian_" + test_name + ".hv", *pert_grad_and_numerical_Hessian_sptr);
+            write_to_file("input_" + test_name + ".hv", input);
+          }
+        }
 }
 
 void
@@ -305,19 +422,25 @@ run_tests()
   shared_ptr<target_type> density_sptr;
   construct_input_data(density_sptr);
 
-  std::cerr << "Tests for QuadraticPrior\n";
+  std::cerr << "\n\nTests for QuadraticPrior\n";
   {
     QuadraticPrior<float> objective_function(false, 1.F);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
   }
-  std::cerr << "Tests for Relative Difference Prior\n";
+  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
   {
-    // gamma is default and epsilon is off
+    // gamma is default and epsilon is 0.0
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
-    this->run_tests_for_objective_function("RDP_no_kappa", objective_function, density_sptr);
+    this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
+  }
+  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.001\n";
+  {
+    // gamma is default and epsilon is "small"
+    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.0001F);
+    this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
   }
   // Disabled PLS due to known issue
-//  std::cerr << "Tests for PLSPrior\n";
+//  std::cerr << "\n\nTests for PLSPrior\n";
 //  {
 //    PLSPrior<float> objective_function(false, 1.F);
 //    shared_ptr<DiscretisedDensity<3,float> > anatomical_image_sptr(density_sptr->get_empty_copy());
@@ -325,7 +448,7 @@ run_tests()
 //    objective_function.set_anatomical_image_sptr(anatomical_image_sptr);
 //    this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
 //  }
-  std::cerr << "Tests for Logcosh Prior\n";
+  std::cerr << "\n\nTests for Logcosh Prior\n";
   {
     // scalar is off
     LogcoshPrior<float> objective_function(false, 1.F, 1.F);

@@ -377,18 +377,21 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 }
 
 template <typename elemT>
-void
+Succeeded
 LogcoshPrior<elemT>::
 compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
                 const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate)
+                const DiscretisedDensity<3,elemT> &current_image_estimate) const
 {
   assert(  prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor==0)
   {
-    return;
+    return Succeeded::yes;
   }
+
+  this->check(current_image_estimate);
+
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
 
@@ -422,19 +425,36 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     for (int dy=min_dy;dy<=max_dy;++dy)
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
-        // sech^2(x * scalar); sech(x) = 1/cosh(x)
-        elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-        elemT current = weights[dz][dy][dx] * Hessian(voxel_diff, this->scalar);
-
-        if (do_kappa)
-          current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-
-        diagonal += current;
-        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
+        elemT current = 0.0;
+        if (dz == 0 && dy == 0 && dx == 0)
+        {
+          // The j == k case (diagonal Hessian element), which is a sum over the neighbourhood.
+          for (int ddz=min_dz;ddz<=max_dz;++ddz)
+            for (int ddy=min_dy;ddy<=max_dy;++ddy)
+              for (int ddx=min_dx;ddx<=max_dx;++ddx)
+              {
+                elemT diagonal_current = weights[ddz][ddy][ddx] *
+                                         diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                                    current_image_estimate[z+ddz][y+ddy][x+ddx]);
+                if (do_kappa)
+                  diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+ddz][y+ddy][x+ddx];
+                current += diagonal_current;
+              }
+        }
+        else
+        {
+          // The j != k vases (off-diagonal Hessian elements)
+          current = weights[dz][dy][dx] * off_diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                                         current_image_estimate[z+dz][y+dy][x+dx]);
+          if (do_kappa)
+            current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+        }
+        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = + current*this->penalisation_factor;
       }
 
-  prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
+  return Succeeded::yes;
 }
+
 
 template <typename elemT>
 void

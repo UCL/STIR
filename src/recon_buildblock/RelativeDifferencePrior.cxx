@@ -179,6 +179,7 @@ template <typename elemT>
 RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, float penalisation_factor_v, float gamma_v, float epsilon_v)
   :  only_2D(only_2D_v)
 {
+  set_defaults();
   this->penalisation_factor = penalisation_factor_v;
   this->gamma = gamma_v;
   this->epsilon = epsilon_v;
@@ -422,6 +423,86 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 }
 
 template <typename elemT>
+Succeeded
+RelativeDifferencePrior<elemT>::
+compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                const BasicCoordinate<3,int>& coords,
+                const DiscretisedDensity<3,elemT> &current_image_estimate) const
+{
+  assert(  prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
+  prior_Hessian_for_single_densel.fill(0);
+  if (this->penalisation_factor==0)
+  {
+    return Succeeded::yes;
+  }
+
+  this->check(current_image_estimate);
+
+  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+          dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
+
+  DiscretisedDensityOnCartesianGrid<3,elemT>& prior_Hessian_for_single_densel_cast =
+          dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(prior_Hessian_for_single_densel);
+
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
+  }
+
+
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
+
+  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
+    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
+
+  const int z = coords[1];
+  const int y = coords[2];
+  const int x = coords[3];
+  const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel.get_min_index()-z);
+  const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel.get_max_index()-z);
+
+  const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel[z].get_min_index()-y);
+  const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel[z].get_max_index()-y);
+
+  const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel[z][y].get_min_index()-x);
+  const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel[z][y].get_max_index()-x);
+
+  elemT diagonal = 0;
+  for (int dz=min_dz;dz<=max_dz;++dz)
+    for (int dy=min_dy;dy<=max_dy;++dy)
+      for (int dx=min_dx;dx<=max_dx;++dx)
+      {
+        elemT current = 0.0;
+        if (dz == 0 && dy == 0 && dx == 0)
+        {
+          // The j == k case (diagonal Hessian element), which is a sum over the neighbourhood.
+          for (int ddz=min_dz;ddz<=max_dz;++ddz)
+            for (int ddy=min_dy;ddy<=max_dy;++ddy)
+              for (int ddx=min_dx;ddx<=max_dx;++ddx)
+              {
+                elemT diagonal_current = weights[ddz][ddy][ddx] *
+                                         diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                                    current_image_estimate[z+ddz][y+ddy][x+ddx]);
+                if (do_kappa)
+                  diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+ddz][y+ddy][x+ddx];
+                current += diagonal_current;
+              }
+        }
+        else
+        {
+          // The j != k vases (off-diagonal Hessian elements)
+          current = weights[dz][dy][dx] * off_diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                                         current_image_estimate[z+dz][y+dy][x+dx]);
+          if (do_kappa)
+            current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+        }
+        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = + current*this->penalisation_factor;
+      }
+
+  return Succeeded::yes;
+}
+
+template <typename elemT>
 Succeeded 
 RelativeDifferencePrior<elemT>::
 add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
@@ -527,9 +608,8 @@ float
 RelativeDifferencePrior<elemT>::
 diagonal_second_derivative(const float x_j, const float x_k) const
 {
-  // THIS MATH IS WRONG!!!
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
-    return 2 * (2 * x_j + this->epsilon)*(2 * x_k + this->epsilon) /
+    return 2 * pow(2 * x_k + this->epsilon, 2) /
            pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
   else
     return 0.0;
@@ -540,9 +620,8 @@ float
 RelativeDifferencePrior<elemT>::
 off_diagonal_second_derivative(const float x_j, const float x_k) const
 {
-  // Not sure if math is correct
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
-    return 2 * (2 * x_j + this->epsilon)*(2 * x_k + this->epsilon) /
+    return - 2 * (2 * x_j + this->epsilon)*(2 * x_k + this->epsilon) /
            pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
   else
     return 0.0;

@@ -60,6 +60,17 @@ public:
   virtual void compute_gradient(DataT& prior_gradient, 
 		   const DataT &current_estimate) =0; 
 
+  //! This should computes a single row of the Hessian
+  /*! Default implementation just call error(). This function needs to be overridden by the
+      derived class.
+      This method computes the Hessian of a particular voxel, indicated by \c coords, of the current image estimate.
+      The default method should overwrite the values in \c prior_Hessian_for_single_densel.
+   */
+  virtual Succeeded
+    compute_Hessian(DataT& prior_Hessian_for_single_densel,
+                    const BasicCoordinate<3,int>& coords,
+                    const DataT& current_image_estimate) const;
+
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output
   /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
@@ -89,6 +100,9 @@ public:
   virtual Succeeded 
     set_up(shared_ptr<const DataT> const& target_sptr);
 
+  //! Returns the status of the _is_convex variable
+  bool get_is_convex() const;
+
 protected:
   float penalisation_factor;
   //! sets value for penalisation factor
@@ -103,7 +117,7 @@ protected:
 
   bool _already_set_up;
 
-  //! Variable to indicate that the prior is a convex function
+  //! Variable to indicate that the prior is a convex function, should be set in defaults by the derived class
   bool _is_convex;
 };
 

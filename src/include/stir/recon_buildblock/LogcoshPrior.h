@@ -121,9 +121,10 @@ public:
                                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
     //! compute Hessian
-    void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
-                         const BasicCoordinate<3,int>& coords,
-                         const DiscretisedDensity<3,elemT> &current_image_estimate);
+    virtual Succeeded
+    compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                    const BasicCoordinate<3,int>& coords,
+                    const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
     //! Compute the multiplication of the hessian of the prior multiplied by the input.
     virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
@@ -220,19 +221,6 @@ private:
       { return tanh(x)/x; }
     }
 
-    //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
-    /*!
-     This function returns the hessian of the logcosh function
-     * @param d the difference between the ith and jth voxel.
-     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
-     * @return the second derivative of the log-cosh function
-     */
-    static inline float Hessian(const float d, const float scalar)
-    {
-      const float x = d * scalar;
-      return square((1/ cosh(x)));
-    }
-
     //! The second partial derivatives of the LogCosh Prior
     /*!
      Diagonal refers to the second derivative w.r.t. x_j only (i.e. diagonal of the Hessian)
@@ -240,7 +228,7 @@ private:
      For LogCosh, the off diagonal is the negative of the diagonal.
      * @param x_j is the target voxel.
      * @param x_k is the voxel in the neighbourhood.
-     * @return the second partial derivative of the LogCosh Prior
+     * @return the second order partial derivatives of the LogCosh Prior
      */
     //@{
     float diagonal_second_derivative(const float x_j, const float x_k) const;
