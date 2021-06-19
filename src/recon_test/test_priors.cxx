@@ -83,6 +83,7 @@ protected:
                                         GeneralisedPrior<target_type>& objective_function,
                                         shared_ptr<target_type> target_sptr);
 
+  //! Tests the prior's gradient by comparing to the numerical gradient computed using perturbation response.
   void test_gradient(const std::string& test_name,
                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
