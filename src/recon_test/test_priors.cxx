@@ -395,7 +395,7 @@ test_Hessian_against_numerical(const std::string &test_name,
           Verbosity::set(verbosity_default);
           // Test if pert_grad_and_numerical_Hessian_sptr is all zeros.
           // This can happen if the eps is too small. This is a quick test that allows for easier debugging.
-          if (pert_grad_and_numerical_Hessian_sptr->sum_positive() == 0.0)
+          if (pert_grad_and_numerical_Hessian_sptr->sum_positive() == 0.0 && Hessian_sptr->sum_positive() > 0.0)
           {
             this->everything_ok = false;
             testOK = false;
@@ -413,6 +413,7 @@ test_Hessian_against_numerical(const std::string &test_name,
 
           if (!testOK)
           {
+            // Output volumes for debug
             std::cerr << "Numerical-Hessian test failed with for " + test_name + " prior\n";
             info("Writing diagnostic files `Hessian_" + test_name + ".hv` and `numerical_Hessian_" + test_name + ".hv`");
             write_to_file("Hessian_" + test_name + ".hv", *Hessian_sptr);
