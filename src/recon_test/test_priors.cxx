@@ -434,10 +434,10 @@ run_tests()
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
     this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
   }
-  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.001\n";
+  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.1\n";
   {
     // gamma is default and epsilon is "small"
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.0001F);
+    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.1F);
     this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
   }
   // Disabled PLS due to known issue
