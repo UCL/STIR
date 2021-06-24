@@ -132,12 +132,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type>& objective_function,
                                  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type& target) {
   std::cerr << "----- testing Gradient\n";
-  test_objective_function_gradient(objective_function,
-                                   target);
+  test_objective_function_gradient(objective_function,target);
 
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_objective_function_Hessian_concavity(objective_function,
-                                            target);
+  test_objective_function_Hessian_concavity(objective_function,target);
+
   std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_objective_function_approximate_Hessian_concavity(objective_function, target);
 }
@@ -195,6 +194,7 @@ test_objective_function_gradient(GeneralisedObjectiveFunction<target_type> &obje
     }
 
 }
+
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type> &objective_function,
@@ -219,10 +219,10 @@ test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_ty
 
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
-//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" and is therefore concave);
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" (Hessian) and is therefore concave);
   } else {
     // print to console the FAILED configuration
-    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore NOT concave" +
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 (Hessian) and is therefore NOT concave" +
          "\n >target image max=" + std::to_string(target.find_max()) +
          "\n >target image min=" + std::to_string(target.find_min()));
   }
@@ -254,10 +254,10 @@ test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFuncti
 
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
-//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" and is therefore concave);
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" (approximate-Hessian) and is therefore concave);
   } else {
     // print to console the FAILED configuration
-    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore NOT concave" +
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 (approximate-Hessian) and is therefore NOT concave" +
          "\n >target image max=" + std::to_string(target.find_max()) +
          "\n >target image min=" + std::to_string(target.find_min()));
   }
