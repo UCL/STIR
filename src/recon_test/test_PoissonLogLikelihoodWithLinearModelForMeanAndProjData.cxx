@@ -115,6 +115,11 @@ protected:
   //! Test the Hessian of the objective function by testing the (x^T Hx > 0) condition
   void test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
                                                  target_type& target);
+
+  //! Test the approximate Hessian of the objective function by testing the (x^T Hx > 0) condition
+  void test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
+                                                             target_type& target);
+
 };
 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
@@ -133,6 +138,8 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_objective_function_Hessian_concavity(objective_function,
                                             target);
+  std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
+  test_objective_function_approximate_Hessian_concavity(objective_function, target);
 }
 
 void
@@ -209,6 +216,42 @@ test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_ty
       ++target_iter; ++output_iter;
     }
   }
+
+  // test for a CONCAVE function
+  if (this->check_if_less( my_sum, 0)) {
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" and is therefore concave);
+  } else {
+    // print to console the FAILED configuration
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore NOT concave" +
+         "\n >target image max=" + std::to_string(target.find_max()) +
+         "\n >target image min=" + std::to_string(target.find_min()));
+  }
+}
+
+
+
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
+test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFunction<target_type> &objective_function,
+                                                      target_type &target){
+  /// setup images
+  shared_ptr<target_type> output(target.get_empty_copy());
+
+  /// Compute H x
+  objective_function.add_multiplication_with_approximate_Hessian(*output, target);
+
+  /// Compute dot(x,(H x))
+  float my_sum = 0.0;
+  {
+    target_type::full_iterator target_iter = target.begin_all();
+    target_type::full_iterator output_iter = output->begin_all();
+    while (target_iter != target.end_all())// && testOK)
+    {
+      my_sum += *target_iter * *output_iter;
+      ++target_iter; ++output_iter;
+    }
+  }
+
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
 //    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" and is therefore concave);
