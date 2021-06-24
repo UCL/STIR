@@ -117,9 +117,10 @@ class QuadraticPrior:  public
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
   //! compute Hessian 
-  void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
-                const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate);
+  virtual Succeeded
+  compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                  const BasicCoordinate<3,int>& coords,
+                  const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
   //! Call accumulate_Hessian_times_input
   virtual Succeeded 
@@ -179,6 +180,20 @@ protected:
   virtual bool post_processing();
  private:
   shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
+
+  //! The second partial derivatives of the Quadratic Prior
+  /*!
+   Diagonal refers to the second derivative w.r.t. x_j only (i.e. diagonal of the Hessian)
+   Off-diagonal refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal of the Hessian)
+   For the Quadratic Prior, the off diagonal is the negative of the diagonal.
+   * @param x_j is the target voxel.
+   * @param x_k is the voxel in the neighbourhood.
+   * @return the second order partial derivatives of the Quadratic Prior
+   */
+  //@{
+  float diagonal_second_derivative(const float x_j, const float x_k) const;
+  float off_diagonal_second_derivative(const float x_j, const float x_k) const;
+  //@}
 };
 
 

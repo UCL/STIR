@@ -127,6 +127,7 @@ void
 PLSPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
+  this->_is_convex = true;
   this->only_2D = false;
   this->alpha=1;
   this->eta=1;

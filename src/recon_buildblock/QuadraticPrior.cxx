@@ -123,6 +123,7 @@ void
 QuadraticPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
+  this->_is_convex = true;
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();
@@ -430,17 +431,17 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 }
 
 template <typename elemT>
-void 
+Succeeded
 QuadraticPrior<elemT>::
 compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
                 const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate)
+                const DiscretisedDensity<3,elemT> &current_image_estimate) const
 {
   assert(  prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor==0)
   {
-    return;
+    return Succeeded::yes;
   }
   
   this->check(current_image_estimate);
@@ -479,19 +480,34 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     for (int dy=min_dy;dy<=max_dy;++dy)
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
-        // dz==0,dy==0,dx==0 will have weight 0, so we can just include it in the loop
-        elemT current =
-          weights[dz][dy][dx];
-        
-        if (do_kappa)
-          current *= 
-          (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-        
-        diagonal += current;
-        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
+        elemT current = 0.0;
+        if (dz == 0 && dy == 0 && dx == 0)
+        {
+          // The j == k case (diagonal Hessian element), which is a sum over the neighbourhood.
+          for (int ddz=min_dz;ddz<=max_dz;++ddz)
+            for (int ddy=min_dy;ddy<=max_dy;++ddy)
+              for (int ddx=min_dx;ddx<=max_dx;++ddx)
+              {
+                elemT diagonal_current = weights[ddz][ddy][ddx] *
+                        diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                   current_image_estimate[z+ddz][y+ddy][x+ddx]);
+                if (do_kappa)
+                  diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+ddz][y+ddy][x+ddx];
+                current += diagonal_current;
+              }
+        }
+        else
+        {
+          // The j != k vases (off-diagonal Hessian elements)
+          current = weights[dz][dy][dx] * off_diagonal_second_derivative(current_image_estimate[z][y][x],
+                                                                         current_image_estimate[z+dz][y+dy][x+dx]);
+          if (do_kappa)
+            current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+        }
+        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = + current*this->penalisation_factor;
       }
       
-      prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
+  return Succeeded::yes;
 }              
 
 template <typename elemT>
@@ -581,14 +597,79 @@ QuadraticPrior<elemT>::
 add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                             const DiscretisedDensity<3,elemT>& input) const
 {
-  return accumulate_Hessian_times_input(output, input, input);
+  // TODO this function overlaps enormously with parabolic_surrogate_curvature
+  // the only difference is that parabolic_surrogate_curvature uses input==1
+
+  assert( output.has_same_characteristics(input));
+  if (this->penalisation_factor==0)
+  {
+    return Succeeded::yes;
+  }
+
+  this->check(input);
+
+  DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(output);
+
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, output_cast.get_grid_spacing(), this->only_2D);
+  }
+
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
+
+  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
+    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
+
+  const int min_z = output.get_min_index();
+  const int max_z = output.get_max_index();
+  for (int z=min_z; z<=max_z; z++)
+    {
+      const int min_dz = max(weights.get_min_index(), min_z-z);
+      const int max_dz = min(weights.get_max_index(), max_z-z);
+
+      const int min_y = output[z].get_min_index();
+      const int max_y = output[z].get_max_index();
+
+      for (int y=min_y;y<= max_y;y++)
+        {
+          const int min_dy = max(weights[0].get_min_index(), min_y-y);
+          const int max_dy = min(weights[0].get_max_index(), max_y-y);
+
+          const int min_x = output[z][y].get_min_index();
+          const int max_x = output[z][y].get_max_index();
+
+          for (int x=min_x;x<= max_x;x++)
+            {
+              const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
+              const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
+
+                elemT result = 0;
+                for (int dz=min_dz;dz<=max_dz;++dz)
+                  for (int dy=min_dy;dy<=max_dy;++dy)
+                    for (int dx=min_dx;dx<=max_dx;++dx)
+                      {
+                        elemT current =
+                          weights[dz][dy][dx] * input[z+dz][y+dy][x+dx];
+
+                         if (do_kappa)
+                          current *=
+                            (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                         result += current;
+                      }
+
+                output[z][y][x] += result * this->penalisation_factor;
+            }
+        }
+    }
+  return Succeeded::yes;
 }
 
 template <typename elemT>
 Succeeded
 QuadraticPrior<elemT>::
 accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
-                               const DiscretisedDensity<3,elemT>& /*current_estimate*/,
+                               const DiscretisedDensity<3,elemT>& current_estimate,
                                const DiscretisedDensity<3,elemT>& input) const
 {
   // TODO this function overlaps enormously with parabolic_surrogate_curvature
@@ -638,13 +719,31 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
               const int min_dx = max(weights[0][0].get_min_index(), min_x-x); 
               const int max_dx = min(weights[0][0].get_max_index(), max_x-x); 
                 
+              /// At this point, we have j = [z][y][x]
+              // The next for loops will have k = [z+dz][y+dy][x+dx]
+              // The following computes
+              //(H_{wf} y)_j =
+              //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
+              //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
+              // Note the condition in the second sum that i is not equal to j
+
                 elemT result = 0;
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
-                        elemT current =
-                          weights[dz][dy][dx] * input[z+dz][y+dy][x+dx];
+                        elemT current = weights[dz][dy][dx];
+                        if (dz == dy == dz == 0) {
+                          // The j == k case
+                          current *= diagonal_second_derivative(current_estimate[z][y][x],
+                                                                current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
+                        } else {
+                          current *= (diagonal_second_derivative(current_estimate[z][y][x],
+                                                                 current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x] +
+                                      off_diagonal_second_derivative(current_estimate[z][y][x],
+                                                                     current_estimate[z + dz][y + dy][x + dx]) *
+                                      input[z + dz][y + dy][x + dx]);
+                        }
 
                          if (do_kappa)
                           current *= 
@@ -658,6 +757,18 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
     }
   return Succeeded::yes;
 }
+
+template <typename elemT>
+float
+QuadraticPrior<elemT>::
+diagonal_second_derivative(const float x_j, const float x_k) const
+{ return 1.0;}
+
+template <typename elemT>
+float
+QuadraticPrior<elemT>::
+off_diagonal_second_derivative(const float x_j, const float x_k) const
+{ return -1.0;}
 
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 
