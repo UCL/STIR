@@ -173,10 +173,12 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
 
 
 // AZ&KT 04/10/99: added rim_truncation_sino
-void divide_and_truncate(Viewgram<float>& numerator, 
-			 const Viewgram<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, double* log_likelihood_ptr /* = NULL */)
+void poisson_divide_and_truncate(Viewgram<float>& numerator,
+                                 const Viewgram<float>& denominator,
+                                 const int rim_truncation_sino,
+                                 int& count, int& count2,
+                                 double* log_likelihood_ptr /* = NULL */, const bool use_KL_divergence,
+                                 const bool do_division)
 {
   
   const int rs=numerator.get_min_axial_pos_num();
@@ -187,11 +189,15 @@ void divide_and_truncate(Viewgram<float>& numerator,
 
   const float small_value= 
     max(numerator.find_max()*SMALL_NUM, 0.F);
+  const float max_quotient = 10000.F;
   
   double result=0; // use this for total result for this viewgram, reducing numerical error
+
+  // Loop over axial positions
   for(int r=rs;r<=re;r++)
   {
     double sub_result=0; // use this for total result for this r, reducing numerical error
+    // Loop over tangential positions
     for(int b=bs;b<=be;b++){      
  
       // KT&SM&MJ 21/05/2001 changed truncation strategy
@@ -223,41 +229,48 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	}
       else
 	{
-	  float& num = numerator[r][b];
-	  if (num<=small_value) // KT Feb2011 was "num<small_value", resulting in a BUG if the whole numerator viewgram was zero
+//	  float& num = numerator[r][b];
+	  if (numerator[r][b]<=small_value) // KT Feb2011 was "num<small_value", resulting in a BUG if the whole numerator viewgram was zero
 	    { 
 	      // we think num was really 0 
 	      // (we compare with small_value due to rounding errors)
 	      // this case includes 0/0, but also num<0	     
-	      num = 0;
-	      if (num<0) count2++;
-	    }
-	  else
-	    {
-	      const float max_quotient = 10000.F;
-	      const float denom = denominator[r][b];
+          numerator[r][b] = 0;
+          if (numerator[r][b]<0) count2++;
+        }
+        else
+        {
 	      // set quotient to min(numerator/denominator, max_quotient)
 	      // a bit tricky to avoid division by 0	  
 	      // we do this by effectively using
 	      // new_denom = max(denominator[r][b], max_quotient/num)
 	      // Note that this includes the case if a negative denominator
 	      // (in case somebody forward projects an image with negatives)
-	      if (num > max_quotient*denom)
-		{
-		  // cancel singularity
-		  count++;
-		  if (log_likelihood_ptr != NULL) 
-		    sub_result -= double(num*log(num/max_quotient));
-		  num = max_quotient;
-		}
+          if (numerator[r][b] > max_quotient*denominator[r][b])
+          {
+            // cancel singularity
+            count++;
+            if (log_likelihood_ptr != NULL)
+            {
+              // Substitute denominator[r][b] (i.e. ybar) for num / max_quotient (i.e. y/ max_quotient)
+              sub_result += compute_Poisson_data_fit(numerator[r][b], numerator[r][b] / max_quotient,
+                                                     use_KL_divergence);
+            }
+            // Compute Division (WITH divide by zero correction)
+            if (do_division)
+            { numerator[r][b] = max_quotient;}
+          }
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-		    sub_result -= double(num*log(denom));
-		  num = num/denom;
-		}
-	    }
-	}
+              sub_result += compute_Poisson_data_fit(double(numerator[r][b]), double(denominator[r][b]), use_KL_divergence);
+
+            // Compute Division (WITHOUT divide by zero correction)
+            if (do_division)
+            { numerator[r][b] = numerator[r][b]/denominator[r][b];}
+          }
+        }
+	  }
 #endif
     }
     if (log_likelihood_ptr != NULL) 
@@ -270,9 +283,10 @@ void divide_and_truncate(Viewgram<float>& numerator,
 
 
 
-void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, double* log_likelihood_ptr )
+void possion_divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
+                                 const int rim_truncation_sino,
+                                 int& count, int& count2, double* log_likelihood_ptr, const bool use_KL_divergence,
+                                 const bool do_division)
 {
   assert(numerator.get_num_viewgrams() == denominator.get_num_viewgrams());
   assert(*(numerator.get_proj_data_info_sptr()) == (*denominator.get_proj_data_info_sptr()));
@@ -280,10 +294,11 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
   RelatedViewgrams<float>::const_iterator denominator_iter = denominator.begin();
   while(numerator_iter!=numerator.end())
   {
-   divide_and_truncate(*numerator_iter,
-                        *denominator_iter,
-                        rim_truncation_sino,
-                        count, count2, log_likelihood_ptr);
+    poisson_divide_and_truncate(*numerator_iter,
+                                *denominator_iter,
+                                rim_truncation_sino,
+                                count, count2, log_likelihood_ptr,
+                                use_KL_divergence, do_division);
   ++numerator_iter;
   ++denominator_iter;
   }
@@ -338,12 +353,25 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 
 //  MJ 03/01/2000 for loglikelihood computation
 // KT 21/05/2001 make sure it returns same result as divide_and_truncate above
-void accumulate_loglikelihood(Viewgram<float>& projection_data, 
-			 const Viewgram<float>& estimated_projections,
-			 const int rim_truncation_sino,
-			 double* accum)
+// RT 17/02/2021 explicitly make sure that it returns the same value as (possion_)divide_and_truncate above by using
+// the same functionality
+void accumulate_Poisson_data_fit(Viewgram<float>& projection_data,
+                                 const Viewgram<float>& estimated_projections,
+                                 const int rim_truncation_sino,
+                                 double* log_likelihood_ptr,
+                                 const bool use_KL_divergence)
 {
-  
+#if 1
+  int count = 0;
+  int count2 = 0;
+  poisson_divide_and_truncate(projection_data,
+                              estimated_projections,
+                              rim_truncation_sino,
+                              count, count2,
+                              log_likelihood_ptr, use_KL_divergence, false);
+
+#else
+  // Old method that does not use poisson_divide_and_truncate and therefore the same thresholding as gradient.
   const int rs=projection_data.get_min_axial_pos_num();
   const int re=projection_data.get_max_axial_pos_num();
   const int bs=projection_data.get_min_tangential_pos_num();
@@ -351,41 +379,52 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 
   /* note for implementation:
      First compute result for this viewgram in a local variable,
-     then add to accum.
+     then add to log_likelihood_ptr.
      This avoids problems with adding small numbers to large numbers
      For instance if there are a large number of bins in the projection data,
      each with about the same contribution. After about 1e6 bins, the value of
-     accum would be no longer change because of the finite precision.
+     log_likelihood_ptr would be no longer change because of the finite precision.
   */
   double result = 0;
   const float small_value= 
     max(projection_data.find_max()*SMALL_NUM, 0.F);
   const float max_quotient = 10000.F;
 
+  // Loop over axial positions
   for(int r=rs;r<=re;r++)
   {
     double sub_result=0; // use this for total result for this r, reducing numerical error
+    // Loop over tangential positions
     for(int b=bs;b<=be;b++)  
       if(!(
 	   b<bs+rim_truncation_sino ||
 	   b>be-rim_truncation_sino ))
 	{
-          // if (estimated_projections[r][b] == 0)
-          //  std::cerr << "Zero at " << r << ", " << b <<'\n';
-	  const float new_estimate =
-	    max(estimated_projections[r][b], 
-		projection_data[r][b]/max_quotient);
-	  if (projection_data[r][b]<=small_value)
-	    sub_result += - double(new_estimate);
-	  else
-	    sub_result += projection_data[r][b]*log(double(new_estimate)) - double(new_estimate);
-	}
+        const float new_estimate = max(estimated_projections[r][b], projection_data[r][b]/max_quotient);
+        sub_result += compute_Poisson_data_fit(projection_data[r][b], new_estimate, use_KL_divergence, small_value);
+      }
     result += sub_result;
   }
 
-  *accum += result;
+  *log_likelihood_ptr += result;
+#endif
 }
 
+double compute_Poisson_data_fit(double y, const double ybar, bool use_KL_divergence)
+{
+  return use_KL_divergence ? negativeKLDivergence(y, ybar) : LogLikelihood(y, ybar);
+}
+
+double LogLikelihood(const double y, const double ybar)
+{
+  return y * log(ybar) - ybar;
+}
+
+double negativeKLDivergence(const double y, const double ybar)
+{
+  return - (y * log(y / ybar) + ybar - y);
+
+}
 
 
 void multiply_and_add(DiscretisedDensity<3,float> &image_res, const DiscretisedDensity<3,float> &image_scaled, float scalar)

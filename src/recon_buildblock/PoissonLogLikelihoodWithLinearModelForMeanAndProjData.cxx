@@ -629,7 +629,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                  this->zero_seg0_end_planes!=0, 
                                  NULL, 
                                  this->additive_proj_data_sptr 
-                                 , caching_info_ptr
+                                 , caching_info_ptr,
+                                 this->get_use_KL_divergence()
                                  );
   
 
@@ -657,7 +658,8 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
                                          this->normalisation_sptr, 
                                          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
-                                         this->caching_info_ptr
+                                         this->caching_info_ptr,
+                                         this->get_use_KL_divergence()
                                          );
                 
     
@@ -895,8 +897,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
           
           // now divide by the data term
           {
-            int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
-            divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
+            int tmp1=0, tmp2=0;// ignore counters returned by poisson_divide_and_truncate
+            possion_divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2, nullptr, false, true);
           }
 
           // back-project
@@ -1069,7 +1071,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 //! Call-back function for compute_gradient
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
-//! Call-back function for accumulate_loglikelihood
+//! Call-back function for accumulate_Poisson_data_fit
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 
 //! Call-back function for sensitivity_computation
@@ -1079,7 +1081,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 //! Call-back function for compute_gradient
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
-//! Call-back function for accumulate_loglikelihood
+//! Call-back function for accumulate_Poisson_data_fit
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 
 //! Call-back function for sensitivity_computation
@@ -1097,7 +1099,8 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     bool zero_seg0_end_planes,
                                     double* log_likelihood_ptr,
                                     shared_ptr<ProjData> const& additive_binwise_correction,
-                                    DistributedCachingInformation* caching_info_ptr
+                                    DistributedCachingInformation* caching_info_ptr,
+                                    bool use_KL_divergence
                                     )
 {
         
@@ -1113,7 +1116,8 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               additive_binwise_correction,
                               /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
                               &RPC_process_related_viewgrams_gradient,
-                              caching_info_ptr
+                              caching_info_ptr,
+                              use_KL_divergence
                               );
 }
 
@@ -1132,7 +1136,8 @@ void distributable_accumulate_loglikelihood(
                                             shared_ptr<BinNormalisation> const& normalisation_sptr,
                                             const double start_time_of_frame,
                                             const double end_time_of_frame,
-                                            DistributedCachingInformation* caching_info_ptr
+                                            DistributedCachingInformation* caching_info_ptr,
+                                            const bool use_KL_divergence
                                             )
                                             
 {
@@ -1150,7 +1155,8 @@ void distributable_accumulate_loglikelihood(
                                     start_time_of_frame,
                                     end_time_of_frame,
                                     &RPC_process_related_viewgrams_accumulate_loglikelihood,
-                                    caching_info_ptr
+                                    caching_info_ptr,
+                                    use_KL_divergence
                                     );
 }
 
@@ -1187,23 +1193,23 @@ void distributable_sensitivity_computation(
                                     start_time_of_frame,
                                     end_time_of_frame,
                                     &RPC_process_related_viewgrams_sensitivity_computation,
-                                    caching_info_ptr
+                                    caching_info_ptr,
+                                    false
                                     );
 
 }
 
 
 //////////// RPC functions
-
-
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                             int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
-                                            const RelatedViewgrams<float>* mult_viewgrams_ptr)
-{       
+                                            const RelatedViewgrams<float>* mult_viewgrams_ptr,
+                                            const bool use_KL_divergence)
+{
   assert(measured_viewgrams_ptr != NULL);
   if (!is_null_ptr(mult_viewgrams_ptr))
     error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
@@ -1243,9 +1249,8 @@ void RPC_process_related_viewgrams_gradient(
 
 
   // for sinogram division
-      
-  divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
-      
+  possion_divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2,
+                              log_likelihood_ptr, use_KL_divergence, true);
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 
@@ -1256,7 +1261,8 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                             int& count, int& count2, double* log_likelihood_ptr,
                                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
-                                                            const RelatedViewgrams<float>* mult_viewgrams_ptr)
+                                                            const RelatedViewgrams<float>* mult_viewgrams_ptr,
+                                                            const bool use_KL_divergence)
 {
   assert(measured_viewgrams_ptr != NULL);
   assert(log_likelihood_ptr != NULL);
@@ -1283,9 +1289,10 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
   for (;
        meas_viewgrams_iter != measured_viewgrams_ptr->end();
        ++meas_viewgrams_iter, ++est_viewgrams_iter)
-    accumulate_loglikelihood(*meas_viewgrams_iter, 
-                             *est_viewgrams_iter, 
-                             rim_truncation_sino, log_likelihood_ptr);
+    accumulate_Poisson_data_fit(*meas_viewgrams_iter,
+                                *est_viewgrams_iter,
+                                rim_truncation_sino,
+                                log_likelihood_ptr, use_KL_divergence);
 };      
 
 void RPC_process_related_viewgrams_sensitivity_computation(
@@ -1294,7 +1301,8 @@ void RPC_process_related_viewgrams_sensitivity_computation(
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                             int& count, int& count2, double* log_likelihood_ptr,
                                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
-                                                            const RelatedViewgrams<float>* mult_viewgrams_ptr)
+                                                            const RelatedViewgrams<float>* mult_viewgrams_ptr,
+                                                            const bool use_KL_divergence)
 {
   assert(measured_viewgrams_ptr != NULL);
 

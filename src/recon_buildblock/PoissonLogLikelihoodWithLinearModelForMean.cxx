@@ -46,6 +46,7 @@ set_defaults()
   this->recompute_sensitivity = false;
   this->use_subset_sensitivities = true;
   this->subsensitivity_sptrs.resize(0);
+  this->use_KL_divergence = false;
 }
 
 template<typename TargetT>
@@ -59,6 +60,7 @@ initialise_keymap()
   this->parser.add_key("subset sensitivity filenames", &this->subsensitivity_filenames);
   this->parser.add_key("recompute sensitivity", &this->recompute_sensitivity);
   this->parser.add_key("use_subset_sensitivities", &this->use_subset_sensitivities);
+  this->parser.add_key("use KL divergence", &this->use_KL_divergence);
 
 }
 
@@ -179,6 +181,22 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 set_subset_sensitivity_sptr(const shared_ptr<TargetT>& arg, const int subset_num)
 {
   this->subsensitivity_sptrs[subset_num] = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+set_use_KL_divergence(const bool KL)
+{
+  this->use_KL_divergence = KL;
+}
+
+template<typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+get_use_KL_divergence()
+{
+  return this->use_KL_divergence;
 }
 
 template<typename TargetT>
