@@ -28,6 +28,10 @@
 #include <string>
 #include <math.h>
 
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
 namespace SPECTUB {
 
 #define EPSILON 1e-12
@@ -59,10 +63,10 @@ void wm_calculation( const int kOS,
 		     const int *const  NITEMS)
 {
 	
-	float weight;
-	float coeff_att = (float) 1.;
-	int   jp;
-	float eff;
+//	float weight;
+//	float coeff_att = (float) 1.;
+//	int   jp;
+//	float eff;
     
     //... variables for geometric component ..............................................
 	
@@ -112,19 +116,14 @@ void wm_calculation( const int kOS,
 	
 	//... to fill projection indices for STIR format .............................
 	
-	if ( wm.do_save_STIR ){ 
-		
-		jp = -1;											// projection index (row index of the weight matrix )
+	if ( wm.do_save_STIR ){
+		int jp = -1;											// projection index (row index of the weight matrix )
 		int j1;
-		
+//		#pragma omp parallel for collapse(3) schedule(dynamic)
 		for ( int j = 0 ; j < prj.NangOS ; j++ ){
-			
-			j1 = wmh.index[ j ];			
-			
 			for ( int k = 0 ; k < prj.Nsli ; k++ ){
-				
 				for ( int i = 0 ; i < prj.Nbin ; i++){
-					
+					j1 = wmh.index[ j ];	
 					jp++;
 					wm.na[ jp ] = j1;
 					wm.nb[ jp ] = i - (int)prj.Nbind2;
@@ -133,11 +132,20 @@ void wm_calculation( const int kOS,
 			}
 		}
 	}	
-	
+	int ne;
 	//=== LOOP1: IMAGE ROWS =======================================================================
-	
-	for ( vox.irow = 0 ; vox.irow < vol.Nrow ; vox.irow++ ){
-		
+//#ifdef STIR_OPENMP
+//#pragma omp parallel 
+//    {
+//omp_set_num_threads(omp_get_num_procs());
+//#endif
+// ne=0;
+//#ifdef STIR_OPENMP
+//#pragma omp parallel for reduction(+:ne)//schedule(dynamic) 
+//#endif
+// create a copy of the input vox and use the copy in our loop
+	for ( int i = 0 ; i < vol.Nrow ; i++ ){
+		vox.irow=i;
                 //cout << "weights: " << 100.*(vox.irow+1)/vol.Nrow << "%" << endl;
 		
 		vox.y = vol.y0 + vox.irow * vol.szcm ;       // y coordinate of the voxel (index 0->Nrow-1: irow)
@@ -173,7 +181,7 @@ void wm_calculation( const int kOS,
 				vox.x1    = vox.x * ang[ ka ].cos + vox.y * ang[ ka ].sin ;		
 				
 				//... to project voxels onto the detection plane and to calculate other distances .....
-				
+				float eff;
                 voxel_projection( &vox , &eff , prj.lngcmd2 );
 				
 				//... setting PSF to zero	.........................................	
@@ -231,26 +239,36 @@ void wm_calculation( const int kOS,
 					if ( wmh.do_msk ){
 						if ( !msk_3d[ vox.iv ] ) continue;
 					}
-					
+					float coeff_att=1.f;
 					if ( wmh.do_att && !wmh.do_full_att ) coeff_att = calc_att( &attpth[ 0 ], attmap , vox.islc );
 					
 					//... weight matrix values calculation .......................................
+#ifdef STIR_OPENMP
+#pragma omp parallel 
+    {
+omp_set_num_threads(omp_get_num_procs());
+#endif
+ ne=0;
+#ifdef STIR_OPENMP
+#pragma omp parallel for reduction(+:ne)//schedule(dynamic) 
+#endif
 					
 					for ( int ie = 0 ; ie < psf.Nib ; ie++ ){
 						
 						if ( psf.ib[ ie ] < 0 ) continue;
 						if ( psf.ib[ ie ] >= prj.Nbin ) continue;
 				
-                        int ks = ( vox.islc + psf.jb[ ie ] );
+                        const int ks = ( vox.islc + psf.jb[ ie ] );
 						
 						if ( ks < 0 ) continue;
 						if ( ks >= vol.Nsli ) continue;
 
-						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
+						const int jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
+                        
 						
 						if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ ie ], attmap, vox.islc );
 						
-						weight = psf.val[ ie ] * eff * coeff_att ;
+						const float weight = psf.val[ ie ] * eff * coeff_att ;
                         
                         //... fill image STIR indices ...........................
                         
@@ -262,12 +280,34 @@ void wm_calculation( const int kOS,
 						}
                         
                         //... fill wm values .....................
-                        
+                        #pragma omp critical 
+                        {
 						wm.col[ jp ][ wm.ne[ jp ] ] = vox.iv;
 						wm.val[ jp ][ wm.ne[ jp ] ] = weight;
-						wm.ne[ jp ]++;
-						
-						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
+                        wm.ne[ jp ]++;
+                        cout<< " ne2 "<< wm.ne[ jp ]<< " "<<NITEMS[ jp ]<<" jp="<<jp<<" "<<omp_get_thread_num()<<endl;
+                        if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
+                        }
+                        
+//                        if ( wm.ne[ jp ] < (NITEMS[ jp ]-2) ){
+//                        #pragma omp critical
+//                        #pragma omp parallel sections
+//                        {
+//                            #pragma omp section
+//                        {ne=wm.ne[jp];
+//                        cout<< " ne1 "<< wm.ne[ jp ]<< " "<<NITEMS[ jp ]<<" jp="<<jp<<" "<<omp_get_thread_num()<<endl;
+                                    
+//                            #pragma omp critical 
+//                            ne++;
+//                            #pragma omp critical
+//						wm.ne[ jp ]=ne;
+//                        #pragma omp critical
+//                        cout<< " ne2 "<< wm.ne[ jp ]<< " "<<NITEMS[ jp ]<<" jp="<<jp<<" "<<omp_get_thread_num()<<endl;
+//						#pragma omp critical
+//						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
+//                        }}
+//                        }else
+//                            continue;
 					}   
 				}                    // end of LOOP4: image slices
 			}                        // end of LOOP3: projection angle into subset
@@ -295,6 +335,11 @@ void wm_calculation( const int kOS,
 		}
 		delete [] attpth;
 	}
+
+//#ifdef STIR_OPENMP
+//    omp_set_num_threads(1);
+//#endif
+     }
 }
 
 

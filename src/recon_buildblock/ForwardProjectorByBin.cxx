@@ -194,7 +194,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
@@ -207,7 +207,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
       RelatedViewgrams<float> viewgrams =
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
       forward_project(viewgrams);
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
 #endif
       {

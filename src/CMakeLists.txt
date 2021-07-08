@@ -15,6 +15,10 @@ option(STIR_MPI
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
        "Compile with OpenMP" OFF)
+option(STIR_OPENMP_MATRIX 
+       "Compile with OpenMP_MATRIX" OFF)
+option(STIR_OPENMP_PROJECTIONS 
+       "Compile with OpenMP_PROJECTIONS" ${STIR_OPENMP})
 
 option(BUILD_TESTING 
        "Build test programs" ON)

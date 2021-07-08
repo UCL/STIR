@@ -57,7 +57,7 @@
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #endif
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #  ifdef STIR_MPI
 #    error Cannot use both OPENMP and MP
 #  endif
@@ -78,7 +78,7 @@ void setup_distributable_computation(
                                      const bool distributed_cache_enabled)
 {
   set_num_threads();
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   info(boost::format("Using distributable_computation with %d threads on %d processors.")
        % omp_get_max_threads() % omp_get_num_procs());
 #endif
@@ -170,7 +170,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
 {
   if (!is_null_ptr(binwise_correction))
     {
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp critical(ADDSINO)
 #endif
 #if !defined(_MSC_VER) || _MSC_VER>1300
@@ -186,7 +186,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
                         
   if (read_from_proj_dat)
     {
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp critical(VIEW)
 #endif
 #if !defined(_MSC_VER) || _MSC_VER>1300
@@ -211,7 +211,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       mult_viewgrams_sptr.reset(
 				new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
       mult_viewgrams_sptr->fill(1.F);
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp critical(MULT)
 #endif
       normalisation_sptr->undo(*mult_viewgrams_sptr);
@@ -403,7 +403,7 @@ void distributable_computation(
   if (output_image_ptr != NULL)
     back_projector_ptr->start_accumulating_in_new_target();
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   std::vector<double> local_log_likelihoods;
   std::vector<int> local_counts, local_count2s;
 #pragma omp parallel shared(local_log_likelihoods, local_counts, local_count2s)
@@ -411,7 +411,7 @@ void distributable_computation(
 
   // start of threaded section if openmp
   { 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp single
     {
       info(boost::format("Starting loop with %1% threads") % omp_get_num_threads(), 2);
@@ -461,7 +461,7 @@ void distributable_computation(
             }
 #else // STIR_MPI
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
           const int thread_num=omp_get_thread_num();
           info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
                % thread_num % omp_get_num_threads()
@@ -471,7 +471,7 @@ void distributable_computation(
                % view_segment_num.segment_num() % view_segment_num.view_num(), 2);
 #endif
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
                                         y.get(),
@@ -491,7 +491,7 @@ void distributable_computation(
       } // end of for-loop 
   } // end of parallel section of openmp
   
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   // "reduce" data constructed by threads
   {
     if (log_likelihood_ptr != NULL)

@@ -32,7 +32,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/DataProcessor.h"
 #include <vector>
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #include "stir/is_null_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include <omp.h>
@@ -76,7 +76,7 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
   _density_sptr.reset(density_info_sptr->clone());
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp parallel
     {
 #pragma omp single
@@ -199,18 +199,18 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp parallel shared(proj_data, symmetries_sptr)
 #endif
   {
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
 #pragma omp for schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
         const ViewSegmentNumbers vs=vs_nums_to_process[i];
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
         viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
@@ -223,7 +223,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
         back_project(viewgrams);
       }
   }
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   // "reduce" data constructed by threads
   {
     for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
@@ -268,7 +268,7 @@ back_project(const RelatedViewgrams<float>& viewgrams,
 
   start_timers();
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   const int thread_num=omp_get_thread_num();
   if(is_null_ptr(_local_output_image_sptrs[thread_num]))
     _local_output_image_sptrs[thread_num].reset(_density_sptr->get_empty_copy());
@@ -306,7 +306,7 @@ void
 BackProjectorByBin::
 start_accumulating_in_new_target()
 {
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   if (omp_get_num_threads()!=1)
       error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");
 
@@ -329,7 +329,7 @@ get_output(DiscretisedDensity<3,float> &density) const
     if (!density.has_same_characteristics(*_density_sptr))
             error("Images should have similar characteristics.");
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   if (omp_get_num_threads()!=1)
         error("BackProjectorByBin::get_output() cannot be called inside a thread");
 
@@ -377,7 +377,7 @@ actual_back_project(const RelatedViewgrams<float>& viewgrams,
                          const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
     shared_ptr<DiscretisedDensity<3,float> > density_sptr = _density_sptr;
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
     const int thread_num=omp_get_thread_num();
     density_sptr = _local_output_image_sptrs[thread_num];
 #endif
