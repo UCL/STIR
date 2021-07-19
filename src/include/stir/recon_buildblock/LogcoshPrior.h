@@ -132,7 +132,7 @@ public:
                     const BasicCoordinate<3,int>& coords,
                     const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
-    //! Compute the multiplication of the hessian of the prior multiplied by the input.
+    //! Compute the multiplication of the hessian of the prior (at \c current_estimate) and the \c input.
     virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                      const DiscretisedDensity<3,elemT>& current_estimate,
                                                      const DiscretisedDensity<3,elemT>& input) const;
