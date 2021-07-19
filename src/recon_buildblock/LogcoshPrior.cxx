@@ -441,8 +441,8 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
               for (int ddx=min_dx;ddx<=max_dx;++ddx)
               {
                 elemT diagonal_current = weights[ddz][ddy][ddx] *
-                                         diagonal_second_derivative(current_image_estimate[z][y][x],
-                                                                    current_image_estimate[z+ddz][y+ddy][x+ddx]);
+                        derivative_20(current_image_estimate[z][y][x],
+                                      current_image_estimate[z + ddz][y + ddy][x + ddx]);
                 if (do_kappa)
                   diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+ddz][y+ddy][x+ddx];
                 current += diagonal_current;
@@ -451,8 +451,8 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
         else
         {
           // The j != k vases (off-diagonal Hessian elements)
-          current = weights[dz][dy][dx] * off_diagonal_second_derivative(current_image_estimate[z][y][x],
-                                                                         current_image_estimate[z+dz][y+dy][x+dx]);
+          current = weights[dz][dy][dx] * derivative_11(current_image_estimate[z][y][x],
+                                                        current_image_estimate[z + dz][y + dy][x + dx]);
           if (do_kappa)
             current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
         }
@@ -592,13 +592,13 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
               elemT current = weights[dz][dy][dx];
               if (dz == dy == dz == 0) {
                 // The j == k case
-                current *= diagonal_second_derivative(current_estimate[z][y][x],
-                                                      current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
+                current *= derivative_20(current_estimate[z][y][x],
+                                         current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
               } else {
-                current *= (diagonal_second_derivative(current_estimate[z][y][x],
-                                                       current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x] +
-                            off_diagonal_second_derivative(current_estimate[z][y][x],
-                                                           current_estimate[z + dz][y + dy][x + dx]) *
+                current *= (derivative_20(current_estimate[z][y][x],
+                                          current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x] +
+                        derivative_11(current_estimate[z][y][x],
+                                      current_estimate[z + dz][y + dy][x + dx]) *
                             input[z + dz][y + dy][x + dx]);
               }
 
@@ -616,19 +616,19 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
 }
 
 template <typename elemT>
-float
+elemT
 LogcoshPrior<elemT>::
-diagonal_second_derivative(const float x_j, const float x_k) const
+derivative_20(const elemT x_j, const elemT x_k) const
 {
   return square((1/ cosh((x_j - x_k) * scalar)));
 }
 
 template <typename elemT>
-float
+elemT
 LogcoshPrior<elemT>::
-off_diagonal_second_derivative(const float x_j, const float x_k) const
+derivative_11(const elemT x_j, const elemT x_k) const
 {
-  return - diagonal_second_derivative(x_j, x_k);
+  return -derivative_20(x_j, x_k);
 }
 
 #  ifdef _MSC_VER

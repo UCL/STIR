@@ -228,16 +228,15 @@ private:
 
     //! The second partial derivatives of the LogCosh Prior
     /*!
-     Diagonal refers to the second derivative w.r.t. x_j only (i.e. diagonal of the Hessian)
-     Off-diagonal refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal of the Hessian)
-     For LogCosh, the off diagonal is the negative of the diagonal.
+     derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
+     derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
      * @param x_j is the target voxel.
      * @param x_k is the voxel in the neighbourhood.
      * @return the second order partial derivatives of the LogCosh Prior
      */
     //@{
-    float diagonal_second_derivative(const float x_j, const float x_k) const;
-    float off_diagonal_second_derivative(const float x_j, const float x_k) const;
+    elemT derivative_20(const elemT x_j, const elemT x_k) const;
+    elemT derivative_11(const elemT x_j, const elemT x_k) const;
     //@}
 };
 
