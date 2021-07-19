@@ -126,7 +126,6 @@ public:
     void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
                                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-    //! compute Hessian
     virtual Succeeded
     compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
                     const BasicCoordinate<3,int>& coords,
