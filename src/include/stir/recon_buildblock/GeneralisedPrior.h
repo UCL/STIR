@@ -100,8 +100,9 @@ public:
   virtual Succeeded 
     set_up(shared_ptr<const DataT> const& target_sptr);
 
-  //! Returns the status of the _is_convex variable
-  bool get_is_convex() const;
+  //! Indicates if the prior is a smooth convex function
+  /*! If true, the prior is expected to have 0th, 1st and 2nd order behaviour implemented.*/
+  virtual bool is_convex() const = 0;
 
 protected:
   float penalisation_factor;
@@ -116,9 +117,6 @@ protected:
   virtual void check(DataT const& current_estimate) const;
 
   bool _already_set_up;
-
-  //! Variable to indicate that the prior is a convex function, should be set in defaults by the derived class
-  bool _is_convex;
 };
 
 END_NAMESPACE_STIR

@@ -127,7 +127,6 @@ void
 PLSPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
-  this->_is_convex = true;
   this->only_2D = false;
   this->alpha=1;
   this->eta=1;
@@ -145,6 +144,13 @@ PLSPrior<elemT>::PLSPrior()
   set_defaults();
 }
 
+template <typename elemT>
+bool
+PLSPrior<elemT>::
+is_convex() const
+{
+  return true;
+}
 
 template <typename elemT>
 PLSPrior<elemT>::PLSPrior(const bool only_2D_v, float penalisation_factor_v)

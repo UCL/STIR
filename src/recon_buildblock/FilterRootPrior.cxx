@@ -41,6 +41,12 @@ FilterRootPrior(shared_ptr<DataProcessor<DataT> >const& filter_sptr, float penal
   this->penalisation_factor = penalisation_factor_v;
 }
 
+template <typename DataT>
+bool FilterRootPrior<DataT>::
+is_convex() const
+{
+  return false;
+}
 
 template < class T>
 static inline int

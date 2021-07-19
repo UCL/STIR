@@ -127,7 +127,7 @@ void
 RelativeDifferencePrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
-  this->_is_convex = true;
+//  this->_is_convex = true;
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();
@@ -144,6 +144,14 @@ template <typename elemT>
 RelativeDifferencePrior<elemT>::RelativeDifferencePrior()
 {
   set_defaults();
+}
+
+template <typename elemT>
+bool
+RelativeDifferencePrior<elemT>::
+is_convex() const
+{
+  return true;
 }
 
 // Return the value of gamma - a RDP parameter

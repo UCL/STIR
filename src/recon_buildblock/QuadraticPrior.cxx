@@ -123,7 +123,6 @@ void
 QuadraticPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
-  this->_is_convex = true;
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();
@@ -148,6 +147,13 @@ QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_f
   this->penalisation_factor = penalisation_factor_v;
 }
 
+template <typename elemT>
+bool
+QuadraticPrior<elemT>::
+is_convex() const
+{
+  return true;
+}
 
   //! get penalty weights for the neigbourhood
 template <typename elemT>

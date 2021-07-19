@@ -165,6 +165,8 @@ class RelativeDifferencePrior:  public
   //! Has to be called before using this object
   virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
   
+  bool is_convex() const;
+  
 protected:
   //! Create variable gamma for Relative Difference Penalty
   float gamma;

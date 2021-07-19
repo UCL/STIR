@@ -246,7 +246,7 @@ test_Hessian_convexity(const std::string& test_name,
                        GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                        shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
 {
-  if (!objective_function.get_is_convex())
+  if (!objective_function.is_convex())
     return;
   /// Construct configurations
   float beta_array[] = {0.01, 1, 100};  // Penalty strength should only affect scale
@@ -337,7 +337,7 @@ test_Hessian_against_numerical(const std::string &test_name,
                                GeneralisedPrior<GeneralisedPriorTests::target_type> &objective_function,
                                shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
 {
-  if (!objective_function.get_is_convex())
+  if (!objective_function.is_convex())
     return;
 
   /// Setup

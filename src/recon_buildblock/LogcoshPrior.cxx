@@ -108,7 +108,6 @@ void
 LogcoshPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
-  this->_is_convex = true;
   this->only_2D = false;
   this->scalar = 1.0;
   this->kappa_ptr.reset();
@@ -143,6 +142,14 @@ LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_facto
   set_defaults();
   this->penalisation_factor = penalisation_factor_v;
   this->scalar = scalar_v;
+}
+
+template <typename elemT>
+bool
+LogcoshPrior<elemT>::
+is_convex() const
+{
+  return true;
 }
 
 //! get penalty weights for the neighbourhood

@@ -40,7 +40,6 @@ GeneralisedPrior<TargetT>::set_defaults()
 {
   _already_set_up = false;
   this->penalisation_factor = 0;  
-  this->_is_convex = false;
 }
 
 template <typename TargetT>
@@ -59,7 +58,7 @@ compute_Hessian(TargetT& output,
                 const BasicCoordinate<3,int>& coords,
                 const TargetT& current_image_estimate) const
 {
-  if (this->get_is_convex())
+  if (this->is_convex())
     error("GeneralisedPrior:\n  compute_Hessian implementation is not overloaded by your convex prior.");
   else
     error("GeneralisedPrior:\n  compute_Hessian is not implemented because the prior is not convex.");
@@ -94,11 +93,6 @@ void GeneralisedPrior<TargetT>::check(TargetT const& current_estimate) const
 {
   if (!_already_set_up) 
     error("The prior should already be set-up, but it's not.");
-}
-
-template <typename TargetT>
-bool GeneralisedPrior<TargetT>::get_is_convex() const {
-  return this->_is_convex;
 }
 
 #  ifdef _MSC_VER
