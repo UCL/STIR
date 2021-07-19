@@ -60,11 +60,13 @@ public:
   virtual void compute_gradient(DataT& prior_gradient, 
 		   const DataT &current_estimate) =0; 
 
-  //! This should computes a single row of the Hessian
+  //! This computes a single row of the Hessian
   /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
-      This method computes the Hessian of a particular voxel, indicated by \c coords, of the current image estimate.
-      The default method should overwrite the values in \c prior_Hessian_for_single_densel.
+      
+      The method computes a row (i.e. at a densel/voxel, indicated by \c coords) of the Hessian at \c current_estimate. 
+      Note that a row corresponds to an object of `DataT`.
+      The method (as implemented in derived classes) should store the result in \c prior_Hessian_for_single_densel.
    */
   virtual Succeeded
     compute_Hessian(DataT& prior_Hessian_for_single_densel,
