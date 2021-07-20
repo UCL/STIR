@@ -134,7 +134,8 @@ public:
 
     This method assumes that the objective function is concave and the output
     add_multiplication_with_approximate_Hessian_without_penalty is non-positive.
-    This method flips the sign of all voxels in the computed denominator
+    This method flips the sign of all voxels in the computed denominator as for this OSSPS
+    implementation, the denominator is expected to be non-negative.
 
     The computed denominator is saved to file as output_filename_prefix
     plus "_precomputed_denominator".

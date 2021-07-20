@@ -223,13 +223,14 @@ precompute_denominator_of_conditioner_without_penalty()
 	    data_full_of_ones_aptr->end_all(),
 	    1.F);
 
-  // Assume that the objective function is convex and thus the precomputed_denominator_ptr is non-positive.
+  // Assume that the objective function is convex and add_multiplication_with_approximate_Hessian_without_penalty
+  // will compute the precomputed_denominator_ptr to be non-positive.
   this->objective_function_sptr->
     add_multiplication_with_approximate_Hessian_without_penalty(
 								*precomputed_denominator_ptr, 
 								*data_full_of_ones_aptr);
 
-  // Flip the sign on each voxel value, each voxel value should be non-negative
+  // In fact, for for OSSPS, we want a non-negative precomputed denominator, so flip the signs on the voxels
   std::for_each(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all(),
                 [](float& a) { return a=-a; } );
 
