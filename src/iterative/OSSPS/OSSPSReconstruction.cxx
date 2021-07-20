@@ -227,6 +227,11 @@ precompute_denominator_of_conditioner_without_penalty()
     add_multiplication_with_approximate_Hessian_without_penalty(
 								*precomputed_denominator_ptr, 
 								*data_full_of_ones_aptr);
+
+  // The precomputed_denominator_ptr is negative. Here we flip the sign on each voxel.
+  std::for_each(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all(),
+                [](float& a) { return a=-a; } );
+
   timer.stop();
   info(boost::format("Precomputing denominator took %1% s CPU time") % timer.value());
   info(boost::format("min and max in precomputed denominator %1%, %2%") % *std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) % *std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()));  

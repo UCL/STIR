@@ -910,7 +910,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   // output += tmp;
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
-		 std::plus<typename TargetT::full_value_type>());
+		 std::minus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
