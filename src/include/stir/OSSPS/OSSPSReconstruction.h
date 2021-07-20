@@ -131,6 +131,13 @@ public:
     GeneralisedObjectiveFunction::add_multiplication_with_approximate_Hessian_without_penalty
     on a vector filled with ones. For emission and transmission tomography,
     this corresponds to Erdogan and Fessler's approximations.
+
+    This method assumes that the objective function is concave and the output
+    add_multiplication_with_approximate_Hessian_without_penalty is non-positive.
+    This method flips the sign of all voxels in the computed denominator
+
+    The computed denominator is saved to file as output_filename_prefix
+    plus "_precomputed_denominator".
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
