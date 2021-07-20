@@ -384,7 +384,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 }
 
 template <typename elemT>
-Succeeded
+void
 LogcoshPrior<elemT>::
 compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
                 const BasicCoordinate<3,int>& coords,
@@ -394,7 +394,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor==0)
   {
-    return Succeeded::yes;
+    return;
   }
 
   this->check(current_image_estimate);
@@ -458,8 +458,6 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
         }
         prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = + current*this->penalisation_factor;
       }
-
-  return Succeeded::yes;
 }
 
 
@@ -533,7 +531,7 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
 }
 
 template <typename elemT>
-Succeeded
+void
 LogcoshPrior<elemT>::
 accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                const DiscretisedDensity<3,elemT>& current_estimate,
@@ -545,7 +543,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
   assert( output.has_same_characteristics(input));
   if (this->penalisation_factor==0)
   {
-    return Succeeded::yes;
+    return;
   }
 
   DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
@@ -612,7 +610,6 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
       }
     }
   }
-  return Succeeded::yes;
 }
 
 template <typename elemT>

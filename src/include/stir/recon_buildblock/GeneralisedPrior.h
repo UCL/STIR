@@ -68,7 +68,7 @@ public:
       Note that a row corresponds to an object of `DataT`.
       The method (as implemented in derived classes) should store the result in \c prior_Hessian_for_single_densel.
    */
-  virtual Succeeded
+  virtual void
     compute_Hessian(DataT& prior_Hessian_for_single_densel,
                     const BasicCoordinate<3,int>& coords,
                     const DataT& current_image_estimate) const;
@@ -80,7 +80,7 @@ public:
       Instead, accumulate_Hessian_times_input() should be used. This method remains for backwards comparability.
        \warning The derived class should accumulate in \a output.
   */
-  virtual Succeeded 
+  virtual void
     add_multiplication_with_approximate_Hessian(DataT& output,
 						const DataT& input) const;
 
@@ -89,7 +89,7 @@ public:
         derived class.
         \warning The derived class should accumulate in \a output.
     */
-  virtual Succeeded
+  virtual void
   accumulate_Hessian_times_input(DataT& output,
           const DataT& current_estimate,
           const DataT& input) const;
