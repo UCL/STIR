@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         std::vector<VoxelsOnCartesianGrid<float> > params;
 
         // Loop over all parameters
-        for (int i=2; i<=argc; ++i) {
+        for (int i=2; i<argc; ++i) {
 
             // Read
             shared_ptr<DiscretisedDensity<3,float> > im(read_from_file<DiscretisedDensity<3,float> >(argv[i]));
