@@ -5,6 +5,7 @@
 #include "stir/config.h"
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 START_NAMESPACE_STIR
 
@@ -12,7 +13,7 @@ START_NAMESPACE_STIR
 std::string find_STIR_config_file(const std::string& filename){
     
     std::string dir;
-    dir = STIR_CONFIG_DIR;
+    dir = get_STIR_config_dir(); //STIR_CONFIG_DIR;
     std::ifstream file(dir+"/"+filename);
     if (file)
         info("Using config file from "+dir);
@@ -22,7 +23,7 @@ std::string find_STIR_config_file(const std::string& filename){
     return dir+"/"+filename;
 
 }
-//! The following finds the STIR configuration directory and prints it out 
+//! The following gets the STIR configuration directory 
 std::string get_STIR_config_dir()
 {     
     const char * var = std::getenv("STIR_CONFIG_DIR");

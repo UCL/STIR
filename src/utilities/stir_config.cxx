@@ -22,10 +22,18 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char *argv[])
 {
+    if(argc!=3 && argc!=2)
+    {
+      std::cerr<<"\nUsage: " << "stir_config_dir" 
+               << " [--config-dir] [--version] \n";
+      std::cerr << "Use the option --config-dir to output the STIR config directory.\n"
+       << "Use the option --version to output the version of STIR you are using.\n"<<std::endl;
+      exit(EXIT_FAILURE);
+    }
     bool print_dir, print_version;
     char const * const option=argv[1];
     std::string option_str(option);
-    int argc_num=argc;
+    
     while (argc>1 && strncmp(argv[1],"--",2)==0)
     {
           if(strcmp(argv[1],"--config-dir")==0)
@@ -38,17 +46,9 @@ main(int argc, char *argv[])
           ++argv;
     }
     
-    if(argc_num!=3 && argc_num!=2)
-    {
-      std::cerr<<"\nUsage: " << "stir_config_dir" 
-               << " [--config-dir] [--version] \n";
-      std::cerr << "Use the option --config-dir to output the STIR config directory.\n"
-       << "Use the option --version to output the version of STIR you are using.\n"<<std::endl;
-      exit(EXIT_FAILURE);
-    }
     
     if (print_dir)
-        find_STIR_config_dir();
+        std::cout<<"Config directory is "<<get_STIR_config_dir()<<std::endl;
     if (print_version)
         std::cout<<"You are using STIR "<<STIR_VERSION_STRING<<std::endl;
 }

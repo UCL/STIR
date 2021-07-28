@@ -173,8 +173,9 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
    return get_radionuclide_from_json(rmodality,nuclide_name);
 #else
     if(rmodality.get_modality()==ImagingModality::PT){
-        warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as F-18."
-                " Decay correction and Branching ratio could be wrong!");
+        if (rname != "^18^Fluorine")
+                  warning("Since STIR was compiled without nlohmann-json-dev, the radionuclide is assumed to be F-18."
+                                " Decay correction and Branching ratio could be wrong!");
         Radionuclide rnuclide("^18^Fluorine",
                               511,
                               0.9686,
@@ -182,8 +183,9 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
                               rmodality);
         this->radionuclide=rnuclide;
     }else if(rmodality.get_modality()==ImagingModality::NM){
-        warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as Tc-99m."
-                " Decay correction could be wrong!");
+        if (rname != "^99m^Technetium")
+                  warning("Since STIR was compiled without nlohmann-json-dev, the radionuclide is assumed to be Tc-99m."
+                                " Decay correction and Branching ratio could be wrong!");
         Radionuclide rnuclide("^99m^Technetium",
                               140.511,
                               0.885,
