@@ -23,11 +23,13 @@ std::string find_STIR_config_file(const std::string& filename){
 
 }
 //! The following finds the STIR configuration directory and prints it out 
-void find_STIR_config_dir(){
-    
-    std::string dir;
-    dir = STIR_CONFIG_DIR;
-        info("Config directory is "+dir);
+std::string get_STIR_config_dir()
+{     
+    const char * var = std::getenv("STIR_CONFIG_DIR");
+    if (var)
+       return var;
+    else
+       return STIR_CONFIG_DIR;
 }
 
 END_NAMESPACE_STIR
