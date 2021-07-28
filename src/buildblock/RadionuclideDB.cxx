@@ -184,7 +184,7 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
     }else if(rmodality.get_modality()==ImagingModality::NM){
         warning("Since I did not find nlohmann-json-dev, the radionuclide information are the same as Tc-99m."
                 " Decay correction could be wrong!");
-        Radionuclide rnuclide("^99m^Tecnetium",
+        Radionuclide rnuclide("^99m^Technetium",
                               140.511,
                               0.885,
                               21624.12,
@@ -196,5 +196,4 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname){
 }
 
 END_NAMESPACE_STIR
-
 
