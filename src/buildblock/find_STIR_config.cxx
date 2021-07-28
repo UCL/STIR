@@ -17,7 +17,7 @@ std::string find_STIR_config_file(const std::string& filename){
     if (file)
         info("Using config file from "+dir);
     else
-        error("Could note open "+dir+"/"+filename);
+        error("Could not open "+dir+"/"+filename);
     
     return dir+"/"+filename;
 
