@@ -69,8 +69,28 @@ ExamInfo::parameter_info() const
 
 bool 
 ExamInfo::operator == (const ExamInfo &p1) const {      
-    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && /* keV*/
-            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&/* keV*/
+    if(!(abs(this->up_energy_thres - p1.up_energy_thres )<=1))
+        error("upper energy is different" );
+    if(!(abs(this->low_energy_thres - p1.low_energy_thres)<=1))
+        error("lower energy is different" );
+    if(!(this->radionuclide==p1.radionuclide))
+        error("radionuclide is different" );
+    if(!(this->time_frame_definitions==p1.time_frame_definitions))
+        error("time_frame_definitions is different" );
+    if(!((this->calibration_factor<=0 && p1.calibration_factor<=0) || 
+         abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-3))
+        error("calibration_factor is different" );
+    if(!(this->imaging_modality==p1.imaging_modality))
+        error("imaging_modality is different" );
+    if(!(this->originating_system==p1.originating_system))
+        error("originating_system is different" );
+    if(!(this->patient_position==p1.patient_position))
+        error("patient_position is different" );
+    if(!(abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5))
+        error("start_time_in_secs_since_1970 is different" );
+return true;
+    /*return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && // keV
+            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&// keV
             this->radionuclide==p1.radionuclide &&
             this->time_frame_definitions==p1.time_frame_definitions &&
 //              this->branching_ratio==p1.branching_ratio &&
@@ -79,6 +99,7 @@ ExamInfo::operator == (const ExamInfo &p1) const {
             this->imaging_modality==p1.imaging_modality &&
             this->originating_system==p1.originating_system &&
             this->patient_position==p1.patient_position &&
-            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;/* sec */ }
+            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;*/// sec  
+}
 
 END_NAMESPACE_STIR
