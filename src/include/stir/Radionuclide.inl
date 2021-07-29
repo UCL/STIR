@@ -57,7 +57,7 @@ Radionuclide::operator==(const Radionuclide& r) const{
     return abs(energy/r.energy-1)<= 1E-3 &&
            abs(branching_ratio/r.branching_ratio-1)<= 1E-3 &&
            abs(half_life/r.half_life-1)<=1E-3 &&
-           modality==r.modality;
+           modality.get_modality()==r.modality.get_modality();
 }
 
 END_NAMESPACE_STIR
