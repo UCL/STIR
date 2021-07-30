@@ -132,10 +132,8 @@ public:
     on a vector filled with ones. For emission and transmission tomography,
     this corresponds to Erdogan and Fessler's approximations.
 
-    This method assumes that the objective function is concave and the output
+    This method assumes that the objective function is concave and the output of
     add_multiplication_with_approximate_Hessian_without_penalty is non-positive.
-    This method flips the sign of all voxels in the computed denominator as for this OSSPS
-    implementation, the denominator is expected to be non-negative.
 
     The computed denominator is saved to file as output_filename_prefix
     plus "_precomputed_denominator".
@@ -205,4 +203,3 @@ END_NAMESPACE_STIR
 #endif
 
 // __OSSPSReconstruction_h__
-
