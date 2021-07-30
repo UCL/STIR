@@ -54,9 +54,17 @@ ImagingModality
 bool  
 Radionuclide::operator==(const Radionuclide& r) const{ 
    /* Note: note checking on `name` in case it is not standardised */
-    return abs(energy/r.energy-1)<= 1E-3 &&
-           abs(branching_ratio/r.branching_ratio-1)<= 1E-3 &&
-           abs(half_life/r.half_life-1)<=1E-3 &&
+//    if(!(abs(energy - r.energy)<= 1E-1)){
+//        std::cout<<energy<<"   "<<r.energy<<std::endl;
+//        error("energy is different" );}
+//    if(!(abs(branching_ratio-r.branching_ratio)<= 1E-1))
+//        error("BR is different" );
+//    if(!(modality.get_modality()==r.modality.get_modality()))
+//        error("modality is different" );
+//    return true;
+        return abs(energy - r.energy)<= 1E-1 &&
+           abs(branching_ratio-r.branching_ratio)<= 1E-1 &&
+           abs(half_life-r.half_life)<=1 &&
            modality.get_modality()==r.modality.get_modality();
 }
 
