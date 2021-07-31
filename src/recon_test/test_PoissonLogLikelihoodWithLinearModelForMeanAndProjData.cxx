@@ -206,16 +206,7 @@ test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_ty
   objective_function.accumulate_Hessian_times_input(*output, target, target);
 
   /// Compute dot(x,(H x))
-  float my_sum = 0.0;
-  {
-    target_type::full_iterator target_iter = target.begin_all();
-    target_type::full_iterator output_iter = output->begin_all();
-    while (target_iter != target.end_all())// && testOK)
-    {
-      my_sum += *target_iter * *output_iter;
-      ++target_iter; ++output_iter;
-    }
-  }
+  const float my_sum = std::inner_product(target.begin_all(), target.end_all(), output->begin_all(), 0.F);
 
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
@@ -241,16 +232,7 @@ test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFuncti
   objective_function.add_multiplication_with_approximate_Hessian(*output, target);
 
   /// Compute dot(x,(H x))
-  float my_sum = 0.0;
-  {
-    target_type::full_iterator target_iter = target.begin_all();
-    target_type::full_iterator output_iter = output->begin_all();
-    while (target_iter != target.end_all())// && testOK)
-    {
-      my_sum += *target_iter * *output_iter;
-      ++target_iter; ++output_iter;
-    }
-  }
+  const float my_sum = std::inner_product(target.begin_all(), target.end_all(), output->begin_all(), 0.F);
 
   // test for a CONCAVE function
   if (this->check_if_less( my_sum, 0)) {
