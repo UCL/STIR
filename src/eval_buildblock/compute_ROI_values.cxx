@@ -37,32 +37,43 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
 {
   const VoxelsOnCartesianGrid<float>& image =
      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
-
-  const int min_z = image.get_min_index();
-  const int max_z = image.get_max_index();
-  const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
-  const float voxel_volume = voxel_size.x() * voxel_size.y() * voxel_size.z();
-
-  // initialise correct size
-  values = VectorWithOffset<ROIValues>(min_z, max_z);
-
   shared_ptr<VoxelsOnCartesianGrid<float> >
     discretised_shape_ptr(image.get_empty_voxels_on_cartesian_grid());
 
 
   shape.construct_volume(*discretised_shape_ptr, num_samples);
 
+  compute_ROI_values_per_plane(values, density, *discretised_shape_ptr, num_samples);
+}
+
+void
+compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
+                             const DiscretisedDensity<3,float>& density,
+                             const VoxelsOnCartesianGrid<float>& discretised_shape,
+                             const CartesianCoordinate3D<int>& num_samples)
+{
+
+  const int min_z = density.get_min_index();
+  const int max_z = density.get_max_index();
+  const VoxelsOnCartesianGrid<float>& image = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
+
+  const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+  const float voxel_volume = voxel_size.x() * voxel_size.y() * voxel_size.z();
+
+  // initialise values correct size
+  values = VectorWithOffset<ROIValues>(min_z, max_z);
+
   for (int z=min_z; z<=max_z; z++)
   {
 #if 0
-    const float volume = (*discretised_shape_ptr)[z].sum() * voxel_volume;
-    (*discretised_shape_ptr)[z] *= image[z];
+    const float volume = (discretised_shape)[z].sum() * voxel_volume;
+    (discretised_shape)[z] *= image[z];
     // TODO incorrect: picks up the values outside the ROI, which are 0
-    const float ROI_min = (*discretised_shape_ptr)[z].find_min();
-    const float ROI_max = (*discretised_shape_ptr)[z].find_max();
-    const float integral = (*discretised_shape_ptr)[z].sum() * voxel_volume;
-    (*discretised_shape_ptr)[z] *= image[z];
-    const float integral_square =(*discretised_shape_ptr)[z].sum() * voxel_volume;
+    const float ROI_min = (discretised_shape)[z].find_min();
+    const float ROI_max = (discretised_shape)[z].find_max();
+    const float integral = (discretised_shape)[z].sum() * voxel_volume;
+    (discretised_shape)[z] *= image[z];
+    const float integral_square =(discretised_shape)[z].sum() * voxel_volume;
 #else
     float ROI_min = std::numeric_limits<float>::max();
     float ROI_max = std::numeric_limits<float>::min();
@@ -71,9 +82,9 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
     float volume = 0;
     {
       Array<2,float>::const_full_iterator 
-	discr_shape_iter = (*discretised_shape_ptr)[z].begin_all_const();
+	discr_shape_iter = (discretised_shape)[z].begin_all_const();
       const Array<2,float>::const_full_iterator 
-	discr_shape_end = (*discretised_shape_ptr)[z].end_all_const();
+	discr_shape_end = (discretised_shape)[z].end_all_const();
       Array<2,float>::const_full_iterator 
 	image_iter = image[z].begin_all_const();
       for (; discr_shape_iter != discr_shape_end; ++discr_shape_iter, ++image_iter)
@@ -125,6 +136,16 @@ compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
   compute_ROI_values_per_plane(values, image, shape, num_samples);
   return 
     compute_total_ROI_values(values);
+}
+
+ROIValues
+compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
+                         const VoxelsOnCartesianGrid<float>& discretised_shape_ptr,
+                         const CartesianCoordinate3D<int>& num_samples)
+{
+  VectorWithOffset<ROIValues> values;
+    compute_ROI_values_per_plane(values, image, discretised_shape_ptr, num_samples);
+    return compute_total_ROI_values(values);
 }
 
 
