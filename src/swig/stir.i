@@ -77,6 +77,11 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
 
+
+#include "stir/evaluation/ROIValues.h"
+#include "stir/evaluation/compute_ROI_values.h"
+
+
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #ifdef HAVE_JSON
@@ -1470,6 +1475,11 @@ namespace stir {
 %include "stir/Shape/Ellipsoid.h"
 %include "stir/Shape/EllipsoidalCylinder.h"
 %include "stir/Shape/Box3D.h"
+
+// ROIValues class and compute compute_ROI_values
+%shared_ptr(stir::ROIValues)
+%include "stir/evaluation/ROIValues.h"
+%include "stir/evaluation/compute_ROI_values.h"
 
 // filters
 #ifdef STIRSWIG_SHARED_PTR
