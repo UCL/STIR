@@ -254,6 +254,10 @@ as used by <code>copy_to</code> and <code>fill_from</code>
   Before this, the <code>add_multiplication_with_approximate_Hessian(output, input)</code> method was used that assumed a quadratic function and therefore <code>hessian = 1</code>.
 </li>
 <li><code>Exam_info</code>, <code>TimeFrameDefinition</code> and <code>PatientPosition </code> have now a <code>==</code> operator</li>
+<li>
+    Overloaded <code>compute_total_ROI_values</code> and <code>compute_ROI_values_per_plane</code> functions to allow the parsing of <code>VoxelsOnCartesianGrid</code> instead of <code>Shape3D</code> as the ROI shape.
+    This allows the ROI volume to be constructed during preprocessing for multiple image analysis.
+</li>
 </ul>
 
 
