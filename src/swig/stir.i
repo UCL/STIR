@@ -1477,8 +1477,7 @@ namespace stir {
 %include "stir/Shape/Box3D.h"
 
 // ROIValues class and compute compute_ROI_values
-%shared_ptr(stir::ROIVales)
-%shared_ptr(stir::compute_total_ROI_values)
+%shared_ptr(stir::ROIValues)
 %include "stir/evaluation/ROIValues.h"
 %include "stir/evaluation/compute_ROI_values.h"
 

@@ -41,14 +41,13 @@ ROI_shape = stir.EllipsoidalCylinder(10, 5, 4, stir.FloatCartesianCoordinate3D(0
 # number_of_sample needs to be a 3D Int CartesianCoordinate
 n = 10
 print(f"Setting the number of samples of each axis to be {n}...")
-number_of_sample = stir.IntCartesianCoordinate3D(n, n, n)
+number_of_samples = stir.IntCartesianCoordinate3D(n, n, n)
 
 # Do ROI evaluation
 print("Computing ROI value...")
-ROI_eval = stir.compute_total_ROI_values(image, ROI_shape, number_of_sample)
+ROI_eval = stir.compute_total_ROI_values(image, ROI_shape, number_of_samples)
 
 # Print the mean and standard deviation
 print(f"ROI mean value = {ROI_eval.get_mean()}")
 print(f"ROI stddev value = {ROI_eval.get_stddev()}")
-
 
