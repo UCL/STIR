@@ -79,6 +79,7 @@
 
 
 #include "stir/evaluation/ROIValues.h"
+#include "stir/evaluation/compute_ROI_values.h"
 
 
 #include "stir/ChainedDataProcessor.h"
@@ -1475,8 +1476,11 @@ namespace stir {
 %include "stir/Shape/EllipsoidalCylinder.h"
 %include "stir/Shape/Box3D.h"
 
+// ROIValues class and compute compute_ROI_values
 %shared_ptr(stir::ROIVales)
+%shared_ptr(stir::compute_total_ROI_values)
 %include "stir/evaluation/ROIValues.h"
+%include "stir/evaluation/compute_ROI_values.h"
 
 // filters
 #ifdef STIRSWIG_SHARED_PTR
