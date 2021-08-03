@@ -57,8 +57,8 @@ Radionuclide::Radionuclide(const std::string &rname, float renergy, float rbranc
 std::string
  Radionuclide:: get_name()const
 { 
-    if (name=="Unknown")
-        error("Radionuclide is Unknown, If you want to use it, it needs to be defined!");
+//    if (name=="Unknown")
+//        error("Radionuclide is Unknown, If you want to use it, it needs to be defined!");
     return name;
 }
 
