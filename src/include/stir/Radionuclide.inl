@@ -41,13 +41,7 @@ Radionuclide::Radionuclide()
     :name("Unknown"),energy(-1),
      branching_ratio(-1),
      half_life(-1),modality("Unknown")
-//    {}
 {
-//    this->name="Unknown";
-//    this->modality=ImagingModality("Unknown");
-//    this->energy=-1;
-//    this->half_life=-1;
-//    this->branching_ratio=-1;
     info(this->parameter_info());
 }
 
@@ -102,19 +96,10 @@ ImagingModality
 
 bool  
 Radionuclide::operator==(const Radionuclide& r) const{ 
-   /* Note: note checking on `name` in case it is not standardised */
-//    if(!(abs(energy - r.energy)<= 1E-1)){
-//        std::cout<<energy<<"   "<<r.energy<<std::endl;
-//        error("energy is different" );}
-//    if(!(abs(branching_ratio-r.branching_ratio)<= 1E-1))
-//        error("BR is different" );
-//    if(!(modality.get_modality()==r.modality.get_modality()))
-//        error("modality is different" );
-//    return true;
-        return abs(energy - r.energy)<= 1E-1 &&
-           abs(branching_ratio-r.branching_ratio)<= 1E-1 &&
-           abs(half_life-r.half_life)<=1 &&
-           modality.get_modality()==r.modality.get_modality();
+        return (abs(energy - r.energy)<= 1E-1 || r.energy<0) &&
+           (abs(branching_ratio-r.branching_ratio)<= 1E-1 || r.branching_ratio<0) &&
+           (abs(half_life-r.half_life)<=1 || r.half_life<0) &&
+           (modality.get_name()==r.modality.get_name() || r.modality.get_name()=="Unknown");
 }
 
 END_NAMESPACE_STIR
