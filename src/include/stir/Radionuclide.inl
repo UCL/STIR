@@ -96,10 +96,10 @@ ImagingModality
 
 bool  
 Radionuclide::operator==(const Radionuclide& r) const{ 
-        return (abs(energy - r.energy)<= 1E-1 || r.energy<0) &&
-           (abs(branching_ratio-r.branching_ratio)<= 1E-1 || r.branching_ratio<0) &&
-           (abs(half_life-r.half_life)<=1 || r.half_life<0) &&
-           (modality.get_name()==r.modality.get_name() || r.modality.get_name()=="Unknown");
+        return (name=="Unknown" && abs(energy - r.energy)<= 1E-1 || energy<0) &&
+           (abs(branching_ratio-r.branching_ratio)<= 1E-1 || branching_ratio<0) &&
+           (abs(half_life-r.half_life)<=1 || half_life<0) &&
+           (modality.get_name()==r.modality.get_name() || modality.get_name()=="Unknown");
 }
 
 END_NAMESPACE_STIR
