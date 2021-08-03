@@ -19,8 +19,37 @@
 */
 START_NAMESPACE_STIR
 
+std::string
+Radionuclide::parameter_info() const
+{
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[30000];
+  ostrstream s(str, 30000);
+#else
+  std::ostringstream s;
+#endif
+  s << "Modality: " << this->modality.get_name() << '\n';
+  s << "Radionuclide: " << this->name << '\n';
+  s << "Energy " << std::fixed << std::setprecision(12) << this->energy << std::setprecision(5) << '\n';
+  s << "Half-life: " << std::fixed << std::setprecision(12) << this->half_life << std::setprecision(5) << '\n';
+  s << "Branching ratio: " << std::fixed << std::setprecision(12) <<this->branching_ratio << std::setprecision(5)<<'\n';
+  return s.str();
+}
+
 Radionuclide::Radionuclide()
-{}
+    :name("Unknown"),energy(-1),
+     branching_ratio(-1),
+     half_life(-1),modality("Unknown")
+//    {}
+{
+//    this->name="Unknown";
+//    this->modality=ImagingModality("Unknown");
+//    this->energy=-1;
+//    this->half_life=-1;
+//    this->branching_ratio=-1;
+    info(this->parameter_info());
+}
 
 
 Radionuclide::Radionuclide(const std::string &rname, float renergy, float rbranching_ratio, float rhalf_life,
@@ -33,23 +62,43 @@ Radionuclide::Radionuclide(const std::string &rname, float renergy, float rbranc
      
 std::string
  Radionuclide:: get_name()const
-{ return name;}
+{ 
+    if (name=="Unknown")
+        error("Radionuclide is Unknown, If you want to use it, it needs to be defined!");
+    return name;
+}
 
 float
  Radionuclide::get_energy()const 
-{return energy;}
+{
+    if (energy<=0)
+        error("Radionuclide energy peak is unset, If you want to use it, it needs to be set!");
+    return energy;
+}
 
 float
  Radionuclide::get_branching_ratio()  const
-{ return branching_ratio;}
+{ 
+    if (energy<=0)
+        error("Radionuclide Branching ratio is unset, If you want to use it, it needs to be set!");
+    return branching_ratio;
+}
 
 float
  Radionuclide::get_half_life() const
-{ return half_life;}
+{
+    if (half_life<=0)
+        error("Radionuclide half life is unset, If you want to use it, it needs to be set!");
+    return half_life;
+}
 
 ImagingModality
  Radionuclide::get_modality() const
-{ return modality;}
+{ 
+    if (modality.get_name()=="Unknown")
+        error("Radionuclide::modality is Unknown, If you want to use it, it needs to be defined!");
+    return modality;
+}
 
 bool  
 Radionuclide::operator==(const Radionuclide& r) const{ 

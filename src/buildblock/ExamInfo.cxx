@@ -89,7 +89,7 @@ ExamInfo::operator == (const ExamInfo &p1) const {
     if(!(abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5))
         error("start_time_in_secs_since_1970 is different" );
 return true;
-    /*return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && // keV
+/*    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && // keV
             abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&// keV
             this->radionuclide==p1.radionuclide &&
             this->time_frame_definitions==p1.time_frame_definitions &&

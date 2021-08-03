@@ -24,6 +24,7 @@
 #define __stir_Radionuclide_H__
 
 #include "stir/ImagingModality.h"
+#include "stir/info.h"
 
 
 START_NAMESPACE_STIR
@@ -53,7 +54,9 @@ public:
   inline float get_half_life() const; 
   //! get modality
   inline ImagingModality get_modality() const; 
-
+  //! Return a string with info on parameters
+  /*! the returned string is not intended for parsing. */
+  inline std::string parameter_info() const;
     
   //! comparison operators
   inline bool operator==(const Radionuclide& r) const;

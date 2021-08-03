@@ -267,9 +267,13 @@ bool InterfileHeader::post_processing()
       this->exam_info_sptr->set_calibration_factor(calibration_factor);
   
   if (!isotope_name.empty()){
-      // here I need to cal the DB and set the Radionuclide memeber
+      // here I need to cal the DB and set the Radionuclide member
      RadionuclideDB radionuclide_db=RadionuclideDB();
      this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
+  }
+  else{
+      RadionuclideDB radionuclide_db=RadionuclideDB();
+      this->exam_info_sptr->set_radionuclide(Radionuclide());
   }
   
   if (patient_orientation_index<0 || patient_rotation_index<0)
