@@ -77,6 +77,10 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
 
+
+#include "stir/evaluation/ROIValues.h"
+
+
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #ifdef HAVE_JSON
@@ -1470,6 +1474,9 @@ namespace stir {
 %include "stir/Shape/Ellipsoid.h"
 %include "stir/Shape/EllipsoidalCylinder.h"
 %include "stir/Shape/Box3D.h"
+
+%shared_ptr(stir::ROIVales)
+%include "stir/evaluation/ROIValues.h"
 
 // filters
 #ifdef STIRSWIG_SHARED_PTR
