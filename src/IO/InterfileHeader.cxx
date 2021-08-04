@@ -268,7 +268,7 @@ bool InterfileHeader::post_processing()
   
   if (!isotope_name.empty()){
       // here I need to cal the DB and set the Radionuclide member
-     RadionuclideDB radionuclide_db=RadionuclideDB();
+     RadionuclideDB radionuclide_db;
      this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
   }
   else{
