@@ -73,5 +73,4 @@ private :
 };
 
 END_NAMESPACE_STIR
-#include "stir/Radionuclide.inl"
 #endif //__stir_Radionuclide_H__
