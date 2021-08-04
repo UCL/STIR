@@ -272,7 +272,7 @@ bool InterfileHeader::post_processing()
      this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
   }
   else{
-      RadionuclideDB radionuclide_db=RadionuclideDB();
+      RadionuclideDB radionuclide_db;
       this->exam_info_sptr->set_radionuclide(Radionuclide());
   }
   
