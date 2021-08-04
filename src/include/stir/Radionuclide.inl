@@ -32,7 +32,7 @@ Radionuclide::parameter_info() const
 }
 
 Radionuclide::Radionuclide()
-    :name("Unknown"),energy(-1),
+    :name(ImagingModality::Unknown),energy(-1),
      branching_ratio(-1),
      half_life(-1),modality("Unknown")
 {
