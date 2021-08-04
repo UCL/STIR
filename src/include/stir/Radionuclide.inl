@@ -83,7 +83,7 @@ float
 ImagingModality
  Radionuclide::get_modality() const
 { 
-    if (modality.get_name()=="Unknown")
+    if (modality.is_unknown())
         error("Radionuclide::modality is Unknown, If you want to use it, it needs to be defined!");
     return modality;
 }
