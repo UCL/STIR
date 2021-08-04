@@ -22,13 +22,7 @@ START_NAMESPACE_STIR
 std::string
 Radionuclide::parameter_info() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
   s << "Modality: " << this->modality.get_name() << '\n';
   s << "Radionuclide: " << this->name << '\n';
   s << "Energy " << std::fixed << std::setprecision(12) << this->energy << std::setprecision(5) << '\n';
