@@ -140,11 +140,11 @@ compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
 
 ROIValues
 compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
-                         const VoxelsOnCartesianGrid<float>& discretised_shape_ptr,
+                         const VoxelsOnCartesianGrid<float>& discretised_shape,
                          const CartesianCoordinate3D<int>& num_samples)
 {
   VectorWithOffset<ROIValues> values;
-    compute_ROI_values_per_plane(values, image, discretised_shape_ptr, num_samples);
+    compute_ROI_values_per_plane(values, image, discretised_shape, num_samples);
     return compute_total_ROI_values(values);
 }
 

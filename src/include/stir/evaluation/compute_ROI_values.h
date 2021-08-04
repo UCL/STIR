@@ -66,7 +66,7 @@ compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
 
 ROIValues
 compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
-                         const VoxelsOnCartesianGrid<float>& discretised_shape_ptr,
+                         const VoxelsOnCartesianGrid<float>& discretised_shape,
                          const CartesianCoordinate3D<int>& num_samples);
 
 // function that calculate the 
