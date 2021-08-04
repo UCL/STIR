@@ -9,6 +9,7 @@ set(${dir_LIB_SOURCES}
   ExamInfo.cxx
   ExamData.cxx
   RadionuclideDB.cxx
+  Radionuclide.cxx
   find_STIR_config.cxx
   ProjData.cxx
   ProjDataInfo.cxx

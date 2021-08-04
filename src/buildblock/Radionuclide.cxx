@@ -17,6 +17,9 @@
 
     See STIR/LICENSE.txt for details
 */
+#include <sstream>
+#include "stir/Radionuclide.h"
+
 START_NAMESPACE_STIR
 
 std::string
@@ -32,12 +35,10 @@ Radionuclide::parameter_info() const
 }
 
 Radionuclide::Radionuclide()
-    :name(ImagingModality::Unknown),energy(-1),
+    :name("Unknown"),energy(-1),
      branching_ratio(-1),
-     half_life(-1),modality("Unknown")
-{
-    info(this->parameter_info());
-}
+     half_life(-1),modality(ImagingModality::Unknown)
+{}
 
 
 Radionuclide::Radionuclide(const std::string &rname, float renergy, float rbranching_ratio, float rhalf_life,
@@ -92,8 +93,8 @@ bool
 Radionuclide::operator==(const Radionuclide& r) const{ 
         return  (abs(energy - r.energy)<= 1E-1 || (energy<=0 && r.energy <=0)) &&
            (abs(branching_ratio-r.branching_ratio)<= 1E-1 || (branching_ratio<=0 && r.branching_ratio<=0)) &&
-           (abs(half_life-r.half_life)<=1 || (r.half_life<=0 && r.half_life<=0) &&
-           (modality==r.modality));
+           (abs(half_life-r.half_life)<=1 || (r.half_life<=0 && r.half_life<=0)) &&
+           (modality==r.modality);
 }
 
 END_NAMESPACE_STIR

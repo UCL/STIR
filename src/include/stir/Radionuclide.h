@@ -38,28 +38,28 @@ class Radionuclide
 {
 public: 
   //! default constructor
-  inline Radionuclide();
+  Radionuclide();
 
   //!  A constructor : constructs a radionuclide with all it's information
-  inline Radionuclide(const std::string& name, float energy, float branching_ratio, float half_life,
+  Radionuclide(const std::string& name, float energy, float branching_ratio, float half_life,
     ImagingModality modality);
   
   //!get name
-  inline std::string get_name()const;
+  std::string get_name()const;
   //! get energy
-  inline float get_energy()const; 
+  float get_energy()const; 
   //! get branching_ratio
-  inline float get_branching_ratio()  const; 
+  float get_branching_ratio()  const; 
   //! get half_life
-  inline float get_half_life() const; 
+  float get_half_life() const; 
   //! get modality
-  inline ImagingModality get_modality() const; 
+  ImagingModality get_modality() const; 
   //! Return a string with info on parameters
   /*! the returned string is not intended for parsing. */
-  inline std::string parameter_info() const;
+  std::string parameter_info() const;
     
   //! comparison operators
-  inline bool operator==(const Radionuclide& r) const;
+  bool operator==(const Radionuclide& r) const;
   
 private :
   
