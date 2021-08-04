@@ -51,8 +51,7 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
 void
 compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
                              const DiscretisedDensity<3,float>& image,
-                             const VoxelsOnCartesianGrid<float>& discretised_shape,
-                             const CartesianCoordinate3D<int>& num_samples);
+                             const VoxelsOnCartesianGrid<float>& discretised_shape);
 
 
 ROIValues
@@ -66,8 +65,7 @@ compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
 
 ROIValues
 compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
-                         const VoxelsOnCartesianGrid<float>& discretised_shape,
-                         const CartesianCoordinate3D<int>& num_samples);
+                         const VoxelsOnCartesianGrid<float>& discretised_shape);
 
 // function that calculate the 
 void
