@@ -39,7 +39,7 @@ ExamInfo::parameter_info() const
 #endif
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
   s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
-  s << "Radionuclide: " << this->radionuclide.get_name() << '\n';
+  s << "Radionuclide: \n" << this->radionuclide.parameter_info() << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
   s << "Scan start time: " << std::fixed << std::setprecision(1) <<this->start_time_in_secs_since_1970 <<'\n'; // reset for further floats
  
