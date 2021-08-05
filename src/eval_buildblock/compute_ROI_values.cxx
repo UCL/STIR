@@ -51,6 +51,8 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
                              const DiscretisedDensity<3,float>& density,
                              const DiscretisedDensity<3,float>& discretised_shape)
 {
+  if (!density.has_same_characteristics(discretised_shape))
+    error("compute_ROI_values_per_plane: density and discretised_shape do not have the same characteristics.");
 
   const int min_z = density.get_min_index();
   const int max_z = density.get_max_index();
@@ -141,6 +143,9 @@ ROIValues
 compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
                          const DiscretisedDensity<3,float>& discretised_shape)
 {
+  if (!image.has_same_characteristics(discretised_shape))
+    error("compute_total_ROI_values: image and discretised_shape do not have the same characteristics.");
+
   VectorWithOffset<ROIValues> values;
   compute_ROI_values_per_plane(values, image, discretised_shape);
     return compute_total_ROI_values(values);
