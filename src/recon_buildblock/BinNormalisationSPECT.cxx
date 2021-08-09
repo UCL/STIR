@@ -118,9 +118,9 @@ post_processing()
   else 
       set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
   
-  if (use_decay_correction_factors() && get_exam_info_sptr()->get_radionuclide().get_half_life()){
+  if (use_decay_correction_factors() && get_exam_info_sptr()->get_radionuclide().get_half_life()>0){
       half_life=get_exam_info_sptr()->get_radionuclide().get_half_life();
-      info("BinNormalisationSPECT: half life  read from DB = "+ std::to_string(half_life));
+      info("BinNormalisationSPECT: half life = "+ std::to_string(half_life));
   }
   
   return false;

@@ -18,6 +18,7 @@
     See STIR/LICENSE.txt for details
 */
 #include <sstream>
+#include <iomanip>
 #include "stir/Radionuclide.h"
 
 START_NAMESPACE_STIR

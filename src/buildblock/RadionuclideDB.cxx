@@ -168,6 +168,8 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
 Radionuclide 
 RadionuclideDB::
 get_radionuclide(ImagingModality rmodality, const std::string& rname){
+    if (rname.empty() || rname=="Unknown")
+        return Radionuclide();
     std::string nuclide_name = get_radionuclide_name_from_lookup_table(rname);
 #ifdef nlohmann_json_FOUND
    return get_radionuclide_from_json(rmodality,nuclide_name);
