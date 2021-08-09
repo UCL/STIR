@@ -67,6 +67,10 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <h3>Bug fixes</h3>
 <ul>
 <li>
+   There was an inconsistency between log-likelihood function
+   and its gradient when <tt>use_subset_sensitivities</tt> was false and <tt>num_subsets</tt> greater than 1.
+   Fixing this isssue means that images reconstructed with <tt>OSSPS</tt> are different from previous versions of STIR when the above conditions are met.
+   See <a href=https://github.com/UCL/STIR/issues/873>Issue #873</a> and associated <a href=https://github.com/UCL/STIR/issues/893>PR #893</a>.
 </li>
 </ul>
 
@@ -143,12 +147,6 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
     ROOT file event processing is now up to 4x faster. In addition, there is now an option to <tt>check energy window information</tt> (defaulting to on).
     Futhermore, added functionality to exclude true and unscattered event types from list mode processing. </li>
-    <li>
-        Poisson log-likelihood gradient methods now use <tt>actual_compute_subset_gradient_without_penalty</tt>
-        to properly handle the objective function gradient computation at the distributable level.
-        Removes the subtraction of the subset sensitivity, which lead to a inconsistency between log-likelihood function
-        and gradient when <tt>use_subset_sensitivities</tt> was false.
-    </li>
 </ul>
 
 
@@ -234,6 +232,10 @@ from the above):</H2>
     <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
     <li><code>BinNormalisation::set_up()</code> now need exam_info_sptr as input.</li>
     <li><code>BinNormalisation::apply()</code> and <code>undo</code> now no longer accept start_time and end_time as they are taken from exam_info. To allow this to happen, class <code>Bin</code> has now an extra member <code>time_frame()</code>. Note that it defaults to 1. If this is incorrect, it has to be initialised explicitly (not via a constructor).</li>
+    <li>Poisson log-likelihood hierarchy has changed for gradient methods to now use <tt>actual_compute_subset_gradient_without_penalty</tt>
+	in the derived classes (which has an extra argument <tt>add_sensitivity</tt>). Therefore developers that created their own derived class will need to
+	adjust their class accordingly. The <tt>public</tt> class interface is identical though.
+    </li>    
 </ul>
 
 <h3>New functionality</h3>
