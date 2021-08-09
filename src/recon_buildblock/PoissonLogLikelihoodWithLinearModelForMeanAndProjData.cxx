@@ -610,9 +610,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                      const TargetT &current_estimate, 
-                                                      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -625,14 +626,13 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                  subset_num, 
                                  this->num_subsets, 
                                  -this->max_segment_num_to_process,
-                                 this->max_segment_num_to_process, 
-                                 this->zero_seg0_end_planes!=0, 
-                                 NULL, 
-                                 this->additive_proj_data_sptr 
-                                 , caching_info_ptr
-                                 );
-  
-
+                                 this->max_segment_num_to_process,
+                                 this->zero_seg0_end_planes!=0,
+                                 NULL,
+                                 this->additive_proj_data_sptr,
+                                 this->normalisation_sptr,
+                                 caching_info_ptr,
+                                 add_sensitivity);
 }
 
 
@@ -1077,7 +1077,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 
 #else 
 //! Call-back function for compute_gradient
-static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+template<bool add_sensitivity> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
@@ -1097,10 +1097,13 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     bool zero_seg0_end_planes,
                                     double* log_likelihood_ptr,
                                     shared_ptr<ProjData> const& additive_binwise_correction,
-                                    DistributedCachingInformation* caching_info_ptr
+                                    shared_ptr<BinNormalisation> const& normalisation_sptr,
+                                    DistributedCachingInformation* caching_info_ptr,
+                                    const bool add_sensitivity
                                     )
 {
-        
+  if (add_sensitivity){
+    // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - 1] )
     distributable_computation(forward_projector_sptr,
                               back_projector_sptr,
                               symmetries_sptr,
@@ -1111,10 +1114,28 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
-                              &RPC_process_related_viewgrams_gradient,
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(),
+                              0., 0.,
+                              &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr
-                              );
+    );
+  } else if (!add_sensitivity){
+    // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
+    distributable_computation(forward_projector_sptr,
+                              back_projector_sptr,
+                              symmetries_sptr,
+                              &output_image, &input_image,
+                              proj_dat, true, //i.e. do read projection data
+                              subset_num, num_subsets,
+                              min_segment, max_segment,
+                              zero_seg0_end_planes,
+                              log_likelihood_ptr,
+                              additive_binwise_correction,
+                              normalisation_sptr, 0., 0.,
+                              &RPC_process_related_viewgrams_gradient<false>,
+                              caching_info_ptr
+    );
+  }
 }
 
 
@@ -1195,7 +1216,7 @@ void distributable_sensitivity_computation(
 
 //////////// RPC functions
 
-
+template <bool add_sensitivity>
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
@@ -1205,8 +1226,6 @@ void RPC_process_related_viewgrams_gradient(
                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {       
   assert(measured_viewgrams_ptr != NULL);
-  if (!is_null_ptr(mult_viewgrams_ptr))
-    error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
   
@@ -1229,23 +1248,28 @@ void RPC_process_related_viewgrams_gradient(
     }
 */
   forward_projector_sptr->forward_project(estimated_viewgrams);
-        
-        
-        
+
   if (additive_binwise_correction_ptr != NULL)
-  {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
-  }
-  
-
-    
-
-
 
   // for sinogram division
-      
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
-      
+
+  // adding the sensitivity:  backproj[y/ybar] *
+  // not adding the sensitivity computes the gradient:  backproj[y/ybar - 1] *
+  // * ignoring normalisation *
+  if (!add_sensitivity){
+    if (mult_viewgrams_ptr)
+    {
+      // subtract normalised ones from the data [y/ybar - 1/N]
+      *measured_viewgrams_ptr -= *mult_viewgrams_ptr;
+    } else {
+      // No mult_viewgrams_ptr, subtract ones [y/ybar - 1]
+      *measured_viewgrams_ptr -= 1;
+    }
+  }
+
+  // back project
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 

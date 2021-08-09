@@ -426,9 +426,10 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                      const TargetT &current_estimate, 
-                                                      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("compute_sub_gradient_without_penalty subset_num out-of-range error");
@@ -452,9 +453,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
 
       this->_single_frame_obj_funcs[frame_num].
-        compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
-                                                              dyn_image_estimate[frame_num], 
-                                                              subset_num);
+              actual_compute_subset_gradient_without_penalty(dyn_gradient[frame_num],
+                                                             dyn_image_estimate[frame_num],
+                                                             subset_num,
+                                                             add_sensitivity);
     }
 
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(gradient,

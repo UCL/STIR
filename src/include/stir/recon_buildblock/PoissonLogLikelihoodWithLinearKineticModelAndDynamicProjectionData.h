@@ -70,10 +70,6 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   */
   virtual TargetT *
     construct_target_ptr() const; 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
 
   virtual std::unique_ptr<ExamInfo>
   get_exam_info_uptr_for_target()  const;
@@ -169,6 +165,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   DynamicDiscretisedDensity _dyn_image_template;
 
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+
+
+  virtual void
+  actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                 const TargetT &current_estimate,
+                                                 const int subset_num,
+                                                 const bool add_sensitivity);
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and

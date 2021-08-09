@@ -358,29 +358,18 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
                                      const TargetT &current_estimate, 
                                      const int subset_num)
 {
-  if (subset_num<0 || subset_num>=this->get_num_subsets())
-    error("compute_sub_gradient_without_penalty subset_num out-of-range error");
-
-  this->
-    compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
-                                                          current_estimate,
-                                                          subset_num);
-  // compute gradient -= sub_sensitivity
-  {
-    typename TargetT::full_iterator gradient_iter =
-      gradient.begin_all();
-    const typename TargetT::full_iterator gradient_end = 
-      gradient.end_all();
-    typename TargetT::const_full_iterator sensitivity_iter =
-      this->get_subset_sensitivity(subset_num).begin_all_const();
-    while (gradient_iter != gradient_end)
-      {
-        *gradient_iter -= (*sensitivity_iter);
-        ++gradient_iter; ++sensitivity_iter;
-      }
-  }
+  this->actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, false);
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
+                                                      const TargetT &current_estimate,
+                                                      const int subset_num)
+{
+  actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, true);
+}
 
 template<typename TargetT>
 void
