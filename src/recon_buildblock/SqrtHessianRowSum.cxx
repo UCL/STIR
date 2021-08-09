@@ -197,9 +197,10 @@ process_data()
     compute_Hessian_row_sum();
   }
 
-  // Square Root the output of the Hessian_row_sum methods
+  // Square Root the negative output of the Hessian_row_sum methods
+  // (approximate) Hessian times a non-negative vector will result in a negative output. Flip the sign before sqrt.
   std::for_each(output_target_sptr->begin_all(), output_target_sptr->end_all(),
-                [](float& a) { return a=sqrt(a); } );
+                [](float& a) { return a=sqrt(-a); } );
 
   // Save the output
   if (!output_filename.empty())

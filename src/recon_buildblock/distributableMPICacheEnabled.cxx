@@ -126,6 +126,13 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       mult_viewgrams_sptr->fill(1.F);
       normalisation_sptr->undo(*mult_viewgrams_sptr);
     }
+  else if (zero_seg0_end_planes)
+  {
+    // No normalisation provided but zero_seg0_end_planes, create a mult_viewgrams
+    mult_viewgrams_sptr.reset(
+            new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
+    mult_viewgrams_sptr->fill(1.F);
+  }
                         
   if (view_segment_num.segment_num()==0 && zero_seg0_end_planes)
     {

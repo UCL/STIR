@@ -212,10 +212,11 @@ public:
   virtual const ProjData& get_input_data() const;
 //@}
   
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
+  virtual void
+  actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                 const TargetT &current_estimate,
+                                                 const int subset_num,
+                                                 const bool add_sensitivity);
 
   virtual std::unique_ptr<ExamInfo>
   get_exam_info_uptr_for_target()  const;
@@ -244,11 +245,15 @@ public:
     This function uses the approximation of the hessian
     \f[ h_i^{''}(y_i) \approx -1/y_i \f]
     Hence
-    \f[ H_{jk} =  \sum_i P_{ij}(1/y_i) P_{ik} \f]
+    \f[ H_{jk} = - \sum_i P_{ij}(1/y_i) P_{ik} \f]
 
     In the above, we've used the plug-in approximation by replacing 
     forward projection of the true image by the measured data. However, the
     later are noisy and this can create problems. 
+
+    The LogLikelihood is a concave function and therefore the Hessian is non-positive.
+    Thus, this (approximate-)Hessian vector product methods output volumes with negative values,
+    if the input is non-negative.
 
     \todo Two work-arounds for the noisy estimate of the Hessian are listed below, 
     but they are currently not implemented.
@@ -272,14 +277,18 @@ public:
     The Hessian (without penalty) is approximately given by:
     \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
     where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2; \f]
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = - y_i / ((P \lambda)_i + a_i)^2; \f]
     and \f$P_{ij} \f$ is the probability matrix.
 
     Hence
-    \f[ H_{jk} =  \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
+    \f[ H_{jk} = - \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
 
     This function is computationally expensive and can be approximated, see
     add_multiplication_with_approximate_sub_Hessian_without_penalty()
+
+    The loglikelihood is a concave function, see
+    add_multiplication_with_approximate_sub_Hessian_without_penalty() for
+    more details regarding Hessian methods.
   */
   virtual Succeeded
         actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
