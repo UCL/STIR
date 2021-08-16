@@ -797,8 +797,10 @@ InterfilePDFSHeader::post_processing() {
   if (InterfileHeader::post_processing() == true)
     return true;
 
-  if (PET_data_type_values[PET_data_type_index] != "Emission") {
-    warning("Interfile error: expecting emission data\n");
+  {
+    warning(boost::format(
+      "Interfile error: expecting emission data, got %s\n")
+      % PET_data_type_values[PET_data_type_index]);
     return true;
   }
 

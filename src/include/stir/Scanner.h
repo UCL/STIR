@@ -135,6 +135,7 @@ public:
     test_scanner,
     Siemens_mMR,
     Siemens_mCT,
+    Vision_600,
     RPT,
     HiDAC,
     Advance,

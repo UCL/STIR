@@ -41,7 +41,9 @@ CListEventECAT8_32bit::CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo
   if (proj_data_info_ptr == 0)
     error("CListEventECAT8_32bit can only be initialised with cylindrical projection data without arc-correction");
   if (proj_data_info_ptr->get_max_ring_difference(0) != proj_data_info_ptr->get_min_ring_difference(0))
-    error("CListEventECAT8_32bit can only handle axial compression==1");
+    error(boost::format(
+      "CListEventECAT8_32bit can only handle axial compression==1, got segment 0 min/max RD: %s,%s")
+      % proj_data_info_ptr->get_max_ring_difference(0) % proj_data_info_ptr->get_min_ring_difference(0));
 
   this->segment_sequence = ecat::find_segment_sequence(*proj_data_info_ptr);
   this->sizes.resize(this->segment_sequence.size());

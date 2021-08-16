@@ -196,6 +196,54 @@ Scanner::Scanner(Type scanner_type) {
     // energy: 435-650
     break;
 
+// case PETMR_Signa:
+//   set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
+// 	       45,
+// 	       357,
+// 	       331, // TODO
+// 	       2 * 224,
+//            311.8F,
+//            8.5F,
+//            5.56F,
+//            2.01565F, // TO CHECK
+// 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
+// 	       5,
+// 	       4,
+//            9, 4, 1, 1, 1,
+//            0.105F, // energy resolution from Levin et al. TMI 2016
+// 			511.F,
+// 		   (short int)(351),
+// 		   (float)(89.0F/13.0F), //TODO
+// 		   (float)(390.0F) );
+//     break;
+
+  case Vision_600:
+    set_params(
+      Vision_600,                                       // type
+      string_list("Siemens Vision", "Vision", "1208"),  // names
+      80,                                               // rings
+      520,                                              // max n non-arc-corr bins
+      520,                                              // default n arc-corr bins
+      21*38,                                            // num detector per ring
+      420.0F,                                           // inner ring radius (mm)
+      7.0F,  // unsure on this                          // avg DoI (mm)
+      3.29114F,                                         // ring spacing (mm)
+      1.6F,                                             // bin size (mm)
+      0.0F,                                             // intrinsic tilt
+      // 8 axial block, 38 transaxial blocks total, no buckets?
+      1, 1,                                             // n axial/trans blocks per bucket
+      10, 21,                                           // n axial/trans xtals per block
+      10, 21,                                           // n axial/trans xtals per singles unit
+      1,                                                // n detector layers
+      // energy
+      0.F, 511.F,
+      33,                                               // max n timing position
+      143.231,                                          // timing position bin size
+      -1.F     // ??                                    // timing resolution
+    );
+    break;
+
+
   case RPT:
 
     set_params(RPT, string_list("PRT-1", "RPT"), 16, 128, 128, 2 * 192, 380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F, 1, 4, 8, 8, 8,
