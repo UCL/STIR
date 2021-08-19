@@ -3,95 +3,119 @@ set(dir buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  Array  
-  IndexRange 
-  PatientPosition
-  ExamData
-  ProjData 
-  ProjDataInfo 
-  ProjDataInfoCylindrical 
-  ProjDataInfoCylindricalArcCorr 
-  ProjDataInfoCylindricalNoArcCorr 
-  ArcCorrection 
-  ProjDataFromStream  
-  ProjDataGEAdvance
-  ProjDataInMemory 
-  ProjDataInterfile 
-  Scanner 
-  SegmentBySinogram 
-  Segment 
-  SegmentByView 
-  Viewgram
-  Verbosity
-  Sinogram 
-  RelatedViewgrams 
-  scale_sinograms 
-  interpolate_projdata 
-  extend_projdata 
-  DiscretisedDensity 
-  VoxelsOnCartesianGrid 
-  ParseDiscretisedDensityParameters
-  utilities 
-  interfile_keyword_functions 
-  zoom 
-  NumericType ByteOrder 
-  KeyParser  
-  recon_array_functions 
-  linear_regression overlap_interpolate 
-  error warning
-  TextWriter
-  DataSymmetriesForViewSegmentNumbers 
-  TimeFrameDefinitions 
-  ParsingObject 
-	ArrayFilter1DUsingConvolutionSymmetricKernel 
-	ArrayFilterUsingRealDFTWithPadding 
-	SeparableArrayFunctionObject 
-	SeparableMetzArrayFilter 
-        SeparableGaussianImageFilter
-        SeparableGaussianArrayFilter
-	MedianArrayFilter3D 
-	MedianImageFilter3D 
-	MinimalArrayFilter3D 
-	MinimalImageFilter3D 
-	SeparableCartesianMetzImageFilter 
-	TruncateToCylindricalFOVImageProcessor 
-	ThresholdMinToSmallPositiveValueDataProcessor 
-	ChainedDataProcessor 
-	ArrayFilter1DUsingConvolution 
-	SeparableConvolutionImageFilter 
-	NonseparableConvolutionUsingRealDFTImageFilter 
-	SSRB 
-	inverse_SSRB 
-	centre_of_gravity 
-	DynamicDiscretisedDensity 
-	DynamicProjData 
-	MultipleProjData 
-  MultipleDataSetHeader
-	GatedProjData 
-	ArrayFilter2DUsingConvolution 
-	ArrayFilter3DUsingConvolution 
-	find_fwhm_in_image
-        GatedDiscretisedDensity
-        MaximalArrayFilter3D
-        MaximalImageFilter3D
-        TimeGateDefinitions
-	ML_norm
-        num_threads
-        GeneralisedPoissonNoiseGenerator
-        FilePath
+  Array.cxx
+  IndexRange.cxx
+  PatientPosition.cxx
+  ExamInfo.cxx
+  ExamData.cxx
+  ProjData.cxx
+  ProjDataInfo.cxx
+  ProjDataInfoCylindrical.cxx
+  ProjDataInfoCylindricalArcCorr.cxx
+  ProjDataInfoCylindricalNoArcCorr.cxx
+  ArcCorrection.cxx
+  ProjDataFromStream.cxx
+  ProjDataGEAdvance.cxx
+  ProjDataInMemory.cxx
+  ProjDataInterfile.cxx
+  Scanner.cxx
+  SegmentBySinogram.cxx
+  Segment.cxx
+  SegmentByView.cxx
+  Viewgram.cxx
+  Verbosity.cxx
+  Sinogram.cxx
+  RelatedViewgrams.cxx
+  scale_sinograms.cxx
+  interpolate_projdata.cxx
+  extend_projdata.cxx
+  multiply_crystal_factors.cxx
+  DiscretisedDensity.cxx
+  VoxelsOnCartesianGrid.cxx
+  ParseDiscretisedDensityParameters.cxx
+  utilities.cxx
+  interfile_keyword_functions.cxx
+  zoom.cxx
+  NumericType ByteOrder.cxx
+  KeyParser.cxx
+  recon_array_functions.cxx
+  linear_regression overlap_interpolate.cxx
+  error warning.cxx
+  TextWriter.cxx
+  DataSymmetriesForViewSegmentNumbers.cxx
+  TimeFrameDefinitions.cxx
+  ParsingObject.cxx
+	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx
+	ArrayFilterUsingRealDFTWithPadding.cxx
+	SeparableArrayFunctionObject.cxx
+	SeparableMetzArrayFilter.cxx
+        SeparableGaussianImageFilter.cxx
+        SeparableGaussianArrayFilter.cxx
+	MedianArrayFilter3D.cxx
+	MedianImageFilter3D.cxx
+	MinimalArrayFilter3D.cxx
+	MinimalImageFilter3D.cxx
+	SeparableCartesianMetzImageFilter.cxx
+	TruncateToCylindricalFOVImageProcessor.cxx
+	ThresholdMinToSmallPositiveValueDataProcessor.cxx
+	ChainedDataProcessor.cxx
+	ArrayFilter1DUsingConvolution.cxx
+	SeparableConvolutionImageFilter.cxx
+	NonseparableConvolutionUsingRealDFTImageFilter.cxx
+	SSRB.cxx
+	inverse_SSRB.cxx
+	centre_of_gravity.cxx
+	DynamicDiscretisedDensity.cxx
+	DynamicProjData.cxx
+	MultipleProjData.cxx
+  MultipleDataSetHeader.cxx
+	GatedProjData.cxx
+	ArrayFilter2DUsingConvolution.cxx
+	ArrayFilter3DUsingConvolution.cxx
+	find_fwhm_in_image.cxx
+        GatedDiscretisedDensity.cxx
+        MaximalArrayFilter3D.cxx
+        MaximalImageFilter3D.cxx
+        TimeGateDefinitions.cxx
+	ML_norm.cxx
+        num_threads.cxx
+        GeneralisedPoissonNoiseGenerator.cxx
+        FilePath.cxx
+        date_time_functions.cxx
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
-    ProjDataGEHDF5
- )
+    ProjDataGEHDF5.cxx
+    )
 endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
-  list(APPEND ${dir_LIB_SOURCES} getopt)
+  list(APPEND ${dir_LIB_SOURCES} getopt.c)
+endif()
+
+if (HAVE_JSON)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
 endif()
 
 include(stir_lib_target)
+
+
+if (HAVE_JSON)
+  # Add the header-only nlohman_json header-only library
+  # Unfortunately, the simple line below exports the dependency while this is really not
+  # necessary.
+  #
+  # target_link_libraries(buildblock PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+
+  # So, we currently use an ugly work-around from
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
+  # Warning: this will fail once nlohman_json stops being header-only!
+  # In that case, we will need to add it in STIRConfig.cmake.in
+  #
+  get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(buildblock PRIVATE "${TMP}")
+endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

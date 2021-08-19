@@ -4,15 +4,7 @@
  Copyright (C) 2018, University College London
  This file is part of STIR.
  
- This file is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2.3 of the License, or
- (at your option) any later version.
- 
- This file is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
+ SPDX-License-Identifier: Apache-2.0
  
  See STIR/LICENSE.txt for details
  */
@@ -423,9 +415,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -443,9 +436,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
               gated_gradient[gate_num].end_all(),
               0.F);
     this->_single_gate_obj_funcs[gate_num].
-      compute_sub_gradient_without_penalty_plus_sensitivity(gated_gradient[gate_num], 
-                                                            gated_image_estimate[gate_num], 
-                                                            subset_num);
+            actual_compute_subset_gradient_without_penalty(gated_gradient[gate_num],
+                                                           gated_image_estimate[gate_num],
+                                                           subset_num,
+                                                           add_sensitivity);
   }	
   //	if(this->_motion_correction_type==-1)
   this->_reverse_motion_vectors.warp_image(gradient,gated_gradient) ; 
@@ -544,5 +538,56 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
   return Succeeded::yes;
 }
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+        const TargetT& current_image_estimate,
+        const TargetT& input,
+        const int subset_num) const
+{
+  { // check argument characteristics
+    std::string explanation;
+    if (!input.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and input for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+
+    if (!current_image_estimate.has_same_characteristics(this->get_subset_sensitivity(0), explanation))
+    {
+      warning("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion:\n"
+              "sensitivity and current_image_estimate for actual_accumulate_sub_Hessian_times_input_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+      return Succeeded::no;
+    }
+  }
+
+  GatedDiscretisedDensity gated_input=this->_gated_image_template;
+  GatedDiscretisedDensity gated_current_image_estimate=this->_gated_image_template;
+  GatedDiscretisedDensity gated_output=this->_gated_image_template;
+  this->_motion_vectors.warp_image(gated_input,input);
+  this->_motion_vectors.warp_image(gated_current_image_estimate, current_image_estimate);
+
+  for(unsigned int gate_num=1;
+      gate_num<=this->get_time_gate_definitions().get_num_gates();
+      ++gate_num)
+  {
+    this->_single_gate_obj_funcs[gate_num].
+    accumulate_sub_Hessian_times_input_without_penalty(gated_output[gate_num],
+            gated_current_image_estimate[gate_num],
+            gated_input[gate_num],
+            subset_num);
+  } // end of loop over gates
+  this->_reverse_motion_vectors.warp_image(output, gated_output);
+  output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
+  return Succeeded::yes;
+}
+
 
 END_NAMESPACE_STIR

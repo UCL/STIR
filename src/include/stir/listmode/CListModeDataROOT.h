@@ -3,15 +3,7 @@
     Copyright (C) 2016, 2017 UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -93,6 +85,11 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
+; optional keywords to create "virtual" crystals to accomodate for gaps between blocks
+; if you do not specify these, the STIR defaults (determined by the "originating system")
+; will be used (which are zero for a User_defined_scanner)
+Number of virtual axial crystals per block := 0
+Number of virtual transaxial crystals per block:= 0
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=

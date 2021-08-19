@@ -6,15 +6,7 @@
     
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -38,6 +30,8 @@
 #include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
 #include "stir/IO/MultiDynamicDiscretisedDensityInputFileFormat.h"
 #include "stir/IO/MultiDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/MultiParametricDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -60,7 +54,7 @@
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 #ifdef HAVE_HDF5
-#include "stir/IO/GESignaListmodeInputFileFormat.h"
+#include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
 #endif
 
 //! Addition for SAFIR listmode input file format
@@ -84,9 +78,10 @@ static InterfileOutputFileFormat::RegisterIt dummy1;
 #ifdef HAVE_ITK
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
-static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
-static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
-static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiIn;
+static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfOut;
+static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfOut;
+static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiOut;
+static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
@@ -129,11 +124,12 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 // we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
 static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,float> > > idummy6(10000);
-static RegisterInputFileFormat<ITKImageInputFileFormat<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > > > idummy7(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,CartesianCoordinate3D<float> > > > idummy7(10000);
 #endif
 static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
 static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
-static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> multidummy_intf(1);
+static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> dynim_dummy_multi(1);
+static RegisterInputFileFormat<MultiParametricDiscretisedDensityInputFileFormat> parim_dummy_multi(1);
 
 
 /*************************** listmode data **********************/
@@ -143,7 +139,7 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdu
 #endif
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
 #ifdef HAVE_HDF5
-static RegisterInputFileFormat<GE::RDF_HDF5::GESignaListmodeInputFileFormat> LMdummyGESigna(7);
+static RegisterInputFileFormat<GE::RDF_HDF5::GEHDF5ListmodeInputFileFormat> LMdummyGEHDF5(7);
 #endif
 
 END_NAMESPACE_STIR

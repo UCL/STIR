@@ -3,19 +3,11 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2013-2016,2019-2021 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -342,21 +334,23 @@ Scanner::Scanner(Type scanner_type)
     break;
 
 
-case PETMR_Signa: 
+case PETMR_Signa:
 
-    set_params(PETMR_Signa, string_list("GE PET/MR Signa", "GE PET/MR Signa"), 
+  set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
 	       45, 
 	       357, 
 	       331, // TODO
 	       2 * 224,
-           311.9F,
-	       9.4F,  
+           311.8F,
+           8.5F,
            5.56F,
            2.01565F, // TO CHECK
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
-	       9, 4, 1, 1, 1);
+             9, 4, 1, 1, 1,
+             0.105F, // energy resolution from Levin et al. TMI 2016
+             511.F);
 break;
 
   case Discovery690:
@@ -385,6 +379,50 @@ break;
 
     break;
   
+
+  case DiscoveryMI3ring: // This is the 3-ring DMI
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI3ring, string_list("GE Discovery MI 3 rings", "Discovery MI3", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       27,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       3, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
+  case DiscoveryMI4ring: // This is the 4-ring DMI
+    // as above, but one extra block
+    // Hsu et al. 2017 JNM
+    // crystal size 3.95 x 5.3 x 25
+    set_params(DiscoveryMI4ring, string_list("GE Discovery MI 4 rings", "Discovery MI4", "Discovery MI"), // needs to include last value as used by GE in RDF files
+	       36,
+	       415,
+	       401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+	       2 * 272,
+               380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+               9.4F,//TODO DOI
+               5.52296F, // ring-spacing
+               2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+	       static_cast<float>(-4.399*_PI/180), //TODO check sign
+	       4, 4,
+	       9, 4,
+               1, 1,
+               1,
+               0.0944F, // energy resolution from Hsu et al. 2017
+               511.F);
+    break;
+
   case HZLR:
 
     set_params(HZLR, string_list("Positron HZL/R"), 
@@ -662,6 +700,26 @@ get_num_virtual_transaxial_crystals_per_block() const
       return 0;
     }
 }
+/*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
+void
+Scanner::
+set_num_virtual_axial_crystals_per_block(int val)
+{
+  //num_virtual_axial_crystals_per_block = val;
+  if (this->get_num_virtual_axial_crystals_per_block() != val)
+    error("Scanner::set_num_virtual_axial_crystals_per_block not really implemented yet");
+}
+
+/*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
+void
+Scanner::
+set_num_virtual_transaxial_crystals_per_block(int val)
+{
+  //num_virtual_transaxial_crystals_per_block = val;
+  if (this->get_num_virtual_transaxial_crystals_per_block() != val)
+    error("Scanner::set_num_virtual_transaxial_crystals_per_block not really implemented yet");
+}
+
 
 Succeeded 
 Scanner::
@@ -874,7 +932,7 @@ Scanner::parameter_info() const
     << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
     << "Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
     << "Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
-    << "View offset (degrees)                    := " << get_default_intrinsic_tilt()*180/_PI << '\n';
+    << "View offset (degrees)                    := " << get_intrinsic_azimuthal_tilt()*180/_PI << '\n';
   s << "Maximum number of non-arc-corrected bins := "
     << get_max_num_non_arccorrected_bins() << '\n'
     << "Default number of arc-corrected bins     := "
@@ -1081,7 +1139,6 @@ Scanner::get_scanner_from_name(const string& name)
 
 string Scanner:: list_all_names()
 {
-  Scanner * scanner_ptr;
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[30000];
@@ -1093,19 +1150,32 @@ string Scanner:: list_all_names()
   Type type= E931; 
   while (type != Unknown_scanner)
   {
-    scanner_ptr = new Scanner(type);
-    s << scanner_ptr->list_names() << '\n';
-    
-    delete scanner_ptr;
+    Scanner scanner(type);
     // tricky business to find next type
-    int int_type = type;
-    ++int_type;
-    type = static_cast<Type>(int_type);
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    s << scanner.list_names() << '\n';
   }
   
   return s.str();
 }
 
+std::list<std::string> Scanner::get_names_of_predefined_scanners()
+{
+  std::list<std::string> ret;
+  Type type= E931;
+  while (type != Unknown_scanner)
+  {
+    Scanner scanner(type);
+    // tricky business to find next type
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    ret.push_back(scanner.get_name());
+  }
+  return ret;
+}
 
 static list<string> 
 string_list(const string& s)

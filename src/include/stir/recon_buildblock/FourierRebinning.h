@@ -18,15 +18,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -105,9 +97,7 @@ class PETCount_rebinned
   (the integer Fourier index corresponding to the azimuthal angle f), and by applying in each region 
   a different method to estimated the rebinned sinogram.
 
-  KTTODO ^A in the next sentence?
-
-  The rebinned data are represented by  in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
+  The rebinned data are represented in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
   where L is the length of the axial FOV and R the ring radius.
   In the high frequencies (region 1), the rebinned data are estimated using Fourier rebinning.
   In the second high frequency region (region 2), the consistency condition is not satisfied 

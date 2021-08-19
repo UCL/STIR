@@ -1,19 +1,11 @@
-﻿//
+//
 //
 /*
     Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
     Copyright (C) 2019- 2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -138,8 +130,8 @@ RelativeDifferencePrior<elemT>::set_defaults()
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();
-  this->gamma = 1;
-  this->epsilon = 0.0001;
+  this->gamma = 2;
+  this->epsilon = 0.0;
 }
 
 template <>
@@ -192,14 +184,14 @@ RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, fl
 }
 
 
-  //! get penalty weights for the neigbourhood
+  //! get penalty weights for the neighbourhood
 template <typename elemT>
 Array<3,float>  
 RelativeDifferencePrior<elemT>::
 get_weights() const
 { return this->weights; }
 
-  //! set penalty weights for the neigbourhood
+  //! set penalty weights for the neighbourhood
 template <typename elemT>
 void 
 RelativeDifferencePrior<elemT>::
@@ -208,7 +200,7 @@ set_weights(const Array<3,float>& w)
 
   //! get current kappa image
   /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-      modify the image by manipulating the image refered to by this pointer.
+      modify the image by manipulating the image referred to by this pointer.
       Unpredictable results will occur.
   */
 template <typename elemT>
@@ -313,10 +305,15 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
                         elemT current;
+                        if (this->epsilon ==0.0 && current_image_estimate[z][y][x] == 0.0 && current_image_estimate[z+dz][y+dy][x+dx] == 0.0){
+                          // handle the undefined nature of the function
+                          current = 0.0;
+                        } else {
                           current = weights[dz][dy][dx] * 0.5 *
                                   (pow(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx],2)/
                                   (current_image_estimate[z][y][x]+current_image_estimate[z+dz][y+dy][x+dx]
                                   + this->gamma * abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon ));
+                        }
                         if (do_kappa)
                           current *= 
                             (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -388,12 +385,17 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                       {
 
                         elemT current;
+                        if (this->epsilon ==0.0 && current_image_estimate[z][y][x] == 0.0 && current_image_estimate[z+dz][y+dy][x+dx] == 0.0){
+                          // handle the undefined nature of the gradient
+                          current = 0.0;
+                        } else {
                             current = weights[dz][dy][dx] *
                                     (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
                                       (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
                                        current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * this->epsilon))/
                                      (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) + this->epsilon));
+                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon)));
+                        }
                         if (do_kappa)
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 

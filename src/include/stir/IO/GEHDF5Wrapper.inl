@@ -9,24 +9,16 @@
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
-
+  \author Ander Biguri
 
 */
 /*
     Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2019, University College London
+    Copyright (C) 2018-2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -38,7 +30,13 @@ namespace RDF_HDF5 {
 shared_ptr<Scanner>
 GEHDF5Wrapper::get_scanner_sptr() const
 {
-    return this->scanner_sptr;
+    return this->proj_data_info_sptr->get_scanner_sptr();
+}
+
+shared_ptr<const ProjDataInfo>
+GEHDF5Wrapper::get_proj_data_info_sptr() const
+{
+  return this->proj_data_info_sptr;
 }
 
 shared_ptr<ExamInfo>
@@ -57,11 +55,10 @@ hsize_t GEHDF5Wrapper::get_dataset_size() const
     return m_list_size;
 }
 
-/*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
+unsigned int GEHDF5Wrapper::get_geo_dims() const
 {
-    //! \todo For examInfo get timeframe definitions
-    return &exam_info_sptr->time_frame_definitions;
-}*/
+    return geo_dims;
+}
 
 const H5::H5File& GEHDF5Wrapper::get_file() const
 { return file; }

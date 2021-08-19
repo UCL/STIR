@@ -3,15 +3,7 @@
     Copyright (C) 2019-2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -96,12 +88,34 @@ public:
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
+  
+  void set_bin_value(const Bin &bin);
     
-  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData.
+  //! \deprecated a*x+b*y (\see xapyb)
+  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y);
+
+  //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData.
   /// This implementation requires that x and y are ProjDataInMemory
   /// (else falls back on general method)
-  virtual void axpby(const float a, const ProjData& x,
-                     const float b, const ProjData& y);
+  virtual void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b);
+
+  //! set values of the array to x*a+y*b, where a, b, x and y are ProjData.
+  /// This implementation requires that a, b, x and y are ProjDataInMemory
+  /// (else falls back on general method)
+  virtual void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b);
+
+  //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
+  /// This implementation requires that a, b and y are ProjDataInMemory
+  /// (else falls back on general method)  
+  virtual void sapyb(const float a, const ProjData& y, const float b);
+
+  //! set values of the array to self*a+y*b where a, b and y are ProjData
+   /// This implementation requires that a, b and y are ProjDataInMemory
+  /// (else falls back on general method)   
+  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
 
   /** @name iterator typedefs
    *  iterator typedefs
@@ -137,6 +151,25 @@ public:
   //! end value for iterating through all elements in the (const) array, see iterator
   inline const_iterator end_all() const
   { return buffer.end_all(); }
+
+ //! \name access to the data via a pointer
+  //@{
+  //! member function for access to the data via a float*
+  inline float* get_data_ptr()
+  { return buffer.get_data_ptr(); }
+
+  //! member function for access to the data via a const float*
+  inline const float * get_const_data_ptr() const
+  { return buffer.get_const_data_ptr(); }
+
+  //! signal end of access to float*
+  inline void release_data_ptr()
+  { buffer.release_data_ptr(); }
+
+  //! signal end of access to const float*
+  inline void release_const_data_ptr() const
+  { buffer.release_const_data_ptr(); }
+  //@}
 
 private:
   Array<1,float> buffer;

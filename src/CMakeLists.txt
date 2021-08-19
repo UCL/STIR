@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -46,7 +38,6 @@ endif()
 if (CERN_ROOT_FOUND)
         set(HAVE_CERN_ROOT ON)
         message(STATUS "CERN ROOT support enabled.")
-        include_directories(${CERN_ROOT_INCLUDE_DIRS})
 else()
     message(STATUS "CERN ROOT support disabled.")
 endif()
@@ -328,7 +319,9 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
         DEPENDS doxygen.stamp)
 
     # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
-    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/html/
+            COMPONENT DOC
+            DESTINATION ${STIR_DOC_DIR}/doxygen)
 endif()
 
 #### SWIG settings

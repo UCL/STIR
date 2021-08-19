@@ -5,15 +5,7 @@
   Copyright (C) 2011-07-01 - 2011, Kris Thielemans
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-  
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
         
   See STIR/LICENSE.txt for details
 */
@@ -242,11 +234,11 @@ interpolate_projdata(ProjData& proj_data_out,
  
   const float out_view_offset = 
     use_view_offset
-    ? proj_data_out_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
     : 0.F;
   const float in_view_offset = 
     use_view_offset
-    ? proj_data_in_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
     : 0.F;
   offset[2] = 
     (proj_data_in_info.get_phi(Bin(0,0,0,0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0,0,0,0)) - out_view_offset) / in_sampling_phi;

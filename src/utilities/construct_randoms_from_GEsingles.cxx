@@ -5,256 +5,88 @@
   \ingroup GE
   \brief Construct randoms as a product of singles estimates
 
-  \todo This file is somewhat preliminary. 
-  - It contains some hard-wired numbers for the Sigma
+  Dead-time is not taken into account.
+
+  \todo We currently assume F-18 for decay.
 
   \author Palak Wadhwa
   \author Kris Thielemans
 
 */
 /*
-  Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
   Copyright (C) 2017- 2019, University of Leeds
+  Copyright (C) 2020, 2021, University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2.0 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
 
-#include "stir/ML_norm.h"
-
 #include "stir/ProjDataInterfile.h"
-
-
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/Scanner.h"
-#include "stir/Bin.h"
-#include "stir/stream.h"
-#include "stir/Sinogram.h"
+#include "stir/ExamInfo.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IO/GEHDF5Wrapper.h"
-#include "stir/Array.h"
-#include "stir/RegisteredParsingObject.h"
-#include "stir/display.h"
+#include "stir/info.h"
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <algorithm>
 #include "stir/data/SinglesRatesFromGEHDF5.h"
+#include "stir/data/randoms_from_singles.h"
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-using std::ofstream;
-using std::ifstream;
-using std::fstream;
 using std::string;
-using std::ios;
 #endif
 
 USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc!=4)
+  if (argc!=4 && argc!=3)
     {
       cerr << "Usage: " << argv[0]
-           << " out_filename listmode_filename template_projdata\n";
+           << " out_filename GE_RDF_filename [template_projdata]\n"
+           << "The template is used for size- and time-frame-info, but actual counts are ignored.\n"
+           << "If no template is specified, we will use the normal GE sizes and the time frame information of the RDF.\n";
       return EXIT_FAILURE;
     }
-#if 0
-  bool do_block = argc>=10?atoi(argv[9])!=0: true;
-  bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
-  bool do_eff   = argc>=8?atoi(argv[7])!=0: true;
-#endif
- // const int eff_iter_num = atoi(argv[4]);
-  const int iter_num = 1;//atoi(argv[5]);
-  //const bool apply_or_undo = atoi(argv[4])!=0;
-  shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[3]);
-  const string _listmode_filename = argv[2];
+  
+  const string input_filename = argv[2];
   const string output_file_name = argv[1];
   const string program_name = argv[0];
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ExamInfo> exam_info_sptr;
 
-  ProjDataInterfile
-    proj_data(template_projdata_ptr->get_exam_info_sptr(),
-              template_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone(),
-          output_file_name);
-
-  const int num_rings =
-    template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings();
-  const int num_detectors_per_ring =
-    template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-#if 0
-  const int num_tangential_crystals_per_block = 8;
-  const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
-  const int num_axial_crystals_per_block = num_rings/2;
-  warning("TODO num_axial_crystals_per_block == num_rings/2\n");
-  const int num_axial_blocks = num_rings/num_axial_crystals_per_block;
-
-  BlockData3D norm_block_data(num_axial_blocks, num_tangential_blocks,
-                              num_axial_blocks-1, num_tangential_blocks-1);
-#endif
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
-
-  {
-      GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
-      singles.read_singles_from_listmode_file(_listmode_filename);
-    // efficiencies
-    if (true)
-      {
-        //singles.write(std::cout);
-
-        for (int r=0; r<num_rings; ++r)
-            for (int c=0; c<num_detectors_per_ring; ++c)
-            {
-                DetectionPosition<> pos(c,r,0);
-                double time_init = 0.;
-                int time_final = static_cast<double>(singles.get_num_time_slices());
-                efficiencies[r][c]=singles.get_singles_rate(pos, time_init, time_final);
-            }
-       // int timesamples=singles._num_time_slices;
-      }
-#if 0
-    // block norm
-    if (do_block)
-      {
+  GE::RDF_HDF5::GEHDF5Wrapper input_file(input_filename);
+  std::string template_filename;
+  if (argc==4)
     {
-      char *in_filename = new char[in_filename_prefix.size() + 30];
-      sprintf(in_filename, "%s_%s_%d.out",
-          in_filename_prefix.c_str(), "block",  iter_num);
-      ifstream in(in_filename);
-      in >> norm_block_data;
-      if (!in)
-        {
-          warning("Error reading %s, using all 1s instead\n", in_filename);
-          do_block = false;
-        }
-      delete[] in_filename;
+      template_filename = argv[3];
+      shared_ptr<ProjData> template_projdata_sptr = ProjData::read_from_file(template_filename);
+      proj_data_info_sptr = template_projdata_sptr->get_proj_data_info_sptr();
+      exam_info_sptr = template_projdata_sptr->get_exam_info_sptr();
     }
-      }
-#endif
-  }
+  else
+    {
+      template_filename = input_filename;
+      proj_data_info_sptr = input_file.get_proj_data_info_sptr();
+      exam_info_sptr = input_file.get_exam_info_sptr();
+    }
 
-  {
-    const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (proj_data.get_proj_data_info_sptr().get());
-    if (proj_data_info_ptr == 0)
-      {
-    error("Can only process not arc-corrected data\n");
-      }
-    const int half_fan_size =
-      std::min(proj_data_info_ptr->get_max_tangential_pos_num(),
-          -proj_data_info_ptr->get_min_tangential_pos_num());
-    const int fan_size = 2*half_fan_size+1;
-    const int max_ring_diff =
-      proj_data_info_ptr->get_max_ring_difference
-      (proj_data_info_ptr->get_max_segment_num());
+  if (exam_info_sptr->get_time_frame_definitions().get_num_time_frames()==0 ||
+      exam_info_sptr->get_time_frame_definitions().get_duration(1) < .0001)
+    error("Missing time-frame information in \"" + template_filename +'\"');
 
-    const int mashing_factor =
-      proj_data_info_ptr->get_view_mashing_factor();
+  ProjDataInterfile 
+    proj_data(exam_info_sptr,
+              proj_data_info_sptr->create_shared_clone(),
+              output_file_name);
 
-    shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_ptr->get_scanner_ptr()));
-    const ProjDataInfoCylindricalNoArcCorr * const uncompressed_proj_data_info_ptr =
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                    /*span=*/1, max_ring_diff,
-                    /*num_views=*/num_detectors_per_ring/2,
-                    fan_size,
-                    /*arccorrection=*/false));
+  GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles(input_filename);
+  const float coincidence_time_window = input_file.get_coincidence_time_window();
 
-
-
-    shared_ptr<GE::RDF_HDF5::GEHDF5Wrapper> m_input_sptr;
-    m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
-    int num_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
-
-    Bin bin;
-    Bin uncompressed_bin;
-
-    for (bin.segment_num() = proj_data.get_min_segment_num();
-     bin.segment_num() <= proj_data.get_max_segment_num();
-     ++ bin.segment_num())
-      {
-
-    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-         ++bin.axial_pos_num())
-      {
-        Sinogram<float> sinogram =
-          proj_data_info_ptr->get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
-        const float out_m = proj_data_info_ptr->get_m(bin);
-        const int in_min_segment_num =
-          proj_data_info_ptr->get_min_ring_difference(bin.segment_num());
-        const int in_max_segment_num =
-          proj_data_info_ptr->get_max_ring_difference(bin.segment_num());
-
-        // now loop over uncompressed detector-pairs
-
-        {
-          for (uncompressed_bin.segment_num() = in_min_segment_num;
-           uncompressed_bin.segment_num() <= in_max_segment_num;
-           ++uncompressed_bin.segment_num())
-        for (uncompressed_bin.axial_pos_num() = uncompressed_proj_data_info_ptr->get_min_axial_pos_num(uncompressed_bin.segment_num());
-             uncompressed_bin.axial_pos_num()  <= uncompressed_proj_data_info_ptr->get_max_axial_pos_num(uncompressed_bin.segment_num());
-             ++uncompressed_bin.axial_pos_num() )
-          {
-            const float in_m = uncompressed_proj_data_info_ptr->get_m(uncompressed_bin);
-            if (fabs(out_m - in_m) > 1E-4)
-              continue;
-
-
-            // views etc
-            if (proj_data.get_min_view_num()!=0)
-              error("Can only handle min_view_num==0\n");
-            for (bin.view_num() = proj_data.get_min_view_num();
-             bin.view_num() <= proj_data.get_max_view_num();
-             ++ bin.view_num())
-              {
-
-            for (bin.tangential_pos_num() = -half_fan_size;
-                 bin.tangential_pos_num() <= half_fan_size;
-                 ++bin.tangential_pos_num())
-              {
-                uncompressed_bin.tangential_pos_num() =
-                  bin.tangential_pos_num();
-                for (uncompressed_bin.view_num() = bin.view_num()*mashing_factor;
-                 uncompressed_bin.view_num() < (bin.view_num()+1)*mashing_factor;
-                 ++ uncompressed_bin.view_num())
-                  {
-
-                int ra = 0, a = 0;
-                int rb = 0, b = 0;
-                uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
-                                              uncompressed_bin);
-
-                float coincidence_time_window = 0.00000000457f;
-                /*(*segment_ptr)[bin.axial_pos_num()]*/
-                // TODO 447 needs to be num_crystals_per_ring()-1
-                sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
-                }
-              }
-              }
-
-
-          }
-        }
-        proj_data.set_sinogram(sinogram);
-      }
-
-      }
-  }
-
-
+  randoms_from_singles(proj_data, singles, coincidence_time_window);
   return EXIT_SUCCESS;
 }

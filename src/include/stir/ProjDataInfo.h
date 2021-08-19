@@ -7,15 +7,7 @@
     Copyright (C) 2017-2018, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -188,6 +180,8 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of TOF bins
+  inline int get_num_tof_poss() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number
@@ -206,6 +200,11 @@ public:
   inline int get_max_tangential_pos_num() const;
   //! Get the total number of sinograms
   inline int get_num_sinograms() const;
+  //! Get the number of non-tof sinograms
+  /*! Note that this is the sum of the number of axial poss over all segments.
+      \see get_num_sinograms()
+  */
+  inline int get_num_non_tof_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //@}

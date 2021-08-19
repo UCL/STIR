@@ -15,15 +15,7 @@
     Copyright (C) 2018-2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -85,7 +77,6 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr=_exam_info_sptr;
-      _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     }
@@ -104,7 +95,6 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr = _exam_info_sptr;
-      _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     
@@ -169,7 +159,7 @@ class DynamicDiscretisedDensity: public ExamData
 
   const float get_isotope_halflife() const;
 
-  const float get_calibration_factor() const;
+   float get_calibration_factor() const;
 
   //! at method
   const singleDiscDensT & at(const unsigned int frame_num) const
@@ -233,7 +223,6 @@ class DynamicDiscretisedDensity: public ExamData
   //TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
-  float _calibration_factor;
   float _isotope_halflife;
   bool _is_decay_corrected; 
   //double _start_time_in_secs_since_1970;

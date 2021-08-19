@@ -12,15 +12,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -91,32 +83,33 @@ public:
   /*! This test is essentially checking if the forward projector can handle the data 
       by calling ForwardProjectorByBin::set_up().
   */
-  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const; 
+  virtual float get_bin_efficiency(const Bin& bin) const override; 
 
 private:
   shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_ptr;
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
 
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   std::string attenuation_image_filename;
 };

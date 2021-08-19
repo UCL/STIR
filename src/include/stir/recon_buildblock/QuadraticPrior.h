@@ -4,15 +4,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details.
 */
@@ -129,14 +121,22 @@ class QuadraticPrior:  public
                 const BasicCoordinate<3,int>& coords,
                 const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  //! Call accumulate_Hessian_times_input
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
-  //! get penalty weights for the neigbourhood
+  //! Compute the multiplication of the hessian of the prior multiplied by the input.
+  //! For the quadratic function, the hessian of the prior is 1.
+  //! Therefore this will return the weights multiplied by the input.
+  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                                                   const DiscretisedDensity<3,elemT>& current_estimate,
+                                                   const DiscretisedDensity<3,elemT>& input) const;
+
+  //! get penalty weights for the neighbourhood
   Array<3,float> get_weights() const;
 
-  //! set penalty weights for the neigbourhood
+  //! set penalty weights for the neighbourhood
   void set_weights(const Array<3,float>&);
 
   //! get current kappa image

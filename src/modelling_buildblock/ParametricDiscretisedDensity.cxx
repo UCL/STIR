@@ -2,18 +2,10 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018 - 2019, University College London
+    Copyright (C) 2018 - 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -61,16 +53,17 @@ ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
       dyn_im.get_density(1).get_origin(),
       dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
 {
-    ExamInfo _exam_info(dyn_im.get_density(1).get_exam_info());
+    this->set_exam_info(dyn_im.get_exam_info());
+}
 
-    // Get the time frame definition (from start of first frame to end of last)
-    TimeFrameDefinitions tdefs = dyn_im.get_exam_info().get_time_frame_definitions();
-    const double start = tdefs.get_start_time(1);
-    const double end   = tdefs.get_end_time(tdefs.get_num_frames());
-    tdefs.set_num_time_frames(1);
-    tdefs.set_time_frame(1,start,end);
-    _exam_info.set_time_frame_definitions(tdefs);
-    this->set_exam_info(_exam_info);
+TEMPLATE
+ParamDiscDensity::
+ParametricDiscretisedDensity(const SingleDiscretisedDensityType& im)
+    : base_type(im.get_index_range(),
+      im.get_origin(),
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(im).get_grid_spacing())
+{
+    this->set_exam_info(im.get_exam_info());
 }
 
 #if 0

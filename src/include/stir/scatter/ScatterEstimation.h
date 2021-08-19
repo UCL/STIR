@@ -1,3 +1,4 @@
+
 #ifndef __stir_scatter_ScatterEstimation_H__
 #define __stir_scatter_ScatterEstimation_H__
 
@@ -6,15 +7,7 @@
     Copyright (C) 2016,2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -35,7 +28,6 @@
 #include "stir/recon_buildblock/Reconstruction.h"
 
 #include "stir/scatter/ScatterSimulation.h"
-#include "stir/recon_buildblock/ChainedBinNormalisation.h"
 
 #include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -47,6 +39,7 @@
 START_NAMESPACE_STIR
 
 template <class TargetT> class PostFiltering;
+class BinNormalisation;
 
 //! A struct to hold the parameters for image masking.
 struct MaskingParameters
@@ -75,6 +68,13 @@ struct MaskingParameters
   It should just deactivate the final upsampling.
   \todo Currently FBP reconstruction is not working and just throws an error.
   \todo This code needs far more documentation.
+
+  \deprecated The current parsing code still allows the <tt>bin normalisation type</tt>
+  keyword to specify a "chained" normalisation object with first the norm and second the atten.
+  As there is no way to guarantee that this will be the case, we have now replaced this with
+  explicit setting of the norm factors only (keyword <tt>normalisation type</tt>) and
+  the attenuation factors. The naming of the keywords is confusing however.
+  (Ensuring backwards compatibility was not so easy, so the code might look confusing.)
 */
 
 class ScatterEstimation: public ParsingObject
@@ -124,7 +124,6 @@ public:
     //!     <li> Check if debug mode and activate all export flags.
     //!     <li> Load the input_projdata_3d_sptr and perform SSRB
     //!     <li> Initialise (partially for the moment) the reconstruction method:
-    //!          Parses the input par file.
     //!     <li> Load Normalisation data and perform SSRB
     //!     <li> Load the background data (randoms) and do normalisation (to get the additive data)
     //!     </ol>
@@ -134,14 +133,23 @@ public:
     // Set functions
     //! Set the input projdata.
     inline void set_input_proj_data_sptr(const shared_ptr<ProjData>);
+    //! Set the input projdata
+    /*! Using same name as Reconstruction */
+#if STIR_VERSION < 050000
+    void set_input_data(const shared_ptr<ProjData>& data);
+#else
+    void set_input_data(const shared_ptr<ExamData>& data);
+#endif
+    shared_ptr<const ProjData> get_input_data() const;
+
     //! Set the reconstruction method for the scatter estimation
     inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
     //! Set the full resolution attenuation image.
     inline void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float > > );
-    //!
-    inline void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
-    //!
-    inline void set_normalisation_proj_data_sptr(const shared_ptr<ProjData>);
+    //! set projection data that contains the attenuation correction factors
+    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
+    //! set normalisation object (excluding attenuation)
+    void set_normalisation_sptr(const shared_ptr<BinNormalisation>);
     //!
     inline void set_background_proj_data_sptr(const shared_ptr<ProjData>);
     //!
@@ -153,6 +161,12 @@ public:
     inline void set_mask_proj_data_sptr(const shared_ptr<ProjData> arg);
 
     inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
+
+    inline void set_num_iterations(int);
+
+    void set_output_scatter_estimate_prefix(const std::string&);
+    void set_export_scatter_estimates_of_each_iteration(bool);
+
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
@@ -160,10 +174,20 @@ public:
 
 
     // Get functions
-    //! Get the number of iteration for the scatter estimation
+    //! Get the number of iterations for the scatter estimation
+    /*! \deprecated Use get_num_iterations() */
     int get_iterations_num() const;
 
-protected:
+    //! Get the number of iterations for the scatter estimation
+    int get_num_iterations() const;
+
+    //! Get the (low resolution) estimate of the activity image
+    shared_ptr<const DiscretisedDensity<3,float> > get_estimated_activity_image_sptr() const;
+
+    //! allows checking if we have called set_up()
+    virtual bool already_setup() const;
+
+ protected:
     //! All recomputes_** will default true
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -187,12 +211,8 @@ protected:
     shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_sptr;
     //! Image with attenuation values.
     shared_ptr<const DiscretisedDensity < 3, float > > atten_image_sptr;
-    //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
-    //! and second the atten.
-    shared_ptr<BinNormalisation>  multiplicative_binnorm_2d_sptr;
-    //! (norm * atten) in 3D. Through out the code we set as first the norm
-    //! and second the atten.
-    shared_ptr<BinNormalisation>  multiplicative_binnorm_sptr;
+    //! normalisation components in 3D (without atten)
+    shared_ptr<BinNormalisation>  norm_3d_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
@@ -216,9 +236,8 @@ protected:
     std::string mask_projdata_filename;
     //! Filename of background projdata
     std::string back_projdata_filename;
-    //! Filename of normalisation factors
-    std::string norm_coeff_filename;
-    //! Paraameter file for the tail fitting.
+    //! Optional parameter file for the tail fitting.
+    /*! If not provided, sensible defaults are used */
     std::string tail_mask_par_filename;
     //! Filename of the measured emission 3D data.
     std::string input_projdata_filename;
@@ -230,7 +249,18 @@ protected:
     //! If they are to be recalculated they will be stored here, if set.
     std::string atten_coeff_filename;
 
-    //! \details the set of parameters to mask the attenuation image
+    //! \details the set of parameters to obtain a mask from the attenuation image
+    /*! The attenuation image will be thresholded to find a plausible mask for where there
+        can be emission data. This mask will be then forward projected to find the tails in the projection data.
+
+        This is a simple strategy that can fail due to motion etc, so the attenuation image is first blurred,
+        and the default threshold is low.
+
+        Note that there is currently no attempt to eliminate the bed from the attenuation image first.
+        Tails are therefore going to be too small, which could create trouble.
+
+        By default, a Gaussian filter of FWHM (15,20,20) will be applied before thresholding with a value  0.003 cm^-1
+    */
     MaskingParameters masking_parameters;
     //! \details The number of iterations the scatter estimation will perform.
     //! Default = 5.
@@ -239,7 +269,22 @@ protected:
     std::string output_scatter_estimate_prefix;
 
     std::string output_additive_estimate_prefix;
+
 private:
+    //! variable to check if we have called set_up()
+    bool _already_setup;
+
+    //! attenuation in 3D
+    shared_ptr<BinNormalisation>  atten_norm_3d_sptr;
+
+    //! ((1/SSRB(1/norm3D)) * SSRB(atten)).
+    /*! Created such that the first term is the norm and second the atten */
+    shared_ptr<BinNormalisation>  multiplicative_binnorm_2d_sptr;
+
+    //! (norm * atten) in 3D.
+    /*! Created such that the first term is the norm and second the atten */
+    shared_ptr<BinNormalisation>  multiplicative_binnorm_sptr;
+
     //! variable for storing current scatter estimate
     shared_ptr<ProjData> scatter_estimate_sptr;
     
@@ -273,9 +318,16 @@ private:
 
     void apply_to_proj_data(ProjData& , const pow_times_add&);
 
+    //! Create combined norm from norm and atten
+    void create_multiplicative_binnorm_sptr();
+
     //! extract the normalisation component of a combined norm
     shared_ptr<BinNormalisation>
-      get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr);
+      get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const;
+
+    //! extract the attenuation factors from a combined norm
+    shared_ptr<ProjData>
+      get_attenuation_correction_factors_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr) const;
 
     //! Returns a shared pointer to a new ProjData. If we run in run_debug_mode and
     //! the extras_path has been set, then it will be a ProjDataInterfile, otherwise it will be a ProjDataInMemory.

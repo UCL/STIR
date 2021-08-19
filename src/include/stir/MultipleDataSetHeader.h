@@ -2,15 +2,7 @@
     Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -47,10 +39,15 @@ public:
     static const char * const registered_name;
 
     //! Get number of data sets
-    int get_num_data_sets() const { return _num_data_sets; }
+    std::size_t get_num_data_sets() const { return _num_data_sets; }
 
     //! Get ith filename
-    std::string get_filename(int i) const { return _filenames.at(i); }
+    /*! \warning Indexing here starts from 0*/
+    std::string get_filename(std::size_t i) const { return _filenames.at(i); }
+
+    //! Create a Multi header pointing to a set of filenames
+    template <class VectorOfStringsT>
+      inline static void write_header(const std::string& filename, const VectorOfStringsT& individual_filenames);
 
 protected:
 
@@ -70,4 +67,6 @@ std::vector<std::string> _filenames;
 };
 
 END_NAMESPACE_STIR
+
+#include "stir/MultipleDataSetHeader.inl"
 #endif

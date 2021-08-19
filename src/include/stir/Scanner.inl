@@ -6,15 +6,7 @@
     Copyright (C) 2016, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -97,9 +89,14 @@ Scanner::get_default_bin_size() const
 { return bin_size;}
 
 float
-Scanner::get_default_intrinsic_tilt() const
+Scanner::get_intrinsic_azimuthal_tilt() const
 {
-  return intrinsic_tilt;}
+#ifdef STIR_LEGACY_IGNORE_VIEW_OFFSET
+  return 0.F;
+#else
+  return intrinsic_tilt;
+#endif
+}
 
 int 
 Scanner::get_num_transaxial_blocks_per_bucket() const
@@ -285,7 +282,7 @@ void Scanner::set_default_bin_size(const float  & new_size)
   bin_size = new_size;
 }
 
-void Scanner::set_default_intrinsic_tilt(const float &  new_tilt)
+void Scanner::set_intrinsic_azimuthal_tilt(const float new_tilt)
 {
   intrinsic_tilt = new_tilt;
 }

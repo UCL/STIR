@@ -6,21 +6,18 @@
     
   \author Kris Thielemans
   \author Ottavia Bertolli
+  \author Nikos Efthimiou
+  \author Palak Wadhwa
 */
 /*
     Copyright (C) 2003-2011, Hammersmith Imanet Ltd
     Copyright (C) 2012-2013, Kris Thielemans
+    Copyright (C) 2018 University of Hull
+    Copyright (C) 2018 University of Leeds
+    Copyright (C) 2020-2021 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -32,7 +29,7 @@
 #include "stir/shared_ptr.h"
 
 #include <fstream>
-
+#include <string.h>
 START_NAMESPACE_STIR
 
 namespace GE {
@@ -66,8 +63,9 @@ template <class RecordT>
     max_size_of_record(max_size_of_record)
 {
     assert(size_of_record_signature<=max_size_of_record);
-    starting_stream_position = 0;
-    current_offset = 0;
+
+    this->max_buffer_size =10000000;
+    this->buffer.reset(new char[this->max_buffer_size]);
 
     set_up();
 }
@@ -79,12 +77,48 @@ set_up()
 {
     input_sptr.reset(new GEHDF5Wrapper(m_filename));
     data_sptr.reset(new char[this->max_size_of_record]);
+    starting_stream_position = 0;
+    current_offset = 0;
 
     input_sptr->initialise_listmode_data();
-    //! \todo edit
     m_list_size = input_sptr->get_dataset_size() - this->size_of_record_signature;
 
+    this->buffer_size = 0;
     return Succeeded::yes;
+}
+
+template <class RecordT>
+void
+InputStreamWithRecordsFromHDF5<RecordT>::
+fill_buffer(const std::streampos offset) const
+{
+  this->buffer_size =
+    static_cast<std::size_t>(std::min(static_cast<uint64_t>(this->max_buffer_size),
+                                      m_list_size - offset));
+  input_sptr->read_list_data(buffer.get(), offset, hsize_t(this->buffer_size));
+  this->start_of_buffer_offset =  offset;
+}
+
+template <class RecordT>
+void
+InputStreamWithRecordsFromHDF5<RecordT>::
+read_data(char* output,const std::streampos offset, const hsize_t size) const
+{
+  if (this->buffer_size == 0 || offset < this->start_of_buffer_offset ||
+      offset >= (this->start_of_buffer_offset + static_cast<std::streampos>(this->buffer_size)))
+    this->fill_buffer(offset);
+
+  // copy data from buffer to output
+  const std::size_t offset_in_buffer = offset - this->start_of_buffer_offset;
+  const hsize_t size_in_buffer = std::min(size, static_cast<hsize_t>(this->buffer_size - offset_in_buffer));
+
+  memcpy(output, this->buffer.get() + offset_in_buffer, static_cast<std::size_t>(size_in_buffer));
+
+  // check if there is anything else to read after the end of the buffer
+  if (size_in_buffer < size)
+    read_data(output + size_in_buffer,
+              offset + static_cast<std::streampos>(size_in_buffer),
+              size - size_in_buffer);
 }
 
 template <class RecordT>
@@ -92,22 +126,30 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 get_next_record(RecordT& record)
 {
+  try
+    {
+      if (current_offset >= static_cast<std::streampos>(m_list_size))
+        return Succeeded::no;
+      char* data_ptr = data_sptr.get();
+      this->read_data(data_ptr, current_offset, hsize_t(this->size_of_record_signature));
+      const std::size_t size_of_record =
+        record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
 
-  if (current_offset > m_list_size)
+      assert(size_of_record <= this->max_size_of_record);
+      // read more bytes if necessary
+      auto remainder = size_of_record - this->size_of_record_signature;
+      if (remainder > 0)
+        this->read_data(data_ptr+this->size_of_record_signature,
+                       current_offset+static_cast<std::streampos>(this->size_of_record_signature),
+                       hsize_t(remainder));
+      current_offset += size_of_record;
+      return
+        record.init_from_data_ptr(data_ptr, size_of_record,false);
+    }
+  catch (...)
+    {
       return Succeeded::no;
-char* data_ptr = data_sptr.get();
-  input_sptr->get_from_dataspace(current_offset, data_ptr);
-
-    // NE: Is this really meaningful?
-
-  const std::size_t size_of_record =
-    record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
-
-  assert(size_of_record <= this->max_size_of_record);
-
-
-  return
-    record.init_from_data_ptr(data_ptr, size_of_record,false);
+    }
 }
 
 

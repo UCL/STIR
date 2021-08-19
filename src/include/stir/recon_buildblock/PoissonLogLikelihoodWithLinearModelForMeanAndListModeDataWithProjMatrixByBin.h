@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
     Copyright (C) 2016, UCL
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -74,15 +66,27 @@ public:
   
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
 
-  //! This should compute the gradient of the objective function at the \a current_estimate overwriting \a gradient
-  virtual  
-  void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
-                                         const TargetT &current_estimate,  
-                                         const int subset_num);  
+  //! Computes the gradient of the objective function at the \a current_estimate overwriting \a gradient.
+  /*!
+   \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
+   because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
+   */
+    virtual
+    void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                        const TargetT &current_estimate,
+                                                        const int subset_num,
+                                                        const bool add_sensitivity);
+
   virtual TargetT * construct_target_ptr() const;  
 
   int set_num_subsets(const int new_num_subsets);
-
+  
+  const shared_ptr<BinNormalisation> & 
+  get_normalisation_sptr() const
+  { return this->normalisation_sptr; }
+  
+  virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
+  
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,

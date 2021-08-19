@@ -14,15 +14,7 @@
     Copyright (C) 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -55,7 +47,7 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     const size_t n = x.size_all();
     const size_t ny = y.size_all();
     if (n!=ny)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Create arrays
     std::vector<float> arr1(n), arr2(n);
@@ -65,11 +57,11 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
     // Check for mismatch
     for (unsigned i=0; i<n; ++i)
         if (std::abs(arr1[i]-arr2[i]) > 1e-4f)
-            error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+            error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 
     // Check for non-zero
     if (std::abs(*std::max_element(arr1.begin(),arr1.end())) < 1e-4f)
-        error("ProjData::axpby and ProjDataInMemory::axpby mismatch");
+        error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
 }
 
 void
@@ -99,14 +91,23 @@ run_tests()
     ProjDataInMemory y1(pd1);
     y1.fill(1000.f);
     ProjDataInMemory y2(y1);
+  
 
-    // Check axpby with general and ProjDataInMemory methods
+    // Check xapby with general and ProjDataInMemory methods
     const float a = 2.f;
     const float b = 3.f;
-    pd1.axpby(a,x1,b,y1);
-    pd2.ProjData::axpby(a,x2,b,y2);
-
+    pd1.xapyb(x1,a,y1,b);
+    pd2.ProjData::xapyb(x2,a,y2,b);
     check_proj_data_are_equal_and_non_zero(pd1,pd2);
+
+    // Check sapby with general and ProjDataInMemory methods
+    ProjDataInMemory out1(x1);
+    out1.sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out1);
+    
+    ProjDataInMemory out2(x1);
+    out2.ProjData::sapyb(a, y1, b);
+    check_proj_data_are_equal_and_non_zero(pd1,out2);
 
     // Check using iterators
     ProjDataInMemory pd3(pd1);

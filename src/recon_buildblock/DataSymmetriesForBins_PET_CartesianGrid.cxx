@@ -3,17 +3,10 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018, Palak Wadhwa
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -23,6 +16,7 @@
   \brief non-inline implementations for class stir::DataSymmetriesForBins_PET_CartesianGrid
 
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author PARAPET project
 
 */
@@ -198,6 +192,13 @@ DataSymmetriesForBins_PET_CartesianGrid
     error("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
 	  "with tangential_pos_num s.t. get_s(...,tang_pos_num)==-get_s(...,-tang_pos_num)\n");
 
+  //PW Disabling some symmetries due to phi offset.
+  if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
+  {
+    warning("Disabling symmetries as image is rotated due to phi offset of the scanner.");
+    this->do_symmetry_90degrees_min_phi = false;
+    this->do_symmetry_180degrees_min_phi = false;
+  }
   if (fabs(image_info_ptr->get_origin().x())>.01F || fabs(image_info_ptr->get_origin().y())>.01F)
     {
       // disable symmetries with shifted images

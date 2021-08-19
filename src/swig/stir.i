@@ -3,15 +3,7 @@
     Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -85,8 +77,16 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
 
+
+#include "stir/evaluation/ROIValues.h"
+#include "stir/evaluation/compute_ROI_values.h"
+
+
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+#include "stir/HUToMuImageProcessor.h"
+#endif
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -97,9 +97,12 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#include "stir/recon_buildblock/LogcoshPrior.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+#include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -933,6 +936,8 @@ T * operator-> () const;
   }
 #endif
 
+%ignore stir::NumericVectorWithOffset::xapyb;
+%ignore stir::NumericVectorWithOffset::axpby;
 %include "stir/NumericVectorWithOffset.h"
 
 #ifdef SWIGPYTHON
@@ -1395,7 +1400,7 @@ namespace stir {
     { 
       Array<3,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_3D(*$self, array);
+      fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
@@ -1428,7 +1433,7 @@ namespace stir {
     { 
       Array<3,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_3D(*$self, array);
+      fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
@@ -1471,6 +1476,11 @@ namespace stir {
 %include "stir/Shape/EllipsoidalCylinder.h"
 %include "stir/Shape/Box3D.h"
 
+// ROIValues class and compute compute_ROI_values
+%shared_ptr(stir::ROIValues)
+%include "stir/evaluation/ROIValues.h"
+%include "stir/evaluation/compute_ROI_values.h"
+
 // filters
 #ifdef STIRSWIG_SHARED_PTR
 #define elemT float
@@ -1484,12 +1494,21 @@ namespace stir {
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+#ifdef HAVE_JSON
+%shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
+#endif
 #undef elemT
 #endif
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
+#ifdef HAVE_JSON
+%include "stir/HUToMuImageProcessor.h"
+#endif
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -1502,8 +1521,15 @@ namespace stir {
              stir::SeparableCartesianMetzImageFilter<elemT>,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+#ifdef HAVE_JSON
+%template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
+             stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+
+%template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
+#endif
 #undef elemT
 
 %include "stir/GeneralisedPoissonNoiseGenerator.h"
@@ -1513,6 +1539,7 @@ namespace stir {
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
 
+%ignore *::get_exam_info_uptr_for_target;
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
@@ -1535,6 +1562,10 @@ namespace stir {
          stir::GeneralisedPrior<TargetT >,
          stir::GeneralisedPrior<TargetT > >);
 %shared_ptr(stir::RelativeDifferencePrior<elemT>);
+%shared_ptr(stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >);
+%shared_ptr(stir::LogcoshPrior<elemT>);
 
 %shared_ptr(stir::Reconstruction<TargetT >);
 %shared_ptr(stir::IterativeReconstruction<TargetT >);
@@ -1556,6 +1587,8 @@ namespace stir {
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
+%shared_ptr(stir::SqrtHessianRowSum<TargetT >);
+
 #undef TargetT
 #undef elemT
 #endif
@@ -1570,6 +1603,7 @@ namespace stir {
 %include "stir/recon_buildblock/QuadraticPrior.h"
 %include "stir/recon_buildblock/PLSPrior.h"
 %include "stir/recon_buildblock/RelativeDifferencePrior.h"
+%include "stir/recon_buildblock/LogcoshPrior.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
  // there's a get_objective_function, so we'll ignore the sptr version
@@ -1581,6 +1615,8 @@ namespace stir {
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+%include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
@@ -1625,6 +1661,11 @@ namespace stir {
        stir::GeneralisedPrior<TargetT >,
        stir::GeneralisedPrior<TargetT > >;
 %template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT>;
+%template (RPLogcoshPrior3DFloat)
+stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
+        stir::GeneralisedPrior<TargetT >,
+        stir::PriorWithParabolicSurrogate<TargetT  > >;
+%template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
 
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
@@ -1644,6 +1685,8 @@ namespace stir {
 
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+%template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
 #undef elemT
 #undef TargetT
@@ -1687,8 +1730,3 @@ namespace stir {
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-
-%include "stir/recon_buildblock/RelativeDifferencePrior.h"
-#define elemT float
-%template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT >;
-

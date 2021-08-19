@@ -1,16 +1,9 @@
 /*
   Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
+  Copyright (C) 2020, University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2.0 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -25,6 +18,7 @@
   The command line arguments are as follows (but everything has to fit on 1 line):
   \code
   [--output-format parameter-filename ]
+  [--parametric || --dynamic]
   [-s [--max_segment_num_to_process number] ] 
   [--add | --mult] 
   [--power power_float] 
@@ -42,6 +36,7 @@
   [--output-format parameter-filename ]
   --accumulate
   [-s] 
+  [--parametric || --dynamic]
   [--add | --mult] 
   [--power power_float] 
   [--times-scalar mult_scalar_float] 
@@ -64,7 +59,8 @@
   '--including-first', the data in the
   first filename will first be manipulated according to '--power' and '--times-scalar'.<br>
   The '-s' option is necessary if the arguments are projection data.
-  Otherwise, it is assumed the data are images.<br>
+  Otherwise, it is assumed the data are images. '--parametric' and '--dynamic' can be used to
+  read parametric/dynamic images.<br>
   For projection data, you can restrict the number of segments read/written
   using the --max_segment_num_to_process option (unless --accumulate is used).
   For example, using 2 as an argument of this option, will read/write
@@ -205,10 +201,11 @@ void process_data(const string& output_file_name,
 		  const bool except_first,
 		  const bool verbose,
 		  const bool do_add,
-		  const FunctionObjectT& pow_times_add_object)
+		  const FunctionObjectT& pow_times_add_object,
+                  const OutputFileFormat<DynamicDiscretisedDensity>& output_format)
 {
-  shared_ptr<DynamicDiscretisedDensity> 
-    dyn_image_sptr(DynamicDiscretisedDensity::read_from_file(*argv));
+  unique_ptr<DynamicDiscretisedDensity>
+    dyn_image_sptr = read_from_file<DynamicDiscretisedDensity>(*argv);
   DynamicDiscretisedDensity & dyn_image = *dyn_image_sptr;
   for(unsigned int frame_num=1;frame_num<=(dyn_image_sptr->get_time_frame_definitions()).get_num_frames();++frame_num)
     {
@@ -251,7 +248,27 @@ void process_data(const string& output_file_name,
 
   if (verbose)
     cout << "Writing output image " << output_file_name << endl;
-  dyn_image_sptr->write_to_ecat7(output_file_name);
+  output_format.write_to_file(output_file_name, *dyn_image_sptr);
+}
+
+template <class DataT>
+shared_ptr<OutputFileFormat<DataT> >
+find_output_format(const std::string& filename)
+{
+  if (filename.empty())
+    return OutputFileFormat<DataT>::default_sptr();
+
+  shared_ptr<OutputFileFormat<DataT> > output_format_sptr;
+  KeyParser parser;
+  parser.add_start_key("output file format parameters");
+  parser.add_parsing_key("output file format type", &output_format_sptr);
+  parser.add_stop_key("END");
+  if (parser.parse(filename.c_str()) == false || is_null_ptr(output_format_sptr))
+    {
+      cerr << "Error parsing output file format from " << filename <<endl;
+      exit(EXIT_FAILURE);
+    }
+  return output_format_sptr;
 }
 
 int 
@@ -320,12 +337,8 @@ main(int argc, char **argv)
   bool do_projdata = false;
   bool parametric = false;
   bool dynamic = false;
-
+  std::string output_format_filename;
   int max_segment_num_to_process = -1;
-  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
-    output_format_sptr =
-    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-
 
   // first process command line options
 
@@ -345,15 +358,7 @@ main(int argc, char **argv)
 	      cerr << "Option '--output-format' expects a (filename) argument\n"; 
 	      exit(EXIT_FAILURE); 
 	    }
-	  KeyParser parser;
-	  parser.add_start_key("output file format parameters");
-	  parser.add_parsing_key("output file format type", &output_format_sptr);
-	  parser.add_stop_key("END"); 
-	  if (parser.parse(argv[1]) == false || is_null_ptr(output_format_sptr))
-	    {
-	      cerr << "Error parsing output file format from " << argv[1]<<endl;
-	      exit(EXIT_FAILURE); 
-	    }
+          output_format_filename = argv[1];
 	  argc-=2; argv+=2;
 	} 
 	
@@ -497,14 +502,10 @@ main(int argc, char **argv)
 		       verbose,
 		       do_add,
 		       pow_times_add_object,
-		       *output_format_sptr);
+		       *find_output_format<DiscretisedDensity<3,float> >(output_format_filename));
 	}
       else if (parametric)
 	{
-	  shared_ptr<OutputFileFormat<ParametricVoxelsOnCartesianGrid > >
-	    output_format_sptr =
-	    OutputFileFormat<ParametricVoxelsOnCartesianGrid >::default_sptr();	  
-
 	  process_data(output_file_name,
 		       num_files, argv, 
 		       no_math_on_data,
@@ -512,7 +513,7 @@ main(int argc, char **argv)
 		       verbose,
 		       do_add,
 		       pow_times_add_object,
-		       *output_format_sptr);
+		       *find_output_format<ParametricVoxelsOnCartesianGrid>(output_format_filename));
 	}
       else if (dynamic)
 	{	  
@@ -522,11 +523,15 @@ main(int argc, char **argv)
 		       except_first,
 		       verbose,
 		       do_add,
-		       pow_times_add_object);
+		       pow_times_add_object,
+                       *find_output_format<DynamicDiscretisedDensity>(output_format_filename));
 	}
     }
   else // do_projdata
     {
+      if (!output_format_filename.empty())
+        error("We do not support specifying the output format yet for projection data");
+
       vector< shared_ptr<ProjData> > all_proj_data(num_files);
       shared_ptr<ProjData> out_proj_data_ptr;
       if (accumulate)

@@ -1,18 +1,10 @@
 /*
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -124,28 +116,7 @@ int main(int argc, char *argv[])
     }
 
   if (print_exam)
-    {
-      const ExamInfo& exam_info = proj_data_sptr->get_exam_info();
-      std::cout << "Modality: " << exam_info.imaging_modality.get_name() << '\n';
-      std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
-      std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
-      if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
-	{
-	  std::cout << "Time frame start - end (duration), all in secs: "
-		    << exam_info.time_frame_definitions.get_start_time(1)
-		    << " - "
-		    << exam_info.time_frame_definitions.get_end_time(1)
-		    << " ("
-		    << exam_info.time_frame_definitions.get_duration(1)
-		    << ")\n";
-	}
-      std::cout << "number of energy windows:=1\n"
-                << "energy window lower level[1] := "
-                << exam_info.get_low_energy_thres() << '\n'
-                << "energy window upper level[1] := "
-                << exam_info.get_high_energy_thres() << '\n';
-        
-    }
+    std::cout << proj_data_sptr->get_exam_info_sptr()->parameter_info();
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_sptr()->parameter_info() << std::endl;
 

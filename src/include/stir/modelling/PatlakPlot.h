@@ -4,15 +4,7 @@
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -92,9 +84,12 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     ModelMatrix<2> get_model_matrix(const PlasmaData& plasma_data, 
 				    const TimeFrameDefinitions& time_frame_definitions, 
 				    const unsigned int starting_frame);
-   //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
+    //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
     unsigned int
       get_starting_frame() const ;
+    //! Returns the number of the last frame available. 
+    unsigned int
+      get_ending_frame() const ;
     //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
     TimeFrameDefinitions 
       get_time_frame_definitions() const ;
@@ -127,7 +122,10 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
       get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
 					      const ParametricVoxelsOnCartesianGrid & par_image) const;
 
-    //! This is the common method used to estimate the parametric images from the dynamic images. 
+    //! This is the common method used to estimate the parametric images from the dynamic images.
+    /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
+      the same as the ones encoded in the model.
+    */
     void 
       apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const;
 

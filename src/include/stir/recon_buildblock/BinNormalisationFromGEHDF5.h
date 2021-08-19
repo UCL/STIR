@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
+  Copyright (C) 2013-2014, 2020 University College London
   Copyright (C) 2017-2019 University of Leeds
 
   Largely a copy of the ECAT7 version. 
@@ -32,6 +32,7 @@
 #define __stir_recon_buildblock_BinNormalisationFromGEHDF5_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -47,6 +48,9 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
+
+class ProjDataInMemory;
+
 namespace GE {
 namespace RDF_HDF5 {
 
@@ -76,7 +80,7 @@ namespace RDF_HDF5 {
  
 */
 class BinNormalisationFromGEHDF5 :
-   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation>
+   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
@@ -93,8 +97,9 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -106,16 +111,15 @@ private:
   Array<1,float> axial_t2_array;
   Array<1,float> trans_t1_array;
   shared_ptr<SinglesRates> singles_rates_ptr;
-  Array<2,float> geometric_factors;
   Array<2,float> efficiency_factors;
-  Array<2,float> crystal_interference_factors;
+  shared_ptr<ProjDataInMemory>  geo_eff_factors_sptr;
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
   int num_blocks_per_singles_unit;
@@ -123,16 +127,17 @@ private:
   bool _use_detector_efficiencies;
   bool _use_dead_time;
   bool _use_geometric_factors;
-  bool _use_crystal_interference_factors;
 
   void read_norm_data(const string& filename);
-  float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
+  float get_dead_time_efficiency ( const DetectionPositionPair<>& detection_position_pair,
 				  const double start_time, const double end_time) const;
 
+  float get_geometric_efficiency_factors  (const DetectionPositionPair<>& detection_position_pair) const;
+  float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   string normalisation_GEHDF5_filename;
   shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;

@@ -1,8 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2019, UCL
-    Copyright (C) 2019, NPL
+    Copyright (C) 2019-2021, UCL
+    Copyright (C) 2019-2021, NPL
     This file is part of STIR.
     Most of this file is free software; you can redistribute that part and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -71,6 +71,7 @@ BinNormalisationSPECT::set_defaults()
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
   this->resampled=0;
+  this->measured_calibration_factor=-1.F;
 
 }
 
@@ -79,16 +80,15 @@ BinNormalisationSPECT::
 initialise_keymap()
 {
   this->parser.add_start_key("Bin Normalisation SPECT");
-  this->parser.add_key("uniformity_filename", &this->uniformity_filename);
-  this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
-  this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
-  this->parser.add_key("folder_prefix", &this->folder_prefix);
-  this->parser.add_key("rel_angle", &this->rel_angle);
-  this->parser.add_key("half_life", &this->half_life);
-  this->parser.add_key("view_time_interval", &this->view_time_interval);
+  this->parser.add_key("uniformity filename", &this->uniformity_filename);
+  this->parser.add_key("use detector efficiencies", &this->_use_detector_efficiencies);
+  this->parser.add_key("use uniformity factors", &this->_use_uniformity_factors);
+  this->parser.add_key("folder prefix", &this->folder_prefix);
+  this->parser.add_key("half life", &this->half_life); //TODO read this from the database according to isotope name
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("projdata filename", &this->projdata_filename);
-  this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
+  this->parser.add_key("use decay correction", &this->_use_decay_correction);
+  this->parser.add_key("measured calibration factor", &this->measured_calibration_factor);
 
   this->parser.add_stop_key("End Bin Normalisation SPECT");
 }
@@ -97,13 +97,28 @@ bool
 BinNormalisationSPECT::
 post_processing()
 {
-  if(use_uniformity_factors()){
-      uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
-  read_uniformity_table(uniformity);}
-
-  norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
-  max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
-//  read_norm_data(normalisation_spect_filename);
+    if(use_uniformity_factors()){
+        uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
+    read_uniformity_table(uniformity);}
+  
+    norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
+    set_exam_info_sptr(norm_proj_data_info_ptr->get_exam_info_sptr());
+    max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+    
+    if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()>1)
+        error("BinNormalisationSPECT: Multiple time frames not yet supported");
+    
+    if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
+        error("BinNormalisationSPECT: At least one time frame should be defined");
+    
+    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
+    
+//  allow to set your own calibration factor
+  if(measured_calibration_factor>0) 
+      set_calibration_factor(measured_calibration_factor);
+  else 
+      set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
+  
   return false;
 }
 
@@ -116,9 +131,11 @@ BinNormalisationSPECT()
 
 Succeeded
 BinNormalisationSPECT::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  return BinNormalisation::set_up(proj_data_info_ptr_v);
+    
+    set_num_views(norm_proj_data_info_ptr->get_num_views());
+  return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
 BinNormalisationSPECT::
@@ -133,26 +150,23 @@ read_norm_data(const std::string& filename)
 {// to think about this
   }
 
-float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
+float BinNormalisationSPECT::get_uncalibrated_bin_efficiency(const Bin& bin) const {
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
 
     if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-        resample_uniformity(//down_sampled_uniformity,
-                            uniformity,
+        resample_uniformity(uniformity,
                             max_tang,
                             zoom);
     }
-
-    if(bin.view_num()==0)
-    set_num_views(norm_proj_data_info_ptr->get_num_views());
 
     int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
     double rel_time;
     rel_time=(this->view_time_interval)*
              (bin.view_num()+1-head_num*
              (num_views/num_detector_heads));
+    
     /*####################################################################################################
      *####################################   uniformity factors  #########################################*/
 
@@ -173,12 +187,14 @@ float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double star
                     normalisation=
                     normalisation/decay_correction_factor(half_life, rel_time);
                 }
-//std::cout<<"value"<<uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1]<<" "<<normalisation<<std::endl;
+                
 return normalisation;
 }
 
-void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams) const{
 
+    
+//    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
@@ -187,14 +203,10 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
 
     if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-        resample_uniformity(//down_sampled_uniformity,
-                            uniformity,
+        resample_uniformity(uniformity,
                             max_tang,
                             zoom);
     }
-
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
@@ -232,14 +244,14 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
                             normalisation/decay_correction_factor(half_life, rel_time);
                         }
           (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
-            (std::max(1.E-20F, get_bin_efficiency(bin, start_time, end_time))*
+            (std::max(1.E-20F, get_uncalibrated_bin_efficiency(bin))*
              normalisation);
            normalisation=1;
         }
     }
 }
 
-void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
+void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams) const{
 
     this->check(*viewgrams.get_proj_data_info_sptr());
     int view_num=viewgrams.get_basic_view_num();
@@ -249,14 +261,10 @@ void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams,const double
 
 if(zoom!=1 && !resampled && use_uniformity_factors()){
 
-    resample_uniformity(//down_sampled_uniformity,
-                        uniformity,
+    resample_uniformity(uniformity,
                         max_tang,
                         zoom);
 }
-
-    if(view_num==0)
-    set_num_views(viewgrams.get_proj_data_info_sptr()->get_num_views());
 
     int head_num=(int)view_num/(num_views/num_detector_heads);
 
@@ -296,7 +304,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 
 
             (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()]*=
-        (this->get_bin_efficiency(bin,start_time, end_time)*normalisation);
+        (this->get_uncalibrated_bin_efficiency(bin)*normalisation);
             normalisation=1;
 
         }
@@ -306,7 +314,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 void
 BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
-{//std::ofstream unif_table("uniformity.dat",std::ios::out);
+{
     for(int n=1; n<=num_detector_heads; n++ ){
       
               const std::string n_string = boost::lexical_cast<std::string>(n);
@@ -321,15 +329,13 @@ read_uniformity_table(Array<3,float>& uniformity) const
               for(int j=1;j<=1023;j++)
                   for(int i=1;i<=1023;i++){
                       uniformity[n-1][j][i]=map[j+i*1024];
-//                      std::cout<<"value"<<uniformity[n-1][j][i]<<std::endl;
                   }
               }
 }
 
 void
 BinNormalisationSPECT::
-resample_uniformity(//Array<3,float>& down_sampled_uniformity,
-                    Array<3,float> uniformity,
+resample_uniformity(Array<3,float> uniformity,
                     const int max_tang,
                     const int zoom) const
 {
@@ -342,9 +348,6 @@ for(int n=0;n<=2;n++){
 
                     down_sampled_uniformity[n][i][j]=down_sampled_uniformity[n][i][j] +
                                             uniformity[n][zoom*i+l][zoom*j+k]/square(zoom);
-//                    std::cout<<"uni"<<uniformity[n][zoom*i+l][zoom*j+k]/square(zoom)<<","
-//                             <<down_sampled_uniformity[n][i][j]<<std::endl;
-
                 }
             }
         }

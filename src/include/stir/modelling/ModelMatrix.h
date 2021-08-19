@@ -4,15 +4,7 @@
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -65,8 +57,8 @@ public:
    inline void set_model_array(const Array<2,float>& model_array);
    inline void set_time_vector(const VectorWithOffset<float>& time_vector);
   //! Function to set _is_calibrated boolean true or false
-   inline void set_if_uncalibrated(const bool is_uncalibrated);
-   inline void set_if_in_correct_scale(const bool in_correct_scale);
+   inline void set_is_uncalibrated(const bool is_uncalibrated);
+   inline void set_is_in_correct_scale(const bool in_correct_scale);
   //!@}
 
   //! Function to give the threshold_value to the all elements of the model_array which lower value than the threshold_value.  

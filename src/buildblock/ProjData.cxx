@@ -5,15 +5,7 @@
     Copyright (C) 2015, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -51,6 +43,10 @@
 #endif // STIR_USE_GE_IO
 #ifdef HAVE_IE
 #include "stir_experimental/IO/GE/ProjDataIE.h"
+#endif
+#ifdef HAVE_HDF5
+#include "stir/ProjDataGEHDF5.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -203,6 +199,17 @@ read_from_file(const string& filename,
   }
 #endif // RDF
       
+#ifdef HAVE_HDF5
+  if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))
+    {
+#ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
+#endif
+      shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
+      if (!is_null_ptr(ptr))
+	return ptr;
+  }
+#endif // GE HDF5
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
 	"Unsupported file format? Aborting.",
@@ -424,12 +431,20 @@ write_to_file(const string& output_filename) const
 
 void
 ProjData::
-axpby(const float a, const ProjData& x,
-      const float b, const ProjData& y)
+axpby( const float a, const ProjData& x,
+       const float b, const ProjData& y)
+{
+  xapyb(x,a,y,b);
+}
+
+void
+ProjData::
+xapyb(const ProjData& x, const float a,
+      const ProjData& y, const float b)
 {
     if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
             *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
-        error("ProjData::axpby: ProjDataInfo don't match");
+        error("ProjData::xapyb: ProjDataInfo don't match");
 
     const int n_min = get_min_segment_num();
     const int n_max = get_max_segment_num();
@@ -439,10 +454,52 @@ axpby(const float a, const ProjData& x,
         SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
         const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
         const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
-        seg.axpby(a, sx, b, sy);
+        seg.xapyb(sx, a, sy, b);
         set_segment(seg);
     }
 }
+
+void
+ProjData::
+xapyb(const ProjData& x, const ProjData& a,
+      const ProjData& y, const ProjData& b)
+{
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
+        error("ProjData::xapyb: ProjDataInfo don't match");
+
+    const int n_min = get_min_segment_num();
+    const int n_max = get_max_segment_num();
+
+    for (int s=n_min; s<=n_max; ++s)
+    {
+        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sa = a.get_segment_by_sinogram(s);
+        const SegmentBySinogram<float> sb = b.get_segment_by_sinogram(s);
+
+        seg.xapyb(sx, sa, sy, sb);
+        set_segment(seg);
+    }
+}
+
+void
+ProjData::
+sapyb(const float a, const ProjData& y, const float b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+void
+ProjData::
+sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
 
 std::vector<int>
 ProjData::

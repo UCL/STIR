@@ -40,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 4.0}}
+ Version 4.1}}
 \end{center}
 
 \end{spacing}
@@ -61,23 +61,15 @@ A. Zverovich \\
 T. Beisel \\
 {\it \small Univ. of Paderborn} \\
 C. Falc\'{o}n \\
-{\it \small Univ. of Barcelona}
+{\it \small Univ. of Barcelona} \\
+R. Twyman \\
+{\it \small University College London}
+\\
+\\
 
-\begin{center}
-License
-\end{center}
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
+SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    Parts of this file are licensed under the PARAPET license.     
-    See STIR/LICENSE.txt for details.
+See STIR/LICENSE.txt for details.
 
 \newpage
 
@@ -188,6 +180,10 @@ the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
+\subsubsection{JSON}
+The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+\url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
+instructions for this library are available on its github page.
 
 \subsubsection{
 C++ Compiler}
@@ -220,12 +216,12 @@ that you would otherwise experience when using \textit{STIR} and ECAT7
 files.
 
 \subsubsection{
-Enabling GE RDF and VOLPET support}
+Enabling GE RDF  support}
 \label{sec:RDFsupport}
-We have software that reads VOLPET and RDF data for all GE scanners, but this can currently
-not be distributed due to licensing restrictions. If you have the
-GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
-support in \textit{STIR}.
+This software includes support for GE Raw Data Format (RDF) version 9 files, used
+by the GE Signa PET/MR and some PET/CT scanners (depending on their software version). This is only enabled if CMake was able to find HDF5 libraries.
+For most operating systems this can be done via your package manager which we highly recommend. You could also
+download from the <a href="https://www.hdfgroup.org/downloads/hdf5/">HDF5 group download page</a>.
 
 \subsection{
 Building}
@@ -328,7 +324,8 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
-\item CERN ROOT files used by GEANT and GATE.
+\item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
+  If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
@@ -633,17 +630,22 @@ but do not write it.
 
 \subsubsection{VOLPET sinograms}
 
-The GE VOLPET sinogram format is supported for reading, but for
-the GE Advance only and data files must have a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views. 
-See section \ref{sec:RDFsupport} for enabling support for other scanners and
-data in the GE RDF format.
+The GE VOLPET sinogram format for the GE Advance was supported for reading, but 
+only for data files with a single data set, maximum ring 
+difference 11 and contain 281 bins * 256 segments * 336 views.
+This has not been tested in a long time so will be removed in a future version.
+
+\subsubsection{RDF9 data}
+See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
+that use the GE RDF format. We currently support uncompressed listmode,
+uncompressed sinograms and normalisation files. (well-counter files are not
+yet supported). Please check \texttt{examples/GE-Signa-PETMR} for some
+information.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
 
-ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.
+ECAT6 data are no longer supported.
 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
@@ -653,6 +655,8 @@ will be read for static reconstruction.
 is currently ignored.
 
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
+
+\textbf{Warning} ECAT7 support is no longer tested.
 
 \subsubsection{Image IO using the AVW library}
 See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
@@ -685,6 +689,11 @@ from GATE.
 and OpenGATE as discrepancies can lead to crashes if the actual number of blocks/crystals etc is
 larger than what is specified in the scanner info. However, this check requires the \texttt{.hroot}
 file to accurately correspond to your GATE macro.
+
+\textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
+``virtual crystals" to accomodate for gaps between blocks. If you use
+the \texttt{originating system} to specify the scanner, this will be automatically enabled.
+(If you do not want this, set it to \textt{User_defined_scanner} and specify all values).
 
 An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
@@ -760,8 +769,13 @@ GATE_Cylindrical_PET Parameters :=
   number of crystals_Z := 4
 
   Singles readout depth := 1
+
+  ; exclude different event types
+  exclude non-random events := 0
+  exclude unscattered events := 0
   exclude scattered events := 0
   exclude random events := 0
+
   offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
@@ -774,12 +788,76 @@ end ROOT header :=
 
 See \texttt{examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
 
+OpenGATE energy information is recorded in MeV units into the ROOT file.
+For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
+STIR assumes this convention and will convert this automatically.
+
 There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
 
+\subsubsubsection{ROOT exclusion keys configurations}
+The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
+Below are sets event types that will be processed with an exclusion or combination of exclusions.
+The exclusions of an event type is false by default.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ | c | c | }
+        \hline
+        \textbf{Event(s) type} & \textbf{Exclusion Configuration}
+        \\ \hline \hline
+        All events & \textit{None}
+
+        \\ \hline \hline
+        \vtop{\hbox{\strut Scattered from same eventID }
+        \hbox{\strut Unscattered from same eventID}}
+        & \textit{exclude random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Unscattered from same eventID }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude scattered events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from different eventIDs }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude non-random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from same eventID}
+        \hbox{\strut Scattered from different eventIDs}}
+        & \textit{exclude unscattered events := 1}
+
+        \\ \hline \hline
+        Unscattered from same eventID & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Unscattered from different eventIDs &  \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Scattered from same eventID  & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+        Scattered from different eventIDs & \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+    \end{tabular}
+    \caption{A guide on how to process specific types of events from a ROOT file using various exclusion keys and combinations of keys.}
+    \label{tab:ROOT_file_exclusions}
+\end{table}
+
+
+\subsection{Multi header format}
+\label{multi-file-format}
+It is often useful to be able to constract a single dataset from multiply components (e.g. images
+or projection data). We have a (STIR-specific) header format for this which is very simple, for example
+\begin{verbatim}
+Multi :=
+  total number of data sets := 2
+  data set[1] := sinogram_1.hs
+  data set[2] := sinogram_2.hs
+end :=
+\end{verbatim}
+Each ``component'' will be read independently, so could in principle be in a different file format
+from the others.
+
+We currently support this format for dynamic images and projection data.
 \subsection{
 List mode processing}
 
@@ -853,6 +931,11 @@ Results are written as a simple text file. This could be used to check if all de
 properly for instance.
 
 \subsubsection{
+list\_lm\_info}
+Writes exam-info and (optionally) geometric info on underlying projection data to stdout.
+Run without arguments to see a usage message.
+
+\subsubsection{
 list\_lm\_events}
 Allows inspecting the events in a list mode file. Run without arguments to see a usage message.
 
@@ -901,6 +984,8 @@ i.e. add views together.
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
 {[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+or
+\cmdline{SSRB --template template\_filename output\_filename input\_projdata\_name [do\_normalisation]}
 
 \begin{description}
 \item[num\_segments\_to\_combine] has to be odd. It is used as the 
@@ -912,6 +997,12 @@ data to combine.
 the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num\_views\_to\_combine}. 
 This is appropriate for rebinning data where normalisation has 
 already been applied, but inappropriate otherwise.
+
+\item[template\_filename] inicated by the \textit{--template} flag, 
+is the sinogram type that the \textit{input\_projdata\_name} will 
+be mapped to. This allows for the effective use of 
+\textit{num\_segments\_to\_combine} to be an even number, 
+e.g. the conversion between span-1 and span-2 projection data sets. 
 
 \item[max\_in\_segment\_num\_to\_process] defaults to all segments. 
 Can be used to ignore the most oblique segments in the input 
@@ -1688,11 +1779,9 @@ they need a different type of objective function. Currently, the only defined ve
 where the input is dynamic projection data and the Patlak linear model is used to go from
 dynamic images to parametric images. See section {sec:KineticModels} for more information.
 
-Currently, the input and output has to be in ECAT7 format. 
-
-Below is an excerpt of a possible parameter for file POSMAPOSL. A complete parameter file
+Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
 can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
-form the input, and that a (linear) kinetic model has to be specified.
+form the input, and that a (linear) kinetic model has to be specified, see \ref{sec:KineticModels}.
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1821,6 +1910,9 @@ only_2D:=1
 
 ; the following is the output prefix of the PET reconstructed image
 kernelised output filename prefix :=KOSMAPOSL
+
+;the following is only set if you want to freeze the kernel matrix after a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
@@ -2254,12 +2346,13 @@ is derived from the \textbf{KineticModel} class.
 The user will need to provide information about:
 \begin{itemize} 
 \item	File of input function (e.g. plasma activity or reference tissue activity values); 
-\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units with the input function) 
+\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units as the input function)
 \item	Starting frame to apply  \textit{Patlak Plot} 
 \item	Delay between input function and PET measurement 
-\item	Time-frame definition file. 
-\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total or mean over each frame 
-\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size}
+\item	Time-frame definition file \textbf{There is currently no check that these time-frame definitions are consistent with the actual data!}
+\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total (which is currently the case in STIR reconstructions) or mean over each frame
+\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size} (i.e. voxels have the
+   same values as for \texttt{zoom=1}) (this needs to be set to 0 for STIR reconstructions).
 \end{itemize}
 Example Sample File: \texttt{PatlakPlot.par} 
 
@@ -2269,7 +2362,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
-scale factor := FLOAT
 blood data filename := plasma.if
 ; In seconds
 Time Shift := FLOAT
@@ -2280,14 +2372,19 @@ end Patlak Plot Parameters:=
 \end{verbatim}
 
 Current assumptions are that an \textit{F-18} tracer is used; the input function is not decay corrected and it
-is given in a text file with three columns (i.e. \textbf{PlasmaSample}): time in \textit{seconds}, plasma-activity in
-\textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}) 
-%HARRY TODO "and multiple" ?
-and multiple the total number of \textbf{PlasmaSample}
-is usually given in the very first row. Currently, the parametric image
-has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+is given in a text file with three columns: time of the sample in \textit{seconds}, plasma-activity\footnote{%
+If you have no plasma info, it is customary to use a published function to convert blood activity to plasma activity.
+\textit{STIR} has currently no functionality for this however.}
+in \textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}). The total number of samples has to be in the very first row.
+(See an example in the \texttt{recon\_test\_pack/test\_modelling\_input}). The data are stored as a vector
+of \texttt{PlasmaSample} objects.
 
-How to Run \textit{Patlak Plot}:
+
+Currently, the parametric image
+can be in (STIR-specific) \texttt{Interfile}, use a \texttt{Multi} header (see \ref{multi-file-format}), or
+\textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+
+How to use \textit{Patlak Plot} for post-reconstruction fitting:
 
 \cmdline{%
 apply\_patlak\_to\_images \textbackslash \\
@@ -2306,7 +2403,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := 1
-scale factor := 1
 blood data filename := tac.roi
 ; In seconds
 Time Shift := 0
@@ -2325,7 +2421,7 @@ Moreover, two direct reconstruction version of linear kinetic models have been a
 
 
 The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
-\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
+\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}, see \ref{sec:ParametricImageIterativeAlgorithms}.
 
 %TODO More information could be included for \textbf{MAP} estimation e.g. \textbf{quadratic priors}. 
 
@@ -2619,19 +2715,11 @@ The programs are \textbf{manip\_image}, \textbf{stir\_write\_pgm}, \textbf{list\
 for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
 \textbf{list\_projdata\_info} for 
-projection data and \textbf{stir\_math} for both. Run them with the 
-name of the image or projection data file as an argument. For 
-example, for \textbf{manip\_image}:
-\cmdline{manip\_image file\_name.hv}
-
+projection data, and \textbf{stir\_math} and \textbf{get\_time\_frame\_info} for both.
+Run them without arguments to get usage information.
 
 See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate projection 
 data.
-
-
-The program \textbf{get\_time\_frame\_info} is \textit{STIR}'s first (small!) 
-step into supporting dynamic data.
-
 
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
@@ -2646,6 +2734,7 @@ convert your \textit{STIR} data to another format using (X)medcon
 
 A utility that lists information about an image on stdout. This includes number of voxels,
 physical sizes, bounding boxes, etc. It also prints min/max/sum of the data. 
+Optionally this can be listed per time-frame.
 
 { \subsubsubsection{stir\_write\_pgm}
 }
@@ -2657,7 +2746,7 @@ This utility is mainly useful for shell/batch scripts.
 { \subsubsubsection{manip\_image}
 }
 
-This program works on two modes. Additionally to the display 
+This program works in two modes. Additionally to the display 
 possibility, the main mode allows to retrieve information about 
 the image:
 
@@ -2871,13 +2960,30 @@ This is a test-release of a program that can be used to find
 ROI values for an image. See the online documentation generated 
 by doxygen for more info.
 
-{ \subsubsubsection{extract\_dynamic\_images}
+{ \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
 
 This executable can be used to get the individual components of a 
 dynamic image as separate images. 
 To use it, simply give the pattern of the output filename, the input filename, and optionally
-supply a parameter file for saving the output images.
+supply a parameter file for the file-format used to save the output images.
+
+{ {\subsubsubsection{extract\_single\_images\_from\_parametric\_image}
+}
+
+As above but for parametric images.
+
+{ \subsubsubsection{create\_multi\_header}
+  This is a command line utility for creating a header that "points" to several other
+  data-sets, useful for e.g. dynamic images/data. The output header is in the \texttt{multi}
+  file-format (see \ref{multi-file-format}) and can then be used in
+  other STIR utilities. This is useful for instance if you have
+  a set of reconstruct images corresponding to several time frames, but need to read the data
+  as a single study.
+
+  To use it, specify the output filename and a list of input filenames (in the order you want
+  them to appear in the header).
+  There is no check that the data sizes and other info are compatible.
 
 { \subsubsubsection{ctac\_to\_mu\_values}
 }
@@ -2897,6 +3003,21 @@ choose one file from the directory), the JSON file containing the conversion slo
 
 The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
 a kVp of 120 is assumed. 
+
+{ \subsubsubsection{compute\_sqrt\_Hessian\_row\_sum} \label{sec:Utilities:HessianRowSum}
+}
+This executable can be used to generate the square root of the Hessian row sum of an objective function, the output of
+which may be used as a spatially variant penalty strength $\kappa$ (or \textit{kappa image}) within iterative
+reconstruction algorithms, see \ref{sec:priors:Quadratic}.
+
+This utility computes the row-sum of the Hessian of the objective function at a given image (by multiplying it with a vector of ones). The square root of the image is saved to file. Along with a method
+to compute the Hessian row sum, we include an optional method to approximate Hessian row sum that is less computational
+and does not require an estimate image for the the Hessian computation (but does require one for an output image
+template).
+
+Basic Usage:
+\cmdline{compute\_sqrt\_Hessian\_row\_sum compute\_sqrt\_Hessian\_row\_sum.par}
+An example parameter file is included in the samples folder.
 
 \subsubsection{
 Converting data}
@@ -2950,49 +3071,6 @@ factor is \texttt{<} 0, in which case it is assumed to be 1).
 
 \textbf{Warning} Note that sinogram data have to be 'corner-swapped', 
 see section \ref{sec:ecat_swap_corners}.
-
-{ \subsubsubsection{conv\_to\_ecat6}
-}
-This program is used to convert image or projection data into 
-CTI ECAT 6 data (input can be any format currently supported 
-by the library). It normally should be run as follows:
-
-
-for images:
-\cmdline{conv\_to\_ecat6 [-k] [-i] outputfilename.img {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ] scanner}
-
-
-for projection data:
-\cmdline{conv\_to\_ecat6 -s[2] [-k] [-i] outputfilename.scn {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ]}
-
-
-If there are no command line parameters, the user is asked for 
-the filenames and options instead. Unless the --\textit{i} option is 
-used, the data will be assigned a frame number in the order that 
-they occur on the command line.
-
-
-See \textbf{STIR/buildblock/Scanner.cxx} for supported scanner names, 
-but examples are ``ECAT 953'', ``ART'', 
-``Advance''. 
-
-
-{ \subsubsubsubsection{Command line options}
-}\begin{description}
-\item[-s2] This option forces output to 2D sinograms (ignoring higher 
-segments).
-\item[-k] the existing ECAT6 file will NOT be overwritten, but added 
-to. Any existing data in the ECAT6 file with the same \texttt{<}frame,gate,data,bed\texttt{>} 
-specification will be overwritten.
-\item[-i] ask for \texttt{<} frame,gate,data,bed\texttt{>} for each dataset
-\end{description}
-
-Note that to store projection data in ECAT6, a 3D sinogram cannot 
-be axially compressed (CTI \textit{span}=1).\\
-\textbf{Warning} This utility does \textit{not} corner-swap 3D projection 
-data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
 
 { \subsubsubsection{conv\_to\_ecat7}
 }
@@ -3060,6 +3138,7 @@ is currently ignored.
 
 \subsubsubsection{ecat\_swap\_corners}
 \label{sec:ecat_swap_corners}
+This utility is obsolete and will be removed in a next version.
 { \subsubsubsubsection{Usage}
 }
 \cmdline{ecat\_swap\_corners out\_name in\_name}
@@ -3975,6 +4054,31 @@ set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.
 Otherwise, all non-positive entries in the data are set to SMALL\_NUM 
 times the minimum strictly positive value.
 
+{ \subsubsubsection{HUToMu}
+}
+
+This data processor (class \texttt{HUToMuImageProcessor}) is intended to convert a CT image in Hounsfield Units to mu-values.
+It takes a file in JSON format specifying the piecewise-linear for various systems, Xray voltages and gamma energies.
+Currently, it supports 2-segment piecewise linear transformations only.
+In practice, this needs to be combined with a smoothing filter to match CT to PET resolution.
+
+A sample file JSON is currently located in the source of STIR (\texttt{src/utilities/share}).
+This file is installed in your \texttt{install\_prefix/share} folder.
+
+{ \subsubsubsubsection{Parameters}
+}
+Example parameters are given by
+\begin{verbatim}
+    HUToMu Parameters:=
+      slope filename := json_filename
+      ; next defaults to GENERIC
+      manufacturer_name := IN_CAPITALS
+      ; CT tube voltage (defaults to 120)
+      ;kilovoltage_peak :=
+      ; gamma energy (defaults to 511 for PET)
+      ;target_photon_energy :=
+    End HUToMu Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{Chained Data Processor}
 }
@@ -4096,6 +4200,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If $\kappa$ is not set, this class will effectively
   use 1 for all $\kappa$'s.
+  The utility \textit{compute\_sqrt\_Hessian\_row\_sum} \ref{sec:Utilities:HessianRowSum} may be used to generate such images.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel\_size divided by the Euclidean distance between the points.
@@ -4121,7 +4226,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   \end{verbatim}
 
 
-{ \subsubsubsection{Relative Difference}
+{ \subsubsubsection{Relative Difference} \label{sec:priors:Relative_Difference}
 }
 This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The gradient of the prior is computed as follows:
   \[g_r = \sum_{dr} w_{dr} *
@@ -4132,13 +4237,13 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   \noindent where $\lambda$ is the image where the gradient is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
-  $\gamma$ is a edge preservation hyper-parameter and $\eplion$ is small 
-  modification the penatly function used to prevent divide by zero's.
+  $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
+  modification the penalty function used to prevent divide by zero's.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
-  x-voxel\_size divided by the Euclidean distance between the points.
+  \texttt{x-voxel\_size} divided by the Euclidean distance between the points.
  
 { \subsubsubsubsection{Parameters}
 }
@@ -4162,6 +4267,45 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   ; epsilion is used to control divide by zeros in the prior denominator
   ; epsilon value := 0.0001
   END Relative Difference Prior Parameters:=
+  \end{verbatim}
+
+
+{ \subsubsubsection{Logcosh} \label{sec:priors:Logcosh}
+}
+This implements a Logcosh. The gradient of the prior is computed as follows:
+  \[g_r = \sum_{dr} w_{dr} * \frac{1}{s} * \tanh(s*(\lambda_{r} - \lambda_{dr})) *
+  \kappa_r * \kappa_{r+dr}\]
+
+  \noindent where $\lambda$ is the image where the gradient is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+  $s$ (a.k.a. scalar) controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior.
+
+  The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  x-voxel\_size divided by the Euclidean distance between the points.
+ 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := Logcosh
+  Logcosh Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  ; scalar is a parameter used to control edge preservation
+  ; scalar value := 1
+  END Logcosh Prior Parameters:=
   \end{verbatim}
 
 
@@ -4201,6 +4345,7 @@ The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
   only_2D:=0
   END PLS Prior Parameters:=
   \end{verbatim}
+
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}
@@ -4257,6 +4402,28 @@ Also note that, although NiftyPET allows spans 0, 1 and 11, the STIR wrapper has
 Projector Pair Using NiftyPET Parameters:=
   verbosity := 1
 End Projector Pair Using NiftyPET Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{Parallelproj}
+\label{sec:projectorpairusingparallelproj}
+}
+This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
+\URL{https://github.com/gschramm/parallelproj}. This project provides implementations
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
+any \em{Python}).
+
+This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
+
+At present, STIR will use the GPU-accelerated functionality of \texttt{parallelproj} was
+built with \em{CUDA} support, otherwise it falls back to the \em{OpenMP} versions.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Parallelproj Parameters:=
+  verbosity := 1
+End Projector Pair Using Parallelproj Parameters:=
 \end{verbatim}
 
 { \subsubsubsection{Separate Projectors }
@@ -4321,7 +4488,7 @@ Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up
 errors and possibly the voxels at the edge of the FOV).
 
 
-See also online documentation for class ForwardProjectorUsingRayTracing.
+See also online documentation for class \texttt{ForwardProjectorUsingRayTracing}.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -4363,11 +4530,24 @@ Forward Projector Using NiftyPET Parameters:=
 End Forward Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This forward projector wraps the \texttt{parallelproj} forward projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Forward Projector Using Parallelproj Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
 It is possible to select the type of back projector. The mechanism 
-is exactly the same as for the ForwardProjector hierarchy.
+is exactly the same as for the \texttt{ForwardProjector} hierarchy.
 
 { \subsubsubsection{Matrix}
 }
@@ -4455,6 +4635,18 @@ Back Projector Using NiftyPET Parameters:=
 End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This back projector wraps the \texttt{parallelproj} back projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Back Projector Using Parallelproj Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a projection matrix}
@@ -5096,6 +5288,8 @@ variable), see section \ref{sec:UsingCMake}.
 \subsubsection{
 X Windows display}
 \label{sec:display}
+\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
 the bitmaps are displayed. To proceed, you have to make this 

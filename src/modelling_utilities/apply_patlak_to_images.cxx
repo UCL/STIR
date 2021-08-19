@@ -4,15 +4,7 @@
   Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -79,30 +71,12 @@ USING_NAMESPACE_STIR
     return EXIT_FAILURE ;
   else
     {  
-      shared_ptr<DynamicDiscretisedDensity> 
-	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
+      // Create dynamic images object from input file
+      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
+      // Create parametric images from input file
       shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr;
-      // If the file already exists, use it as a template
-      std::ifstream file(argv[1]);
-      if (file) {
-          warning("The output file already exists, so using this as a template.");
-          par_image_sptr = shared_ptr<ParametricVoxelsOnCartesianGrid>(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
-          // Modify template by getting exam info from input. Input is dynamic with multiple time frames. The
-          // output parametric image is going to be a single time frame that goes from
-          // the start of the first dynamic image to the end of the last.
-          TimeFrameDefinitions tdefs = dyn_image.get_exam_info().get_time_frame_definitions();
-          const double start = tdefs.get_start_time();
-          const double end   = tdefs.get_end_time();
-          tdefs.set_num_time_frames(1);
-          tdefs.set_time_frame(1,start,end);
-          // Set the time frame definitions
-          ExamInfo exam_info = par_image_sptr->get_exam_info();
-          exam_info.set_time_frame_definitions(tdefs);
-          par_image_sptr->set_exam_info(exam_info);
-      }
-      else
-          par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);
+      par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);
 
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
       assert(indirect_patlak.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
@@ -116,9 +90,9 @@ USING_NAMESPACE_STIR
       timer.stop();  
       
       if(writing_succeeded==Succeeded::yes)
-	return EXIT_SUCCESS ;
+	      return EXIT_SUCCESS ;
       else 
-	return EXIT_FAILURE ;
+	      return EXIT_FAILURE ;
     }
 }
 

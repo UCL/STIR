@@ -5,17 +5,9 @@
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
-    Copyight (C) 2018, University College London
+    Copyight (C) 2018,2020, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -89,7 +81,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
     DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
     ExamInfo exam_info;
-    for (int i=1; i<=header.get_num_data_sets(); ++i) {
+    for (std::size_t i=1U; i<=header.get_num_data_sets(); ++i) {
         unique_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i-1)));
 
         // Check that there is time frame information
@@ -100,7 +92,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
         // Set some info on the first frame
         if (i==1)
           {
-            exam_info = dyn_disc_den_ptr->get_exam_info();
+            exam_info = t->get_exam_info();
             exam_info.time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
             shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(exam_info.originating_system));
             dyn_disc_den_ptr->set_scanner(*scanner_sptr);
@@ -110,9 +102,12 @@ public InputFileFormat<DynamicDiscretisedDensity>
         dyn_disc_den_ptr->set_density(*t,i);
     }
     // Hard wire some stuff for now (TODO?)
-    dyn_disc_den_ptr->set_calibration_factor(1.);
     dyn_disc_den_ptr->set_if_decay_corrected(1.);
     dyn_disc_den_ptr->set_isotope_halflife(6586.2F);
+    
+    if(!dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().empty() && 
+       dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide()!="^18^Fluorine")
+        error("MultiDynamicDiscretisedDensityInputFileFormat: halflife hardwired to 18F but the isotope used in this data is different");
     
     return unique_ptr<data_type>(dyn_disc_den_ptr);
   }

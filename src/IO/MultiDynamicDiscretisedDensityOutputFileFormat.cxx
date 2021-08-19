@@ -2,18 +2,10 @@
 //
 /*
   Copyright (C) 2006-2009, Hammersmith Imanet Ltd
-  Copyright (C) 2018, University College London
+  Copyright (C) 2018,2020 University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -32,7 +24,8 @@
 #include "stir/DynamicDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
-#include <fstream>
+#include "stir/FilePath.h"
+#include "stir/MultipleDataSetHeader.h"
 
 START_NAMESPACE_STIR
 
@@ -43,7 +36,7 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 MultiDynamicDiscretisedDensityOutputFileFormat(const NumericType& type, 
 					const ByteOrder& byte_order) 
 {
-  base_type::set_defaults();
+  this->set_defaults();
   this->set_type_of_numbers(type);
   this->set_byte_order(byte_order);
 }
@@ -53,6 +46,9 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 set_defaults()
 {
   base_type::set_defaults();
+  this->set_type_of_numbers(NumericType::FLOAT);
+  this->set_byte_order(ByteOrder::native);
+  this->individual_output_type_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 
@@ -95,6 +91,11 @@ MultiDynamicDiscretisedDensityOutputFileFormat::
 actual_write_to_file(std::string& filename, 
 		     const DynamicDiscretisedDensity & density) const
 {
+    {
+      FilePath file_path(filename, false); // create object without checking if a fo;e exists already
+      if (!file_path.get_extension().empty())
+        error("MultiDynamicDiscretisedDensityOutputFileFormat: currently needs an output filename without extension. sorry");
+    }
     // Create all the filenames
     VectorWithOffset<std::string> individual_filenames(1,int(density.get_num_time_frames()));
     for (int i=1; i<=int(density.get_num_time_frames()); i++)
@@ -109,18 +110,7 @@ actual_write_to_file(std::string& filename,
     
     // Write some multi header info
     filename = filename + ".txt";
-    std::ofstream multi_file(filename.c_str());
-    if (!multi_file.is_open()) {
-        warning("MultiDynamicDiscretisedDensity error: Failed to write \"" + filename + "\".\n");
-        return Succeeded::no;
-    }
-    multi_file << "Multi :=\n";
-    multi_file << "\ttotal number of data sets := " << density.get_num_time_frames() << "\n";
-    for (int i=1; i<=int(density.get_num_time_frames()); i++)
-        multi_file << "\tdata set["<<i<<"] := "<<individual_filenames[i]<<"\n";
-    multi_file << "end :=\n";
-    multi_file.close();
-
+    MultipleDataSetHeader::write_header(filename, individual_filenames);
     return Succeeded::yes;
 }
 

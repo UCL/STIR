@@ -4,15 +4,7 @@
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -81,6 +73,8 @@ correct_projdata Parameters :=
 
   ; scatter term to be subtracted AFTER norm+atten correction
   ; defaults to 0
+  ; - scatter which should NOT be used here (it would need to be added to randoms and used above)
+  ; - additive_term which should be used here BUT already included the randoms
   ;scatter projdata filename := scatter.hs
 
   ; to interpolate to uniform sampling in 's', set value to 1
@@ -256,12 +250,12 @@ run() const
       // ** first fill in the data **      
       RelatedViewgrams<float> 
         viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,
-							       symmetries_ptr);
+                                                               symmetries_ptr);
       if (use_data_or_set_to_1)
       {
         viewgrams += 
           input_projdata.get_related_viewgrams(view_seg_nums,
-					       symmetries_ptr);
+                                               symmetries_ptr);
       }	  
       else
       {
@@ -269,11 +263,11 @@ run() const
       }
       
       if (do_arc_correction && !apply_or_undo_correction)
-	{
-	  error("Cannot undo arc-correction yet. Sorry.");
-	  // TODO
-	  //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
-	}
+       {
+         error("Cannot undo arc-correction yet. Sorry.");
+         // TODO
+         //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
+       }
 
       if (do_scatter && !apply_or_undo_correction)
       {
@@ -291,41 +285,38 @@ run() const
 #if 0
       if (frame_num==-1)
       {
-	int num_frames = frame_def.get_num_frames();
-	for ( int i = 1; i<=num_frames; i++)
-	{ 
-	  //cerr << "Doing frame  " << i << endl; 
-	  const double start_frame = frame_def.get_start_time(i);
-	  const double end_frame = frame_def.get_end_time(i);
-	  //cerr << "Start time " << start_frame << endl;
-	  //cerr << " End time " << end_frame << endl;
-	  // ** normalisation **
-	  if (apply_or_undo_correction)
-	  {
-	    normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	  }
-	  else
-	  {
-	    normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	  }
-	}
+        int num_frames = frame_def.get_num_frames();
+        for ( int i = 1; i<=num_frames; i++)
+        { 
+          //cerr << "Doing frame  " << i << endl; 
+          const double start_frame = frame_def.get_start_time(i);
+          const double end_frame = frame_def.get_end_time(i);
+          //cerr << "Start time " << start_frame << endl;
+          //cerr << " End time " << end_frame << endl;
+          // ** normalisation **
+          if (apply_or_undo_correction)
+          {
+            normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+          }
+          else
+          {
+            normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+          }
+        }
       }
-
-
-
       else
 #endif
       {      
-	const double start_frame = frame_defs.get_start_time(frame_num);
-	const double end_frame = frame_defs.get_end_time(frame_num);
-	if (apply_or_undo_correction)
-	{
-	  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	}
-	else
-	{
-	  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	}    
+        const double start_frame = frame_defs.get_start_time(frame_num);
+        const double end_frame = frame_defs.get_end_time(frame_num);
+        if (apply_or_undo_correction)
+        {
+          normalisation_ptr->apply(viewgrams);
+        }
+        else
+        {
+          normalisation_ptr->undo(viewgrams);
+        }    
       }
       if (do_scatter && apply_or_undo_correction)
       {
@@ -475,6 +466,7 @@ set_up()
 {
   const int max_segment_num_available =
     input_projdata_ptr->get_max_segment_num();
+  // Set default or upper bound of data to process (if out of bounds)
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
@@ -493,66 +485,65 @@ set_up()
 	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
     }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
-					  max_segment_num_to_process);
+                                                   max_segment_num_to_process);
 
   // construct output_projdata
   {
 #if 0
     // attempt to do mult-frame data, but then we should have different input data anyway
     if (frame_definition_filename.size()!=0 && frame_num==-1)
-      {
-	const int num_frames = frame_defs.get_num_frames();
-	for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", current_frame);
-	    const string output_filename_with_ext = output_filename + ext;	
-	    output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext);
-	  }
-      }
+    {
+      const int num_frames = frame_defs.get_num_frames();
+      for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", current_frame);
+          const string output_filename_with_ext = output_filename + ext;	
+          output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                  output_proj_data_info_sptr,output_filename_with_ext);
+        }
+    }
     else
 #endif
-      {
-	string output_filename_with_ext = output_filename;
+    {
+	    string output_filename_with_ext = output_filename;
 #if 0
-	if (frame_definition_filename.size()!=0)
-	  {
-	    char ext[50];
-	    sprintf(ext, "_f%dg1b0d0", frame_num);
-	    output_filename_with_ext += ext;
-	  }
+      if (frame_definition_filename.size()!=0)
+        {
+          char ext[50];
+          sprintf(ext, "_f%dg1b0d0", frame_num);
+          output_filename_with_ext += ext;
+        }
 #endif
-	output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
-							output_proj_data_info_sptr,output_filename_with_ext));
-      }
+      output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+                                                      output_proj_data_info_sptr,output_filename_with_ext));
+      }// output_projdata block
 
-  }
+  }// output_projdata block
  
   // read attenuation image and add it to the normalisation object
   if(atten_image_filename!="0" && atten_image_filename!="")
-    {
+  {
       
-      shared_ptr<BinNormalisation> atten_sptr
-	(new BinNormalisationFromAttenuationImage(atten_image_filename,
-						  forward_projector_ptr));
+    shared_ptr<BinNormalisation> atten_sptr
+	            (new BinNormalisationFromAttenuationImage(atten_image_filename,
+						                                            forward_projector_ptr));
       
-      normalisation_ptr = 
-	shared_ptr<BinNormalisation>
-	( new ChainedBinNormalisation(normalisation_ptr,
-				      atten_sptr));
-    }
+    normalisation_ptr = 
+        shared_ptr<BinNormalisation>
+        ( new ChainedBinNormalisation(normalisation_ptr, atten_sptr));
+  }
   else
-    {
-      // get rid of this object for now
-      // this is currently checked to find the symmetries: bad
-      // TODO
-      forward_projector_ptr.reset();
-    }
+  {
+    // get rid of this object for now
+    // this is currently checked to find the symmetries: bad
+    // TODO
+    forward_projector_ptr.reset();
+  }
 
   // set up normalisation object
   if (
-      normalisation_ptr->set_up(input_proj_data_info_sptr)
+      normalisation_ptr->set_up(input_projdata_ptr->get_exam_info_sptr(),input_proj_data_info_sptr)
       != Succeeded::yes)
     {
       warning("correct_projdata: set-up of normalisation failed\n");

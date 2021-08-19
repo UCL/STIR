@@ -4,17 +4,10 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -28,6 +21,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author PARAPET project
 
 
@@ -133,15 +127,14 @@ get_bin(const LOR<float>& lor) const
     }
 
   // first find view 
-  // unfortunately, phi ranges from [0,Pi[, but the rounding can
-  // map this to a view which corresponds to Pi anyway.
-  bin.view_num() = round(lor_coords.phi() / get_azimuthal_angle_sampling());
+  //PW phi-intrinsic_tilt included to get the accurate bin.view_number.
+  bin.view_num() = round(to_0_2pi(lor_coords.phi()-get_azimuthal_angle_offset()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
-  assert(bin.view_num()<=get_num_views());
   const bool swap_direction =
     bin.view_num() > get_max_view_num();
   if (swap_direction)
     bin.view_num()-=get_num_views();
+  assert(bin.view_num()<get_num_views());
 
   bin.tangential_pos_num() = round(lor_coords.s() / get_tangential_sampling());
   if (swap_direction)

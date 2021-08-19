@@ -18,15 +18,7 @@
     Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -187,9 +179,11 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
- private:
+ protected:
+  //! ProjDataInfo set by set_up()
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 
+ private:
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
 	    const int start_segment_num, const int end_segment_num,

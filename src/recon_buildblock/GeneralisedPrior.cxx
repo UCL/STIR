@@ -4,15 +4,7 @@
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -67,6 +59,18 @@ add_multiplication_with_approximate_Hessian(TargetT& output,
 {
   error("GeneralisedPrior:\n"
   "add_multiplication_with_approximate_Hessian implementation is not overloaded by your prior.");
+  return Succeeded::no;
+}
+
+template <typename TargetT>
+Succeeded
+GeneralisedPrior<TargetT>::
+accumulate_Hessian_times_input(TargetT& output,
+        const TargetT& current_estimate,
+        const TargetT& input) const
+{
+  error("GeneralisedPrior:\n"
+        "accumulate_Hessian_times_input implementation is not overloaded by your prior.");
   return Succeeded::no;
 }
 

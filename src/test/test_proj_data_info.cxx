@@ -9,24 +9,18 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author PARAPET project
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2021, University College London
+    Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -169,6 +163,10 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			  if (diff_tangential_pos_num>max_diff_tangential_pos_num)
 			    max_diff_tangential_pos_num=diff_tangential_pos_num;
 			}
+#ifdef STIR_OPENMP
+                      // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		      if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin: value") ||
 			  !check(diff_segment_num<=0, "round-trip get_LOR then get_bin: segment") ||
 			  !check(diff_view_num<=1, "round-trip get_LOR then get_bin: view") ||
@@ -505,7 +503,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       float s = ob2.get_s(bin);
       
       check_if_equal( theta, 0.F,"test on get_tantheta, seg 0");
-      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 0");
+      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling()+ ob2.get_azimuthal_angle_offset(), " get_phi , seg 0");
       // KT 25/10/2000 adjust to new convention
       const float ax_pos_origin =
 	(ob2.get_min_axial_pos_num(0) + ob2.get_max_axial_pos_num(0))/2.F;
@@ -525,7 +523,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       float thetatest = 2*ob2.get_axial_sampling(1)/(2*sqrt(square(scanner_ptr->get_effective_ring_radius())-square(s)));
       
       check_if_equal( theta, thetatest,"test on get_tantheta, seg 1");
-      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 1");
+      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling()+ ob2.get_azimuthal_angle_offset(), " get_phi , seg 1");
       // KT 25/10/2000 adjust to new convention
       const float ax_pos_origin =
 	(ob2.get_min_axial_pos_num(1) + ob2.get_max_axial_pos_num(1))/2.F;
@@ -684,10 +682,13 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	    positive_segment = 
 	      proj_data_info.get_view_tangential_pos_num_for_det_num_pair(view, tang_pos_num, det_num_a, det_num_b);
 	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det1, det2, view, tang_pos_num);
-	    
 	    if (!check((det_num_a == det1 && det_num_b == det2 && positive_segment) ||
 		       (det_num_a == det2 && det_num_b == det1 && !positive_segment)))
 	      {
+#ifdef STIR_OPENMP
+                // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
 		     << "\n  dets -> sino -> dets gives new detector numbers "
 		     << det1 << ", " << det2 << endl;
@@ -695,11 +696,19 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	      }
 	    if (!check(view < num_detectors/2))
 	      {
+#ifdef STIR_OPENMP
+                // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
 		     << ":\n  view is too big : " << view << endl;
 	      }
 	    if (!check(tang_pos_num < num_detectors/2 && tang_pos_num >= -(num_detectors/2)))
 	      {
+#ifdef STIR_OPENMP
+                // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
 		     << ":\n  tang_pos_num is out of range : " << tang_pos_num << endl;
 	      }
@@ -723,11 +732,17 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 
 	    if (tang_pos_num != new_tang_pos_num || view != new_view || !positive_segment)
 	      {
-		cerr << "Problem at view = " << view << ", tang_pos_num = " << tang_pos_num
+#ifdef STIR_OPENMP
+                      // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
+                {
+                  cerr << "Problem at view = " << view << ", tang_pos_num = " << tang_pos_num
 		     << "\n   sino -> dets -> sino gives new view, tang_pos_num :"
 		     << new_view << ", " << new_tang_pos_num 
 		     << " with detector swapping " << positive_segment
 		     << endl;
+                }
 	      }
 	  } // end of sinogram_to_detector, detectors_to_sinogram test
 	
@@ -776,6 +791,10 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		    Succeeded::yes;       
 		if (there_is_a_bin)
 		  proj_data_info.get_det_pos_pair_for_bin(new_det_pos_pair, bin);
+#ifdef STIR_OPENMP
+                // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
 		    !check(det_pos_pair == new_det_pos_pair, "checking if we round-trip to the same detection positions"))
 		    {
@@ -831,6 +850,10 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		    proj_data_info.get_bin_for_det_pos_pair(new_bin, 
 							    det_pos_pair) ==
 		    Succeeded::yes;
+#ifdef STIR_OPENMP
+                  // add a pragma to avoid cerr output being jumbled up if there are any errors
+#pragma omp critical(TESTPROJDATAINFO)
+#endif
 		  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
 		      !check(bin == new_bin, "checking if we round-trip to the same bin"))
 		    {

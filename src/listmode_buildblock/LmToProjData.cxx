@@ -9,18 +9,11 @@
 */
 /*
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2021 University College London
+    Copright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -141,6 +134,104 @@ construct_proj_data(shared_ptr<iostream>& output,
                     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
 /**************************************************************
+ set/get
+**************************************************************/
+void LmToProjData::set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo> t_sptr)
+{
+  this->_already_setup = false;
+  template_proj_data_info_ptr = t_sptr->create_shared_clone();
+}
+
+shared_ptr<ProjDataInfo> LmToProjData::get_template_proj_data_info_sptr()
+{
+  return template_proj_data_info_ptr;
+}
+
+void LmToProjData::set_input_data(const shared_ptr<ExamData>& v)
+{
+  this->_already_setup = false;
+  this->lm_data_ptr = dynamic_pointer_cast<ListModeData>(v);
+  if (is_null_ptr(this->lm_data_ptr))
+    error("LmToProjData::set_input_data() called with non-listmode data or other error");
+}
+
+void LmToProjData::set_input_data(const std::string& filename)
+{
+  shared_ptr<ListModeData> lm(stir::read_from_file<ListModeData>(filename));
+  this->set_input_data(lm);
+  this->input_filename = filename;
+}
+
+#if 0
+ListModeData& LmToProjData::get_input_data()
+{
+  return *lm_data_ptr;
+}
+#endif
+
+
+void LmToProjData::set_output_filename_prefix(const std::string& v)
+{
+  this->output_filename_prefix = v;
+}
+
+std::string LmToProjData::get_output_filename_prefix() const
+{
+  return output_filename_prefix;
+}
+
+void LmToProjData::set_store_prompts(bool v)
+{
+  this->store_prompts = v;
+}
+
+bool LmToProjData::get_store_prompts() const
+{
+  return store_prompts;
+}
+
+void LmToProjData::set_store_delayeds(bool v)
+{
+  this->store_delayeds = v;
+}
+
+bool LmToProjData::get_store_delayeds() const
+{
+  return store_delayeds;
+}
+
+void LmToProjData::set_num_segments_in_memory(int v)
+{
+  this->_already_setup = false;
+  this->num_segments_in_memory = v;
+}
+
+int LmToProjData::get_num_segments_in_memory() const
+{
+  return num_segments_in_memory;
+}
+
+void LmToProjData::set_num_events_to_store(long int v)
+{
+  this->num_events_to_store = v;
+}
+
+long int LmToProjData::get_num_events_to_store() const
+{
+  return num_events_to_store;
+}
+
+void LmToProjData::set_time_frame_definitions(const TimeFrameDefinitions& v)
+{
+  this->frame_defs = v;
+}
+
+const TimeFrameDefinitions& LmToProjData::get_time_frame_definitions() const
+{
+  return frame_defs;
+}
+
+/**************************************************************
  The 3 parsing functions
 ***************************************************************/
 void 
@@ -200,29 +291,54 @@ post_processing()
       return true;
     }
 
-  if (!interactive && output_filename_prefix.size()==0)
-    {
-      warning("You have to specify an output_filename_prefix\n");
-      return true;
-    }
-
-  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
+  set_input_data(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
       warning("You have to specify template_projdata\n");
       return true;
     }
-  shared_ptr<ProjData> template_proj_data_ptr =
+  shared_ptr<ProjData> template_proj_data_sptr =
     ProjData::read_from_file(template_proj_data_name);
 
-  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
+  set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
 
-  // propagate relevant metadata
-  template_proj_data_info_ptr->set_bed_position_horizontal
-    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
-  template_proj_data_info_ptr->set_bed_position_vertical
-    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
+  if (set_up() == Succeeded::no)
+    return true;
+
+#ifdef FRAME_BASED_DT_CORR
+  cerr << "LmToProjData Using FRAME_BASED_DT_CORR\n";
+#else
+  cerr << "LmToProjData NOT Using FRAME_BASED_DT_CORR\n";
+#endif
+
+  return false;
+}
+
+Succeeded LmToProjData::set_up()
+{
+  _already_setup = true;
+
+  if (!interactive && output_filename_prefix.size()==0)
+    {
+      error("You have to specify an output_filename_prefix");
+    }
+
+  if (is_null_ptr(template_proj_data_info_ptr))
+    {
+      error("LmToProjData::set_up(): template projection data not set");
+    }
+
+  // set up normalisation objects
+
+  if (is_null_ptr(normalisation_ptr))
+    {
+      error("Invalid pre-normalisation object");
+    }
+  if (is_null_ptr(post_normalisation_ptr))
+    {
+      error("Invalid post-normalisation object");
+    }
 
   // initialise segment_num related variables
 
@@ -247,36 +363,10 @@ post_processing()
       min(num_segments_in_memory, num_segments);
   if (num_segments == 0)
     {
-      warning("LmToProjData: num_segments_in_memory cannot be 0");
-      return true;
+      error("LmToProjData: num_segments_in_memory cannot be 0");
     }
-  
 
-
-  Scanner const * const scanner_ptr = 
-    template_proj_data_info_ptr->get_scanner_ptr();
-
-  if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
-    {
-      warning("LmToProjData:\nScanner from list mode data (%s) is different from\n"
-	      "scanner from template projdata (%s).\n"
-	      "Full definition of scanner from list mode data:\n%s\n"
-	      "Full definition of scanner from template:\n%s\n",
-	      lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
-	      scanner_ptr->get_name().c_str(),
-	      lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
-	      scanner_ptr->parameter_info().c_str());
-      return true;
-    }
-  
   // handle store_prompts and store_delayeds
-
-  if (lm_data_ptr->has_delayeds()==false && store_delayeds==true)
-    {
-      warning("This list mode data does not seem to have delayed events.\n"
-	      "Setting store_delayeds to false.");
-      store_delayeds=true;
-    }
   
   if (store_prompts)
     {
@@ -291,43 +381,31 @@ post_processing()
 	delayed_increment = 1;
       else
 	{
-	  warning("At least one of store_prompts or store_delayeds should be true");
-	  return true;
+	  error("At least one of store_prompts or store_delayeds should be true");
 	}
-    }
-
-  // set up normalisation objects
-
-  if (is_null_ptr(normalisation_ptr))
-    {
-      warning("Invalid pre-normalisation object\n");
-      return true;
-    }
-  if (is_null_ptr(post_normalisation_ptr))
-    {
-      warning("Invalid post-normalisation object\n");
-      return true;
     }
 
   if (do_pre_normalisation)
     {
-      shared_ptr<Scanner> scanner_sptr(new Scanner(*scanner_ptr));
+      shared_ptr<Scanner> scanner_sptr(new Scanner(*template_proj_data_info_ptr->get_scanner_sptr()));
       // TODO this won't work for the HiDAC or so
       proj_data_info_cyl_uncompressed_ptr.
 	reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
 							       ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-											     1, scanner_ptr->get_num_rings()-1,
-											     scanner_ptr->get_num_detectors_per_ring()/2,
-											     scanner_ptr->get_default_num_arccorrected_bins(), 
+											     1, scanner_sptr->get_num_rings()-1,
+											     scanner_sptr->get_num_detectors_per_ring()/2,
+											     scanner_sptr->get_default_num_arccorrected_bins(), 
 											     false)));
       
-      if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+      if ( normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(), proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of pre-normalisation failed\n");
     }
   else
     {
-      if ( post_normalisation_ptr->set_up(template_proj_data_info_ptr)
+      auto all_frames_exam_info_sptr = std::make_shared<ExamInfo>(lm_data_ptr->get_exam_info());
+      all_frames_exam_info_sptr->set_time_frame_definitions(frame_defs);
+      if ( post_normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(),template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of post-normalisation failed\n");
     }
@@ -349,13 +427,7 @@ post_processing()
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
-#ifdef FRAME_BASED_DT_CORR
-  cerr << "LmToProjData Using FRAME_BASED_DT_CORR\n";
-#else
-  cerr << "LmToProjData NOT Using FRAME_BASED_DT_CORR\n";
-#endif
-
-  return false;
+  return Succeeded::yes;
 }
 
 /**************************************************************
@@ -399,16 +471,16 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 
 
     // do_normalisation
-#ifndef FRAME_BASED_DT_CORR
-     const double start_time = current_time;
-     const double end_time = current_time;
-#else
-     const double start_time = frame_defs.get_start_time(current_frame_num);
-     const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
+//#ifndef FRAME_BASED_DT_CORR
+//     const double start_time = current_time;
+//     const double end_time = current_time;
+//#else
+//     const double start_time = frame_defs.get_start_time(current_frame_num);
+//     const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
      
       const float bin_efficiency = 
-	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -457,14 +529,14 @@ do_post_normalisation(Bin& bin) const
 	}
       else
 	{
-#ifndef FRAME_BASED_DT_CORR
-	  const double start_time = current_time;
-	  const double end_time = current_time;
-#else
-	  const double start_time = frame_defs.get_start_time(current_frame_num);
-	  const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
-	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+//#ifndef FRAME_BASED_DT_CORR
+//	  const double start_time = current_time;
+//	  const double end_time = current_time;
+//#else
+//	  const double start_time = frame_defs.get_start_time(current_frame_num);
+//	  const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin);
 	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
 	  if (bin_efficiency < 1.E-10)
 	    {
@@ -519,10 +591,43 @@ start_new_time_frame(const unsigned int)
 void
 LmToProjData::
 process_data()
-{ 
+{
+  if (!_already_setup)
+    error("LmToProjData: you need to call set_up() first");
+
   CPUTimer timer;
   timer.start();
 
+  // propagate relevant metadata
+  template_proj_data_info_ptr->set_bed_position_horizontal
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
+  template_proj_data_info_ptr->set_bed_position_vertical
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
+
+  // a few more checks, now that we have the lm_data_ptr
+  {
+    Scanner const * const scanner_ptr = 
+      template_proj_data_info_ptr->get_scanner_ptr();
+
+    if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
+      {
+        error("LmToProjData:\nScanner from list mode data (%s) is different from\n"
+                "scanner from template projdata (%s).\n"
+                "Full definition of scanner from list mode data:\n%s\n"
+                "Full definition of scanner from template:\n%s\n",
+                lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
+                scanner_ptr->get_name().c_str(),
+                lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
+                scanner_ptr->parameter_info().c_str());
+      }
+
+    if (lm_data_ptr->has_delayeds()==false && store_delayeds==true)
+      {
+        warning("This list mode data does not seem to have delayed events.\n"
+                "Setting store_delayeds to false.");
+        store_delayeds=false;
+      }
+  }
   // assume list mode data starts at time 0
   // we have to do this because the first time tag might occur only after a
   // few coincidence events (as happens with ECAT scanners)
@@ -540,7 +645,7 @@ process_data()
   ListRecord& record = *record_sptr;
 
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
-	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
+    error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
 
 
   /* Here starts the main loop which will store the listmode data. */
@@ -653,6 +758,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
+             bin.time_frame_num() = current_frame_num;
                      get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store

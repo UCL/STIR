@@ -3,15 +3,7 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -61,9 +53,8 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
  shared_ptr<Scanner> scanner_sptr;
-  this->exam_info_sptr.reset(new ExamInfo);
-//  ExamInfo& exam_info(*exam_info_sptr);
-   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
+ shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+ exam_info_sptr->imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
     const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
@@ -86,32 +77,33 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     // This should have been handled by the projdatainfo.
     ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
 
-         this->exam_info_sptr->start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
+         exam_info_sptr->start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
 
         switch(singles_main_header.patient_orientation)
           {
           case FeetFirstProne:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFP); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFP); break;
           case HeadFirstProne:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFP); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFP); break;
           case FeetFirstSupine:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFS); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFS); break;
           case HeadFirstSupine:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFS); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFS); break;
           case FeetFirstRight:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDR); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDR); break;
           case HeadFirstRight:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDR); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDR); break;
           case FeetFirstLeft:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDL); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDL); break;
           case HeadFirstLeft:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDL); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDL); break;
           case UnknownOrientation:
           default:
-            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::unknown_position); break;
+            exam_info_sptr->patient_position = PatientPosition(PatientPosition::unknown_position); break;
           }
       }
   }
+  this->set_exam_info(*exam_info_sptr);
 
     shared_ptr<ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                         1,

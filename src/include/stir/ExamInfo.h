@@ -1,16 +1,9 @@
 /*
-    Copyright (C) 2013, 2018, University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2018, 2020-2021 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -20,6 +13,7 @@
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
   \author Nikos Efthimiou
+  \author Daniel Deidda
 */
 
 
@@ -43,6 +37,7 @@ START_NAMESPACE_STIR
 
   \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
+  
   */
 class ExamInfo
 {
@@ -57,18 +52,23 @@ public :
 
   ExamInfo()
     : start_time_in_secs_since_1970(0.),
-    low_energy_thres(-1),
-    up_energy_thres(-1)
+
+    calibration_factor(-1.F),
+    low_energy_thres(-1.F),
+    up_energy_thres(-1.F)
+
     {
   }
 
   std::string originating_system;
-  
+    
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+//  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
   { return time_frame_definitions; }
@@ -83,6 +83,10 @@ public :
   inline float get_low_energy_thres() const;
   //! Get the high energy boundary
   inline float get_high_energy_thres() const;
+  //! Get the calibration factor
+  inline  float get_calibration_factor() const;
+  //! Get the radionuclide name
+  inline std::string get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -91,6 +95,13 @@ public :
   inline void set_low_energy_thres(float new_val);
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
+
+  //! Set the Calibration factor
+  inline void set_calibration_factor(const float cal_val);
+  //! Set the radionuclide
+  inline void set_radionuclide(const std::string& name);
+  //! Copy energy information from another ExamInfo
+  inline void set_energy_information_from(const ExamInfo&);
   //@}
 
   inline bool has_energy_information() const
@@ -108,6 +119,22 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  //!  Warning: the operator == does not check that originating system is consistent!
+  bool operator == (const ExamInfo &p1) const ;
+  
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
+  //! Return a string with info on parameters
+  /*! the returned string is not intended for parsing. */
+  std::string parameter_info() const;
+
+protected:
+  
+  float calibration_factor;
   private:
      //!
   //! \brief low_energy_thres
@@ -117,6 +144,8 @@ public :
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
+  
+  std::string radionuclide;
 
   //!
   //! \brief up_energy_thres

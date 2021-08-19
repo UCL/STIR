@@ -1,16 +1,8 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014, 2018 University College London
+# Copyright 2014, 2018, 2020 University College London
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -33,7 +25,14 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   FIND_PACKAGE(SWIG 3.0 REQUIRED)
   INCLUDE("${SWIG_USE_FILE}")
 
-  SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\")
+  SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\" -DSTIR_DEPRECATED="")
+  # Manually add some flags (really should get this from elsewhere)
+  if (HAVE_LLN_MATRIX)
+    SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_LLN_MATRIX)
+  endif()
+  if (HAVE_JSON)
+    SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_JSON)
+  endif()
 
   SET_SOURCE_FILES_PROPERTIES(stir.i PROPERTIES CPLUSPLUS ON)
 
@@ -41,9 +40,11 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
     # We use doxy2swig to convert the doxygen-generated xml to a swig file
     # Note the "standard" CMake trick of first adding a custom command that generates a file, and then
     # a custom target that depends on the file.
+    # Note that we need to depend on the doxygen.stamp as well as otherwise parallel builds can fail
+    # See the last section of https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
     add_custom_command(
       OUTPUT STIR_DOXY2SWIG.i
-      DEPENDS RUN_DOXYGEN
+      DEPENDS RUN_DOXYGEN ../doxygen.stamp
       COMMAND ${PYTHON_EXECUTABLE}
           ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py -c
           ${CMAKE_BINARY_DIR}/xml/index.xml
@@ -64,6 +65,28 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   endif()
 
+  #if (SWIG_VERSION VERSION_LESS 3.0.11)
+    # Older SWIG versions (checked with 3.0.12) have problems with some templates and private typedefs.
+    # To get round this, some include files in STIR have "#ifdef SWIG" statements.
+    # We need to compile the wrapper with -DSWIG.
+    # However, none of the other STIR files (including the registries) should be compiled with -DSWIG
+    # We will do this using the SWIG_GENERATED_COMPILE_DEFINITIONS property, if supported by CMake
+    if (CMAKE_VERSION VERSION_LESS 3.12)
+      message(WARNING "Our work-around for a SWIG problem needs CMake 3.12 or more recent. We recommend to upgrade CMake to 3.12 or later.")
+      function(SWIG_WORKAROUND module)
+        SET_TARGET_PROPERTIES(${module} PROPERTIES COMPILE_FLAGS -DSWIG)
+        # example attempt to only add it to the source only on older CMake, but KT cannot get it to work
+        # set_property(SOURCE CMakeFiles/_stir.dir/stirPYTHON_wrap.cxx PROPERTY COMPILE_DEFINITIONS SWIG)
+      endfunction()
+    else()
+      # KT thought this would work, but it doesn't. So instead, we use a similar line for each TARGET
+      # set_property(SOURCE stir.i PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SWIG)
+      function(SWIG_WORKAROUND module)
+        set_property(TARGET ${module} PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SWIG)
+      endfunction()
+    endif()
+
+  #endif()
 endif()
 
 if(BUILD_SWIG_PYTHON)
@@ -76,7 +99,6 @@ if(BUILD_SWIG_PYTHON)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
   FIND_PACKAGE(Numpy REQUIRED)
   INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
-  # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
@@ -86,9 +108,7 @@ if(BUILD_SWIG_PYTHON)
   else()
     SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
-  SET_TARGET_PROPERTIES(${SWIG_MODULE_stir_REAL_NAME} PROPERTIES
-            COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
-  )
+  SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
   SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
@@ -128,16 +148,14 @@ if (BUILD_SWIG_OCTAVE)
   SET(OCTAVE_SUFFIX ".oct")
   SET(OCTAVE_PREFIX "")
 
-  # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
   SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
   else()
     SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
-  SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}"
-            COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
-  )
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
+  SWIG_WORKAROUND(${SWIG_MODULE_stiroct_REAL_NAME})
   SWIG_LINK_LIBRARIES(stiroct ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES})
 
   # add OCTAVE_INCFLAGS to swig-generated file only, not to all files as 
@@ -167,8 +185,8 @@ if (BUILD_SWIG_MATLAB)
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${Matlab_CXXLINKER_FLAGS}"
-        COMPILE_FLAGS -DSWIG # some include files in STIR have "#ifdef SWIG" statements, so we define the variable here
         FOLDER "Matlab")
+  SWIG_WORKAROUND(${SWIG_MODULE_stirMATLAB_REAL_NAME})
   target_link_libraries(${SWIG_MODULE_stirMATLAB_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
 	
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})

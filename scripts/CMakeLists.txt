@@ -3,15 +3,7 @@
 # Copyright 2011-07-01 - 2011 Kris Thielemans
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -29,7 +21,9 @@ set(${dir_scripts}
   estimate_scatter.sh
   zoom_att_image.sh
   get_num_voxels.sh
-)
+  create_fdef_from_listmode.sh
+  force_view_offset_to_zero.sh
+  )
 
 
 

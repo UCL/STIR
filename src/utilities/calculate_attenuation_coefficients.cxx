@@ -4,15 +4,7 @@
     Copyright (C) 2015, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the Lesser GNU General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    Lesser GNU General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -134,7 +126,7 @@ main (int argc, char * argv[])
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
-		      new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
+		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
 					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
@@ -148,7 +140,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");
@@ -161,11 +153,11 @@ main (int argc, char * argv[])
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
   if (doACF)
     {
-      normalisation_ptr->apply(*out_proj_data_ptr,start_frame,end_frame, symmetries_sptr);
+      normalisation_ptr->apply(*out_proj_data_ptr, symmetries_sptr);
     }
   else
     {
-      normalisation_ptr->undo(*out_proj_data_ptr,start_frame,end_frame, symmetries_sptr);
+      normalisation_ptr->undo(*out_proj_data_ptr, symmetries_sptr);
     }    
 
   return EXIT_SUCCESS;

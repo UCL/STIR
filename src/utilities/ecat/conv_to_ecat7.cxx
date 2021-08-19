@@ -32,15 +32,7 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -267,7 +259,7 @@ int main(int argc, char *argv[])
     // TODO exam_info currently used from the first frame, which means that time frame info is incorrect
     // better to use DynamicProjData etc.
     make_ECAT7_main_header(mhead, filenames[0], 
-			   proj_data_ptr->get_exam_info,
+			   proj_data_ptr->get_exam_info(),
 			   *proj_data_ptr->get_proj_data_info_sptr(),
 			   write_as_attenuation,
 			   NumericType::SHORT);

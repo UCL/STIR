@@ -4,15 +4,7 @@
     Copyright (C) 2013, 2015-2017, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -276,6 +268,8 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of TOF positions
+  inline int get_num_tof_poss() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number
@@ -294,14 +288,33 @@ public:
   inline int get_max_tangential_pos_num() const;
   //! Get the total number of sinograms
   inline int get_num_sinograms() const;
+  //! Get the number of non-tof sinograms
+  /*! Note that this is the sum of the number of axial poss over all segments.
+      \see get_num_sinograms()
+  */
+  inline int get_num_non_tof_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
-  /// Implementation of a*x+b*y, where a and b are scalar, and x and y are ProjData
-  virtual void axpby(const float a, const ProjData& x,
-                     const float b, const ProjData& y);
+  //! \deprecated a*x+b*y (\see xapyb)
+  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y);
+
+  //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData
+  virtual void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b);
+
+  //! set values of the array to x*a+y*b, where a, b, x and y are ProjData
+  virtual void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b);
+
+  //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
+  virtual void sapyb(const float a, const ProjData& y, const float b);
+
+  //! set values of the array to self*a+y*b where a, b and y are ProjData
+  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
 
 protected:
 

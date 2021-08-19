@@ -11,15 +11,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 #
@@ -47,7 +39,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=4.0.0}
+: ${VERSION:=4.1.0}
 : ${TAG:=rel_${VERSION}}
 
 
@@ -72,7 +64,7 @@ set -e
 #fi
 
 
-read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, .zenodo.json? (press Ctrl-C if not)"
 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
@@ -121,7 +113,7 @@ if [ $do_license = 1 ]; then
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
   find . -path .git -prune \
-     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET  >>LICENSE.txt 
+     -o -name "*[xhlkc]" -type f  -print | grep -v .git| grep -v maintenance | xargs grep -l PARAPET-license  >>LICENSE.txt 
   git add LICENSE.txt
 fi
 
@@ -259,4 +251,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "if not beta, did you run with 'do_website_final_version=1'?
+echo "if not beta, did you run with 'do_website_final_version=1'?"

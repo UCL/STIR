@@ -4,21 +4,14 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -94,6 +87,7 @@ public:
     //! Default constructor
     InputStreamFromROOTFileForCylindricalPET();
 
+#if 0 // not used, so commented out
     InputStreamFromROOTFileForCylindricalPET(std::string filename,
                                              std::string chain_name,
                                              int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
@@ -103,6 +97,7 @@ public:
                                              bool exclude_scattered, bool exclude_randoms,
                                              float low_energy_window, float up_energy_window,
                                              int offset_dets);
+#endif
 
     virtual ~InputStreamFromROOTFileForCylindricalPET() {}
 
@@ -122,18 +117,11 @@ public:
     inline virtual int get_num_axial_blocks_per_bucket_v() const;
     //! Get the number of transaxial modules
     inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
-    //! Get the axial number of crystals per module
-    inline virtual int get_num_axial_crystals_per_block_v() const;
-    //! Get the transaxial number of crystals per module
-    inline virtual int get_num_transaxial_crystals_per_block_v() const;
     //! Calculate the number of axial crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_axial_crystals_per_singles_unit() const;
     //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
-    inline void set_crystal_repeater_x(int);
-    inline void set_crystal_repeater_y(int);
-    inline void set_crystal_repeater_z(int);
     inline void set_submodule_repeater_x(int);
     inline void set_submodule_repeater_y(int);
     inline void set_submodule_repeater_z(int);
@@ -148,14 +136,26 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
-    Int_t crystalID1, crystalID2;
-    Int_t submoduleID1, submoduleID2;
-    Int_t moduleID1, moduleID2;
-    Int_t rsectorID1, rsectorID2;
+    //! \name TBranches for Cylindrical PET
+    //@{
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_submoduleID1 = nullptr;
+    TBranch *br_submoduleID2 = nullptr;
+    TBranch *br_moduleID1 = nullptr;
+    TBranch *br_moduleID2 = nullptr;
+    TBranch *br_rsectorID1 = nullptr;
+    TBranch *br_rsectorID2 = nullptr;
+    //@}
 
-    int crystal_repeater_x;
-    int crystal_repeater_y;
-    int crystal_repeater_z;
+    //! \name ROOT Variables, i.e. to hold data from each entry.
+    //@{
+    std::int32_t crystalID1, crystalID2;
+    std::int32_t submoduleID1, submoduleID2;
+    std::int32_t moduleID1, moduleID2;
+    std::int32_t rsectorID1, rsectorID2;
+    //@}
+
     int submodule_repeater_x;
     int submodule_repeater_y;
     int submodule_repeater_z;

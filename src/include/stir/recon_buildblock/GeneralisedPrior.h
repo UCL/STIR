@@ -4,15 +4,7 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -69,12 +61,26 @@ public:
 		   const DataT &current_estimate) =0; 
 
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output
-  /*! Default implementation just call error(). This function needs to be overriden by the 
+  /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
+      This method assumes that the hessian of the prior is 1 and hence the function quadratic.
+      Instead, accumulate_Hessian_times_input() should be used. This method remains for backwards comparability.
+       \warning The derived class should accumulate in \a output.
   */
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DataT& output,
 						const DataT& input) const;
+
+    //! This should compute the multiplication of the Hessian with a vector and add it to \a output
+    /*! Default implementation just call error(). This function needs to be overridden by the
+        derived class.
+        \warning The derived class should accumulate in \a output.
+    */
+  virtual Succeeded
+  accumulate_Hessian_times_input(DataT& output,
+          const DataT& current_estimate,
+          const DataT& input) const;
+
 
   inline float get_penalisation_factor() const;
   inline void set_penalisation_factor(float new_penalisation_factor);

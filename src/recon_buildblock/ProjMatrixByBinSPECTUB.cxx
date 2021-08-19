@@ -1,18 +1,10 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
-    Copyright (C) 2013-2014, 2019, University College London
+    Copyright (C) 2013-2014, 2019, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -52,6 +44,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <stdio.h>
 #include <iostream>
@@ -61,8 +54,6 @@
 #include <math.h>
 #include <ctype.h>
 //#include <time.h>
-
-using namespace std;
 
 //... user defined libraries .............................................................
 
@@ -336,7 +327,7 @@ set_up(
 	vox.thcm = vol.thcm;
 	
 	//... projecction parameters ..........................................
-	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
+	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180/_PI);
 	prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180/_PI);
 	prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0)/10;
 	
@@ -385,6 +376,8 @@ set_up(
 	bin.thcmd2 = bin.thcm / (float)2.;
 	bin.szdx   = bin.szcm / wmh.psfres;
 	bin.thdx   = bin.thcm / wmh.psfres;
+
+        std::stringstream info_stream;
 	
 	//....PSF and collimator parameters ........................................	
         boost::algorithm::to_lower(psf_type);
@@ -394,12 +387,12 @@ set_up(
 		
 		if ( psf_type == "3d" ) {
 			wmh.do_psf_3d = true;
-			cout << "3D PSF Correction. Parallel geometry" << endl;
+			info_stream << "3D PSF Correction. Parallel geometry" << std::endl;
 		}
 		else {
 			if ( psf_type== "2d" ) {
 				wmh.do_psf_3d = false;
-				cout << "2D PSF Correction. Parallel geometry" << endl;
+				info_stream << "2D PSF Correction. Parallel geometry" << std::endl;
 			}
 			else 
                           {
@@ -420,12 +413,12 @@ set_up(
 	  //int num = collimator_number;
 	  //if ( num ==0 ) {
 	  wmh.COL.do_fb = false;
-	  cout << "No correction for PSF. Parallel geometry" << endl;
+	  info_stream << "No correction for PSF. Parallel geometry" << std::endl;
 	  //}
 	  //else {
 	  //	wmh.COL.do_fb = true;
 	  //	wmh.COL.F     = collimator_number;
-	  //	cout << "No correction for PSF. Fanbeam geometry with focal distance = " << wmh.COL.F << " cm " << endl;
+	  //	info_stream << "No correction for PSF. Fanbeam geometry with focal distance = " << wmh.COL.F << " cm " << std::endl;
 	  //}		
 	}
 	
@@ -464,7 +457,7 @@ set_up(
 					
 					wmh.msk_fn = mask_file;
 					
-					cout << "MASK filename = " << wmh.msk_fn << endl;
+					info_stream << "MASK filename = " << wmh.msk_fn << std::endl;
 				}
 				else 
                                 {
@@ -485,19 +478,26 @@ set_up(
 	wm.do_save_STIR = true;
 
 	//:: Control of read parameters
-	cout << "" << endl;
-	cout << "Parameters of SPECT UB matrix: (in cm)" << endl;
-	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< endl;
-	cout << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << endl;
-	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm << endl;
-	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << endl;
-	cout << "Number of subsets: " << wmh.prj.NOS << endl;
+	info_stream << "" << std::endl;
+	info_stream << "Parameters of SPECT UB matrix: (in cm)" << std::endl;
+	info_stream << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< std::endl;
+	info_stream << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << std::endl;
+	info_stream << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm << std::endl;
+	info_stream << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << std::endl;
+	info_stream << "Number of subsets: " << wmh.prj.NOS << std::endl;
 	if ( wmh.do_att ){
-		cout << "Correction for atenuation: " << wmh.att_fn << "\t\tdo_msk_att: " << wmh.do_msk_att << endl;
-		cout << "Attenuation map: " << wmh.att_fn << endl;
+		info_stream << "Correction for attenuation: " << wmh.att_fn << "\t\tdo_msk_att: " << wmh.do_msk_att << std::endl;
+		info_stream << "Attenuation map: " << wmh.att_fn << std::endl;
 	}
-	cout << "Rotation radius: " << Rrad[0] << endl;
-	cout << "Minimum weight: " << wmh.min_w << endl;
+	info_stream << "Rotation radii: {" << Rrad[0];
+        for (int i=1; i<prj.Nang; ++i)
+          {
+            info_stream << ", " << Rrad[i];
+          }
+        info_stream << "}\n";
+	info_stream << "Minimum weight: " << wmh.min_w << std::endl;
+
+        info(info_stream.str());
 
 	//... to sort angles into subsets ......................................
 
@@ -598,12 +598,12 @@ set_up(
 
 	//... double array wm.val and wm.col .....................................................
 
-	if ( ( wm.val = new (nothrow) float * [ wm.NbOS ] ) == NULL ) 
+	if ( ( wm.val = new (std::nothrow) float * [ wm.NbOS ] ) == NULL ) 
           {
             //error_wm_SPECT( 200, "wm.val[]" );
             error("Error allocating space to store values for SPECTUB matrix");
           }
-	if ( ( wm.col = new (nothrow) int   * [ wm.NbOS ] ) == NULL ) 
+	if ( ( wm.col = new (std::nothrow) int   * [ wm.NbOS ] ) == NULL ) 
           {
             //error_wm_SPECT( 200, "wm.col[]" );
             error("Error allocating space to store column indices for SPECTUB matrix");
@@ -611,7 +611,7 @@ set_up(
 
 	//... array wm.ne .........................................................................
 
-	if ( ( wm.ne = new (nothrow) int [ wm.NbOS + 1 ]) == 0 ) 
+	if ( ( wm.ne = new (std::nothrow) int [ wm.NbOS + 1 ]) == 0 ) 
           {
             // error_wm_SPECT(200,"wm.ne[]");
             error("Error allocating space to store number of elements for SPECTUB matrix");
@@ -659,7 +659,7 @@ set_up(
 
 		wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
 
-		//cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
+		//cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<std::endl;
 
 	// compute_one_subset(kOS);
 	}   // end of LOOP: Subsets
@@ -777,13 +777,13 @@ compute_one_subset(const int kOS) const
 
   for( int i = 0 ; i < wmh.prj.NbOS ; i++ ){
 
-    if ( ( wm.val[ i ] = new (nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( wm.val[ i ] = new (std::nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) 
       {
         //error_wm_SPECT( 200, "wm.val[][]" );
         error("Error allocating space to store values for SPECTUB matrix");
       }
 
-    if ( ( wm.col[ i ] = new (nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( wm.col[ i ] = new (std::nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) 
       {
         //error_wm_SPECT( 200, "wm.col[]" );
         error("Error allocating space to store column indices for SPECTUB matrix");
