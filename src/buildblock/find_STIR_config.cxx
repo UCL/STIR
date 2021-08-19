@@ -15,9 +15,9 @@ std::string find_STIR_config_file(const std::string& filename){
     std::string dir;
     dir = get_STIR_config_dir(); //STIR_CONFIG_DIR;
     std::ifstream file(dir+"/"+filename);
-    if (file)
-        info("Using config file from "+dir);
-    else
+    if (!file)
+//        info("Using config file from "+dir);
+//    else
         error("Could not open "+dir+"/"+filename);
     
     return dir+"/"+filename;
