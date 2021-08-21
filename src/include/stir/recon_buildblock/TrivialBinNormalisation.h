@@ -46,7 +46,7 @@ public:
   virtual inline bool is_trivial() const override { return true;}  
 
 private:
-  virtual inline void set_defaults() override {}
+  virtual void set_defaults() override;
   virtual inline void initialise_keymap() override {}
   
 };

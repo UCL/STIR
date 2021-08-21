@@ -24,5 +24,8 @@ START_NAMESPACE_STIR
 const char * const 
 TrivialBinNormalisation::registered_name = "None";
 
+void TrivialBinNormalisation::set_defaults()
+{}
+
 END_NAMESPACE_STIR
 
