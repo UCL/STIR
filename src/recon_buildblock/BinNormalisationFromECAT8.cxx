@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014, 2019, 2020 University College London
+  Copyright (C) 2013-2014, 2019, 2020, 2021 University College London
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -44,10 +44,10 @@
 #include "stir/Bin.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
-#include "stir/IO/InterfileHeader.h"
 #include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
+#include "stir/utilities.h"
 #include <algorithm>
 #include <fstream>
 #include <cctype>
@@ -262,52 +262,17 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
 #endif
-#if 0
-  InterfileRawDataHeaderSiemens interfile_parser;
-//  interfile_parser.ignore_key("data format");
-  interfile_parser.parse(filename.c_str());
+  InterfileNormHeaderSiemens norm_parser;
+  norm_parser.parse(filename.c_str());
 
-#else
-  KeyParser parser;
-  std::string originating_system;
-  std::string data_file_name;
-  int num_buckets;
-  {
-    parser.add_start_key("INTERFILE");
-    parser.add_stop_key("END OF INTERFILE"); // add this for safety (even though it isn't always there)
-    parser.add_key("originating_system", &originating_system);
-    parser.add_key("name_of_data_file", &data_file_name);
-    parser.add_key("%number of buckets", &num_buckets);
-    parser.add_key("%scanner quantification factor (Bq*s/ECAT counts)",& calib_factor);
-    parser.add_key("%cross calibration factor",& cross_calib_factor);
-    parser.parse(filename.c_str());
-  }
-#endif
-  // remove trailing \r
-  std::string s=/*interfile_parser.*/originating_system;
-  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
-  /*interfile_parser.*/originating_system=s;
-  s=/*interfile_parser.*/data_file_name;
-  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
-  /*interfile_parser.*/data_file_name=s;
-  
-  this->scanner_ptr.reset(Scanner::get_scanner_from_name(/*interfile_parser.*/originating_system));
-  switch(this->scanner_ptr->get_type())
-    {
-      //case Scanner::E1080:
-    case Scanner::Siemens_mCT:
-    case Scanner::Siemens_mMR:
-      break;
-    default:
-      error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
-    }
+  this->norm_proj_data_info_sptr =  norm_parser.data_info_ptr;
+  this->scanner_ptr = norm_parser.data_info_ptr->get_scanner_sptr();
 
-	char directory_name[max_filename_length];
+        char directory_name[max_filename_length];
 	get_directory_name(directory_name, filename.c_str());
 	char full_data_file_name[max_filename_length];
-	strcpy(full_data_file_name, data_file_name.c_str());
+	strcpy(full_data_file_name, norm_parser.data_file_name.c_str());
 	prepend_directory_name(full_data_file_name, directory_name);
-
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
   // Calculate the number of axial blocks per singles unit and 
   // total number of blocks per singles unit.
@@ -393,13 +358,20 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   int eff_test = scanner_ptr->get_num_detectors_per_ring() * scanner_ptr->get_num_rings();
 #endif
 
-  std::ifstream binary_data(full_data_file_name, std::ios::binary | std::ios::in);
+  std::ifstream binary_data;
+  open_read_binary(binary_data, full_data_file_name);
   if (read_data(binary_data, geometric_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading geo factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[1])
+    error("Error reading ECAT8 norm file: wrong offset after component 1");
   if (read_data(binary_data, crystal_interference_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading crystal_interference_factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[2])
+    error("Error reading ECAT8 norm file: wrong offset after component 2");
   if (read_data(binary_data, efficiency_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading efficiency_factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[3])
+    error("Error reading ECAT8 norm file: wrong offset after component 3");
   if (read_data(binary_data, axial_effects, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading axial_effects_factors from '%s'", full_data_file_name);
 
@@ -711,15 +683,9 @@ construct_sino_lookup_table()
   const int num_rings = this->scanner_ptr->get_num_rings();
   this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
                                                0, num_rings-1));
-  // construct proj_data_info in "native" Siemens space for the norm (span=11 usually?)
-  // TODO will have to get "native" span from somewhere. is it in the norm header?  49
- unique_ptr<ProjDataInfo> proj_data_info_uptr=ProjDataInfo::construct_proj_data_info(this->scanner_ptr, 11, num_rings -1,
-                                         this->scanner_ptr->get_max_num_views(),
-                                         this->scanner_ptr->get_max_num_non_arccorrected_bins(),
-                                         false);
- 
+
  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
-             dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_uptr->clone()));
+             dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(norm_proj_data_info_sptr->clone()));
               
   this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
   

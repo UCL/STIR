@@ -1,24 +1,21 @@
 /*
-    Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2020, 2021 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 /*! 
   \file
   \ingroup InterfileIO
+  \ingroup ECAT
   \brief  This file declares the classes stir::InterfileHeaderSiemens,
-          stir::InterfileImageHeader, stir::InterfilePDFSHeader  
+          stir::InterfileRawDataHeaderSiemens, stir::InterfilePDFSHeaderSiemens,
+          stir::InterfileListmodeHeaderSiemens, stir:InterfileNormHeaderSiemens
 
   \author Kris Thielemans
-  \author Sanida Mustafovic
-  \author PARAPET project
 
-  See http://stir.sourceforge.net for a description of the full
-  proposal for Interfile headers for 3D PET.
 */
 
 
@@ -39,6 +36,7 @@ class ProjDataInfo;
   \brief a class for Interfile keywords (and parsing) common to 
   all types of data
   \ingroup InterfileIO
+  \ingroup ECAT
   */
 class InterfileHeaderSiemens : public InterfileHeader
 {
@@ -80,6 +78,7 @@ private:
 /*!
   \brief a class for Interfile keywords (and parsing) specific to images
   \ingroup InterfileIO
+  \ingroup ECAT
   */
 class InterfileImageHeader : public InterfileHeaderSiemens
 {
@@ -101,8 +100,9 @@ protected:
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
-Siemens PET projection or list mode data
+Siemens PET projection, list mode data or norm data
 \ingroup InterfileIO
+\ingroup ECAT
 */
 class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
   {
@@ -143,8 +143,9 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
-projection data (i.e. ProjDataFromStream)
+projection data (i.e. ProjDataFromStream) for Siemens PET scanners
 \ingroup InterfileIO
+\ingroup ECAT
 */
 class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
   {
@@ -179,8 +180,9 @@ class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
-Siemesn listmode data (in PETLINK format)
+Siemens listmode data (in PETLINK format)
 \ingroup InterfileIO
+\ingroup ECAT
 */
 class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
   {
@@ -206,6 +208,34 @@ class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
   private:
 
     int find_storage_order();
+
+  };
+
+/*!
+\brief a class for Interfile keywords (and parsing) specific to
+Siemens (component-based) normalisation data
+\ingroup InterfileIO
+\ingroup ECAT
+*/
+class InterfileNormHeaderSiemens : public InterfileRawDataHeaderSiemens
+  {
+  public:
+    InterfileNormHeaderSiemens();
+
+  protected:
+
+    //! Returns false if OK, true if not.
+    virtual bool post_processing() override;
+
+  public:
+    float calib_factor;
+    float cross_calib_factor;
+    int num_buckets;
+
+  private:
+    int num_components;
+    std::vector<std::vector<int>> number_of_dimensions;
+    void read_num_components();
 
   };
 

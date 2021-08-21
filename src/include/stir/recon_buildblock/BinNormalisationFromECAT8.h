@@ -121,6 +121,7 @@ public:
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> norm_proj_data_info_sptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
