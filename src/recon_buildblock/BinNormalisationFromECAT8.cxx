@@ -687,7 +687,7 @@ construct_sino_lookup_table()
  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
              dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(norm_proj_data_info_sptr->clone()));
               
-  this->num_Siemens_sinograms = proj_data_info_sptr->get_num_sinograms(); // TODO will have to be get_num_non_tof_sinograms()
+  this->num_Siemens_sinograms = proj_data_info_sptr->get_num_non_tof_sinograms();
   
   auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_sptr);
   Bin bin;
@@ -708,8 +708,8 @@ construct_sino_lookup_table()
               proj_data_info_sptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
               for (auto iter=det_pos_pairs.begin();iter!=det_pos_pairs.end(); ++iter)
                 {
-                  sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = z;
-                  sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = z;
+                  sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = Siemens_sino_index;
+                  sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = Siemens_sino_index;
                 }
               break;
             }
