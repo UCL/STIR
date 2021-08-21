@@ -38,6 +38,7 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
+  TrivialBinNormalisation() {}
   virtual inline void apply(RelatedViewgrams<float>&) const override {}
   virtual inline void undo(RelatedViewgrams<float>&) const override {}
   
