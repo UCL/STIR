@@ -362,15 +362,15 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   open_read_binary(binary_data, full_data_file_name);
   if (read_data(binary_data, geometric_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading geo factors from '%s'", full_data_file_name);
-  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[1])
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[1]))
     error("Error reading ECAT8 norm file: wrong offset after component 1");
   if (read_data(binary_data, crystal_interference_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading crystal_interference_factors from '%s'", full_data_file_name);
-  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[2])
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[2]))
     error("Error reading ECAT8 norm file: wrong offset after component 2");
   if (read_data(binary_data, efficiency_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading efficiency_factors from '%s'", full_data_file_name);
-  if (binary_data.tellg() != norm_parser.data_offset_each_dataset[3])
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[3]))
     error("Error reading ECAT8 norm file: wrong offset after component 3");
   if (read_data(binary_data, axial_effects, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading axial_effects_factors from '%s'", full_data_file_name);
