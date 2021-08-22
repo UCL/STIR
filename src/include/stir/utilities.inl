@@ -9,6 +9,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -21,6 +22,7 @@
 #else
 #include <sstream>
 #endif
+#include <fstream>
 
 START_NAMESPACE_STIR
 /*!
@@ -64,21 +66,14 @@ ask_num (const std::string& str,
 
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-				  const std::string& name)
+				  const std::string& name,
+                                  const std::ios::openmode open_mode)
 {
-#if 0
-  //KT 30/07/98 The next lines are only necessary (in VC 5.0) when importing 
-  // <fstream.h>. We use <fstream> now, so they are disabled.
-
-  // Visual C++ does not complain when opening a nonexisting file for reading,
-  // unless using std::ios::nocreate
-  s.open(name.c_str(), std::ios::in | std::ios::binary | std::ios::nocreate); 
-#else
-  s.open(name.c_str(), std::ios::in | std::ios::binary); 
-#endif
-  // KT 14/01/2000 added name of file in error message
+  s.open(name.c_str(), std::ios::in | std::ios::binary | open_mode);
   if (s.fail() || s.bad())
-    { error("Error opening file %s\n", name.c_str());  }
+    error("Error opening file for reading. Filename:\n'" + name + "'");
+  if (s.peek() == std::ifstream::traits_type::eof())
+    error("Error opening file for reading (non-existent or empty file). Filename:\n'" + name + "'");
   return s;
 }
 

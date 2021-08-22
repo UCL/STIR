@@ -1006,12 +1006,8 @@ read_interfile_PDFS_SPECT(istream& input,
   
   assert(!is_null_ptr(hdr.data_info_sptr));
 
-   shared_ptr<iostream> data_in(new fstream (full_data_file_name, open_mode | ios::binary));
-   if (!data_in->good())
-     {
-       warning("interfile parsing: error opening file %s",full_data_file_name);
-       return 0;
-     }
+  shared_ptr<fstream> data_in(new fstream);
+  open_read_binary(*data_in, full_data_file_name, open_mode);
 
    return new ProjDataFromStream(hdr.get_exam_info_sptr(), 
 				 hdr.data_info_sptr,
@@ -1045,12 +1041,8 @@ read_interfile_PDFS_Siemens(istream& input,
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());
 
-  shared_ptr<iostream> data_in(new fstream(full_data_file_name, open_mode | ios::binary));
-  if (!data_in->good())
-    {
-    warning("interfile parsing: error opening file %s", full_data_file_name);
-    return 0;
-    }
+  shared_ptr<fstream> data_in(new fstream);
+  open_read_binary(*data_in, full_data_file_name, open_mode);
 
   if (hdr.compression)
     warning("Siemens projection data is compressed. Reading of raw data will fail.");
@@ -1121,12 +1113,8 @@ read_interfile_PDFS(istream& input,
   
    assert(!is_null_ptr(hdr.data_info_sptr));
 
-   shared_ptr<iostream> data_in(new fstream (full_data_file_name, open_mode | ios::binary));
-   if (!data_in->good())
-     {
-       warning("interfile parsing: error opening file %s",full_data_file_name);
-       return 0;
-     }
+   shared_ptr<fstream> data_in(new fstream);
+   open_read_binary(*data_in, full_data_file_name, open_mode);
 
    return new ProjDataFromStream(hdr.get_exam_info_sptr(),
 				 hdr.data_info_sptr->create_shared_clone(),

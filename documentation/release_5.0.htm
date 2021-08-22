@@ -155,6 +155,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
     ROOT file event processing is now up to 4x faster. In addition, there is now an option to <tt>check energy window information</tt> (defaulting to on).
     Futhermore, added functionality to exclude true and unscattered event types from list mode processing. </li>
+<li>Reading of Interfile projection-data will now write a more explicit warning when the binary file is non-existent or empty (improving over the cryptic <tt>WARNING: read_data: error after reading from stream</tt> that we wrote before).</li>
 </ul>
 
 
@@ -270,6 +271,12 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <li>
     Overloaded <code>compute_total_ROI_values</code> and <code>compute_ROI_values_per_plane</code> functions to allow the passing of  a<code>VoxelsOnCartesianGrid</code> object instead of a <code>Shape3D</code> as the ROI shape.
     This allows the ROI volume to be constructed during preprocessing for multiple image analysis.
+</li>
+<li><code>stir::open_read_binary</code> improvements:
+   <ul>
+     <li>now has an optional argument to be able to open a stream read/write.</li>
+     <li>errors if stream is empty after opening</li>
+   </ul>
 </li>
 </ul>
 
