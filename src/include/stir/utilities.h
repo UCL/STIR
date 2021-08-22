@@ -164,10 +164,15 @@ void * read_stream_in_memory(std::istream& input, std::streamsize& file_size);
 std::streamsize find_remaining_size (std::istream& input);
 
 //! opens a stream for reading binary data. Calls error() when it does not succeed.
-/*! \warning probably does not work if you are not in the C-locale */
+/*! actual open mode is `in|binary|open_mode`. This function calls error() if the opened
+    stream is empty.
+    \warning probably does not work if you are not in the C-locale.
+*/
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-                                  const std::string& name);
+                                  const std::string& name,
+                                  const std::ios::openmode open_mode = std::ios::in);
+
 //! opens a FILE for reading binary data. Calls error() when it does not succeed.
 /*! \warning probably does not work if you are not in the C-locale*/
 FILE*& open_read_binary(FILE*& fptr, 
