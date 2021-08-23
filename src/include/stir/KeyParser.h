@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2020, University College London
+    Copyright (C) 2013, 2020, 2021 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -452,25 +452,29 @@ private :
 
   ////// methods
 
-  // loops over all lines in the file.
+  //! output the value to a stream, depending on the type
+  static void value_to_stream(std::ostream& s, const map_element&);
+  //! output the (vectorised) values to a stream, depending on the type
+  static void vectorised_value_to_stream(std::ostream& s, const std::string& keyword, const map_element& element);
+
+  //! loops over all lines in the file.
   Succeeded parse_header(const bool write_warnings);
 
-  // read a line, find keyword and call parse_value_in_line()
+  //! read a line, find keyword and call parse_value_in_line()
   Succeeded read_and_parse_line(const bool write_warning);
 
+  //! find keyword and call its call_back
   // see if current keyword is in the keymap using map_keyword
   // if so, call its call_back function and return Succeeded::yes, else
   // conditionally write a warning and return Succeeded::no
   Succeeded parse_value_in_line(const std::string& line, const bool write_warning);
 
-  // set 'current' to map_element corresponding to 'keyword'
+  //! set 'current' to map_element corresponding to 'keyword'
   // return Succeeded::yes if valid keyword, Succeeded::no otherwise
   Succeeded map_keyword(const std::string& keyword);
 
-  // call appropriate member function
+  //! call appropriate member function
   void process_key();
-
-
 
 };
 
