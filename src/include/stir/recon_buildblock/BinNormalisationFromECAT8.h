@@ -57,19 +57,35 @@ START_NAMESPACE_ECAT
 
   \par Parsing example
   \verbatim
-  Bin Normalisation type := from ecat7
+  Bin Normalisation type := from ecat8
   Bin Normalisation From ECAT8:=
-  normalisation filename:= myfile.hn
+  normalisation filename:= myfile.n.hdr
 
   ; next keywords can be used to switch off some of the normalisation components
-  ; do not use unless you know why
+  ; do not use unless you know why.
+  ; Default values are indicated below (i.e. use all of them)
   ; use_gaps:=1
   ; use_detector_efficiencies:=1
   ; use_dead_time:=1
   ; use_geometric_factors:=1
   ; use_crystal_interference_factors:=1
+  ; use_axial_effects_factors:=1
   End Bin Normalisation From ECAT8:=
   \endverbatim
+
+  \par More information
+
+  Siemens stores `axial effects`, i.e. one number per sinogram. This normally limits the use of the
+  file to data that have been acquired with the same `span`, which is usually 11 for present Siemens scanners.
+
+  We work around this in 2 ways:
+  - we assume that the `axial_effects_factor` is the same for every ring pair contributing to a particular
+  Siemens sinogram
+  - if there is no corresponding Siemens sinogram (i.e. the norm file has been acquired with a particular
+  maximum ring difference, smaller than what is actually possible with the scanner), we use an
+  `axial_effects_factor` of 1. This should be reasonable as the numbers are around 1 (on the mMR).
+
+ This stratey allows us to give normalisation factor for span=1 data, even if the norm file is for span=11.
 
   \todo dead-time is not yet implemented
 

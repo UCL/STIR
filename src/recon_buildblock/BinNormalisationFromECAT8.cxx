@@ -682,14 +682,17 @@ construct_sino_lookup_table()
 {
   const int num_rings = this->scanner_ptr->get_num_rings();
   this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
-                                               0, num_rings-1));
+                                             0, num_rings-1));
+  // fill with invalid index such that we can detect out-of-range
+  // see find_axial_effects
+  this->sino_index.fill(-1);
 
- shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(
-             dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(norm_proj_data_info_sptr->clone()));
+  auto proj_data_info_no_arccorr_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(norm_proj_data_info_sptr.get());
               
-  this->num_Siemens_sinograms = proj_data_info_sptr->get_num_non_tof_sinograms();
+  this->num_Siemens_sinograms = proj_data_info_no_arccorr_ptr->get_num_non_tof_sinograms();
   
-  auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_sptr);
+  const auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_no_arccorr_ptr);
   Bin bin;
   bin.tangential_pos_num()=0;
   bin.view_num()=0;
@@ -701,11 +704,11 @@ construct_sino_lookup_table()
       for (std::size_t i=0; i<segment_sequence.size();++i)
         { 
           bin.segment_num() = segment_sequence[i];
-          const int num_ax_poss = proj_data_info_sptr->get_num_axial_poss(bin.segment_num());
+          const int num_ax_poss = proj_data_info_no_arccorr_ptr->get_num_axial_poss(bin.segment_num());
           if (z< num_ax_poss)
             {
               bin.axial_pos_num() = z;
-              proj_data_info_sptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+              proj_data_info_no_arccorr_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
               for (auto iter=det_pos_pairs.begin();iter!=det_pos_pairs.end(); ++iter)
                 {
                   sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = Siemens_sino_index;
@@ -725,7 +728,21 @@ float
 BinNormalisationFromECAT8::
 find_axial_effects(int ring1, int ring2) const
 {
-  return axial_effects[sino_index[ring1][ring2]];
+  // A variable to see if we're going to write a warning
+  // TODO should use a member variable, reset in set_up() I guess, in case somebody sets-up an
+  // existing norm object for different geometry, but maybe that's unlikely.
+  static bool first_time = true;
+  const int Siemens_sino_index = sino_index[ring1][ring2];
+  if (Siemens_sino_index<0)
+    {
+      if (first_time)
+        {
+          warning("ECAT8 norm axial effects not given for the largest ring differences. I will just use 1 for those.");
+          first_time = false;
+        }
+      return 1.F;
+    }
+  return axial_effects[Siemens_sino_index];
 }
   
 
