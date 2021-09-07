@@ -29,7 +29,7 @@ import stir.*
     output_format=InterfileOutputFileFormat();
     output_format.write_to_file('stir_matlab_test.hv', image) ;
     image2=FloatVoxelsOnCartesianGrid.read_from_file('stir_matlab_test.hv');
-    assert (isequal(image.get_voxel_size(),image2.get_voxel_size()))
+    assert (eq(image.get_voxel_size(),image2.get_voxel_size())) % isequal to eq
     %assert (image.shape()==image2.shape())
     %assert (get_physical_coordinates_for_bounding_box(image) == get_physical_coordinates_for_bounding_box(image2))
     assert(image2(ind - image.get_min_indices() + image2.get_min_indices()) == image(ind))
@@ -47,18 +47,18 @@ import stir.*
     projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6);
     assert (projdatainfo.get_scanner().get_num_rings()==32)
     projdata=ProjDataInterfile(examinfo, projdatainfo, 'stir_matlab_test.hs');
-    assert (projdata.get_min_segment_num()==-1)
-    assert( projdata.get_max_segment_num()==+1)
+    assert (projdata.get_min_segment_num()==-2) 
+    assert (projdata.get_max_segment_num()==+2) 
     for seg=projdata.get_min_segment_num() : projdata.get_max_segment_num()
         segment=projdatainfo.get_empty_segment_by_view(seg);
         segment.fill(double(seg)+100.)
-        assert(isequal(projdata.set_segment(segment),Succeeded(Succeeded.yes)))
+        assert(eq(projdata.set_segment(segment),Succeeded(Succeeded.yes)))
     end
     % now delete object such that the file gets closed and we can read it
     delete( projdata)
 
     projdata2=ProjData.read_from_file('stir_matlab_test.hs');
-    assert (isequal(projdatainfo,projdata2.get_proj_data_info()))
+    assert (eq(projdatainfo,projdata2.get_proj_data_info()))
     for seg=projdatainfo.get_min_segment_num() : projdatainfo.get_max_segment_num()
         % construct same segment data as above (TODO: better to stick it into a list or so)
         segment=projdatainfo.get_empty_segment_by_view(seg);
