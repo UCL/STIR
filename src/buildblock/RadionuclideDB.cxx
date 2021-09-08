@@ -162,6 +162,8 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
                         rmodality);
   
   return rnuclide;
+#else
+return Radionuclide();
 #endif
 }
 
