@@ -14,7 +14,6 @@ START_NAMESPACE_STIR
 
   \ingroup ancillary
 */
-//! the following returns the path of the configuration file "filename we are looking for
 std::string find_STIR_config_file(const std::string& filename);
 
 //! The following gets the STIR configuration directory 
