@@ -13,13 +13,14 @@ std::string find_STIR_config_file(const std::string& filename){
     
     std::string dir;
     dir = get_STIR_config_dir(); //STIR_CONFIG_DIR;
-    std::ifstream file(dir+"/"+filename);
+    // TODO this might be dangerous on Windows but seems to work
+    const std::string name = (dir+"/"+filename);
+    std::ifstream file(name);
     if (!file)
-//        info("Using config file from "+dir);
-//    else
-        error("Could not open "+dir+"/"+filename);
-    
-    return dir+"/"+filename;
+       error("find_STIR_config_file could not open "+name);
+    if (file.peek() == std::ifstream::traits_type::eof())
+      error("find_STIR_config_file error opening file for reading (non-existent or empty file). Filename:\n'" + name + "'");
+    return name;
 
 }
 //! The following gets the STIR configuration directory 
