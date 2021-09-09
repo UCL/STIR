@@ -17,7 +17,10 @@ START_NAMESPACE_STIR
 //! the following returns the path of the configuration file "filename we are looking for
 std::string find_STIR_config_file(const std::string& filename);
 
-//! The following gets the STIR configuration directory 
+//! The following returns a string with the (full) path of the directory where STIR configuration files are found
+//! First checks an environment variable `STIR_CONFIG_DIR`. If that isn't set, 
+//! it returns the value of the `STIR_CONFIG_DIR` CMake variable set at build time 
+//! (with a default location in the installation directory).
 std::string get_STIR_config_dir();
 
 
