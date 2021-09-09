@@ -38,6 +38,7 @@ START_NAMESPACE_STIR
 
   \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
+  
   */
 class ExamInfo
 {
@@ -121,6 +122,7 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  //!  Warning: the operator == does not check that originating system is consistent!
   bool operator == (const ExamInfo &p1) const ;
   
   //! Clone and create shared_ptr of the copy

@@ -61,12 +61,21 @@ To reflect this change, <code>Scanner::get_default_intrinsic_tilt()</code> has b
 Note: start angle was already supported for SPECT<br />
 Backward compatibility for reconstructed images can be achieved by setting the <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> CMake option to <tt>ON</tt>. (However, copied sinogram data will then always have the offset set to 0, in contrast to earlier versions of STIR).
 </li>
+<li>
+    PoissonLogLikelihood Hessian methods have been corrected to reflect the concavity of the function. Hessian vector products now return non-positive voxels, if the vector (input) is non-negative.
+    STIR usages of these methods (OSSPS and SqrtHessianRowSum) have been updated to see no effective change in functionality.
+    However, calling the Hessian vector product methods, via python etc., will result in a change in functionality as the sign of the output voxel values has changed.
+</li>
 </ul>
 
 
 <h3>Bug fixes</h3>
 <ul>
 <li>
+   There was an inconsistency between log-likelihood function
+   and its gradient when <tt>use_subset_sensitivities</tt> was false and <tt>num_subsets</tt> greater than 1.
+   Fixing this isssue means that images reconstructed with <tt>OSSPS</tt> are different from previous versions of STIR when the above conditions are met.
+   See <a href=https://github.com/UCL/STIR/issues/873>Issue #873</a> and associated <a href=https://github.com/UCL/STIR/issues/893>PR #893</a>.
 </li>
 </ul>
 
@@ -126,6 +135,9 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 	SAFIR input file format now supports a Gaussian LOR randomization, which is applied on the endpoints of each LOR when sorting the listmode events into virtual scanner projection data.
 </li>
 <li><code>Scanner</code> has now a new <code>static</code> member <code>get_names_of_predefined_scanners</code> returning a list of names.
+</li>
+<li>
+    Exposed <code>compute_total_ROI_values</code> and <code>ROIValues</code> via swig. Added python example <code>ROI_demo.py</code> to demonstrate usage.
 </li>
 </ul>
 
@@ -228,6 +240,10 @@ from the above):</H2>
     <li>Remove overloaded <code>PatlakPlot::get_model_matrix</code>, now it can only be called using class members</li>
     <li><code>BinNormalisation::set_up()</code> now need exam_info_sptr as input.</li>
     <li><code>BinNormalisation::apply()</code> and <code>undo</code> now no longer accept start_time and end_time as they are taken from exam_info. To allow this to happen, class <code>Bin</code> has now an extra member <code>time_frame()</code>. Note that it defaults to 1. If this is incorrect, it has to be initialised explicitly (not via a constructor).</li>
+    <li>Poisson log-likelihood hierarchy has changed for gradient methods to now use <tt>actual_compute_subset_gradient_without_penalty</tt>
+	in the derived classes (which has an extra argument <tt>add_sensitivity</tt>). Therefore developers that created their own derived class will need to
+	adjust their class accordingly. The <tt>public</tt> class interface is identical though.
+    </li>    
 </ul>
 
 <h3>New functionality</h3>
@@ -251,6 +267,12 @@ as used by <code>copy_to</code> and <code>fill_from</code>
   Before this, the <code>add_multiplication_with_approximate_Hessian(output, input)</code> method was used that assumed a quadratic function and therefore <code>hessian = 1</code>.
 </li>
 <li><code>Exam_info</code>, <code>TimeFrameDefinition</code> and <code>PatientPosition </code> have now a <code>==</code> operator</li>
+<li>
+    Overloaded <code>compute_total_ROI_values</code> and <code>compute_ROI_values_per_plane</code> functions to allow the passing of  a<code>VoxelsOnCartesianGrid</code> object instead of a <code>Shape3D</code> as the ROI shape.
+    This allows the ROI volume to be constructed during preprocessing for multiple image analysis.
+</li>
+<li><code>KeyParser::parameter_info()</code> now outputs vectorised keys as well
+</li>
 </ul>
 
 

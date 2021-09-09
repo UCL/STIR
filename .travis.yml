@@ -97,10 +97,11 @@ matrix:
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
 
    # osx, OpenMP using llvm clang
- - os: osx
-   osx_image: xcode11.3
-   python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang"
+   # disable due to LLVM clang 12.0.1 problem 
+ #- os: osx
+ #  osx_image: xcode11.3
+ #  python: 3
+ #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang"
 
 env:
   global:

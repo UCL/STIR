@@ -36,7 +36,8 @@
 #include "itkOrientImageFilter.h"
 #include "stir/info.h"
 #include "boost/format.hpp"
-#include "boost/lexical_cast.hpp"
+#include <string> // for std::stod
+
 START_NAMESPACE_STIR
 
 //! Class for reading images in ITK file-format.
@@ -53,6 +54,7 @@ typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
 typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 typedef itk::MetaDataObject< std::string >                   MetaDataStringType;
 
+// internal function to do the conversion. Note that it can throw an exception.
 template<typename STIRImageType>
 static
 STIRImageType *
@@ -283,7 +285,7 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
       {
         std::vector<double > start_times(1), durations(1);
         start_times[0] = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime, false) - DICOM_datetime_to_secs_since_Unix_epoch(acq_datetime, false);
-        durations[0] = boost::lexical_cast<double>(actual_frame_duration)/1000.;
+        durations[0] = std::stod(actual_frame_duration)/1000.;
         exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(start_times, durations));
       }
     if (!series_datetime.empty())
@@ -455,7 +457,6 @@ read_file_itk(const std::string &filename)
 {
   typedef itk::GDCMImageIO       ImageIOType;
   ImageIOType::Pointer dicomIO = ImageIOType::New();
-  try
     {
       if (!dicomIO->CanReadFile(filename.c_str()))
         {
@@ -535,11 +536,6 @@ read_file_itk(const std::string &filename)
      
         }
     }
-  catch (std::exception &ex)
-    {
-      error(ex.what());
-      return 0;
-    }
 }
 
 //To read any file format via ITK
@@ -548,7 +544,6 @@ inline
 STIRImageMulti*
 read_file_itk(const std::string &filename)
 {
-  try
     {
       // Not a DICOM file, so we just read a single image
       typedef itk::ImageFileReader<ITKImageMulti> ReaderType;
@@ -582,11 +577,6 @@ read_file_itk(const std::string &filename)
       return convert_ITK_to_STIR<ITKImageMulti, STIRImageMultiConcrete>
         (itk_image, true);
 
-    }
-  catch (std::exception &ex)
-    {
-      error(ex.what());
-      return 0;
     }
 }
 
