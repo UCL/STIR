@@ -1,7 +1,7 @@
 /*!
 
   \file
-  \ingroup projdata
+  \ingroup ancillary
   \brief Declaration of class stir::RadionuclideDB
     
   \author Daniel Deidda

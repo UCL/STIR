@@ -186,6 +186,11 @@ where to find the \texttt{boost/} directory with all the include files
 The \texttt{HUToMu} functionality parses a file in JSON format. We use the
 \url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
 instructions for this library are available on its github page.
+The \texttt{Radionuclide} functionality also parses files in JSON format. 
+To use and install these files the variable texttt{STIR_CONFIG_DIR} needs to be set via cmake. 
+This allows you to read JSON files that you may have modified and install them in the config folder.
+The default value is set to "STIR/src/config/" and will be installed in your install folder  in " share/stir/config"
+
 
 \subsubsection{
 C++ Compiler}

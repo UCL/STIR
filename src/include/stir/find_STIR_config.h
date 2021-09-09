@@ -6,7 +6,18 @@
 #include "stir/common.h"
 START_NAMESPACE_STIR
 
+/*!
+  \brief find full path of a config file
+  \return calls get_STIR_config_dir() and prepends it to \a filename
+
+  Does a brief check if the file can be opened.
+
+  \ingroup ancillary
+*/
+//! the following returns the path of the configuration file "filename we are looking for
 std::string find_STIR_config_file(const std::string& filename);
+
+//! The following gets the STIR configuration directory 
 std::string get_STIR_config_dir();
 
 
