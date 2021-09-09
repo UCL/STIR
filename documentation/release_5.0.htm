@@ -21,7 +21,7 @@ detailed below.
 	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
 	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
   <li>Radionuclide information is saved into a JSON configuration file for a number of popular radionuclide for PET and SPECT. This can make operations like decay correction easier and accurate. 
-          To be able to use the JSON we need to provide the isotope name used in the acquisition. For SPECT this is extracted from the Dicom header and saved in the interfile. For PET this can change for every 		  scanner and ways to read this information need to be implemented for each scanner/vendor. The new classes are new <code>Radionuclide</code> and  <code>RadionuclideDB</code>; 
+          To be able to use the database we need to provide the isotope name used in the acquisition. For SPECT this is extracted from the Dicom header and saved in the interfile. For PET ways to read this information need to be implemented for each scanner/vendor. The new classes are new <code>Radionuclide</code> and  <code>RadionuclideDB</code>; 
 	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
 
   <li>KOSMAPOSL (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. Code contributed by Daniel Deidda (NPL), Kris Thielemans (UCL) and Ashley Gillman (CSIRO)</li>
