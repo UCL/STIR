@@ -1,5 +1,4 @@
 
-#include "stdlib.h"
 #include "stir/find_STIR_config.h"
 #include "stir/info.h"
 #include "stir/config.h"
