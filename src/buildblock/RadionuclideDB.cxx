@@ -10,7 +10,7 @@
 */
 /*
     Copyright (C) 2021, National Physical Laboratory
-    Copyright (C) 2021, University Colleg London
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
