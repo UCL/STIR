@@ -8,6 +8,9 @@ set(${dir_LIB_SOURCES}
   PatientPosition.cxx
   ExamInfo.cxx
   ExamData.cxx
+  RadionuclideDB.cxx
+  Radionuclide.cxx
+  find_STIR_config.cxx
   ProjData.cxx
   ProjDataInfo.cxx
   ProjDataInfoCylindrical.cxx

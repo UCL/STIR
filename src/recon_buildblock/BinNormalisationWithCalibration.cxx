@@ -30,7 +30,6 @@ BinNormalisationWithCalibration::set_defaults()
   base_type::set_defaults();
   
   this->calibration_factor = 1;
-  this->branching_ratio=1;
 }
 
 void 
@@ -59,7 +58,7 @@ BinNormalisationWithCalibration()
 float 
 BinNormalisationWithCalibration::
 get_calib_decay_branching_ratio_factor(const Bin&) const{
-    return this->calibration_factor* this->branching_ratio; //TODO: multiply by branching factor and decay
+    return this->calibration_factor* this->radionuclide.get_branching_ratio(); //TODO: multiply by decay
 }
 
 float
@@ -77,18 +76,13 @@ set_calibration_factor(const float calib){
 float
 BinNormalisationWithCalibration::
 get_branching_ratio() const {
-   return this->branching_ratio;
+   return this->radionuclide.get_branching_ratio();
 }
+
 
 void
 BinNormalisationWithCalibration::
-set_branching_ratio(const float br){
-    this->branching_ratio=br;
-}
-
-void
-BinNormalisationWithCalibration::
-set_radionuclide(const std::string& rnuclide){
+set_radionuclide(const Radionuclide &rnuclide){
     this->radionuclide=rnuclide;
 }
 

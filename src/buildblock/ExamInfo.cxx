@@ -39,7 +39,7 @@ ExamInfo::parameter_info() const
 #endif
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
   s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
-  s << "Radionuclide: " << this->radionuclide << '\n';
+  s << "Radionuclide: \n" << this->radionuclide.parameter_info() << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
   s << "Scan start time: " << std::fixed << std::setprecision(1) <<this->start_time_in_secs_since_1970 <<'\n'; // reset for further floats
  
@@ -69,8 +69,8 @@ ExamInfo::parameter_info() const
 
 bool 
 ExamInfo::operator == (const ExamInfo &p1) const {      
-    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && /* keV*/
-            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&/* keV*/
+    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && // keV
+            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&// keV
             this->radionuclide==p1.radionuclide &&
             this->time_frame_definitions==p1.time_frame_definitions &&
 //              this->branching_ratio==p1.branching_ratio &&
@@ -78,6 +78,7 @@ ExamInfo::operator == (const ExamInfo &p1) const {
              abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-3) &&
             this->imaging_modality==p1.imaging_modality &&
             this->patient_position==p1.patient_position &&
-            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;/* sec */ }
+            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;// sec  
+}
 
 END_NAMESPACE_STIR

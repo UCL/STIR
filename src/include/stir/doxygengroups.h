@@ -113,11 +113,16 @@ projection data,...
 \defgroup Coordinate Items relating to coordinates
 \ingroup buildblock
 */
+
 /*!
 \defgroup geometry Items related to simple geometric calculations
 \ingroup buildblock
 Functions to compute distances between lines etc.
 */
+/*!
+\defgroup ancillary Items related to ancillary information such as radionuclide, patient info etc
+\ingroup buildblock
+ */
 /*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock
