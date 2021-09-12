@@ -183,14 +183,9 @@ where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
 \subsubsection{JSON}
-The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+The \texttt{HUToMu} and \texttt{Radionuclide} database functionality parse a file in JSON format. We use the
 \url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
 instructions for this library are available on its github page.
-The \texttt{Radionuclide} functionality also parses files in JSON format. 
-To use and install these files the variable texttt{STIR_CONFIG_DIR} needs to be set via cmake. 
-This allows you to read JSON files that you may have modified and install them in the config folder.
-The default value is set to \textt{STIR/src/config/} and will be installed in your install folder  in \textt{share/stir/config}
-
 
 \subsubsection{
 C++ Compiler}
@@ -322,7 +317,7 @@ the developer's guide.}\\
 \hline
 % ROW 
 {\raggedright \textit{STIR\_CONFIG\_DIR}} & 
-{\raggedright Contains the location of the \textit{STIR} configuration folder. There you can find for example a JSON file used for the estimation of attenuation factors from a CT image.}\\
+{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more information.}\\
 \hline
 \end{longtable}
 
@@ -452,7 +447,31 @@ in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf
 slow.
 
 
+\section{Configuration after installation
+\label{sec:configuration}
+}
+Since \textit{STIR} version 5.0, STIR reads some configuration files, currently JSON files used for
+the estimation of attenuation factors from a CT image and a database with isotope information.
+The location of these files is found as follows
+\begin{itemize}
+\item Environment variable: if the \texttt{STIR\_CONFIG\_DIR} environment variable exists, it is used.
 
+\item CMake variable: when running \textit{CMake}, you can specify the default location via the
+\texttt{STIR\_CONFIG\_DIR} CMake variable. By default, this is set to a sub-directory \texttt{share/stir/config}
+in your install folder.
+\end{itemize}
+If you want to use a non-default location, it is highly recommended to set the variable to an absolute path.
+
+The installation process will copy the default configuration files to the path specified by the
+(CMake) \texttt{STIR\_CONFIG\_DIR} variable.
+This currently contains
+\begin{itemize}
+\item \texttt{ct\_slopes.json} which is used for the estimation of attenuation factors from a CT image,
+\item \texttt{radionuclide\_info.json} contains information on radio-isotopes, such as decay rates etc.
+\item \texttt{radionuclide\_names.json} contains a look-up table for radio-isotope names to convert them
+to the standard (as used by DICOM).
+\end{itemize}
+You might need to edit these files to add information for your scanner.
 
 \section{
 Running \textit{STIR} programs}
