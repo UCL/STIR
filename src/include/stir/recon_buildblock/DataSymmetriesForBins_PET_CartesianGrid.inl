@@ -103,7 +103,7 @@ find_transform_z(
   }
       }
     //block implementaion
-    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical")
+    else if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical")
       {
   const ProjDataInfoBlocksOnCylindrical* proj_data_info_blk_ptr =
       static_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get());
