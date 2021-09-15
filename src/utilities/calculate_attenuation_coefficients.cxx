@@ -81,9 +81,19 @@ static void print_usage_and_exit()
     std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]\n"
 	     <<"\t--ACF  calculates the attenuation correction factors\n"
 	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
-             <<"\t--PMRT uses the Ray Tracing Projection Matrix (default) (ignored if parfile provided)\n"
-             <<"\t--NOPMRT uses the (old) Ray Tracing forward projector (ignored if parfile provided)\n"
-             <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
+       <<"\t--PMRT uses the Ray Tracing Projection Matrix (default) (ignored if parfile provided)\n"
+       <<"\t--NOPMRT uses the (old) Ray Tracing forward projector (ignored if parfile provided)\n"
+       <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n\n"
+       <<"Example forward projector parameter file:\n\n"
+       <<"Forward Projector parameters:=\n"
+       <<"   type := Matrix\n"
+       <<"   Forward projector Using Matrix Parameters :=\n"
+       <<"      Matrix type := Ray Tracing\n"
+       <<"         Ray tracing matrix parameters :=\n"
+       <<"         End Ray tracing matrix parameters :=\n"
+       <<"      End Forward Projector Using Matrix Parameters :=\n"
+       <<"End:=\n";
+
     exit(EXIT_FAILURE);
 }
 
