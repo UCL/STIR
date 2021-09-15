@@ -93,6 +93,22 @@ if (ITK_FOUND)
   target_link_libraries(IO ITKCommon ${ITK_LIBRARIES})
 endif()
 
+if (HAVE_JSON)
+  # Add the header-only nlohman_json header-only library
+  # Unfortunately, the simple line below exports the dependency while this is really not
+  # necessary.
+  #
+  # target_link_libraries(IO PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+
+  # So, we currently use an ugly work-around from
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
+  # Warning: this will fail once nlohman_json stops being header-only!
+  # In that case, we will need to add it in STIRConfig.cmake.in
+  #
+  get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(IO PRIVATE "${TMP}")
+endif()
+
 # currently needed for ParametricDensity (TODO get rid of this somehow?)
 target_link_libraries(IO modelling_buildblock )
 
