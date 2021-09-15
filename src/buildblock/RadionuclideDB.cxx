@@ -89,7 +89,7 @@ get_radionuclide_name_from_lookup_table(const std::string& rname) const
               "If you added a radionuclide you also need to add the same in the lookup table");
     
     for (unsigned int l=0; l<table_json.size(); l++)
-        for (unsigned int c=0; c<table_json.at(0).size(); c++)
+        for (unsigned int c=0; c<table_json.at(l).size(); c++)
         {
             if(table_json.at(l).at(c)==rname)
             return table_json.at(l).at(0);
