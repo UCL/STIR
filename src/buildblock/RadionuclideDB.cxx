@@ -88,12 +88,14 @@ get_radionuclide_name_from_lookup_table(const std::string& rname) const
         error("The lookup table and the radionuclide database do not have the same number of elements. " 
               "If you added a radionuclide you also need to add the same in the lookup table");
     
-    for (int l=0; l<table_json.size(); l++)
-        for (int c=0; c<table_json.at(0).size(); c++)
+    for (unsigned int l=0; l<table_json.size(); l++)
+        for (unsigned int c=0; c<table_json.at(0).size(); c++)
         {
             if(table_json.at(l).at(c)==rname)
             return table_json.at(l).at(0);
         }
+    /* not found in table, so return as-is */
+    return rname;
 #else
     if (rname.empty())
         return "default";
