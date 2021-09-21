@@ -26,10 +26,9 @@
     counts while if set to false it will have the \a total_number_of_counts/get_duration(frame_num).
   - The dynamic images will always be in decaying counts.
   - The plasma data is assumed to be in decaying counts.
+  - if Poisson distributed images is set to true, weigths according to the decay will be applied. 
   
   \sa PatlakPlot.h for the \a par_file
-
-  \note This implementation does not use wighted least squares because for Patlak Plot only the last frames are used, which they usually have the same duration and similar number of counts.
 
   \todo Reimplement the method for image-based input function.
 
