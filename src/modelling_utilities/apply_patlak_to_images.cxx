@@ -20,19 +20,7 @@
   apply_patlak_to_images output_parametric_image input_dynamic_image [par_file] 
   \endcode
   
-  \par
-  - The dynamic images will be calibrated only if the calibration factor is given. 
-  - The \a if_total_cnt is set to true the Dynamic Image will have the total number of 
-    counts while if set to false it will have the \a total_number_of_counts/get_duration(frame_num).
-  - The dynamic images will always be in decaying counts.
-  - The plasma data is assumed to be in decaying counts.
-  - if Poisson distributed images is set to true, weigths according to the decay will be applied. 
-  
-  \sa PatlakPlot.h for the \a par_file
-
-  \todo Reimplement the method for image-based input function.
-
-  \todo Add to the Doxygen documentation a reference to their paper and how exactly this utility works.
+  \sa stir::PatlakPlot for more details, including assumptions and the parameter file.
 */
 
 #include "stir/CPUTimer.h"

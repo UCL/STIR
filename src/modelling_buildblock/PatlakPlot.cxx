@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,6 +13,7 @@
   \ingroup modelling
   \brief Implementations of inline functions of class stir::PatlakPlot
   \author Charalampos Tsoumpas
+  \author Ander Biguri
 
   \sa PatlakPlot.h, ModelMatrix.h and KineticModel.h
 

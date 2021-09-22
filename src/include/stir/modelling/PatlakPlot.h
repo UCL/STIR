@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -14,7 +15,7 @@
   \brief Implementation of functions of class stir::PatlakPlot
 
   \author Charalampos Tsoumpas
-
+  \author Kris Thielemans
 */
 
 
@@ -43,6 +44,13 @@ START_NAMESPACE_STIR
     <i>Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations,</i>
     J Cereb Blood Flow Metab 5: p. 584-90. 
 
+  The kinetic model is
+  \f[
+     C(t) =Ki*\int{C_p(t)\,dt}+V C_p(t)
+  \f]
+  with \f$C(t)\f$ the tissue TAC and \f$C_p(t)\f$ the (plasma) input function, with \f$Ki\f$ the slope
+  and \f$V\f$ the intercept. \f$t\f$ is a time-frame index (i.e. the activity/input function is
+  integrated over the time frame).
 
   \par Example .par file
   \verbatim
@@ -54,17 +62,27 @@ START_NAMESPACE_STIR
   blood data filename :=  blood_file.txt
   ; In seconds
   Time Shift := 0
-  In total counts := 1
+  ; work-around current lack of STIR unit info
+  In total counts := 0 ; defaults to 0, set to 1 for images in activity
+  ; enable this for fully calibrated images from your scanner
+  In correct scale := 0 ; defaults to 0
+
+  ; enable this if you want to use weighted linear regression, assuming
+  ; that each voxel and time frame is Poisson distributed
+  Poisson distributed images := 0 ; defaults to 0
 
   end Patlak Plot Parameters:=
   \endverbatim
 
   \warning
   - The dynamic images will be calibrated only if the calibration factor is given. 
-  - The [if_total_cnt] is set to true the Dynamic Image will have the total number of 
-    counts while if set to false it will have the total_number_of_counts/get_duration(frame_num).
-  - The dynamic images will always be in decaying counts.
-  - The plasma data is assumed to be in decaying counts.
+  - The \c if_total_cnt is set to \c true the Dynamic Image will be assumed to have the total number of
+    counts while if set to \c false it will have the \c total_number_of_counts/get_duration(frame_num).
+  - The dynamic images will always be assumed to be without decay correction.
+  - The plasma data is assumed to be without decay correction.
+
+  This class provides functionality for iterative estimation as well as "ordinary"
+  linear regression (see \c apply_linear_regression()).
 
   \todo Should be derived from LinearModels, but when non-linear models will be introduced, as well.  
 */
@@ -122,8 +140,16 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
       get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
 					      const ParametricVoxelsOnCartesianGrid & par_image) const;
 
-    //! This is the common method used to estimate the parametric images from the dynamic images.
-    /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
+    //! estimate parametric images from dynamic images
+    /*! This performs Patlak Linear regression is applied to the data by minimising
+       \f[\sum_t w_t ( C(t)/C_p(t) - (Ki*\int{C_p(t)\,dt}/C_p(t)+V))^2 \f]
+       Weights can currently be chosen as either 1, or by assuming that \f$C(t)\f$
+       is Poisson distributed (potentially after converting to "counts"),
+       which is a reasonable approximation for OSEM images (although somewhat dangerous
+       for noisy data). The latter is chosen if
+       \c _assume_poisson_distribution is \c true.
+
+       \todo There is currently no check if the time frame definitions from \a dyn_image are
       the same as the ones encoded in the model.
     */
     void 
@@ -139,7 +165,7 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
   float _time_shift;   //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
   bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale factor.
   bool _in_total_cnt;   //!< Switch to choose the values of the model to be in total counts or in mean counts.
-  bool _assume_poisson_distribution; //!< Assume that image is Poisson distributed, and weight linear regression accordingly [1/(counts/int{Cp(t)}^2)]
+  bool _assume_poisson_distribution; //!< Assume that image is Poisson distributed, and weight linear regression accordingly (see \c apply_linear_regression())
   std::string _blood_data_filename;   //!< Name of file in which the input function is stored
   PlasmaData _plasma_frame_data;    //!< Stores the plasma data into frames for brain studies
   std::string _time_frame_definition_filename;   //!< name of file to get frame definitions
