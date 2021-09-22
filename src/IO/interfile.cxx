@@ -4,15 +4,7 @@
     Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -599,9 +591,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
   
-  if (!exam_info.get_radionuclide().empty())
+  if (!exam_info.get_radionuclide().get_name().empty() && exam_info.get_radionuclide().get_name()!="Unknown")
   output_header << "isotope name := "  
-                <<exam_info.get_radionuclide()  << endl;
+                <<exam_info.get_radionuclide().get_name()  << endl;
 
   if (is_spect)
     {
@@ -1188,14 +1180,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
-#if 0
-  // TODO get_phi currently ignores view offset
   const float angle_first_view = 
-    pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
-#else
-  const float angle_first_view = 
-    pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
-#endif
+    pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180/_PI);
   const float angle_increment = 
     (pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,1,0,0)) -
      pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);

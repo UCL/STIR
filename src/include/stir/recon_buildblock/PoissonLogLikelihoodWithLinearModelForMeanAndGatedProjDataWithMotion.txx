@@ -4,15 +4,7 @@
  Copyright (C) 2018, University College London
  This file is part of STIR.
  
- This file is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2.3 of the License, or
- (at your option) any later version.
- 
- This file is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
+ SPDX-License-Identifier: Apache-2.0
  
  See STIR/LICENSE.txt for details
  */
@@ -423,9 +415,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -443,9 +436,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
               gated_gradient[gate_num].end_all(),
               0.F);
     this->_single_gate_obj_funcs[gate_num].
-      compute_sub_gradient_without_penalty_plus_sensitivity(gated_gradient[gate_num], 
-                                                            gated_image_estimate[gate_num], 
-                                                            subset_num);
+            actual_compute_subset_gradient_without_penalty(gated_gradient[gate_num],
+                                                           gated_image_estimate[gate_num],
+                                                           subset_num,
+                                                           add_sensitivity);
   }	
   //	if(this->_motion_correction_type==-1)
   this->_reverse_motion_vectors.warp_image(gradient,gated_gradient) ; 

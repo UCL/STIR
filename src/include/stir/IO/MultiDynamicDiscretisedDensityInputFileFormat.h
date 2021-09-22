@@ -7,15 +7,7 @@
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     Copyight (C) 2018,2020, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -111,12 +103,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
     }
     // Hard wire some stuff for now (TODO?)
     dyn_disc_den_ptr->set_if_decay_corrected(1.);
-    dyn_disc_den_ptr->set_isotope_halflife(6586.2F);
-    
-    if(!dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide().empty() && 
-       dyn_disc_den_ptr->get_exam_info_sptr()->get_radionuclide()!="^18^Fluorine")
-        error("MultiDynamicDiscretisedDensityInputFileFormat: halflife hardwired to 18F but the isotope used in this data is different");
-    
+
     return unique_ptr<data_type>(dyn_disc_den_ptr);
   }
 };

@@ -13,15 +13,7 @@
     Copright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -142,6 +134,104 @@ construct_proj_data(shared_ptr<iostream>& output,
                     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
 /**************************************************************
+ set/get
+**************************************************************/
+void LmToProjData::set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo> t_sptr)
+{
+  this->_already_setup = false;
+  template_proj_data_info_ptr = t_sptr->create_shared_clone();
+}
+
+shared_ptr<ProjDataInfo> LmToProjData::get_template_proj_data_info_sptr()
+{
+  return template_proj_data_info_ptr;
+}
+
+void LmToProjData::set_input_data(const shared_ptr<ExamData>& v)
+{
+  this->_already_setup = false;
+  this->lm_data_ptr = dynamic_pointer_cast<ListModeData>(v);
+  if (is_null_ptr(this->lm_data_ptr))
+    error("LmToProjData::set_input_data() called with non-listmode data or other error");
+}
+
+void LmToProjData::set_input_data(const std::string& filename)
+{
+  shared_ptr<ListModeData> lm(stir::read_from_file<ListModeData>(filename));
+  this->set_input_data(lm);
+  this->input_filename = filename;
+}
+
+#if 0
+ListModeData& LmToProjData::get_input_data()
+{
+  return *lm_data_ptr;
+}
+#endif
+
+
+void LmToProjData::set_output_filename_prefix(const std::string& v)
+{
+  this->output_filename_prefix = v;
+}
+
+std::string LmToProjData::get_output_filename_prefix() const
+{
+  return output_filename_prefix;
+}
+
+void LmToProjData::set_store_prompts(bool v)
+{
+  this->store_prompts = v;
+}
+
+bool LmToProjData::get_store_prompts() const
+{
+  return store_prompts;
+}
+
+void LmToProjData::set_store_delayeds(bool v)
+{
+  this->store_delayeds = v;
+}
+
+bool LmToProjData::get_store_delayeds() const
+{
+  return store_delayeds;
+}
+
+void LmToProjData::set_num_segments_in_memory(int v)
+{
+  this->_already_setup = false;
+  this->num_segments_in_memory = v;
+}
+
+int LmToProjData::get_num_segments_in_memory() const
+{
+  return num_segments_in_memory;
+}
+
+void LmToProjData::set_num_events_to_store(long int v)
+{
+  this->num_events_to_store = v;
+}
+
+long int LmToProjData::get_num_events_to_store() const
+{
+  return num_events_to_store;
+}
+
+void LmToProjData::set_time_frame_definitions(const TimeFrameDefinitions& v)
+{
+  this->frame_defs = v;
+}
+
+const TimeFrameDefinitions& LmToProjData::get_time_frame_definitions() const
+{
+  return frame_defs;
+}
+
+/**************************************************************
  The 3 parsing functions
 ***************************************************************/
 void 
@@ -201,30 +291,17 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
+  set_input_data(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
       warning("You have to specify template_projdata\n");
       return true;
     }
-  shared_ptr<ProjData> template_proj_data_ptr =
+  shared_ptr<ProjData> template_proj_data_sptr =
     ProjData::read_from_file(template_proj_data_name);
 
-  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
-
-  // set up normalisation objects
-
-  if (is_null_ptr(normalisation_ptr))
-    {
-      warning("Invalid pre-normalisation object\n");
-      return true;
-    }
-  if (is_null_ptr(post_normalisation_ptr))
-    {
-      warning("Invalid post-normalisation object\n");
-      return true;
-    }
+  set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
 
   if (set_up() == Succeeded::no)
     return true;
@@ -245,6 +322,22 @@ Succeeded LmToProjData::set_up()
   if (!interactive && output_filename_prefix.size()==0)
     {
       error("You have to specify an output_filename_prefix");
+    }
+
+  if (is_null_ptr(template_proj_data_info_ptr))
+    {
+      error("LmToProjData::set_up(): template projection data not set");
+    }
+
+  // set up normalisation objects
+
+  if (is_null_ptr(normalisation_ptr))
+    {
+      error("Invalid pre-normalisation object");
+    }
+  if (is_null_ptr(post_normalisation_ptr))
+    {
+      error("Invalid post-normalisation object");
     }
 
   // initialise segment_num related variables
@@ -310,6 +403,8 @@ Succeeded LmToProjData::set_up()
     }
   else
     {
+      auto all_frames_exam_info_sptr = std::make_shared<ExamInfo>(lm_data_ptr->get_exam_info());
+      all_frames_exam_info_sptr->set_time_frame_definitions(frame_defs);
       if ( post_normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(),template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("LmToProjData: set-up of post-normalisation failed\n");
@@ -376,16 +471,16 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 
 
     // do_normalisation
-#ifndef FRAME_BASED_DT_CORR
-     const double start_time = current_time;
-     const double end_time = current_time;
-#else
-     const double start_time = frame_defs.get_start_time(current_frame_num);
-     const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
+//#ifndef FRAME_BASED_DT_CORR
+//     const double start_time = current_time;
+//     const double end_time = current_time;
+//#else
+//     const double start_time = frame_defs.get_start_time(current_frame_num);
+//     const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
      
       const float bin_efficiency = 
-	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -434,14 +529,14 @@ do_post_normalisation(Bin& bin) const
 	}
       else
 	{
-#ifndef FRAME_BASED_DT_CORR
-	  const double start_time = current_time;
-	  const double end_time = current_time;
-#else
-	  const double start_time = frame_defs.get_start_time(current_frame_num);
-	  const double end_time =frame_defs.get_end_time(current_frame_num);
-#endif
-	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+//#ifndef FRAME_BASED_DT_CORR
+//	  const double start_time = current_time;
+//	  const double end_time = current_time;
+//#else
+//	  const double start_time = frame_defs.get_start_time(current_frame_num);
+//	  const double end_time =frame_defs.get_end_time(current_frame_num);
+//#endif
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin);
 	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
 	  if (bin_efficiency < 1.E-10)
 	    {
@@ -530,7 +625,7 @@ process_data()
       {
         warning("This list mode data does not seem to have delayed events.\n"
                 "Setting store_delayeds to false.");
-        store_delayeds=true;
+        store_delayeds=false;
       }
   }
   // assume list mode data starts at time 0
@@ -663,6 +758,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
+             bin.time_frame_num() = current_frame_num;
                      get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store

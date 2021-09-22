@@ -5,15 +5,7 @@
     Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -34,6 +26,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/RadionuclideDB.h"
 #include "stir/info.h"
 #include <numeric>
 #include <functional>
@@ -273,9 +266,9 @@ bool InterfileHeader::post_processing()
 //  if(this->calibration_factor>0)
       this->exam_info_sptr->set_calibration_factor(calibration_factor);
   
-  if (!isotope_name.empty()){
-      this->exam_info_sptr->set_radionuclide(isotope_name);
-  }
+      // here I need to cal the DB and set the Radionuclide member
+     RadionuclideDB radionuclide_db;
+     this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
   
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;

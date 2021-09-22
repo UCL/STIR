@@ -2,15 +2,7 @@
 # Copyright 2014, 2018, 2020 University College London
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -48,9 +40,11 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
     # We use doxy2swig to convert the doxygen-generated xml to a swig file
     # Note the "standard" CMake trick of first adding a custom command that generates a file, and then
     # a custom target that depends on the file.
+    # Note that we need to depend on the doxygen.stamp as well as otherwise parallel builds can fail
+    # See the last section of https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
     add_custom_command(
       OUTPUT STIR_DOXY2SWIG.i
-      DEPENDS RUN_DOXYGEN
+      DEPENDS RUN_DOXYGEN ../doxygen.stamp
       COMMAND ${PYTHON_EXECUTABLE}
           ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py -c
           ${CMAKE_BINARY_DIR}/xml/index.xml

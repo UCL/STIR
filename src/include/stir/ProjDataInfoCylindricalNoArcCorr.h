@@ -5,15 +5,7 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -289,6 +281,9 @@ private:
   
   float ring_radius;
   float angular_increment;
+
+  //! get offset in psi for first detector (i.e. angle along the scanner ring)
+  float get_psi_offset() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   struct Det1Det2 { int det1_num; int det2_num; };

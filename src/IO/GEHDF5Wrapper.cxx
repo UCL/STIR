@@ -18,15 +18,7 @@
     Copyright (C) 2018-2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -244,15 +236,6 @@ GEHDF5Wrapper::check_file()
     if(is_sino_file())
     {
         is_sino = true;
-         if (rdf_ver == 9) //AB todo: is this valid for 10?
-        {
-            // Check 1: Is the file compressed?
-            unsigned int is_compressed;
-            H5::DataSet str_file_version = file.openDataSet("/HeaderData/Sorter/Segment2/compDataSegSize");
-            str_file_version.read(&is_compressed, H5::PredType::NATIVE_UINT32);
-            if (is_compressed)
-                error("The RDF9 file sinogram is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
-        }
         return Succeeded::yes;
     }
     if(is_norm_file())
@@ -373,7 +356,7 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
     if (!is_list_file())
       scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
     scanner_sptr->set_ring_spacing(ring_spacing);
-    scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt*_PI/180);
+    scanner_sptr->set_intrinsic_azimuthal_tilt(intrinsic_tilt*_PI/180);
     scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
     scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
     scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
@@ -524,18 +507,15 @@ Succeeded GEHDF5Wrapper::initialise_listmode_data()
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
 
     m_dataspace = m_dataset_sptr->getSpace();
-    int dataset_list_Ndims = m_dataspace.getSimpleExtentNdims();
+    m_dataset_list_Ndims = m_dataspace.getSimpleExtentNdims();
 
     // We allocate dims_out in the stack for efficiecy and safety but we need an error check just in case then
-    if (dataset_list_Ndims>m_max_dataset_dims) 
-        error("Dataset dimensions ("+ std::to_string(dataset_list_Ndims) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
+    if (m_dataset_list_Ndims>m_max_dataset_dims)
+        error("Dataset dimensions ("+ std::to_string(m_dataset_list_Ndims) + ") bigger than maximum of" + std::to_string(m_max_dataset_dims) + ". This is unexpected, Aborting.");
     hsize_t dims_out[m_max_dataset_dims];
 
     m_dataspace.getSimpleExtentDims( dims_out, NULL);
     m_list_size=dims_out[0];
-    const hsize_t tmp_size_of_record_signature = m_size_of_record_signature;
-    m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
-                            &tmp_size_of_record_signature);
 
     return Succeeded::yes;
 }
@@ -592,6 +572,16 @@ Succeeded GEHDF5Wrapper::initialise_proj_data(const unsigned int view_num)
 {
     if(!is_sino_file())
         error("The file provided is not sinogram data. Aborting");
+
+    if(rdf_ver==9)
+    {
+      // Is the file compressed?
+      unsigned int is_compressed;
+      H5::DataSet str_file_version = file.openDataSet("/HeaderData/Sorter/Segment2/compDataSegSize");
+      str_file_version.read(&is_compressed, H5::PredType::NATIVE_UINT32);
+      if (is_compressed)
+        error("The RDF9 file sinogram is compressed, we won't be able to read it. Please uncompress it and retry. Aborting");
+    }
 
     if(view_num == 0 || view_num > static_cast<unsigned>(this->get_scanner_sptr()->get_num_detectors_per_ring()/2))
       error("internal error in GE HDF5 code: view number "+ std::to_string(view_num) +" is incorrect");
@@ -728,14 +718,15 @@ float GEHDF5Wrapper::get_coincidence_time_window() const
 
 
 // Developed for listmode access
-Succeeded GEHDF5Wrapper::read_list_data( char* output,std::streampos& current_offset, const hsize_t size) const
+Succeeded GEHDF5Wrapper::read_list_data( char* output,
+                                         const std::streampos offset, const hsize_t size) const
 {
     if(!is_list_file())
         error("The file provided is not list data. Aborting");
-    hsize_t pos = static_cast<hsize_t>(current_offset);
+    const hsize_t pos = static_cast<hsize_t>(offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &size, &pos );
-    m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
-    current_offset += static_cast<std::streampos>(size);
+    const H5::DataSpace memspace( m_dataset_list_Ndims, &size);
+    m_dataset_sptr->read( output, H5::PredType::STD_U8LE, memspace, m_dataspace );
 
     return Succeeded::yes;
 }
@@ -762,8 +753,8 @@ Succeeded GEHDF5Wrapper::read_sinogram(Array<3, unsigned char> &output,
     std::vector<unsigned char> aux_buffer(m_NX_SUB*m_NY_SUB*m_NZ_SUB);
     
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
-    m_memspace_ptr= new H5::DataSpace(3, str_dimsf);
-    m_dataset_sptr->read(static_cast<void*>(aux_buffer.data()), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+    H5::DataSpace memspace(3, str_dimsf);
+    m_dataset_sptr->read(static_cast<void*>(aux_buffer.data()), H5::PredType::STD_U8LE, memspace, m_dataspace);
 
     // the data is not in the correct size if its RDF9, so we will need to transpose the output of the data read. 
     if(rdf_ver==9)
@@ -813,8 +804,8 @@ Succeeded GEHDF5Wrapper::read_geometric_factors(Array<1, unsigned int> &output,
     aux_reader.resize(count[0]*count[1]);
 
     m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, count.data());
-    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
+    H5::DataSpace memspace(2, count.data());
+    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_UINT32, memspace, m_dataspace);
     aux_reader.release_data_ptr();
 
     // GE/RDF9 stores the tangetial axis reversed to STIR. Flip.
@@ -845,8 +836,8 @@ Succeeded GEHDF5Wrapper::read_efficiency_factors(Array<1, float> &output,
     aux_reader.resize(m_NX_SUB*m_NY_SUB);
 
     m_dataspace.selectHyperslab(H5S_SELECT_SET, str_dimsf, offset.data());
-    m_memspace_ptr= new H5::DataSpace(2, str_dimsf);
-    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_FLOAT, *m_memspace_ptr, m_dataspace);
+    H5::DataSpace memspace(2, str_dimsf);
+    m_dataset_sptr->read(aux_reader.get_data_ptr(), H5::PredType::NATIVE_FLOAT, memspace, m_dataspace);
     aux_reader.release_data_ptr();
 
     // GE/RDF9 stores the tangetial axis reversed to STIR. Flip.

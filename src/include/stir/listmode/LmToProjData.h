@@ -19,15 +19,7 @@
     Copyright (C) 2019, 2021, University College of London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -177,6 +169,42 @@ public:
   /*! \warning leaves parameters ill-defined. Set them by parsing. */
   LmToProjData();
 
+  /*! \name Functions to get/set parameters
+    This can be used as alternative to the parsing mechanism.
+   \warning Be careful with setting shared pointers. If you modify the objects in
+   one place, all objects that use the shared pointer will be affected.
+  */
+  //@{
+  void set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo>);
+  shared_ptr<ProjDataInfo> get_template_proj_data_info_sptr();
+
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const shared_ptr<ExamData>&);
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const std::string& filename);
+#if 0
+  //! get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual ListModeData& get_input_data() const;
+#endif
+
+  void set_output_filename_prefix(const std::string&);
+  std::string get_output_filename_prefix() const;
+
+  void set_store_prompts(bool);
+  bool get_store_prompts() const;
+  void set_store_delayeds(bool);
+  bool get_store_delayeds() const;
+  void set_num_segments_in_memory(int);
+  int get_num_segments_in_memory() const;
+  void set_num_events_to_store(long int);
+  long int get_num_events_to_store() const;
+  void set_time_frame_definitions(const TimeFrameDefinitions&);
+  const TimeFrameDefinitions& get_time_frame_definitions() const;
+  //@}
+
   //! Perform various checks
   /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
   virtual Succeeded set_up();
@@ -185,7 +213,6 @@ public:
   virtual void process_data();
 
 protected:
-
   
   //! will be called when a new time frame starts
   /*! The frame numbers start from 1. */

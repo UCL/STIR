@@ -4,9 +4,11 @@
 # 
 # Relies on reg_aladin from NiftyReg, but you could use other registration algorithms of course
 # Author: Kris Thielemans
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
+: ${pardir:=$(dirname $0)}
 
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` output_filename_prefix GE_AC_filename STIR_NAC_filename"

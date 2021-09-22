@@ -2,18 +2,10 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012-01-29, Kris Thielemans
-    Copyright (C) 2020 University College London
+    Copyright (C) 2020, 2021 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -1216,6 +1208,178 @@ namespace detail
 	s << c;
       }
   }
+
+}
+
+void KeyParser::value_to_stream(std::ostream& s, const map_element& element)
+{
+#define KP_case_to_stream(KeyArgumentValue, type) \
+	case KeyArgumentValue : \
+          s << *reinterpret_cast<const type *>(element.p_object_variable); break
+  switch(element.type)
+    {
+      KP_case_to_stream(KeyArgument::INT, int);
+      KP_case_to_stream(KeyArgument::UINT, unsigned int);
+      KP_case_to_stream(KeyArgument::ULONG,unsigned long);
+      KP_case_to_stream(KeyArgument::LONG,long);
+      KP_case_to_stream(KeyArgument::DOUBLE,double);
+      KP_case_to_stream(KeyArgument::FLOAT,float);
+      KP_case_to_stream(KeyArgument::ASCII, std::string);
+      KP_case_to_stream(KeyArgument::LIST_OF_INTS, IntVect);
+      KP_case_to_stream(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
+      // sigh... macro expansion fails of type contain commas....
+      // Work-around: use typedefs.
+      //typedef Array<2,float> KP_array2d;
+      //typedef Array<3,float> KP_array3d;
+      typedef BasicCoordinate<3,float> KP_coord;
+      typedef BasicCoordinate<3,Array<3,float> > KP_coord_array3d;
+      // KP_case_to_stream(KeyArgument::ARRAY2D_OF_FLOATS, KP_array2d);
+      // KP_case_to_stream(KeyArgument::ARRAY3D_OF_FLOATS, KP_array3d);
+      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_FLOATS, KP_coord);
+      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS,KP_coord_array3d);
+      KP_case_to_stream(KeyArgument::LIST_OF_ASCII, std::vector<std::string>);
+    case KeyArgument::BOOL:
+      s << (*reinterpret_cast<const bool*>(element.p_object_variable) ? 1 : 0); break;
+    case KeyArgument::NONE:
+      break;
+    case KeyArgument::ASCIIlist :
+      {
+        const int index = *reinterpret_cast<const int*>(element.p_object_variable);
+        s << (index == -1 ?
+              "UNALLOWED VALUE" :
+              (*element.p_object_list_of_values)[index]);
+        break;
+      }
+    case KeyArgument::PARSINGOBJECT:
+      {
+        auto parsing_object_ptr =
+          *reinterpret_cast<RegisteredObjectBase**>(element.p_object_variable);
+        if (parsing_object_ptr!=0)
+	  {
+	    s << parsing_object_ptr->get_registered_name() << endl;
+	    s << parsing_object_ptr->parameter_info() << endl;
+	  }
+        else
+          s << "None";
+        break;
+      }
+    case KeyArgument::SHARED_PARSINGOBJECT:
+      {
+        auto parsing_object_ptr =
+          (*reinterpret_cast<const shared_ptr<RegisteredObjectBase>*>(element.p_object_variable));
+
+        if (!is_null_ptr(parsing_object_ptr))
+	  {
+	    s << parsing_object_ptr->get_registered_name() << endl;
+	    s << parsing_object_ptr->parameter_info();
+	  }
+        else
+          s << "None";
+        break;
+      }
+
+    case KeyArgument::ARRAY2D_OF_FLOATS:
+      detail::to_stream(s, *reinterpret_cast<const Array<2,float>*>(element.p_object_variable)); break;
+    case KeyArgument::ARRAY3D_OF_FLOATS:
+      detail::to_stream(s, *reinterpret_cast<const Array<3,float>*>(element.p_object_variable)); break;
+    default :
+      warning("KeyParser error: unknown type. Implementation error\n");
+      break;
+    }
+  #undef KP_case_to_stream
+}
+
+// sadly largely a repetition of the above, but now with a cast to std::vector<type> and a loop
+// Ugly!
+void KeyParser::vectorised_value_to_stream(std::ostream& s, const std::string& keyword, const map_element& element)
+{
+#define KP_case_to_stream(KeyArgumentValue, type) \
+	case KeyArgumentValue : \
+          { \
+            auto vect = *reinterpret_cast<const std::vector<type> *>(element.p_object_variable); \
+            for (unsigned current_index=1; current_index <= vect.size(); ++current_index) \
+              s << keyword << '[' << current_index << "] := " << vect[current_index-1] << '\n'; \
+          } \
+          break
+  switch(element.type)
+    {
+      KP_case_to_stream(KeyArgument::INT, int);
+      KP_case_to_stream(KeyArgument::UINT, unsigned int);
+      KP_case_to_stream(KeyArgument::ULONG,unsigned long);
+      KP_case_to_stream(KeyArgument::LONG,long);
+      KP_case_to_stream(KeyArgument::DOUBLE,double);
+      KP_case_to_stream(KeyArgument::FLOAT,float);
+      KP_case_to_stream(KeyArgument::ASCII, std::string);
+      KP_case_to_stream(KeyArgument::LIST_OF_INTS, IntVect);
+      KP_case_to_stream(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
+      // sigh... macro expansion fails of type contain commas....
+      // Work-around: use typedefs.
+      //typedef Array<2,float> KP_array2d;
+      //typedef Array<3,float> KP_array3d;
+      typedef BasicCoordinate<3,float> KP_coord;
+      typedef BasicCoordinate<3,Array<3,float> > KP_coord_array3d;
+      // KP_case_to_stream(KeyArgument::ARRAY2D_OF_FLOATS, KP_array2d);
+      // KP_case_to_stream(KeyArgument::ARRAY3D_OF_FLOATS, KP_array3d);
+      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_FLOATS, KP_coord);
+      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS,KP_coord_array3d);
+      KP_case_to_stream(KeyArgument::LIST_OF_ASCII, std::vector<std::string>);
+    case KeyArgument::BOOL:
+      {
+        auto vect = *reinterpret_cast<const std::vector<bool> *>(element.p_object_variable);
+        for (unsigned current_index=1; current_index <= vect.size(); ++current_index)
+          s << keyword << '[' << current_index << "] := " << (vect[current_index-1] ? 1 : 0) << '\n';
+        break;
+      }
+    case KeyArgument::NONE:
+      break;
+    case KeyArgument::ASCIIlist :
+      {
+        auto vect = *reinterpret_cast<const std::vector<int> *>(element.p_object_variable);
+        for (unsigned current_index=1; current_index <= vect.size(); ++current_index)
+          {
+            s << keyword << '[' << current_index << "] := ";
+            const int index = vect[current_index-1];
+            s << (index == -1 ?
+                  "UNALLOWED VALUE" :
+                  (*element.p_object_list_of_values)[index])
+               << '\n';
+          }
+        break;
+      }
+    case KeyArgument::PARSINGOBJECT:
+      {
+        warning("KeyParser::parameter_info(): vectorised keyword type PARSINGOBJECT not yet supported");
+        break;
+      }
+    case KeyArgument::SHARED_PARSINGOBJECT:
+      {
+        warning("KeyParser::parameter_info(): vectorised keyword type PARSINGOBJECT not yet supported");
+        break;
+      }
+
+    case KeyArgument::ARRAY2D_OF_FLOATS:
+      {
+        auto vect = *reinterpret_cast<const std::vector<Array<2,float>> *>(element.p_object_variable);
+        for (unsigned current_index=1; current_index <= vect.size(); ++current_index)
+          {
+            s << keyword << '[' << current_index << "] := ";
+            detail::to_stream(s, vect[current_index-1]);
+          }
+      }
+    case KeyArgument::ARRAY3D_OF_FLOATS:
+      {
+        auto vect = *reinterpret_cast<const std::vector<Array<3,float>> *>(element.p_object_variable);
+        for (unsigned current_index=1; current_index <= vect.size(); ++current_index)
+          {
+            s << keyword << '[' << current_index << "] := ";
+            detail::to_stream(s, vect[current_index-1]);
+          }
+      }
+    default :
+      warning("KeyParser error: unknown type. Implementation error\n");
+      break;
+    }
+#undef KP_case_to_stream
 }
 
 string KeyParser::parameter_info() const
@@ -1243,101 +1407,13 @@ string KeyParser::parameter_info() const
 
       if (i->second.vectorised_key_level > 0)
         {
-          warning("KeyParser: cannot handle vectorised key yet");//TODO
-          continue;
+          vectorised_value_to_stream(s, i->first, i->second);
         }
-      s << i->first << " := ";
-      switch(i->second.type)
-      {
-        // TODO will break with vectorised keys
-      case KeyArgument::DOUBLE:
-        s << *reinterpret_cast<double*>(i->second.p_object_variable); break;
-      case KeyArgument::FLOAT:
-        s << *reinterpret_cast<float*>(i->second.p_object_variable); break;
-      case KeyArgument::INT:
-        s << *reinterpret_cast<int*>(i->second.p_object_variable); break;
-      case KeyArgument::BOOL:
-        s << (*reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0); break;
-      case KeyArgument::UINT:
-        s << *reinterpret_cast<unsigned int*>(i->second.p_object_variable); break;
-      case KeyArgument::ULONG:
-        s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
-      case KeyArgument::LONG:
-        s << *reinterpret_cast<long*>(i->second.p_object_variable); break;
-      case KeyArgument::NONE:
-        break;
-      case KeyArgument::ASCII :
-	 s << *reinterpret_cast<string*>(i->second.p_object_variable); break;	  	  
-      case KeyArgument::ASCIIlist :
-        { 
-	    const int index = *reinterpret_cast<int*>(i->second.p_object_variable);
-            s << (index == -1 ?
-                   "UNALLOWED VALUE" :
-                   (*i->second.p_object_list_of_values)[index]);
-	    break;
-	}
-      case KeyArgument::PARSINGOBJECT:
+      else
         {
-          RegisteredObjectBase* parsing_object_ptr =
-            *reinterpret_cast<RegisteredObjectBase**>(i->second.p_object_variable);
-	  if (parsing_object_ptr!=0)
-	  {
-	    s << parsing_object_ptr->get_registered_name() << endl;
-	    s << parsing_object_ptr->parameter_info() << endl;
-	  }
-	  else
-	    s << "None";
-          break;	 
+          s << i->first << " := ";
+          value_to_stream(s, i->second);
         }
-      case KeyArgument::SHARED_PARSINGOBJECT:
-        {
-#if defined(__GNUC__) && __GNUC__ < 3
-
-          s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
-#else
-          shared_ptr<RegisteredObjectBase> parsing_object_ptr =
-            (*reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(i->second.p_object_variable));
-          
-          if (!is_null_ptr(parsing_object_ptr))
-	  {
-            //std::cerr << "\nBefore *parsing_object_ptr" << endl;	  
-            //std::cerr << "\ntypename *parsing_object_ptr " << typeid(*parsing_object_ptr).name() <<std::endl<<std::endl;
-	    s << parsing_object_ptr->get_registered_name() << endl;
-	    s << parsing_object_ptr->parameter_info();
-	  }
-	  else
-	    s << "None";
-#endif
-          break;	 
-        }
-
-      case KeyArgument::LIST_OF_DOUBLES:
-        s << *reinterpret_cast<DoubleVect*>(i->second.p_object_variable); break;	  	  
-      case KeyArgument::LIST_OF_INTS:
-        s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  
-      case KeyArgument::ARRAY2D_OF_FLOATS:
-	detail::to_stream(s, *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable)); break;
-      case KeyArgument::ARRAY3D_OF_FLOATS:
-	detail::to_stream(s, *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable)); break;
-      case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
-	{
-	    typedef BasicCoordinate<3,float> type;
-	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
-	    break;
-	}
-      case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
-	{
-	    typedef BasicCoordinate<3,Array<3,float> > type;
-	    detail::to_stream(s, *reinterpret_cast<type*>(i->second.p_object_variable));
-	    break;
-	}
-      case KeyArgument::LIST_OF_ASCII:
-        s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
-      default :
-	  warning("KeyParser error: unknown type. Implementation error\n");
-	  break;
-
-      }
       s << endl;
     }
     // finally, find stop key

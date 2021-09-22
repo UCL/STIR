@@ -3,15 +3,7 @@
   Copyright (C) 2018-2019, University of Hull
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -576,8 +568,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
         iterative_object->set_input_data(this->input_projdata_sptr);
 
-    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
 
     //
@@ -636,7 +626,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
               // Essentially since inv_projData_sptr is 1s then this is an inversion.
               // inv_projdata_sptr = 1/norm3d
-              norm3d_sptr->undo(*inv_projdata_3d_sptr, start_time, end_time);
+              norm3d_sptr->undo(*inv_projdata_3d_sptr);
 
               info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 

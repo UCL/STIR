@@ -4,15 +4,7 @@
     Copyright (C) 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -121,11 +113,16 @@ projection data,...
 \defgroup Coordinate Items relating to coordinates
 \ingroup buildblock
 */
+
 /*!
 \defgroup geometry Items related to simple geometric calculations
 \ingroup buildblock
 Functions to compute distances between lines etc.
 */
+/*!
+\defgroup ancillary Items related to ancillary information such as radionuclide, patient info etc
+\ingroup buildblock
+ */
 /*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock

@@ -1,8 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, IRSL
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -12,9 +12,7 @@
 
   \brief non-inline implementations for stir::ProjMatrixByBinUsingSolidAngle
 
-  \author Mustapha Sadki
   \author Kris Thielemans
-  \author PARAPET project
 
 */
 

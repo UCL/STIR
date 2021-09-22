@@ -7,31 +7,60 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright (C) 2014, University College London
+#  Copyright (C) 2014,2020 University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
 # 
 
-echo This script should work with STIR version 3.x, 4.x. If you have
+echo This script should work with STIR version 5.x. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
 
 command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
 echo "Using `command -v generate_image`"
+
+force_zero_view_offset=0
+suffix=""
+#
+# Parse option arguments (--)
+# Note that the -- is required to suppress interpretation of $1 as options 
+# to expr
+#
+while test `expr -- "$1" : "--.*"` -gt 0
+do
+
+  if test "$1" = "--force_zero_view_offset"
+  then
+    force_zero_view_offset=1
+  elif test "$1" = "--suffix"
+  then
+    suffix="$2"
+    shift 1
+  elif test "$1" = "--help"
+  then
+    echo "Usage: `basename $0` [--force_zero_view_offset]  [--suffix sometext] [install_dir]"
+    echo "(where [] means that an argument is optional)"
+    exit 1
+  else
+    echo Warning: Unknown option "$1"
+    echo rerun with --help for more info.
+    exit 1
+  fi
+
+  shift 1
+
+done 
+
+if [ $# -eq 1 ]; then
+  echo "Prepending $1 to your PATH for the duration of this script."
+  PATH=$1:$PATH
+fi
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -64,8 +93,14 @@ awk '/END OF INTERFILE/ { print "number of energy windows := 1\nenergy window lo
     ${template_sino} > tmp_header.hs
 mv tmp_header.hs ${template_sino}
 
+if [ $force_zero_view_offset -eq 1 ]; then
+  new_template_sino=my_DSTE_3D_rd2_template$suffix.hs
+  force_view_offset_to_zero.sh ${new_template_sino} ${template_sino}
+  template_sino=${new_template_sino}
+fi
+
 # create sinograms
-./simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino}
+./simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} 10 ${suffix}
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
