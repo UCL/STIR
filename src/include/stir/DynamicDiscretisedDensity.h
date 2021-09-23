@@ -77,7 +77,6 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr=_exam_info_sptr;
-      _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
     }
   //!  Construct an empty DynamicDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
@@ -95,7 +94,7 @@ class DynamicDiscretisedDensity: public ExamData
       _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
       _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       this->exam_info_sptr = _exam_info_sptr;
-      _isotope_halflife=-1.F;
+
       _scanner_sptr=scanner_sptr;
     
       for (unsigned int frame_num=1; frame_num<=time_frame_definitions.get_num_frames(); ++frame_num)
@@ -214,7 +213,6 @@ class DynamicDiscretisedDensity: public ExamData
   */
   void decay_correct_frames()  ;
   void set_if_decay_corrected(const bool is_decay_corrected)  ;
-  void set_isotope_halflife(const float isotope_halflife);
   void set_calibration_factor(const float calibration_factor) ;
   void set_num_densities(const int num_densities)
   { _densities.resize(num_densities); }
@@ -223,7 +221,6 @@ class DynamicDiscretisedDensity: public ExamData
   //TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
-  float _isotope_halflife;
   bool _is_decay_corrected; 
   //double _start_time_in_secs_since_1970;
 };

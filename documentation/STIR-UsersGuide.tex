@@ -63,7 +63,9 @@ T. Beisel \\
 C. Falc\'{o}n \\
 {\it \small Univ. of Barcelona} \\
 R. Twyman \\
-{\it \small University College London}
+{\it \small University College London}\\
+D. Deidda \\
+{\it \small National Physical Laboratory}
 \\
 \\
 
@@ -90,8 +92,8 @@ This library was originally developed by the PARAPET
 project (funded by the European Union during 1997-2000), extended by Hammersmith 
 Imanet and made into an Open Source project. \\
 The current library has different license restrictions than the 
-original PARAPET distribution. Details on licensing are to be 
-found during the registration process, and the file \textbf{STIR/LICENSE.txt} 
+original PARAPET distribution, with nearly all changes since then released under the Apache-2.0 license.
+Details on licensing are in the file \textbf{STIR/LICENSE.txt} 
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
@@ -118,7 +120,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
+\item the \url{http://stir.sourceforge.net/wiki}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -133,7 +135,7 @@ always welcome. Please use the stir-users mailing list.
 \section{
 Installation}
 This section describes how to install STIR. It is complemented by information on the
-\url{http://sourceforge.net/stir}{STIR Wiki} with information for specific systems etc.
+\url{http://stir.sourceforge.net/wiki}{STIR Wiki} with information for specific systems etc.
 
 \subsection{
 Installing source files}
@@ -142,7 +144,7 @@ Download the source at the \textit{STIR} site:
 \begin{center}
 \url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
-\noindent (Section \textbf{Registered Users}).
+or from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
 Alternatively, if you are feeling adventurous, you can get the most-recent
 developer version (no guarantees!) of STIR from\\
 \url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
@@ -181,7 +183,7 @@ where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
 \subsubsection{JSON}
-The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+The \texttt{HUToMu} and \texttt{Radionuclide} database functionality parse a file in JSON format. We use the
 \url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
 instructions for this library are available on its github page.
 
@@ -221,7 +223,7 @@ Enabling GE RDF  support}
 This software includes support for GE Raw Data Format (RDF) version 9 files, used
 by the GE Signa PET/MR and some PET/CT scanners (depending on their software version). This is only enabled if CMake was able to find HDF5 libraries.
 For most operating systems this can be done via your package manager which we highly recommend. You could also
-download from the <a href="https://www.hdfgroup.org/downloads/hdf5/">HDF5 group download page</a>.
+download from the \url{https://www.hdfgroup.org/downloads/hdf5/}{HDF5 group download page}.
 
 \subsection{
 Building}
@@ -310,8 +312,12 @@ See section \ref{sec:RunningWithOPENMP} for information on how to run programs u
 the developer's guide.}\\
 \hline
 % ROW 
-{\raggedright \textit{STIR\_ENABLE\_EXPERIMENTAL}} & 
+{\raggedright \textit{STIR\_ENABLE\_\\EXPERIMENTAL}} & 
 {\raggedright Toggles between ON, OFF. Enable to use experimental features in \textit{STIR}.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_CONFIG\_DIR}} & 
+{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more information.}\\
 \hline
 \end{longtable}
 
@@ -320,13 +326,14 @@ capabilities of STIR.
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
 \item AVW\texttrademark{} (a commercial library\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.}
-via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
+{www.mayo.edu/bir/Software/AVW/AVW1.html}.})
+via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.\\
+\textit{AVW support has not been tested since about 2010.}
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
 \item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
   If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
-\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
+\item GE RDF\texttrademark{} 9 support via \texttt{HDF5\_ROOT} and related variables (requires the HDF5 library).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
@@ -342,7 +349,7 @@ provides normally a default in a system location, but you could set it for insta
 \item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is now recommended to set 
 this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
-\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
+\texttt{98}, \texttt{14} and \texttt{17}.
 \end{itemize}
 
 When building the Python code, and you have multiple versions of Python installed,
@@ -394,10 +401,10 @@ display, you could try 8bit mode anyway.
 
 { \subsubsubsection{Cygwin on Windows}
 }
+\textit{Cygwin support has not been tested since about 2018 but likely still works. Instructions below might be out-of-date though.}
 
-Cygwin is a must-have if you are using Windows but would like 
-to have nearly everything that Linux/Unix has to offer (at least 
-from a user's point of view). Check out http://cygwin.com.
+If you are using Windows but would like 
+to have nearly everything that Linux/Unix has to offer, Cygwin could help. Check out http://cygwin.com.
 
 { \subsubsubsubsection{Using X windows on cygwin}
 }
@@ -441,7 +448,33 @@ in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf
 slow.
 
 
+\section{Configuration after installation
+\label{sec:configuration}
+}
+Since \textit{STIR} version 5.0, STIR reads some configuration files, currently JSON files used for
+the estimation of attenuation factors from a CT image and a database with isotope information.
+The location of these files is found as follows
+\begin{itemize}
+\item Environment variable: if the \texttt{STIR\_CONFIG\_DIR} environment variable exists, it is used.
 
+\item CMake variable: when running \textit{CMake}, you can specify the default location via the
+\texttt{STIR\_CONFIG\_DIR} CMake variable. By default, this is set to a sub-directory \texttt{share/stir/config}
+in your install folder.
+\end{itemize}
+If you want to use a non-default location, it is highly recommended to set the variable to an absolute path.
+
+The installation process will copy the default configuration files to the path specified by the
+(CMake) \texttt{STIR\_CONFIG\_DIR} variable.
+This currently contains
+\begin{itemize}
+\item \texttt{ct\_slopes.json} which is used for the estimation of attenuation factors from a CT image,
+\item \texttt{radionuclide\_info.json} contains information on radio-isotopes, such as decay rates etc.
+\item \texttt{radionuclide\_names.json} contains a look-up table for radio-isotope names to convert them
+to the standard (as used by DICOM).
+\end{itemize}
+You might need to edit these files to add information for your scanner.
+
+See section \ref{sec:RunningWithOPENMP} for information on OpenMP an dmult-threading (if enabled when building \textit{STIR}).
 
 \section{
 Running \textit{STIR} programs}
@@ -659,6 +692,8 @@ For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 \textbf{Warning} ECAT7 support is no longer tested.
 
 \subsubsection{Image IO using the AVW library}
+\textit{AVW support has not been tested since about 2010.}
+
 See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
@@ -693,7 +728,7 @@ file to accurately correspond to your GATE macro.
 \textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
 ``virtual crystals" to accomodate for gaps between blocks. If you use
 the \texttt{originating system} to specify the scanner, this will be automatically enabled.
-(If you do not want this, set it to \textt{User_defined_scanner} and specify all values).
+(If you do not want this, set it to \texttt{User\_defined\_scanner} and specify all values).
 
 An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
@@ -3222,6 +3257,8 @@ parameters for usage info.
 { \subsubsubsection{conv\_AVW}
 }
 \label{sec:convAVW}
+\textit{AVW support has not been tested since about 2010.}
+
 If you have the \textit{AVW}\texttrademark  library
 \footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.
@@ -4408,7 +4445,7 @@ End Projector Pair Using NiftyPET Parameters:=
 \label{sec:projectorpairusingparallelproj}
 }
 This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
-\URL{https://github.com/gschramm/parallelproj}. This project provides implementations
+\url{https://github.com/gschramm/parallelproj}{github.com/gschramm/parallelproj}. This project provides implementations
 of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
 any \em{Python}).
 

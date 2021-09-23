@@ -20,6 +20,9 @@ detailed below.
   <li>Calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
 	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
 	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
+  <li>Radionuclide information is saved into a JSON configuration file for a number of popular radionuclide for PET and SPECT. This can make operations like decay correction easier and accurate. 
+          To be able to use the database we need to provide the isotope name used in the acquisition. For SPECT this is extracted from the Dicom header and saved in the interfile. For PET ways to read this information need to be implemented for each scanner/vendor. The new classes are new <code>Radionuclide</code> and  <code>RadionuclideDB</code>; 
+	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
 
   <li>KOSMAPOSL (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. Code contributed by Daniel Deidda (NPL), Kris Thielemans (UCL) and Ashley Gillman (CSIRO)</li>
   <li>It is now possibly to call the <a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a>
@@ -128,7 +131,9 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 </li> 
  <li><tt>KOSMAPOSL</tt> (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. This can be set in the parameter file through the keyword <tt>freeze_iterative_kernel_at_subiter_num</tt>
 </li>     
-<li><code>BinNormalisationWithCalibration</code> is a new class derived from <code>BinNormalisation</code>. This class allows to apply calibration factor from the scanner and save the information into the interfile header. To use this, a specific BinNormalisation class should be derived from BinNormalisationWithCalibration, the information about the calibration factor read, and the function get_uncalibrated_bin_efficiencies() needs to be overwritten. Note that also the isotope name and branching ratio can be set here (the latter will need to be set according to the isotope by reading into a radionuclide database). BinNormalisationSPECT already reads Calibration factor and isotope name and apply the calibration factor read from interfile. Since not all SPECT scanner do quantitative reconstruction an option of setting the calibration factor from the parameter file is added. Factors for BinNormalisationECA8/ECAT7 and GEHDF5 are set to one at the moment as we need to double check on the meaning of cross calibration factor for ECAT and find out hoe to read them for GEHDF5. Documentation for this is pending and will be added in the following PR.
+<li><code>BinNormalisationWithCalibration</code> is a new class derived from <code>BinNormalisation</code>. This class allows to apply calibration factor from the scanner and save the information into the interfile header. To use this, a specific BinNormalisation class should be derived from BinNormalisationWithCalibration, the information about the calibration factor read, and the function get_uncalibrated_bin_efficiencies() needs to be overwritten. Note that also the isotope name and branching ratio can be set here (the latter will need to be set according to the isotope by reading into a radionuclide database, see below). BinNormalisationSPECT already reads Calibration factor and isotope name and apply the calibration factor read from interfile. Since not all SPECT scanner do quantitative reconstruction an option of setting the calibration factor from the parameter file is added. Factors for BinNormalisationECA8/ECAT7 and GEHDF5 are set to one at the moment as we need to double check on the meaning of cross calibration factor for ECAT and find out how to read them for GEHDF5. Documentation for this is pending and will be added in the following PR.
+</li>
+<li><code>Radionuclide</code> is a new class which contains radionuclide information such as halflife, branching ratio, energy etc. This class allows to propagate infrmation trough the reconstruction as it is now a member in the <code>ExamInfo</code>. It is populated from the information extracted from <code>RadionuclideDB</code> which allows to create a Radionuclide object from the information stored in the <tt>radionuclide_info.json</tt> in the STIR configuration directory. Different vendors, as we saw with SPECT, may have different standards for the isotope name. Three different ones were observed, therefore a lookup table has been added to allow the use of the data base for any different isotope name format. The lookup table is a JSON file stored in <tt>radionuclide_names.json</tt>.
 </li>
  <li>Logcosh Prior.</li>
 <li>
@@ -270,6 +275,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <li>
     Overloaded <code>compute_total_ROI_values</code> and <code>compute_ROI_values_per_plane</code> functions to allow the passing of  a<code>VoxelsOnCartesianGrid</code> object instead of a <code>Shape3D</code> as the ROI shape.
     This allows the ROI volume to be constructed during preprocessing for multiple image analysis.
+</li>
+<li><code>KeyParser::parameter_info()</code> now outputs vectorised keys as well
 </li>
 </ul>
 
