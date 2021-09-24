@@ -67,30 +67,37 @@ int main(int argc, char **argv)
                            measured_data->get_proj_data_info_sptr()->create_shared_clone(),
 			   output_file_name));
 
-  const int num_rings = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_rings();
-  const int num_detectors_per_ring = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_detectors_per_ring();
-  const int num_transaxial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_blocks();
-  const int num_axial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_blocks();
-  const int num_transaxial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_crystals_per_block();
-  const int num_axial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_crystals_per_block();
-    
-  GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring);
+    const int num_transaxial_blocks =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_blocks();
+    const int num_axial_blocks =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_blocks();
+    const int virtual_axial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_virtual_axial_crystals_per_block();
+    const int virtual_transaxial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_virtual_transaxial_crystals_per_block();
+    const int num_physical_rings =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_rings() -(num_axial_blocks-1)*virtual_axial_crystals;
+    const int num_physical_detectors_per_ring =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
+
+    const int num_physical_transaxial_crystals_per_block =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
+    const int num_physical_axial_crystals_per_block =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_crystals_per_block()-virtual_axial_crystals;
+
+  GeoData3D norm_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring);
 
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks,
                               num_axial_blocks-1, num_transaxial_blocks-1);
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+  DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
     {
 
@@ -98,7 +105,7 @@ int main(int argc, char **argv)
       if (do_eff)
   	{
 	  char *in_filename = new char[in_filename_prefix.size() + 30];
-	  sprintf(in_filename, "%s_%s_%d_%d.out", 
+	  sprintf(in_filename, "%s_%s_%d_%d.out",
 		  in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
 	  std::ifstream in(in_filename);
 	  in >> efficiencies;
@@ -127,13 +134,13 @@ int main(int argc, char **argv)
                 delete[] in_filename;
             }
         }
-        
+
         // block norm
       if (do_block)
 	{
 	  {
 	    char *in_filename = new char[in_filename_prefix.size() + 30];
-	    sprintf(in_filename, "%s_%s_%d.out", 
+	    sprintf(in_filename, "%s_%s_%d.out",
 		    in_filename_prefix.c_str(), "block",  iter_num);
 	    std::ifstream in(in_filename);
 	    in >> norm_block_data;
@@ -148,9 +155,10 @@ int main(int argc, char **argv)
 
       {
         FanProjData fan_data;
-    make_fan_data(fan_data, *measured_data);
-//	make_fan_data_remove_gaps(fan_data, *measured_data);
-          
+
+	make_fan_data_remove_gaps(fan_data, *measured_data);
+
+
 	if (do_eff)
           apply_efficiencies(fan_data, efficiencies, apply_or_undo);
     if (do_geo)
@@ -160,8 +168,8 @@ int main(int argc, char **argv)
 
 	if (do_display)
 	  display(fan_data, "input*norm");
-	set_fan_data(*out_proj_data_ptr, fan_data);
-//    set_fan_data_add_gaps(*out_proj_data_ptr, fan_data);
+
+    set_fan_data_add_gaps(*out_proj_data_ptr, fan_data);
 
           
       }

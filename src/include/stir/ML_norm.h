@@ -222,17 +222,12 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info);
 
-void make_fan_data(FanProjData& fan_data,
-                   const ProjData& proj_data);
-
 void make_fan_data_remove_gaps(FanProjData& fan_data,
                    const ProjData& proj_data);
 
-void set_fan_data(ProjData& proj_data,
-                  const FanProjData& fan_data);
-
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data);
+                  const FanProjData& fan_data,
+                  const float gap_value=0.F);
 
 void apply_block_norm(FanProjData& fan_data,
                       const BlockData3D& block_data,
