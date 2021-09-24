@@ -30,7 +30,7 @@ if [ $# -gt 4 ]; then
   suffix=$5
 fi
 echo "===  create ACFs"
-calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} > my_create_acfs.log 2>&1
+calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_acfs.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1; 
 fi
