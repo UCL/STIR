@@ -28,7 +28,7 @@
 
   The option <tt>--NOPMRT</tt> forces forward projection using the (old) Ray Tracing
 
-  \par Optionially include parameter file for specifying the forward projector (overrules --PMRT and --NOPMRT options)
+  \par Optionally include a parameter file for specifying the forward projector (overrules --PMRT and --NOPMRT options)
   \verbatim
   Forward Projector parameters:=
     type := Matrix
