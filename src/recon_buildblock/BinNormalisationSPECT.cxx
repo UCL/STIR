@@ -65,6 +65,7 @@ BinNormalisationSPECT::registered_name = "SPECT";
 void 
 BinNormalisationSPECT::set_defaults()
 {
+  base_type::set_defaults();
   this->uniformity_filename = "";
   this->_use_detector_efficiencies = false;
   this->_use_dead_time = false;
@@ -80,6 +81,7 @@ void
 BinNormalisationSPECT::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation SPECT");
   this->parser.add_key("uniformity filename", &this->uniformity_filename);
   this->parser.add_key("use detector efficiencies", &this->_use_detector_efficiencies);
@@ -98,6 +100,9 @@ bool
 BinNormalisationSPECT::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
+
     if(use_uniformity_factors()){
         uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
     read_uniformity_table(uniformity);}
@@ -142,7 +147,7 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const 
     
     this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
     
-  return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
+  return base_type::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
 BinNormalisationSPECT::

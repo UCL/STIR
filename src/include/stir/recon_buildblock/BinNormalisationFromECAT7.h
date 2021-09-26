@@ -75,6 +75,8 @@ START_NAMESPACE_ECAT7
 class BinNormalisationFromECAT7 :
    public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
