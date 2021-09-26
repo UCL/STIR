@@ -47,13 +47,17 @@ public:
   //!get name
   std::string get_name()const;
   //! get energy
-  float get_energy()const; 
+  /*! if \a check=\c true, calls error() if value not set (i.e. is negative)*/
+  float get_energy(bool check=true) const;
   //! get branching_ratio
-  float get_branching_ratio()  const; 
+  /*! if \a check=\c true, calls error() if value not set (i.e. is negative)*/
+  float get_branching_ratio(bool check=true)  const;
   //! get half_life
-  float get_half_life() const; 
+  /*! if \a check=\c true, calls error() if value not set (i.e. is negative)*/
+  float get_half_life(bool check=true) const;
   //! get modality
-  ImagingModality get_modality() const; 
+  /*! if \a check=\c true, calls error() if value not set (i.e. is unknown)*/
+  ImagingModality get_modality(bool check=true) const;
   //! Return a string with info on parameters
   /*! the returned string is not intended for parsing. */
   std::string parameter_info() const;
