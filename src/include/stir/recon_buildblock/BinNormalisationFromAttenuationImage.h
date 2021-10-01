@@ -56,6 +56,8 @@ START_NAMESPACE_STIR
 class BinNormalisationFromAttenuationImage :
    public RegisteredParsingObject<BinNormalisationFromAttenuationImage, BinNormalisation>
 {
+private:
+  using base_type = BinNormalisation;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 

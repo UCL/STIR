@@ -46,6 +46,8 @@ START_NAMESPACE_STIR
 class BinNormalisationFromProjData :
    public RegisteredParsingObject<BinNormalisationFromProjData, BinNormalisation>
 {
+private:
+  using base_type = BinNormalisation;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 

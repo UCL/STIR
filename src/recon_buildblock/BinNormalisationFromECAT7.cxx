@@ -170,6 +170,7 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
 void 
 BinNormalisationFromECAT7::set_defaults()
 {
+  base_type::set_defaults();
   this->normalisation_ECAT7_filename = "";
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = true;
@@ -181,6 +182,7 @@ void
 BinNormalisationFromECAT7::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation From ECAT7");
   // todo remove obsolete keyword
   this->parser.add_key("normalisation_ECAT7_filename", &this->normalisation_ECAT7_filename);
@@ -197,6 +199,8 @@ bool
 BinNormalisationFromECAT7::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
   read_norm_data(normalisation_ECAT7_filename);
   this->set_calibration_factor(1);
   return false;
@@ -219,7 +223,7 @@ Succeeded
 BinNormalisationFromECAT7::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(proj_data_info_ptr_v);
+  base_type::set_up(proj_data_info_ptr_v);
 
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =

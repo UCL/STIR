@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London
+    Copyright (C) 2014, 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -55,6 +55,8 @@ public:
   BinNormalisation();
 
   virtual ~BinNormalisation();
+  /*! sets \c _already_setup to \c false */
+  virtual void set_defaults() override;
   virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)
@@ -65,7 +67,7 @@ public:
   virtual inline bool is_trivial() const { return false;}
 
   //! initialises the object and checks if it can handle such projection data
-  /*! Default version does nothing. */
+  /*! Default version sets _already_set_up and stores the shared pointers. */
   virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
 
   //! Return the 'efficiency' factor for a single bin

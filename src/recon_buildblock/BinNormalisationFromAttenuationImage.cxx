@@ -37,6 +37,7 @@ BinNormalisationFromAttenuationImage::registered_name =
 void 
 BinNormalisationFromAttenuationImage::set_defaults()
 {
+  base_type::set_defaults();
   attenuation_image_ptr.reset();
   forward_projector_ptr.reset();
   attenuation_image_filename = "";
@@ -46,6 +47,7 @@ void
 BinNormalisationFromAttenuationImage::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From Attenuation Image");
   parser.add_key("attenuation_image_filename", &attenuation_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
@@ -96,7 +98,7 @@ post_processing()
   *new_sptr *= rescale;
   attenuation_image_ptr = new_sptr;
 
-  return false;
+  return base_type::post_processing();
 }
 
 
@@ -129,7 +131,7 @@ Succeeded
 BinNormalisationFromAttenuationImage::
 set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr);
+  base_type::set_up(exam_info_sptr, proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);
   forward_projector_ptr->set_input(*attenuation_image_ptr);
   return Succeeded::yes;

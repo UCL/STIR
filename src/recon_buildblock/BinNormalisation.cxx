@@ -38,6 +38,11 @@ BinNormalisation()
 {
 }
 
+void BinNormalisation::set_defaults()
+{
+  this->_already_set_up = false;
+}
+
 BinNormalisation::
 ~BinNormalisation()
 {}
