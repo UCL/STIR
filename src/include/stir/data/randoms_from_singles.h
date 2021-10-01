@@ -46,7 +46,7 @@ class SinglesRates;
   \f]
   converting that to total singles $s$ in the time frame, we get
   \f[
-     r_{ij} = \tau s_i s_j \frac{ \int_{t_1}^{t_2} dt\,exp (-2 \lambda t)}{\left(\int_t1^t2 dt\,exp (-\lambda t)\right)^2}
+     r_{ij} = \tau s_i s_j \frac{ \int_{t_1}^{t_2} dt\,exp (-2 \lambda t)}{\left(\int_{t1}^{t2} dt\,exp (-\lambda t)\right)^2}
   \f]
 
   \todo Dead-time is currently completely ignored.

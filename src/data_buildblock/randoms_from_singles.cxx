@@ -63,8 +63,9 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
 
        randoms-counts[i,j] = int_t1^t2 randoms-rate[t,i,j]
                  = coinc_window * singles-rate[0,i] * singles-rate[0,j] * int_t1^t2 exp (-2lambda t)
-                   coinc_window * singles-counts[i] * singles-counts[j] *
+                 = coinc_window * singles-counts[i] * singles-counts[j] *
                    int_t1^t2 exp (-2lambda t) / (int_t1^t2 exp (-lambda t))^2
+       where int indicates an integral.
 
        Now we can use that decay_correction_factor(lambda,t1,t2) computes
           duration/(int_t1^t2 exp (-lambda t))
