@@ -41,7 +41,8 @@ def plot_sinogram_profiles(filenames, sumaxis=0, select=0):
     plt.show()
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(sys.argv[0])
+    parser.description= "This script loads, sums axis' and plots profiles over input sinogram files."
     parser.add_argument('filenames', nargs='*',
                         help='Sinogram file names to show, any number.')
     parser.add_argument("--sumaxis", default=0, type=int, 
