@@ -204,7 +204,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
 #endif
   {
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp for schedule(dynamic)
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)

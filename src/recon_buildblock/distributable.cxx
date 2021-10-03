@@ -426,7 +426,7 @@ void distributable_computation(
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
     }
-#pragma omp for schedule(runtime)  
+#pragma omp for schedule(dynamic)  
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
