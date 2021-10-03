@@ -20,25 +20,27 @@ import argparse
 import sys
 import matplotlib.pyplot as plt
 
-def plot_sinogram_profiles(filenames, sumaxis=0, select=0):
+def plot_sinogram_profiles(projection_data_list, sumaxis=0, select=0):
     """
     Plot a profile through STIR.ProjData.
     Average over all sinograms to reduce noise
-    filenames: list of sinogram filenames or stir.ProjData objects to load and plot
+    projection_data_list: list of sinogram file names or stir.ProjData objects to load and plot
     sumaxis: axes to sum over (passed to numpy.sum(..., axis))
     select: element to select after summing
     """
     plt.figure()
     ax = plt.subplot(111)
 
-    for f in filenames:
+    for f in projection_data_list:
         if isinstance(f, str):
             print(f"Handling:\n  {f}")
             f = stir.ProjData_read_from_file(f)
             label = f
+
         if isinstance(f, stir.ProjData):
             f = stirextra.to_numpy(f)
             label = ""
+            
         else:
             raise ValueError("wrong type of argument")
 
