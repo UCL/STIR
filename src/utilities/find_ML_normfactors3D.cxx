@@ -119,9 +119,12 @@ int main(int argc, char **argv)
     const int num_physical_transaxial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-    const int num_physical_axial_crystals_per_block =
+    int num_physical_axial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
+    if(num_axial_blocks>1) {
+	    num_physical_axial_crystals_per_block *= num_axial_blocks;
+    }
 
 
 
