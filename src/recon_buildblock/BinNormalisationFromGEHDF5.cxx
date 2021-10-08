@@ -212,6 +212,7 @@ create_ax_pos_offset(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, std::ve
 void 
 BinNormalisationFromGEHDF5::set_defaults()
 {
+  base_type::set_defaults();
   this->normalisation_GEHDF5_filename = "";
   //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
@@ -223,6 +224,7 @@ void
 BinNormalisationFromGEHDF5::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation From GE HDF5");
   this->parser.add_key("normalisation_filename", &this->normalisation_GEHDF5_filename);
   //this->parser.add_parsing_key("singles rates", &this->singles_rates_ptr);
@@ -237,6 +239,8 @@ bool
 BinNormalisationFromGEHDF5::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
   read_norm_data(normalisation_GEHDF5_filename);
   this->set_calibration_factor(1); //TODO: read actual factor somewhere
   return false;
@@ -259,7 +263,7 @@ Succeeded
 BinNormalisationFromGEHDF5::
 set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
+  base_type::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());

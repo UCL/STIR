@@ -294,6 +294,9 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
   nor psi to be between 0 and 2 pi. They will standardise the input automatically.
   </li>
+  <li>
+    OpenMP loop scheduling changed to use <code>dynamic</code> instead of <code>runtime</code>. On some machines, this was causing slower projection operations due to a <code>static</code> scheduler being selected by default. See <a href=https://github.com/UCL/STIR/issues/935>Issue #935</a> for more details.
+  </li>
 </ul>
 
 </body>

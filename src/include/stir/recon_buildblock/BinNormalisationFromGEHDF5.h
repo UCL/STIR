@@ -82,6 +82,8 @@ namespace RDF_HDF5 {
 class BinNormalisationFromGEHDF5 :
    public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 

@@ -58,34 +58,30 @@ std::string
     return name;
 }
 
-float
- Radionuclide::get_energy()const 
+float Radionuclide::get_energy(bool check) const
 {
-    if (energy<=0)
+    if (check && energy<=0)
         error("Radionuclide energy peak is unset, If you want to use it, it needs to be set!");
     return energy;
 }
 
-float
- Radionuclide::get_branching_ratio()  const
+float Radionuclide::get_branching_ratio(bool check)  const
 { 
-    if (energy<=0)
+    if (check && branching_ratio<=0)
         error("Radionuclide Branching ratio is unset, If you want to use it, it needs to be set!");
     return branching_ratio;
 }
 
-float
- Radionuclide::get_half_life() const
+float Radionuclide::get_half_life(bool check) const
 {
-    if (half_life<=0)
+    if (check && half_life<=0)
         error("Radionuclide half life is unset, If you want to use it, it needs to be set!");
     return half_life;
 }
 
-ImagingModality
- Radionuclide::get_modality() const
+ImagingModality Radionuclide::get_modality(bool check) const
 { 
-    if (modality.is_unknown())
+    if (check && modality.is_unknown())
         error("Radionuclide::modality is Unknown, If you want to use it, it needs to be defined!");
     return modality;
 }

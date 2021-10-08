@@ -38,6 +38,11 @@ BinNormalisation()
 {
 }
 
+void BinNormalisation::set_defaults()
+{
+  this->_already_set_up = false;
+}
+
 BinNormalisation::
 ~BinNormalisation()
 {}
@@ -140,7 +145,7 @@ apply(ProjData& proj_data,
                                          0, 1/*subset_num, num_subsets*/);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)  
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -187,7 +192,7 @@ undo(ProjData& proj_data,
                                          0, 1/*subset_num, num_subsets*/);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)  
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
