@@ -1,14 +1,29 @@
+# Author: Robert Twyman
+# Copyright 2021 UCL
+# This file is part of STIR.
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
+# # Script for plotting and investigating GE singles information
+# It was observed that the STIR `construct_randoms_from_GEsingles` utility was overestimating the randoms from singles by approximately 25% to 33%.
+# This script investigates the decay rate of the singles, logged by `print_GE_singles_values`, by extracting the logged information into numpy arrays, plotting the total number of singles per second and tries to fit the measured data.
+# # Initial commentary
+# It was considered that there was an overestimation of randoms due to issues with decay/deadtime.
+
 import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+# # Core Functions
+
+# Functions to convert between lambda and half-life
 def get_lambda(half_life):
     return np.log(2) / half_life
 
 def get_half_life(lbda):
     return np.log(2) / lbda
 
+# Linear and decay functions
 def linear_function(m, x, c):
     return m * x + c
 
@@ -81,61 +96,58 @@ if not os.path.isfile(log_file):
 else:
     print(f"{log_file} already exists.")
 
-# Load the log file in text and imediately load into a function to extract the array
+# Load the log file in text and imediately load into a function to extract the lines into an array
 
 singles_values = extract_singles_values_array_from_lines(get_lines_from_file(log_file))
 
-# %
+seconds = np.array([i for i in range(len(singles_values))]) # Assume each array corresponds to one second
 
-seconds = np.array([0] * len(singles_values)) # Assume each array corresponds 10 one second
+# for i in range(len(singles_values)):
+#     singles_per_second[i] = np.sum(singles_values[i])
+singles_per_second = np.array([np.sum(singles_values[i]) for i in range(len(singles_values))])
 
-singles_per_second = np.array([0] * len(singles_values))
-for i in range(len(singles_values)):
-    seconds[i] = i
-    singles_per_second[i] = np.sum(singles_values[i])
+print(seconds)
 
-# %%
-# log( S0 exp(-2lambda t) = log(S0) -2lambda t )
+# Take the natural log of the decay function gives a linear function 
+# `log( S0 exp(-2lambda t) = log(S0) -2lambda t )`. 
+# Fit the data in `singles_per_second` to a linear function and compute `lbda` (lambda) and `S0`
 
 lbda, S0 = np.polyfit(seconds, np.log(singles_per_second), 1)
 lbda = -lbda
 S0 = np.exp(S0)
-measured_half_life = get_half_life(lbda)
+measured_half_life = get_half_life(lbda) # Convert lbda into half-life
+exponential_fit = [decay_function(lbda, t, S0) for t in seconds]
+
+# The first line of this print is a sanity check, expect value to be close to 1.
+print(f"sum(singles_per_second) / sum(exponential_fit) = {np.sum(singles_per_second) / np.sum(exponential_fit)}\n",
+      f"measured half life from polyfit = {measured_half_life} seconds")
+
+# Compute expected behaviour based upon F18 half-life and compare the difference in the number of singles.
 
 F18_half_life = 6586.2
 F18_lbda = get_lambda(F18_half_life)
-
-# lin_fit = [linear_function(lbda, si, np.log(S0)) for si in seconds]
-
-exponential_fit = [decay_function(lbda, t, S0) for t in seconds]
 F18_singles = [decay_function(F18_lbda, t, S0) for t in seconds]
+print(f"sum(F18_singles) / sum(exponential_fit) = {np.sum(F18_singles) / np.sum(exponential_fit)}\n",
+      f"F18_half_life = {F18_half_life} seconds.")
+
+# Plot the three singles rates here.
 
 plt.figure()
 plt.plot(singles_per_second)
 plt.plot(exponential_fit)
 plt.plot(F18_singles)
-plt.title(f"fit half-life = {round(measured_half_life*10)/10} seconds")
-plt.legend(["singles_per_second", "exponential fit to measured data", "F18 decay (using correct t1/2)"])
+plt.title("Number of Singles plotted over time")
+plt.legend(["GE singles per second", "Exponential fit to GE singles per second", "F18 decay"])
 plt.ylabel("Single Events per Second")
 plt.xlabel("Seconds (s)")
 plt.show()
-
-# 
-# plt.figure()
-# plt.plot(np.log(singles_per_second))
-# plt.plot(lin_fit)
-# plt.legend(["log[singles_per_second]", "linear_fit"])
-# plt.title(f"lambda = {1 / lbda}, log[S0] = {S0}")
-# plt.ylabel("log[Single Events per Second]")
-# plt.xlabel("Seconds (s)")
-# plt.show()
 
 print(f"sum(singles_per_second) / sum(exponential_fit) = {np.sum(singles_per_second) / np.sum(exponential_fit)}\n",
       f"sum(F18_singles) / sum(exponential_fit) = {np.sum(F18_singles) / np.sum(exponential_fit)}\n",
       f"measured half_life = {measured_half_life}\n"
       f"F18_half_life = {F18_half_life}")
 
-# %
+# # Begining of Commentary on results
 
 plt.figure()
 plt.imshow(np.sum(singles_values, axis=0))
