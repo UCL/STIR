@@ -32,20 +32,21 @@ def plot_sinogram_profiles(projection_data_list, sumaxis=0, select=0):
     ax = plt.subplot(111)
 
     for f in projection_data_list:
+        label = ""
         if isinstance(f, str):
             print(f"Handling:\n  {f}")
-            f = stir.ProjData_read_from_file(f)
             label = f
-
+            f = stir.ProjData_read_from_file(f)
+ 
         if isinstance(f, stir.ProjData):
             f = stirextra.to_numpy(f)
-            label = ""
             
         else:
             raise ValueError("wrong type of argument")
 
         plt.plot(np.sum(f, axis=sumaxis)[select,:], label=label)
 
+    plt.title(f"Summing over axis {sumaxis} with element {select}")
     ax.legend()
     plt.show()
 
