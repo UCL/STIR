@@ -3,7 +3,7 @@
 # This file is part of STIR.
 # SPDX-License-Identifier: Apache-2.0
 # See STIR/LICENSE.txt for details
-# There is no difference between the python and iPython scripts here. The scripts are converted using the `p2j` command line utility.
+# This python script can be converted easily into an iPython file by typing `p2j plot_GE_singles_info.py` into a command line.
 # # Script for plotting and investigating GE singles information
 # It was observed that the STIR `construct_randoms_from_GEsingles` utility was overestimating the randoms from singles by approximately 25% to 33%.
 # This script investigates the decay rate of the singles, logged by `print_GE_singles_values`, by extracting the logged information into numpy arrays, plotting the total number of singles per second and tries to fit the measured data.
