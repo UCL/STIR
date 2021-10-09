@@ -137,32 +137,52 @@ plt.plot(singles_per_second)
 plt.plot(exponential_fit)
 plt.plot(F18_singles)
 plt.title("Number of Singles plotted over time")
-plt.legend(["GE singles per second", "Exponential fit to GE singles per second", "F18 decay"])
-plt.ylabel("Single Events per Second")
+plt.legend(["GE singles per second", 
+            "Exponential fit to GE singles per second", 
+            "F18 decay"])
+plt.ylabel("Single Events per second")
 plt.xlabel("Seconds (s)")
 plt.show()
 
 print(f"sum(singles_per_second) / sum(exponential_fit) = {np.sum(singles_per_second) / np.sum(exponential_fit)}\n",
       f"sum(F18_singles) / sum(exponential_fit) = {np.sum(F18_singles) / np.sum(exponential_fit)}\n",
-      f"measured half_life = {measured_half_life}\n"
+      f"measured half_life = {measured_half_life}\n\n"
       f"F18_half_life = {F18_half_life}")
 
-# # Begining of Commentary on results
+# # Discussion of decay investigation results
+# The above fit and plot indicates that the singles are sensitive to an alternative cause than just radioactive decay, as indicaed by the measured half-life being greater than the F18 value. 
+# An explaination for this may be detector deadtime. If this is the case we need to reconsider the plot.
+# At low singles rate the impact due to deadtime would be insignificant, therefore we would expect the `GE singles per second` and the `Exponential fit` plots to intersect. _N.B. This intersection would likely not appear on the range of this figure._ It is expected that the measured `S0` would be too small in this case as the current value is influnced by deadtime.
+
+# # Sum over alternative axis of `singles_values`
+
+# The following is a little additional investigation conducted. Sum over each of the time interval to give the sum for each detector-ring pair over time.
 
 plt.figure()
 plt.imshow(np.sum(singles_values, axis=0))
+plt.title("Sum of singles for each Detector and Ring in the scanner.")
+plt.xlabel("Detector Number")
+plt.ylabel("Ring Number")
 plt.show()
 
-# %
+# Sum over each time intervals and the rings. Flip the vector to see structure. 
 
 plt.figure()
 plt.plot(np.sum(singles_values, axis=(0,1)))
 plt.plot(np.flip(np.sum(singles_values, axis=(0,1))))
-plt.title("detectors")
+plt.xlabel("Detector Number")
+plt.ylabel("Number of singles")
 plt.show()
+
+# Sum over the time intervals and the detectors. Flip to see structure.
 
 plt.figure()
 plt.plot(np.sum(singles_values, axis=(0,2)))
 plt.plot(np.flip(np.sum(singles_values, axis=(0,2))))
-plt.title("rings")
+plt.xlabel("Rings Number")
+plt.ylabel("Number of singles")
 plt.show()
+
+# # A general conclusion
+# We see the expected sinusoidal behaviour over the detectors but in the rings we may observe higher activity at one axial extremity due to activity of the source.
+
