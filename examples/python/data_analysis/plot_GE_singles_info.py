@@ -5,10 +5,9 @@
 # See STIR/LICENSE.txt for details
 # This python script can be converted easily into an iPython file by typing `p2j plot_GE_singles_info.py` into a command line.
 # # Script for plotting and investigating GE singles information
-# It was observed that the STIR `construct_randoms_from_GEsingles` utility was overestimating the randoms from singles by approximately 25% to 33%.
-# This script investigates the decay rate of the singles, logged by `print_GE_singles_values`, by extracting the logged information into numpy arrays, plotting the total number of singles per second and tries to fit the measured data.
-# # Initial commentary
-# It was considered that there was an overestimation of randoms due to issues with decay/deadtime.
+# This script can be used to investigate the accuracy of the STIR `construct_randoms_from_GEsingles` utility
+# by comparing its output with the measured data.
+# In addition, it plots if the singles decay as expected (as this is assumed by `randoms_from_singles`).
 
 import os
 import sys
