@@ -117,7 +117,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+  enum Type {E931, Siemens_mCT, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690, DiscoveryMI3ring, DiscoveryMI4ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
@@ -139,6 +139,8 @@ class Scanner
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -158,6 +160,8 @@ class Scanner
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+          int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
@@ -189,9 +193,10 @@ class Scanner
   //! \name Functions returning geometrical info
   //@{
 
-  //! get number of rings
+  //! get number of rings. This function returns the total number of rings + gaps
   inline int get_num_rings() const;
-  //! get the number of detectors per ring
+  //! get the number of detectors per ring. This function returns the total
+  //! number of detectors + gasp in the ring.
   inline int get_num_detectors_per_ring() const;
   //! get the  maximum number of arccorrected tangential positions
   /*! \warning name is not in standard STIR terminology. Should be
@@ -276,6 +281,10 @@ class Scanner
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
   int get_num_virtual_transaxial_crystals_per_block() const;
+
+  int get_num_virtual_axial_crystals_per_bucket() const;
+  int get_num_virtual_transaxial_crystals_per_bucket() const;
+
   void set_num_virtual_axial_crystals_per_block(int);
   void set_num_virtual_transaxial_crystals_per_block(int);
   //@}
@@ -300,9 +309,11 @@ class Scanner
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
   inline void set_type(const Type & new_type);
-  //! set number of rings
+  //! set number of rings. This function will set the total number of rings
+  //! reseting the virtual crystals to the axial direction to 0.
   inline void set_num_rings(const int & new_num);
-  //! set the namber of detectors per ring
+  //! set the namber of detectors per ring. This function will set the total number
+  //! of detectors per ring, reseting the number of virtual crystals to 0.
   inline void set_num_detectors_per_ring(const int & new_num) ;
   //! set the  maximum number of arccorrected bins
   inline void set_max_num_non_arccorrected_bins(const int & new_num) ;
@@ -381,10 +392,18 @@ private:
   int num_axial_blocks_per_bucket;      /* axial blocks per bucket */
   int num_axial_crystals_per_block;     /* number of crystals in the axial direction */
   int num_transaxial_crystals_per_block;/* number of transaxial crystals */
+  //! Number of axial virtual crystals per block
+  int num_virtual_axial_crystals_per_block;
+  //! Number of transaxial virtual crystals per block
+  int num_virtual_transaxial_crystals_per_block;
   int num_detector_layers;
 
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
+
+  int num_virtual_axial_crystals_per_bucket;
+
+  int num_virtual_transaxial_crystals_per_bucket;
 
    //!
   //! \brief energy_resolution
@@ -413,6 +432,8 @@ private:
                   float bin_size_v, float intrinsic_tilt_v,
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
@@ -431,6 +452,8 @@ private:
                   float bin_size_v, float intrinsic_tilt_v,
                   int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_block_v, int num_virtual_transaxial_crystals_per_block_v,
+                  int num_virtual_axial_crystals_per_bucket_v, int num_virtual_transaxial_crystals_per_bucket_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,

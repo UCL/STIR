@@ -38,11 +38,17 @@ Scanner::get_type() const
 
 int
 Scanner::get_num_rings() const
-{  return num_rings;}
+{
+    return num_rings + get_num_virtual_axial_crystals_per_bucket() * get_num_axial_buckets() +
+            get_num_virtual_axial_crystals_per_block() * get_num_axial_blocks();
+}
 int
 Scanner::get_num_detectors_per_ring() const
 {
-  return num_detectors_per_ring;}
+  return num_detectors_per_ring + get_num_virtual_transaxial_crystals_per_bucket() * get_num_transaxial_buckets() +
+          get_num_virtual_transaxial_crystals_per_block() * get_num_transaxial_blocks();
+}
+
 int
 Scanner::get_max_num_non_arccorrected_bins() const
 { return max_num_non_arccorrected_bins;}
@@ -113,13 +119,15 @@ Scanner::get_num_axial_blocks_per_bucket() const
 int
 Scanner::get_num_axial_crystals_per_block() const
 {
-  return num_axial_crystals_per_block;
+  return num_axial_crystals_per_block +
+          get_num_virtual_axial_crystals_per_block();
 }
 
 int
 Scanner::get_num_transaxial_crystals_per_block()const
 {
-  return num_transaxial_crystals_per_block;
+  return (num_transaxial_crystals_per_block +
+          get_num_virtual_transaxial_crystals_per_block());
 }
 
 
@@ -128,7 +136,8 @@ Scanner::get_num_axial_crystals_per_bucket() const
 {
   return
     get_num_axial_blocks_per_bucket() *
-    get_num_axial_crystals_per_block();
+    get_num_axial_crystals_per_block() +
+          get_num_virtual_axial_crystals_per_bucket();
 }
 
 
@@ -137,7 +146,8 @@ Scanner::get_num_transaxial_crystals_per_bucket() const
 {
   return
     get_num_transaxial_blocks_per_bucket() *
-    get_num_transaxial_crystals_per_block();
+    get_num_transaxial_crystals_per_block() +
+          get_num_virtual_transaxial_crystals_per_bucket();
 }
 
 int
@@ -151,25 +161,28 @@ Scanner::get_num_axial_blocks() const
 {
   // when using virtual crystals between blocks, there won't be one at the end, so we
   // need to take this into account.
-  return (num_rings+get_num_virtual_axial_crystals_per_block())/num_axial_crystals_per_block;
+  return (num_rings)/num_axial_crystals_per_block;
 }
 
 int
 Scanner::get_num_transaxial_blocks() const
 {
-  return num_detectors_per_ring/num_transaxial_crystals_per_block;
+  return num_transaxial_crystals_per_block == 0 ? num_detectors_per_ring :
+                                                  num_detectors_per_ring/(num_transaxial_crystals_per_block);
 }
 
 int
 Scanner::get_num_axial_buckets() const
 {
-  return get_num_axial_blocks()/num_axial_blocks_per_bucket;
+  return num_axial_blocks_per_bucket == 0 ? get_num_axial_blocks() :
+                                            get_num_axial_blocks()/num_axial_blocks_per_bucket;
 }
 
 int
 Scanner::get_num_transaxial_buckets() const
 {
-  return get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+  return num_transaxial_blocks_per_bucket== 0 ? get_num_transaxial_blocks() :
+              get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
 }
 
 
@@ -237,11 +250,15 @@ void Scanner::set_type(const Type & new_type)
 
 void Scanner::set_num_rings(const int & new_num)
 {
+    num_virtual_axial_crystals_per_bucket = 0;
+    num_virtual_axial_crystals_per_block = 0;
   num_rings = new_num;
 }
   
-void Scanner::set_num_detectors_per_ring(const int & new_num) 
+void Scanner::set_num_detectors_per_ring(const int & new_num)
 {
+    num_virtual_transaxial_crystals_per_bucket = 0;
+    num_virtual_transaxial_crystals_per_block = 0;
   num_detectors_per_ring = new_num;  
 }
 
