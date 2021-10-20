@@ -148,15 +148,14 @@ SeparableConvolutionImageFilter(
       
 }
 
-#if 0
 template <typename elemT>
-VectorWithOffset<elemT>
+VectorWithOffset<VectorWithOffset<elemT>>
 SeparableConvolutionImageFilter<elemT>::
 get_filter_coefficients()
 {
   return filter_coefficients;
 }
-#endif
+
 
 template <typename elemT>
 Succeeded

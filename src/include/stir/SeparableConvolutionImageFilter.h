@@ -110,7 +110,7 @@ public:
   */
   SeparableConvolutionImageFilter(const VectorWithOffset< VectorWithOffset<elemT> >& filter_coefficients);
 
-  //VectorWithOffset<elemT> get_filter_coefficients();
+  VectorWithOffset<VectorWithOffset<elemT>> get_filter_coefficients();
   
   
 private:
