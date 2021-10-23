@@ -58,6 +58,21 @@ ScatterSimulation::
     scatt_points_vector.clear();
 }
 
+bool ScatterSimulation::get_use_cache() const
+{
+  return this->use_cache;
+}
+
+void ScatterSimulation::set_use_cache(bool value)
+{
+  if (value == this->use_cache)
+    return;
+
+  this->remove_cache_for_integrals_over_activity();
+  this->remove_cache_for_integrals_over_attenuation();
+  this->use_cache = value;
+}
+
 Succeeded
 ScatterSimulation::
 process_data()
