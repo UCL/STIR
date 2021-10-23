@@ -18,6 +18,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
         test_warp_image
 	test_DynamicDiscretisedDensity
 	test_ScatterSimulation
+        test_ML_norm
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
