@@ -79,7 +79,7 @@ protected:
     //! \param det_num_A
     //! \param det_num_B
     //! \return
-    float
+    double
     simulate_for_one_scatter_point(const std::size_t scatter_point_num,
                                                   const unsigned det_num_A,
                                                   const unsigned det_num_B);
