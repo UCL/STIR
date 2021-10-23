@@ -210,6 +210,7 @@ script:
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
   - ./run_test_zoom_image.sh
+  - ./run_ML_norm_tests.sh
   - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
   - ./run_tests_modelling.sh
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
