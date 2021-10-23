@@ -74,12 +74,8 @@ protected:
 
 
     //!
-    //! \brief simulate_for_one_scatter_point
-    //! \param scatter_point_num
-    //! \param det_num_A
-    //! \param det_num_B
-    //! \return
-    float
+    //! \brief simulate single scatter for one scatter point
+    double
     simulate_for_one_scatter_point(const std::size_t scatter_point_num,
                                                   const unsigned det_num_A,
                                                   const unsigned det_num_B);
