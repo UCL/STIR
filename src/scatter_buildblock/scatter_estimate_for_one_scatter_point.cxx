@@ -12,7 +12,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementation of stir::ScatterEstimationByBin::single_scatter_estimate_for_one_scatter_point
+  \brief Implementation of stir::SingleScatterSimulation::simulate_for_one_scatter_point
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
