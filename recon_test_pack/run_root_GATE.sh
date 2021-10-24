@@ -177,8 +177,8 @@ if test ${ThereWereErrors} = 1  ;
 then
   echo "Check what went wrong. The following log files might help you:"
   echo "${error_log_files}"
-  if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
+  if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
     for log in ${error_log_files}; do
       echo "=========== ${log} =========="
       cat ${log}
