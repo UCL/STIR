@@ -33,11 +33,6 @@ jobs:
           compiler_version: 11
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
-        - os: windows-latest
-          #compiler: gcc
-          #compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Release"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
@@ -89,7 +84,8 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (windows*)
-              vcpkg install boost hdf5 nlohmann-json
+              # this compiles the whole thing so takes ages
+              vcpkg install boost-core hdf5 nlohmann-json
               # swig is preinstalled and is currently not in vcpcg
               vcpkg list
               PYTHON_EXECUTABLE=$(which python3)
