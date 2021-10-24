@@ -160,7 +160,7 @@ jobs:
             ./run_test_simulate_and_recon_with_motion.sh
             ./run_scatter_tests.sh
             ./run_test_zoom_image.sh
-            # ./run_ML_norm_tests.sh
+            ./run_ML_norm_tests.sh
             if [[ $BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
             ./run_tests_modelling.sh
             cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
