@@ -159,7 +159,7 @@ get_filter_coefficients()
 template<typename elemT>
 void
 SeparableConvolutionImageFilter<elemT>::
-set_filter_coefficients(VectorWithOffset<VectorWithOffset<elemT>> v)
+set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v)
 {
   filter_coefficients = v;
 }
@@ -175,7 +175,7 @@ get_filter_coefficients(const int axis)
 template<typename elemT>
 void
 SeparableConvolutionImageFilter<elemT>::
-set_filter_coefficients(const int axis, VectorWithOffset<elemT> v)
+set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v)
 {
   filter_coefficients[axis] = v;
 }

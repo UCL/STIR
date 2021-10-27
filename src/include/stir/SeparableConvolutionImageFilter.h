@@ -113,10 +113,10 @@ public:
   //! Overloaded get and set methods the filter coefficients for axis or set of filter coefficients
   //@{
   VectorWithOffset<VectorWithOffset<elemT>> get_filter_coefficients();
-  void set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>> v);
+  void set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v);
   // These methods are made available as VectorWithOffset<VectorWithOffset<elemT>> is not accessable via swig
   VectorWithOffset<elemT> get_filter_coefficients(const int axis);
-  void set_filter_coefficients(const int axis, const VectorWithOffset<elemT> v);
+  void set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v);
   //@}
 
 private:
