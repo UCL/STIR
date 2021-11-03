@@ -161,10 +161,7 @@ build_crystal_maps()
 		see start_x*/
 
 		//calculate start_point to build the map.
-		float start_z = -1*(
-								((num_axial_blocks-1)/2.)*axial_block_spacing
-							+ ((num_axial_crystals_per_block-1)/2.)*axial_crystal_spacing
-											 );
+		float start_z = 0;
 		float start_y = -1*get_scanner_ptr()->get_effective_ring_radius();
 		float start_x = -1*(
 								 ((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
