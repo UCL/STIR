@@ -26,6 +26,7 @@ os.chdir('../recon_demo')
 recon = stir.OSMAPOSLReconstruction3DFloat('recon_demo_OSEM.par')
 # now modify a few settings from in Python for illustration
 recon.set_num_subsets(2)
+num_subiterations = 4
 # set filenames to save subset sensitivities (for illustration purposes)
 poissonobj = recon.get_objective_function()
 poissonobj.set_subsensitivity_filenames('sens_subset%d.hv')
@@ -49,7 +50,7 @@ except:
 s = recon.set_up(target)
 if (s == stir.Succeeded(stir.Succeeded.yes)):
     pylab.figure()
-    for iter in range(1, 4):
+    for iter in range(1,num_subiterations+1):
         print('\n--------------------- Subiteration ', iter)
         recon.set_start_subiteration_num(iter)
         recon.set_num_subiterations(iter)
@@ -61,6 +62,11 @@ if (s == stir.Succeeded(stir.Succeeded.yes)):
         npimage = stirextra.to_numpy(target)
         pylab.plot(npimage[10, 30, :])
         pylab.show()
+
+    # Save the final image
+    recon_filename = f"recon_image_{num_subiterations}.hv"
+    print(f"Saving Image as: {recon_filename}")
+    target.write_to_file(recon_filename)
 
     # plot slice of final image
     pylab.figure()
