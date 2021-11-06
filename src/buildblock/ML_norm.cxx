@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2016, 2020, University College London
+    Copyright (C) 2016, 2020, 2021, University College London
     Copyright (C) 2016-2017, PETsys Electronics
+    Copyright (C) 2021, Gefei Chen
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -989,11 +990,11 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
     const int half_fan_size = fan_size/2;
 
 
-    const int virtual_axial_crystals =
+    const int num_virtual_axial_crystals_per_block =
             proj_data_info_ptr->get_scanner_sptr()->
                     get_num_virtual_axial_crystals_per_block();
 
-    const int virtual_transaxial_crystals =
+    const int num_virtual_transaxial_crystals_per_block =
             proj_data_info_ptr->get_scanner_sptr()->
                     get_num_virtual_transaxial_crystals_per_block();
 
@@ -1010,21 +1011,18 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
             proj_data_info_ptr->get_scanner_sptr()->
                     get_num_axial_crystals_per_block();
 
-    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - virtual_transaxial_crystals;
+    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
-    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - virtual_axial_crystals;
+    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
 
     const int num_transaxial_blocks_in_fansize = fan_size/(num_transaxial_crystals_per_block);
-    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*virtual_transaxial_crystals;
+    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*num_virtual_transaxial_crystals_per_block;
     const int new_half_fan_size = new_fan_size/2;
     const int num_axial_blocks_in_max_delta = max_delta/(num_axial_crystals_per_block);
-    const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*virtual_axial_crystals;
-    const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*virtual_transaxial_crystals;
-    const int num_physical_rings = num_rings - (num_axial_blocks-1)*virtual_axial_crystals;
-
-
-    // ****    End     ****  //
+    const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+    const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*num_virtual_transaxial_crystals_per_block;
+    const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
 
     fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
 
@@ -1052,22 +1050,22 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
 
                     if (a_in_block >= num_physical_transaxial_crystals_per_block)
                         continue;
-                    int new_a = a - a / num_transaxial_crystals_per_block;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
                     int ra_in_block = ra % num_axial_crystals_per_block;
                     if (ra_in_block >= num_physical_axial_crystals_per_block)
                         continue;
-                    int new_ra = ra - ra / num_axial_crystals_per_block;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
                     int b_in_block = b % num_transaxial_crystals_per_block;
                     if (b_in_block >= num_physical_transaxial_crystals_per_block)
                         continue;
-                    int new_b = b - b / num_transaxial_crystals_per_block;
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
                     int rb_in_block = rb % num_axial_crystals_per_block;
                     if (rb_in_block >= num_physical_axial_crystals_per_block)
                         continue;
-                    int new_rb = rb - rb / num_axial_crystals_per_block;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
                     fan_data(new_ra, new_a, new_rb, new_b) =
                     fan_data(new_rb, new_b, new_ra, new_a) =
@@ -1095,11 +1093,10 @@ void set_fan_data_add_gaps(ProjData& proj_data,
     //assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
 
 
-    // ****  Added by Tahereh Nikjenad **** //
-    const int virtual_axial_crystals =
+    const int num_virtual_axial_crystals_per_block =
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_virtual_axial_crystals_per_block();
-    const int virtual_transaxial_crystals =
+    const int num_virtual_transaxial_crystals_per_block =
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_virtual_transaxial_crystals_per_block();
     const int num_transaxial_crystals_per_block =
@@ -1109,12 +1106,9 @@ void set_fan_data_add_gaps(ProjData& proj_data,
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_axial_crystals_per_block();
 
-    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - virtual_transaxial_crystals;
+    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
-    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - virtual_axial_crystals;
-
-
-    // ****    End     ****  //
+    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
     Bin bin;
     shared_ptr<SegmentBySinogram<float> > segment_ptr;
@@ -1139,26 +1133,27 @@ void set_fan_data_add_gaps(ProjData& proj_data,
                     (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = gap_value;
 
 
-                    int a_in_block = a%num_transaxial_crystals_per_block;
-                    if(a_in_block>=num_physical_transaxial_crystals_per_block)
-                        continue;
-                    int new_a = a-a/num_transaxial_crystals_per_block;
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    int a_in_block = a % num_transaxial_crystals_per_block;
 
-                    int ra_in_block = ra%num_axial_crystals_per_block;
-                    if(ra_in_block>=num_physical_axial_crystals_per_block)
+                    if (a_in_block >= num_physical_transaxial_crystals_per_block)
                         continue;
-                    int new_ra = ra-ra/num_axial_crystals_per_block;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
-                    int b_in_block = b%num_transaxial_crystals_per_block;
-                    if(b_in_block>=num_physical_transaxial_crystals_per_block)
+                    int ra_in_block = ra % num_axial_crystals_per_block;
+                    if (ra_in_block >= num_physical_axial_crystals_per_block)
                         continue;
-                    int new_b = b-b/num_transaxial_crystals_per_block;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-                    int rb_in_block = rb%num_axial_crystals_per_block;
-                    if(rb_in_block>=num_physical_axial_crystals_per_block)
+                    int b_in_block = b % num_transaxial_crystals_per_block;
+                    if (b_in_block >= num_physical_transaxial_crystals_per_block)
                         continue;
-                    int new_rb = rb-rb/num_axial_crystals_per_block;
-                    
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int rb_in_block = rb % num_axial_crystals_per_block;
+                    if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
                     
                     (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
                     fan_data(new_ra, new_a, new_rb, new_b);
