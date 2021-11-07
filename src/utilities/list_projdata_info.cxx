@@ -130,14 +130,13 @@ int main(int argc, char *argv[])
       const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
       const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
 
+      bool accumulators_initialized = false;
+      float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
+      float accum_max=std::numeric_limits<float>::min();
+      double sum=0.;
       for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
       {
-          std::cout << "\nTOF bin: " << timing_num;
-          bool accumulators_initialized = false;
-          float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
-          float accum_max=std::numeric_limits<float>::min();
-          double sum=0.;
-          for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
+        for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
           {
               const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num, timing_num));
               const float this_max=seg.find_max();
@@ -155,14 +154,14 @@ int main(int argc, char *argv[])
                   if (accum_min>this_min) accum_min=this_min;
               }
           }
-          if (print_min)
-              std::cout << "\nData min: " << accum_min;
-          if (print_max)
-              std::cout << "\nData max: " << accum_max;
-          if (print_sum)
-              std::cout << "\nData sum: " << sum;
-          std::cout << "\n";
       }
+      if (print_min)
+        std::cout << "\nData min: " << accum_min;
+      if (print_max)
+        std::cout << "\nData max: " << accum_max;
+      if (print_sum)
+        std::cout << "\nData sum: " << sum;
+      std::cout << "\n";
   }
   return EXIT_SUCCESS;
 }

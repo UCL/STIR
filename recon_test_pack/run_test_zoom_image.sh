@@ -176,7 +176,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==4 { print $2}'`
+new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==2 { print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then
