@@ -76,7 +76,7 @@ get_ROI_value() {
 # warning: return 0 if they are different (which is non-standard I guess)
 compare_values() {
     if [ $# -ne 3 ]; then
-      echo "Something wrong with call to compare_values"
+      echo "Someting wrong with call to compare_values"
     exit 1
     fi
     error_bigger_than_x=`echo $1 $2 $3 | awk '{ print(($2/$1 - 1)*($2/$1 - 1)> ($3 * $3)) }'`
@@ -168,7 +168,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==4 { print $2}'`
+org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/ { print $2}'`
 
 ./simulate_data.sh my_zoom_test4.hv my_atten_image.hv ${template_sino} 0
 if [ $? -ne 0 ]; then
@@ -176,11 +176,11 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==2 { print $2}'`
+new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/ { print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then
-  echo "DIFFERENCE IN su  of prompts IS TOO LARGE."
+  echo "DIFFERENCE IN sum of prompts IS TOO LARGE."
   exit 1
 fi
 
