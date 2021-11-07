@@ -6,15 +6,7 @@
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -256,6 +248,26 @@ Array<num_dimensions, elemT>::fill(const elemT &n)
   this->check_state();
   for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
     this->num[i].fill(n);
+  this->check_state();
+}
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::apply_lower_threshold(const elemT &l)
+{
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
+    this->num[i].apply_lower_threshold(l);
+  this->check_state();
+}
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::apply_upper_threshold(const elemT &u)
+{
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
+    this->num[i].apply_upper_threshold(u);
   this->check_state();
 }
 

@@ -39,6 +39,7 @@ number of crystals_Z := 4
 Singles readout depth := 1
 exclude scattered events := ${EXCLUDE_SCATTERED}
 exclude random events := ${EXCLUDE_RANDOM}
+check energy window information := 1  ; Default 1
 offset (num of detectors) := 0 
 
 low energy window (keV) := 0  		; Default 0

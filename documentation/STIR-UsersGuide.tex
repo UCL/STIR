@@ -40,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 4.0}}
+ Version 4.1}}
 \end{center}
 
 \end{spacing}
@@ -61,23 +61,17 @@ A. Zverovich \\
 T. Beisel \\
 {\it \small Univ. of Paderborn} \\
 C. Falc\'{o}n \\
-{\it \small Univ. of Barcelona}
+{\it \small Univ. of Barcelona} \\
+R. Twyman \\
+{\it \small University College London}\\
+D. Deidda \\
+{\it \small National Physical Laboratory}
+\\
+\\
 
-\begin{center}
-License
-\end{center}
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
+SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    Parts of this file are licensed under the PARAPET license.     
-    See STIR/LICENSE.txt for details.
+See STIR/LICENSE.txt for details.
 
 \newpage
 
@@ -98,8 +92,8 @@ This library was originally developed by the PARAPET
 project (funded by the European Union during 1997-2000), extended by Hammersmith 
 Imanet and made into an Open Source project. \\
 The current library has different license restrictions than the 
-original PARAPET distribution. Details on licensing are to be 
-found during the registration process, and the file \textbf{STIR/LICENSE.txt} 
+original PARAPET distribution, with nearly all changes since then released under the Apache-2.0 license.
+Details on licensing are in the file \textbf{STIR/LICENSE.txt} 
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
@@ -126,7 +120,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
+\item the \url{http://stir.sourceforge.net/wiki}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -141,7 +135,7 @@ always welcome. Please use the stir-users mailing list.
 \section{
 Installation}
 This section describes how to install STIR. It is complemented by information on the
-\url{http://sourceforge.net/stir}{STIR Wiki} with information for specific systems etc.
+\url{http://stir.sourceforge.net/wiki}{STIR Wiki} with information for specific systems etc.
 
 \subsection{
 Installing source files}
@@ -150,7 +144,7 @@ Download the source at the \textit{STIR} site:
 \begin{center}
 \url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
-\noindent (Section \textbf{Registered Users}).
+or from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
 Alternatively, if you are feeling adventurous, you can get the most-recent
 developer version (no guarantees!) of STIR from\\
 \url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
@@ -189,7 +183,7 @@ where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
 \subsubsection{JSON}
-The \texttt{HUToMu} functionality parses a file in JSON format. We use the
+The \texttt{HUToMu} and \texttt{Radionuclide} database functionality parse a file in JSON format. We use the
 \url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
 instructions for this library are available on its github page.
 
@@ -224,12 +218,12 @@ that you would otherwise experience when using \textit{STIR} and ECAT7
 files.
 
 \subsubsection{
-Enabling GE RDF and VOLPET support}
+Enabling GE RDF  support}
 \label{sec:RDFsupport}
-We have software that reads VOLPET and RDF data for all GE scanners, but this can currently
-not be distributed due to licensing restrictions. If you have the
-GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
-support in \textit{STIR}.
+This software includes support for GE Raw Data Format (RDF) version 9 files, used
+by the GE Signa PET/MR and some PET/CT scanners (depending on their software version). This is only enabled if CMake was able to find HDF5 libraries.
+For most operating systems this can be done via your package manager which we highly recommend. You could also
+download from the \url{https://www.hdfgroup.org/downloads/hdf5/}{HDF5 group download page}.
 
 \subsection{
 Building}
@@ -318,8 +312,12 @@ See section \ref{sec:RunningWithOPENMP} for information on how to run programs u
 the developer's guide.}\\
 \hline
 % ROW 
-{\raggedright \textit{STIR\_ENABLE\_EXPERIMENTAL}} & 
+{\raggedright \textit{STIR\_ENABLE\_\\EXPERIMENTAL}} & 
 {\raggedright Toggles between ON, OFF. Enable to use experimental features in \textit{STIR}.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_CONFIG\_DIR}} & 
+{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more information.}\\
 \hline
 \end{longtable}
 
@@ -328,13 +326,14 @@ capabilities of STIR.
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
 \item AVW\texttrademark{} (a commercial library\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.}
-via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
+{www.mayo.edu/bir/Software/AVW/AVW1.html}.})
+via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.\\
+\textit{AVW support has not been tested since about 2010.}
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
 \item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
   If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
-\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
+\item GE RDF\texttrademark{} 9 support via \texttt{HDF5\_ROOT} and related variables (requires the HDF5 library).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
@@ -350,7 +349,7 @@ provides normally a default in a system location, but you could set it for insta
 \item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is now recommended to set 
 this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
-\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
+\texttt{98}, \texttt{14} and \texttt{17}.
 \end{itemize}
 
 When building the Python code, and you have multiple versions of Python installed,
@@ -402,10 +401,10 @@ display, you could try 8bit mode anyway.
 
 { \subsubsubsection{Cygwin on Windows}
 }
+\textit{Cygwin support has not been tested since about 2018 but likely still works. Instructions below might be out-of-date though.}
 
-Cygwin is a must-have if you are using Windows but would like 
-to have nearly everything that Linux/Unix has to offer (at least 
-from a user's point of view). Check out http://cygwin.com.
+If you are using Windows but would like 
+to have nearly everything that Linux/Unix has to offer, Cygwin could help. Check out http://cygwin.com.
 
 { \subsubsubsubsection{Using X windows on cygwin}
 }
@@ -449,7 +448,33 @@ in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf
 slow.
 
 
+\section{Configuration after installation
+\label{sec:configuration}
+}
+Since \textit{STIR} version 5.0, STIR reads some configuration files, currently JSON files used for
+the estimation of attenuation factors from a CT image and a database with isotope information.
+The location of these files is found as follows
+\begin{itemize}
+\item Environment variable: if the \texttt{STIR\_CONFIG\_DIR} environment variable exists, it is used.
 
+\item CMake variable: when running \textit{CMake}, you can specify the default location via the
+\texttt{STIR\_CONFIG\_DIR} CMake variable. By default, this is set to a sub-directory \texttt{share/stir/config}
+in your install folder.
+\end{itemize}
+If you want to use a non-default location, it is highly recommended to set the variable to an absolute path.
+
+The installation process will copy the default configuration files to the path specified by the
+(CMake) \texttt{STIR\_CONFIG\_DIR} variable.
+This currently contains
+\begin{itemize}
+\item \texttt{ct\_slopes.json} which is used for the estimation of attenuation factors from a CT image,
+\item \texttt{radionuclide\_info.json} contains information on radio-isotopes, such as decay rates etc.
+\item \texttt{radionuclide\_names.json} contains a look-up table for radio-isotope names to convert them
+to the standard (as used by DICOM).
+\end{itemize}
+You might need to edit these files to add information for your scanner.
+
+See section \ref{sec:RunningWithOPENMP} for information on OpenMP an dmult-threading (if enabled when building \textit{STIR}).
 
 \section{
 Running \textit{STIR} programs}
@@ -638,17 +663,22 @@ but do not write it.
 
 \subsubsection{VOLPET sinograms}
 
-The GE VOLPET sinogram format is supported for reading, but for
-the GE Advance only and data files must have a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views. 
-See section \ref{sec:RDFsupport} for enabling support for other scanners and
-data in the GE RDF format.
+The GE VOLPET sinogram format for the GE Advance was supported for reading, but 
+only for data files with a single data set, maximum ring 
+difference 11 and contain 281 bins * 256 segments * 336 views.
+This has not been tested in a long time so will be removed in a future version.
+
+\subsubsection{RDF9 data}
+See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
+that use the GE RDF format. We currently support uncompressed listmode,
+uncompressed sinograms and normalisation files. (well-counter files are not
+yet supported). Please check \texttt{examples/GE-Signa-PETMR} for some
+information.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
 
-ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.
+ECAT6 data are no longer supported.
 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
@@ -659,7 +689,11 @@ is currently ignored.
 
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 
+\textbf{Warning} ECAT7 support is no longer tested.
+
 \subsubsection{Image IO using the AVW library}
+\textit{AVW support has not been tested since about 2010.}
+
 See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
@@ -694,7 +728,7 @@ file to accurately correspond to your GATE macro.
 \textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
 ``virtual crystals" to accomodate for gaps between blocks. If you use
 the \texttt{originating system} to specify the scanner, this will be automatically enabled.
-(If you do not want this, set it to \textt{User_defined_scanner} and specify all values).
+(If you do not want this, set it to \texttt{User\_defined\_scanner} and specify all values).
 
 An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
 scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
@@ -770,8 +804,13 @@ GATE_Cylindrical_PET Parameters :=
   number of crystals_Z := 4
 
   Singles readout depth := 1
+
+  ; exclude different event types
+  exclude non-random events := 0
+  exclude unscattered events := 0
   exclude scattered events := 0
   exclude random events := 0
+
   offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
@@ -793,6 +832,51 @@ available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
+
+\subsubsubsection{ROOT exclusion keys configurations}
+The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
+Below are sets event types that will be processed with an exclusion or combination of exclusions.
+The exclusions of an event type is false by default.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ | c | c | }
+        \hline
+        \textbf{Event(s) type} & \textbf{Exclusion Configuration}
+        \\ \hline \hline
+        All events & \textit{None}
+
+        \\ \hline \hline
+        \vtop{\hbox{\strut Scattered from same eventID }
+        \hbox{\strut Unscattered from same eventID}}
+        & \textit{exclude random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Unscattered from same eventID }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude scattered events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from different eventIDs }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude non-random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from same eventID}
+        \hbox{\strut Scattered from different eventIDs}}
+        & \textit{exclude unscattered events := 1}
+
+        \\ \hline \hline
+        Unscattered from same eventID & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Unscattered from different eventIDs &  \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Scattered from same eventID  & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+        Scattered from different eventIDs & \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+    \end{tabular}
+    \caption{A guide on how to process specific types of events from a ROOT file using various exclusion keys and combinations of keys.}
+    \label{tab:ROOT_file_exclusions}
+\end{table}
+
 
 \subsection{Multi header format}
 \label{multi-file-format}
@@ -1861,6 +1945,9 @@ only_2D:=1
 
 ; the following is the output prefix of the PET reconstructed image
 kernelised output filename prefix :=KOSMAPOSL
+
+;the following is only set if you want to freeze the kernel matrix after a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
@@ -3020,49 +3107,6 @@ factor is \texttt{<} 0, in which case it is assumed to be 1).
 \textbf{Warning} Note that sinogram data have to be 'corner-swapped', 
 see section \ref{sec:ecat_swap_corners}.
 
-{ \subsubsubsection{conv\_to\_ecat6}
-}
-This program is used to convert image or projection data into 
-CTI ECAT 6 data (input can be any format currently supported 
-by the library). It normally should be run as follows:
-
-
-for images:
-\cmdline{conv\_to\_ecat6 [-k] [-i] outputfilename.img {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ] scanner}
-
-
-for projection data:
-\cmdline{conv\_to\_ecat6 -s[2] [-k] [-i] outputfilename.scn {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ]}
-
-
-If there are no command line parameters, the user is asked for 
-the filenames and options instead. Unless the --\textit{i} option is 
-used, the data will be assigned a frame number in the order that 
-they occur on the command line.
-
-
-See \textbf{STIR/buildblock/Scanner.cxx} for supported scanner names, 
-but examples are ``ECAT 953'', ``ART'', 
-``Advance''. 
-
-
-{ \subsubsubsubsection{Command line options}
-}\begin{description}
-\item[-s2] This option forces output to 2D sinograms (ignoring higher 
-segments).
-\item[-k] the existing ECAT6 file will NOT be overwritten, but added 
-to. Any existing data in the ECAT6 file with the same \texttt{<}frame,gate,data,bed\texttt{>} 
-specification will be overwritten.
-\item[-i] ask for \texttt{<} frame,gate,data,bed\texttt{>} for each dataset
-\end{description}
-
-Note that to store projection data in ECAT6, a 3D sinogram cannot 
-be axially compressed (CTI \textit{span}=1).\\
-\textbf{Warning} This utility does \textit{not} corner-swap 3D projection 
-data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
-
 { \subsubsubsection{conv\_to\_ecat7}
 }
 This program is used to convert image or projection data into 
@@ -3129,6 +3173,7 @@ is currently ignored.
 
 \subsubsubsection{ecat\_swap\_corners}
 \label{sec:ecat_swap_corners}
+This utility is obsolete and will be removed in a next version.
 { \subsubsubsubsection{Usage}
 }
 \cmdline{ecat\_swap\_corners out\_name in\_name}
@@ -3212,6 +3257,8 @@ parameters for usage info.
 { \subsubsubsection{conv\_AVW}
 }
 \label{sec:convAVW}
+\textit{AVW support has not been tested since about 2010.}
+
 If you have the \textit{AVW}\texttrademark  library
 \footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.
@@ -4228,12 +4275,12 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
   $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
-  modification the penatly function used to prevent divide by zero's.
+  modification the penalty function used to prevent divide by zero's.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
-  x-voxel\_size divided by the Euclidean distance between the points.
+  \texttt{x-voxel\_size} divided by the Euclidean distance between the points.
  
 { \subsubsubsubsection{Parameters}
 }
@@ -4394,6 +4441,28 @@ Projector Pair Using NiftyPET Parameters:=
 End Projector Pair Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+\label{sec:projectorpairusingparallelproj}
+}
+This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
+\url{https://github.com/gschramm/parallelproj}{github.com/gschramm/parallelproj}. This project provides implementations
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
+any \em{Python}).
+
+This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
+
+At present, STIR will use the GPU-accelerated functionality of \texttt{parallelproj} was
+built with \em{CUDA} support, otherwise it falls back to the \em{OpenMP} versions.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Parallelproj Parameters:=
+  verbosity := 1
+End Projector Pair Using Parallelproj Parameters:=
+\end{verbatim}
+
 { \subsubsubsection{Separate Projectors }
 }
 Forward and back projectors are completely independent of each 
@@ -4456,7 +4525,7 @@ Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up
 errors and possibly the voxels at the edge of the FOV).
 
 
-See also online documentation for class ForwardProjectorUsingRayTracing.
+See also online documentation for class \texttt{ForwardProjectorUsingRayTracing}.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -4498,11 +4567,24 @@ Forward Projector Using NiftyPET Parameters:=
 End Forward Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This forward projector wraps the \texttt{parallelproj} forward projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Forward Projector Using Parallelproj Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
 It is possible to select the type of back projector. The mechanism 
-is exactly the same as for the ForwardProjector hierarchy.
+is exactly the same as for the \texttt{ForwardProjector} hierarchy.
 
 { \subsubsubsection{Matrix}
 }
@@ -4590,6 +4672,18 @@ Back Projector Using NiftyPET Parameters:=
 End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{Parallelproj}
+}
+This back projector wraps the \texttt{parallelproj} back projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Back Projector Using Parallelproj Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a projection matrix}
@@ -5231,6 +5325,8 @@ variable), see section \ref{sec:UsingCMake}.
 \subsubsection{
 X Windows display}
 \label{sec:display}
+\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
 the bitmaps are displayed. To proceed, you have to make this 

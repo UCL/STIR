@@ -19,15 +19,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -41,17 +33,17 @@ Bin::Bin():segment(0),view(0),
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, float bin_value)
      :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(0), bin_value(bin_value)
+     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(0), bin_value(bin_value),time_frame(1)
      {}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num)
      :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),timing_pos(0), bin_value(0.0f)
+     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),timing_pos(0), bin_value(0.0f),time_frame(1)
      {}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num, float bin_value)
      :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(bin_value)
+     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(bin_value),time_frame(1)
      {}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num)
@@ -80,6 +72,10 @@ int
 Bin::timing_pos_num() const
 { return timing_pos; }
 
+int
+ Bin:: time_frame_num() const
+{return time_frame;}
+
 int&
  Bin::axial_pos_num()
 { return axial_pos;}
@@ -99,6 +95,10 @@ int&
 int&
 Bin:: timing_pos_num()
 { return timing_pos;}
+
+int&
+Bin:: time_frame_num()
+{return time_frame;}
 
 #if 0
 const ProjDataInfo *

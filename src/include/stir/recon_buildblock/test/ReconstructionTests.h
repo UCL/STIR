@@ -1,14 +1,7 @@
 /*
     Copyright (C) 2020, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -47,6 +40,10 @@ public:
 
   virtual ~ReconstructionTests() {}
 
+  //! default proj_data_info
+  virtual inline std::unique_ptr<ProjDataInfo>
+    construct_default_proj_data_info_uptr() const;
+
   //! creates input
   /*! sets \c _proj_data_sptr and \c _input_density_sptr from
     filenames or defaults if the filename is empty.
@@ -83,6 +80,22 @@ ReconstructionTests(const std::string &proj_data_filename,
 {
 }
 
+template <class TargetT>
+std::unique_ptr<ProjDataInfo>
+ReconstructionTests<TargetT>::
+construct_default_proj_data_info_uptr() const
+{
+  // construct a small scanner and sinogram
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+  scanner_sptr->set_num_rings(5);
+  std::unique_ptr<ProjDataInfo> proj_data_info_uptr(
+        ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                      /*span=*/3,
+                                      /*max_delta=*/4,
+                                      /*num_views=*/128,
+                                      /*num_tang_poss=*/128));
+  return proj_data_info_uptr;
+}
 
 template <class TargetT>
 void
@@ -92,18 +105,11 @@ construct_input_data()
   Verbosity::set(1);
   if (this->_proj_data_filename.empty())
     {
-      // construct a small scanner and sinogram
-      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-      scanner_sptr->set_num_rings(5);
-      shared_ptr<ProjDataInfo> proj_data_info_sptr(
-        ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-                                      /*span=*/3, 
-                                      /*max_delta=*/4,
-                                      /*num_views=*/128,
-                                      /*num_tang_poss=*/128));
+      shared_ptr<ProjDataInfo> proj_data_info_sptr(this->construct_default_proj_data_info_uptr());
       shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
       exam_info_sptr->imaging_modality = ImagingModality::PT;
       _proj_data_sptr.reset(new ProjDataInMemory (exam_info_sptr, proj_data_info_sptr));
+
       std::cerr << "Will run tests with projection data with the following settings:\n"
                 << proj_data_info_sptr->parameter_info();
     }

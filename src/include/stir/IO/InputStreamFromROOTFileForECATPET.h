@@ -4,21 +4,14 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForECATPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -133,8 +126,19 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
+    //! \name TBranches for ECAT PET
+    //@{
+    TBranch *br_crystalID1 = nullptr;
+    TBranch *br_crystalID2 = nullptr;
+    TBranch *br_blockID1 = nullptr;
+    TBranch *br_blockID2 = nullptr;
+    //@}
+
+    //! \name ROOT Variables, i.e. to hold data from each entry.
+    //@{
     std::int32_t blockID1, blockID2;
     std::int32_t crystalID1, crystalID2;
+    //@}
 
     int block_repeater_y;
     int block_repeater_z;

@@ -20,15 +20,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -46,6 +38,9 @@ START_NAMESPACE_STIR
 
  The timing position reflect the detection time difference between the two events.
  It is a multiple of the delta t of the least significant clock bit.
+
+ The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
+ handling list mode data.
 
  \warning N.E: Constructors with default values were removed. I faced many problems with ambguity. I had to make
  changes to all the framework, when one set a float value, it has to be as 'x.f'
@@ -83,12 +78,15 @@ public:
   inline int view_num() const; 
   //! get timing position number
   inline int timing_pos_num() const;
+  //! get time-frame number (1-based)
+  inline int time_frame_num() const;
   
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
   inline int& tangential_pos_num(); 
   inline int& view_num(); 
   inline int& timing_pos_num();
+  inline int& time_frame_num();
   
   //! get an empty copy
   inline Bin get_empty_copy() const;
@@ -120,6 +118,7 @@ private :
   int  tangential_pos;
   int  timing_pos;
   float bin_value;
+  int time_frame;
   
   
 };

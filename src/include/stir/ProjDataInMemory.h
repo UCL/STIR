@@ -4,15 +4,7 @@
     Copyright (C) 2019-2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -161,6 +153,25 @@ public:
   //! end value for iterating through all elements in the (const) array, see iterator
   inline const_iterator end_all() const
   { return buffer.end_all(); }
+
+ //! \name access to the data via a pointer
+  //@{
+  //! member function for access to the data via a float*
+  inline float* get_data_ptr()
+  { return buffer.get_data_ptr(); }
+
+  //! member function for access to the data via a const float*
+  inline const float * get_const_data_ptr() const
+  { return buffer.get_const_data_ptr(); }
+
+  //! signal end of access to float*
+  inline void release_data_ptr()
+  { buffer.release_data_ptr(); }
+
+  //! signal end of access to const float*
+  inline void release_const_data_ptr() const
+  { buffer.release_const_data_ptr(); }
+  //@}
 
 private:
   Array<1,float> buffer;

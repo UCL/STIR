@@ -4,15 +4,7 @@
     Copyright (C) 2018, 2019 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -643,9 +635,10 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                      const TargetT &current_estimate, 
-                                                      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -658,16 +651,15 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                  subset_num, 
                                  this->num_subsets, 
                                  -this->max_segment_num_to_process,
-                                 this->max_segment_num_to_process, 
-                                 this->zero_seg0_end_planes!=0, 
-                                 NULL, 
-                                 this->additive_proj_data_sptr 
-                                 , caching_info_ptr,
-								 -this->max_timing_pos_num_to_process,
-								 this->max_timing_pos_num_to_process
-                                 );
-  
-
+                                 this->max_segment_num_to_process,
+                                 this->zero_seg0_end_planes!=0,
+                                 NULL,
+                                 this->additive_proj_data_sptr,
+                                 this->normalisation_sptr,
+                                 caching_info_ptr,
+                                   -this->max_timing_pos_num_to_process,
+                                   this->max_timing_pos_num_to_process,
+                                 add_sensitivity);
 }
 
 
@@ -904,7 +896,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 
   info("Forward projecting input image.", 2);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -920,14 +912,16 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 #endif
           const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
-			  // first compute data-term: y*norm^2
-			  RelatedViewgrams<float> viewgrams =
-                this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr, false);
-			  // TODO add 1 for 1/(y+1) approximation
+          // first compute data-term: y*norm^2
+          RelatedViewgrams<float> viewgrams =
+            this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+          // TODO add 1 for 1/(y+1) approximation
 
-			  this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams);
 
-			  // smooth TODO
+          // smooth TODO
+
+          this->get_normalisation().apply(viewgrams);
 
           RelatedViewgrams<float> tmp_viewgrams;
           // set tmp_viewgrams to geometric forward projection of input
@@ -954,7 +948,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   // output += tmp;
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
-		 std::plus<typename TargetT::full_value_type>());
+		 std::minus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
@@ -1029,7 +1023,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   // Forward project input image
   info("Forward projecting input image.",2);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
   {  // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
@@ -1051,7 +1045,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   info("Forward projecting current image estimate and back projecting to output.", 2);
   this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
   {
@@ -1096,10 +1090,10 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 
   shared_ptr<TargetT> tmp(output.get_empty_copy());
   this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
-  // output += tmp;
+  // output -= tmp;
   std::transform(output.begin_all(), output.end_all(),
                  tmp->begin_all(), output.begin_all(),
-                 std::plus<typename TargetT::full_value_type>());
+                 std::minus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
@@ -1111,7 +1105,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
 // make call-backs public for the moment
 
 //! Call-back function for compute_gradient
-RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+template<bool add_sensitivity> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
@@ -1121,7 +1115,7 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 
 #else 
 //! Call-back function for compute_gradient
-static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+template<bool add_sensitivity> static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
@@ -1141,11 +1135,14 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                                     bool zero_seg0_end_planes,
                                     double* log_likelihood_ptr,
                                     shared_ptr<ProjData> const& additive_binwise_correction,
+                                    shared_ptr<BinNormalisation> const& normalisation_sptr,
                                     DistributedCachingInformation* caching_info_ptr,
-									int min_timing_pos_num, int max_timing_pos_num
+                                    int min_timing_pos_num, int max_timing_pos_num,
+                                    const bool add_sensitivity
                                     )
 {
-        
+  if (add_sensitivity){
+    // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - 1] )
     distributable_computation(forward_projector_sptr,
                               back_projector_sptr,
                               symmetries_sptr,
@@ -1156,11 +1153,30 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
-                              &RPC_process_related_viewgrams_gradient,
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(),
+                              0., 0.,
+                              &RPC_process_related_viewgrams_gradient<true>,
                               caching_info_ptr,
-							  min_timing_pos_num, max_timing_pos_num
-                              );
+                              min_timing_pos_num, max_timing_pos_num
+    );
+  } else if (!add_sensitivity){
+    // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
+    distributable_computation(forward_projector_sptr,
+                              back_projector_sptr,
+                              symmetries_sptr,
+                              &output_image, &input_image,
+                              proj_dat, true, //i.e. do read projection data
+                              subset_num, num_subsets,
+                              min_segment, max_segment,
+                              zero_seg0_end_planes,
+                              log_likelihood_ptr,
+                              additive_binwise_correction,
+                              normalisation_sptr, 0., 0.,
+                              &RPC_process_related_viewgrams_gradient<false>,
+                              caching_info_ptr,
+                              min_timing_pos_num, max_timing_pos_num
+    );
+  }
 }
 
 
@@ -1245,7 +1261,7 @@ void distributable_sensitivity_computation(
 
 //////////// RPC functions
 
-
+template <bool add_sensitivity>
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
@@ -1255,8 +1271,6 @@ void RPC_process_related_viewgrams_gradient(
                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {       
   assert(measured_viewgrams_ptr != NULL);
-  if (!is_null_ptr(mult_viewgrams_ptr))
-    error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
   
@@ -1279,23 +1293,28 @@ void RPC_process_related_viewgrams_gradient(
     }
 */
   forward_projector_sptr->forward_project(estimated_viewgrams);
-        
-        
-        
+
   if (additive_binwise_correction_ptr != NULL)
-  {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
-  }
-  
-
-    
-
-
 
   // for sinogram division
-      
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
-      
+
+  // adding the sensitivity:  backproj[y/ybar] *
+  // not adding the sensitivity computes the gradient:  backproj[y/ybar - 1] *
+  // * ignoring normalisation *
+  if (!add_sensitivity){
+    if (mult_viewgrams_ptr)
+    {
+      // subtract normalised ones from the data [y/ybar - 1/N]
+      *measured_viewgrams_ptr -= *mult_viewgrams_ptr;
+    } else {
+      // No mult_viewgrams_ptr, subtract ones [y/ybar - 1]
+      *measured_viewgrams_ptr -= 1;
+    }
+  }
+
+  // back project
   back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 

@@ -2,17 +2,10 @@
 //
 /*
     Copyright (C) 2002- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -94,6 +87,12 @@ SSRB(const ProjDataInfo& in_proj_data_info,
   out_proj_data_info_sptr->
     set_num_tangential_poss(in_proj_data_info.get_num_tangential_poss() -
 			    num_tang_poss_to_trim);
+  if (num_views_to_combine>1)
+    {
+      const float offset = in_proj_data_info_sptr->get_azimuthal_angle_offset() +
+        in_proj_data_info_sptr->get_azimuthal_angle_sampling() * (num_views_to_combine-1)/2.F;
+      out_proj_data_info_sptr->set_azimuthal_angle_offset(offset);
+    }
 
   // Find new maximum segment_num
   // To understand this formula, check how the out_segment_num is related to 

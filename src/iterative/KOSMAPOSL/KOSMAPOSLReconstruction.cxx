@@ -4,19 +4,11 @@
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2018-2019 University of Leeds
     Copyright (C) 2019 University College of London
-    Copyright (C) 2019 National Physical Laboratory
+    Copyright (C) 2019-2021 National Physical Laboratory
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -167,6 +159,7 @@ set_defaults()
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
   this->hybrid=0;
+  this->freeze_iterative_kernel_at_subiter_num=-1;
 }
 
 template <typename TargetT>
@@ -189,6 +182,7 @@ initialise_keymap()
   this->parser.add_key("hybrid",&this->hybrid);
   this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
   this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
+  this->parser.add_key("freeze iterative kernel at subiteration number",&this->freeze_iterative_kernel_at_subiter_num);
 }
 
 
@@ -261,7 +255,8 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
      (this->hybrid==0))
      error("KOSMAPOSL::set_up(): anatomical image has not been set");
  
- this->subiteration_counter=0;
+ if(this->freeze_iterative_kernel_at_subiter_num==0)
+     error("The kernel cannot be frozen at subiteration 0 as subiteration number starts from 1.");
 
  if (this->anatomical_prior_sptrs.size()!=sigma_m.size()){
      error("The number of sigma_m parameters must be the same as the number of anatomical images");
@@ -336,6 +331,14 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
   return Succeeded::yes;
 }
 
+template <typename TargetT>
+bool 
+KOSMAPOSLReconstruction<TargetT>::
+still_updating_iterative_kernel() {
+ return this->freeze_iterative_kernel_at_subiter_num<0 ||
+        this->subiteration_num<this->freeze_iterative_kernel_at_subiter_num;
+}
+
 /***************************************************************
   get_ functions
 ***************************************************************/
@@ -395,9 +398,14 @@ get_hybrid() const
 { return this->hybrid; }
 
 template <typename TargetT>
-
 std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptrs()
 { return this->anatomical_prior_sptrs; }
+
+template <typename TargetT>
+const int
+KOSMAPOSLReconstruction<TargetT>::
+get_freeze_iterative_kernel_at_subiter_num() const
+{ return this->freeze_iterative_kernel_at_subiter_num; }
 
 
 /***************************************************************
@@ -532,6 +540,14 @@ set_hybrid(const bool arg)
 {
   this->_already_set_up = false;
   this->hybrid = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_freeze_iterative_kernel_at_subiter_num(const int arg)
+{
+  this->freeze_iterative_kernel_at_subiter_num = arg;
 }
 
 /***************************************************************/
@@ -764,6 +780,8 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
       // Going to need the full emission regional normalised differences
       int dimf_row = this->num_voxels;
       int dimf_col = this->num_non_zero_feat-1;
+      
+      if(still_updating_iterative_kernel()) 
       calculate_norm_matrix(*this->kpnorm_sptr, dimf_row, dimf_col,
                           current_alpha_estimate);
     }
@@ -968,15 +986,32 @@ update_estimate(TargetT &current_alpha_coefficent_image)
   timerSubset.Start();
 #endif // PARALLEL
   
+  shared_ptr<TargetT> iterative_kernel_image_sptr;
+  
   // TODO make member parameter to avoid reallocation all the time
   unique_ptr< TargetT > multiplicative_update_image_ptr
     (current_alpha_coefficent_image.get_empty_copy());
 
   const int subset_num=this->get_subset_num();  
   info(boost::format("Now processing subset #: %1%") % subset_num);
-
+  
+//  the following condition sets the "iterative_kernel_image_frozen_sptr" member to the image ptr
+//  we have at the iteration select by "freeze_iterative_kernel_at_subiter_num"
+  if (this->freeze_iterative_kernel_at_subiter_num>0 &&
+      this->subiteration_num==this->freeze_iterative_kernel_at_subiter_num)
+          
+      this->iterative_kernel_image_frozen_sptr=shared_ptr<TargetT>(current_alpha_coefficent_image.clone());
+  
+//  the following condition decides whether the "iterative_kernel_image" to use for the kernel calculation
+//  should be equal to the current update (if we did not set freeze_iterative_kernel_at_subiter_num or if the current subiteration 
+// is smaller than the one chosen trhough freeze_iterative_kernel_at_subiter_num) or the frozen image
+  if (still_updating_iterative_kernel())
+      iterative_kernel_image_sptr=shared_ptr<TargetT>(current_alpha_coefficent_image.clone());
+  else
+      iterative_kernel_image_sptr=this->iterative_kernel_image_frozen_sptr;
+  
   unique_ptr< TargetT > current_update_image_ptr(current_alpha_coefficent_image.get_empty_copy());
-  compute_kernelised_image (*current_update_image_ptr, current_alpha_coefficent_image, current_alpha_coefficent_image);
+  compute_kernelised_image(*current_update_image_ptr, current_alpha_coefficent_image, *iterative_kernel_image_sptr);
 
 
 
@@ -991,10 +1026,10 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
 
   //apply kernel to the multiplicative update
-        compute_kernelised_image (*kmultiplicative_update_ptr, *multiplicative_update_image_ptr, current_alpha_coefficent_image);
+        compute_kernelised_image (*kmultiplicative_update_ptr, *multiplicative_update_image_ptr, *iterative_kernel_image_sptr);
 
   // divide by subset sensitivity  
-        compute_kernelised_image (*ksens_ptr, sensitivity, current_alpha_coefficent_image);
+        compute_kernelised_image (*ksens_ptr, sensitivity, *iterative_kernel_image_sptr);
 
      int count = 0;
     
@@ -1126,7 +1161,7 @@ unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
     unique_ptr<TargetT> kcurrent_ptr(current_alpha_coefficent_image.get_empty_copy());
 
     // compute the emission image from the alpha coefficient image
-    compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,current_alpha_coefficent_image);
+    compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,*iterative_kernel_image_sptr);
 
     //Write the emission image estimate:
     if(!(this->subiteration_num % this->save_interval) ||    // every save_interval'th

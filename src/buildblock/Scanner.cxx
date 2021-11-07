@@ -4,19 +4,11 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2016, University of Hull
-    Copyright (C) 2013-2016,2019,2020 University College London
+    Copyright (C) 2013-2016,2019-2021 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -1049,7 +1041,7 @@ Scanner::parameter_info() const
     << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
     << "Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
     << "Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
-    << "View offset (degrees)                    := " << get_default_intrinsic_tilt()*180/_PI << '\n';
+    << "View offset (degrees)                    := " << get_intrinsic_azimuthal_tilt()*180/_PI << '\n';
   s << "Maximum number of non-arc-corrected bins := "
     << get_max_num_non_arccorrected_bins() << '\n'
     << "Default number of arc-corrected bins     := "
@@ -1262,7 +1254,6 @@ Scanner::get_scanner_from_name(const string& name)
 
 string Scanner:: list_all_names()
 {
-  Scanner * scanner_ptr;
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[30000];
@@ -1274,19 +1265,32 @@ string Scanner:: list_all_names()
   Type type= E931;
   while (type != Unknown_scanner)
   {
-    scanner_ptr = new Scanner(type);
-    s << scanner_ptr->list_names() << '\n';
-
-    delete scanner_ptr;
+    Scanner scanner(type);
     // tricky business to find next type
-    int int_type = type;
-    ++int_type;
-    type = static_cast<Type>(int_type);
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    s << scanner.list_names() << '\n';
   }
 
   return s.str();
 }
 
+std::list<std::string> Scanner::get_names_of_predefined_scanners()
+{
+  std::list<std::string> ret;
+  Type type= E931;
+  while (type != Unknown_scanner)
+  {
+    Scanner scanner(type);
+    // tricky business to find next type
+    type = static_cast<Type>(static_cast<int>(type)+1);
+    if (scanner.get_type() == User_defined_scanner)
+      continue;
+    ret.push_back(scanner.get_name());
+  }
+  return ret;
+}
 
 static list<string>
 string_list(const string& s)

@@ -1,17 +1,9 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -66,30 +58,29 @@ Succeeded
 InputStreamFromROOTFileForECATPET::
 get_next_record(CListRecordROOT& record)
 {
-    while(true)
-    {
-        if (current_position == nentries)
-            return Succeeded::no;
+  while(true)
+  {
+    if (current_position == nentries)
+      return Succeeded::no;
 
+    Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+    current_position ++ ;
 
-        if (stream_ptr->GetEntry(current_position) == 0 )
-            return Succeeded::no;
+    if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
+      continue;
 
-        current_position ++ ;
+    GetEntryCheck(br_time1->GetEntry(brentry));
+    GetEntryCheck(br_time2->GetEntry(brentry));
 
-        if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
-            continue;
-        if ( eventID1 != eventID2 && exclude_randoms )
-            continue;
-        //multiply here by 1000 to convert the list mode energy from MeV to keV
-        if (this->get_energy1_in_keV() < low_energy_window ||
-                this->get_energy1_in_keV() > up_energy_window ||
-                this->get_energy2_in_keV() < low_energy_window ||
-                this->get_energy2_in_keV() > up_energy_window)
-            continue;
+    // Get positional ID information
+    GetEntryCheck(br_crystalID1->GetEntry(brentry));
+    GetEntryCheck(br_crystalID2->GetEntry(brentry));
 
-        break;
-    }
+    GetEntryCheck(br_blockID1->GetEntry(brentry));
+    GetEntryCheck(br_blockID2->GetEntry(brentry));
+
+    break;
+  }
 
     int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
             + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;

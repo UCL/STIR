@@ -103,7 +103,7 @@ calc_ring1_plus_ring2(const Bin& bin,
 
 static
 void
-set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin, 
                                 DetectionPositionPair<>& detection_position_pair) {
   int det1_num=0;
@@ -212,6 +212,7 @@ create_ax_pos_offset(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, std::ve
 void 
 BinNormalisationFromGEHDF5::set_defaults()
 {
+  base_type::set_defaults();
   this->normalisation_GEHDF5_filename = "";
   //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
@@ -223,6 +224,7 @@ void
 BinNormalisationFromGEHDF5::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation From GE HDF5");
   this->parser.add_key("normalisation_filename", &this->normalisation_GEHDF5_filename);
   //this->parser.add_parsing_key("singles rates", &this->singles_rates_ptr);
@@ -237,6 +239,8 @@ bool
 BinNormalisationFromGEHDF5::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
   read_norm_data(normalisation_GEHDF5_filename);
   this->set_calibration_factor(1); //TODO: read actual factor somewhere
   return false;
@@ -257,9 +261,9 @@ BinNormalisationFromGEHDF5(const string& filename)
 
 Succeeded
 BinNormalisationFromGEHDF5::
-set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
+  base_type::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
@@ -401,7 +405,7 @@ read_norm_data(const string& filename)
             std::vector<unsigned int> repeat_buffer;
             repeat_buffer.reserve(projInfo->get_num_axial_poss(i_seg)*count[1]-1);
             // repeat the values
-            for (unsigned int i=0; i<projInfo->get_num_axial_poss(i_seg);i++)
+            for (int i=0; i<projInfo->get_num_axial_poss(i_seg);i++)
               repeat_buffer.insert(repeat_buffer.end(),buffer.begin(),buffer.end());
             // copy data back
             // AB TODO: Hardcoded magic number, remove somehow (when magic is discovered)
@@ -452,9 +456,12 @@ use_geometric_factors() const
 
 float 
 BinNormalisationFromGEHDF5::
-get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const
+get_uncalibrated_bin_efficiency(const Bin& bin) const
 {  
-  float	total_efficiency = 0 ;
+    
+    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+    float	total_efficiency = 0 ;
 
   /* TODO
      this loop does some complicated stuff with rings etc

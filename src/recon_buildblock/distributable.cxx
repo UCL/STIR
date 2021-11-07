@@ -4,15 +4,7 @@
     Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -223,7 +215,14 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
 #ifdef STIR_OPENMP
 #pragma omp critical(MULT)
 #endif
-      normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
+      normalisation_sptr->undo(*mult_viewgrams_sptr);
+    }
+  else if (zero_seg0_end_planes)
+    {
+      // No normalisation provided but zero_seg0_end_planes, create a mult_viewgrams
+      mult_viewgrams_sptr.reset(
+              new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
+      mult_viewgrams_sptr->fill(1.F);
     }
                         
   if (view_segment_num.segment_num()==0 && zero_seg0_end_planes)
@@ -432,7 +431,7 @@ void distributable_computation(
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
     }
-#pragma omp for schedule(runtime)  
+#pragma omp for schedule(dynamic)  
 #endif
 
   for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)

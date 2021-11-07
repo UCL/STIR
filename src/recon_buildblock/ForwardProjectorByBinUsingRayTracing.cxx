@@ -18,15 +18,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -122,6 +114,10 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
   if (proj_data_info_sptr->get_num_views()%2 != 0)
     {
       error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. Sorry.");
+    }
+  if (fabs(proj_data_info_sptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
+    {
+      error("The on-the-fly Ray tracing forward projector cannot handle data with non-zero view offset. Use another projector. Sorry.");
     }
 
   symmetries_ptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, image_info_ptr));

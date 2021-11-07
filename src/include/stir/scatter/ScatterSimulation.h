@@ -4,15 +4,7 @@
     Copyright (C) 2013 - 2016, 2019, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -227,7 +219,11 @@ public:
 
     //! Output the log of the process.
     virtual void write_log(const double simulation_time, const float total_scatter);
-    
+
+    //! Enable/disable caching of line integrals
+    void set_use_cache(const bool);
+    //! Return if line integrals are cached or not
+    bool get_use_cache() const;
 
 protected:
 

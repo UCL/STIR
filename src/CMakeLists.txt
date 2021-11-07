@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -275,6 +267,11 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 #        INCLUDE(${STIR_DIR}/lib.cmake)
 endforeach(STIR_DIR)
 
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/config/ DESTINATION ${STIR_CONFIG_DIR}
+                FILES_MATCHING PATTERN "*.json")
+            message("installing JSON file from " ${CMAKE_SOURCE_DIR}/src/config/" to " ${CMAKE_INSTALL_PREFIX}/share/stir/config)
+            
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled
 find_package(Doxygen)

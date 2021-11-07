@@ -14,15 +14,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -215,7 +207,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
-  //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
+  //WRONG mhead.gantry_tilt= scanner.get_intrinsic_azimuthal_tilt();
 #endif // STIR_ORIGINAL_ECAT6
 }
 

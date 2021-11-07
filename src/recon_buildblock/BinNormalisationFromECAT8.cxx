@@ -160,6 +160,7 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
 void 
 BinNormalisationFromECAT8::set_defaults()
 {
+  base_type::set_defaults();
   this->normalisation_ECAT8_filename = "";
   this->_use_gaps = true;
   this->_use_detector_efficiencies = true;
@@ -172,6 +173,7 @@ void
 BinNormalisationFromECAT8::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation From ECAT8");
   // todo remove obsolete keyword
   this->parser.add_key("normalisation_ECAT8_filename", &this->normalisation_ECAT8_filename);
@@ -189,6 +191,8 @@ bool
 BinNormalisationFromECAT8::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
   read_norm_data(normalisation_ECAT8_filename);
 //  this->set_calibration_factor(cross_calib_factor*calib_factor);   TODO understand if we need to use cross calib factor. Let's set 1 for now
   this->set_calibration_factor(1);
@@ -213,7 +217,7 @@ Succeeded
 BinNormalisationFromECAT8::
 set_up(const shared_ptr<const ExamInfo> &exam_info_sptr_v, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
-  BinNormalisation::set_up(exam_info_sptr_v, proj_data_info_ptr_v);
+  base_type::set_up(exam_info_sptr_v, proj_data_info_ptr_v);
 
   set_exam_info_sptr(exam_info_sptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
@@ -547,8 +551,7 @@ use_crystal_interference_factors() const
 #if 1
 float 
 BinNormalisationFromECAT8::
-get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
-
+get_uncalibrated_bin_efficiency(const Bin& bin) const {
 
   // TODO disable when not HR+ or HR++
   /*
@@ -655,6 +658,11 @@ get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const d
 	  }
 	if (this->use_dead_time())
 	  {
+	    if (get_exam_info_sptr()->get_time_frame_definitions().get_num_time_frames() == 0)
+	      error("BinNormalisationFromECAT8: projection_data needs to have timing information to compute dead-time");
+	    const float start_time=get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+            const float end_time=get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+
 	    lor_efficiency_this_pair *=
 	      get_dead_time_efficiency(pos1, start_time, end_time) * 
 	      get_dead_time_efficiency(pos2, start_time, end_time);

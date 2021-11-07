@@ -12,15 +12,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -46,16 +38,16 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
-  virtual inline void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
-  virtual inline void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
+  virtual inline void apply(RelatedViewgrams<float>&) const override {}
+  virtual inline void undo(RelatedViewgrams<float>&) const override {}
   
-  virtual inline float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
+  virtual inline float get_bin_efficiency(const Bin& bin) const override { return 1.F;}
 
-  virtual inline bool is_trivial() const { return true;}  
+  virtual inline bool is_trivial() const override { return true;}  
 
 private:
-  virtual inline void set_defaults() {}
-  virtual inline void initialise_keymap() {}
+  virtual inline void set_defaults() override {}
+  virtual inline void initialise_keymap() override {}
   
 };
 

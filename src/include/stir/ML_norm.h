@@ -1,23 +1,17 @@
 //
 //
 /*
- Copyright (C) 2001- 2011, Hammersmith Imanet Ltd
- Copyright (C) 2020, University College London
- Copyright (C) 2016-2017, PETsys Electronics
  This file is part of STIR.
  
- This file is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2.1 of the License, or
- (at your option) any later version.
- 
- This file is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
- 
- See STIR/LICENSE.txt for details
- */
+    Copyright (C) 2001- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
+    Copyright (C) 2016-2017, PETsys Electronics
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
  \file
  \ingroup buildblock
@@ -228,17 +222,12 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info);
 
-void make_fan_data(FanProjData& fan_data,
-                   const ProjData& proj_data);
-
 void make_fan_data_remove_gaps(FanProjData& fan_data,
                    const ProjData& proj_data);
 
-void set_fan_data(ProjData& proj_data,
-                  const FanProjData& fan_data);
-
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data);
+                  const FanProjData& fan_data,
+                  const float gap_value=0.F);
 
 void apply_block_norm(FanProjData& fan_data,
                       const BlockData3D& block_data,

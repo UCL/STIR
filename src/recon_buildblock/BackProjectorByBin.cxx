@@ -17,15 +17,7 @@
     Copyright (C) 2015, 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -212,7 +204,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
 #endif
   {
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp for schedule(dynamic)
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)

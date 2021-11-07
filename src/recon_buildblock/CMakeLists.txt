@@ -3,15 +3,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -22,103 +14,113 @@ set(dir recon_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
- ForwardProjectorByBin 
-	ForwardProjectorByBinUsingRayTracing 
-	ForwardProjectorByBinUsingRayTracing_Siddon 
-	PresmoothingForwardProjectorByBin
-	BackProjectorByBin 
-	BackProjectorByBinUsingInterpolation 
-	BackProjectorByBinUsingInterpolation_linear 
-	BackProjectorByBinUsingInterpolation_piecewise_linear 
-	PostsmoothingBackProjectorByBin
-	Reconstruction 
-	AnalyticReconstruction 
-	IterativeReconstruction 
-	distributable 
-	DataSymmetriesForBins 
-	DataSymmetriesForDensels 
-	TrivialDataSymmetriesForBins 
-	DataSymmetriesForBins_PET_CartesianGrid 
-	SymmetryOperation 
-	SymmetryOperations_PET_CartesianGrid 
-        find_basic_vs_nums_in_subset
-	ProjMatrixElemsForOneBin 
-	ProjMatrixElemsForOneDensel 
-	ProjMatrixByBin 
-	ProjMatrixByBinUsingRayTracing 
-	ProjMatrixByBinUsingInterpolation 
-	ProjMatrixByBinFromFile
-	ProjMatrixByBinSPECTUB
-	SPECTUB_Tools
-	SPECTUB_Weight3d
-	ForwardProjectorByBinUsingProjMatrixByBin 
-	BackProjectorByBinUsingProjMatrixByBin 
-	BackProjectorByBinUsingSquareProjMatrixByBin
-	RayTraceVoxelsOnCartesianGrid 
-	ProjectorByBinPair 
-	ProjectorByBinPairUsingProjMatrixByBin 
-	ProjectorByBinPairUsingSeparateProjectors 
-	BinNormalisation 
-	BinNormalisationWithCalibration
-	ChainedBinNormalisation 
-	BinNormalisationFromProjData 
-	TrivialBinNormalisation 
-	BinNormalisationFromAttenuationImage 
-	BinNormalisationSPECT
-	GeneralisedPrior 
-	ProjDataRebinning 
-	FourierRebinning
-	PLSPrior
-        QuadraticPrior
-        RelativeDifferencePrior
-		LogcoshPrior
-	FilterRootPrior 
-	GeneralisedObjectiveFunction 
-	PoissonLogLikelihoodWithLinearModelForMean 
-	PoissonLogLikelihoodWithLinearModelForMeanAndProjData 
-	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData 
-	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
-        PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
-        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
-	SqrtHessianRowSum
+ ForwardProjectorByBin.cxx
+	ForwardProjectorByBinUsingRayTracing.cxx
+	ForwardProjectorByBinUsingRayTracing_Siddon.cxx
+	PresmoothingForwardProjectorByBin.cxx
+	BackProjectorByBin.cxx
+	BackProjectorByBinUsingInterpolation.cxx
+	BackProjectorByBinUsingInterpolation_linear.cxx
+	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx
+	PostsmoothingBackProjectorByBin.cxx
+	Reconstruction.cxx
+	AnalyticReconstruction.cxx
+	IterativeReconstruction.cxx
+	distributable.cxx
+	DataSymmetriesForBins.cxx
+	DataSymmetriesForDensels.cxx
+	TrivialDataSymmetriesForBins.cxx
+	DataSymmetriesForBins_PET_CartesianGrid.cxx
+	SymmetryOperation.cxx
+	SymmetryOperations_PET_CartesianGrid.cxx
+        find_basic_vs_nums_in_subset.cxx
+	ProjMatrixElemsForOneBin.cxx
+	ProjMatrixElemsForOneDensel.cxx
+	ProjMatrixByBin.cxx
+	ProjMatrixByBinUsingRayTracing.cxx
+	ProjMatrixByBinUsingInterpolation.cxx
+	ProjMatrixByBinFromFile.cxx
+	ProjMatrixByBinSPECTUB.cxx
+	SPECTUB_Tools.cxx
+	SPECTUB_Weight3d.cxx
+	ForwardProjectorByBinUsingProjMatrixByBin.cxx
+	BackProjectorByBinUsingProjMatrixByBin.cxx
+	BackProjectorByBinUsingSquareProjMatrixByBin.cxx
+	RayTraceVoxelsOnCartesianGrid.cxx
+	ProjectorByBinPair.cxx
+	ProjectorByBinPairUsingProjMatrixByBin.cxx
+	ProjectorByBinPairUsingSeparateProjectors.cxx
+	BinNormalisation.cxx
+	BinNormalisationWithCalibration.cxx
+	ChainedBinNormalisation.cxx
+	BinNormalisationFromProjData.cxx
+	TrivialBinNormalisation.cxx
+	BinNormalisationFromAttenuationImage.cxx
+	BinNormalisationSPECT.cxx
+	GeneralisedPrior.cxx
+	ProjDataRebinning.cxx
+	FourierRebinning.cxx
+	PLSPrior.cxx
+        QuadraticPrior.cxx
+        RelativeDifferencePrior.cxx
+	LogcoshPrior.cxx
+	FilterRootPrior.cxx
+	GeneralisedObjectiveFunction.cxx
+	PoissonLogLikelihoodWithLinearModelForMean.cxx
+	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx
+	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx
+	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx
+        PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx
+        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
+	SqrtHessianRowSum.cxx
 )
 
 if (HAVE_ECAT)
  list(APPEND ${dir_LIB_SOURCES}
-	BinNormalisationFromECAT7
+	BinNormalisationFromECAT7.cxx
  )
 endif()
 
 # ECAT8 doesn't need the LLN matrix library
 list(APPEND ${dir_LIB_SOURCES}
-	BinNormalisationFromECAT8
+	BinNormalisationFromECAT8.cxx
 )
 
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
-         BinNormalisationFromGEHDF5
+         BinNormalisationFromGEHDF5.cxx
  )
 endif()
 
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}
      ${${dir_LIB_SOURCES}}
-	distributableMPICacheEnabled 
-	distributed_functions 
-	DistributedWorker 
-	DistributedCachingInformation 
-	distributed_test_functions
+	distributableMPICacheEnabled.cxx
+	distributed_functions.cxx
+	DistributedWorker.cxx
+	DistributedCachingInformation.cxx
+	distributed_test_functions.cxx
 )
 endif()
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
   list(APPEND ${dir_LIB_SOURCES}
-    NiftyPET_projector/NiftyPETHelper
-    NiftyPET_projector/ForwardProjectorByBinNiftyPET
-    NiftyPET_projector/BackProjectorByBinNiftyPET
-    NiftyPET_projector/ProjectorByBinPairUsingNiftyPET
+    NiftyPET_projector/NiftyPETHelper.cxx
+    NiftyPET_projector/ForwardProjectorByBinNiftyPET.cxx
+    NiftyPET_projector/BackProjectorByBinNiftyPET.cxx
+    NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.cxx
   )
 endif()
+
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    Parallelproj_projector/ForwardProjectorByBinParallelproj.cxx
+    Parallelproj_projector/BackProjectorByBinParallelproj.cxx
+    Parallelproj_projector/ProjectorByBinPairUsingParallelproj.cxx
+    Parallelproj_projector/ParallelprojHelper.cxx
+  )
+endif()
+
 
 include(stir_lib_target)
 
@@ -140,4 +142,11 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
 	target_link_libraries(recon_buildblock NiftyPET::mmr_auxe)
 	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
 	target_link_libraries(recon_buildblock CUDA::cudart)
+endif()
+
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  target_link_libraries(recon_buildblock parallelproj::parallelproj_c)
+  if (parallelproj_built_with_CUDA)
+    target_link_libraries(recon_buildblock parallelproj::parallelproj_cuda)
+  endif()
 endif()

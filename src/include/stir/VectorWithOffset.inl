@@ -6,15 +6,7 @@
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -31,6 +23,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include "thresholding.h"
 
 START_NAMESPACE_STIR
 
@@ -566,6 +559,25 @@ VectorWithOffset<T>::fill(const T &n)
   //std::fill(begin(), end(), n);
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     num[i] = n;
+  this->check_state();
+}
+
+
+template <class T>
+inline void
+VectorWithOffset<T>::apply_lower_threshold(const T &lower)
+{
+  this->check_state();
+  threshold_lower(this->begin(), this->end(), lower);
+  this->check_state();
+}
+
+template <class T>
+inline void
+VectorWithOffset<T>::apply_upper_threshold(const T &upper)
+{
+  this->check_state();
+  threshold_upper(this->begin(), this->end(), upper);
   this->check_state();
 }
 

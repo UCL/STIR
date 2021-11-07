@@ -5,15 +5,7 @@
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -139,6 +131,12 @@ public:
     GeneralisedObjectiveFunction::add_multiplication_with_approximate_Hessian_without_penalty
     on a vector filled with ones. For emission and transmission tomography,
     this corresponds to Erdogan and Fessler's approximations.
+
+    This method assumes that the objective function is concave and the output of
+    add_multiplication_with_approximate_Hessian_without_penalty is non-positive.
+
+    The computed denominator is saved to file as output_filename_prefix
+    plus "_precomputed_denominator".
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
@@ -205,4 +203,3 @@ END_NAMESPACE_STIR
 #endif
 
 // __OSSPSReconstruction_h__
-

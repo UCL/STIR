@@ -8,15 +8,7 @@
 
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -213,7 +205,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
   else if(this->_single_frame_obj_funcs.size() != 0)
     {
       bool frames_are_balanced=true;
-      for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+      for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
         frames_are_balanced &= this->_single_frame_obj_funcs[frame_num].subsets_are_approximately_balanced(warning_message);
       return frames_are_balanced;
     }
@@ -296,7 +288,7 @@ int
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_num_subsets(const int num_subsets)
 {
-  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
     {
       if(this->_single_frame_obj_funcs.size() != 0)
         if(this->_single_frame_obj_funcs[frame_num].set_num_subsets(num_subsets) != num_subsets)
@@ -353,9 +345,9 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
     return Succeeded::no;
 
-  if (this->_patlak_plot_sptr->get_starting_frame()<=0 || this->_patlak_plot_sptr->get_starting_frame()>this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames())
+  if (this->_patlak_plot_sptr->get_starting_frame()<=0 || this->_patlak_plot_sptr->get_starting_frame()>this->_patlak_plot_sptr->get_ending_frame())
     {
-      warning("Starting frame is %d. Generally, it should be a late frame,\nbut in any case it should be less than the number of frames %d\nand at least 1.",this->_patlak_plot_sptr->get_starting_frame(), this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+      warning("Starting frame is %d. Generally, it should be a late frame,\nbut in any case it should be less than the number of frames %d\nand at least 1.",this->_patlak_plot_sptr->get_starting_frame(), this->_patlak_plot_sptr->get_ending_frame());
       return Succeeded::no;
     }
   {
@@ -369,9 +361,9 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
                                 density_template_sptr);
 
     // construct _single_frame_obj_funcs
-    this->_single_frame_obj_funcs.resize(this->_patlak_plot_sptr->get_starting_frame(),this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+    this->_single_frame_obj_funcs.resize(this->_patlak_plot_sptr->get_starting_frame(),this->_patlak_plot_sptr->get_ending_frame());
    
-    for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+    for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
       {
         this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
         this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
@@ -434,9 +426,10 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                      const TargetT &current_estimate, 
-                                                      const int subset_num)
+actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                               const TargetT &current_estimate,
+                                               const int subset_num,
+                                               const bool add_sensitivity)
 {
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("compute_sub_gradient_without_penalty subset_num out-of-range error");
@@ -444,7 +437,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   DynamicDiscretisedDensity dyn_gradient=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;
 
-  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(),
               dyn_image_estimate[frame_num].end_all(),
               1.F);
@@ -452,7 +445,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
   // loop over single_frame and use model_matrix
-  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
     {
       std::fill(dyn_gradient[frame_num].begin_all(),
                 dyn_gradient[frame_num].end_all(),
@@ -460,9 +453,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
 
       this->_single_frame_obj_funcs[frame_num].
-        compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
-                                                              dyn_image_estimate[frame_num], 
-                                                              subset_num);
+              actual_compute_subset_gradient_without_penalty(dyn_gradient[frame_num],
+                                                             dyn_image_estimate[frame_num],
+                                                             subset_num,
+                                                             add_sensitivity);
     }
 
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(gradient,
@@ -482,7 +476,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;
 
   // TODO why fill with 1?
-  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(),
               dyn_image_estimate[frame_num].end_all(),
               1.F);
@@ -490,7 +484,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
  
   // loop over single_frame
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
-      frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+      frame_num<=this->_patlak_plot_sptr->get_ending_frame();
       ++frame_num)
     {
       result +=
@@ -509,7 +503,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   DynamicDiscretisedDensity dyn_sensitivity=this->_dyn_image_template;
 
   // loop over single_frame and use model_matrix
-  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
+  for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_ending_frame();++frame_num)
     {
       dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_subset_sensitivity(subset_num);
       //  add_subset_sensitivity(dyn_sensitivity[frame_num],subset_num);
@@ -545,9 +539,9 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   DynamicDiscretisedDensity dyn_output=this->_dyn_image_template;
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_input,input) ; 
 
-  VectorWithOffset<float> scale_factor(this->_patlak_plot_sptr->get_starting_frame(),this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+  VectorWithOffset<float> scale_factor(this->_patlak_plot_sptr->get_starting_frame(),this->_patlak_plot_sptr->get_ending_frame());
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
-      frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+      frame_num<=this->_patlak_plot_sptr->get_ending_frame();
       ++frame_num)
     {
       assert(dyn_input[frame_num].find_max()==dyn_input[frame_num].find_min());
@@ -591,7 +585,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
   DynamicProjData temp_projdata = this->get_dyn_proj_data();
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
-      frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+      frame_num<=this->_patlak_plot_sptr->get_ending_frame();
       ++frame_num)
     temp_projdata.set_proj_data_sptr(this->_single_frame_obj_funcs[frame_num].get_proj_data_sptr(),frame_num);
     
@@ -653,7 +647,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_current_image_estimate, current_image_estimate);
 
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
-      frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+      frame_num<=this->_patlak_plot_sptr->get_ending_frame();
       ++frame_num)
   {
     assert(dyn_input[frame_num].find_max()==dyn_input[frame_num].find_min());
@@ -678,7 +672,7 @@ dyn_input.write_to_ecat7("dynamic_input_from_all_params_one.img");
 dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
 DynamicProjData temp_projdata = this->get_dyn_proj_data();
 for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
-  frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
+  frame_num<=this->_patlak_plot_sptr->get_ending_frame();
   ++frame_num)
 temp_projdata.set_proj_data_sptr(this->_single_frame_obj_funcs[frame_num].get_proj_data_sptr(),frame_num);
 

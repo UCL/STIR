@@ -1,18 +1,11 @@
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2016, 2020, University College London
+    Copyright (C) 2016, 2020, 2021, University College London
     Copyright (C) 2016-2017, PETsys Electronics
+    Copyright (C) 2021, Gefei Chen
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -25,6 +18,7 @@
 
   \author Kris Thielemans
   \author Tahereh Niknejad
+  \author Gefei Chen
 
 */
 
@@ -726,7 +720,6 @@ FanProjData(const int num_rings, const int num_detectors_per_ring, const int max
   assert(num_detectors_per_ring%2 == 0);
   assert(max_ring_diff<num_rings);
   assert(fan_size < num_detectors_per_ring);
-
   
   IndexRange<4> fan_indices;
   fan_indices.grow(0,num_rings-1);
@@ -980,54 +973,6 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 	    
 }
 
-void make_fan_data(FanProjData& fan_data,
-	           const ProjData& proj_data)
-{
-  int num_rings;
-  int num_detectors_per_ring;
-  int fan_size;
-  int max_delta;
-
-  if(proj_data.get_proj_data_info_sptr()->is_tof_data())
-      error("make_fan_data: Incompatible with TOF data. Abort.");
-
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_sptr());
-
-  const int half_fan_size = fan_size/2;
-  fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
-
-  shared_ptr<SegmentBySinogram<float> > segment_ptr;      
-  Bin bin;
-
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-  {
-//	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
-	  {
-        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()/*,bin.timing_pos_num()*/)));
-
-		for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-		 ++bin.axial_pos_num())
-		   for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
-			  for (bin.tangential_pos_num() = -half_fan_size;
-			   bin.tangential_pos_num() <= half_fan_size;
-				   ++bin.tangential_pos_num())
-			  {
-				int ra = 0, a = 0;
-				int rb = 0, b = 0;
-
-				proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-
-				fan_data(ra, a, rb, b) =
-			  fan_data(rb, b, ra, a) =
-				  (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-          }
-	  }
-  }
-}
 
 /// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
@@ -1038,51 +983,61 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
     int num_detectors_per_ring;
     int fan_size;
     int max_delta;
+
+    if(proj_data.get_proj_data_info_sptr()->is_tof_data())
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+
     shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
                  *proj_data.get_proj_data_info_sptr());
     
     const int half_fan_size = fan_size/2;
 
-    
-    // ****  Added by me **** //
-    
-    
-     const int num_transaxial_blocks =
-     proj_data_info_ptr ->get_scanner_sptr()->
-     get_num_transaxial_blocks();
-     const int num_axial_blocks =
-     proj_data_info_ptr->get_scanner_sptr()->
-     get_num_axial_blocks();
-     const int num_transaxial_crystals_per_block =
-     proj_data_info_ptr->get_scanner_sptr()->
-     get_num_transaxial_crystals_per_block();
-     const int num_axial_crystals_per_block =
-     proj_data_info_ptr->get_scanner_sptr()->
-     get_num_axial_crystals_per_block();
-     
-    
 
-    const int num_transaxial_blocks_in_fansize = fan_size/num_transaxial_crystals_per_block;
-    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize;
+    const int num_virtual_axial_crystals_per_block =
+            proj_data_info_ptr->get_scanner_sptr()->
+                    get_num_virtual_axial_crystals_per_block();
+
+    const int num_virtual_transaxial_crystals_per_block =
+            proj_data_info_ptr->get_scanner_sptr()->
+                    get_num_virtual_transaxial_crystals_per_block();
+
+    const int num_transaxial_blocks =
+            proj_data_info_ptr ->get_scanner_sptr()->
+                    get_num_transaxial_blocks();
+    const int num_axial_blocks =
+            proj_data_info_ptr->get_scanner_sptr()->
+                    get_num_axial_blocks();
+    const int num_transaxial_crystals_per_block =
+            proj_data_info_ptr->get_scanner_sptr()->
+                    get_num_transaxial_crystals_per_block();
+    const int num_axial_crystals_per_block =
+            proj_data_info_ptr->get_scanner_sptr()->
+                    get_num_axial_crystals_per_block();
+
+    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
+
+    const int num_transaxial_blocks_in_fansize = fan_size/(num_transaxial_crystals_per_block);
+    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*num_virtual_transaxial_crystals_per_block;
     const int new_half_fan_size = new_fan_size/2;
-    const int num_axial_blocks_in_max_delta = max_delta/num_axial_crystals_per_block;
-    const int new_max_delta = max_delta - num_axial_blocks_in_max_delta - 1;
-    const int new_num_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks;
-    const int new_num_rings = num_rings - num_axial_blocks;
-    
-    // ****    End     ****  //
+    const int num_axial_blocks_in_max_delta = max_delta/(num_axial_crystals_per_block);
+    const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+    const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*num_virtual_transaxial_crystals_per_block;
+    const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
 
-    fan_data = FanProjData(new_num_rings, new_num_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
+    fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
 
-    
+
     shared_ptr<SegmentBySinogram<float> > segment_ptr;
     Bin bin;
-    
+
     for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
     {
         segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
-        
+
         for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
              bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
              ++bin.axial_pos_num())
@@ -1093,15 +1048,28 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
                 {
                     int ra = 0, a = 0;
                     int rb = 0, b = 0;
-                    
+
                     proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-                    int new_a = a - a/num_transaxial_crystals_per_block;
-                    int new_b = b - b/num_transaxial_crystals_per_block;
-                    int new_ra = ra - ra/ num_axial_crystals_per_block;
-                    int new_rb = rb - rb/num_axial_crystals_per_block;
-                    
-                    if ((ra == num_rings -1) || (rb  == num_rings -1) || (a == num_detectors_per_ring-1) || (b == num_detectors_per_ring-1)) continue;
-                    
+                    int a_in_block = a % num_transaxial_crystals_per_block;
+
+                    if (a_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int ra_in_block = ra % num_axial_crystals_per_block;
+                    if (ra_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    int b_in_block = b % num_transaxial_crystals_per_block;
+                    if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int rb_in_block = rb % num_axial_crystals_per_block;
+                    if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
                     fan_data(new_ra, new_a, new_rb, new_b) =
                     fan_data(new_rb, new_b, new_ra, new_a) =
@@ -1111,99 +1079,52 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
 }
 
 
-void set_fan_data(ProjData& proj_data,
-		  const FanProjData& fan_data)
-{
-  int num_rings;
-  int num_detectors_per_ring;
-  int fan_size;
-  int max_delta;
-
-  if(proj_data.get_proj_data_info_sptr()->is_tof_data())
-      error("make_fan_data: Incompatible with TOF data. Abort.");
-
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_sptr());
-
-  const int half_fan_size = fan_size/2;
-  assert(num_rings == fan_data.get_num_rings());
-  assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
-
-  Bin bin;
-  shared_ptr<SegmentBySinogram<float> > segment_ptr;    
- 
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-  {
-//	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
-	  {
-        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num()/*,bin.timing_pos_num()*/)));
-
-		for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-		 ++bin.axial_pos_num())
-		   for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
-			  for (bin.tangential_pos_num() = -half_fan_size;
-			   bin.tangential_pos_num() <= half_fan_size;
-				   ++bin.tangential_pos_num())
-			  {
-				int ra = 0, a = 0;
-				int rb = 0, b = 0;
-
-				proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-
-				(*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
-				  fan_data(ra, a, rb, b);
-			  }
-		proj_data.set_segment(*segment_ptr);
-	  }
-  }
-}
-
 /// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data)
+                  const FanProjData& fan_data, const float gap_value)
 {
     int num_rings;
     int num_detectors_per_ring;
     int fan_size;
     int max_delta;
+
+    if(proj_data.get_proj_data_info_sptr()->is_tof_data())
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+
     shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
                  *proj_data.get_proj_data_info_sptr());
-    
+
     const int half_fan_size = fan_size/2;
     //assert(num_rings == fan_data.get_num_rings());
     //assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
-    
-    
-    // ****  Added by Tahereh Nikjenad **** //
-    
+
+
+    const int num_virtual_axial_crystals_per_block =
+    proj_data_info_ptr->get_scanner_sptr()->
+    get_num_virtual_axial_crystals_per_block();
+    const int num_virtual_transaxial_crystals_per_block =
+    proj_data_info_ptr->get_scanner_sptr()->
+    get_num_virtual_transaxial_crystals_per_block();
     const int num_transaxial_crystals_per_block =
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_transaxial_crystals_per_block();
     const int num_axial_crystals_per_block =
     proj_data_info_ptr->get_scanner_sptr()->
     get_num_axial_crystals_per_block();
-    
-   // const int num_axial_detectors = fan_data.get_num_rings();      // Number of ring in fan data (w/o gaps)
-   // const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();   // number of detector per ring in fan data w/o gaps
-    
-   // const int num_axial_crystals_per_block = num_axial_detectors/num_axial_blocks;  // number of axial detector per block in fan_data w/o gaps
-   // const int num_transaxial_crystals_per_block = num_transaxial_detectors/num_transaxial_blocks; // number of transaxial detector per block in fan_data w/o gaps
 
-    
-    // ****    End     ****  //
-    
+    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
     Bin bin;
     shared_ptr<SegmentBySinogram<float> > segment_ptr;
-    
+
     for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
     {
         segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
-        
+
         for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
              bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
              ++bin.axial_pos_num())
@@ -1216,20 +1137,31 @@ void set_fan_data_add_gaps(ProjData& proj_data,
                     int rb = 0, b = 0;
 
                     proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
-                    
-                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = 1e20;
 
-                    
-                    if ((ra+1)% num_axial_crystals_per_block == 0) continue;
-                    if ((rb+1)% num_axial_crystals_per_block == 0) continue;
-                    if ((a+1)% num_transaxial_crystals_per_block == 0) continue;
-                    if ((b+1)% num_transaxial_crystals_per_block == 0) continue;
-                    
-                    int new_a = a - a/num_transaxial_crystals_per_block;
-                    int new_b = b - b/num_transaxial_crystals_per_block;
-                    int new_ra = ra - ra/ num_axial_crystals_per_block;
-                    int new_rb = rb - rb/num_axial_crystals_per_block;
-                    
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = gap_value;
+
+
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    int a_in_block = a % num_transaxial_crystals_per_block;
+
+                    if (a_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int ra_in_block = ra % num_axial_crystals_per_block;
+                    if (ra_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    int b_in_block = b % num_transaxial_crystals_per_block;
+                    if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int rb_in_block = rb % num_axial_crystals_per_block;
+                    if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
                     
                     (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
                     fan_data(new_ra, new_a, new_rb, new_b);
@@ -1423,7 +1355,6 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
       error("make_fan_data: Incompatible with TOF data. Abort.");
 
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size/2;
@@ -1585,7 +1516,6 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
 			  const FanProjData& model)
 {
   const int num_detectors_per_ring = model.get_num_detectors_per_ring();
-  
   assert(model.get_min_ra() == data_fan_sums.get_min_index());
   assert(model.get_max_ra() == data_fan_sums.get_max_index());
   assert(model.get_min_a() == data_fan_sums[data_fan_sums.get_min_index()].get_min_index());

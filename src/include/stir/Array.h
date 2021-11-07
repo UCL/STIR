@@ -5,15 +5,7 @@
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -193,6 +185,12 @@ public:
   
   //! Fill elements with value n (overrides VectorWithOffset::fill)
   inline void fill(const elemT &n);
+
+  //! Sets elements below value to the value (overrides VectorWithOffset::fill)
+  inline void apply_lower_threshold(const elemT &l);
+
+  //! Sets elements above value to the value (overrides VectorWithOffset::fill)
+  inline void apply_upper_threshold(const elemT &u);
 
   //! checks if the index range is 'regular'
   /*! Implementation note: this works by calling get_index_range().is_regular().
