@@ -111,7 +111,6 @@ process_data()
     float total_scatter = 0 ;
 
     info("ScatterSimulator: Initialization finished ...");
-
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
@@ -366,8 +365,13 @@ set_up()
     {
         CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
         // check above statement
-        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
-                    detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+            ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        }else{
+            auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+            ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        }
         assert(detector_coord_A.z() == 0);
         assert(detector_coord_B.z() == 0);
         // check that get_m refers to the middle of the scanner
@@ -378,11 +382,20 @@ set_up()
         assert(fabs(m_last + m_first) < m_last * 10E-4);
     }
 #endif
-    this->shift_detector_coordinates_to_origin =
+    if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            this->shift_detector_coordinates_to_origin =
             CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+    }else{
+        if(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            // align BlocksOnCylindrical scanner ring 0 to z=0.
+            this->shift_detector_coordinates_to_origin =
+            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+        }
+        // align Generic geometry here.
+    }
 
 #if 1
-    // checks on image zooming to avvoid getting incorrect results
+    // checks on image zooming to avoid getting incorrect results
     {
       check_z_to_middle_consistent(*this->activity_image_sptr, "activity");
       check_z_to_middle_consistent(*this->density_image_sptr, "attenuation");
@@ -710,7 +723,7 @@ set_output_proj_data_sptr(shared_ptr<ProjData> arg)
     this->output_proj_data_sptr = arg;
 }
 
-shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfo>
 ScatterSimulation::
 get_template_proj_data_info_sptr() const
 {
@@ -739,10 +752,14 @@ void
 ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
     this->_already_set_up = false;
-    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr* >(arg.clone()));
 
-    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
-        error("ScatterSimulation: Can only handle non-arccorrected data");
+    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
+        this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+        if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
+            error("ScatterSimulation: Can only handle non-arccorrected data");
+        }
+    }
 
     // find final size of detection_points_vector
     this->total_detectors =
@@ -818,7 +835,6 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       + 5; // add 5 to avoid strange edge-effects, certainly with B-splines
     new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins+.5F));
     new_scanner_sptr->set_default_bin_size(new_scanner_sptr->get_effective_ring_radius() * _PI / new_num_dets); // approx new detector size
-
     // Find how much is the delta ring
     // If the previous projdatainfo had max segment == 1 then should be from SSRB
     // in ScatterEstimation. Otherwise use the max possible.

@@ -761,9 +761,15 @@ calculate_proj_matrix_elems_for_one_bin(
     min((min(max_index.x(), -min_index.x())+.45F)*voxel_size.x(),
         (min(max_index.y(), -min_index.y())+.45F)*voxel_size.y()); 
 #else
-  const float fovrad_in_mm = 
+  float fovrad_in_mm = 
     min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
         (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
+        if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
+  {
+    fovrad_in_mm =
+        min((min(max_index.x(), -min_index.x()) - 5.f) * voxel_size.x(),
+            (min(max_index.y(), -min_index.y()) - 5.f) * voxel_size.y());
+  }
 #endif
 
   if (num_tangential_LORs == 1)

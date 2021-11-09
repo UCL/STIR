@@ -78,8 +78,6 @@ ProjDataInfoBlocksOnCylindrical::get_m(const Bin& bin) const
 {
 	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 	get_LOR(lor, bin);
-	//Parisa to Check
-	//std::cout<<"seg_ax_m_z1 = "<<bin.segment_num()<<"\t"<<bin.axial_pos_num()<<"\t"<<lor.z1()<<"\t"<<(lor.z1() + lor.z2())/2.<<std::endl;
 	return (lor.z1() + lor.z2())/2.;
 }
 
@@ -101,14 +99,11 @@ ProjDataInfoBlocksOnCylindrical::get_t(const Bin& bin) const
 float
 ProjDataInfoBlocksOnCylindrical::get_tantheta(const Bin& bin) const
 {
-	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-	get_LOR(lor, bin);
-	const float delta_z = lor.z2() - lor.z1();
-  if (fabs(delta_z)<0.0001F)
-		return 0;
-	const float R=get_ring_radius(bin.view_num());
-	assert(R>=fabs(get_s(bin)));
-	return delta_z/(2*sqrt(square(R)-square(get_s(bin))));
+  CartesianCoordinate3D<float> _p1;
+  CartesianCoordinate3D<float> _p2;
+  find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+  CartesianCoordinate3D<float> p2_minus_p1 = _p2 - _p1;
+  return p2_minus_p1.z() / (sqrt(square(p2_minus_p1.x())+square(p2_minus_p1.y()))); 
 }
 
 float

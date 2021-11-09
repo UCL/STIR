@@ -87,11 +87,45 @@ float
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
 get_s(const Bin& bin) const
 {
-	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 	get_LOR(lor, bin);
-	if (bin.view_num()==0 && lor.phi()>0.1)
-          return -1*lor.radius() * sin(lor.beta());
-	return lor.radius() * sin(lor.beta());
+  // REQUIREMENT: Euclidean coordinate of 3 points, a,b and c.
+  // CALCULATION: // Equation of a line, in parametric form, given two point a, b: p(t) = a + (b-a)*t
+  //              // Let a,b,c be points in 2D and let a,b form a line then shortest distance between c and line ab is:
+  //              // || (p0-p1) - [(p0-p1)*(p2-p1)/||p2-p1||^2]*(p2-p1) ||
+  //              p1 = _p1, p2=_p2 and p0=(0,0,0)
+  // OUTPUT:      replace the ring_radius*sin(lor.beta()) with distance from o to ab.
+
+  // Can't access coordinate of detection from this class so we have to recalculate where it is:
+  
+  CartesianCoordinate3D<float> _p1;
+	CartesianCoordinate3D<float> _p2;
+	find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+
+  // // Get p1-p0 and p2-p1 vector.
+  CartesianCoordinate3D<float> p2_minus_p1 = _p2 - _p1;
+  CartesianCoordinate3D<float> p0_minus_p1 = CartesianCoordinate3D<float>(0,0,0) - _p1;
+  float p0_minus_p1_dot_p2_minus_p1 = p0_minus_p1.x()* p2_minus_p1.x() + p0_minus_p1.y()*p2_minus_p1.y();
+  float p2_minus_p1_magitude = square(p2_minus_p1.x()) + square(p2_minus_p1.y());
+  float x = 0;
+  float y = 0;
+  float sign = sin(lor.beta());
+  if (p2_minus_p1_magitude > 0.01)
+  {
+    x = p0_minus_p1.x() - (p0_minus_p1_dot_p2_minus_p1/p2_minus_p1_magitude)*p2_minus_p1.x();
+    y = p0_minus_p1.y() - (p0_minus_p1_dot_p2_minus_p1/p2_minus_p1_magitude)*p2_minus_p1.y();
+  }
+  else
+  {
+     error("get_s(): 2 detection points are too close to each other. This indicates an internal error.");
+  }
+  float s = sqrt(square(x) + square(y));
+
+  if(sign < 0.0){
+    return -s;
+  }else{
+    return s;
+  }
 }
 
 float

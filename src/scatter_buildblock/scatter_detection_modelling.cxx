@@ -29,7 +29,7 @@
 */
 
 #include "stir/scatter/ScatterSimulation.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
 #include <iostream>
@@ -75,9 +75,21 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
         error("ScatterSimulation::find_detectors: need to call set_up() first");
 #endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  this->proj_data_info_cyl_noarc_cor_sptr->
-    find_cartesian_coordinates_of_detection(
-                                            detector_coord_A,detector_coord_B,bin);
+  auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+  if(ptr){
+    ptr->
+      find_cartesian_coordinates_of_detection(
+                                              detector_coord_A,detector_coord_B,bin);
+  }else{
+    auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+    if(ptr){
+      ptr->
+        find_cartesian_coordinates_of_detection(
+                                                detector_coord_A,detector_coord_B,bin);
+    }else{
+      error("wrong type of projection data for scatter simulation");
+    }
+  }
   det_num_A =
     this->find_in_detection_points_vector(detector_coord_A + 
                                           this->shift_detector_coordinates_to_origin);
