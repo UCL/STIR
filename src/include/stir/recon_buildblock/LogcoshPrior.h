@@ -108,10 +108,6 @@ public:
     //! Constructs it explicitly with scalar
     LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
-    virtual bool
-    parabolic_surrogate_curvature_depends_on_argument() const
-    { return false; }
-
     //! compute the value of the function
     double
     compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
