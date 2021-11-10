@@ -3,15 +3,7 @@
     Copyright (C) 2013, 2018, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -85,8 +77,16 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
 
+
+#include "stir/evaluation/ROIValues.h"
+#include "stir/evaluation/compute_ROI_values.h"
+
+
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
+#include "stir/SeparableGaussianImageFilter.h"
+#include "stir/SeparableConvolutionImageFilter.h"
+
 #ifdef HAVE_JSON
 #include "stir/HUToMuImageProcessor.h"
 #endif
@@ -1479,6 +1479,11 @@ namespace stir {
 %include "stir/Shape/EllipsoidalCylinder.h"
 %include "stir/Shape/Box3D.h"
 
+// ROIValues class and compute compute_ROI_values
+%shared_ptr(stir::ROIValues)
+%include "stir/evaluation/ROIValues.h"
+%include "stir/evaluation/compute_ROI_values.h"
+
 // filters
 #ifdef STIRSWIG_SHARED_PTR
 #define elemT float
@@ -1488,10 +1493,22 @@ namespace stir {
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >)
+
 %shared_ptr(stir::RegisteredParsingObject<stir::SeparableCartesianMetzImageFilter<elemT>,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+
+%shared_ptr(stir::RegisteredParsingObject<stir::SeparableGaussianImageFilter<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::SeparableGaussianImageFilter<elemT>)
+
+%shared_ptr(stir::RegisteredParsingObject<stir::SeparableConvolutionImageFilter<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::SeparableConvolutionImageFilter<elemT>)
+
 #ifdef HAVE_JSON
 %shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
@@ -1504,6 +1521,8 @@ namespace stir {
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
+%include "stir/SeparableGaussianImageFilter.h"
+%include "stir/SeparableConvolutionImageFilter.h"
 #ifdef HAVE_JSON
 %include "stir/HUToMuImageProcessor.h"
 #endif
@@ -1515,11 +1534,25 @@ namespace stir {
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(ChainedDataProcessor3DFloat) stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >;
+
 %template(RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
              stir::SeparableCartesianMetzImageFilter<elemT>,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+
+%template(RPSeparableGaussianImageFilter3DFloat) stir::RegisteredParsingObject<
+        stir::SeparableGaussianImageFilter<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+%template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
+
+%template(RPSeparableConvolutionImageFilter3DFloat) stir::RegisteredParsingObject<
+        stir::SeparableConvolutionImageFilter<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+%template(SeparableConvolutionImageFilter3DFloat) stir::SeparableConvolutionImageFilter<elemT>;
+
 #ifdef HAVE_JSON
 %template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
              stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,

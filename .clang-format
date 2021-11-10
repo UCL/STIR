@@ -1,0 +1,15 @@
+---
+Language : Cpp
+# BasedOnStyle : GNU
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+AlwaysBreakTemplateDeclarations: true
+BraceWrapping:
+  SplitEmptyFunction: false
+ColumnLimit:     130
+IndentPPDirectives: AfterHash
+PointerAlignment: Left
+SortIncludes:    false
+SortUsingDeclarations: false
+SpaceBeforeParens: ControlStatements
+Standard:        Cpp11
+...

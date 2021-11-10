@@ -1,0 +1,188 @@
+name: Build and ctest and recon_test_pack CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 9
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+        - os: ubuntu-latest
+          compiler: clang
+          #compiler_version:
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 10
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Debug"
+        - os: macOS-latest
+          compiler: gcc
+          compiler_version: 11
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+
+      # let's run all of them, as opposed to aborting when one fails
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: set_compiler_variables
+      shell: bash
+      run: |
+          set -ex
+          if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+            CC="clang"
+            CXX="clang++"
+          elif test 'XX${{ matrix.compiler }}' = 'XXgcc'; then
+            CC="gcc"
+            CXX="g++"
+          fi
+          if test 'XX${{ matrix.compiler_version }}' != 'XX'; then
+            CC=${CC}-${{ matrix.compiler_version }}
+            CXX=${CXX}-${{ matrix.compiler_version }}            
+          fi
+
+          export CC CXX
+          # make available to jobs below
+          echo CC="$CC" >> $GITHUB_ENV
+          echo CXX="$CXX" >> $GITHUB_ENV
+
+    - name: install_dependencies
+      shell: bash
+      run: |
+          set -ex
+          case ${{matrix.os}} in
+            (ubuntu*)
+              # install compiler
+              if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+                  sudo apt install $CC # package is called clang
+              else
+                  sudo apt install $CXX
+              fi
+              # other dependencies
+              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (macOS*)
+              brew install boost swig python nlohmann-json
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (windows*)
+              # this compiles the whole thing so takes ages
+              vcpkg install boost-core hdf5 nlohmann-json
+              # swig is preinstalled and is currently not in vcpcg
+              vcpkg list
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+          esac
+          echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> $GITHUB_ENV
+          #${PYTHON_EXECUTABLE} -m pip install -U pip
+          ${PYTHON_EXECUTABLE} -m pip install pytest numpy
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+
+    - name: configure
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+      run: |
+          set -ex
+          #export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          cmake --version
+          if test "XX$CC" != "XX"; then
+              $CC --version
+              $CXX --version
+          fi
+          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+          # make available to jobs below
+          echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
+          EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+          echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
+          mkdir build
+          cd build
+          cmake -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
+
+    - name: build
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: 
+          cd ${GITHUB_WORKSPACE}/build;
+          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+
+    - name: ctest
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          cd ${GITHUB_WORKSPACE}/build
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} = Debug; then
+              EXCLUDE="-E test_data_processor_projectors -E test_export_array -E test_ArcCorrection"
+          fi
+          ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: recon_test_pack
+      shell: bash
+      env:
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/recon_test_pack
+          ./run_tests.sh --nointbp
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} != Debug; then
+            ./run_test_simulate_and_recon.sh
+            ./run_test_listmode_recon.sh
+            ./run_test_simulate_and_recon_with_motion.sh
+            ./run_scatter_tests.sh
+            ./run_test_zoom_image.sh
+            ./run_ML_norm_tests.sh
+            if [[ $BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+            ./run_tests_modelling.sh
+            cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
+            ./run_SPECT_tests.sh
+          fi
+
+    - name: examples
+      shell: bash
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          # Run examples to see if they work
+          cd ${GITHUB_WORKSPACE}/examples/PET_simulation
+          ./run_simulation.sh 1> /dev/null
+
+    - name: Python
+      shell: bash
+      run: |
+          set -ex
+          # Run Python tests, making sure we're using the correct Python interpreter
+          #export PYTHON_EXECUTABLE=$(cmake -LA -N ${GITHUB_WORKSPACE}/build |awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
+          echo Using Python executable "$PYTHON_EXECUTABLE"
+          export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/python
+          cd ${GITHUB_WORKSPACE}/src
+          ${PYTHON_EXECUTABLE} -m pytest .

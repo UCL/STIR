@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -45,6 +37,7 @@ BinNormalisationFromAttenuationImage::registered_name =
 void 
 BinNormalisationFromAttenuationImage::set_defaults()
 {
+  base_type::set_defaults();
   attenuation_image_ptr.reset();
   forward_projector_ptr.reset();
   attenuation_image_filename = "";
@@ -54,6 +47,7 @@ void
 BinNormalisationFromAttenuationImage::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From Attenuation Image");
   parser.add_key("attenuation_image_filename", &attenuation_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
@@ -104,7 +98,7 @@ post_processing()
   *new_sptr *= rescale;
   attenuation_image_ptr = new_sptr;
 
-  return false;
+  return base_type::post_processing();
 }
 
 
@@ -137,7 +131,7 @@ Succeeded
 BinNormalisationFromAttenuationImage::
 set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr);
+  base_type::set_up(exam_info_sptr, proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);
   forward_projector_ptr->set_input(*attenuation_image_ptr);
   return Succeeded::yes;
@@ -145,7 +139,7 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const 
 
 
 void 
-BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
@@ -164,7 +158,7 @@ BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,c
 
 void 
 BinNormalisationFromAttenuationImage::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+undo(RelatedViewgrams<float>& viewgrams) const 
 {
   this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
@@ -182,7 +176,7 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 }
 
 float 
-BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
+BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin) const
 {
   //TODO
   error("BinNormalisationFromAttenuationImage::get_bin_efficiency is not implemented");

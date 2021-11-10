@@ -11,15 +11,7 @@
     Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -156,15 +148,37 @@ SeparableConvolutionImageFilter(
       
 }
 
-#if 0
 template <typename elemT>
-VectorWithOffset<elemT>
+VectorWithOffset<VectorWithOffset<elemT>>
 SeparableConvolutionImageFilter<elemT>::
 get_filter_coefficients()
 {
   return filter_coefficients;
 }
-#endif
+
+template<typename elemT>
+void
+SeparableConvolutionImageFilter<elemT>::
+set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v)
+{
+  filter_coefficients = v;
+}
+
+template <typename elemT>
+VectorWithOffset<elemT>
+SeparableConvolutionImageFilter<elemT>::
+get_filter_coefficients(const int axis)
+{
+  return filter_coefficients[axis];
+}
+
+template<typename elemT>
+void
+SeparableConvolutionImageFilter<elemT>::
+set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v)
+{
+  filter_coefficients[axis] = v;
+}
 
 template <typename elemT>
 Succeeded

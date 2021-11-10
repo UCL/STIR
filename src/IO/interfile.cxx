@@ -5,15 +5,7 @@
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -604,9 +596,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
   
-  if (!exam_info.get_radionuclide().empty())
+  if (!exam_info.get_radionuclide().get_name().empty() && exam_info.get_radionuclide().get_name()!="Unknown")
   output_header << "isotope name := "  
-                <<exam_info.get_radionuclide()  << endl;
+                <<exam_info.get_radionuclide().get_name()  << endl;
 
   if (is_spect)
     {

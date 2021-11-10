@@ -12,15 +12,7 @@
     Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -78,6 +70,8 @@ START_NAMESPACE_STIR
 class ChainedBinNormalisation :
    public RegisteredParsingObject<ChainedBinNormalisation, BinNormalisation>
 {
+private:
+  using base_type = BinNormalisation;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -101,37 +95,39 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
   /*! 
     This calls apply() of the 2 BinNormalisation members
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
+
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
   virtual void apply(ProjData&) const override;
 #endif
 
-  virtual void apply_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+  virtual void apply_only_first(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void apply_only_first(ProjData&,const double start_time, const double end_time) const;
+virtual void apply_only_first(ProjData&) const;
 
-virtual void apply_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void apply_only_second(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void apply_only_second(ProjData&,const double start_time, const double end_time) const;
+virtual void apply_only_second(ProjData&) const;
 
   //! Undo the normalisation of some data
   /*! 
     This calls undo() of the 2 BinNormalisation members. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
-  virtual void undo(ProjData&,const double start_time, const double end_time) const override;
-#endif
+  virtual void undo(ProjData&) const override;
+ #endif 
 
-virtual void undo_only_first(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void undo_only_first(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void undo_only_first(ProjData&,const double start_time, const double end_time) const;
+virtual void undo_only_first(ProjData&) const;
 
-virtual void undo_only_second(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
+virtual void undo_only_second(RelatedViewgrams<float>& viewgrams) const;
 
-virtual void undo_only_second(ProjData&,const double start_time, const double end_time) const;
+virtual void undo_only_second(ProjData&) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const override;
+  virtual float get_bin_efficiency(const Bin& bin) const override;
+  
  //! Returns the is_trivial() status of the first normalisation object.
  //! \warning Currently, if the object has not been set the function throws an error.
   virtual bool is_first_trivial() const;

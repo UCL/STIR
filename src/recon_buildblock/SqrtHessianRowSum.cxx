@@ -2,15 +2,7 @@
     Copyright (C) 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -205,9 +197,10 @@ process_data()
     compute_Hessian_row_sum();
   }
 
-  // Square Root the output of the Hessian_row_sum methods
+  // Square Root the negative output of the Hessian_row_sum methods
+  // (approximate) Hessian times a non-negative vector will result in a negative output. Flip the sign before sqrt.
   std::for_each(output_target_sptr->begin_all(), output_target_sptr->end_all(),
-                [](float& a) { return a=sqrt(a); } );
+                [](float& a) { return a=sqrt(-a); } );
 
   // Save the output
   if (!output_filename.empty())

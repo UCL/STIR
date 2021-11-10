@@ -2,15 +2,7 @@
     Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -103,7 +95,7 @@ int main(int argc, char **argv)
       // write fan sums to file
       {
         std::string fan_sum_name = "fansums_for_";
-	fan_sum_name += argv[2];
+        fan_sum_name += get_filename(argv[2]);
 	fan_sum_name.erase(fan_sum_name.begin() + fan_sum_name.rfind('.'), 
 			   fan_sum_name.end());
 	fan_sum_name += ".dat"; 

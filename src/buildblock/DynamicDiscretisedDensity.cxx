@@ -14,15 +14,7 @@
     Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -60,8 +52,6 @@ operator=(const DynamicDiscretisedDensity& argument)
     this->_densities[i].reset(argument._densities[i]->clone());
 
   this->_scanner_sptr = argument._scanner_sptr;
-//  this->exam_info_sptr->set_calibration_factor(argument.get_calibration_factor());
-  this->_isotope_halflife = argument._isotope_halflife;
   this->_is_decay_corrected = argument._is_decay_corrected;
   return *this;
 }
@@ -116,7 +106,7 @@ get_density(const unsigned int frame_num)
 const float 
 DynamicDiscretisedDensity::
 get_isotope_halflife() const
-{ return this->_isotope_halflife; }
+{ return this->exam_info_sptr->get_radionuclide().get_half_life(); }
 
 const float  
 DynamicDiscretisedDensity::
@@ -211,10 +201,6 @@ void  DynamicDiscretisedDensity::
 set_if_decay_corrected(const bool is_decay_corrected) 
 {  this->_is_decay_corrected=is_decay_corrected; }
 
-void  DynamicDiscretisedDensity::
-set_isotope_halflife(const float isotope_halflife) 
-{ _isotope_halflife=isotope_halflife; }
-
  void DynamicDiscretisedDensity::
  decay_correct_frames()  
 {
@@ -225,7 +211,7 @@ set_isotope_halflife(const float isotope_halflife)
       for (  unsigned int frame_num = 1 ; frame_num<=get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
         { 
           *(_densities[frame_num-1])*=
-            static_cast<float>(decay_correction_factor(_isotope_halflife,get_time_frame_definitions().get_start_time(frame_num),get_time_frame_definitions().get_end_time(frame_num)));
+            static_cast<float>(decay_correction_factor(get_isotope_halflife(),get_time_frame_definitions().get_start_time(frame_num),get_time_frame_definitions().get_end_time(frame_num)));
         }
       _is_decay_corrected=true;
     }

@@ -4,15 +4,7 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -76,10 +68,15 @@ START_NAMESPACE_ECAT7
   End Bin Normalisation From ECAT7:=
   \endverbatim
  
+  \par Warning
+  dead-time code might currently give wrong results due to uncertainty in units for singles rates
+
 */
 class BinNormalisationFromECAT7 :
    public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -95,8 +92,8 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT7(const std::string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr,const shared_ptr<const ProjDataInfo>&);
-  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const override;
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr,const shared_ptr<const ProjDataInfo>&) override;
+  float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;

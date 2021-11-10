@@ -3,15 +3,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -106,12 +98,28 @@ public:
 protected:
   char const * proj_data_filename;
   char const * density_filename;
+  shared_ptr<ProjData> proj_data_sptr;
+  shared_ptr<ProjData> mult_proj_data_sptr;
+  shared_ptr<ProjData> add_proj_data_sptr;
   shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
 
   //! run the test
   /*! Note that this function is not specific to PoissonLogLikelihoodWithLinearModelForMeanAndProjData */
   void run_tests_for_objective_function(GeneralisedObjectiveFunction<target_type>& objective_function,
                                         target_type& target);
+
+  //! Test the gradient of the objective function by comparing to the numerical gradient via perturbation
+  void test_objective_function_gradient(GeneralisedObjectiveFunction<target_type>& objective_function,
+                                        target_type& target);
+
+  //! Test the Hessian of the objective function by testing the (x^T Hx > 0) condition
+  void test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
+                                                 target_type& target);
+
+  //! Test the approximate Hessian of the objective function by testing the (x^T Hx > 0) condition
+  void test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
+                                                             target_type& target);
+
 };
 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
@@ -123,6 +131,21 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type>& objective_function,
                                  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type& target) {
+  std::cerr << "----- testing Gradient\n";
+  test_objective_function_gradient(objective_function,target);
+
+  std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
+  test_objective_function_Hessian_concavity(objective_function,target);
+
+  std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
+  test_objective_function_approximate_Hessian_concavity(objective_function, target);
+}
+
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
+test_objective_function_gradient(GeneralisedObjectiveFunction<target_type> &objective_function,
+                                 target_type &target)
+{
   shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
   shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
   const int subset_num = 0;
@@ -150,16 +173,23 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
     }
   if (!testOK)
     {
-      info("Writing diagnostic files gradient.hv, numerical_gradient.hv");
+      info("Writing diagnostic files target.hv, gradient.hv, numerical_gradient.hv");
+      write_to_file("target.hv", target);
       write_to_file("gradient.hv", *gradient_sptr);
       write_to_file("numerical_gradient.hv", *gradient_2_sptr);
-#if 0
+#if 1
+    info("Writing diagnostic files subsens.hv, gradient-without-sens.hv, "
+         "proj_data.hs, mult_proj_data.hs and add_proj_data.hs");
+
       write_to_file("subsens.hv", 
                     reinterpret_cast<const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).get_subset_sensitivity(subset_num));
-      gradient_sptr->fill(0.F);
-      reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).
-        compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, target, subset_num);
-      write_to_file("gradient-without-sens.hv", *gradient_sptr);
+    gradient_sptr->fill(0.F);
+    reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).
+      compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, target, subset_num);
+    write_to_file("gradient-without-sens.hv", *gradient_sptr);
+    proj_data_sptr->write_to_file("proj_data.hs");
+    mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
+    add_proj_data_sptr->write_to_file("add_proj_data.hs");
 #endif
     }
 
@@ -167,9 +197,59 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
 
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
+test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type> &objective_function,
+                                          target_type &target){
+  /// setup images
+  shared_ptr<target_type> output(target.get_empty_copy());
+
+  /// Compute H x
+  objective_function.accumulate_Hessian_times_input(*output, target, target);
+
+  /// Compute dot(x,(H x))
+  const float my_sum = std::inner_product(target.begin_all(), target.end_all(), output->begin_all(), 0.F);
+
+  // test for a CONCAVE function
+  if (this->check_if_less( my_sum, 0)) {
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" (Hessian) and is therefore concave);
+  } else {
+    // print to console the FAILED configuration
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 (Hessian) and is therefore NOT concave" +
+         "\n >target image max=" + std::to_string(target.find_max()) +
+         "\n >target image min=" + std::to_string(target.find_min()));
+  }
+}
+
+
+
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
+test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFunction<target_type> &objective_function,
+                                                      target_type &target){
+  /// setup images
+  shared_ptr<target_type> output(target.get_empty_copy());
+
+  /// Compute H x
+  objective_function.add_multiplication_with_approximate_Hessian(*output, target);
+
+  /// Compute dot(x,(H x))
+  const float my_sum = std::inner_product(target.begin_all(), target.end_all(), output->begin_all(), 0.F);
+
+  // test for a CONCAVE function
+  if (this->check_if_less( my_sum, 0)) {
+//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" (approximate-Hessian) and is therefore concave);
+  } else {
+    // print to console the FAILED configuration
+    info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 (approximate-Hessian) and is therefore NOT concave" +
+         "\n >target image max=" + std::to_string(target.find_max()) +
+         "\n >target image min=" + std::to_string(target.find_min()));
+  }
+}
+
+
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 construct_input_data(shared_ptr<target_type>& density_sptr)
 { 
-  shared_ptr<ProjData> proj_data_sptr;
   if (this->proj_data_filename == 0)
     {
       // construct a small scanner and sinogram
@@ -247,9 +327,8 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   // multiplicative term
   shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
   {
-    shared_ptr<ProjData> 
-      mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
-						proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+    mult_proj_data_sptr.reset(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
+                                                    proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
          ++seg_num)
@@ -270,9 +349,8 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   }
 
   // additive term
-  shared_ptr<ProjData> add_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
-								
-proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+  add_proj_data_sptr.reset(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
+                                                 proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();

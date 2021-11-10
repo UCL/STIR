@@ -5,15 +5,7 @@
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
@@ -38,7 +30,7 @@ if [ $# -gt 4 ]; then
   suffix=$5
 fi
 echo "===  create ACFs"
-calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} > my_create_acfs.log 2>&1
+calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_acfs.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1; 
 fi

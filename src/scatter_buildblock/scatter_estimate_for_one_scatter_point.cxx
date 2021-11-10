@@ -5,22 +5,14 @@
   Copyright (C) 2011-07-01 - 2011, Kris Thielemans
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details. 
+  SPDX-License-Identifier: Apache-2.0 
   
   See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup scatter
-  \brief Implementation of stir::ScatterEstimationByBin::single_scatter_estimate_for_one_scatter_point
+  \brief Implementation of stir::SingleScatterSimulation::simulate_for_one_scatter_point
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
@@ -44,7 +36,7 @@ static const float total_Compton_cross_section_511keV =
 ScatterSimulation::
   total_Compton_cross_section(511.F); 
 
-float
+double
 SingleScatterSimulation::
  simulate_for_one_scatter_point(
           const std::size_t scatter_point_num, 
@@ -126,11 +118,11 @@ SingleScatterSimulation::
   }
 #endif
 
-  float scatter_ratio=0 ;
+  double scatter_ratio=0 ;
 
   scatter_ratio= 
-    (emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1) 
-     +emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1)) 
+    (emiss_to_detA*(1./rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
+     +emiss_to_detB*(1./rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
     *atten_to_detB
     *atten_to_detA
     *scatter_point_mu

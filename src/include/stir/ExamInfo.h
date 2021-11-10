@@ -1,16 +1,9 @@
 /*
-    Copyright (C) 2013, 2018, 2020 University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2018, 2020-2021 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -20,6 +13,7 @@
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
   \author Nikos Efthimiou
+  \author Daniel Deidda
 */
 
 
@@ -29,6 +23,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/Radionuclide.h"
 #include "stir/shared_ptr.h"
 
 #include "stir/shared_ptr.h"
@@ -43,6 +38,7 @@ START_NAMESPACE_STIR
 
   \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
+  
   */
 class ExamInfo
 {
@@ -73,6 +69,8 @@ public :
 
   TimeFrameDefinitions time_frame_definitions;
   
+  Radionuclide radionuclide;
+  
 //  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
@@ -91,7 +89,7 @@ public :
   //! Get the calibration factor
   inline  float get_calibration_factor() const;
   //! Get the radionuclide name
-  inline std::string get_radionuclide() const;
+  inline Radionuclide get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -104,7 +102,7 @@ public :
   //! Set the Calibration factor
   inline void set_calibration_factor(const float cal_val);
   //! Set the radionuclide
-  inline void set_radionuclide(const std::string& name);
+  inline void set_radionuclide(const Radionuclide& arg);
   //! Copy energy information from another ExamInfo
   inline void set_energy_information_from(const ExamInfo&);
   //@}
@@ -124,6 +122,7 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  //!  Warning: the operator == does not check that originating system is consistent!
   bool operator == (const ExamInfo &p1) const ;
   
   //! Clone and create shared_ptr of the copy
@@ -149,8 +148,6 @@ protected:
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
   
-  std::string radionuclide;
-
   //!
   //! \brief up_energy_thres
   //! \author Nikos Efthimiou

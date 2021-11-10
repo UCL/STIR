@@ -2,15 +2,7 @@
     Copyright (C) 2016 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -82,12 +74,8 @@ protected:
 
 
     //!
-    //! \brief simulate_for_one_scatter_point
-    //! \param scatter_point_num
-    //! \param det_num_A
-    //! \param det_num_B
-    //! \return
-    float
+    //! \brief simulate single scatter for one scatter point
+    double
     simulate_for_one_scatter_point(const std::size_t scatter_point_num,
                                                   const unsigned det_num_A,
                                                   const unsigned det_num_B);

@@ -45,6 +45,14 @@ demo4_obj_fun.cxx
 		- how to compute the objective function (log-likelihood) value of an image
 	    - how to compute the objective function (log-likelihood) gradient
 	    - how a basic iterative optimisation works (or may not, if parameters are altered)
+
+demo5_line_search.cxx
+	Deviating from the previous demos, this demo performs a line search from a provided image
+	in the direction of the gradient for various step sizes.
+	  It illustrates
+		- how to initialise and setup an objective function object
+		- how to compute the objective function (log-likelihood) value and gradient
+	    - Demonstrates how important step sizes for each iteration of an optimisation algorithm.
  
 CMakeLists.txt
 	A CMake file to say which files to build.
@@ -72,6 +80,10 @@ demo_obj_fun.par
 	compute the objective function value of an image and perform 
 	some iterative gradient ascent updates.
 
+demo5_line_search.par
+	An example parameter file for demo5_line_search.cxx, used to
+	perform a line search of a image and objective function.
+
 generate_image.par
 	An example parameter file for generate_image that allows it
 	to construct a simple image that can be used for constructing 
@@ -97,10 +109,10 @@ ccmake .
 # alternative 2: set STIR_LOCAL to this directory
 cd your-build-dir
 # reconfigure your project
-ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
+ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/C++/src  .
 
 # make the examples
-make demo1 demo2 demo3 demo4_obj_fun
+make demo1 demo2 demo3 demo4_obj_fun demo5_line_search
 # optionally install everything, including the demos
 make install
 
@@ -115,7 +127,7 @@ First you need to create some data.
       forward_project sino.hs image.hv  small.hs
 
 # Run the demos.
-EXE_LOC=/whereever/you/built/STIR/src/examples/src
+EXE_LOC=/whereever/you/built/STIR/src/examples/C++
 	
 # demo1
 	$EXE_LOC/demo1
@@ -137,7 +149,13 @@ EXE_LOC=/whereever/you/built/STIR/src/examples/src
 	# Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par".
 	# However, it is quite easy to cause unstable behaviour in the estimates.
 	# Additionally, there is a lack of positivity constraint on the density images (typical for PET reconstruction).
-	
+
+# demo5_line_search
+	$EXE_LOC/demo5_line_search demo5_line_search.par
+	# Feel free to alter the objective function, image filename, and the step size configuration in the parameter file.
+	# Try plotting the output `alphas.dat` and `Phis.dat` and visualise how the step size can impact the
+	  objective function value
+	# Now try `use exponential alphas := 1`?
 
 What now ?
 ----------
@@ -148,4 +166,4 @@ Good luck
 Kris Thielemans
 12 November 2004
 (with minor updates until 2017)
-Robert Twyman, 2020 (addition of demo4_obj_fun)
+Robert Twyman, 2020,2021 (addition of demo4_obj_fun and demo5_line_search)

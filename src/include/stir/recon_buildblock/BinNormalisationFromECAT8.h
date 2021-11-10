@@ -78,6 +78,8 @@ START_NAMESPACE_ECAT
 class BinNormalisationFromECAT8 :
    public RegisteredParsingObject<BinNormalisationFromECAT8, BinNormalisation, BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -94,7 +96,7 @@ public:
   BinNormalisationFromECAT8(const string& filename);
 
   virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
-  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const override;
+  float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;

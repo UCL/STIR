@@ -10,8 +10,8 @@
   \author Daniel Deidda
 */
 /*
-    Copyright (C) 2019, UCL
-    Copyright (C) 2019, NPL
+    Copyright (C) 2019-2021, UCL
+    Copyright (C) 2019-2021, NPL
     See STIR/LICENSE.txt for details
 */
 
@@ -32,6 +32,8 @@ START_NAMESPACE_STIR
 class BinNormalisationSPECT :
   public RegisteredParsingObject<BinNormalisationSPECT,  BinNormalisation, BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
 
 
@@ -62,11 +64,12 @@ public:
                               const double start_time,
                               const double end_time) const;
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const override;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
 
-  virtual float get_uncalibrated_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const override;
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
+
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   void read_linearity_table(Array<3,float>& linearity) const;
   void read_uniformity_table(Array<3,float>& uniformity) const;

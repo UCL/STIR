@@ -1,14 +1,6 @@
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -26,12 +18,11 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use this.")
 endif()
 
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
-cmake_minimum_required(VERSION 2.8.3)
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # Compiler Id for Apple Clang is AppleClang, see STIR issue #531
 endif()
@@ -80,13 +71,14 @@ else() #if(CYGWIN)
 #  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
 # TODO append version numbers
-set(STIR_DATA_DIR "share/stir")
+set(STIR_DATA_DIR "share/stir") 
 set(ConfigPackageLocation lib/cmake/)
-
+set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/stir/config" CACHE PATH "") 
+message("${STIR_CONFIG_DIR} defined")
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
-
+ 
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )

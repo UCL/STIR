@@ -82,6 +82,8 @@ namespace RDF_HDF5 {
 class BinNormalisationFromGEHDF5 :
    public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -97,8 +99,9 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
-  float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const override;
+
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
