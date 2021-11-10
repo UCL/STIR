@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         /*
           for each lor
             find_LOR_intersections_with_cylinder => c1 & c2
-            c12 = |c1-c2| = sqrt(Δx^2+Δy^2+Δz^2)
+            c12 = |c1-c2| = sqrt(dx^2+dy^2+dz^2)
             N_lor/c12 should be the same for all therefore:
             NF_lor= <N> / (N_lor/c12)
         */
