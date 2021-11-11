@@ -36,6 +36,31 @@ limitations under the License.
 
 START_NAMESPACE_STIR
 
+void
+ProjDataInfoGeneric::
+initialise_ring_diff_arrays_if_not_done_yet() const
+{
+  // for efficiency reasons, use "Double-Checked-Locking(DCL) pattern" with OpenMP atomic operation
+  // OpenMP v3.1 or later required
+  // thanks to yohjp: http://stackoverflow.com/questions/27975737/how-to-handle-cached-data-structures-with-multi-threading-e-g-openmp
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+  bool initialised;
+#pragma omp atomic read
+  initialised = ring_diff_arrays_computed;
+
+  if (!initialised)
+#endif
+    {
+#if defined(STIR_OPENMP)
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
+#endif
+      {
+        if (!ring_diff_arrays_computed)
+          initialise_ring_diff_arrays();
+      }
+    }
+}
+
 //! find phi from correspoding lor
 float
 ProjDataInfoGeneric::get_phi(const Bin& bin)const
@@ -76,14 +101,11 @@ ProjDataInfoGeneric::get_t(const Bin& bin) const
 float
 ProjDataInfoGeneric::get_tantheta(const Bin& bin) const
 {
-	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-	get_LOR(lor, bin);
-	const float delta_z = lor.z2() - lor.z1();
-    if (fabs(delta_z)<0.0001F)
-		return 0;
-	const float R=get_ring_radius(bin.view_num());
-	assert(R>=fabs(get_s(bin)));
-		return delta_z/(2*sqrt(square(R)-square(get_s(bin))));
+  CartesianCoordinate3D<float> _p1;
+  CartesianCoordinate3D<float> _p2;
+  find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+  CartesianCoordinate3D<float> p2_minus_p1 = _p2 - _p1;
+  return p2_minus_p1.z() / (sqrt(square(p2_minus_p1.x())+square(p2_minus_p1.y()))); 
 }
 
 float

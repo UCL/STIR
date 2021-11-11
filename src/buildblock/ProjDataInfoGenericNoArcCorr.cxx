@@ -404,12 +404,24 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
   det_pos1.axial_coord() = Ring_A;
   det_pos2.axial_coord() = Ring_B;
 
+#if 1 // TODO GENERICvsBLOCKS
   coord_1 = get_scanner_ptr()->get_coords_given_detpos(det_pos1);
   coord_2 = get_scanner_ptr()->get_coords_given_detpos(det_pos2);
+#else
+    if (crystal_map->find_cartesian_coordinate_given_detection_position(coord_1, det_pos1)==Succeeded::yes &&
+      crystal_map->find_cartesian_coordinate_given_detection_position(coord_2, det_pos2)==Succeeded::yes)
+  {
+    return;
+  }
+  else
+  {
+    error("couldn't find corresponding cartesian coordinates for given detection positions.\n");
+    return;
+  }
+#endif
 }
 
 
-//TODO: Try to get it obsolete (Is still used in one test)
 Bin
 ProjDataInfoGenericNoArcCorr::
 get_bin(const LOR<float>& lor) const
@@ -423,6 +435,7 @@ get_bin(const LOR<float>& lor) const
 
 	DetectionPosition<> det_pos1;
 	DetectionPosition<> det_pos2;
+        // TODO GENERICvsBLOCK crystal_map should not be used
   if (crystal_map->find_detection_position_given_cartesian_coordinate(det_pos1, _p1)==Succeeded::no ||
       crystal_map->find_detection_position_given_cartesian_coordinate(det_pos2, _p2)==Succeeded::no)
   {

@@ -499,7 +499,8 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 
 	LORAs2Points<float> lor_as_2_points(_p1, _p2);
 	const double R = get_ring_radius();
-  lor_as_2_points.change_representation_for_block(lor, R);
+    
+    lor_as_2_points.change_representation(lor, R);
 }
 
 std::string
