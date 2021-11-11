@@ -54,8 +54,8 @@ START_NAMESPACE_STIR
   a smoothing scalar term and the \f$\epsilon\f$ is a small non-negative value included to prevent division by zero.
   Please note that the RDP is only well defined for non-negative voxel values.
   For more details, see: <em> J. Nuyts, D. Beque, P. Dupont, and L. Mortelmans,
-  “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
-  vol. 49, no. 1, pp. 56–60, 2002. </em>
+  "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
+  vol. 49, no. 1, pp. 56-60, 2002. </em>
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in 
   Jeff Fessler's papers. It should have identical dimensions to the image for which the

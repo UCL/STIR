@@ -21,7 +21,7 @@
   This can be used to compute a spatially variant penalty strength (kappa) image. This utility uses methods proposed by:
   Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F., Stearns, C. W.,
   & Thielemans, K. (2020). Benefits of Using a Spatially-Variant Penalty Strength With Anatomical Priors
-  in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11–22. https://doi.org/10.1109/TMI.2019.2913889
+  in PET Reconstruction. IEEE Transactions on Medical Imaging, 39(1), 11-22. https://doi.org/10.1109/TMI.2019.2913889
 
   Based upon the value of "use approximate hessian" in the parameter file, either of two methods can be used to
   compute the spatially variant penalty strength, a.k.a. kappa.
