@@ -1,19 +1,15 @@
 /*
-Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+    Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    This file is part of STIR.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+    See STIR/LICENSE.txt for details
 */
-
 /*!
 
   \file
@@ -22,6 +18,10 @@ limitations under the License.
   
   \author Parisa Khateri
   \author Michael Roethlisberger
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author Berta Marti Fuster
+  \author PARAPET project
 */
 #ifndef __stir_ProjDataInfoGeneric_H__
 #define __stir_ProjDataInfoGeneric_H__

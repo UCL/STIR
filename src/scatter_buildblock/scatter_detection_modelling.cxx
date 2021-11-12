@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2004- 2009, Hammersmith Imanet
+  Copyright (C) 2021, University of Leeds
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0 
@@ -17,7 +18,7 @@
   \author Pablo Aguiar
   \author Nikolaos Dikaios
   \author Kris Thielemans
-
+  \author Viet Ahn Dao
 */
 
 #include "stir/scatter/ScatterSimulation.h"

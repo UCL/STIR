@@ -2,6 +2,7 @@
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 - 2016, 2019, 2020 University College London
     Copyright (C) 2018-2019, University of Hull
+    Copyright (C) 2021, University of Leeds
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -16,6 +17,7 @@
   \author Nikos Efthimiou
   \author Charalampos Tsoumpas
   \author Kris Thielemans
+  \author Viet Ahn Dao
 */
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/ViewSegmentNumbers.h"

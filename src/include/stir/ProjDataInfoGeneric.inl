@@ -1,17 +1,16 @@
 /*
-Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2003, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+    Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2017, ETH Zurich, Institute of Particle Physics and Astrophysics
+    Copyright (C) 2018, 2021 University of Leeds
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    This file is part of STIR.
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+    See STIR/LICENSE.txt for details
 */
 
 /*!
@@ -21,8 +20,14 @@ limitations under the License.
 
   \brief Implementation of inline functions of class stir::ProjDataInfoGeneric
 	
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author Palak Wadhwa
+  \author Berta Marti Fuster
+  \author PARAPET project
   \author Parisa Khateri
   \author Michael Roethlisberger
+  \author Viet Ahn Dao
 */
 
 // for sqrt
