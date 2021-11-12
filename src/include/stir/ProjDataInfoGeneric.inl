@@ -242,8 +242,7 @@ get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
       ring_diff < get_min_ring_difference(get_min_segment_num()))
     return Succeeded::no;
 
-  if (!ring_diff_arrays_computed)
-    initialise_ring_diff_arrays();
+  this->initialise_ring_diff_arrays_if_not_done_yet();
 
   segment_num = ring_diff_to_segment_num[ring_diff];
   // warning: relies on initialise_ring_diff_arrays to set invalid ring_diff to a too large segment_num
@@ -280,8 +279,7 @@ ProjDataInfoGeneric::
 get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
 					     const int axial_pos_num) const
 {
-  if (!ring_diff_arrays_computed)
-    initialise_ring_diff_arrays();
+  this->initialise_ring_diff_arrays_if_not_done_yet();
   if (is_null_ptr(segment_axial_pos_to_ring_pair[segment_num][axial_pos_num]))
     compute_segment_axial_pos_to_ring_pair(segment_num, axial_pos_num);
   return *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
