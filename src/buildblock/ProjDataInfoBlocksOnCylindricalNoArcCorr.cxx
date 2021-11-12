@@ -104,8 +104,8 @@ operator==(const self_type& that) const
   if (!base_type::blindly_equals(&that))
     return false;
   return
-    this->ring_radius == that.ring_radius &&
-    this->angular_increment == that.angular_increment;
+    fabs(this->ring_radius - that.ring_radius) < 0.05F &&
+    fabs(this->angular_increment - that.angular_increment) < 0.05F;
 }
 
 bool
@@ -145,6 +145,8 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::parameter_info()  const
    This is ok on SUNs (gcc, but probably SUNs cc as well), Parsytec (gcc),
    Pentium (gcc, VC++) and probably every other system which uses
    the 2-complement convention.
+
+   Update: compile time assert is implemented.
 */
 
 /*!
@@ -170,8 +172,8 @@ void
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
 initialise_uncompressed_view_tangpos_to_det1det2() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
@@ -222,8 +224,8 @@ void
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
 initialise_det1det2_to_uncompressed_view_tangpos() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
