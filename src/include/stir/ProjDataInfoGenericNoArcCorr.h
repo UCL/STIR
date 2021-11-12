@@ -266,7 +266,7 @@ public:
 					       CartesianCoordinate3D<float>& coord_2,
 					       const Bin& bin) const;
 
-  void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
+  virtual void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
 							     CartesianCoordinate3D<float>& coord_2,
 							     const int Ring_A,const int Ring_B,
 							     const int det1, const int det2) const;
@@ -295,9 +295,9 @@ private:
   inline void initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet() const;
   //! build look-up table unless already done before
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
-
+ protected:
   virtual bool blindly_equals(const root_type * const) const;
-
+ private:
   //! \todo Has to be removed
   shared_ptr<GeometryBlocksOnCylindrical> crystal_map;
   };

@@ -41,9 +41,6 @@
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
-using std::string;
-using std::pair;
-using std::vector;
 #endif
 
 START_NAMESPACE_STIR
@@ -58,15 +55,12 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views,const int num_tangential_poss)
-: ProjDataInfoBlocksOnCylindrical(scanner_ptr,
+  : ProjDataInfoGenericNoArcCorr(scanner_ptr,
+                                 ring_radius_v, angular_increment_v,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss),
-  ring_radius(ring_radius_v),
-  angular_increment(angular_increment_v)
+                          num_views, num_tangential_poss)
 {
-  uncompressed_view_tangpos_to_det1det2_initialised = false;
-  det1det2_to_uncompressed_view_tangpos_initialised = false;
   crystal_map.reset(new GeometryBlocksOnCylindrical(scanner_ptr));
 }
 
@@ -76,16 +70,12 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views,const int num_tangential_poss)
-: ProjDataInfoBlocksOnCylindrical(scanner_ptr,
+: ProjDataInfoGenericNoArcCorr(scanner_ptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
   assert(!is_null_ptr(scanner_ptr));
-  ring_radius = scanner_ptr->get_effective_ring_radius();
-  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
-  uncompressed_view_tangpos_to_det1det2_initialised = false;
-  det1det2_to_uncompressed_view_tangpos_initialised = false;
   crystal_map.reset(new GeometryBlocksOnCylindrical(scanner_ptr));
 }
 
@@ -103,9 +93,9 @@ operator==(const self_type& that) const
 {
   if (!base_type::blindly_equals(&that))
     return false;
+  // TODOBLOCKS check crystal_map
   return
-    fabs(this->ring_radius - that.ring_radius) < 0.05F &&
-    fabs(this->angular_increment - that.angular_increment) < 0.05F;
+    true;
 }
 
 bool
@@ -117,7 +107,7 @@ blindly_equals(const root_type * const that_ptr) const
     this->operator==(static_cast<const self_type&>(*that_ptr));
 }
 
-string
+std::string
 ProjDataInfoBlocksOnCylindricalNoArcCorr::parameter_info()  const
 {
 
@@ -129,245 +119,9 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::parameter_info()  const
   std::ostringstream s;
  #endif
   s << "ProjDataInfoBlocksOnCylindricalNoArcCorr := \n";
-  s << ProjDataInfoBlocksOnCylindrical::parameter_info();
+  s << base_type::parameter_info();
   s << "End :=\n";
   return s.str();
-}
-
-/*
-   TODO make compile time assert
-
-   Warning:
-   this code makes use of an implementation dependent feature:
-   bit shifting negative ints to the right.
-    -1 >> 1 should be -1
-    -2 >> 1 should be -1
-   This is ok on SUNs (gcc, but probably SUNs cc as well), Parsytec (gcc),
-   Pentium (gcc, VC++) and probably every other system which uses
-   the 2-complement convention.
-
-   Update: compile time assert is implemented.
-*/
-
-/*!
-  Go from sinograms to detectors.
-
-  Because sinograms are not arc-corrected, tang_pos_num corresponds
-  to an angle as well. Before interleaving we have that
-  \verbatim
-  det_angle_1 = LOR_angle + bin_angle
-  det_angle_2 = LOR_angle + (Pi - bin_angle)
-  \endverbatim
-  (Hint: understand this first at LOR_angle=0, then realise that
-  other LOR_angles follow just by rotation)
-
-  Code gets slightly intricate because:
-  - angles have to be defined modulo 2 Pi (so num_detectors)
-  - interleaving
-*/
-
-//! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
-//Parisa: changed phi assertion
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-initialise_uncompressed_view_tangpos_to_det1det2() const
-{
-  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
-  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
-
-  const int num_detectors =
-    get_scanner_ptr()->get_num_detectors_per_ring();
-
-  assert(num_detectors%2 == 0);
-  // check views range from 0 to Pi
-  /*!
-    warning The following assersions are slightly different from cylindrical.
-    because in the function get_phi(bin), get_lor is called.
-  */
-  assert(fabs(Bin(0,0,0,0).view_num()*get_azimuthal_angle_sampling()) < 1.E-4);
-  assert(fabs(Bin(0,get_num_views(),0,0).view_num()*get_azimuthal_angle_sampling() - _PI) < 1.E-4);
-
-  const int min_tang_pos_num = -(num_detectors/2)+1;
-  const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
-
-  if (this->get_min_tangential_pos_num() < min_tang_pos_num ||
-      this->get_max_tangential_pos_num() > max_tang_pos_num)
-    {
-      error("The tangential_pos range (%d to %d) for this projection data is too large.\n"
-	    "Maximum supported range is from %d to %d",
-	    this->get_min_tangential_pos_num(), this->get_max_tangential_pos_num(),
-	    min_tang_pos_num, max_tang_pos_num);
-    }
-
-  uncompressed_view_tangpos_to_det1det2.grow(0,num_detectors/2-1);
-  for (int v_num=0; v_num<=num_detectors/2-1; ++v_num)
-  {
-    uncompressed_view_tangpos_to_det1det2[v_num].grow(min_tang_pos_num, max_tang_pos_num);
-
-    for (int tp_num=min_tang_pos_num; tp_num<=max_tang_pos_num; ++tp_num)
-    {
-      /*
-         adapted from CTI code
-         Note for implementation: avoid using % with negative numbers
-         so add num_detectors before doing modulo num_detectors)
-        */
-      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det1_num =
-        (v_num + (tp_num >> 1) + num_detectors) % num_detectors;
-      uncompressed_view_tangpos_to_det1det2[v_num][tp_num].det2_num =
-        (v_num - ( (tp_num + 1) >> 1 ) + num_detectors/2) % num_detectors;
-    }
-  }
-  uncompressed_view_tangpos_to_det1det2_initialised = true;
-}
-
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-initialise_det1det2_to_uncompressed_view_tangpos() const
-{
-  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
-  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
-
-  const int num_detectors =
-    get_scanner_ptr()->get_num_detectors_per_ring();
-
-  if (num_detectors%2 != 0)
-    {
-      error("Number of detectors per ring should be even but is %d", num_detectors);
-    }
-  if (this->get_min_view_num() != 0)
-    {
-      error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
-    }
-  // check views range from 0 to Pi
-
-
-  // check views range from 0 to Pi
-  //! warning The following assersions are slightly different from cylindrical. See the above function
-  assert(fabs(Bin(0,0,0,0).view_num()*get_azimuthal_angle_sampling()) < 1.E-4);
-  assert(fabs(Bin(0,get_max_view_num()+1,0,0).view_num()*get_azimuthal_angle_sampling() - _PI) < 1.E-4);
-
-
-  //const int min_tang_pos_num = -(num_detectors/2);
-  //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
-  const int max_num_views = num_detectors/2;
-
-  det1det2_to_uncompressed_view_tangpos.grow(0,num_detectors-1);
-  for (int det1_num=0; det1_num<num_detectors; ++det1_num)
-  {
-    det1det2_to_uncompressed_view_tangpos[det1_num].grow(0, num_detectors-1);
-
-    for (int det2_num=0; det2_num<num_detectors; ++det2_num)
-    {
-      if (det1_num == det2_num)
-	  continue;
-      /*
-       This somewhat obscure formula was obtained by inverting the code for
-       get_det_num_pair_for_view_tangential_pos_num()
-       This can be simplified (especially all the branching later on), but
-       as we execute this code only occasionally, it's probably not worth it.
-      */
-      int swap_detectors;
-      /*
-      Note for implementation: avoid using % with negative numbers
-      so add num_detectors before doing modulo num_detectors
-      */
-      int tang_pos_num = (det1_num - det2_num +  3*num_detectors/2) % num_detectors;
-      int view_num = (det1_num - (tang_pos_num >> 1) +  num_detectors) % num_detectors;
-
-      /* Now adjust ranges for view_num, tang_pos_num.
-      The next lines go only wrong in the singular (and irrelevant) case
-      det_num1 == det_num2 (when tang_pos_num == num_detectors - tang_pos_num)
-
-        We use the combinations of the following 'symmetries' of
-        (tang_pos_num, view_num) == (tang_pos_num+2*num_views, view_num + num_views)
-        == (-tang_pos_num, view_num + num_views)
-        Using the latter interchanges det_num1 and det_num2, and this leaves
-        the LOR the same in the 2D case. However, in 3D this interchanges the rings
-        as well. So, we keep track of this in swap_detectors, and return its final
-        value.
-      */
-      if (view_num <  max_num_views)
-      {
-        if (tang_pos_num >=  max_num_views)
-        {
-          tang_pos_num = num_detectors - tang_pos_num;
-          swap_detectors = 1;
-        }
-        else
-        {
-          swap_detectors = 0;
-        }
-      }
-      else
-      {
-        view_num -= max_num_views;
-        if (tang_pos_num >=  max_num_views)
-        {
-          tang_pos_num -= num_detectors;
-          swap_detectors = 0;
-        }
-        else
-        {
-          tang_pos_num *= -1;
-          swap_detectors = 1;
-        }
-      }
-
-      det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num = view_num;
-      det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].tang_pos_num = tang_pos_num;
-      det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].swap_detectors = swap_detectors==0;
-    }
-  }
-  det1det2_to_uncompressed_view_tangpos_initialised = true;
-}
-
-unsigned int
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-get_num_det_pos_pairs_for_bin(const Bin& bin) const
-{
-  return
-    get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-						 bin.axial_pos_num())*
-    get_view_mashing_factor();
-}
-
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
-			      const Bin& bin) const
-{
-  this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
-
-  dps.resize(get_num_det_pos_pairs_for_bin(bin));
-
-  const ProjDataInfoBlocksOnCylindrical::RingNumPairs& ring_pairs =
-    get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-						 bin.axial_pos_num());
-  // not sure how to handle mashing with non-zero view offset...
-  assert(get_min_view_num()==0);
-
-  unsigned int current_dp_num=0;
-  for (int uncompressed_view_num=bin.view_num()*get_view_mashing_factor();
-       uncompressed_view_num<(bin.view_num()+1)*get_view_mashing_factor();
-       ++uncompressed_view_num)
-    {
-      const int det1_num =
-	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
-      const int det2_num =
-	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoBlocksOnCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-	   rings_iter != ring_pairs.end();
-	   ++rings_iter)
-	{
-	  assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
-	  dps[current_dp_num].pos1().tangential_coord() = det1_num;
-	  dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
-	  dps[current_dp_num].pos2().tangential_coord() = det2_num;
-	  dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-	  ++current_dp_num;
-	}
-    }
-  assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin));
 }
 
 //!warning Use crystal map
