@@ -114,6 +114,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
   }
 }
 
+#if 0 // disabled as currently the same as ProjDataInfoGeneric
 //overload for block geometry
 static void
 find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
@@ -180,6 +181,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
        + num_planes_per_scanner_ring*delta)/2;
   }
 }
+#endif
 
 // overloading for generic case
 static void

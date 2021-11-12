@@ -86,7 +86,6 @@ set(${dir_LIB_SOURCES}
         FilePath.cxx
         date_time_functions.cxx
        GeometryBlocksOnCylindrical.cxx
-        ProjDataInfoBlocksOnCylindrical.cxx
         ProjDataInfoBlocksOnCylindricalNoArcCorr.cxx
         ProjDataInfoGeneric.cxx
         ProjDataInfoGenericNoArcCorr.cxx
