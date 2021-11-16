@@ -688,7 +688,7 @@ ProjDataInfoTests::run_coordinate_test()
                 if (abs(lorB.phi() - lorC1.phi()) < tolerance )
                 {
                     
-                    check_if_equal(proj_data_info_blocks_ptr->get_s(bin),proj_data_info_cyl_ptr->get_s(bin), "A get_s() from projdata Cylinder is different from Block on Cylindrical");
+                    check_if_equal(proj_data_info_blocks_ptr->get_s(bin),lorB.s(), "A get_s() from projdata is different from Block on Cylindrical LOR.s()");
                     
                     check_if_equal(lorB.s(),lorC1.s(),"tang_pos="+ std::to_string(tang)+ 
                     " PHI-C="+ std::to_string(lorC1.phi())+ 
@@ -714,7 +714,7 @@ ProjDataInfoTests::run_coordinate_test()
                 else if (abs(lorB.phi() - lorC1.phi())+_PI < tolerance || abs(lorB.phi() - lorC1.phi())-_PI < tolerance){
                     
                     
-                    check_if_equal(proj_data_info_blocks_ptr->get_s(bin),proj_data_info_cyl_ptr->get_s(bin), "B get_s() from projdata Cylinder is different from Block on Cylindrical");
+                    check_if_equal(proj_data_info_blocks_ptr->get_s(bin),lorB.s(), "B get_s() from projdata is different from Block on Cylindrical LOR.s()");
                     check_if_equal(proj_data_info_blocks_ptr->get_phi(bin), phi-_PI, "B get_phi() from projdata Cylinder is different from Block on Cylindrical");
 
                     check_if_equal(lorB.s(),-lorC1.s(),"tang_pos="+ std::to_string(tang)+ 
