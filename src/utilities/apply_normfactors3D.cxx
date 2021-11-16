@@ -92,8 +92,9 @@ int main(int argc, char **argv)
     int num_physical_axial_crystals_per_block =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
-    if(num_axial_blocks>1) {
-	    num_physical_axial_crystals_per_block *= num_axial_blocks;    
+   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
+    if(get_num_axial_buckets() >1) {
+	    num_physical_axial_crystals_per_block *= scanner_stpr->get_num_axial_blocks_per_bucket() ;    
     }
 
   GeoData3D norm_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring);
