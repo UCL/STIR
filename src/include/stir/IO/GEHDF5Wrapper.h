@@ -94,6 +94,9 @@ public:
     //! reads coincidence time window from file (in secs)
     float get_coincidence_time_window() const;
 
+    //! reads the isotope half-life from file (in secs)
+    float get_halflife() const;
+
     //! reads listmode event(s)
     /* \param[output] output: has to be pre-allocated and of the correct size
        \param[in] offset: start in listmode data (in number of bytes)
