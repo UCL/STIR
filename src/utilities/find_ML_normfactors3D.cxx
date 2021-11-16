@@ -116,14 +116,19 @@ int main(int argc, char **argv)
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
 
-    const int num_physical_transaxial_crystals_per_block =
+    int num_physical_transaxial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-    int num_physical_axial_crystals_per_block =
+   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
+    if(get_num_transaxial_buckets() >1) {
+	    num_physical_transaxial_crystals_per_basic_unit *= scanner_stpr->get_num_transaxial_blocks_per_bucket() ;    
+    }	
+    int num_physical_axial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
-    if(num_axial_blocks>1) {
-	    num_physical_axial_crystals_per_block *= num_axial_blocks;
+   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
+    if(get_num_axial_buckets() >1) {
+	    num_physical_axial_crystals_per_basic_unit *= scanner_stpr->get_num_axial_blocks_per_bucket() ;    
     }
 
 
@@ -136,8 +141,8 @@ int main(int argc, char **argv)
     Array<2,float> data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
     DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
-    GeoData3D measured_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
-    GeoData3D norm_geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+    GeoData3D measured_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+    GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
 
     BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
     BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
@@ -337,7 +342,7 @@ int main(int argc, char **argv)
             if (do_KL)
             {
                 Array<2,float> fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
-                GeoData3D geo_data(num_physical_axial_crystals_per_block, num_physical_transaxial_crystals_per_block/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+                GeoData3D geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
                 BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
    
                 make_fan_sum_data(fan_sums, fan_data);
