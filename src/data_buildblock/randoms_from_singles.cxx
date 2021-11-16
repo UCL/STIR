@@ -81,7 +81,7 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
                        "RFS: decay correction factor: %2%,\n"
                        "time frame duration: %3%.\n"
                        "total correction factor from (singles_totals)^2 to randoms_totals: %4%.\n")
-         % isotope_halflife % corr_factor % duration % (1/corr_factor),
+         % isotope_halflife % decay_corr_factor % duration % (1/corr_factor),
          2);
 
     multiply_crystal_factors(proj_data, total_singles,
