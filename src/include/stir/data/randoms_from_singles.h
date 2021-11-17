@@ -52,11 +52,10 @@ class SinglesRates;
   For more details, see:
   Stearns, C. W., McDaniel, D. L., Kohlmyer, S. G., Arul, P. R., Geiser, B. P., & Shanmugam, V. (2003).
   Random coincidence estimation from single event rates on the Discovery ST PET/CT scanner.
-  2003 IEEE Nuclear Science Symposium. Conference Record (IEEE Cat. No.03CH37515), 5, 3067–3069.
+  2003 IEEE Nuclear Science Symposium. Conference Record (IEEE Cat. No.03CH37515), 5, 3067-3069.
   https://doi.org/10.1109/NSSMIC.2003.1352545
 
   \todo Dead-time is currently completely ignored.
-  \todo The function currently assumes F-18 half-life.
 */
 void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window, float isotope_halflife=-1.F);
 
