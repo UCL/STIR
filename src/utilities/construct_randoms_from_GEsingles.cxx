@@ -87,10 +87,7 @@ int main(int argc, char **argv)
   GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles(input_filename);
   const float coincidence_time_window = input_file.get_coincidence_time_window();
 
-  // If half-life exists in proj_data, use that value, otherwise get it from the input_file
-  const float isotope_halflife = proj_data.get_exam_info().get_radionuclide().get_half_life(false) != -1
-                                 ? proj_data.get_exam_info().get_radionuclide().get_half_life()
-                                 : input_file.get_halflife();
+  const float isotope_halflife = input_file.get_halflife();
 
   randoms_from_singles(proj_data, singles, coincidence_time_window, isotope_halflife);
   return EXIT_SUCCESS;

@@ -30,8 +30,11 @@
 START_NAMESPACE_STIR
 
 void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
-                          const float coincidence_time_window, const float isotope_halflife)
+                          const float coincidence_time_window, float isotope_halflife=-1.F)
 {
+  if (isotope_halflife == -1.F)
+    isotope_halflife = proj_data.get_exam_info().get_radionuclide().get_half_life();
+
   const int num_rings =
     proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring =

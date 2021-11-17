@@ -58,6 +58,6 @@ class SinglesRates;
   \todo Dead-time is currently completely ignored.
   \todo The function currently assumes F-18 half-life.
 */
-void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window, const float isotope_halflife);
+void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window, float isotope_halflife=-1.F);
 
 END_NAMESPACE_STIR
