@@ -219,7 +219,11 @@ public:
 
     //! Output the log of the process.
     virtual void write_log(const double simulation_time, const float total_scatter);
-    
+
+    //! Enable/disable caching of line integrals
+    void set_use_cache(const bool);
+    //! Return if line integrals are cached or not
+    bool get_use_cache() const;
 
 protected:
 

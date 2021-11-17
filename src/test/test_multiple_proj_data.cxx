@@ -5,7 +5,7 @@
   \file
   \ingroup test
 
-  \brief Test program for MultipleProjDataTests
+  \brief Test program for stir::MultipleProjData
 
   Give a txt file with the names of the projection data within. e.g.,:
 
@@ -33,6 +33,7 @@
 #include "stir/MultipleProjData.h"
 #include "stir/ProjDataInMemory.h"
 #include <fstream>
+#include <iomanip>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

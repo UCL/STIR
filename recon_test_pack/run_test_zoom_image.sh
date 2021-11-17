@@ -13,8 +13,8 @@
 # 
 
 # Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
     set -e
 fi
 
