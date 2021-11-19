@@ -33,6 +33,8 @@ class SinglesRates;
   for finding the randoms-rate in terms of the
   singles-rates. The function then takes duration properly into account using the following
   procedure.
+  This uses \c isotope_halflife in the computation of \f$\lambda\f$. Default value is -1 and the function will
+  extract \c isotope_halflife from \c proj_data. If set, will use the passed value.
 
   We actually have total counts in the singles for sinograms and need total counts in the randoms.
   Assuming the radioactivity distribution is stationary and only decays, and dropping indices \f$i,j\f$,
