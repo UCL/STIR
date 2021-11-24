@@ -128,8 +128,9 @@ public:
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
 
-  ProjDataInMemory   // had to return ptr... abstract class
-  get_subset(const std::vector<int> views) const;
+  //! construct projection data that stores a subset of the views
+  ProjDataInMemory
+  get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 

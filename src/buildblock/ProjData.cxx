@@ -231,18 +231,23 @@ read_from_file(const string& filename,
 
 
 ProjDataInMemory
-ProjData::get_subset(const std::vector<int> views) const
+ProjData::get_subset(const std::vector<int>& views) const
 {
-  shared_ptr<ProjDataInfoSubsetByView> subset_proj_data_info_sptr(
-    ProjDataInfoSubsetByView(proj_data_info_sptr, views));
-  shared_ptr<ProjData> subset_proj_data_sptr(exam_info_sptr, subset_proj_data_info_sptr);
+  auto subset_proj_data_info_sptr =
+    std::make_shared<ProjDataInfoSubsetByView>(proj_data_info_sptr, views));
+  ProjDataInMemory subset_proj_data(exam_info_sptr, subset_proj_data_info_sptr);
 
-  for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); segment_num++) {
-    for (int subset_view=0; subset_view<views.size(); subset_view++) {
-      Viewgram<float> viewgram = get_viewgram(views[subset_view], segment_num);
-      Viewgram<float> subset_viewgram = get_viewgram(views[subset_view], segment_num);
+  for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
+    {
+      for (int subset_view_num=0; subset_view_num<views.size(); ++subset_view_num)
+        {
+          const Viewgram<float> viewgram = this->get_viewgram(views[subset_view_num], segment_num);
+          Viewgram<float> subset_viewgram = subset_proj_data_info_sptr-> get_empty_viewgram(subset_view_num, segment_num);
+          subset_viewgram.fill(viewgram);
+          if (subset_proj_data.set_viewgram(subset_viewgram) != Succeeded::yes)
+            error("ProjData::get_subset failed to set a viewgram");
+        }
     }
-  }
 }
 
   
