@@ -31,6 +31,10 @@
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
+#include "stir/ProjDataInMemory.h" // needed for subsets
+#include "stir/ProjDataInfoSubsetByView.h"
+#include "stir/Viewgram.h"
+
 
 #ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
@@ -224,6 +228,22 @@ read_from_file(const string& filename,
 //{
 //  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
 //}
+
+
+ProjDataInMemory
+ProjData::get_subset(const std::vector<int> views) const
+{
+  shared_ptr<ProjDataInfoSubsetByView> subset_proj_data_info_sptr(
+    ProjDataInfoSubsetByView(proj_data_info_sptr, views));
+  shared_ptr<ProjData> subset_proj_data_sptr(exam_info_sptr, subset_proj_data_info_sptr);
+
+  for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); segment_num++) {
+    for (int subset_view=0; subset_view<views.size(); subset_view++) {
+      Viewgram<float> viewgram = get_viewgram(views[subset_view], segment_num);
+      Viewgram<float> subset_viewgram = get_viewgram(views[subset_view], segment_num);
+    }
+  }
+}
 
   
 Viewgram<float> 

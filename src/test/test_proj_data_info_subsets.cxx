@@ -190,14 +190,14 @@ test_split(const ProjData &proj_data)
     std::vector<int> odd_views;
 
     for (int view = 0; view++; view < proj_data.get_num_views()) {
-        if view % 2 == 0:
+        if (view % 2 == 0)
             even_views.push_back(view);
         else
             odd_views.push_back(view);
     }
 
-    ProjData even_subset = proj_data.get_subset(even_views);
-    ProjData odd_subset = proj_data.get_subset(odd_views);
+    ProjDataInMemory even_subset = proj_data.get_subset(even_views);
+    ProjDataInMemory odd_subset = proj_data.get_subset(odd_views);
 
     int segment = 0; // for segment
 
