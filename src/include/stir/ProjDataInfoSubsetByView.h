@@ -2,7 +2,7 @@
     Copyright (C) ...
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -10,12 +10,12 @@
 
   \file
   \ingroup projdata
-  \brief Declaration of class stir::ProjDataInfoSubset
+  \brief Declaration of class stir::ProjDataInfoSubsetByView
 
   \author Ashley Gillman
 */
-#ifndef __stir_ProjDataInfoCylindrical_H__
-#define __stir_ProjDataInfoCylindrical_H__
+#ifndef __stir_ProjDataInfoSubsetByView__H__
+#define __stir_ProjDataInfoSubsetByView__H__
 
 
 #include "stir/ProjDataInfo.h"
@@ -40,26 +40,15 @@ private:
 
 public:
   //! Constructors
-  ProjDataInfoSubsetByView();
-  //! Constructor given all the necessary information
-  /*! The min and max ring difference in each segment are passed
-  as VectorWithOffsets. All three vectors have to have index ranges
-  from min_segment_num to max_segment_num.
-  
-  \warning Most of this library assumes that segment 0 corresponds
-  to an average ring difference of 0.
-  */
-  ProjDataInfoSubsetByView(
-    const shared_ptr<ProjDataInfo> full_proj_data_info,
-    const /*VectorWithOffset<int>& ?*/ std::vector<int> views);
+  //ProjDataInfoSubsetByView();
+  ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info,
+                           const std::vector<int> views);
 
   ProjDataInfo* clone() const;
 
-  //~ProjDataInfo() {}
-
   void reduce_segment_range(const int min_segment_num, const int max_segment_num);
  
-  //! set new number of views, covering the same azimuthal angle range
+  //! this will call error()
   void
     set_num_views(const int new_num_views);
 
@@ -81,7 +70,7 @@ public:
 
   float get_t(const Bin&) const;
 
-  inline float get_m(const Bin&) const;
+  float get_m(const Bin&) const;
 
   float get_s(const Bin&) const;
 
@@ -106,6 +95,9 @@ protected:
 
 private:
 
+  shared_ptr<ProjDataInfo> org_proj_data_info_sptr;
+  std::vector<int> view_to_org_view_num;
+  std::vector<int> org_view_to_view_num;
 };
 
 
