@@ -18,16 +18,38 @@
 */
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Bin.h"
+#include "stir/Array.h"
 
 START_NAMESPACE_STIR
 
 ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info_sptr,
                                                    const std::vector<int>& views)
   :
+  ProjDataInfo(full_proj_data_info_sptr->get_scanner_sptr(),
+               VectorWithOffset<int>(full_proj_data_info_sptr->get_min_segment_num(),
+                                     full_proj_data_info_sptr->get_max_segment_num()), // filled in below
+               views.size(),
+               full_proj_data_info_sptr->get_num_tangential_poss()),
   org_proj_data_info_sptr(full_proj_data_info_sptr->clone()),
-  view_to_org_view_num(views)
+  view_to_org_view_num(views),
+  org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
-  // TODO initialise the org_view_to_view_num
+  // initialise the org_view_to_view_num
+  for (int subset_view_num=0; subset_view_num<views.size(); ++subset_view_num)
+    {
+      org_view_to_view_num[view_to_org_view_num[subset_view_num]] = subset_view_num;
+    }
+
+  // currently need to copy information across due to bad hierarchy design
+  for (int segment_num = full_proj_data_info_sptr->get_min_segment_num();
+       segment_num <= full_proj_data_info_sptr->get_max_segment_num();
+       ++segment_num)
+    {
+      this->set_min_axial_pos_num(full_proj_data_info_sptr->get_min_axial_pos_num(segment_num), segment_num);
+      this->set_max_axial_pos_num(full_proj_data_info_sptr->get_max_axial_pos_num(segment_num), segment_num);
+    }
+  this->set_bed_position_horizontal(full_proj_data_info_sptr->get_bed_position_horizontal());
+  this->set_bed_position_vertical(full_proj_data_info_sptr->get_bed_position_vertical());
 }
 
 
@@ -69,26 +91,36 @@ void ProjDataInfoSubsetByView::set_num_tangential_poss(const int num_tang_poss)
 void ProjDataInfoSubsetByView::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment)
 {
   this->org_proj_data_info_sptr->set_num_axial_poss_per_segment(num_axial_poss_per_segment);
+  // currently need to do this
+  ProjDataInfo::set_num_axial_poss_per_segment(num_axial_poss_per_segment);
 }
 
 void ProjDataInfoSubsetByView::set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num)
 {
   this->org_proj_data_info_sptr->set_min_axial_pos_num(min_ax_pos_num, segment_num);
+  // currently need to do this
+  ProjDataInfo::set_min_axial_pos_num(min_ax_pos_num, segment_num);
 }
 
 void ProjDataInfoSubsetByView::set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num)
 {
   this->org_proj_data_info_sptr->set_max_axial_pos_num(max_ax_pos_num, segment_num);
+  // currently need to do this
+  ProjDataInfo::set_max_axial_pos_num(max_ax_pos_num, segment_num);
 }
 
 void ProjDataInfoSubsetByView::set_min_tangential_pos_num(const int min_tang_poss)
 {
   this->org_proj_data_info_sptr->set_min_tangential_pos_num(min_tang_poss);
+  // currently need to do this
+  ProjDataInfo::set_min_tangential_pos_num(min_tang_poss);
 }
 
 void ProjDataInfoSubsetByView::set_max_tangential_pos_num(const int max_tang_poss)
 {
   this->org_proj_data_info_sptr->set_max_tangential_pos_num(max_tang_poss);
+  // currently need to do this
+  ProjDataInfo::set_max_tangential_pos_num(max_tang_poss);
 }
 
 float ProjDataInfoSubsetByView::get_tantheta(const Bin& bin) const
