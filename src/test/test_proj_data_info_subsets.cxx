@@ -94,12 +94,13 @@ test_split(const ProjData &proj_data)
     std::vector<int> even_views;
     std::vector<int> odd_views;
 
-    for (int view = 0; view++; view < proj_data.get_num_views()) {
+    for (int view = 0; view < proj_data.get_num_views(); ++ view)
+      {
         if (view % 2 == 0)
             even_views.push_back(view);
         else
             odd_views.push_back(view);
-    }
+      }
 
     ProjDataInMemory even_subset = proj_data.get_subset(even_views);
     ProjDataInMemory odd_subset = proj_data.get_subset(odd_views);
@@ -107,12 +108,13 @@ test_split(const ProjData &proj_data)
     int segment = 0; // for segment
 
     // dodgy: assume n views is even
-    for (int subset_view = 0; subset_view++; subset_view < even_subset.get_num_views()) {
+    for (int subset_view = 0; subset_view < even_subset.get_num_views(); subset_view++)
+      {
         check_if_equal(
             proj_data.get_viewgram(even_views[subset_view], segment),
             even_subset.get_viewgram(subset_view, segment),
             "Are viewgrams equal?");
-    }
+      }
 }
 
 

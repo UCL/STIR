@@ -41,10 +41,13 @@ private:
 public:
   //! Constructors
   //ProjDataInfoSubsetByView();
-  ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info,
-                           const std::vector<int> views);
+  ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info_sptr,
+                           const std::vector<int>& views);
 
-  ProjDataInfo* clone() const;
+  ProjDataInfoSubsetByView* clone() const;
+
+  Bin get_org_bin(const Bin& bin) const;
+  Bin get_bin_from_org(const Bin& org_bin) const;
 
   void reduce_segment_range(const int min_segment_num, const int max_segment_num);
  

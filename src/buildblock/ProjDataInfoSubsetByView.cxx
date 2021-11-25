@@ -17,11 +17,12 @@
 
 */
 #include "stir/ProjDataInfoSubsetByView.h"
+#include "stir/Bin.h"
 
 START_NAMESPACE_STIR
 
-ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info,
-                                                   const std::vector<int> views)
+ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> full_proj_data_info_sptr,
+                                                   const std::vector<int>& views)
   :
   org_proj_data_info_sptr(full_proj_data_info_sptr->clone()),
   view_to_org_view_num(views)
@@ -30,20 +31,24 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
 }
 
 
-ProjDataInfo* ProjDataInfoSubsetByView::clone() const
+ProjDataInfoSubsetByView* ProjDataInfoSubsetByView::clone() const
 {
   return new ProjDataInfoSubsetByView(this->org_proj_data_info_sptr, this->org_view_to_view_num);
 }
 
-Bin ProjDataInfoSubsetByView::get_org_bin(const Bin& org_bin)
+Bin ProjDataInfoSubsetByView::get_org_bin(const Bin& bin) const
 {
-  // TODO
+  Bin org_bin(bin);
+  org_bin.view_num() = this->view_to_org_view_num[bin.view_num()];
+  return org_bin;
 }
 
 
-Bin ProjDataInfoSubsetByView::get_bin_from_org(const Bin&)
+Bin ProjDataInfoSubsetByView::get_bin_from_org(const Bin& org_bin) const
 {
-  // TODO
+  Bin bin(org_bin);
+  bin.view_num() = this->org_view_to_view_num[org_bin.view_num()];
+  return bin;
 }
 
 void ProjDataInfoSubsetByView::reduce_segment_range(const int min_segment_num, const int max_segment_num)
@@ -51,9 +56,9 @@ void ProjDataInfoSubsetByView::reduce_segment_range(const int min_segment_num, c
   this->org_proj_data_info_sptr->reduce_segment_range(min_segment_num, max_segment_num);
 }
  
-void set_num_views(const int)
+void ProjDataInfoSubsetByView::set_num_views(const int)
 {
-  error("");
+  error("ProjDataInfoSubsetByView does not allow changing the number of views");
 }
 
 void ProjDataInfoSubsetByView::set_num_tangential_poss(const int num_tang_poss)
@@ -61,34 +66,34 @@ void ProjDataInfoSubsetByView::set_num_tangential_poss(const int num_tang_poss)
   this->org_proj_data_info_sptr->set_num_tangential_poss(num_tang_poss);
 }
 
-void ProjDataInfoSubsetByView::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment);
+void ProjDataInfoSubsetByView::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment)
 {
   this->org_proj_data_info_sptr->set_num_axial_poss_per_segment(num_axial_poss_per_segment);
 }
 
 void ProjDataInfoSubsetByView::set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num)
 {
-  this->org_proj_data_info_sptr->;
+  this->org_proj_data_info_sptr->set_min_axial_pos_num(min_ax_pos_num, segment_num);
 }
 
-void ProjDataInfoSubsetByView::set_max_axial_pos_num(max_ax_pos_num, segment_num)
+void ProjDataInfoSubsetByView::set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num)
 {
   this->org_proj_data_info_sptr->set_max_axial_pos_num(max_ax_pos_num, segment_num);
 }
 
-void ProjDataInfoSubsetByView::set_min_tangential_pos_num(const int min_tang_poss, const int segment_num)
+void ProjDataInfoSubsetByView::set_min_tangential_pos_num(const int min_tang_poss)
 {
-  this->org_proj_data_info_sptr->set_min_tangential_pos_num(min_tang_poss, segment_num);
+  this->org_proj_data_info_sptr->set_min_tangential_pos_num(min_tang_poss);
 }
 
-void ProjDataInfoSubsetByView::set_max_tangential_pos_num(max_tang_poss)
+void ProjDataInfoSubsetByView::set_max_tangential_pos_num(const int max_tang_poss)
 {
   this->org_proj_data_info_sptr->set_max_tangential_pos_num(max_tang_poss);
 }
 
 float ProjDataInfoSubsetByView::get_tantheta(const Bin& bin) const
 {
-  this->org_proj_data_info_sptr->get_tantheta(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_tantheta(get_org_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_phi(const Bin& bin) const
@@ -103,7 +108,7 @@ float ProjDataInfoSubsetByView::get_t(const Bin& bin) const
 
 float ProjDataInfoSubsetByView::get_m(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->float get_m(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_m(get_org_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_s(const Bin& bin) const
@@ -143,14 +148,18 @@ bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
   return this->org_proj_data_info_sptr->operator>=(proj);
 }
 
-std::string ProjDataInfo::parameter_info() const
+std::string ProjDataInfoSubsetByView::parameter_info() const
 {
   // TODO insert view info
-  this->org_proj_data_info_sptr->parameter_info();
+  return this->org_proj_data_info_sptr->parameter_info();
 }
   
-bool ProjDataInfo::blindly_equals(const root_type * const p) const
+bool ProjDataInfoSubsetByView::blindly_equals(const root_type * const p) const
 {
-  this->org_proj_data_info_sptr->blindly_equals(p);
+  if ((*this->org_proj_data_info_sptr) != (*p))
+    return false;
   // TODO compare view tables
+  return true;
 }
+
+END_NAMESPACE_STIR
