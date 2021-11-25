@@ -92,7 +92,9 @@ public:
   bool operator>=(const ProjDataInfo& proj) const;
 
   std::string parameter_info() const;
-  
+
+  shared_ptr<const ProjDataInfo> get_org_proj_data_info_sptr() const;
+
 protected:
   bool blindly_equals(const root_type * const) const;
 

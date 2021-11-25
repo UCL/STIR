@@ -194,4 +194,9 @@ bool ProjDataInfoSubsetByView::blindly_equals(const root_type * const p) const
   return true;
 }
 
+shared_ptr<const ProjDataInfo> ProjDataInfoSubsetByView::get_org_proj_data_info_sptr() const
+{
+  return this->org_proj_data_info_sptr;
+}
+
 END_NAMESPACE_STIR
