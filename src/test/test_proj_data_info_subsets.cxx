@@ -186,34 +186,41 @@ run_tests()
 void TestProjDataInfoSubsets::
 test_split(const ProjData &proj_data)
 {
-    std::vector<int> even_views;
-    std::vector<int> odd_views;
+  int view;    
+  int num_subsets = 4;
 
-    for (int view = 0; view++; view < proj_data.get_num_views()) {
-        if (view % 2 == 0)
-            even_views.push_back(view);
-        else
-            odd_views.push_back(view);
+  std::vector<int> subset_views;
+
+  for (int subset = 0; subset < num_subsets; ++subset){
+    // create a vector containg every num_subsest-th view starting at subset
+    // for num_subsets = 4 and subset = 0 this is [0, 4, 8, 12, ...]
+    // for num_subsets = 4 and subset = 1 this is [1, 5, 9, 13, ...]
+
+    subset_views.clear();
+    view = subset;
+
+    while(view < proj_data.get_num_views()){
+      subset_views.push_back(view);
+      view += num_subsets;
     }
 
-    ProjDataInMemory even_subset = proj_data.get_subset(even_views);
-    ProjDataInMemory odd_subset = proj_data.get_subset(odd_views);
+    ProjDataInMemory subset_proj_data = proj_data.get_subset(subset_views);
 
-    int segment = 0; // for segment
+    // loop over views in the subset data and compare them against the original "full" data
+    for(std::size_t i = 0; i < subset_views.size(); ++i){
+      // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
+      // the corresponding view in the original data is at subset_views[i]
 
-    // dodgy: assume n views is even
-    for (int subset_view = 0; subset_view++; subset_view < even_subset.get_num_views()) {
-        // views_in_subset should be like {1, 2, 3}
+      // TODO: Check how to get number of segments from proj_data
+      // loop over all segments to check viewgram for all segments
+      for (int segment = 0; segment < proj_data.get_num_segments(); ++segment){
         compare_views(
-            proj_data.get_viewgram(even_views[subset_view], segment),
-            even_subset.get_viewgram(subset_view, segment));
-        compare_views(
-            proj_data.get_viewgram(even_views[subset_view], segment),
-            even_subset.get_viewgram(subset_view, segment));
-        // also compare viewgram metadata
-
+            proj_data.get_viewgram(subset_views[i], segment),
+            subset_proj.get_viewgram(i, segment));
+        // TODO also compare viewgram metadata
+      }
     }
-}
+  }      
 }
 
 
