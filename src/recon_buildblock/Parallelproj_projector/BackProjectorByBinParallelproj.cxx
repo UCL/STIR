@@ -49,7 +49,7 @@ BackProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() :
-    _cuda_device(0), _cuda_verbosity(true)
+    _cuda_verbosity(true)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -65,7 +65,6 @@ initialise_keymap()
 {
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
-  parser.add_key("CUDA device", &_cuda_device);
   parser.add_key("verbosity", &_cuda_verbosity);
 }
 
@@ -127,16 +126,32 @@ get_output(DiscretisedDensity<3,float> &density) const
     info("Calling parallelproj backprojector", 2);
 
 #ifdef parallelproj_built_with_CUDA
+
+    // send image to all visible CUDA devices
+    long long num_image_voxel = static_cast<long long>(image_vec.size());
+    float** image_on_cuda_devices;
+    image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+
+    // do (chuck-wise) back projection on the CUDA devices 
     joseph3d_back_cuda(_helper->xstart.data(),
                        _helper->xend.data(),
-                       image_vec.data(),
+                       image_on_cuda_devices,
                        _helper->origin.data(),
                        _helper->voxsize.data(),
                        p.get_const_data_ptr(),
                        static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
                        _helper->imgdim.data(),
-                       /*threadsperblock*/ 64,
-                       /*num_devices*/ -1);
+                       /*threadsperblock*/ 64);
+
+    // sum backprojected images on the first CUDA device
+    sum_float_arrays_on_first_device(image_on_cuda_devices, num_image_voxel);
+
+    // copy summed image back to host
+    get_float_array_from_device(image_on_cuda_devices, num_image_voxel, 0, image_vec.data());
+
+    // free image array from CUDA devices
+    free_float_array_on_all_devices(image_on_cuda_devices);
+
 #else
     joseph3d_back(_helper->xstart.data(),
                   _helper->xend.data(),

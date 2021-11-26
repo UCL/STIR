@@ -94,7 +94,6 @@ private:
     bool _do_not_setup_helper;
     friend class ProjectorByBinPairUsingParallelproj;
     void set_helper(shared_ptr<detail::ParallelprojHelper>);
-    int _cuda_device;
     bool _cuda_verbosity;
     bool _use_truncation;
 };

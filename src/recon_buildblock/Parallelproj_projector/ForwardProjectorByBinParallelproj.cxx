@@ -41,7 +41,7 @@ ForwardProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj() :
-    _cuda_device(0), _cuda_verbosity(true), _use_truncation(true)
+    _cuda_verbosity(true), _use_truncation(true)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -57,7 +57,6 @@ initialise_keymap()
 {
   parser.add_start_key("Forward Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Forward Projector Using Parallelproj Parameters");
-  parser.add_key("CUDA device", &_cuda_device);
   parser.add_key("verbosity", &_cuda_verbosity);
 }
 
@@ -144,16 +143,26 @@ set_input(const DiscretisedDensity<3,float> & density)
 
     info("Calling parallelproj forward",2);
 #ifdef parallelproj_built_with_CUDA
+
+    // send image to all visible CUDA devices
+    long long num_image_voxel = static_cast<long long>(image_vec.size());
+    float** image_on_cuda_devices;
+    image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+
+    // do (chuck-wise) projection on the CUDA devices 
     joseph3d_fwd_cuda(_helper->xstart.data(),
                       _helper->xend.data(),
-                      image_vec.data(),
+                      image_on_cuda_devices,
                       _helper->origin.data(),
                       _helper->voxsize.data(),
                       _projected_data_sptr->get_data_ptr(),
                       static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
                       _helper->imgdim.data(),
-                      /*threadsperblock*/ 64,
-                      /*num_devices*/ -1);
+                      /*threadsperblock*/ 64);
+
+    // free image array from CUDA devices
+    free_float_array_on_all_devices(image_on_cuda_devices);
+
 #else
     joseph3d_fwd(_helper->xstart.data(),
                   _helper->xend.data(),
