@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2018, Palak Wadhwa
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -22,6 +23,7 @@
 */
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
@@ -132,7 +134,18 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_swap_s(do_symmetry_swap_s_v),
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
-  if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get())))
+  if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(proj_data_info_ptr.get())))
+    {
+      // special handling of subset case
+      // will for now just switch view syms off
+      if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr->get_org_proj_data_info_sptr().get())))
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+              "(can only handle projection data corresponding to a cylinder)\n",
+              typeid(*proj_data_info_ptr->get_org_proj_data_info_sptr()).name());
+      do_symmetry_90degrees_min_phi = false;
+      do_symmetry_180degrees_min_phi = false;      
+    }
+  else if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get())))
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
           "(can only handle projection data corresponding to a cylinder)\n",
       typeid(*proj_data_info_ptr).name());

@@ -12,6 +12,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/Viewgram.h"
 
 
 START_NAMESPACE_STIR
@@ -30,6 +31,7 @@ public:
 
     void run_tests();
 
+    void test_split(const ProjData &proj_data);
     void test_split_and_combine(const ProjData &proj_data, int num_subets=2);
     void test_forward_projection_is_consistent(
         const DiscretisedDensity<3,float> &input_image, const ProjData &forward_projection,
@@ -50,104 +52,6 @@ TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string &sinogram_fil
 }
 
 
-static
-Succeeded
-compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
-{
-    // Subtract
-    std::vector<float> diff = vec1;
-    std::transform(vec1.begin(), vec1.end(), vec2.begin(), diff.begin(), std::minus<float>());
-
-    // Get max difference
-    const float max_diff = *std::max_element(diff.begin(), diff.end());
-
-    std::cout << "Min array 1 / array 2 = " << *std::min_element(vec1.begin(),vec1.end()) << " / " << *std::min_element(vec2.begin(),vec2.end()) << "\n";
-    std::cout << "Max array 1 / array 2 = " << *std::max_element(vec1.begin(),vec1.end()) << " / " << *std::max_element(vec2.begin(),vec2.end()) << "\n";
-    std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f)      << "\n";
-    std::cout << "Max diff = " << max_diff << "\n\n";
-
-    return (std::abs(max_diff) < 1e-3f ? Succeeded::yes : Succeeded::no);
-}
-
-static
-void
-compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, const DiscretisedDensity<3,float> &im_2)
-{
-    std::cout << "\nComparing images...\n";
-
-    if (!im_1.has_same_characteristics(im_2)) {
-        std::cout << "\nImages have different characteristics!\n";
-        everything_ok = false;
-    }
-
-    Coordinate3D<int> min_indices, max_indices;
-
-    im_1.get_regular_range(min_indices, max_indices);
-    unsigned num_elements = 1;
-    for (int i=0; i<3; ++i)
-        num_elements *= unsigned(max_indices[i + 1] - min_indices[i + 1] + 1);
-
-    std::vector<float> arr_1(num_elements), arr_2(num_elements);
-
-    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = im_1.begin_all_const();
-    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = im_2.begin_all_const();
-    std::vector<float>::iterator arr_1_iter = arr_1.begin();
-    std::vector<float>::iterator arr_2_iter = arr_2.begin();
-    while (im_1_iter!=im_1.end_all_const()) {
-        *arr_1_iter = *im_1_iter;
-        *arr_2_iter = *im_2_iter;
-        ++im_1_iter;
-        ++im_2_iter;
-        ++arr_1_iter;
-        ++arr_2_iter;
-    }
-
-    // Compare values
-    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
-        std::cout << "Images match!\n";
-    else {
-        std::cout << "Images don't match!\n";
-        everything_ok = false;
-    }
-}
-
-static
-void
-compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &proj_data_2)
-{
-    std::cout << "\nComparing sinograms...\n";
-
-    if (*proj_data_1.get_proj_data_info_sptr() != *proj_data_2.get_proj_data_info_sptr()) {
-        std::cout << "\nSinogram proj data info don't match\n";
-        everything_ok = false;
-    }
-
-    int min_segment_num = proj_data_1.get_min_segment_num();
-    int max_segment_num = proj_data_1.get_max_segment_num();
-
-    // Get number of elements
-    unsigned num_elements(0);
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
-        num_elements += unsigned(proj_data_1.get_max_axial_pos_num(segment_num) - proj_data_1.get_min_axial_pos_num(segment_num)) + 1;
-    num_elements *= unsigned(proj_data_1.get_max_view_num() - proj_data_1.get_min_view_num()) + 1;
-    num_elements *= unsigned(proj_data_1.get_max_tangential_pos_num() - proj_data_1.get_min_tangential_pos_num()) + 1;
-
-    // Create arrays
-    std::vector<float> arr_1(num_elements), arr_2(num_elements);
-    proj_data_1.copy_to(arr_1.begin());
-    proj_data_2.copy_to(arr_2.begin());
-
-    // Compare values
-    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
-        std::cout << "Sinograms match!\n";
-    else {
-        std::cout << "Sinograms don't match!\n";
-        everything_ok = false;
-    }
-}
-
-
-
 void
 TestProjDataInfoSubsets::
 run_tests()
@@ -156,7 +60,8 @@ run_tests()
         // Open sinogram
         _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
 
-        test_split_and_combine(*_input_sino_sptr);
+        test_split(*_input_sino_sptr);
+        // test_split_and_combine(*_input_sino_sptr);
 
         // shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> proj_pair (new ProjectorByBinPairUsingProjMatrixByBin);
 
@@ -214,9 +119,10 @@ test_split(const ProjData &proj_data)
       // TODO: Check how to get number of segments from proj_data
       // loop over all segments to check viewgram for all segments
       for (int segment = 0; segment < proj_data.get_num_segments(); ++segment){
+        // TODO: implement compare_views
         compare_views(
             proj_data.get_viewgram(subset_views[i], segment),
-            subset_proj.get_viewgram(i, segment));
+            subset_proj_data.get_viewgram(i, segment), "Are viewgrams equal?");
         // TODO also compare viewgram metadata
       }
     }
@@ -224,28 +130,28 @@ test_split(const ProjData &proj_data)
 }
 
 
-void TestProjDataInfoSubsets::
-test_split_and_combine(const ProjData &proj_data, int num_subsets)
-{
-    StandardSubsetter subsetter = StandardSubsetter(proj_data.get_proj_data_info_sptr(), num_subsets);
+// void TestProjDataInfoSubsets::
+// test_split_and_combine(const ProjData &proj_data, int num_subsets)
+// {
+//     StandardSubsetter subsetter = StandardSubsetter(proj_data.get_proj_data_info_sptr(), num_subsets);
 
-    std::vector<ProjData> subsets;
-    for (int s=0; s++; s<num_subsets) {
-        //ProjData subset = proj_data.get_subset(s, num_subsets);
-        // or
-        ProjData subset = proj_data.get_subset(subsetter.get_views_for_subset(s));
-        subsets.push_back(subset);
-    }
+//     std::vector<ProjData> subsets;
+//     for (int s=0; s++; s<num_subsets) {
+//         //ProjData subset = proj_data.get_subset(s, num_subsets);
+//         // or
+//         ProjData subset = proj_data.get_subset(subsetter.get_views_for_subset(s));
+//         subsets.push_back(subset);
+//     }
 
-    ProjData new_proj_data = ProjData(proj_data);  // how to copy?
-    new_proj_data.fill(0);
+//     ProjData new_proj_data = ProjData(proj_data);  // how to copy?
+//     new_proj_data.fill(0);
 
-    for (int s=0; s++; s<num_subsets) {
-        new_proj_data.fill_subset(s, num_subsets, subsets[s]);
-    }
+//     for (int s=0; s++; s<num_subsets) {
+//         new_proj_data.fill_subset(s, num_subsets, subsets[s]);
+//     }
 
-    compare_sinos(proj_data, new_proj_data);
-}
+//     compare_sinos(proj_data, new_proj_data);
+// }
 
 
 // void TestProjDataInfoSubsets::
