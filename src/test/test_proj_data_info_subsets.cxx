@@ -112,20 +112,20 @@ test_split(const ProjData &proj_data)
     ProjDataInMemory subset_proj_data = proj_data.get_subset(subset_views);
 
     // loop over views in the subset data and compare them against the original "full" data
-    for(std::size_t i = 0; i < subset_views.size(); ++i){
-      // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
-      // the corresponding view in the original data is at subset_views[i]
+    for(std::size_t i = 0; i < subset_views.size(); ++i)
+      {
+        // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
+        // the corresponding view in the original data is at subset_views[i]
 
-      // TODO: Check how to get number of segments from proj_data
-      // loop over all segments to check viewgram for all segments
-      for (int segment = 0; segment < proj_data.get_num_segments(); ++segment){
-        // TODO: implement compare_views
-        compare_views(
-            proj_data.get_viewgram(subset_views[i], segment),
-            subset_proj_data.get_viewgram(i, segment), "Are viewgrams equal?");
-        // TODO also compare viewgram metadata
+        // loop over all segments to check viewgram for all segments
+        for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
+          {
+            check_if_equal(
+                           proj_data.get_viewgram(subset_views[i], segment_num),
+                           subset_proj_data.get_viewgram(i, segment_num), "Are viewgrams equal?");
+            // TODO also compare viewgram metadata
+          }
       }
-    }
   }      
 }
 
