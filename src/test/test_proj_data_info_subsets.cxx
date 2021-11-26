@@ -13,7 +13,8 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Viewgram.h"
-
+#include "stir/Scanner.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -43,6 +44,7 @@ public:
 protected:
     std::string _sinogram_filename;
     shared_ptr<ProjData> _input_sino_sptr;
+    static shared_ptr<ProjData> construct_test_proj_data();
 
 };
 
@@ -51,14 +53,30 @@ TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string &sinogram_fil
 {
 }
 
-
+shared_ptr<ProjData> TestProjDataInfoSubsets::construct_test_proj_data()
+{
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+  shared_ptr<ProjDataInfo>
+    proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(scanner_ptr,
+                                                               /*span*/5, scanner_ptr->get_num_rings()-1,
+                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
+                                                               /*tang_pos*/64, 
+                                                               /*arc_corrected*/ false));
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  return std::make_shared<ProjDataInMemory>(exam_info_sptr, proj_data_info_sptr);
+}
+    
 void
 TestProjDataInfoSubsets::
 run_tests()
 {
-    try {
+    try
+      {
         // Open sinogram
-        _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
+        if (_sinogram_filename.empty())
+          _input_sino_sptr = construct_test_proj_data();
+        else
+          _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
 
         test_split(*_input_sino_sptr);
         // test_split_and_combine(*_input_sino_sptr);
@@ -186,14 +204,14 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    if (argc < 2) {
-        std::cerr << "\n\tUsage: " << argv[0] << " sinogram\n";
+    if (argc > 2) {
+        std::cerr << "\n\tUsage: " << argv[0] << " [projdata_filename]\n";
         return EXIT_FAILURE;
     }
 
     set_default_num_threads();
 
-    TestProjDataInfoSubsets test(argv[1]);
+    TestProjDataInfoSubsets test(argc>1? argv[1] : "");
 
     if (test.is_everything_ok())
         test.run_tests();
