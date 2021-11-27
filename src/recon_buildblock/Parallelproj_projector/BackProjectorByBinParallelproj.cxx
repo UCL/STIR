@@ -49,7 +49,7 @@ BackProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() :
-    _cuda_verbosity(true)
+    _cuda_verbosity(true), _num_gpu_chunks(1)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -66,6 +66,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
   parser.add_key("verbosity", &_cuda_verbosity);
+  parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
 
 void
@@ -127,21 +128,38 @@ get_output(DiscretisedDensity<3,float> &density) const
 
 #ifdef parallelproj_built_with_CUDA
 
-    // send image to all visible CUDA devices
     long long num_image_voxel = static_cast<long long>(image_vec.size());
+    long long num_lors = static_cast<long long>(p.get_proj_data_info_sptr()->size_all());
+
+    long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
+    long long remainder = num_lors & _num_gpu_chunks;
+
+    long long num_lors_per_chunk;
+    long long offset = 0;
+
+    // send image to all visible CUDA devices
     float** image_on_cuda_devices;
     image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
 
     // do (chuck-wise) back projection on the CUDA devices 
-    joseph3d_back_cuda(_helper->xstart.data(),
-                       _helper->xend.data(),
-                       image_on_cuda_devices,
-                       _helper->origin.data(),
-                       _helper->voxsize.data(),
-                       p.get_const_data_ptr(),
-                       static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                       _helper->imgdim.data(),
-                       /*threadsperblock*/ 64);
+    for(int i_chunk = 0; i_chunk < _num_gpu_chunks; i_chunk++){
+      if(i_chunk < remainder)
+        num_lors_per_chunk = num_lors_per_chunk_floor + 1;
+      else
+        num_lors_per_chunk = num_lors_per_chunk_floor;
+
+      joseph3d_back_cuda(_helper->xstart.data() + offset,
+                         _helper->xend.data() + offset,
+                         image_on_cuda_devices,
+                         _helper->origin.data(),
+                         _helper->voxsize.data(),
+                         p.get_const_data_ptr() + offset,
+                         num_lors_per_chunk,
+                         _helper->imgdim.data(),
+                         /*threadsperblock*/ 64);
+
+      offset += num_lors_per_chunk;
+    }
 
     // sum backprojected images on the first CUDA device
     sum_float_arrays_on_first_device(image_on_cuda_devices, num_image_voxel);

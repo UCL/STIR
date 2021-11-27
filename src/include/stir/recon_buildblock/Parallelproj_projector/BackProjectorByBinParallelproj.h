@@ -78,6 +78,10 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
+   // set/get number of gpu chunks to use
+   void set_num_gpu_chunks(int num_gpu_chunks) {_num_gpu_chunks = num_gpu_chunks; }
+   int  get_num_gpu_chunks() { return _num_gpu_chunks; }
+
 protected:
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,
@@ -92,6 +96,7 @@ protected:
   friend class ProjectorByBinPairUsingParallelproj;
   void set_helper(shared_ptr<detail::ParallelprojHelper>);
   bool _cuda_verbosity;
+  int _num_gpu_chunks;
 };
 
 END_NAMESPACE_STIR

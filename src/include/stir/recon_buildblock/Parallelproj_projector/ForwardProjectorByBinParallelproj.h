@@ -81,6 +81,10 @@ virtual void set_up(
     /// projection and after back projection
     void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
+    // set/get number of gpu chunks to use
+    void set_num_gpu_chunks(int num_gpu_chunks) {_num_gpu_chunks = num_gpu_chunks; }
+    int  get_num_gpu_chunks() { return _num_gpu_chunks; }
+
 protected:
 
   virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
@@ -96,6 +100,7 @@ private:
     void set_helper(shared_ptr<detail::ParallelprojHelper>);
     bool _cuda_verbosity;
     bool _use_truncation;
+    int _num_gpu_chunks;
 };
 
 END_NAMESPACE_STIR
