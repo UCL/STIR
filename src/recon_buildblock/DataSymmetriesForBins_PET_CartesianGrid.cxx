@@ -183,6 +183,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
 }
 #endif
 
+#if 0 // disabled as now derived from Cylindrical
 // overloading for generic case
 static void
 find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
@@ -224,6 +225,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
                 + num_planes_per_scanner_ring*delta)/2;
     }
 }
+#endif
 
 /*! The DiscretisedDensity pointer has to point to an object of 
   type  DiscretisedDensityOnCartesianGrid (or a derived type).
@@ -380,12 +382,18 @@ DataSymmetriesForBins_PET_CartesianGrid
        this->do_symmetry_swap_segment =
        this->do_symmetry_swap_s = false;
      }
+    if (!dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get())->axial_sampling_is_uniform())
+      {
+        this->do_symmetry_shift_z = false;
+        this->do_symmetry_swap_segment = false;
+      }
 
+    // TODOBLOCK. should probably not call next function for non-uniform sampling
     find_relation_between_coordinate_systems(
             num_planes_per_scanner_ring,
             num_planes_per_axial_pos,
             axial_pos_to_z_offset,
-            static_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get()),
+            dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
             cartesian_grid_info_ptr);
   }
     // generic implementation
@@ -429,11 +437,18 @@ DataSymmetriesForBins_PET_CartesianGrid
         this->do_symmetry_shift_z = false;
     }
 
+    if (!dynamic_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get())->axial_sampling_is_uniform())
+      {
+        this->do_symmetry_shift_z = false;
+        this->do_symmetry_swap_segment = false;
+      }
+
+    // TODOBLOCK. should probably not call next function for non-uniform sampling
     find_relation_between_coordinate_systems(
           num_planes_per_scanner_ring,
           num_planes_per_axial_pos,
           axial_pos_to_z_offset,
-          static_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get()),
+          dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
           cartesian_grid_info_ptr);
     }
 }

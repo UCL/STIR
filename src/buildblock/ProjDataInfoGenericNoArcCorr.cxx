@@ -174,15 +174,7 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
-
   assert(num_detectors%2 == 0);
-  // check views range from 0 to Pi
-  /*!
-    warning The following assersions are slightly different from cylindrical.
-    because in the function get_phi(bin), get_lor is called.
-  */
-  assert(fabs(Bin(0,0,0,0).view_num()*get_azimuthal_angle_sampling()) < 1.E-4);
-  assert(fabs(Bin(0,get_num_views(),0,0).view_num()*get_azimuthal_angle_sampling() - _PI) < 1.E-4);
 
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
@@ -235,11 +227,6 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
     {
       error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
     }
-
-  // check views range from 0 to Pi
-  //! warning The following assersions are slightly different from cylindrical. See the above function
-  assert(fabs(Bin(0,0,0,0).view_num()*get_azimuthal_angle_sampling()) < 1.E-4);
-  assert(fabs(Bin(0,get_max_view_num()+1,0,0).view_num()*get_azimuthal_angle_sampling() - _PI) < 1.E-4);
 
 
   //const int min_tang_pos_num = -(num_detectors/2);
@@ -328,7 +315,7 @@ get_num_det_pos_pairs_for_bin(const Bin& bin) const
 
 void
 ProjDataInfoGenericNoArcCorr::
-get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
+get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >& dps,
 			      const Bin& bin) const
 {
   this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();

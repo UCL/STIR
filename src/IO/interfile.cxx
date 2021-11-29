@@ -1441,7 +1441,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
             }
 
         const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
-          if (fabs(proj_data_info_sptr->get_ring_radius()-
+#if 0 // KT commented out. currently no get_ring_radius() anymore
+        if (fabs(proj_data_info_sptr->get_ring_radius()-
         scanner.get_effective_ring_radius()) > .1)
       warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
          "\tproj_data_info has %g, scanner has %g.\n"
@@ -1449,6 +1450,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
          "\tYou will have a problem reading this data back in.",
          proj_data_info_sptr->get_ring_radius(),
          scanner.get_effective_ring_radius());
+#endif
           if (fabs(proj_data_info_sptr->get_ring_spacing()-
         scanner.get_ring_spacing()) > .1)
        warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
@@ -1490,20 +1492,6 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
               }
 
               const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
-              if (fabs(proj_data_info_sptr->get_ring_radius() - scanner.get_effective_ring_radius()) > .1)
-              	 warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
-              		 "\tproj_data_info has %g, scanner has %g.\n"
-              		 "\tThis really should not happen and signifies a bug.\n"
-              		 "\tYou will have a problem reading this data back in.",
-              		 proj_data_info_sptr->get_ring_radius(),
-              		 scanner.get_effective_ring_radius());
-              if (fabs(proj_data_info_sptr->get_ring_spacing() - scanner.get_ring_spacing()) > .1)
-              	 warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
-              		 "\tproj_data_info has %g, scanner has %g.\n"
-              		 "\tThis really should not happen and signifies a bug.\n"
-              		 "\tYou will have a problem reading this data back in.",
-              		 proj_data_info_sptr->get_ring_spacing(),
-              		 scanner.get_ring_spacing());
 
               output_header << scanner.parameter_info();
 
