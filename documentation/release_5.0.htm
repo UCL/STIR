@@ -162,7 +162,13 @@ Backward compatibility for reconstructed images can be achieved by setting the <
   <li> <code>find_ML_normfactors3D</code> and <code>apply_ML_normfactors3D</code> can be used for scanner with virtual crystal (Only verified on mCT).
       Contributed by Gefei Chen, see <a href=https://github.com/UCL/STIR/pull/833>PR 833</a>.
   </li>
- li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
+  <li> If there are multiple buckets specified in the interfile header, we increase the symmetry size to a bucket in the <code>find_ML_normfactors3D</code>. Otherwise, we use a block.
+     The use of an argument <code>--for-symmetry-per-block</code> in the <code>find_ML_normfactors3D</code> utility will use the symmetry size of a block.
+  </li>
+  <li> If there are multiple buckets specified in the interfile header, we increase the symmetry size to a bucket in the <code>apply_ML_normfactors3D</code>. Otherwise, we use a block.
+     The use of an argument <code>do_symmetry_per_block</code> in the <code>apply_ML_normfactors3D</code> utility will use the symmetry size of a block.
+  </li>
+ <li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
 	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
     ROOT file event processing is now up to 4x faster. In addition, there is now an option to <tt>check energy window information</tt> (defaulting to on).
     Futhermore, added functionality to exclude true and unscattered event types from list mode processing. </li>
