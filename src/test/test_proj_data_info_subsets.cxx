@@ -127,7 +127,7 @@ test_split(const ProjData &proj_data)
       view += num_subsets;
     }
 
-    ProjDataInMemory& subset_proj_data = *proj_data.get_subset(subset_views);
+    ProjDataInMemory& subset_proj_data = (ProjDataInMemory&)*proj_data.get_subset(subset_views);
 
     // loop over views in the subset data and compare them against the original "full" data
     for(std::size_t i = 0; i < subset_views.size(); ++i)
