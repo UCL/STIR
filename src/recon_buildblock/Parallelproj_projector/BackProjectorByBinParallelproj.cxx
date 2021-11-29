@@ -70,6 +70,15 @@ initialise_keymap()
 }
 
 void
+BackProjectorByBinParallelproj::
+set_defaults()
+{
+  _cuda_verbosity = true;
+  _num_gpu_chunks = 1;
+}
+
+
+void
 BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
 {
   this->_helper = helper;

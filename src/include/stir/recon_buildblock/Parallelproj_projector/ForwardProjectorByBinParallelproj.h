@@ -74,6 +74,9 @@ virtual void set_up(
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
+    /// set defaults
+    void set_defaults();
+
     /// Set verbosity
     void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 

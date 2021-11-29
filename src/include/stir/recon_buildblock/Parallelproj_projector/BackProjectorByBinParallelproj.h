@@ -75,6 +75,9 @@ public:
     This function has to be called before any back-projection is initiated.*/
   virtual void start_accumulating_in_new_target();
 
+  /// set defaults
+  void set_defaults();
+
   /// Set verbosity
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 

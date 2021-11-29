@@ -62,6 +62,16 @@ initialise_keymap()
 }
 
 void
+ForwardProjectorByBinParallelproj::
+set_defaults()
+{
+  _cuda_verbosity = true;
+  _use_truncation = true;
+  _num_gpu_chunks = 1;
+}
+
+
+void
 ForwardProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
 {
   this->_helper = helper;
