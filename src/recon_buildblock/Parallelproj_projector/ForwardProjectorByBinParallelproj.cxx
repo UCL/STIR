@@ -149,7 +149,7 @@ set_input(const DiscretisedDensity<3,float> & density)
     long long num_lors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all());
 
     long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
-    long long remainder = num_lors & _num_gpu_chunks;
+    long long remainder = num_lors % _num_gpu_chunks;
 
     long long num_lors_per_chunk;
     long long offset = 0;
@@ -160,13 +160,15 @@ set_input(const DiscretisedDensity<3,float> & density)
 
     // do (chuck-wise) projection on the CUDA devices 
     for(int i_chunk = 0; i_chunk < _num_gpu_chunks; i_chunk++){
-      if(i_chunk < remainder)
+      if(i_chunk < remainder){
         num_lors_per_chunk = num_lors_per_chunk_floor + 1;
-      else
+      }
+      else{
         num_lors_per_chunk = num_lors_per_chunk_floor;
+      }
 
-      joseph3d_fwd_cuda(_helper->xstart.data() + offset,
-                        _helper->xend.data() + offset,
+      joseph3d_fwd_cuda(_helper->xstart.data() + 3*offset,
+                        _helper->xend.data() + 3*offset,
                         image_on_cuda_devices,
                         _helper->origin.data(),
                         _helper->voxsize.data(),
