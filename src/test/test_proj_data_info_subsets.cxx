@@ -127,7 +127,7 @@ test_split(const ProjData &proj_data)
       view += num_subsets;
     }
 
-    ProjDataInMemory subset_proj_data = proj_data.get_subset(subset_views);
+    ProjDataInMemory& subset_proj_data = *proj_data.get_subset(subset_views);
 
     // loop over views in the subset data and compare them against the original "full" data
     for(std::size_t i = 0; i < subset_views.size(); ++i)
@@ -155,9 +155,9 @@ test_split(const ProjData &proj_data)
 
 //     std::vector<ProjData> subsets;
 //     for (int s=0; s++; s<num_subsets) {
-//         //ProjData subset = proj_data.get_subset(s, num_subsets);
+//         //ProjData& subset = *proj_data.get_subset(s, num_subsets);
 //         // or
-//         ProjData subset = proj_data.get_subset(subsetter.get_views_for_subset(s));
+//         ProjData& subset = *proj_data.get_subset(subsetter.get_views_for_subset(s));
 //         subsets.push_back(subset);
 //     }
 
@@ -190,7 +190,7 @@ test_split(const ProjData &proj_data)
 //     back_projection_sum.fill(0.f);
 
 //     for (int s=0; s++; s<num_subsets) {
-//         ProjData subset = input_sino.get_subset(s, num_subsets);
+//         ProjData& subset = *input_sino.get_subset(s, num_subsets);
 
 //     }
 // }
