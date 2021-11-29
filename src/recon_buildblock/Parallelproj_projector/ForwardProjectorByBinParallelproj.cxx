@@ -159,8 +159,8 @@ set_input(const DiscretisedDensity<3,float> & density)
     image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
 
     // do (chuck-wise) projection on the CUDA devices 
-    for(int i_chunk = 0; i_chunk < _num_gpu_chunks; i_chunk++){
-      if(i_chunk < remainder){
+    for(int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++){
+      if(chunk_num < remainder){
         num_lors_per_chunk = num_lors_per_chunk_floor + 1;
       }
       else{
