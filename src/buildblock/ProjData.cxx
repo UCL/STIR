@@ -230,12 +230,13 @@ read_from_file(const string& filename,
 //}
 
 
-ProjDataInMemory
+unique_ptr<ProjData>
 ProjData::get_subset(const std::vector<int>& views) const
 {
   auto subset_proj_data_info_sptr =
     std::make_shared<ProjDataInfoSubsetByView>(proj_data_info_sptr, views);
-  ProjDataInMemory subset_proj_data(exam_info_sptr, subset_proj_data_info_sptr);
+  auto subset_proj_data_ptr = new ProjDataInMemory(exam_info_sptr, subset_proj_data_info_sptr);
+  auto subset_proj_data = *subset_proj_data_ptr;
 
   for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
     {
@@ -247,7 +248,7 @@ ProjData::get_subset(const std::vector<int>& views) const
             error("ProjData::get_subset failed to set a viewgram");
         }
     }
-  return subset_proj_data;
+  return unique_ptr<ProjData>(subset_proj_data_ptr);
 }
 
   
