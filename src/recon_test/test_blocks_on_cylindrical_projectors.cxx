@@ -106,13 +106,22 @@ BlocksTests::run_plane_symmetry_test(){
     
 //    rotate by 30 degrees
     phi2=30*_PI/180;
-    VoxelsOnCartesianGrid<float>  image2=image;
+    VoxelsOnCartesianGrid<float>  image2=*image.get_empty_copy();
     const Array<2,float> direction2=make_array(make_1d_array(1.F,0.F,0.F),
     make_1d_array(0.F,cos(float(_PI)-phi2),sin(float(_PI)-phi2)),
     make_1d_array(0.F,-sin(float(_PI)-phi2),cos(float(_PI)-phi2)));
-    plane.set_direction_vectors(direction2);
+    
+    Ellipsoid
+      plane2(CartesianCoordinate3D<float>(/*edge_z*/25*grid_spacing.z(),
+                                             /*edge_y*/91*grid_spacing.y(),
+                                             /*edge_x*/5*grid_spacing.x()),
+		        /*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(),
+                                                       0*grid_spacing.y(),
+                                                       0),
+                direction2);
+//    plane.set_direction_vectors(direction2);
         
-    plane.construct_volume(image2, make_coordinate(3,3,3));
+    plane2.construct_volume(image2, make_coordinate(3,3,3));
     
 //    create projadata info
     
@@ -196,20 +205,21 @@ BlocksTests::run_plane_symmetry_test(){
     forw_projector2_sptr->forward_project(*projdata2, *image2_sptr);
     
     int view1_num = 0, view2_num = 0;
-    LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB;
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB1;
     for(int i=0;i<projdata->get_max_view_num();i++){
         Bin bin(0,i,0,0);
-        proj_data_info_blocks_ptr->get_LOR(lorB,bin);
-        if(abs(lorB.phi()-phi1)/phi1<=1E-2){
+        proj_data_info_blocks_ptr->get_LOR(lorB1,bin);
+        if(abs(lorB1.phi()-phi1)/phi1<=1E-2){
             view1_num=i;
             break;
         }
     }
     
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB2;
     for(int i=0;i<projdata2->get_max_view_num();i++){
         Bin bin(0,i,0,0);
-        proj_data_info_blocks_ptr->get_LOR(lorB,bin);
-        if(abs(lorB.phi()-phi2)/phi2<=1E-2){
+        proj_data_info_blocks_ptr->get_LOR(lorB2,bin);
+        if(abs(lorB2.phi()-phi2)/phi2<=1E-2){
             view2_num=i;
             break;
         }
@@ -231,16 +241,16 @@ BlocksTests::run_plane_symmetry_test(){
         for(int tang=projdata2->get_min_tangential_pos_num();tang<projdata2->get_max_tangential_pos_num();tang++){
             
             if((max2-projdata2->get_sinogram(0,0).at(view2_num).at(tang))/max2<1E-3) {
-                tang1_num=tang;
+                tang2_num=tang;
                 break;
             }
         }
 
         float bin1=projdata->get_sinogram(0,0).at(view1_num).at(tang1_num);
         float bin2=projdata2->get_sinogram(0,0).at(view2_num).at(tang2_num);
-    set_tolerance(10E-3);
-    check_if_equal(bin1, max1,"the value seen in the block at 30 degrees should be the same as the max value of the sinogram");
-    check_if_equal(bin2, max2,"the value seen in the block at 60 degrees should be the same as the max value of the sinogram");
+    set_tolerance(10E-2);
+    check_if_equal(bin1, max1,"the value seen in the block at 60 degrees should be the same as the max value of the sinogram");
+    check_if_equal(bin2, max2,"the value seen in the block at 30 degrees should be the same as the max value of the sinogram");
 }
 
 /*! The following is a test for symmetries: a simulated image is created with spherical source in front of each detector block,

@@ -489,7 +489,7 @@ ProjDataInfoTests::run_Blocks_DOI_test()
     int Bring1, Bring2, Bdet1,Bdet2, BDring1, BDring2, BDdet1, BDdet2;
     CartesianCoordinate3D< float> b1,b2,bd1,bd2;
     float doi=scannerBlocksDOI_ptr->get_average_depth_of_interaction();
-//    timer.reset(); timer.start();
+    timer.reset(); timer.start();
     
     for (int seg =proj_data_info_blocks_doi0_ptr->get_min_segment_num(); seg <=proj_data_info_blocks_doi0_ptr->get_max_segment_num();  ++ seg)
       for (int ax =proj_data_info_blocks_doi0_ptr->get_min_axial_pos_num(seg); ax <=proj_data_info_blocks_doi0_ptr->get_max_axial_pos_num(seg); ++ax)
@@ -545,15 +545,30 @@ ProjDataInfoTests::run_coordinate_test()
     scannerBlocks_ptr->set_num_axial_crystals_per_block(1);
     scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
                                                scannerBlocks_ptr->get_num_axial_crystals_per_block());
-    scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
-                                                    scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
     scannerBlocks_ptr->set_num_transaxial_crystals_per_block(1);
     scannerBlocks_ptr->set_num_axial_blocks_per_bucket(1);
     scannerBlocks_ptr->set_num_transaxial_blocks_per_bucket(1);
+        scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
+                                                    scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
     scannerBlocks_ptr->set_num_rings(1);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     
+    int num_transaxial_blocks_per_bucket = scannerBlocks_ptr->get_num_transaxial_blocks_per_bucket();
+    int num_transaxial_crystals_per_block = scannerBlocks_ptr->get_num_transaxial_crystals_per_block();
+	int num_transaxial_buckets = scannerBlocks_ptr->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+    float transaxial_block_spacing = scannerBlocks_ptr->get_transaxial_block_spacing();
+    float transaxial_crystal_spacing = scannerBlocks_ptr->get_transaxial_crystal_spacing();
+//    estimate the angle covered by a bucket, alpha
+    
+    float csi=_PI/num_transaxial_buckets;
+    float trans_blocks_gap=transaxial_block_spacing-num_transaxial_crystals_per_block*transaxial_crystal_spacing;
+    float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing/2)*
+            (transaxial_crystal_spacing/2+trans_blocks_gap);
+    
+    float dx=scannerBlocks_ptr->get_effective_ring_radius()*sin(csi_minus_csiGaps);
+    float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
+
     shared_ptr<Scanner> scannerCyl_ptr;
     scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
     scannerCyl_ptr->set_num_axial_crystals_per_block(1);
@@ -604,7 +619,7 @@ ProjDataInfoTests::run_coordinate_test()
     int Bring1, Bring2, Bdet1,Bdet2, Cring1, Cring2, Cdet1, Cdet2;
     int RTring1, RTring2, RTdet1,RTdet2;
     CartesianCoordinate3D< float> b1,b2,c1,c2,roundt1, roundt2;
-//    timer.reset(); timer.start();
+    timer.reset(); timer.start();
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB;
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorC;
     
@@ -796,7 +811,14 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
     
     int Bring1, Bring2, Bdet1,Bdet2, Cring1, Cring2, Cdet1, Cdet2;
     CartesianCoordinate3D< float> b1,b2,c1,c2;
-//    timer.reset(); timer.start();
+    
+    //    estimate the angle covered by half bucket, csi
+        float csi=_PI/scannerBlocks_ptr->get_num_transaxial_buckets();
+    //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
+        float r=scannerBlocks_ptr->get_effective_ring_radius()/cos(csi);
+        float max_tolerance=abs(scannerBlocks_ptr->get_effective_ring_radius()-r);
+        
+    timer.reset(); timer.start();
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB;
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorC;
     
@@ -842,14 +864,15 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                 proj_data_info_blocks_ptr->find_cartesian_coordinates_of_detection(b1,b2,bin);
                 
                 // we expect to be differences of the order of the mm in x and y due to the difference in geometry
-                set_tolerance(10E-1);
                 
-                check_if_equal(b1.z(),c1.z(), " ");
-                check_if_equal(b2.z(),c2.z(), " ");
-                check_if_equal(b1.y(),c1.y(), " ");
-                check_if_equal(b2.y(),c2.y(), " ");
-                check_if_equal(b1.x(),c1.x(), " ");
-                check_if_equal(b2.x(),c2.x(), " ");
+                set_tolerance(max_tolerance);
+                
+                check_if_equal(b1.z(),c1.z(), " checking cartesian coordinate z1");
+                check_if_equal(b2.z(),c2.z(), " checking cartesian coordinate z2");
+                check_if_equal(b1.y(),c1.y(), " checking cartesian coordinate y1");
+                check_if_equal(b2.y(),c2.y(), " checking cartesian coordinate y2");
+                check_if_equal(b1.x(),c1.x(), " checking cartesian coordinate x1");
+                check_if_equal(b2.x(),c2.x(), " checking cartesian coordinate x2");
                                        
               }
     timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
@@ -948,31 +971,30 @@ run_lor_get_s_test(){
 //    num_det_per_ring:2PI=det_id_diff:PI/2
     int det_id_diff=scannerBlocks_ptr->get_num_detectors_per_ring()*(_PI/2)/(2*_PI);
     int Ctb=scannerCyl_ptr->get_num_transaxial_crystals_per_block();
-    float crystal_trans_spacing=scannerBlocks_ptr->get_transaxial_crystal_spacing();
+    float transaxial_crystal_spacing=scannerBlocks_ptr->get_transaxial_crystal_spacing();
     float block_trans_spacing=scannerBlocks_ptr->get_transaxial_block_spacing();
     float prev_s=0;
     float prev_phi=0;
     for (int i=0; i<scannerCyl_ptr->get_num_transaxial_crystals_per_block();i++){
         
-        Cring1=0;Cdet1=i+2*Ctb-Ctb/2;
-        Cring2=0;Cdet2=2*Ctb-Ctb/2+det_id_diff+Ctb-1 -i;
+        Cring1=0;Cdet1=i+2*Ctb;
+        Cring2=0;Cdet2=2*Ctb+det_id_diff+Ctb-1 -i;
                 
         proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1,Cring1,Cdet2,Cring1);
         proj_data_info_blocks_ptr->get_LOR(lorB,bin);
         float R=block_trans_spacing*(sin(_PI*5/12)+sin(_PI/4)+sin(_PI/12));
         float s=R*cos(_PI/3)+
-                crystal_trans_spacing/2*sin(_PI/4)+
-                (i)*crystal_trans_spacing*sin(_PI/4);
+                transaxial_crystal_spacing/2*sin(_PI/4)+
+                (i)*transaxial_crystal_spacing*sin(_PI/4);
         
-        float s_step=crystal_trans_spacing*sin(_PI/4);
+        float s_step=transaxial_crystal_spacing*sin(_PI/4);
         
 //        the following fails at the moment
 //        check_if_equal(s, lorB.s(),std::to_string(i)+ " Blocks get_s()  is different");
 //        the first value we expect to be different
+        set_tolerance(10E-3);
         if (i>0){
-        check_if_equal(s_step, lorB.s()-prev_s,std::to_string(i)+ " Blocks get_s() the step is different");//+
-//                       std::to_string(crystal_trans_spacing*sin(_PI/4)) + " lorB.s() the step is "+std::to_string(lorB.s()-prev_s)+
-//                       + "phi step is "+std::to_string(lorB.phi()-prev_phi));
+        check_if_equal(s_step, lorB.s()-prev_s,std::to_string(i)+ " Blocks get_s() the step is different");
         check_if_equal(0.F, lorB.phi()-prev_phi, " Blocks get_phi() should be always the same as we are considering parallel LORs");
         }
         prev_s=lorB.s();

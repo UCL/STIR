@@ -169,12 +169,22 @@ build_crystal_maps()
 		see start_x*/
 
 		//calculate start_point to build the map.
+
+//    estimate the angle covered by half bucket, csi
+    float csi=_PI/num_transaxial_buckets;
+    float trans_blocks_gap=transaxial_block_spacing-num_transaxial_crystals_per_block*transaxial_crystal_spacing;
+    float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing*2)*
+            (transaxial_crystal_spacing/2+trans_blocks_gap);
+//    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
+    float r=get_scanner_ptr()->get_effective_ring_radius()/cos(csi_minus_csiGaps);
+    
 	float start_z = 0;
 	float start_y = -1*get_scanner_ptr()->get_effective_ring_radius();
-	float start_x = -1*(
-								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
-							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
-											); //the first crystal in the bucket
+	float start_x = -1*r*sin(csi_minus_csiGaps);//(
+//								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
+//							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
+//											); //the first crystal in the bucket
+    
 	stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
 	for (int ax_block_num=0; ax_block_num<num_axial_blocks; ++ax_block_num)
@@ -184,20 +194,12 @@ build_crystal_maps()
 					for (int trans_crys_num=0; trans_crys_num<num_transaxial_crystals_per_block; ++trans_crys_num)
 	{
 		// calculate detection position for a given detector
-		// note: in STIR convention, crystal(0,0,0) corresponds to card_coord(z=-l/2,y=-r,x=0)
+		// note: in STIR convention, crystal(0,0,0) corresponds to card_coord(z=0,y=-r,x=0)
 		int tangential_coord;
-		if (num_transaxial_blocks_per_bucket%2==0)
 			tangential_coord = trans_bucket_num*num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block
 														+ trans_block_num*num_transaxial_crystals_per_block
-														+ trans_crys_num
-														- num_transaxial_blocks_per_bucket/2*num_transaxial_crystals_per_block;
-		else
-			tangential_coord = trans_bucket_num*num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block
-														+ trans_block_num*num_transaxial_crystals_per_block
-														+ trans_crys_num
-														- num_transaxial_blocks_per_bucket/2*num_transaxial_crystals_per_block
-														- num_transaxial_crystals_per_block/2;
-
+														+ trans_crys_num;
+		
 		if (tangential_coord<0)
 					tangential_coord += num_detectors_per_ring;
 
@@ -210,7 +212,8 @@ build_crystal_maps()
 									ax_block_num*axial_block_spacing + ax_crys_num*axial_crystal_spacing,
 									0.,
 									trans_block_num*transaxial_block_spacing + trans_crys_num*transaxial_crystal_spacing);
-		float alpha = trans_bucket_num*(2*_PI)/num_transaxial_buckets;
+		float alpha = get_scanner_ptr()->get_intrinsic_azimuthal_tilt()+
+                trans_bucket_num*(2*_PI)/num_transaxial_buckets+csi_minus_csiGaps;
 
 		stir::Array<2, float> rotation_matrix = get_rotation_matrix(alpha);
 		// to match index range of CartesianCoordinate3D, which is 1 to 3
