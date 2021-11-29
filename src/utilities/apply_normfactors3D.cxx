@@ -38,16 +38,18 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc<7 || argc>12)
+  if (argc<7 || argc>13)
     {
       std::cerr << "Usage: " << argv[0] 
-           << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num [do_eff [ do_geo [ do_block [do_display]]]]\n"
+           << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num [do_eff [ do_geo [ do_block [do_display [do_symmetry_per_block ]]]]]\n"
 	   << "apply_or_undo is 1 (multiply) or 0 (divide)\n"
 	   << "do_eff, do_geo, do_block are 1 or 0 and all default to 1\n"	   
-      	   << "do_display is 1 or 0 (defaults to 0)\n";
+      	   << "do_display is 1 or 0 (defaults to 0)\n"
+	   << "do_symmetry_per_block is 1 or 0 (defaults to 0)\n";
       return EXIT_FAILURE;
     }
 
+  bool do_symmetry_per_block = argc>=12?atoi(argv[11])!=0 : false;
   const bool do_display = argc>=11?atoi(argv[10])!=0 : false;
   bool do_block = argc>=10?atoi(argv[9])!=0: true;
   bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
@@ -101,17 +103,18 @@ int main(int argc, char **argv)
     int num_physical_transaxial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
-    if(num_transaxial_buckets >1) {
-            num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;    
-    }	
     int num_physical_axial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
    // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
-    if(num_axial_buckets >1) {
-	    num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;    
-    }
+    if(do_symmetry_per_block==false) {
+      if(num_transaxial_buckets >1) {
+            num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
+      }
+      if(num_axial_buckets >1) {
+            num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;
+      }
+    }    
 
   GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring);
 

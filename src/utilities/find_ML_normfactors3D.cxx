@@ -37,7 +37,7 @@
 
 static void print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model] \\\n"
+  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
 	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
 	   << " set num_iterations to 0 to do only efficiencies\n";
   exit(EXIT_FAILURE);
@@ -57,6 +57,7 @@ int main(int argc, char **argv)
   bool do_KL = false;
   bool do_geo = true;
   bool do_block = false;
+  bool do_symmetry_per_block = false;
 
   // first process command line options
   while (argc>0 && argv[0][0]=='-' && argc>=1)
@@ -79,6 +80,11 @@ int main(int argc, char **argv)
       else if (strcmp(argv[0], "--include-block-timing-model")==0)
 	{
 	  do_block = true;
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--for-symmetry-per-block")==0)
+	{
+	  do_symmetry_per_block = true;
 	  --argc; ++argv;
 	}
       else
@@ -131,17 +137,19 @@ int main(int argc, char **argv)
     int num_physical_transaxial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
-   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.                                                                                                                                             
-    if(num_transaxial_buckets >1) {
-            num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
-    }
     int num_physical_axial_crystals_per_basic_unit =
             measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
                     get_num_axial_crystals_per_block()-virtual_axial_crystals;
-   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.                                                                                                                                             
-    if(num_axial_buckets >1) {
+   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
+    if(do_symmetry_per_block==false) {
+      if(num_transaxial_buckets >1) {
+	    num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
+      }
+      if(num_axial_buckets >1) {
             num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;
+      }
     }
+
 
 
 
