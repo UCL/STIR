@@ -15,11 +15,11 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_ParametricDiscretisedDensity
+	test_ParametricDiscretisedDensity.cxx
 )
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_modelling
+	test_modelling.cxx
 )
 
 ADD_TEST(test_modelling

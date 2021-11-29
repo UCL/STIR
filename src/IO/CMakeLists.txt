@@ -19,7 +19,9 @@ set(${dir_LIB_SOURCES}
   OutputFileFormat.cxx
   OutputFileFormat_default.cxx
   InterfileOutputFileFormat.cxx
-  interfile InterfileHeader InterfilePDFSHeaderSPECT.cxx
+  interfile.cxx
+  InterfileHeader.cxx
+  InterfilePDFSHeaderSPECT.cxx
   InterfileHeaderSiemens.cxx
   InputFileFormatRegistry.cxx
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx

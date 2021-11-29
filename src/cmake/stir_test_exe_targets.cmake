@@ -84,15 +84,15 @@ endmacro( create_stir_mpi_test)
 #### use the above macros for each target in dir_SIMPLE_TEST_EXE_SOURCES etc
 
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
-   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 
 # identical to above, but without including the registries as dependencies
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
-   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "")
+   create_stir_test (${executable} "${STIR_LIBRARIES}" "")
 endforeach()
 
 foreach(executable ${${dir_INVOLVED_TEST_EXE_SOURCES}})
-   create_stir_involved_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_involved_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 
