@@ -39,11 +39,14 @@ set(${dir_LIB_SOURCES}
   utilities.cxx
   interfile_keyword_functions.cxx
   zoom.cxx
-  NumericType ByteOrder.cxx
+  NumericType.cxx
+  ByteOrder.cxx
   KeyParser.cxx
   recon_array_functions.cxx
-  linear_regression overlap_interpolate.cxx
-  error warning.cxx
+  linear_regression.cxx
+  overlap_interpolate.cxx
+  error.cxx
+  warning.cxx
   TextWriter.cxx
   DataSymmetriesForViewSegmentNumbers.cxx
   TimeFrameDefinitions.cxx
@@ -103,7 +106,7 @@ if (NOT HAVE_SYSTEM_GETOPT)
 endif()
 
 if (HAVE_JSON)
-  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
+  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor.cxx)
 endif()
 
 include(stir_lib_target)

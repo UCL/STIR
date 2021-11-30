@@ -33,6 +33,8 @@ class SinglesRates;
   for finding the randoms-rate in terms of the
   singles-rates. The function then takes duration properly into account using the following
   procedure.
+  This uses \c isotope_halflife in the computation of \f$\lambda\f$. Default value is -1 and the function will
+  extract \c isotope_halflife from \c proj_data. If set, will use the passed value.
 
   We actually have total counts in the singles for sinograms and need total counts in the randoms.
   Assuming the radioactivity distribution is stationary and only decays, and dropping indices \f$i,j\f$,
@@ -49,9 +51,14 @@ class SinglesRates;
      r_{ij} = \tau s_i s_j \frac{ \int_{t_1}^{t_2} dt\,exp (-2 \lambda t)}{\left(\int_{t1}^{t2} dt\,exp (-\lambda t)\right)^2}
   \f]
 
+  For more details, see:
+  Stearns, C. W., McDaniel, D. L., Kohlmyer, S. G., Arul, P. R., Geiser, B. P., & Shanmugam, V. (2003).
+  Random coincidence estimation from single event rates on the Discovery ST PET/CT scanner.
+  2003 IEEE Nuclear Science Symposium. Conference Record (IEEE Cat. No.03CH37515), 5, 3067-3069.
+  https://doi.org/10.1109/NSSMIC.2003.1352545
+
   \todo Dead-time is currently completely ignored.
-  \todo The function currently assumes F-18 half-life.
 */
-void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window);
+void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window, float isotope_halflife=-1.F);
 
 END_NAMESPACE_STIR

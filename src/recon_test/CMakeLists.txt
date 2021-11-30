@@ -15,20 +15,20 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_DataSymmetriesForBins_PET_CartesianGrid
-        test_FBP2D
-        test_FBP3DRP
-        test_priors
-        test_blocks_on_cylindrical_projectors
+	test_DataSymmetriesForBins_PET_CartesianGrid.cxx
+        test_FBP2D.cxx
+        test_FBP3DRP.cxx
+        test_priors.cxx
+        test_blocks_on_cylindrical_projectors.cxx
 )
 
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
-        fwdtest
-        bcktest
-        recontest
-        test_data_processor_projectors
-        test_OSMAPOSL
+        fwdtest.cxx
+        bcktest.cxx
+        recontest.cxx
+        test_data_processor_projectors.cxx
+        test_OSMAPOSL.cxx
 )
 
 include(stir_test_exe_targets)

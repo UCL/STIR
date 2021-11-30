@@ -695,8 +695,10 @@ calculate_proj_matrix_elems_for_one_bin(
   //if (num_lors_per_axial_pos>1 && tantheta==0 num_lors_per_axial_pos%2==0);
 
   // merging code assumes integer multiple
-  assert(fabs(sampling_distance_of_adjacent_LORs_z/voxel_size.z()
-              - num_lors_per_axial_pos) <= 1E-4);
+  if (fabs(sampling_distance_of_adjacent_LORs_z/voxel_size.z()
+              - num_lors_per_axial_pos) > 1E-3)
+    error(boost::format("ProjMatrixByBinUsingRayTracing: currently need sampling distance in axial direction (%f) to be an integer multiple of the voxel size (%g)")
+          % sampling_distance_of_adjacent_LORs_z % voxel_size.z());
 
 
   // find offset in z, taking into account if there are 1 or more LORs
