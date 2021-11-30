@@ -1358,11 +1358,22 @@ namespace stir {
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 
+// ignore this to avoid problems with unique_ptr, and add it later
+%ignore stir::ProjData::get_subset;
 %include "stir/ProjData.h"
+
+%newobject stir::ProjData::get_subset;
 
 namespace stir {
 %extend ProjData
   {
+    // work around the current SWIG limitation that it doesn't wrap unique_ptr. See above
+    ProjDataInMemory* get_subset(const std::vector<int>& views)
+    {
+      return get_subset(views).get();
+    }
+
+
 #ifdef SWIGPYTHON
     %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
     %newobject to_array;

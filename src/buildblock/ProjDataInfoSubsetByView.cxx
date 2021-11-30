@@ -35,7 +35,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
   org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
   // initialise the org_view_to_view_num
-  for (int subset_view_num=0; subset_view_num<views.size(); ++subset_view_num)
+  for (int subset_view_num=0; subset_view_num<static_cast<int>(views.size()); ++subset_view_num)
     {
       org_view_to_view_num[view_to_org_view_num[subset_view_num]] = subset_view_num;
     }

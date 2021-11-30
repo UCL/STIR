@@ -127,7 +127,7 @@ test_split(const ProjData &proj_data)
       view += num_subsets;
     }
 
-    auto subset_proj_data_uptr = std::move(proj_data.get_subset(subset_views));
+    auto subset_proj_data_uptr = proj_data.get_subset(subset_views);
     auto& subset_proj_data = *subset_proj_data_uptr;
 
     // loop over views in the subset data and compare them against the original "full" data
