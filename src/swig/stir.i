@@ -96,8 +96,12 @@
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+#ifdef HAVE_parallelproj
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif
+
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
@@ -1729,17 +1733,11 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
     stir::ForwardProjectorByBin>);
-%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
-    stir::ForwardProjectorByBin>);
 %shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
-%shared_ptr(stir::ForwardProjectorByBinParallelproj);
 %shared_ptr(stir::BackProjectorByBin);
 %shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
     stir::BackProjectorByBin>);
-%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
-    stir::BackProjectorByBin>);
 %shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
-%shared_ptr(stir::BackProjectorByBinParallelproj);
 
 
 %shared_ptr(stir::ProjMatrixByBin);
@@ -1768,18 +1766,29 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 
-%template (internalRPForwardProjectorByBinParallelproj)  
-  stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
-     stir::ForwardProjectorByBin>;
-%include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
-
 
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 
+
+
+#ifdef HAVE_parallelproj
+%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::ForwardProjectorByBinParallelproj);
+%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::BackProjectorByBinParallelproj);
+
+%template (internalRPForwardProjectorByBinParallelproj)  
+  stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+
 %template (internalRPBackProjectorByBinParallelproj)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif
