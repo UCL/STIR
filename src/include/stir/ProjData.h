@@ -129,7 +129,7 @@ public:
     set_sinogram(const Sinogram<float>&) = 0;
 
   //! construct projection data that stores a subset of the views
-  unique_ptr<ProjData>
+  unique_ptr<ProjDataInMemory>
     get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
