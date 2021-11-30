@@ -248,7 +248,7 @@ ProjData::get_subset(const std::vector<int>& views) const
             error("ProjData::get_subset failed to set a viewgram");
         }
     }
-  return unique_ptr<ProjDataInMemory>(subset_proj_data_ptr);
+  return std::move(unique_ptr<ProjDataInMemory>(subset_proj_data_ptr));
 }
 
   
