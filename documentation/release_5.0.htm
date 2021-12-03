@@ -69,7 +69,13 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     STIR usages of these methods (OSSPS and SqrtHessianRowSum) have been updated to see no effective change in functionality.
     However, calling the Hessian vector product methods, via python etc., will result in a change in functionality as the sign of the output voxel values has changed.
 </li>
+
+<li> Python/MATLAB wrappers no longer have <code>ProjDataInfo::ProjDataInfoCTI</code>, use <code>ProjDataInfo::construct_proj_data_info</code> instead.
+  However, this now returns an object of the appropriate (derived) type as opposed to just
+  <code>ProjDataInfo</code>. This should be transparant, except apparently for testing equality of objects.
+</li>
 </ul>
+
 
 
 <h3>Bug fixes</h3>
