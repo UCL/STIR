@@ -1208,11 +1208,6 @@ Scanner::parameter_info() const
     s << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
       <<get_scanner_geometry() << '\n';
   }
-  if (get_scanner_orientation() != "")
-  {
-    s << "Scanner orientation (X or Y)                                := "
-      <<get_scanner_orientation() << '\n';
-  }
   if (get_axial_crystal_spacing() >=0)
     s << "Distance between crystals in axial direction (cm)           := "
       << get_axial_crystal_spacing()/10 << '\n';
@@ -1278,9 +1273,8 @@ Scanner* Scanner::ask_parameters()
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
       info("more options are available for the scanner: \n(a) Energy Resolution :=\n(b) Reference energy (in keV)\t:="
-        "\n(c) Scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) \n(d) Scanner orientation (X or Y)\t:="
+        "\n(c) Scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) \n"
         "\n\n(a) and (b) are used in Scatter Simulation. \n (c) is used to choose more precise models of the scanner. "
-        "\n(d) is used in BlocksOnCylindrical Geometry to build the proper crystal map."
         "\nIn case, you need them, set them manually in your interfile header before 'end scanner parameters:='.");
       
       //This is needed for finding effective central bin size, because it is different for different geometries.
