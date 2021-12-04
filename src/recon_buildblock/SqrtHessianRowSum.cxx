@@ -24,6 +24,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 #include "stir/unique_ptr.h"
+#include "stir/Verbosity.h"
 
 
 START_NAMESPACE_STIR
@@ -54,6 +55,7 @@ set_defaults()
   set_compute_with_penalty(false);
 
   _already_setup = false;
+  this->_verbosity = -1;
 }
 
 template <typename TargetT>
@@ -66,6 +68,7 @@ SqrtHessianRowSum<TargetT>::initialise_keymap()
   parser.add_key("use approximate Hessian", &use_approximate_hessian);
   parser.add_key("compute with penalty", &compute_with_penalty);
   parser.add_parsing_key("objective function type", &objective_function_sptr);
+  parser.add_key("verbosity", &_verbosity);
   parser.add_stop_key("End");
 }
 
@@ -80,6 +83,10 @@ SqrtHessianRowSum<TargetT>::post_processing()
     return true;
   }
   input_image_sptr = read_from_file<TargetT>(input_image_filename);
+
+  if (_verbosity >= 0)
+    Verbosity::set(_verbosity);
+
   return false;
 }
 
