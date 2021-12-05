@@ -130,10 +130,6 @@ endif()
 
 if(NOT DISABLE_HDF5)
   find_package(HDF5 COMPONENTS CXX)
-  if (HDF5_FOUND)
-    message(WARNING "STIR HDF5 code needs C++-11, so we will enable this.")
-    UseCXX(11)
-  endif()
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
