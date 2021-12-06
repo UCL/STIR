@@ -58,6 +58,7 @@
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/LORCoordinates.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Array.h"
@@ -825,6 +826,9 @@ namespace std {
 %shared_ptr(stir::Segment<float>);
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
+%shared_ptr(stir::LORAs2Points<float>);
+%shared_ptr(stir::LOR<float>);
+%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 #else
 namespace boost {
 template<class T> class shared_ptr
@@ -881,6 +885,9 @@ T * operator-> () const;
 
 %include "stir/BasicCoordinate.h"
 %include "stir/Coordinate3D.h"
+%include "stir/LORCoordinates.h"
+
+%template(FloatLOR) stir::LOR<float>;
 // ignore non-const versions
 %ignore  stir::CartesianCoordinate3D::z();
 %ignore  stir::CartesianCoordinate3D::y();
@@ -1103,6 +1110,7 @@ namespace stir {
 
   %ADD_indexaccess(int,T,VectorWithOffset);
   %template(FloatVectorWithOffset) VectorWithOffset<float>;
+  %template(IntVectorWithOffset) VectorWithOffset<int>;
 
   // TODO need to instantiate with name?
   %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
@@ -1221,7 +1229,7 @@ namespace stir {
   //  then setitem still doesn't modify the object for more than 1 level
 #if 1
   // note: next line has no memory allocation problems because all Array<1,...> objects
-  // are auto-converted to shared_ptrs.
+  // are auto-converted to _ptrs.
   // however, cannot use setitem to modify so ideally we would define getitem only (at least for python) (TODO)
   // TODO DISABLE THIS
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
@@ -1355,6 +1363,39 @@ namespace stir {
 %include "stir/ProjDataInfoGenericNoArcCorr.h"
 %include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 
+%extend stir::ProjDataInfoBlocksOnCylindricalNoArcCorr {
+    
+stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> get_lor(const Bin bin){
+    stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+    $self->get_LOR(lor,bin);
+    return lor;
+}
+
+stir::CartesianCoordinate3D<float>
+    find_cartesian_coordinate_of_detection_1(const Bin bin) const 
+{
+    CartesianCoordinate3D<float> coord_1;
+    CartesianCoordinate3D<float> coord_2;
+    $self->find_cartesian_coordinates_of_detection(coord_1,
+                                                   coord_2,
+                                                   bin);
+    
+    return coord_1;
+}
+
+stir::CartesianCoordinate3D<float>
+    find_cartesian_coordinate_of_detection_2(const Bin bin) const 
+{
+    CartesianCoordinate3D<float> coord_1;
+    CartesianCoordinate3D<float> coord_2;
+    $self->find_cartesian_coordinates_of_detection(coord_1,
+                                                   coord_2,
+                                                   bin);
+    
+    return coord_2;
+}
+}
+        
 %include "stir/Viewgram.h"
 %include "stir/RelatedViewgrams.h"
 %include "stir/Sinogram.h"
