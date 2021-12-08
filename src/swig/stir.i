@@ -888,6 +888,7 @@ T * operator-> () const;
 %include "stir/LORCoordinates.h"
 
 %template(FloatLOR) stir::LOR<float>;
+%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
 // ignore non-const versions
 %ignore  stir::CartesianCoordinate3D::z();
 %ignore  stir::CartesianCoordinate3D::y();

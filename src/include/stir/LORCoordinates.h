@@ -433,6 +433,10 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self_type;
   typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
 

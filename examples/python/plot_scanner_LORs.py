@@ -32,10 +32,12 @@ import math
 import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+import matplotlib.cm as cm
 #%% definition of useful objects and variables
 
 scanner=stir.Scanner_get_scanner_from_name('SAFIRDualRingPrototype')
+scanner.set_num_transaxial_blocks_per_bucket(2)
+# scanner.set_intrinsic_azimuthal_tilt(45)
 # scanner.set_num_axial_crystals_per_block(1)
 # scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block());
 # scanner.set_num_rings(1)
@@ -52,6 +54,8 @@ r=scanner.get_effective_ring_radius()
 
 NtCpBl=scanner.get_num_transaxial_crystals_per_block()
 NtBlpBu=scanner.get_num_transaxial_blocks_per_bucket()
+NaCpBl=scanner.get_num_axial_crystals_per_block()
+NaBlpBu=scanner.get_num_axial_blocks_per_bucket()
 NCpR=scanner.get_num_detectors_per_ring()
 
 min_r_diff=stir.IntVectorWithOffset((2*Nr-1))
@@ -81,34 +85,61 @@ proj_data_info_blocks=stir.ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner, num
 #%% Plot 2D XY LORs for segment, axial position and tangential position =0
 b1=stir.FloatCartesianCoordinate3D;
 b2=stir.FloatCartesianCoordinate3D;
-lor=stir.FloatLOR;
+lor=stir.FloatLORInAxialAndNoArcCorrSinogramCoordinates;
 
-fig=plt.figure(figsize=(12, 12))
+fig=plt.figure()
 ax=plt.axes()
 plt.xlim([-rmax, rmax])
 plt.ylim([-rmax, rmax])
 ax.set_xlabel('X ')
 ax.set_ylabel('Y ')
 
+color_v = iter(cm.tab20(numpy.linspace(0, 10, NCpR)))
+c=next(color_v)
+tB_num2=-1
+
 for v in range(0, Nv, 5):
+    tB_nim_i, tB_num_f=divmod(v/NtCpBl,1)
+    tB_num=int(tB_nim_i)
     bin=stir.Bin(0,v,0,0)
+
+    if tB_num>tB_num2:
+        c=next(color_v)
+
+    tB_num2=tB_num
     b1=proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
     b2=proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
-    plt.plot((b1.x(), b2.x()),(b1.y(), b2.y()))
-    # plt.show()  #if debugging we can se how the LORs are order
-plt.show()    
-plt.savefig('2D-XY-LOR.png', format='png', dpi=300)
+    
+    plt.plot((b1.x(), b2.x()),(b1.y(), b2.y()),color=c)
+    plt.plot(b1.x(),b1.y(),'o',color=c, label="Block %s - det %s" % (tB_num, v))
 
-plt.close()
+    # Shrink current axis %
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0+box.y0*0.01, box.width * .985, box.height])
+    plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
+    # plt.show()  #if debugging we can se how the LORs are order
+
+plt.savefig('2D-2BlocksPerBuckets-XY-LOR.png', format='png', dpi=300)
+plt.show()    
+plt.close();
+
+# # %% the following is an example when using LOR coordinates
+# fig=plt.figure(figsize=(12, 12))
+# ax=plt.axes()
+# plt.xlim([-rmax, rmax])
+# plt.ylim([-rmax, rmax])
+# ax.set_xlabel('X ')
+# ax.set_ylabel('Y ')
 
 # for v in range(0, Nv, 5):
 #     bin=stir.Bin(0,v,0,0)
 #     lor=proj_data_info_blocks.get_lor(bin)
 #     phi=lor.phi();
-#     plt.plot((b1.x(), b2.x()),(b1.y(), b2.y()))
-#     # plt.show()
+#     r=lor.radius()
+#     plt.plot((r*math.sin(phi), r*math.sin(phi+math.pi)),(-r*math.cos(phi), -r*math.cos(phi+math.pi)))
+#     plt.show()
 # plt.show()    
-# plt.savefig('2D-XY-LOR.png', format='png', dpi=300)
+# plt.savefig('2D-XY-LOR-cyl.png', format='png', dpi=300)
 
 # plt.close()
 
@@ -118,12 +149,34 @@ plt.xlim([0, NaBl*aBl_s])
 plt.ylim([-rmax, rmax])
 ax.set_xlabel('Z ')
 ax.set_ylabel('Y ')
-for a in range(0,(Nr-1), 1):
+
+color_a = iter(cm.tab20(numpy.linspace(0, 1, Nr)))
+c=next(color_a)
+aB_num2=-1
+
+for a in range(0,(Nr), 1):
+    aB_nim_i, aB_num_f=divmod(a/NaCpBl,1)
+    aB_num=int(aB_nim_i)
+    bin=stir.Bin(0,v,0,0)
+
+    if aB_num>aB_num2:
+        c=next(color_a)
+
+    aB_num2=aB_num
     bin=stir.Bin((Nr-1),0,a,0)
     b1=proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
     b2=proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
-    plt.plot((b1.z(), b2.z()),(b1.y(), b2.y()))
+    
+    plt.plot((b1.z(), b2.z()),(b1.y(), b2.y()),color=c)
+    plt.plot(b1.z(),b1.y(),'o',color=c, label="Block %s - ring %s" % (aB_num, a))
+
+    # Shrink current axis 
+    box = ax.get_position()
+    ax.set_position([box.x0-box.x0*0.01, box.y0+box.y0*0.01, box.width * .985, box.height])
+    plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
+
     # plt.show()
+
 plt.savefig('2D-YZ-LOR.png', format='png', dpi=300)
 plt.show()
 plt.close()
@@ -137,12 +190,31 @@ ax.set_zlim([0, NaBl*aBl_s])
 ax.set_xlabel('X ')
 ax.set_ylabel('Y ')
 ax.set_zlabel('Z ')
-for a in range(0,(Nr-1), 1):
-    for v in range(0, Nv, 15):
+color_a = iter(cm.tab20(numpy.linspace(0, 1, Nr)))
+c=next(color_a)
+aB_num2=-1
+
+for a in range(0,(Nr), 4):
+    for v in range(0, Nv, 30):
+        # aB_nim_i, aB_num_f=divmod(a/NaCpBl,1)
+        # aB_num=int(aB_nim_i)
         bin=stir.Bin((Nr-1),v,a,0)
+        
+        # if aB_num>aB_num2:
+        c=next(color_a)
+            
+        # aB_num2=aB_num
         b1=proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
         b2=proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
-        plt.plot((b1.x(), b2.x()),(b1.y(), b2.y()),(b1.z(), b2.z()))
-        plt.show()
+        plt.plot((b1.x(), b2.x()),(b1.y(), b2.y()),(b1.z(), b2.z()),color=c)
+        ax.scatter3D(b1.x(),b1.y(),b1.z(),'o',color=c, label="ring %s - detector %s" % (a, v))
+
+        # Shrink current axis by 1.5%
+        box = ax.get_position()
+        ax.set_position([box.x0-box.x0*0.12, box.y0+box.y0*0.01, box.width * .985, box.height])
+        
+        plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
+        # plt.show()
 
 plt.savefig('3dLOR.png', format='png', dpi=300)
+plt.show()
