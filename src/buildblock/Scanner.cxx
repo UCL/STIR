@@ -769,15 +769,14 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 }
 
 // creates maps to convert between stir and 3d coordinates
-void
+Scanner::det_pos_to_coord_type
 Scanner::
-read_detectormap_from_file( const std::string& crystal_map_name )
+read_detectormap_from_file_help( const std::string& crystal_map_name )
 {
     std::ifstream crystal_map_file(crystal_map_name.c_str());
     if( !crystal_map_file )
     {
-        std::cerr << "Error opening file " << crystal_map_name << "." << std::endl;
-        return;
+        error("Error opening file '" + crystal_map_name + "'");
     }
     std::string line;
     //map containing the crystal map from the input file (safir -> coords)
@@ -805,8 +804,14 @@ read_detectormap_from_file( const std::string& crystal_map_name )
 
         coord_map[detpos] = coord;
     }
+    return coord_map;
+}
 
-    // The detector crystal coordinates are now saved in coord_map the following way:
+void
+Scanner::
+set_detector_map( const Scanner::det_pos_to_coord_type& coord_map )
+{
+    // The detector crystal coordinates are saved in coord_map the following way:
     // (detector#, ring#, 1)[(x,y,z)]
     // the detector# and ring# are determined outside of STIR (later given in input)
     // In order to fulfill the STIR convention we have to give the coordinates  
@@ -837,7 +842,7 @@ read_detectormap_from_file( const std::string& crystal_map_name )
         detpos.tangential_coord() = det;
         detpos.radial_coord() = 0;
         input_index_to_stir_index[map_for_sorting_coordinates[*it]] = detpos;
-        stir_index_to_coord[detpos] = coord_map[map_for_sorting_coordinates[*it]];
+        stir_index_to_coord[detpos] = coord_map.at(map_for_sorting_coordinates[*it]);
         det++;
         if (det == num_detectors_per_ring)
         {
@@ -849,6 +854,16 @@ read_detectormap_from_file( const std::string& crystal_map_name )
             }
         }
     }
+}
+
+// creates maps to convert between stir and 3d coordinates
+void
+Scanner::
+read_detectormap_from_file( const std::string& crystal_map_name )
+{
+  det_pos_to_coord_type coord_map =
+  read_detectormap_from_file_help(crystal_map_file_name);
+  set_detector_map(coord_map);
 }
 
 /*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
