@@ -492,9 +492,16 @@ private:
         return seed;
     }
   };
-  boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> input_index_to_stir_index;
-  boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> stir_index_to_coord;
+
+  typedef boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> det_pos_to_coord_type;
+  typedef boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> unordered_to_ordered_det_pos_type;
+  unordered_to_ordered_det_pos_type input_index_to_stir_index;
+  det_pos_to_coord_type stir_index_to_coord;
   std::string crystal_map_file_name;
+
+  static det_pos_to_coord_type
+    read_detectormap_from_file_help( const std::string& crystal_map_name );
+  void set_detector_map( const det_pos_to_coord_type& coord_map );
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );
