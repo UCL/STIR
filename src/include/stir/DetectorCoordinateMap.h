@@ -1,27 +1,19 @@
-/* DetectorCoordinateMapFromFile.h
- Read List-Mode Event Data using map from file: Header File
-
+/*
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2020 Positrigo AG, Zurich
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+    This file is part of STIR.
 
-		http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    See STIR/LICENSE.txt for details
  */
 
 /*!
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::DetectorCoordinateMapFromFile
+  \brief Declaration of class stir::DetectorCoordinateMap
 
   \author Jannis Fischer
 */
@@ -36,8 +28,8 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DetectionPosition.h"
 
-#ifndef __stir_listmode_DetectorCoordinateMapFromFile_H__
-#define __stir_listmode_DetectorCoordinateMapFromFile_H__
+#ifndef __stir_DetectorCoordinateMap_H__
+#define __stir_DetectorCoordinateMap_H__
 
 START_NAMESPACE_STIR
 
@@ -47,11 +39,11 @@ START_NAMESPACE_STIR
 	ring,detector,(layer,)x,y,z
 	An empty line will terminate the reading at that line.
 */
-class DetectorCoordinateMapFromFile
+class DetectorCoordinateMap
 {
 public:
 	//! Constructor calls read_detectormap_from_file( filename ).
-	DetectorCoordinateMapFromFile(const std::string& filename, double sigma = 0.0) :
+	DetectorCoordinateMap(const std::string& filename, double sigma = 0.0) :
 		sigma(sigma),
 		distribution(0.0, sigma)
 		{ read_detectormap_from_file( filename ); }

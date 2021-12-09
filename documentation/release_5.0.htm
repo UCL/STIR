@@ -266,7 +266,8 @@ from the above):</H2>
     <li>Poisson log-likelihood hierarchy has changed for gradient methods to now use <tt>actual_compute_subset_gradient_without_penalty</tt>
 	in the derived classes (which has an extra argument <tt>add_sensitivity</tt>). Therefore developers that created their own derived class will need to
 	adjust their class accordingly. The <tt>public</tt> class interface is identical though.
-    </li>    
+    </li>
+    <li><code>DetectorCoordinateMapFromfile</code> (used by SAFIR listmode files) has been renamed to <code>DetectorCoordinateMap</code> and moved from <tt>listmode</tt> to <tt>buildblock</tt></li>
 </ul>
 
 <h3>New functionality</h3>
