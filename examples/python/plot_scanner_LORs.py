@@ -1,23 +1,20 @@
-# Demo of how to use STIR from python to reconstruct some data
+# Demo of how to use STIR from python to plot line of responses of a blocksOnCylindrical scanner in different 2D 
+# orientation and in 3Ds. The plots show the coordinate system used in STIR with labels L for left, R for right, 
+# P for posterior, A for anterior, H for Head and F for feet. This is easily modifiable for Cylindrical scanner. 
 # To run in "normal" Python, you would type the following in the command line
-#  execfile('recon_demo.py')
+#  execfile('plot_scanner_LORs.py')
 # In ipython, you can use
-#  %run recon_demo.py
+#  %run plot_scanner_LORs.py
 
-# Copyright 2012-06-05 - 2013 Kris Thielemans
-# Copyright 2015 University College London
+# Copyright 2021 University College London
+# Copyright 2021 National Phyisical Laboratory
+
+# Author Daniel Deidda
+# Author Kris Thielemans
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -37,7 +34,7 @@ import matplotlib.cm as cm
 
 scanner=stir.Scanner_get_scanner_from_name('SAFIRDualRingPrototype')
 scanner.set_num_transaxial_blocks_per_bucket(2)
-# scanner.set_intrinsic_azimuthal_tilt(45)
+scanner.set_intrinsic_azimuthal_tilt(0)
 # scanner.set_num_axial_crystals_per_block(1)
 # scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block());
 # scanner.set_num_rings(1)
@@ -67,6 +64,7 @@ tBl_gap=tBl_s-NtCpBl*tC_s
 csi_minus_csiGaps=csi-(csi/tBl_s*2)*(tC_s/2+tBl_gap)
 rmax =r/math.cos(csi_minus_csiGaps)
 
+# scanner.set_intrinsic_azimuthal_tilt(-csi_minus_csiGaps) #if you want to play with the orientation of the blocks
 
 #%% Create projection data info for Blocks on Cylindrical
 for i in range(0,2*Nr-1,1 ):
@@ -115,11 +113,16 @@ for v in range(0, Nv, 5):
 
     # Shrink current axis %
     box = ax.get_position()
-    ax.set_position([box.x0, box.y0+box.y0*0.01, box.width * .985, box.height])
+    ax.set_position([box.x0-box.y0*0.04, box.y0+box.y0*0.01, box.width, box.height])
+    ax.set_aspect('equal', 'box')
     plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
     # plt.show()  #if debugging we can se how the LORs are order
-
-plt.savefig('2D-2BlocksPerBuckets-XY-LOR.png', format='png', dpi=300)
+plt.gca().invert_yaxis()
+plt.text(-65,65,"PL")
+plt.text(65,65,"PR")
+plt.text(-65,-65,"AL")
+plt.text(65,-65,"AR")
+plt.savefig('2D-2BlocksPerBuckets-ObliqueAt0degrees-XY-LOR.png', format='png', dpi=300)
 plt.show()    
 plt.close();
 
@@ -138,6 +141,7 @@ plt.close();
 #     r=lor.radius()
 #     plt.plot((r*math.sin(phi), r*math.sin(phi+math.pi)),(-r*math.cos(phi), -r*math.cos(phi+math.pi)))
 #     plt.show()
+# plt.gca().invert_yaxis()
 # plt.show()    
 # plt.savefig('2D-XY-LOR-cyl.png', format='png', dpi=300)
 
@@ -176,7 +180,11 @@ for a in range(0,(Nr), 1):
     plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
 
     # plt.show()
-
+plt.gca().invert_yaxis()
+plt.text(0.2,69,"PH")
+plt.text(0.2,-65,"AH")
+plt.text(34,69,"PF")
+plt.text(34,-65,"AF")
 plt.savefig('2D-YZ-LOR.png', format='png', dpi=300)
 plt.show()
 plt.close()
@@ -215,6 +223,6 @@ for a in range(0,(Nr), 4):
         
         plt.legend(loc='best',bbox_to_anchor=(1., 1.),fancybox=True)
         # plt.show()
-
+plt.gca().invert_yaxis()
 plt.savefig('3dLOR.png', format='png', dpi=300)
 plt.show()
