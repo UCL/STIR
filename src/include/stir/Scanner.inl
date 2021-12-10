@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -25,6 +25,7 @@
 
 
 */
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -462,18 +463,30 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
 
 // For retrieving the coordinates / detector, ring id from the scanner
 stir::DetectionPosition<>
-Scanner::get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const{
-    if (crystal_map_file_name == ""){
+Scanner::get_det_pos_for_index(const stir::DetectionPosition<> & det_pos) const
+{
+    if (!detector_map_sptr)
         stir::error("Crystal Map not defined!");
-    }
-    return input_index_to_stir_index.at(det_pos);
+
+    return detector_map_sptr->get_det_pos_for_index(det_pos);
 }
+
 stir::CartesianCoordinate3D<float>
-Scanner::get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const{
-    if (crystal_map_file_name == ""){
+Scanner::get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const
+{
+    if (!detector_map_sptr)
         stir::error("Crystal Map not defined!");
-    }
-    return stir_index_to_coord.at(det_pos);
+
+    return detector_map_sptr->get_coordinate_for_det_pos(det_pos);
+}
+
+stir::CartesianCoordinate3D<float>
+Scanner::get_coordinate_for_index(const stir::DetectionPosition<>& index) const
+{
+    if (!detector_map_sptr)
+        stir::error("Crystal Map not defined!");
+
+    return detector_map_sptr->get_coordinate_for_index(index);
 }
 
 END_NAMESPACE_STIR

@@ -393,8 +393,8 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
   det_pos2.axial_coord() = Ring_B;
 
 #if 1 // TODO GENERICvsBLOCKS
-  coord_1 = get_scanner_ptr()->get_coords_given_detpos(det_pos1);
-  coord_2 = get_scanner_ptr()->get_coords_given_detpos(det_pos2);
+  coord_1 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos1);
+  coord_2 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos2);
 #else
     if (crystal_map->find_cartesian_coordinate_given_detection_position(coord_1, det_pos1)==Succeeded::yes &&
       crystal_map->find_cartesian_coordinate_given_detection_position(coord_2, det_pos2)==Succeeded::yes)

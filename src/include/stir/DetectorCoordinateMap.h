@@ -1,7 +1,7 @@
 /*
-	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2015, 2017 ETH Zurich, Institute of Particle Physics
 	Copyright 2020 Positrigo AG, Zurich
-
+    Copyright (C) 2021 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,10 +12,12 @@
 /*!
 
   \file
-  \ingroup listmode
+  \ingroup buildblock
   \brief Declaration of class stir::DetectorCoordinateMap
 
   \author Jannis Fischer
+  \author Parisa Khateri
+  \author Kris Thielemans
 */
 
 #include <fstream>
@@ -41,27 +43,6 @@ START_NAMESPACE_STIR
 */
 class DetectorCoordinateMap
 {
-public:
-	//! Constructor calls read_detectormap_from_file( filename ).
-	DetectorCoordinateMap(const std::string& filename, double sigma = 0.0) :
-		sigma(sigma),
-		distribution(0.0, sigma)
-		{ read_detectormap_from_file( filename ); }
-
-	//! Reads map from file and stores it.
-	void read_detectormap_from_file( const std::string& filename );
-
-	//! Returns a cartesian coordinate given a detection position.
-	stir::CartesianCoordinate3D<float> get_detector_coordinate( const stir::DetectionPosition<>& det_pos )
-	{ 
-		auto coord = coord_map.at(det_pos); 
-		coord.x() += distribution(generator);
-		coord.y() += distribution(generator);
-		coord.z() += distribution(generator);
-		return coord;
-	}
-
-private:
 	struct ihash
 	    : std::unary_function<stir::DetectionPosition<> , std::size_t>
 	{
@@ -74,11 +55,73 @@ private:
 		    return seed;
 	    }
 	};
+public:
+    typedef boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> det_pos_to_coord_type;
+    typedef boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> unordered_to_ordered_det_pos_type;
 
-	boost::unordered_map< stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash > coord_map;
-	const double sigma;
-	std::default_random_engine generator;
-	std::normal_distribution<double> distribution;
+	//! Constructor calls read_detectormap_from_file( filename ).
+	DetectorCoordinateMap(const std::string& filename, double sigma = 0.0) :
+		sigma(sigma),
+		distribution(0.0, sigma)
+		{ read_detectormap_from_file( filename ); }
+	//! Constructor calls set_detector_map(coord_map).
+	DetectorCoordinateMap(const det_pos_to_coord_type& coord_map, double sigma = 0.0) :
+		sigma(sigma),
+		distribution(0.0, sigma)
+		{ set_detector_map( coord_map ); }
+
+	//! Reads map from file and stores it.
+	void read_detectormap_from_file( const std::string& filename );
+	//! stores the map
+	/*! applies sorting to standard STIR order */
+    void set_detector_map( const det_pos_to_coord_type& coord_map );
+
+	stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<>& index) const
+	{
+		return input_index_to_det_pos.at(index);
+    }
+	//! Returns a cartesian coordinate given a detection position.
+	stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos( const stir::DetectionPosition<>& det_pos ) const
+	{ 
+		auto coord = det_pos_to_coord.at(det_pos);
+		coord.x() += distribution(generator);
+		coord.y() += distribution(generator);
+		coord.z() += distribution(generator);
+		return coord;
+	}
+	//! Returns a cartesian coordinate given an (unsorted) index.
+	stir::CartesianCoordinate3D<float> get_coordinate_for_index( const stir::DetectionPosition<>& index ) const
+	{
+		return get_coordinate_for_det_pos(get_det_pos_for_index(index));
+	}
+
+        unsigned get_num_tangential_coords() const
+	{ return num_tangential_coords; }
+	unsigned get_num_axial_coords() const
+	{ return num_axial_coords; }
+	unsigned get_num_radial_coords() const
+	{ return num_radial_coords; }
+
+protected:
+
+ DetectorCoordinateMap(double sigma = 0.0) :
+        sigma(sigma),
+        distribution(0.0, sigma)
+  {}
+private:
+  unsigned num_tangential_coords;
+  unsigned num_axial_coords;
+  unsigned num_radial_coords;
+  unordered_to_ordered_det_pos_type input_index_to_det_pos;
+  det_pos_to_coord_type det_pos_to_coord;
+
+  const double sigma;
+  mutable std::default_random_engine generator;
+  mutable std::normal_distribution<double> distribution;
+
+  static det_pos_to_coord_type
+    read_detectormap_from_file_help( const std::string& crystal_map_name );
+
 };
 
 END_NAMESPACE_STIR

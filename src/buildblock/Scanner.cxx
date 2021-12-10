@@ -4,7 +4,6 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C) 2013-2016,2019,2020 University College London
     Copyright (C) 2013-2016,2019-2021 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
@@ -36,7 +35,7 @@
 #include "stir/Succeeded.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
-#include "stir/modulo.h"
+#include "stir/DetectorCoordinateMap.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -766,104 +765,28 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   {
     read_detectormap_from_file(crystal_map_file_name);
   }
-}
-
-// creates maps to convert between stir and 3d coordinates
-Scanner::det_pos_to_coord_type
-Scanner::
-read_detectormap_from_file_help( const std::string& crystal_map_name )
-{
-    std::ifstream crystal_map_file(crystal_map_name.c_str());
-    if( !crystal_map_file )
-    {
-        error("Error opening file '" + crystal_map_name + "'");
-    }
-    std::string line;
-    //map containing the crystal map from the input file (safir -> coords)
-    boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> coord_map;
-    // read in the file save the content in a map
-    while( std::getline( crystal_map_file, line))
-    {
-        if( line.size() && line[0] == '#' ) continue;
-        bool has_layer_index = false;
-        stir::CartesianCoordinate3D<float> coord;
-        stir::DetectionPosition<> detpos;
-        std::vector<std::string> entry;
-        boost::split(entry, line, boost::is_any_of("\t,"));
-        if( !entry.size() ) break;
-        else if( entry.size() == 5 ) has_layer_index = false;
-        else if( entry.size() == 6 ) has_layer_index = true;
-        coord[1] = atof(entry[4+has_layer_index].c_str() );
-        coord[2] = atof(entry[3+has_layer_index].c_str() );
-        coord[3] = atof(entry[2+has_layer_index].c_str() );
-
-        if( !has_layer_index ) detpos.radial_coord() = 0;
-        else detpos.radial_coord() = atoi(entry[2].c_str());
-        detpos.axial_coord() = atoi(entry[0].c_str());
-        detpos.tangential_coord() = atoi(entry[1].c_str());
-
-        coord_map[detpos] = coord;
-    }
-    return coord_map;
+  else
+  {
+    this->detector_map_sptr = 0;
+  }
 }
 
 void
 Scanner::
-set_detector_map( const Scanner::det_pos_to_coord_type& coord_map )
+set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map )
 {
-    // The detector crystal coordinates are saved in coord_map the following way:
-    // (detector#, ring#, 1)[(x,y,z)]
-    // the detector# and ring# are determined outside of STIR (later given in input)
-    // In order to fulfill the STIR convention we have to give the coordinates  
-    // detector# and ring# defined by ourself so that the start (0,0) goes to the 
-    // coordinate with the smallest z and smallest y and the detector# is  
-    // counterclockwise rising.
-    // To achieve this, we assign each coordinate the value 'coord_sorter' which
-    // is the assigned value of the criteria mentioned above. With it we sort the 
-    // coordinates and fill the to maps 'input_index_to_stir_index' and 
-    // 'stir_index_to_coord'.
-    std::vector<double> coords_to_be_sorted;
-    boost::unordered_map<double, stir::DetectionPosition<> > map_for_sorting_coordinates;
-    coords_to_be_sorted.reserve(coord_map.size());
-
-    for(auto it : coord_map)
-    {
-        double coord_sorter = it.second[1] * 100 + from_min_pi_plus_pi_to_0_2pi(std::atan2(it.second[3], -it.second[2]));
-        coords_to_be_sorted.push_back(coord_sorter);
-        map_for_sorting_coordinates[coord_sorter] = it.first;
-    }
-    std::sort(coords_to_be_sorted.begin(), coords_to_be_sorted.end());
-    int ring = 0;
-    int det = 0;
-    for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
-    {
-        stir::DetectionPosition<> detpos;
-        detpos.axial_coord() = ring;
-        detpos.tangential_coord() = det;
-        detpos.radial_coord() = 0;
-        input_index_to_stir_index[map_for_sorting_coordinates[*it]] = detpos;
-        stir_index_to_coord[detpos] = coord_map.at(map_for_sorting_coordinates[*it]);
-        det++;
-        if (det == num_detectors_per_ring)
-        {
-            ring++;
-            det = 0;
-            if (ring == num_rings && it != --coords_to_be_sorted.end())
-            {
-                stir::error("Detector and RingNumber of the crystal map and ProjData are not the same!");
-            }
-        }
-    }
+  this->detector_map_sptr.reset(new DetectorCoordinateMap(coord_map));
+  if ((unsigned)num_detectors_per_ring != detector_map_sptr->get_num_tangential_coords() ||
+      (unsigned)num_rings != detector_map_sptr->get_num_axial_coords() ||
+      (unsigned)num_detector_layers != detector_map_sptr->get_num_radial_coords())
+      error("Scanner:set_detector_map: inconsistent number of detectors");
 }
 
-// creates maps to convert between stir and 3d coordinates
 void
 Scanner::
-read_detectormap_from_file( const std::string& crystal_map_name )
+read_detectormap_from_file( const std::string& filename )
 {
-  det_pos_to_coord_type coord_map =
-  read_detectormap_from_file_help(crystal_map_file_name);
-  set_detector_map(coord_map);
+  this->detector_map_sptr.reset(new DetectorCoordinateMap(filename));
 }
 
 /*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().

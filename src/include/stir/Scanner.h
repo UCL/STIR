@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, 2019, UCL
+    Copyright (C) 2016, 2019, 2021 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C 2017-2018, University of Leeds
     This file is part of STIR.
@@ -33,6 +33,8 @@
 
 #include "stir/DetectionPosition.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/DetectorCoordinateMap.h"
+#include "stir/shared_ptr.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -45,7 +47,6 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
-
 /*!
   \ingroup buildblock
   \brief A class for storing some info on the scanner
@@ -421,13 +422,14 @@ class Scanner
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
-  // Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
+  //! Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
   // used in CListRecordSAFIR.inl for accessing the coordinates
-  inline stir::DetectionPosition<> get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const;
-  // Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
+  inline stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<> & det_pos) const;
+  //! Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
   // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
-  inline stir::CartesianCoordinate3D<float> get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const;
-
+  inline stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const;
+  //! Get the Cartesian coordinates (x,y,z) given the detection position id in the input crystal map
+   inline stir::CartesianCoordinate3D<float> get_coordinate_for_index(const stir::DetectionPosition<>& det_pos) const;
 private:
   Type type;
   std::list<std::string> list_of_names;
@@ -477,31 +479,10 @@ private:
   float axial_block_spacing;             /*! block pitch in axial direction in mm*/
   float transaxial_block_spacing;        /*! block pitch in transaxial direction in mm*/
   
-  //!
-  //!\brief map and hash function for saving the coords in generic geometry
-  //!\author Michael Roethlisberger
-  struct ihash
-    : std::unary_function<stir::DetectionPosition<> , std::size_t>
-  {
-    std::size_t operator()(stir::DetectionPosition<>  const& detpos) const
-    {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, detpos.axial_coord());
-        boost::hash_combine(seed, detpos.radial_coord());
-        boost::hash_combine(seed, detpos.tangential_coord());
-        return seed;
-    }
-  };
-
-  typedef boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> det_pos_to_coord_type;
-  typedef boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> unordered_to_ordered_det_pos_type;
-  unordered_to_ordered_det_pos_type input_index_to_stir_index;
-  det_pos_to_coord_type stir_index_to_coord;
   std::string crystal_map_file_name;
+  shared_ptr<DetectorCoordinateMap> detector_map_sptr;
 
-  static det_pos_to_coord_type
-    read_detectormap_from_file_help( const std::string& crystal_map_name );
-  void set_detector_map( const det_pos_to_coord_type& coord_map );
+  void set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map );
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );

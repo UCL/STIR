@@ -46,8 +46,8 @@ CListEventSAFIR<Derived>::get_LOR() const
 
 	if(!map) stir::error("Crystal map not set.");
 
-	lor.p1() = map->get_detector_coordinate(det_pos_pair.pos1());
-	lor.p2() = map->get_detector_coordinate(det_pos_pair.pos2());
+	lor.p1() = map->get_coordinate_for_index(det_pos_pair.pos1());
+	lor.p2() = map->get_coordinate_for_index(det_pos_pair.pos2());
 
 	return lor;
 }
@@ -79,8 +79,8 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
       //transform det_pos_pair into stir coordinates
       DetectionPosition<> pos1 = det_pos_pair.pos1();
       DetectionPosition<> pos2 = det_pos_pair.pos2();
-      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_detpos_given_id(pos1);
-      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_detpos_given_id(pos2);
+      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_det_pos_for_index(pos1);
+      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_det_pos_for_index(pos2);
 
       if (proj_data_info_gen.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
          bin.set_bin_value(1);
@@ -91,8 +91,8 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
   {
 	  if(!map) stir::error("Crystal map not set.");
 
-      stir::CartesianCoordinate3D<float> c1 = map->get_detector_coordinate(det_pos_pair.pos1());
-      stir::CartesianCoordinate3D<float> c2 = map->get_detector_coordinate(det_pos_pair.pos2());
+      stir::CartesianCoordinate3D<float> c1 = map->get_coordinate_for_index(det_pos_pair.pos1());
+      stir::CartesianCoordinate3D<float> c2 = map->get_coordinate_for_index(det_pos_pair.pos2());
       int det1, det2, ring1, ring2;
 
       if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical"
