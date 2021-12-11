@@ -25,6 +25,7 @@
 */
 
 #include "stir/info.h"
+#include "stir/make_array.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjDataInterfile.h"

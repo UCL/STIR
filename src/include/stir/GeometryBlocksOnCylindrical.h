@@ -32,12 +32,7 @@ limitations under the License.
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
-#include "stir/make_array.h"
-#include "stir/numerics/MatrixFunction.h"
 #include <map>
-#include <string>
-#include <vector>
-#include <cmath>
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -68,25 +63,13 @@ public:
 
 	//! Destructor
 	~GeometryBlocksOnCylindrical() {}
-
-	//! comparison operator for DetectionPosition class. needded to be used as a key type in building map
-	class compare_det_pos{
-	public:
-		bool operator() (const stir::DetectionPosition<>& , const stir::DetectionPosition<>&) const;
-	};
-
-  //! comparison operator for CartesianCoordinate3D class. needded to be used as a key type in building map
- 	class compare_cartesian_coord{
-	public:
-		bool operator() (const stir::CartesianCoordinate3D<float>& , const stir::CartesianCoordinate3D<float>&) const;
-	};
-
+ private:
 	//! Get rotation matrix for a given angle around z axis
 	stir::Array<2, float> get_rotation_matrix(float alpha) const;
 
 	//! Build crystal map in cartesian coordinate
 	void build_crystal_maps();
-
+ public:
 	//! Get cartesian coordinate for a given detection position
 	inline Succeeded
           find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& ,
@@ -96,7 +79,7 @@ public:
 	Succeeded
           find_detection_position_given_cartesian_coordinate(DetectionPosition<>&,
                                                              const CartesianCoordinate3D<float>&) const;
-
+ private:
 	//! Get scanner pointer
 	inline const Scanner* get_scanner_ptr() const;
 
@@ -105,14 +88,11 @@ private:
 	//! member variables
 	shared_ptr<Scanner> scanner_ptr;
 	std::map<stir::DetectionPosition<>,
-           stir::CartesianCoordinate3D<float>,
-           stir::GeometryBlocksOnCylindrical::compare_det_pos> cartesian_coord_map_given_detection_position_keys;
+          stir::CartesianCoordinate3D<float>> cartesian_coord_map_given_detection_position_keys;
 	std::map<stir::CartesianCoordinate3D<float>,
-           stir::DetectionPosition<>,
-           stir::GeometryBlocksOnCylindrical::compare_cartesian_coord> detection_position_map_given_cartesian_coord_keys_3_decimal;
+          stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_3_decimal;
 	std::map<stir::CartesianCoordinate3D<float>,
-			 	  stir::DetectionPosition<>,
-			 	  stir::GeometryBlocksOnCylindrical::compare_cartesian_coord> detection_position_map_given_cartesian_coord_keys_2_decimal;
+          stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_2_decimal;
 
 };
 

@@ -54,39 +54,6 @@ GeometryBlocksOnCylindrical(const shared_ptr<Scanner> &scanner_ptr_v):
 	build_crystal_maps();
 }
 
-bool
-GeometryBlocksOnCylindrical::
-compare_det_pos::
-operator() (const stir::DetectionPosition<>& det_pos1,
-						const stir::DetectionPosition<>& det_pos2) const
-{
-	if ( det_pos1.tangential_coord()<det_pos2.tangential_coord() )
-		return 1;
-	else if ( det_pos1.tangential_coord()==det_pos2.tangential_coord() && det_pos1.axial_coord()<det_pos2.axial_coord() )
-		return 1;
-	else if ( det_pos1.tangential_coord()==det_pos2.tangential_coord() && det_pos1.axial_coord()==det_pos2.axial_coord() && det_pos1.radial_coord() < det_pos2.radial_coord() )
-		return 1;
-	else
-		return 0;
-}
-
-bool
-GeometryBlocksOnCylindrical::
-compare_cartesian_coord::
-operator() (const stir::CartesianCoordinate3D<float>& cart_coord1,
-						const stir::CartesianCoordinate3D<float>& cart_coord2) const
-{
-	if (cart_coord1.z()<cart_coord2.z())
-		return 1;
-	else if (cart_coord1.z()==cart_coord2.z() && cart_coord1.y()<cart_coord2.y())
-		return 1;
-	else if (cart_coord1.z()==cart_coord2.z() && cart_coord1.y()==cart_coord2.y() && cart_coord1.x()<cart_coord2.x())
-		return 1;
-	else
-		return 0;
-}
-
-
 stir::Array<2, float>
 GeometryBlocksOnCylindrical::
 get_rotation_matrix(float alpha) const
