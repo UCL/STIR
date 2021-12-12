@@ -50,25 +50,6 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr()
 
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
 ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                                 const float ring_radius_v, const float angular_increment_v,
-                                 const  VectorWithOffset<int>& num_axial_pos_per_segment,
-                                 const  VectorWithOffset<int>& min_ring_diff_v,
-                                 const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,const int num_tangential_poss)
-  : ProjDataInfoGenericNoArcCorr(scanner_ptr,
-                                 ring_radius_v, angular_increment_v,
-                          num_axial_pos_per_segment,
-                          min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss)
-{
-  if (is_null_ptr(scanner_ptr))
-    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a non-empty Scanner");
-  if (scanner_ptr->get_scanner_geometry() != "BlocksOnCylindrical")
-    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a Scanner with appropriate geometry");
-}
-
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
