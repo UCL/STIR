@@ -15,12 +15,14 @@
 
   \author Jannis Fischer
   \author Parisa Khateri
+  \author Michael Roethlisberger
   \author Kris Thielemans
 */
 
 #include "stir/error.h"
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/modulo.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 	
@@ -117,7 +119,18 @@ void DetectorCoordinateMap::set_detector_map( const DetectorCoordinateMap::det_p
     for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
       {
         input_index_to_det_pos[map_for_sorting_coordinates[*it]] = detpos;
-        det_pos_to_coord[detpos] = coord_map.at(map_for_sorting_coordinates[*it]);
+        auto cart_coord = coord_map.at(map_for_sorting_coordinates[*it]);
+        // rounding cart_coord to 3 and 2 decimal points then filling maps
+        cart_coord.z() = (round(cart_coord.z()*1000.0F))/1000.0F;
+        cart_coord.y() = (round(cart_coord.y()*1000.0F))/1000.0F;
+        cart_coord.x() = (round(cart_coord.x()*1000.0F))/1000.0F;
+	det_pos_to_coord[detpos] = cart_coord;
+        detection_position_map_given_cartesian_coord_keys_3_decimal[cart_coord] = detpos; //used to find bin from listmode data
+        cart_coord.z() = (round(cart_coord.z()*100.0F))/100.0F;
+        cart_coord.y() = (round(cart_coord.y()*100.0F))/100.0F;
+        cart_coord.x() = (round(cart_coord.x()*100.0F))/100.0F;
+        detection_position_map_given_cartesian_coord_keys_2_decimal[cart_coord] = detpos;
+
         ++detpos.tangential_coord();
         if (detpos.tangential_coord() == num_tangential_coords)
           {
@@ -138,6 +151,54 @@ void DetectorCoordinateMap::read_detectormap_from_file( const std::string& filen
   det_pos_to_coord_type coord_map =
   read_detectormap_from_file_help(filename);
   set_detector_map(coord_map);
+}
+
+Succeeded
+DetectorCoordinateMap::
+find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
+                                                   const CartesianCoordinate3D<float>& cart_coord) const
+{
+  /*! first round the cartesian coordinates, it might happen that the cart_coord
+   is not precisely pointing to the center of the crystal and
+   then the det_pos cannot be found using the map
+  */
+  //rounding cart_coord to 3 decimal place and find det_pos
+  CartesianCoordinate3D<float> rounded_cart_coord;
+  rounded_cart_coord.z() = round(cart_coord.z()*1000.0F)/1000.0F;
+  rounded_cart_coord.y() = round(cart_coord.y()*1000.0F)/1000.0F;
+  rounded_cart_coord.x() = round(cart_coord.x()*1000.0F)/1000.0F;
+	if (detection_position_map_given_cartesian_coord_keys_3_decimal.count(rounded_cart_coord))
+	{
+          det_pos =	detection_position_map_given_cartesian_coord_keys_3_decimal.at(rounded_cart_coord);
+          return Succeeded::yes;
+	}
+	else
+	{
+          //rounding cart_coord to 2 decimal place and find det_pos
+		rounded_cart_coord.z() = round(cart_coord.z()*100.0F)/100.0F;
+		rounded_cart_coord.y() = round(cart_coord.y()*100.0f)/100.0F;
+		rounded_cart_coord.x() = round(cart_coord.x()*100.0F)/100.0F;
+		if (detection_position_map_given_cartesian_coord_keys_2_decimal.count(rounded_cart_coord))
+		{
+                  det_pos =	detection_position_map_given_cartesian_coord_keys_2_decimal.at(rounded_cart_coord);
+                  return Succeeded::yes;
+		}
+		else
+		{
+			rounded_cart_coord.z() = round(cart_coord.z()*10.0F)/10.0F;
+			rounded_cart_coord.y() = round(cart_coord.y()*10.0f)/10.0F;
+			rounded_cart_coord.x() = round(cart_coord.x()*10.0F)/10.0F;
+			if (detection_position_map_given_cartesian_coord_keys_2_decimal.count(rounded_cart_coord))
+			{
+                  det_pos =	detection_position_map_given_cartesian_coord_keys_2_decimal.at(rounded_cart_coord);
+                  return Succeeded::yes;
+			}else{
+				warning("cartesian coordinate (x, y, z)=(%f, %f, %f) does not exist in the inner map",
+							cart_coord.x(), cart_coord.y(), cart_coord.z());
+				return Succeeded::no;
+			}
+		}
+	}
 }
 
 END_NAMESPACE_STIR

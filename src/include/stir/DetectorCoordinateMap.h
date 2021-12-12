@@ -35,6 +35,8 @@
 
 START_NAMESPACE_STIR
 
+class Succeeded;
+
 /*! Class providing map functionality to convert detector indices to spatial coordinates. 
 	Map files can have 5 or 6 tab- or comma-separated columns. Lines beginning with '#' are ignored. The layer column is optional
 	\par Format:
@@ -95,6 +97,10 @@ public:
 		return get_coordinate_for_det_pos(get_det_pos_for_index(index));
 	}
 
+        Succeeded
+          find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
+                                                             const CartesianCoordinate3D<float>& cart_coord) const;
+
         unsigned get_num_tangential_coords() const
 	{ return num_tangential_coords; }
 	unsigned get_num_axial_coords() const
@@ -114,6 +120,10 @@ private:
   unsigned num_radial_coords;
   unordered_to_ordered_det_pos_type input_index_to_det_pos;
   det_pos_to_coord_type det_pos_to_coord;
+  std::map<stir::CartesianCoordinate3D<float>,
+    stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_3_decimal;
+  std::map<stir::CartesianCoordinate3D<float>,
+    stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_2_decimal;
 
   const double sigma;
   mutable std::default_random_engine generator;

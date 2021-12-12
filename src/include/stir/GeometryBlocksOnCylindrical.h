@@ -74,11 +74,6 @@ public:
 	inline Succeeded
           find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& ,
                                                              const DetectionPosition<>&) const;
-
-        //! Get cartesian coordinate for a given detection position
-	Succeeded
-          find_detection_position_given_cartesian_coordinate(DetectionPosition<>&,
-                                                             const CartesianCoordinate3D<float>&) const;
  private:
 	//! Get scanner pointer
 	inline const Scanner* get_scanner_ptr() const;
@@ -87,11 +82,6 @@ public:
 private:
 	//! member variables
 	shared_ptr<Scanner> scanner_ptr;
-	std::map<stir::CartesianCoordinate3D<float>,
-          stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_3_decimal;
-	std::map<stir::CartesianCoordinate3D<float>,
-          stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_2_decimal;
-
 };
 
 END_NAMESPACE_STIR
