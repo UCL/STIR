@@ -32,17 +32,8 @@ GeometryBlocksOnCylindrical::
 find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& cart_coord,
                                                    const DetectionPosition<>& det_pos) const
 {
-  if (cartesian_coord_map_given_detection_position_keys.count(det_pos))
-    {
-      cart_coord = cartesian_coord_map_given_detection_position_keys.at(det_pos);
-      return Succeeded::yes;
-    }
-  else
-    {
-      warning("detection position with (tangential_coord, axial_coord, radial_coord)=(%d, %d, %d) does not exist in the inner map",
-              det_pos.tangential_coord(), det_pos.axial_coord(), det_pos.radial_coord());
-      return Succeeded::no;
-    }
+  cart_coord = this->get_coordinate_for_det_pos(det_pos);
+  return Succeeded::yes;
 }
 
 const Scanner*

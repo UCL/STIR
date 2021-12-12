@@ -131,6 +131,7 @@ build_crystal_maps()
 	float transaxial_crystal_spacing = get_scanner_ptr()->get_transaxial_crystal_spacing();
 	std::string scanner_orientation = get_scanner_ptr()->get_scanner_orientation();
 
+	det_pos_to_coord_type cartesian_coord_map_given_detection_position_keys;
 	// check for the scanner orientation
 	/*Building starts from a bucket perpendicular to y axis, from its first crystal.
 		see start_x*/
@@ -205,6 +206,7 @@ build_crystal_maps()
 		cart_coord.x() = (round(cart_coord.x()*100.0F))/100.0F;
 		detection_position_map_given_cartesian_coord_keys_2_decimal[cart_coord] = det_pos;
 	}
+        set_detector_map(cartesian_coord_map_given_detection_position_keys);
 }
 
 

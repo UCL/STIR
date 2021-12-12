@@ -27,7 +27,7 @@ limitations under the License.
 #ifndef __stir_GeometryBlocksOnCylindrical_H__
 #define __stir_GeometryBlocksOnCylindrical_H__
 
-#include "stir/DetectionPosition.h"
+#include "stir/DetectorCoordinateMap.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 
 */
 
-class GeometryBlocksOnCylindrical
+class GeometryBlocksOnCylindrical: public DetectorCoordinateMap
 {
 
 
@@ -87,8 +87,6 @@ public:
 private:
 	//! member variables
 	shared_ptr<Scanner> scanner_ptr;
-	std::map<stir::DetectionPosition<>,
-          stir::CartesianCoordinate3D<float>> cartesian_coord_map_given_detection_position_keys;
 	std::map<stir::CartesianCoordinate3D<float>,
           stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_3_decimal;
 	std::map<stir::CartesianCoordinate3D<float>,
