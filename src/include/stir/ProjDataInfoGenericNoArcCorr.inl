@@ -126,13 +126,6 @@ get_s(const Bin& bin) const
   }
 }
 
-float
-ProjDataInfoGenericNoArcCorr::
-get_angular_increment() const
-{
-  return angular_increment;
-}
-
 void
 ProjDataInfoGenericNoArcCorr::
 get_det_num_pair_for_view_tangential_pos_num(

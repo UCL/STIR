@@ -9,6 +9,7 @@
 */
 /*
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -78,8 +79,14 @@ operator==(const DetectionPosition& d) const
 template <typename coordT>
 bool
 DetectionPosition<coordT>::
-operator!=(const DetectionPosition& d) const
-{ return !(*this==d); }
+operator<(const DetectionPosition& d) const
+{
+  return
+    (tangential < d.tangential) ||
+    ((tangential == d.tangential) && 
+     ((axial < d.axial) ||
+      ((axial == d.axial) && (radial < d.radial))));
+}
 
 END_NAMESPACE_STIR
 

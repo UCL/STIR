@@ -36,14 +36,7 @@ START_NAMESPACE_STIR
 class Succeeded;
 /*!
   \ingroup projdata
-  \brief Projection data info for data which are not arc-corrected.
-
-  For this class, 'tangential_pos_num' actually indexes an angular coordinate
-  with a particular angular sampling (usually given by half the angle between
-  detectors). That is
-  \code
-    get_s(Bin(..., tang_pos_num)) == ring_radius * sin(tang_pos_num*angular_increment)
-  \endcode
+  \brief Projection data info for data from a scanner with discrete dtectors organised by blocks
 
   This class also contains some functions specific for (static) full-ring PET
   scanners. In this case, it is assumed that for 'raw' data (i.e. no mashing)
@@ -77,10 +70,6 @@ class Succeeded;
     as 'ordered pair' (i.e. ring_difference can be positive and negative).
   In STIR, we use the second convention.
 
-  \todo The detector specific functions possibly do not belong in this class.
-  One can easily imagine a case where the theta,phi,s,t coordinates are as
-  described, but there is no real correspondence with detectors (for instance,
-  a rotating system). Maybe they should be moved somewhere else?
   */
 class ProjDataInfoBlocksOnCylindricalNoArcCorr : public ProjDataInfoGenericNoArcCorr
 {
@@ -95,19 +84,9 @@ private:
 public:
   //! Default constructor (leaves object in ill-defined state)
   ProjDataInfoBlocksOnCylindricalNoArcCorr();
-  //! Constructor completely specifying all parameters
-  /*! \see ProjDataInfoCylindrical class documentation for info on parameters */
-  ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const float ring_radius, const float angular_increment,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v,
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
 
-  //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
-  /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
-  \todo only suitable for full-ring PET scanners*/
-   ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+  //! Constructor which gets geometry from the scanner
+  ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v,
     const  VectorWithOffset<int>& max_ring_diff_v,
@@ -119,30 +98,11 @@ public:
 
   virtual std::string parameter_info() const;
 
-  virtual
-    Bin
-    get_bin(const LOR<float>&) const;
-
-
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
-  /*! \warning These function take a different convention for the axial coordinate
-    compare to the get_m(), get_LOR() etc. In the current function, the axial coordinate (z)
-    is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
-    \obsolete
-  */
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
-
-  virtual void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
-					       CartesianCoordinate3D<float>& coord_2,
-					       const Bin& bin) const override;
-
-  void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-							     CartesianCoordinate3D<float>& coord_2,
-							     const int Ring_A,const int Ring_B,
-							     const int det1, const int det2) const override;
 
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 						  const CartesianCoordinate3D<float>& coord_1,
@@ -153,10 +113,7 @@ private:
 
   virtual bool blindly_equals(const root_type * const) const;
 
-  //! used to find scanner coordinates given cartesian coordinates and vice versa
-  shared_ptr<GeometryBlocksOnCylindrical> crystal_map;
-
-  };
+};
 
 END_NAMESPACE_STIR
 

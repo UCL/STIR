@@ -56,6 +56,7 @@ set(buildblock_simple_tests
 	test_Scanner.cxx
 	test_ArcCorrection.cxx
 	test_find_fwhm_in_image.cxx
+        test_DetectionPosition.cxx
 	test_proj_data_info.cxx
 	test_proj_data.cxx
 	test_proj_data_maths.cxx

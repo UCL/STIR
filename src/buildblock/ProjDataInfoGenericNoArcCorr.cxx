@@ -52,24 +52,6 @@ ProjDataInfoGenericNoArcCorr()
 
 ProjDataInfoGenericNoArcCorr::
 ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                                 const float ring_radius_v, const float angular_increment_v,
-                                 const  VectorWithOffset<int>& num_axial_pos_per_segment,
-                                 const  VectorWithOffset<int>& min_ring_diff_v,
-                                 const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,const int num_tangential_poss)
-: ProjDataInfoGeneric(scanner_ptr,
-                          num_axial_pos_per_segment,
-                          min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss),
-  ring_radius(ring_radius_v),
-  angular_increment(angular_increment_v)
-{
-  uncompressed_view_tangpos_to_det1det2_initialised = false;
-  det1det2_to_uncompressed_view_tangpos_initialised = false;
-}
-
-ProjDataInfoGenericNoArcCorr::
-ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
@@ -80,8 +62,6 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           num_views, num_tangential_poss)
 {
   assert(!is_null_ptr(scanner_ptr));
-  ring_radius = scanner_ptr->get_effective_ring_radius();
-  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 }
@@ -101,9 +81,7 @@ operator==(const self_type& that) const
 {
   if (!base_type::blindly_equals(&that))
     return false;
-  return
-    fabs(this->ring_radius - that.ring_radius) < 0.05F &&
-    fabs(this->angular_increment - that.angular_increment) < 0.05F;
+  return true;
 }
 
 bool
@@ -392,21 +370,8 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
   det_pos1.axial_coord() = Ring_A;
   det_pos2.axial_coord() = Ring_B;
 
-#if 1 // TODO GENERICvsBLOCKS
-  coord_1 = get_scanner_ptr()->get_coords_given_detpos(det_pos1);
-  coord_2 = get_scanner_ptr()->get_coords_given_detpos(det_pos2);
-#else
-    if (crystal_map->find_cartesian_coordinate_given_detection_position(coord_1, det_pos1)==Succeeded::yes &&
-      crystal_map->find_cartesian_coordinate_given_detection_position(coord_2, det_pos2)==Succeeded::yes)
-  {
-    return;
-  }
-  else
-  {
-    error("couldn't find corresponding cartesian coordinates for given detection positions.\n");
-    return;
-  }
-#endif
+  coord_1 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos1);
+  coord_2 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos2);
 }
 
 
@@ -423,9 +388,9 @@ get_bin(const LOR<float>& lor) const
 
 	DetectionPosition<> det_pos1;
 	DetectionPosition<> det_pos2;
-        // TODO GENERICvsBLOCK crystal_map should not be used
-  if (crystal_map->find_detection_position_given_cartesian_coordinate(det_pos1, _p1)==Succeeded::no ||
-      crystal_map->find_detection_position_given_cartesian_coordinate(det_pos2, _p2)==Succeeded::no)
+
+  if (get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos1, _p1)==Succeeded::no ||
+      get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos2, _p2)==Succeeded::no)
   {
     bin.set_bin_value(-1);
     return bin;

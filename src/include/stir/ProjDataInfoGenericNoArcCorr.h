@@ -34,14 +34,7 @@ START_NAMESPACE_STIR
 class Succeeded;
 /*!
   \ingroup projdata
-  \brief Projection data info for data which are not arc-corrected.
-
-  For this class, 'tangential_pos_num' actually indexes an angular coordinate
-  with a particular angular sampling (usually given by half the angle between
-  detectors). That is
-  \code
-    get_s(Bin(..., tang_pos_num)) == ring_radius * sin(tang_pos_num*angular_increment)
-  \endcode
+  \brief Projection data info for data for a scanner with discrete detectors
 
   This class also contains some functions specific for (static) full-ring PET
   scanners. In this case, it is assumed that for 'raw' data (i.e. no mashing)
@@ -74,11 +67,6 @@ class Succeeded;
   - have 2 sinograms of the same size as in 2D, together with the rings
     as 'ordered pair' (i.e. ring_difference can be positive and negative).
   In STIR, we use the second convention.
-
-  \todo The detector specific functions possibly do not belong in this class.
-  One can easily imagine a case where the theta,phi,s,t coordinates are as
-  described, but there is no real correspondence with detectors (for instance,
-  a rotating system). Maybe they should be moved somewhere else?
   */
 class ProjDataInfoGenericNoArcCorr : public ProjDataInfoGeneric
 {
@@ -93,18 +81,8 @@ private:
 public:
   //! Default constructor (leaves object in ill-defined state)
   ProjDataInfoGenericNoArcCorr();
-  //! Constructor completely specifying all parameters
-  /*! \see ProjDataInfoCylindrical class documentation for info on parameters */
-  ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const float ring_radius, const float angular_increment,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v,
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
 
-  //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
-  /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
-  \todo only suitable for full-ring PET scanners*/
+  //! Constructor which gets geometry from the scanner
    ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v,
@@ -121,9 +99,6 @@ public:
     customarily applied to raw PET data.
   */
   inline virtual float get_s(const Bin&) const;
-
-  //! Gets angular increment (in radians)
-  inline float get_angular_increment() const;
 
   virtual std::string parameter_info() const;
 
@@ -273,9 +248,6 @@ public:
 
 private:
 
-  float ring_radius;
-  float angular_increment;
-
   // used in get_view_tangential_pos_num_for_det_num_pair()
   struct Det1Det2 { int det1_num; int det2_num; };
   mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;
@@ -297,10 +269,7 @@ private:
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
  protected:
   virtual bool blindly_equals(const root_type * const) const;
- private:
-  //! \todo Has to be removed
-  shared_ptr<GeometryBlocksOnCylindrical> crystal_map;
-  };
+};
 
 END_NAMESPACE_STIR
 

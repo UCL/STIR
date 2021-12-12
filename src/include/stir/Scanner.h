@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, 2019, UCL
+    Copyright (C) 2016, 2019, 2021 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C 2017-2018, University of Leeds
     This file is part of STIR.
@@ -33,6 +33,8 @@
 
 #include "stir/DetectionPosition.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/DetectorCoordinateMap.h"
+#include "stir/shared_ptr.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -45,7 +47,6 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
-
 /*!
   \ingroup buildblock
   \brief A class for storing some info on the scanner
@@ -90,6 +91,8 @@ class Succeeded;
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
+      \warning You have to call set_up() after using the \c set_* functions (except set_params()).
+
   \todo  
     a hierarchy distinguishing between different types of scanners
   \todo derive from ParsingObject
@@ -130,7 +133,9 @@ class Scanner
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690, DiscoveryMI3ring, DiscoveryMI4ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype, User_defined_scanner,
 	     Unknown_scanner};
-  
+
+  virtual ~Scanner() {}
+
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
 
@@ -187,7 +192,11 @@ class Scanner
           float transaxial_block_spacing_v = -1.0f,
           const std::string& crystal_map_file_name = "");
 
-
+  //! Initialised internal geometry
+  /*! Currently called in the set_params() functions, but needs to be
+      called explicitly when afterwards using any of the other \c set_ functions
+  */
+  virtual void set_up();
 
   //! get scanner parameters as a std::string
   std::string parameter_info() const;
@@ -295,6 +304,8 @@ class Scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
     The other members of the class return the size of the "virtual" block. With these
     functions you can find its true size (or set it).
+
+    You have to call set_up() after using the \c set_* functions.
   */
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
@@ -338,7 +349,10 @@ class Scanner
   //@} (end of get detector responce info)
 
   //! \name Functions setting info
-  /*! Be careful to keep consistency by setting all relevant parameters*/
+  /*! Be careful to keep consistency by setting all relevant parameters.
+
+    You have to call set_up() after using any of these.
+  */
   //@{
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
@@ -383,7 +397,8 @@ class Scanner
   //! set scanner orientation
   inline void set_scanner_orientation(const std::string& new_scanner_orientation);
   //! set scanner geometry
-  inline void set_scanner_geometry(const std::string& new_scanner_geometry);
+  /*! Will also read the detector map from file if the geometry is \c Generic */
+  void set_scanner_geometry(const std::string& new_scanner_geometry);
   //! set crystal spacing in axial direction
   inline void set_axial_crystal_spacing(const float & new_spacing);
   //! set crystal spacing in transaxial direction
@@ -393,6 +408,7 @@ class Scanner
   //! set block spacing in transaxial direction
   inline void set_transaxial_block_spacing(const float & new_spacing);
   //! set crystal map file name for the generic geometry
+  /*! \warning, data is not read yet. use set_scanner_geometry() after calling this function */
   inline void set_crystal_map_file_name(const std::string& new_crystal_map_file_name);
   //@} (end of block geometry info)
 
@@ -421,14 +437,21 @@ class Scanner
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
-  // Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
+  //! Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
   // used in CListRecordSAFIR.inl for accessing the coordinates
-  inline stir::DetectionPosition<> get_detpos_given_id(const stir::DetectionPosition<> & det_pos) const;
-  // Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
+  inline stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<> & det_pos) const;
+  //! Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
   // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
-  inline stir::CartesianCoordinate3D<float> get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const;
-
+  inline stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const;
+  //! Get the Cartesian coordinates (x,y,z) given the detection position id in the input crystal map
+  inline stir::CartesianCoordinate3D<float> get_coordinate_for_index(const stir::DetectionPosition<>& det_pos) const;
+  //! Find detection position at a coordinate
+  // used  in ProjInfoDataGenericNoArcCorr.cxx for accessing the get_bin
+  inline Succeeded
+     find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
+                                                        const CartesianCoordinate3D<float>& cart_coord) const;
 private:
+  bool _already_setup;
   Type type;
   std::list<std::string> list_of_names;
   int num_rings;                /* number of direct planes */
@@ -477,31 +500,10 @@ private:
   float axial_block_spacing;             /*! block pitch in axial direction in mm*/
   float transaxial_block_spacing;        /*! block pitch in transaxial direction in mm*/
   
-  //!
-  //!\brief map and hash function for saving the coords in generic geometry
-  //!\author Michael Roethlisberger
-  struct ihash
-    : std::unary_function<stir::DetectionPosition<> , std::size_t>
-  {
-    std::size_t operator()(stir::DetectionPosition<>  const& detpos) const
-    {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, detpos.axial_coord());
-        boost::hash_combine(seed, detpos.radial_coord());
-        boost::hash_combine(seed, detpos.tangential_coord());
-        return seed;
-    }
-  };
-
-  typedef boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> det_pos_to_coord_type;
-  typedef boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> unordered_to_ordered_det_pos_type;
-  unordered_to_ordered_det_pos_type input_index_to_stir_index;
-  det_pos_to_coord_type stir_index_to_coord;
   std::string crystal_map_file_name;
+  shared_ptr<DetectorCoordinateMap> detector_map_sptr;
 
-  static det_pos_to_coord_type
-    read_detectormap_from_file_help( const std::string& crystal_map_name );
-  void set_detector_map( const det_pos_to_coord_type& coord_map );
+  void set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map );
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );

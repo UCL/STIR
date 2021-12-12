@@ -15,7 +15,6 @@ set(${dir_LIB_SOURCES}
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
 	CListModeDataSAFIR.cxx
-	DetectorCoordinateMapFromFile.cxx
 )
 
 if (HAVE_HDF5)

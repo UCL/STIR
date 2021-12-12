@@ -4,7 +4,6 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C) 2013-2016,2019,2020 University College London
     Copyright (C) 2013-2016,2019-2021 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
@@ -36,7 +35,8 @@
 #include "stir/Succeeded.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
-#include "stir/modulo.h"
+#include "stir/DetectorCoordinateMap.h"
+#include "stir/GeometryBlocksOnCylindrical.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -72,6 +72,7 @@ static list<string>
 
   
 Scanner::Scanner(Type scanner_type)
+  : _already_setup(false)
 {
 
   // set_params parameters:
@@ -573,6 +574,7 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  float axial_block_spacing_v,
                  float transaxial_block_spacing_v,
                  const std::string& crystal_map_file_name_v)
+: _already_setup(false)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -619,6 +621,7 @@ Scanner::Scanner(Type type_v, const string& name,
                  float axial_block_spacing_v,
                  float transaxial_block_spacing_v,
                  const std::string& crystal_map_file_name_v)
+  : _already_setup(false)
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -751,119 +754,68 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   
   scanner_orientation = scanner_orientation_v;
   
-  if (scanner_geometry_v == "")
-      scanner_geometry = "Cylindrical";
-  else
-      scanner_geometry = scanner_geometry_v;
-      
   axial_crystal_spacing = axial_crystal_spacing_v;
   transaxial_crystal_spacing = transaxial_crystal_spacing_v;
   axial_block_spacing = axial_block_spacing_v;
   transaxial_block_spacing = transaxial_block_spacing_v;
   
   crystal_map_file_name = crystal_map_file_name_v;
-  if (crystal_map_file_name != "")
-  {
-    read_detectormap_from_file(crystal_map_file_name);
-  }
+
+  if (scanner_geometry_v == "")
+    set_scanner_geometry("Cylindrical");
+  else
+    set_scanner_geometry(scanner_geometry_v);
+
+  set_up();
 }
 
-// creates maps to convert between stir and 3d coordinates
-Scanner::det_pos_to_coord_type
-Scanner::
-read_detectormap_from_file_help( const std::string& crystal_map_name )
+void Scanner::set_scanner_geometry(const std::string& new_scanner_geometry)
 {
-    std::ifstream crystal_map_file(crystal_map_name.c_str());
-    if( !crystal_map_file )
-    {
-        error("Error opening file '" + crystal_map_name + "'");
-    }
-    std::string line;
-    //map containing the crystal map from the input file (safir -> coords)
-    boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> coord_map;
-    // read in the file save the content in a map
-    while( std::getline( crystal_map_file, line))
-    {
-        if( line.size() && line[0] == '#' ) continue;
-        bool has_layer_index = false;
-        stir::CartesianCoordinate3D<float> coord;
-        stir::DetectionPosition<> detpos;
-        std::vector<std::string> entry;
-        boost::split(entry, line, boost::is_any_of("\t,"));
-        if( !entry.size() ) break;
-        else if( entry.size() == 5 ) has_layer_index = false;
-        else if( entry.size() == 6 ) has_layer_index = true;
-        coord[1] = atof(entry[4+has_layer_index].c_str() );
-        coord[2] = atof(entry[3+has_layer_index].c_str() );
-        coord[3] = atof(entry[2+has_layer_index].c_str() );
-
-        if( !has_layer_index ) detpos.radial_coord() = 0;
-        else detpos.radial_coord() = atoi(entry[2].c_str());
-        detpos.axial_coord() = atoi(entry[0].c_str());
-        detpos.tangential_coord() = atoi(entry[1].c_str());
-
-        coord_map[detpos] = coord;
-    }
-    return coord_map;
+  scanner_geometry = new_scanner_geometry;
+   _already_setup = false;
 }
 
-void
-Scanner::
-set_detector_map( const Scanner::det_pos_to_coord_type& coord_map )
+void Scanner::set_up()
 {
-    // The detector crystal coordinates are saved in coord_map the following way:
-    // (detector#, ring#, 1)[(x,y,z)]
-    // the detector# and ring# are determined outside of STIR (later given in input)
-    // In order to fulfill the STIR convention we have to give the coordinates  
-    // detector# and ring# defined by ourself so that the start (0,0) goes to the 
-    // coordinate with the smallest z and smallest y and the detector# is  
-    // counterclockwise rising.
-    // To achieve this, we assign each coordinate the value 'coord_sorter' which
-    // is the assigned value of the criteria mentioned above. With it we sort the 
-    // coordinates and fill the to maps 'input_index_to_stir_index' and 
-    // 'stir_index_to_coord'.
-    std::vector<double> coords_to_be_sorted;
-    boost::unordered_map<double, stir::DetectionPosition<> > map_for_sorting_coordinates;
-    coords_to_be_sorted.reserve(coord_map.size());
+  if (scanner_geometry == "Generic")
+    {
+      if (crystal_map_file_name == "")
+        error("Scanner: scanner_geometry=Generic needs a crystal map");
 
-    for(auto it : coord_map)
-    {
-        double coord_sorter = it.second[1] * 100 + from_min_pi_plus_pi_to_0_2pi(std::atan2(it.second[3], -it.second[2]));
-        coords_to_be_sorted.push_back(coord_sorter);
-        map_for_sorting_coordinates[coord_sorter] = it.first;
+      read_detectormap_from_file(crystal_map_file_name);
     }
-    std::sort(coords_to_be_sorted.begin(), coords_to_be_sorted.end());
-    int ring = 0;
-    int det = 0;
-    for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
+  else
     {
-        stir::DetectionPosition<> detpos;
-        detpos.axial_coord() = ring;
-        detpos.tangential_coord() = det;
-        detpos.radial_coord() = 0;
-        input_index_to_stir_index[map_for_sorting_coordinates[*it]] = detpos;
-        stir_index_to_coord[detpos] = coord_map.at(map_for_sorting_coordinates[*it]);
-        det++;
-        if (det == num_detectors_per_ring)
+      if (crystal_map_file_name != "")
+        error("Scanner: use scanner_geometry=Generic when specifying a crystal map");
+      if (scanner_geometry == "BlocksOnCylindrical")
+        this->detector_map_sptr.reset(new GeometryBlocksOnCylindrical(*this));
+      else
         {
-            ring++;
-            det = 0;
-            if (ring == num_rings && it != --coords_to_be_sorted.end())
-            {
-                stir::error("Detector and RingNumber of the crystal map and ProjData are not the same!");
-            }
+          this->detector_map_sptr = 0;
+          if (scanner_geometry != "Cylindrical")
+            error("Scanner::scanner_geometry needs to be one of Cylindrical, BlocksOnCylindrical, Generic");
         }
     }
+  _already_setup = true;
 }
 
-// creates maps to convert between stir and 3d coordinates
 void
 Scanner::
-read_detectormap_from_file( const std::string& crystal_map_name )
+set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map )
 {
-  det_pos_to_coord_type coord_map =
-  read_detectormap_from_file_help(crystal_map_file_name);
-  set_detector_map(coord_map);
+  this->detector_map_sptr.reset(new DetectorCoordinateMap(coord_map));
+  if ((unsigned)num_detectors_per_ring != detector_map_sptr->get_num_tangential_coords() ||
+      (unsigned)num_rings != detector_map_sptr->get_num_axial_coords() ||
+      (unsigned)num_detector_layers != detector_map_sptr->get_num_radial_coords())
+      error("Scanner:set_detector_map: inconsistent number of detectors");
+}
+
+void
+Scanner::
+read_detectormap_from_file( const std::string& filename )
+{
+  this->detector_map_sptr.reset(new DetectorCoordinateMap(filename));
 }
 
 /*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
@@ -1301,15 +1253,15 @@ Scanner* Scanner::ask_parameters()
       //This is needed for finding effective central bin size, because it is different for different geometries.
       const string ScannerGeometry =
         ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
-      scanner_ptr->set_scanner_geometry(ScannerGeometry);
 
       if (ScannerGeometry == "Generic")
       {
         string CrystalMapFileName = ask_string("Enter the name of the crystal map: ", "");
         scanner_ptr->set_crystal_map_file_name(CrystalMapFileName);
-        scanner_ptr->read_detectormap_from_file(CrystalMapFileName);
       }
   
+      // will also read detector-map from file
+      scanner_ptr->set_scanner_geometry(ScannerGeometry);
 
       return scanner_ptr;
     }

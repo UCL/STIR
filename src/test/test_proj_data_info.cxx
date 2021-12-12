@@ -445,11 +445,10 @@ void
 ProjDataInfoTests::run_Blocks_DOI_test()
 {
     CPUTimer timer;
-    shared_ptr<Scanner> scannerBlocks_ptr, scannerBlocksDOI_ptr;
-    scannerBlocks_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    shared_ptr<Scanner> scannerBlocks_ptr(new Scanner (Scanner::SAFIRDualRingPrototype));
     scannerBlocks_ptr->set_average_depth_of_interaction(0);    
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-            
+    scannerBlocks_ptr->set_up();
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
@@ -472,8 +471,9 @@ ProjDataInfoTests::run_Blocks_DOI_test()
                     scannerBlocks_ptr->get_max_num_views(),
                     scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
    
-   scannerBlocksDOI_ptr=scannerBlocks_ptr;
+   shared_ptr<Scanner> scannerBlocksDOI_ptr(new Scanner(*scannerBlocks_ptr));
    scannerBlocksDOI_ptr->set_average_depth_of_interaction(0.1);
+   scannerBlocksDOI_ptr->set_up();
    shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_doi5_ptr;
    proj_data_info_blocks_doi5_ptr.reset(
                new ProjDataInfoBlocksOnCylindricalNoArcCorr(
@@ -488,7 +488,7 @@ ProjDataInfoTests::run_Blocks_DOI_test()
     
     int Bring1, Bring2, Bdet1,Bdet2, BDring1, BDring2, BDdet1, BDdet2;
     CartesianCoordinate3D< float> b1,b2,bd1,bd2;
-    float doi=scannerBlocksDOI_ptr->get_average_depth_of_interaction();
+    //float doi=scannerBlocksDOI_ptr->get_average_depth_of_interaction();
     timer.reset(); timer.start();
     
     for (int seg =proj_data_info_blocks_doi0_ptr->get_min_segment_num(); seg <=proj_data_info_blocks_doi0_ptr->get_max_segment_num();  ++ seg)
@@ -522,6 +522,7 @@ ProjDataInfoTests::run_Blocks_DOI_test()
 //               set_tolerance(10E-2);
                 check(b1!=bd1, "detector position should be different with different DOIs");
                 check(b2!=bd2, "detector position should be different with different DOIs");
+                // TODO improve check here
               }
     timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
     
@@ -553,21 +554,22 @@ ProjDataInfoTests::run_coordinate_test()
     scannerBlocks_ptr->set_num_rings(1);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-    
-    int num_transaxial_blocks_per_bucket = scannerBlocks_ptr->get_num_transaxial_blocks_per_bucket();
-    int num_transaxial_crystals_per_block = scannerBlocks_ptr->get_num_transaxial_crystals_per_block();
-	int num_transaxial_buckets = scannerBlocks_ptr->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
-    float transaxial_block_spacing = scannerBlocks_ptr->get_transaxial_block_spacing();
-    float transaxial_crystal_spacing = scannerBlocks_ptr->get_transaxial_crystal_spacing();
+    scannerBlocks_ptr->set_up();
+
+    // int num_transaxial_blocks_per_bucket = scannerBlocks_ptr->get_num_transaxial_blocks_per_bucket();
+    // int num_transaxial_crystals_per_block = scannerBlocks_ptr->get_num_transaxial_crystals_per_block();
+    // int num_transaxial_buckets = scannerBlocks_ptr->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+    // float transaxial_block_spacing = scannerBlocks_ptr->get_transaxial_block_spacing();
+    // float transaxial_crystal_spacing = scannerBlocks_ptr->get_transaxial_crystal_spacing();
 //    estimate the angle covered by a bucket, alpha
     
-    float csi=_PI/num_transaxial_buckets;
-    float trans_blocks_gap=transaxial_block_spacing-num_transaxial_crystals_per_block*transaxial_crystal_spacing;
-    float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing/2)*
-            (transaxial_crystal_spacing/2+trans_blocks_gap);
+    //float csi=_PI/num_transaxial_buckets;
+    //float trans_blocks_gap=transaxial_block_spacing-num_transaxial_crystals_per_block*transaxial_crystal_spacing;
+    /*float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing/2)*
+      (transaxial_crystal_spacing/2+trans_blocks_gap);*/
     
-    float dx=scannerBlocks_ptr->get_effective_ring_radius()*sin(csi_minus_csiGaps);
-    float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
+    //float dx=scannerBlocks_ptr->get_effective_ring_radius()*sin(csi_minus_csiGaps);
+    //float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
 
     shared_ptr<Scanner> scannerCyl_ptr;
     scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
@@ -582,6 +584,7 @@ ProjDataInfoTests::run_coordinate_test()
     
     scannerCyl_ptr->set_num_rings(1);
     scannerCyl_ptr->set_scanner_geometry("Cylindrical");
+    scannerCyl_ptr->set_up();
         
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
@@ -660,7 +663,7 @@ ProjDataInfoTests::run_coordinate_test()
                  
                 const float old_phi=proj_data_info_cyl_ptr->get_phi(bin);
                 if (fabs(phi-old_phi)>=2*_PI/num_detectors){
-                 float ang=2*_PI/num_detectors/2;
+                  //float ang=2*_PI/num_detectors/2;
 //                  warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
                   lorC1 = LORInAxialAndNoArcCorrSinogramCoordinates<float>(lorC.z2(),
@@ -766,7 +769,8 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                                                     scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-    
+    scannerBlocks_ptr->set_up();
+
     shared_ptr<Scanner> scannerCyl_ptr;
     scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
@@ -775,7 +779,8 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                                                  scannerCyl_ptr->get_num_transaxial_crystals_per_block());
     
     scannerCyl_ptr->set_scanner_geometry("Cylindrical");
-        
+    scannerCyl_ptr->set_up();
+
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
@@ -836,10 +841,7 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                 
                 proj_data_info_cyl_ptr->get_LOR(lorC,bin);
                 proj_data_info_blocks_ptr->get_LOR(lorB,bin);
-                
-                const int num_detectors =
-                  proj_data_info_cyl_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
-            
+
                 int det_num1=0, det_num2=0;
                 proj_data_info_cyl_ptr->
                   get_det_num_pair_for_view_tangential_pos_num(det_num1,
@@ -897,7 +899,8 @@ run_lor_get_s_test(){
                                                     scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-    
+    scannerBlocks_ptr->set_up();
+
     shared_ptr<Scanner> scannerCyl_ptr;
     scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
@@ -906,6 +909,7 @@ run_lor_get_s_test(){
                                                  scannerCyl_ptr->get_num_transaxial_crystals_per_block());
     
     scannerCyl_ptr->set_scanner_geometry("Cylindrical");
+    scannerCyl_ptr->set_up();
         
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
@@ -982,10 +986,10 @@ run_lor_get_s_test(){
                 
         proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1,Cring1,Cdet2,Cring1);
         proj_data_info_blocks_ptr->get_LOR(lorB,bin);
-        float R=block_trans_spacing*(sin(_PI*5/12)+sin(_PI/4)+sin(_PI/12));
-        float s=R*cos(_PI/3)+
+        /*float R=block_trans_spacing*(sin(_PI*5/12)+sin(_PI/4)+sin(_PI/12));
+          float s=R*cos(_PI/3)+
                 transaxial_crystal_spacing/2*sin(_PI/4)+
-                (i)*transaxial_crystal_spacing*sin(_PI/4);
+                (i)*transaxial_crystal_spacing*sin(_PI/4);*/
         
         float s_step=transaxial_crystal_spacing*sin(_PI/4);
         

@@ -42,50 +42,11 @@ limitations under the License.
 
 START_NAMESPACE_STIR
 
-
 GeometryBlocksOnCylindrical::
-GeometryBlocksOnCylindrical()
-{}
-
-GeometryBlocksOnCylindrical::
-GeometryBlocksOnCylindrical(const shared_ptr<Scanner> &scanner_ptr_v):
-	scanner_ptr(scanner_ptr_v)
+GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
-	build_crystal_maps();
+  build_crystal_maps(scanner);
 }
-
-bool
-GeometryBlocksOnCylindrical::
-compare_det_pos::
-operator() (const stir::DetectionPosition<>& det_pos1,
-						const stir::DetectionPosition<>& det_pos2) const
-{
-	if ( det_pos1.tangential_coord()<det_pos2.tangential_coord() )
-		return 1;
-	else if ( det_pos1.tangential_coord()==det_pos2.tangential_coord() && det_pos1.axial_coord()<det_pos2.axial_coord() )
-		return 1;
-	else if ( det_pos1.tangential_coord()==det_pos2.tangential_coord() && det_pos1.axial_coord()==det_pos2.axial_coord() && det_pos1.radial_coord() < det_pos2.radial_coord() )
-		return 1;
-	else
-		return 0;
-}
-
-bool
-GeometryBlocksOnCylindrical::
-compare_cartesian_coord::
-operator() (const stir::CartesianCoordinate3D<float>& cart_coord1,
-						const stir::CartesianCoordinate3D<float>& cart_coord2) const
-{
-	if (cart_coord1.z()<cart_coord2.z())
-		return 1;
-	else if (cart_coord1.z()==cart_coord2.z() && cart_coord1.y()<cart_coord2.y())
-		return 1;
-	else if (cart_coord1.z()==cart_coord2.z() && cart_coord1.y()==cart_coord2.y() && cart_coord1.x()<cart_coord2.x())
-		return 1;
-	else
-		return 0;
-}
-
 
 stir::Array<2, float>
 GeometryBlocksOnCylindrical::
@@ -98,72 +59,24 @@ get_rotation_matrix(float alpha) const
                           );
 }
 
-
-Succeeded
-GeometryBlocksOnCylindrical::
-find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
-                                                   const CartesianCoordinate3D<float>& cart_coord) const
-{
-  /*! first round the cartesian coordinates, it might happen that the cart_coord
-   is not precisely pointing to the center of the crystal and
-   then the det_pos cannot be found using the map
-  */
-  //rounding cart_coord to 3 decimal place and find det_pos
-  CartesianCoordinate3D<float> rounded_cart_coord;
-  rounded_cart_coord.z() = round(cart_coord.z()*1000.0F)/1000.0F;
-  rounded_cart_coord.y() = round(cart_coord.y()*1000.0F)/1000.0F;
-  rounded_cart_coord.x() = round(cart_coord.x()*1000.0F)/1000.0F;
-	if (detection_position_map_given_cartesian_coord_keys_3_decimal.count(rounded_cart_coord))
-	{
-          det_pos =	detection_position_map_given_cartesian_coord_keys_3_decimal.at(rounded_cart_coord);
-          return Succeeded::yes;
-	}
-	else
-	{
-          //rounding cart_coord to 2 decimal place and find det_pos
-		rounded_cart_coord.z() = round(cart_coord.z()*100.0F)/100.0F;
-		rounded_cart_coord.y() = round(cart_coord.y()*100.0f)/100.0F;
-		rounded_cart_coord.x() = round(cart_coord.x()*100.0F)/100.0F;
-		if (detection_position_map_given_cartesian_coord_keys_2_decimal.count(rounded_cart_coord))
-		{
-                  det_pos =	detection_position_map_given_cartesian_coord_keys_2_decimal.at(rounded_cart_coord);
-                  return Succeeded::yes;
-		}
-		else
-		{
-			rounded_cart_coord.z() = round(cart_coord.z()*10.0F)/10.0F;
-			rounded_cart_coord.y() = round(cart_coord.y()*10.0f)/10.0F;
-			rounded_cart_coord.x() = round(cart_coord.x()*10.0F)/10.0F;
-			if (detection_position_map_given_cartesian_coord_keys_2_decimal.count(rounded_cart_coord))
-			{
-                  det_pos =	detection_position_map_given_cartesian_coord_keys_2_decimal.at(rounded_cart_coord);
-                  return Succeeded::yes;
-			}else{
-				warning("cartesian coordinate (x, y, z)=(%f, %f, %f) does not exist in the inner map",
-							cart_coord.x(), cart_coord.y(), cart_coord.z());
-				return Succeeded::no;
-			}
-		}
-	}
-}
-
 void
 GeometryBlocksOnCylindrical::
-build_crystal_maps()
+build_crystal_maps(const Scanner& scanner)
 {
 	// local variables to describe scanner
-	int num_axial_crystals_per_block = get_scanner_ptr()->get_num_axial_crystals_per_block();
-	int num_transaxial_crystals_per_block = get_scanner_ptr()->get_num_transaxial_crystals_per_block();
-	int num_axial_blocks = get_scanner_ptr()->get_num_axial_blocks();
-	int num_transaxial_blocks_per_bucket = get_scanner_ptr()->get_num_transaxial_blocks_per_bucket();
-	int num_transaxial_buckets = get_scanner_ptr()->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
-	int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
-	float axial_block_spacing = get_scanner_ptr()->get_axial_block_spacing();
-	float transaxial_block_spacing = get_scanner_ptr()->get_transaxial_block_spacing();
-	float axial_crystal_spacing = get_scanner_ptr()->get_axial_crystal_spacing();
-	float transaxial_crystal_spacing = get_scanner_ptr()->get_transaxial_crystal_spacing();
-	std::string scanner_orientation = get_scanner_ptr()->get_scanner_orientation();
+	int num_axial_crystals_per_block = scanner.get_num_axial_crystals_per_block();
+	int num_transaxial_crystals_per_block = scanner.get_num_transaxial_crystals_per_block();
+	int num_axial_blocks = scanner.get_num_axial_blocks();
+	int num_transaxial_blocks_per_bucket = scanner.get_num_transaxial_blocks_per_bucket();
+	int num_transaxial_buckets = scanner.get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+	int num_detectors_per_ring = scanner.get_num_detectors_per_ring();
+	float axial_block_spacing = scanner.get_axial_block_spacing();
+	float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
+	float axial_crystal_spacing = scanner.get_axial_crystal_spacing();
+	float transaxial_crystal_spacing = scanner.get_transaxial_crystal_spacing();
+	std::string scanner_orientation = scanner.get_scanner_orientation();
 
+	det_pos_to_coord_type cartesian_coord_map_given_detection_position_keys;
 	// check for the scanner orientation
 	/*Building starts from a bucket perpendicular to y axis, from its first crystal.
 		see start_x*/
@@ -176,10 +89,10 @@ build_crystal_maps()
     float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing*2)*
             (transaxial_crystal_spacing/2+trans_blocks_gap);
 //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
-    float r=get_scanner_ptr()->get_effective_ring_radius()/cos(csi_minus_csiGaps);
+    float r=scanner.get_effective_ring_radius()/cos(csi_minus_csiGaps);
     
 	float start_z = 0;
-	float start_y = -1*get_scanner_ptr()->get_effective_ring_radius();
+	float start_y = -1*scanner.get_effective_ring_radius();
 	float start_x = -1*r*sin(csi_minus_csiGaps);//(
 //								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
 //							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
@@ -212,7 +125,7 @@ build_crystal_maps()
 									ax_block_num*axial_block_spacing + ax_crys_num*axial_crystal_spacing,
 									0.,
 									trans_block_num*transaxial_block_spacing + trans_crys_num*transaxial_crystal_spacing);
-		float alpha = get_scanner_ptr()->get_intrinsic_azimuthal_tilt()+
+		float alpha = scanner.get_intrinsic_azimuthal_tilt()+
                 trans_bucket_num*(2*_PI)/num_transaxial_buckets+csi_minus_csiGaps;
 
 		stir::Array<2, float> rotation_matrix = get_rotation_matrix(alpha);
@@ -227,17 +140,9 @@ build_crystal_maps()
 		stir::CartesianCoordinate3D<float> cart_coord =
 								stir::matrix_multiply(rotation_matrix, transformed_coord);
 
-		// rounding cart_coord to 3 and 2 decimal points then filling maps
-		cart_coord.z() = (round(cart_coord.z()*1000.0F))/1000.0F;
-		cart_coord.y() = (round(cart_coord.y()*1000.0F))/1000.0F;
-		cart_coord.x() = (round(cart_coord.x()*1000.0F))/1000.0F;
-		cartesian_coord_map_given_detection_position_keys[det_pos] = cart_coord; //used to find s, m, phi, theta
-		detection_position_map_given_cartesian_coord_keys_3_decimal[cart_coord] = det_pos; //used to find bin from listmode data
-		cart_coord.z() = (round(cart_coord.z()*100.0F))/100.0F;
-		cart_coord.y() = (round(cart_coord.y()*100.0F))/100.0F;
-		cart_coord.x() = (round(cart_coord.x()*100.0F))/100.0F;
-		detection_position_map_given_cartesian_coord_keys_2_decimal[cart_coord] = det_pos;
+		cartesian_coord_map_given_detection_position_keys[det_pos] = cart_coord;
 	}
+        set_detector_map(cartesian_coord_map_given_detection_position_keys);
 }
 
 

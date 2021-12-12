@@ -44,7 +44,7 @@
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
-#include "stir/listmode/DetectorCoordinateMapFromFile.h"
+#include "stir/DetectorCoordinateMap.h"
 #include "boost/make_shared.hpp"
 
 START_NAMESPACE_STIR
@@ -71,7 +71,7 @@ class CListEventSAFIR : public CListEvent
 public:
 	/*! Constructor which initializes map upon construction.
 	*/
-	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMapFromFile> map ) : map(map) {}
+	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMap> map ) : map(map) {}
 	
 	//! Returns LOR corresponding to the given event.
 	inline virtual LORAs2Points<float> get_LOR() const;
@@ -91,14 +91,14 @@ public:
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
-	inline void set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) { map = new_map; }
+	inline void set_map( shared_ptr<DetectorCoordinateMap> new_map ) { map = new_map; }
 private:
 	friend class CListRecordSAFIR;
 	/*! Default constructor will not work as it does not initialize a map to relate
-	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) after default construction.
+	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<DetectorCoordinateMap> new_map ) after default construction.
 	*/
 	inline CListEventSAFIR( ) {}
-	shared_ptr<DetectorCoordinateMapFromFile> map;
+	shared_ptr<DetectorCoordinateMap> map;
 };
 
 
