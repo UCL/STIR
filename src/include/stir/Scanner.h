@@ -91,6 +91,8 @@ class Succeeded;
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
+      \warning You have to call set_up() after using the \c set_* functions (except set_params()).
+
   \todo  
     a hierarchy distinguishing between different types of scanners
   \todo derive from ParsingObject
@@ -131,7 +133,9 @@ class Scanner
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, Discovery690, DiscoveryMI3ring, DiscoveryMI4ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype, User_defined_scanner,
 	     Unknown_scanner};
-  
+
+  virtual ~Scanner() {}
+
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
 
@@ -188,7 +192,11 @@ class Scanner
           float transaxial_block_spacing_v = -1.0f,
           const std::string& crystal_map_file_name = "");
 
-
+  //! Initialised internal geometry
+  /*! Currently called in the set_params() functions, but needs to be
+      called explicitly when afterwards using any of the other \c set_ functions
+  */
+  virtual void set_up();
 
   //! get scanner parameters as a std::string
   std::string parameter_info() const;
@@ -296,6 +304,8 @@ class Scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
     The other members of the class return the size of the "virtual" block. With these
     functions you can find its true size (or set it).
+
+    You have to call set_up() after using the \c set_* functions.
   */
   //@{! 
   int get_num_virtual_axial_crystals_per_block() const;
@@ -339,7 +349,10 @@ class Scanner
   //@} (end of get detector responce info)
 
   //! \name Functions setting info
-  /*! Be careful to keep consistency by setting all relevant parameters*/
+  /*! Be careful to keep consistency by setting all relevant parameters.
+
+    You have to call set_up() after using any of these.
+  */
   //@{
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
@@ -384,7 +397,8 @@ class Scanner
   //! set scanner orientation
   inline void set_scanner_orientation(const std::string& new_scanner_orientation);
   //! set scanner geometry
-  inline void set_scanner_geometry(const std::string& new_scanner_geometry);
+  /*! Will also read the detector map from file if the geometry is \c Generic */
+  void set_scanner_geometry(const std::string& new_scanner_geometry);
   //! set crystal spacing in axial direction
   inline void set_axial_crystal_spacing(const float & new_spacing);
   //! set crystal spacing in transaxial direction
@@ -394,6 +408,7 @@ class Scanner
   //! set block spacing in transaxial direction
   inline void set_transaxial_block_spacing(const float & new_spacing);
   //! set crystal map file name for the generic geometry
+  /*! \warning, data is not read yet. use set_scanner_geometry() after calling this function */
   inline void set_crystal_map_file_name(const std::string& new_crystal_map_file_name);
   //@} (end of block geometry info)
 
@@ -429,8 +444,14 @@ class Scanner
   // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
   inline stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const;
   //! Get the Cartesian coordinates (x,y,z) given the detection position id in the input crystal map
-   inline stir::CartesianCoordinate3D<float> get_coordinate_for_index(const stir::DetectionPosition<>& det_pos) const;
+  inline stir::CartesianCoordinate3D<float> get_coordinate_for_index(const stir::DetectionPosition<>& det_pos) const;
+  //! Find detection position at a coordinate
+  // used  in ProjInfoDataGenericNoArcCorr.cxx for accessing the get_bin
+  inline Succeeded
+     find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
+                                                        const CartesianCoordinate3D<float>& cart_coord) const;
 private:
+  bool _already_setup;
   Type type;
   std::list<std::string> list_of_names;
   int num_rings;                /* number of direct planes */

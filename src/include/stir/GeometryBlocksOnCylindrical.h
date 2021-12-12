@@ -28,12 +28,7 @@ limitations under the License.
 #define __stir_GeometryBlocksOnCylindrical_H__
 
 #include "stir/DetectorCoordinateMap.h"
-#include "stir/CartesianCoordinate3D.h"
-#include "stir/Scanner.h"
-#include "stir/shared_ptr.h"
 #include "stir/Array.h"
-#include <map>
-#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -56,36 +51,16 @@ class GeometryBlocksOnCylindrical: public DetectorCoordinateMap
 
 public:
 
-	//! Consstructors
-	GeometryBlocksOnCylindrical();
+	GeometryBlocksOnCylindrical(const Scanner &scanner);
 
-	GeometryBlocksOnCylindrical(const shared_ptr<Scanner> &scanner_ptr_v);
-
-	//! Destructor
-	~GeometryBlocksOnCylindrical() {}
- private:
+private:
 	//! Get rotation matrix for a given angle around z axis
 	stir::Array<2, float> get_rotation_matrix(float alpha) const;
 
 	//! Build crystal map in cartesian coordinate
-	void build_crystal_maps();
- public:
-	//! Get cartesian coordinate for a given detection position
-	inline Succeeded
-          find_cartesian_coordinate_given_detection_position(CartesianCoordinate3D<float>& ,
-                                                             const DetectionPosition<>&) const;
- private:
-	//! Get scanner pointer
-	inline const Scanner* get_scanner_ptr() const;
-
-
-private:
-	//! member variables
-	shared_ptr<Scanner> scanner_ptr;
+	void build_crystal_maps(const Scanner& scanner);
 };
 
 END_NAMESPACE_STIR
-
-#include "stir/GeometryBlocksOnCylindrical.inl"
 
 #endif

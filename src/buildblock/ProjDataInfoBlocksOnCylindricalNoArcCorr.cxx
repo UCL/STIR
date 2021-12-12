@@ -61,7 +61,10 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
-  crystal_map.reset(new GeometryBlocksOnCylindrical(scanner_ptr));
+  if (is_null_ptr(scanner_ptr))
+    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a non-empty Scanner");
+  if (scanner_ptr->get_scanner_geometry() != "BlocksOnCylindrical")
+    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a Scanner with appropriate geometry");
 }
 
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
@@ -75,8 +78,10 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
-  assert(!is_null_ptr(scanner_ptr));
-  crystal_map.reset(new GeometryBlocksOnCylindrical(scanner_ptr));
+  if (is_null_ptr(scanner_ptr))
+    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a non-empty Scanner");
+  if (scanner_ptr->get_scanner_geometry() != "BlocksOnCylindrical")
+    error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a Scanner with appropriate geometry");
 }
 
 
@@ -134,8 +139,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
 
   DetectionPosition<> det_pos1;
   DetectionPosition<> det_pos2;
-  if (crystal_map->find_detection_position_given_cartesian_coordinate(det_pos1, c1)==Succeeded::no ||
-      crystal_map->find_detection_position_given_cartesian_coordinate(det_pos2, c2)==Succeeded::no)
+  if (get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos1, c1)==Succeeded::no ||
+      get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos2, c2)==Succeeded::no)
   {
     return Succeeded::no;
   }
@@ -154,61 +159,6 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
      det1!=det2)
      ? Succeeded::yes : Succeeded::no;
 }
-
-
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-find_cartesian_coordinates_of_detection(
-					CartesianCoordinate3D<float>& coord_1,
-					CartesianCoordinate3D<float>& coord_2,
-					const Bin& bin) const
-{
- // find detectors
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-  get_det_pair_for_bin(det_num_a, ring_a,
-                       det_num_b, ring_b, bin);
-
-  // find corresponding cartesian coordinates
-  find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
-    ring_a,ring_b,det_num_a,det_num_b);
-  return;
-}
-
-//!warning Use crystal map
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
-				 CartesianCoordinate3D<float>& coord_2,
-				 const int Ring_A,const int Ring_B,
-				 const int det1, const int det2) const
-{
-  assert(0<=det1);
-  assert(det1<get_scanner_ptr()->get_num_detectors_per_ring());
-  assert(0<=det2);
-  assert(det2<get_scanner_ptr()->get_num_detectors_per_ring());
-
-	DetectionPosition<> det_pos1;
-	DetectionPosition<> det_pos2;
-  det_pos1.tangential_coord() = det1;
-  det_pos2.tangential_coord() = det2;
-  det_pos1.axial_coord() = Ring_A;
-  det_pos2.axial_coord() = Ring_B;
-
-  if (crystal_map->find_cartesian_coordinate_given_detection_position(coord_1, det_pos1)==Succeeded::yes &&
-      crystal_map->find_cartesian_coordinate_given_detection_position(coord_2, det_pos2)==Succeeded::yes)
-  {
-    return;
-  }
-  else
-  {
-    error("couldn't find corresponding cartesian coordinates for given detection positions.\n");
-    return;
-  }
-}
-
 
 void
 ProjDataInfoBlocksOnCylindricalNoArcCorr::
@@ -246,47 +196,5 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
       bin.tangential_pos_num() > get_max_tangential_pos_num())
     bin.set_bin_value(-1);
 }
-
-//!warning Use crystal map
-Bin
-ProjDataInfoBlocksOnCylindricalNoArcCorr::
-get_bin(const LOR<float>& lor) const
-{
-	Bin bin;
-
-  const LORAs2Points<float> & lor_as_2points = dynamic_cast<const LORAs2Points<float> &>(lor);
-
-	CartesianCoordinate3D<float> _p1 = lor_as_2points.p1();
-	CartesianCoordinate3D<float> _p2 = lor_as_2points.p2();
-
-	DetectionPosition<> det_pos1;
-	DetectionPosition<> det_pos2;
-  if (crystal_map->find_detection_position_given_cartesian_coordinate(det_pos1, _p1)==Succeeded::no ||
-      crystal_map->find_detection_position_given_cartesian_coordinate(det_pos2, _p2)==Succeeded::no)
-  {
-    bin.set_bin_value(-1);
-    return bin;
-  }
-
-  DetectionPositionPair<> det_pos_pair;
-	det_pos_pair.pos1() = det_pos1;
-	det_pos_pair.pos2() = det_pos2;
-
-
-	if (get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes&&
-		bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
-		bin.tangential_pos_num() <= get_max_tangential_pos_num())
-		{
-	    bin.set_bin_value(1);
-	    return bin;
-		}
-	else
-		{
-			bin.set_bin_value(-1);
-			return bin;
-		}
-
-}
-
 
 END_NAMESPACE_STIR

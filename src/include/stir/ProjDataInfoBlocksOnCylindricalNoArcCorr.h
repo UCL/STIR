@@ -119,30 +119,11 @@ public:
 
   virtual std::string parameter_info() const;
 
-  virtual
-    Bin
-    get_bin(const LOR<float>&) const;
-
-
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
-  /*! \warning These function take a different convention for the axial coordinate
-    compare to the get_m(), get_LOR() etc. In the current function, the axial coordinate (z)
-    is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
-    \obsolete
-  */
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
-
-  virtual void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
-					       CartesianCoordinate3D<float>& coord_2,
-					       const Bin& bin) const override;
-
-  void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-							     CartesianCoordinate3D<float>& coord_2,
-							     const int Ring_A,const int Ring_B,
-							     const int det1, const int det2) const override;
 
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 						  const CartesianCoordinate3D<float>& coord_1,
@@ -153,10 +134,7 @@ private:
 
   virtual bool blindly_equals(const root_type * const) const;
 
-  //! used to find scanner coordinates given cartesian coordinates and vice versa
-  shared_ptr<GeometryBlocksOnCylindrical> crystal_map;
-
-  };
+};
 
 END_NAMESPACE_STIR
 

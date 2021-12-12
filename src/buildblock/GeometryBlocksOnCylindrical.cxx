@@ -42,16 +42,10 @@ limitations under the License.
 
 START_NAMESPACE_STIR
 
-
 GeometryBlocksOnCylindrical::
-GeometryBlocksOnCylindrical()
-{}
-
-GeometryBlocksOnCylindrical::
-GeometryBlocksOnCylindrical(const shared_ptr<Scanner> &scanner_ptr_v):
-	scanner_ptr(scanner_ptr_v)
+GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
-	build_crystal_maps();
+  build_crystal_maps(scanner);
 }
 
 stir::Array<2, float>
@@ -67,20 +61,20 @@ get_rotation_matrix(float alpha) const
 
 void
 GeometryBlocksOnCylindrical::
-build_crystal_maps()
+build_crystal_maps(const Scanner& scanner)
 {
 	// local variables to describe scanner
-	int num_axial_crystals_per_block = get_scanner_ptr()->get_num_axial_crystals_per_block();
-	int num_transaxial_crystals_per_block = get_scanner_ptr()->get_num_transaxial_crystals_per_block();
-	int num_axial_blocks = get_scanner_ptr()->get_num_axial_blocks();
-	int num_transaxial_blocks_per_bucket = get_scanner_ptr()->get_num_transaxial_blocks_per_bucket();
-	int num_transaxial_buckets = get_scanner_ptr()->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
-	int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
-	float axial_block_spacing = get_scanner_ptr()->get_axial_block_spacing();
-	float transaxial_block_spacing = get_scanner_ptr()->get_transaxial_block_spacing();
-	float axial_crystal_spacing = get_scanner_ptr()->get_axial_crystal_spacing();
-	float transaxial_crystal_spacing = get_scanner_ptr()->get_transaxial_crystal_spacing();
-	std::string scanner_orientation = get_scanner_ptr()->get_scanner_orientation();
+	int num_axial_crystals_per_block = scanner.get_num_axial_crystals_per_block();
+	int num_transaxial_crystals_per_block = scanner.get_num_transaxial_crystals_per_block();
+	int num_axial_blocks = scanner.get_num_axial_blocks();
+	int num_transaxial_blocks_per_bucket = scanner.get_num_transaxial_blocks_per_bucket();
+	int num_transaxial_buckets = scanner.get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+	int num_detectors_per_ring = scanner.get_num_detectors_per_ring();
+	float axial_block_spacing = scanner.get_axial_block_spacing();
+	float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
+	float axial_crystal_spacing = scanner.get_axial_crystal_spacing();
+	float transaxial_crystal_spacing = scanner.get_transaxial_crystal_spacing();
+	std::string scanner_orientation = scanner.get_scanner_orientation();
 
 	det_pos_to_coord_type cartesian_coord_map_given_detection_position_keys;
 	// check for the scanner orientation
@@ -95,10 +89,10 @@ build_crystal_maps()
     float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing*2)*
             (transaxial_crystal_spacing/2+trans_blocks_gap);
 //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
-    float r=get_scanner_ptr()->get_effective_ring_radius()/cos(csi_minus_csiGaps);
+    float r=scanner.get_effective_ring_radius()/cos(csi_minus_csiGaps);
     
 	float start_z = 0;
-	float start_y = -1*get_scanner_ptr()->get_effective_ring_radius();
+	float start_y = -1*scanner.get_effective_ring_radius();
 	float start_x = -1*r*sin(csi_minus_csiGaps);//(
 //								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
 //							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
@@ -131,7 +125,7 @@ build_crystal_maps()
 									ax_block_num*axial_block_spacing + ax_crys_num*axial_crystal_spacing,
 									0.,
 									trans_block_num*transaxial_block_spacing + trans_crys_num*transaxial_crystal_spacing);
-		float alpha = get_scanner_ptr()->get_intrinsic_azimuthal_tilt()+
+		float alpha = scanner.get_intrinsic_azimuthal_tilt()+
                 trans_bucket_num*(2*_PI)/num_transaxial_buckets+csi_minus_csiGaps;
 
 		stir::Array<2, float> rotation_matrix = get_rotation_matrix(alpha);

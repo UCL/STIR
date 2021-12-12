@@ -297,10 +297,7 @@ private:
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
  protected:
   virtual bool blindly_equals(const root_type * const) const;
- private:
-  //! \todo Has to be removed
-  shared_ptr<GeometryBlocksOnCylindrical> crystal_map;
-  };
+};
 
 END_NAMESPACE_STIR
 

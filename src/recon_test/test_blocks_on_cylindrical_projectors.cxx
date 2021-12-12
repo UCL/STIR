@@ -139,7 +139,7 @@ BlocksTests::run_plane_symmetry_test(){
     scannerBlocks_ptr->set_num_rings(1);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-    
+    scannerBlocks_ptr->set_up();
     
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
@@ -337,7 +337,7 @@ write_to_file("image_for2",*image2_sptr);
     scannerBlocks_ptr->set_num_rings(1);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
-    
+    scannerBlocks_ptr->set_up();
     
     VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);

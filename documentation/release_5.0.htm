@@ -267,7 +267,12 @@ from the above):</H2>
 	in the derived classes (which has an extra argument <tt>add_sensitivity</tt>). Therefore developers that created their own derived class will need to
 	adjust their class accordingly. The <tt>public</tt> class interface is identical though.
     </li>
-    <li><code>DetectorCoordinateMapFromfile</code> (used by SAFIR listmode files) has been renamed to <code>DetectorCoordinateMap</code> and moved from <tt>listmode</tt> to <tt>buildblock</tt></li>
+    <li><code>DetectorCoordinateMapFromfile</code> (used by SAFIR listmode files) has been renamed to <code>DetectorCoordinateMap</code> and moved from <tt>listmode</tt> to <tt>buildblock</tt>.</li>
+    <li><code>Scanner</code> now has a <code>set_up()</code> function. This needs to be called after
+      using any of the <code>set_*()</code> functions (except <code>set_params</code>). For the blocks/generic
+      scanners, this will fill in the detector maps etc.
+      You will get a run-time exception if you forgot to do this.
+    </li>
 </ul>
 
 <h3>New functionality</h3>

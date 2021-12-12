@@ -36,6 +36,7 @@
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
 #include "stir/DetectorCoordinateMap.h"
+#include "stir/GeometryBlocksOnCylindrical.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -71,6 +72,7 @@ static list<string>
 
   
 Scanner::Scanner(Type scanner_type)
+  : _already_setup(false)
 {
 
   // set_params parameters:
@@ -572,6 +574,7 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  float axial_block_spacing_v,
                  float transaxial_block_spacing_v,
                  const std::string& crystal_map_file_name_v)
+: _already_setup(false)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -618,6 +621,7 @@ Scanner::Scanner(Type type_v, const string& name,
                  float axial_block_spacing_v,
                  float transaxial_block_spacing_v,
                  const std::string& crystal_map_file_name_v)
+  : _already_setup(false)
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -750,25 +754,50 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   
   scanner_orientation = scanner_orientation_v;
   
-  if (scanner_geometry_v == "")
-      scanner_geometry = "Cylindrical";
-  else
-      scanner_geometry = scanner_geometry_v;
-      
   axial_crystal_spacing = axial_crystal_spacing_v;
   transaxial_crystal_spacing = transaxial_crystal_spacing_v;
   axial_block_spacing = axial_block_spacing_v;
   transaxial_block_spacing = transaxial_block_spacing_v;
   
   crystal_map_file_name = crystal_map_file_name_v;
-  if (crystal_map_file_name != "")
-  {
-    read_detectormap_from_file(crystal_map_file_name);
-  }
+
+  if (scanner_geometry_v == "")
+    set_scanner_geometry("Cylindrical");
   else
-  {
-    this->detector_map_sptr = 0;
-  }
+    set_scanner_geometry(scanner_geometry_v);
+
+  set_up();
+}
+
+void Scanner::set_scanner_geometry(const std::string& new_scanner_geometry)
+{
+  scanner_geometry = new_scanner_geometry;
+   _already_setup = false;
+}
+
+void Scanner::set_up()
+{
+  if (scanner_geometry == "Generic")
+    {
+      if (crystal_map_file_name == "")
+        error("Scanner: scanner_geometry=Generic needs a crystal map");
+
+      read_detectormap_from_file(crystal_map_file_name);
+    }
+  else
+    {
+      if (crystal_map_file_name != "")
+        error("Scanner: use scanner_geometry=Generic when specifying a crystal map");
+      if (scanner_geometry == "BlocksOnCylindrical")
+        this->detector_map_sptr.reset(new GeometryBlocksOnCylindrical(*this));
+      else
+        {
+          this->detector_map_sptr = 0;
+          if (scanner_geometry != "Cylindrical")
+            error("Scanner::scanner_geometry needs to be one of Cylindrical, BlocksOnCylindrical, Generic");
+        }
+    }
+  _already_setup = true;
 }
 
 void
@@ -1224,15 +1253,15 @@ Scanner* Scanner::ask_parameters()
       //This is needed for finding effective central bin size, because it is different for different geometries.
       const string ScannerGeometry =
         ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
-      scanner_ptr->set_scanner_geometry(ScannerGeometry);
 
       if (ScannerGeometry == "Generic")
       {
         string CrystalMapFileName = ask_string("Enter the name of the crystal map: ", "");
         scanner_ptr->set_crystal_map_file_name(CrystalMapFileName);
-        scanner_ptr->read_detectormap_from_file(CrystalMapFileName);
       }
   
+      // will also read detector-map from file
+      scanner_ptr->set_scanner_geometry(ScannerGeometry);
 
       return scanner_ptr;
     }
