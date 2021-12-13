@@ -68,7 +68,9 @@ build_crystal_maps(const Scanner& scanner)
 	int num_transaxial_crystals_per_block = scanner.get_num_transaxial_crystals_per_block();
 	int num_axial_blocks = scanner.get_num_axial_blocks();
 	int num_transaxial_blocks_per_bucket = scanner.get_num_transaxial_blocks_per_bucket();
+	int num_axial_blocks_per_bucket = scanner.get_num_axial_blocks_per_bucket();
 	int num_transaxial_buckets = scanner.get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
+	int num_axial_buckets = scanner.get_num_axial_blocks()/num_axial_blocks_per_bucket;
 	int num_detectors_per_ring = scanner.get_num_detectors_per_ring();
 	float axial_block_spacing = scanner.get_axial_block_spacing();
 	float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
@@ -100,11 +102,12 @@ build_crystal_maps(const Scanner& scanner)
     
 	stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
-	for (int ax_block_num=0; ax_block_num<num_axial_blocks; ++ax_block_num)
-		for (int ax_crys_num=0; ax_crys_num<num_axial_crystals_per_block; ++ax_crys_num)
-			for (int trans_bucket_num=0; trans_bucket_num<num_transaxial_buckets; ++trans_bucket_num)
-				for (int trans_block_num=0; trans_block_num<num_transaxial_blocks_per_bucket; ++trans_block_num)
-					for (int trans_crys_num=0; trans_crys_num<num_transaxial_crystals_per_block; ++trans_crys_num)
+	for (int ax_bucket_num=0; ax_bucket_num<num_axial_buckets; ++ax_bucket_num)
+		for (int ax_block_num=0; ax_block_num<num_axial_blocks; ++ax_block_num)
+			for (int ax_crys_num=0; ax_crys_num<num_axial_crystals_per_block; ++ax_crys_num)
+				for (int trans_bucket_num=0; trans_bucket_num<num_transaxial_buckets; ++trans_bucket_num)
+					for (int trans_block_num=0; trans_block_num<num_transaxial_blocks_per_bucket; ++trans_block_num)
+						for (int trans_crys_num=0; trans_crys_num<num_transaxial_crystals_per_block; ++trans_crys_num)
 	{
 		// calculate detection position for a given detector
 		// note: in STIR convention, crystal(0,0,0) corresponds to card_coord(z=0,y=-r,x=0)
@@ -116,7 +119,9 @@ build_crystal_maps(const Scanner& scanner)
 		if (tangential_coord<0)
 					tangential_coord += num_detectors_per_ring;
 
-		int axial_coord = ax_block_num*num_axial_crystals_per_block + ax_crys_num;
+		int axial_coord = ax_bucket_num*num_axial_blocks_per_bucket*num_axial_crystals_per_block
+														+ ax_block_num*num_axial_crystals_per_block 
+														+ ax_crys_num;
 		int radial_coord = 0;
 		stir::DetectionPosition<> det_pos(tangential_coord, axial_coord, radial_coord);
 
