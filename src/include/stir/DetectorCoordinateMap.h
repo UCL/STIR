@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/unordered_map.hpp>
 
