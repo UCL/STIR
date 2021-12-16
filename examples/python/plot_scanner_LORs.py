@@ -33,12 +33,13 @@ import matplotlib.cm as cm
 #%% definition of useful objects and variables
 
 scanner=stir.Scanner_get_scanner_from_name('SAFIRDualRingPrototype')
-scanner.set_num_transaxial_blocks_per_bucket(2)
+scanner.set_num_transaxial_blocks_per_bucket(1)
 scanner.set_intrinsic_azimuthal_tilt(0)
 # scanner.set_num_axial_crystals_per_block(1)
 # scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block());
 # scanner.set_num_rings(1)
 scanner.set_scanner_geometry("BlocksOnCylindrical")
+# scanner.set_up();
 
 Nr=scanner.get_num_rings()
 Nv=scanner.get_max_num_views()
@@ -64,8 +65,7 @@ tBl_gap=tBl_s-NtCpBl*tC_s
 csi_minus_csiGaps=csi-(csi/tBl_s*2)*(tC_s/2+tBl_gap)
 rmax =r/math.cos(csi_minus_csiGaps)
 
-# scanner.set_intrinsic_azimuthal_tilt(-csi_minus_csiGaps) #if you want to play with the orientation of the blocks
-
+scanner.set_intrinsic_azimuthal_tilt(-csi_minus_csiGaps) #if you want to play with the orientation of the blocks
 scanner.set_up()
 #%% Create projection data info for Blocks on Cylindrical
 for i in range(0,2*Nr-1,1 ):

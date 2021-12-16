@@ -125,7 +125,7 @@ build_crystal_maps(const Scanner& scanner)
 		int radial_coord = 0;
 		stir::DetectionPosition<> det_pos(tangential_coord, axial_coord, radial_coord);
 
-		//calculate cartesion coordinate for a given detector
+		//calculate cartesian coordinate for a given detector
 		stir::CartesianCoordinate3D<float> transformation_matrix(
 									ax_block_num*axial_block_spacing + ax_crys_num*axial_crystal_spacing,
 									0.,
