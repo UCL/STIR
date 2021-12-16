@@ -60,7 +60,7 @@ public:
   float calculate_angle_within_half_bucket(const shared_ptr<Scanner> scanner_ptr,
                                            const shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr);
 private:
-  void run_coordinate_test_for_different_block_orientation();
+  void run_coordinate_test_for_flat_first_bucket();
   void run_map_orientation_test();
 };
 
@@ -100,7 +100,7 @@ DetectionPosMapTests::calculate_angle_within_half_bucket(const shared_ptr<Scanne
   csi will be affected. However this does not happen when csi is calculated in the same way we do in the crystal map.
 */
 void
-DetectionPosMapTests::run_coordinate_test_for_different_block_orientation()
+DetectionPosMapTests::run_coordinate_test_for_flat_first_bucket()
 {
     CPUTimer timer;
     shared_ptr<Scanner> scannerBlocks_ptr;
@@ -193,7 +193,7 @@ run_tests()
 {
     
     std::cerr << "-------- Testing DetectorCoordinateMap --------\n";
-    run_coordinate_test_for_different_block_orientation();
+    run_coordinate_test_for_flat_first_bucket();
 }
 END_NAMESPACE_STIR
 
