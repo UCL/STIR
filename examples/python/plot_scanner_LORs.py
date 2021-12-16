@@ -66,6 +66,7 @@ rmax =r/math.cos(csi_minus_csiGaps)
 
 # scanner.set_intrinsic_azimuthal_tilt(-csi_minus_csiGaps) #if you want to play with the orientation of the blocks
 
+scanner.set_up()
 #%% Create projection data info for Blocks on Cylindrical
 for i in range(0,2*Nr-1,1 ):
     min_r_diff[i]=-Nr+1+i
