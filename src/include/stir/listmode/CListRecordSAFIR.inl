@@ -5,6 +5,7 @@
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
 	Copyright 2020 Positrigo AG, Zurich
+    Copyright 2021 University College London
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -19,6 +20,17 @@
 	limitations under the License.
 
  */
+/*!
+
+  \file
+  \ingroup listmode
+  \brief Inline implementation of class stir::CListEventSAFIR and stir::CListRecordSAFIR with supporting classes
+
+  \author Jannis Fischer
+  \author Parisa Khateri
+  \author Kris Thielemans
+*/
+
 #include<random>
 
 #include "stir/LORCoordinates.h"
@@ -44,91 +56,57 @@ CListEventSAFIR<Derived>::get_LOR() const
 
 	static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
 
-	if(!map) stir::error("Crystal map not set.");
+    lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
+    lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
 
-	lor.p1() = map->get_coordinate_for_index(det_pos_pair.pos1());
-	lor.p2() = map->get_coordinate_for_index(det_pos_pair.pos2());
-
-	return lor;
+    return lor;
 }
 
-//! author Parisa Khateri
-//! Overrides the default implementation to use get_detection_position() which should be faster.
+namespace detail
+{
+template <class PDIT>
+static inline bool
+get_bin_for_det_pos_pair(Bin& bin, DetectionPositionPair<>& det_pos_pair, const ProjDataInfo& proj_data_info)
+{
+  if (auto proj_data_info_ptr = dynamic_cast<const PDIT*>(&proj_data_info))
+    {
+      if (proj_data_info_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
+        bin.set_bin_value(1);
+      else
+        bin.set_bin_value(-1);
+      return true;
+    }
+  else
+    return false;
+}
+} // namespace detail
+
 template <class Derived>
 void
-CListEventSAFIR<Derived>::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+CListEventSAFIR<Derived>::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
-	DetectionPositionPair<> det_pos_pair;
-	static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
+  DetectionPositionPair<> det_pos_pair;
+  static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
 
-	//check aligned detectors
-  if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
-  {
-		/*std::cerr<<"WARNING: aligned detectors: det1="<<det_pos_pair.pos1().tangential_coord()
-              	<<"\tdet2="<<det_pos_pair.pos2().tangential_coord()
-                <<"\tring1="<<det_pos_pair.pos1().axial_coord()
-                <<"\tring2="<<det_pos_pair.pos2().axial_coord()<<"\n";*/
-		bin.set_bin_value(-1);
-  }
-  // Case for generic scanner
-  if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Generic" && bin.get_bin_value() != -1)
-  {
-      const ProjDataInfoGenericNoArcCorr& proj_data_info_gen =
-                  dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(proj_data_info);
-      //transform det_pos_pair into stir coordinates
-      DetectionPosition<> pos1 = det_pos_pair.pos1();
-      DetectionPosition<> pos2 = det_pos_pair.pos2();
-      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_det_pos_for_index(pos1);
-      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_det_pos_for_index(pos2);
+  if (!map_sptr)
+    {
+      // transform det_pos_pair into stir conventions
+      det_pos_pair.pos1() = map_to_use().get_det_pos_for_index(det_pos_pair.pos1());
+      det_pos_pair.pos2() = map_to_use().get_det_pos_for_index(det_pos_pair.pos2());
 
-      if (proj_data_info_gen.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
-         bin.set_bin_value(1);
-      else
-         bin.set_bin_value(-1);
-  }
-  else
-  {
-	  if(!map) stir::error("Crystal map not set.");
-
-      stir::CartesianCoordinate3D<float> c1 = map->get_coordinate_for_index(det_pos_pair.pos1());
-      stir::CartesianCoordinate3D<float> c2 = map->get_coordinate_for_index(det_pos_pair.pos2());
-      int det1, det2, ring1, ring2;
-
-      if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical"
-                           && bin.get_bin_value()!=-1)
-      {
-         //const ProjDataInfoCylindricalNoArcCorr& proj_data_info_cyl =
-          //         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info);
-                   
-         LORAs2Points<float> lor;
-       	 lor.p1() = c1;
-         lor.p2() = c2;
-         bin = proj_data_info.get_bin(lor);
-      }
-      else if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical"
-                   				&& bin.get_bin_value()!=-1)
-      {
-    		const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_blk =
-                    dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info);
-
-        if (proj_data_info_blk.find_scanner_coordinates_given_cartesian_coordinates(det1, det2, ring1, ring2, c1, c2) == Succeeded::no)
-        		bin.set_bin_value(-1);
-        else
+      if (!detail::get_bin_for_det_pos_pair<ProjDataInfoGenericNoArcCorr>(bin, det_pos_pair, proj_data_info))
         {
-    			assert(!(ring1<0 ||
-                   ring1>=proj_data_info_blk.get_scanner_ptr()->get_num_rings() ||
-    							 ring2<0 ||
-    							 ring2>=proj_data_info_blk.get_scanner_ptr()->get_num_rings())
-    						 );
-          
-    			if(proj_data_info_blk.get_bin_for_det_pair(bin, det1, ring1, det2, ring2)==Succeeded::yes)
-    					bin.set_bin_value(1);
-          else
-    					bin.set_bin_value(-1);
-         }
-      }
-  }
+          if (!detail::get_bin_for_det_pos_pair<ProjDataInfoCylindricalNoArcCorr>(bin, det_pos_pair, proj_data_info))
+            error("Wrong type of proj-data-info for SAFIR");
+        }
+    }
+  else
+    {
+      const stir::CartesianCoordinate3D<float> c1 = map_sptr->get_coordinate_for_index(det_pos_pair.pos1());
+      const stir::CartesianCoordinate3D<float> c2 = map_sptr->get_coordinate_for_index(det_pos_pair.pos2());
+      const LORAs2Points<float> lor(c1, c2);
+      bin = proj_data_info.get_bin(lor);
+    }
 }
 
 void CListEventDataSAFIR::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)

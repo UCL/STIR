@@ -450,6 +450,10 @@ class Scanner
   inline Succeeded
      find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
                                                         const CartesianCoordinate3D<float>& cart_coord) const;
+
+  shared_ptr<const DetectorCoordinateMap> get_detector_map_sptr() const
+  { return detector_map_sptr; }
+
 private:
   bool _already_setup;
   Type type;

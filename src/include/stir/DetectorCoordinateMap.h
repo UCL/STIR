@@ -43,6 +43,8 @@ class Succeeded;
 	\par Format:
 	ring,detector,(layer,)x,y,z
 	An empty line will terminate the reading at that line.
+
+    Optionally LOR end-points can be randomly displaced using a Gaussian distribution with standard deviation \sigma (in mm).
 */
 class DetectorCoordinateMap
 {

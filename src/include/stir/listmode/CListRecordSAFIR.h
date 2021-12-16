@@ -50,7 +50,7 @@
 START_NAMESPACE_STIR
 
 /*!
-Provides interface of the record class to STIR by implementing get_LOR(). It uses a map from detector indices to coordinates to specify LORAs2Points from given detection pair indices.
+Provides interface of the record class to STIR by implementing get_LOR(). It uses an optional map from detector indices to coordinates to specify LORAs2Points from given detection pair indices.
 
 The record has the following format (for little-endian byte order)
 \code
@@ -69,36 +69,41 @@ template <class Derived>
 class CListEventSAFIR : public CListEvent
 {
 public:
-	/*! Constructor which initializes map upon construction.
+	/*! Default constructor will not work as it does not initialize a map to relate
+	detector indices and space coordinates. Always use either set_scanner_sptr or set_map_sptr after default construction.
 	*/
-	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMap> map ) : map(map) {}
-	
+	inline CListEventSAFIR( ) {}
+
 	//! Returns LOR corresponding to the given event.
 	inline virtual LORAs2Points<float> get_LOR() const;
+	
+  //! Override the default implementation
+  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+  
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
-	
-	//! author Parisa Khateri
-  //! Override the default implementation
-  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
-
 	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
 
 	//! Returns 0 if event is prompt and 1 if random/delayed
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
-	inline void set_map( shared_ptr<DetectorCoordinateMap> new_map ) { map = new_map; }
+	/*! Use a null pointer to disable the mapping functionality */
+	inline void set_map_sptr( shared_ptr<const DetectorCoordinateMap> new_map_sptr ) { map_sptr = new_map_sptr; }
+    /*! Set the scanner */
+    /*! Currently only used if the map is not set. */
+	inline void set_scanner_sptr( shared_ptr<const Scanner> new_scanner_sptr ) { scanner_sptr = new_scanner_sptr; }
+
 private:
 	friend class CListRecordSAFIR;
-	/*! Default constructor will not work as it does not initialize a map to relate
-	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<DetectorCoordinateMap> new_map ) after default construction.
-	*/
-	inline CListEventSAFIR( ) {}
-	shared_ptr<DetectorCoordinateMap> map;
+	shared_ptr<const DetectorCoordinateMap> map_sptr;
+	shared_ptr<const Scanner> scanner_sptr;
+
+	const DetectorCoordinateMap& map_to_use() const
+	{ return  map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
 
