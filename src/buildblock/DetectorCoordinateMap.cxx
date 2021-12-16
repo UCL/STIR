@@ -118,8 +118,13 @@ void DetectorCoordinateMap::set_detector_map( const DetectorCoordinateMap::det_p
     stir::DetectionPosition<> detpos(0,0,0);
     for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
       {
+#if 0
         input_index_to_det_pos[map_for_sorting_coordinates[*it]] = detpos;
         auto cart_coord = coord_map.at(map_for_sorting_coordinates[*it]);
+#else
+        input_index_to_det_pos[detpos] = detpos;
+        auto cart_coord = coord_map.at(detpos);
+#endif
         // rounding cart_coord to 3 and 2 decimal points then filling maps
         cart_coord.z() = (round(cart_coord.z()*1000.0F))/1000.0F;
         cart_coord.y() = (round(cart_coord.y()*1000.0F))/1000.0F;
