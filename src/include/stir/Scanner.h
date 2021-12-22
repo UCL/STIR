@@ -99,6 +99,8 @@ class Succeeded;
 */
 class Scanner 
 {
+    friend class DetectionPosMapTests;
+    
  public:
 
    /************* static members*****************************/
