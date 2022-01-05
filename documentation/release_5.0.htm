@@ -91,6 +91,11 @@ Backward compatibility for reconstructed images can be achieved by setting the <
    Fixing this isssue means that images reconstructed with <tt>OSSPS</tt> are different from previous versions of STIR when the above conditions are met.
    See <a href=https://github.com/UCL/STIR/issues/873>Issue #873</a> and associated <a href=https://github.com/UCL/STIR/issues/893>PR #893</a>.
 </li>
+<li>
+  Parametric image reconstruction with <tt>POSMAPOSL</tt> could lead to zeroes being introduced
+  gradually during reconstruction.
+   See <a href=https://github.com/UCL/STIR/issues/906>Issue #906</a> and associated <a href=https://github.com/UCL/STIR/issues/978>PR #978</a>.
+</li>
 </ul>
 
 <h3>New functionality</h3>
