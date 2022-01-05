@@ -21,6 +21,8 @@
 
 #include "stir/ProjDataInterfile.h"
 #include "stir/multiply_crystal_factors.h"
+#include "stir/GeometryBlocksOnCylindrical.h"
+#include "stir/DetectorCoordinateMap.h"
 #include "stir/stream.h"
 #include "stir/IndexRange2D.h"
 #include <iostream>
@@ -73,6 +75,33 @@ int main(int argc, char **argv)
 		in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
 	ifstream in(in_filename);
 	in >> efficiencies;
+  // perform shifting of efficiency only if crystal map is defined in interfile header.
+  if(template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_detector_map_sptr() != nullptr){
+    shared_ptr<const DetectorCoordinateMap> external_map = template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_detector_map_sptr();
+    shared_ptr<GeometryBlocksOnCylindrical> internal_map;
+    internal_map.reset(new GeometryBlocksOnCylindrical(*(template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_sptr())));
+    DetectorEfficiencies internal_efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+    for (int axial = 0; axial <= num_rings; axial++)
+    {
+      for (int tang = 0; tang <= num_detectors_per_ring; tang++)
+      {
+        // (internal_axial, internal_tang, 0) <-> (x,y,z) <-> (external_axial, external_tang, 0)
+        // therefore external map and internal map NEEDS TO AGREE on (x,y,z)
+        stir::DetectionPosition<> internal_det_pos;
+        internal_det_pos.radial_coord()=0;
+        internal_det_pos.axial_coord()=axial;
+        internal_det_pos.tangential_coord()=tang;
+        stir::CartesianCoordinate3D<float> internal_3D_coord = internal_map->get_coordinate_for_det_pos(internal_det_pos);
+        stir::DetectionPosition<> external_det_pos;
+        if(external_map->find_detection_position_given_cartesian_coordinate(external_det_pos,internal_3D_coord) == Succeeded::yes){
+          internal_efficiencies[axial, tang] = efficiencies[external_det_pos.axial_coord(), external_det_pos.tangential_coord()];
+        }else{
+          error("there is a mismatch of (x,y,z) coordinate between internal and external crystal. Check if depth of interaction between 2 crystal map matches!");
+        }
+      }
+    }
+    efficiencies = internal_efficiencies;
+  }
 	if (!in)
 	  {
 	    error("Error reading %s, using all 1s instead\n", in_filename);
