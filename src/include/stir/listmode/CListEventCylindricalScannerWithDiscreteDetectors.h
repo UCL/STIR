@@ -22,6 +22,8 @@
 #include "stir/Succeeded.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/listmode/CListRecord.h"
 
 START_NAMESPACE_STIR
@@ -74,13 +76,41 @@ public:
    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
      {
-       return uncompressed_proj_data_info_sptr;
+       shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
+       uncompressed_proj_data_info_sptr;
+       uncompressed_proj_data_info_sptr.reset
+    (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>
+    (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
+     }
+     shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+    get_uncompressed_proj_data_info_blk_sptr() const {
+      shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+       uncompressed_proj_data_info_sptr;
+       uncompressed_proj_data_info_sptr.reset
+    (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>
+    (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
+    }
+    shared_ptr<const ProjDataInfoGenericNoArcCorr>
+    get_uncompressed_proj_data_info_generic_sptr() const {
+      shared_ptr<const ProjDataInfoGenericNoArcCorr>
+       uncompressed_proj_data_info_sptr;
+       uncompressed_proj_data_info_sptr.reset
+    (dynamic_cast<const ProjDataInfoGenericNoArcCorr *>
+    (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
+    }
+   shared_ptr<const ProjDataInfo>
+    get_proj_data_info_sptr() const
+     {
+       return proj_data_info_sptr;
      }
 
    shared_ptr<Scanner> scanner_sptr;
  private:
-   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-     uncompressed_proj_data_info_sptr;
+   shared_ptr<const ProjDataInfo>
+     proj_data_info_sptr;
 
 };
 

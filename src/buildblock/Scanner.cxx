@@ -809,8 +809,6 @@ void Scanner::set_up()
     }
   else
     {
-      if (crystal_map_file_name != "")
-        error("Scanner: use scanner_geometry=Generic when specifying a crystal map");
       if (scanner_geometry == "BlocksOnCylindrical")
         this->detector_map_sptr.reset(new GeometryBlocksOnCylindrical(*this));
       else
