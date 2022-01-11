@@ -445,7 +445,7 @@ void
 ProjDataInfoTests::run_Blocks_DOI_test()
 {
     CPUTimer timer;
-    shared_ptr<Scanner> scannerBlocks_ptr(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerBlocks_ptr->set_average_depth_of_interaction(0);    
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
@@ -462,26 +462,22 @@ ProjDataInfoTests::run_Blocks_DOI_test()
             num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
         }
     
-    shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_doi0_ptr;
-   proj_data_info_blocks_doi0_ptr.reset(
-                new ProjDataInfoBlocksOnCylindricalNoArcCorr(
+    auto proj_data_info_blocks_doi0_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
                     scannerBlocks_ptr,
                     num_axial_pos_per_segment,
                     min_ring_diff_v, max_ring_diff_v,
                     scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
    
-   shared_ptr<Scanner> scannerBlocksDOI_ptr(new Scanner(*scannerBlocks_ptr));
+   auto scannerBlocksDOI_ptr=std::make_shared<Scanner>(*scannerBlocks_ptr);
    scannerBlocksDOI_ptr->set_average_depth_of_interaction(0.1);
    scannerBlocksDOI_ptr->set_up();
-   shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_doi5_ptr;
-   proj_data_info_blocks_doi5_ptr.reset(
-               new ProjDataInfoBlocksOnCylindricalNoArcCorr(
+   auto proj_data_info_blocks_doi5_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
                    scannerBlocksDOI_ptr,
                    num_axial_pos_per_segment,
                    min_ring_diff_v, max_ring_diff_v,
                    scannerBlocksDOI_ptr->get_max_num_views(),
-                   scannerBlocksDOI_ptr->get_max_num_non_arccorrected_bins()));
+                   scannerBlocksDOI_ptr->get_max_num_non_arccorrected_bins());
 
     Bin bin;
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
@@ -541,8 +537,7 @@ void
 ProjDataInfoTests::run_coordinate_test()
 {
     CPUTimer timer;
-    shared_ptr<Scanner> scannerBlocks_ptr;
-    scannerBlocks_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerBlocks_ptr->set_num_axial_crystals_per_block(1);
     scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
                                                scannerBlocks_ptr->get_num_axial_crystals_per_block());
@@ -571,8 +566,7 @@ ProjDataInfoTests::run_coordinate_test()
     //float dx=scannerBlocks_ptr->get_effective_ring_radius()*sin(csi_minus_csiGaps);
     //float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
 
-    shared_ptr<Scanner> scannerCyl_ptr;
-    scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerCyl_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerCyl_ptr->set_num_axial_crystals_per_block(1);
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
                                             scannerCyl_ptr->get_num_axial_crystals_per_block());
@@ -599,23 +593,19 @@ ProjDataInfoTests::run_coordinate_test()
             num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
         }
     
-    shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_ptr;
-    proj_data_info_blocks_ptr.reset(
-                new ProjDataInfoBlocksOnCylindricalNoArcCorr(
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
                     scannerBlocks_ptr,
                     num_axial_pos_per_segment,
                     min_ring_diff_v, max_ring_diff_v,
                     scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
     
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_ptr;
-    proj_data_info_cyl_ptr.reset(
-                new ProjDataInfoCylindricalNoArcCorr(
+    auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
                 num_axial_pos_per_segment,
                 min_ring_diff_v, max_ring_diff_v,
                 scannerBlocks_ptr->get_max_num_views(),
-                scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
 
     Bin bin, binRT;
     
@@ -761,8 +751,7 @@ void
 ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
 {
     CPUTimer timer;
-    shared_ptr<Scanner> scannerBlocks_ptr;
-    scannerBlocks_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerBlocks_ptr=std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
     scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
                                                scannerBlocks_ptr->get_num_axial_crystals_per_block());
     scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
@@ -771,8 +760,7 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
 
-    shared_ptr<Scanner> scannerCyl_ptr;
-    scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerCyl_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
                                             scannerCyl_ptr->get_num_axial_crystals_per_block());
     scannerCyl_ptr->set_transaxial_block_spacing(scannerCyl_ptr->get_transaxial_crystal_spacing()*
@@ -794,23 +782,19 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
             num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
         }
     
-    shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_ptr;
-    proj_data_info_blocks_ptr.reset(
-                new ProjDataInfoBlocksOnCylindricalNoArcCorr(
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
                     scannerBlocks_ptr,
                     num_axial_pos_per_segment,
                     min_ring_diff_v, max_ring_diff_v,
                     scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
     
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_ptr;
-    proj_data_info_cyl_ptr.reset(
-                new ProjDataInfoCylindricalNoArcCorr(
+    auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
                 num_axial_pos_per_segment,
                 min_ring_diff_v, max_ring_diff_v,
                 scannerBlocks_ptr->get_max_num_views(),
-                scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
 
     Bin bin;
     
@@ -891,8 +875,7 @@ void
 ProjDataInfoTests::
 run_lor_get_s_test(){
     CPUTimer timer;
-    shared_ptr<Scanner> scannerBlocks_ptr;
-    scannerBlocks_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerBlocks_ptr=std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
     scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
                                                scannerBlocks_ptr->get_num_axial_crystals_per_block());
     scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
@@ -901,8 +884,7 @@ run_lor_get_s_test(){
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
 
-    shared_ptr<Scanner> scannerCyl_ptr;
-    scannerCyl_ptr.reset(new Scanner (Scanner::SAFIRDualRingPrototype));
+    auto scannerCyl_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
                                             scannerCyl_ptr->get_num_axial_crystals_per_block());
     scannerCyl_ptr->set_transaxial_block_spacing(scannerCyl_ptr->get_transaxial_crystal_spacing()*
@@ -924,23 +906,19 @@ run_lor_get_s_test(){
             num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
     }
     
-    shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_blocks_ptr;
-    proj_data_info_blocks_ptr.reset(
-                new ProjDataInfoBlocksOnCylindricalNoArcCorr(
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
                     scannerBlocks_ptr,
                     num_axial_pos_per_segment,
                     min_ring_diff_v, max_ring_diff_v,
                     scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
     
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_ptr;
-    proj_data_info_cyl_ptr.reset(
-                new ProjDataInfoCylindricalNoArcCorr(
+    auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
                 num_axial_pos_per_segment,
                 min_ring_diff_v, max_ring_diff_v,
                 scannerBlocks_ptr->get_max_num_views(),
-                scannerBlocks_ptr->get_max_num_non_arccorrected_bins()));
+                scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
 // select detection position 1
     
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB;
