@@ -738,6 +738,7 @@ ProjDataInfoTests::run_coordinate_test()
                 else{
                     check(false, "phi is different");
                 }
+                check_if_equal(proj_data_info_blocks_ptr->get_m(bin),proj_data_info_cyl_ptr->get_m(bin)," test get_m Cylindrical");
               }
     timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
     
@@ -860,6 +861,8 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                 check_if_equal(b1.x(),c1.x(), " checking cartesian coordinate x1");
                 check_if_equal(b2.x(),c2.x(), " checking cartesian coordinate x2");
                                        
+                set_tolerance(10E-4);
+                check_if_equal(proj_data_info_blocks_ptr->get_m(bin),proj_data_info_cyl_ptr->get_m(bin)," test get_m Cylindrical");
               }
     timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
     
