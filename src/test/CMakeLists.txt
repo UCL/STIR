@@ -19,6 +19,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DynamicDiscretisedDensity.cxx
 	test_ScatterSimulation.cxx
         test_ML_norm.cxx
+	test_proj_data_info_subsets.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -57,7 +58,6 @@ set(buildblock_simple_tests
 	test_ArcCorrection.cxx
 	test_find_fwhm_in_image.cxx
 	test_proj_data_info.cxx
-	test_proj_data_info_subsets.cxx
 	test_proj_data.cxx
 	test_proj_data_maths.cxx
 	test_export_array.cxx
