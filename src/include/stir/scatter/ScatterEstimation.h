@@ -167,10 +167,17 @@ public:
     void set_output_scatter_estimate_prefix(const std::string&);
     void set_export_scatter_estimates_of_each_iteration(bool);
 
+    void set_max_scale_value(float value);
+    void set_min_scale_value(float value);
+    void set_mask_projdata_filename(std::string name);
+    void set_mask_image_filename(std::string name);
+    void set_output_additive_estimate_prefix(std::string name);
+    void set_run_debug_mode(bool debug);
+
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
-    inline void set_zoom_xy(float);
+    //inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
-    inline void set_zoom_z(float);
+    //inline void set_zoom_z(float);
 
 
     // Get functions

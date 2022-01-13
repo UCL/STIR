@@ -53,6 +53,11 @@
  #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
 
+ #include "stir/DataSymmetriesForViewSegmentNumbers.h"
+ #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+ #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+ #include "stir/listmode/LmToProjData.h"
+
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange.h"
@@ -106,6 +111,12 @@
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
+
+#include "stir/multiply_crystal_factors.h"
+
+#include "stir/scatter/ScatterEstimation.h"
+#include "stir/scatter/ScatterSimulation.h"
+#include "stir/scatter/SingleScatterSimulation.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -1722,6 +1733,9 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 #undef elemT
 #undef TargetT
 
+%shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
+%include "stir/DataSymmetriesForViewSegmentNumbers.h"
+
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
@@ -1761,3 +1775,40 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+%shared_ptr(stir::BinNormalisation);
+%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromProjData, stir::BinNormalisation>);
+%shared_ptr(stir::BinNormalisationFromProjData);
+%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>);
+%shared_ptr(stir::BinNormalisationFromAttenuationImage);
+
+%include "stir/recon_buildblock/BinNormalisation.h"
+
+%template (internalRPBinNormalisationFromProjData) stir::RegisteredParsingObject<
+  stir::BinNormalisationFromProjData, stir::BinNormalisation>;
+%include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+
+%template (internalRPBinNormalisationFromAttenuationImage) stir::RegisteredParsingObject<
+  stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>;
+%include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+
+//%include "stir/multiply_crystal_factors.h"
+void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
+
+%shared_ptr(stir::LmToProjData);
+%include "stir/listmode/LmToProjData.h"
+
+%shared_ptr(stir::ScatterSimulation);
+%shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
+  stir::ScatterSimulation, stir::ScatterSimulation>);
+%shared_ptr(stir::SingleScatterSimulation);
+
+%include "stir/scatter/ScatterSimulation.h"
+
+%template (internalRPSingleScatterSimulation) 
+  stir::RegisteredParsingObject<stir::SingleScatterSimulation,
+  stir::ScatterSimulation, stir::ScatterSimulation>;
+%include "stir/scatter/SingleScatterSimulation.h"
+
+%shared_ptr(stir::ScatterEstimation);
+%include "stir/scatter/ScatterEstimation.h"

@@ -92,6 +92,7 @@ public:
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
+  using base_type::apply;
   virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
