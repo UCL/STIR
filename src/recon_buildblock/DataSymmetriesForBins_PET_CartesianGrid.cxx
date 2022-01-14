@@ -135,14 +135,21 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
   auto subset_proj_data_info_ptr = dynamic_cast<const ProjDataInfoSubsetByView *>(proj_data_info_ptr.get());
-  if(!is_null_ptr(subset_proj_data_info_ptr))
+  if (is_null_ptr(proj_data_info_ptr)) {
+    error("DataSymmetriesForBins_PET_CartesianGrid constructed with uninitialied ProjDataInfo");
+  }
+  else if(!is_null_ptr(subset_proj_data_info_ptr))
     {
       // special handling of subset case
       // will for now just switch view syms off
       if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get())))
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
               "(can only handle projection data corresponding to a cylinder)\n",
               typeid(*subset_proj_data_info_ptr->get_org_proj_data_info_sptr()).name());
+        
+      if (do_symmetry_90degrees_min_phi or do_symmetry_180degrees_min_phi) {
+        warning("Turning off 90 and 180 degrees minus phi symmetries for subsets.");
+      }
       do_symmetry_90degrees_min_phi = false;
       do_symmetry_180degrees_min_phi = false;      
     }

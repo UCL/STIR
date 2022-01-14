@@ -16,6 +16,7 @@
 #include "stir/Viewgram.h"
 #include "stir/Scanner.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/Shape/DiscretisedShape3D.h"
 // ^ should we have to include this? Should be included from Ellipsoid? Bug?
@@ -45,9 +46,9 @@ public:
     void test_split(const ProjData &proj_data);
     //void test_split_and_combine(const ProjData &proj_data, int num_subsets=2);
     void test_forward_projection_is_consistent(
-        const shared_ptr<const VoxelsOnCartesianGrid<float> > input_image_sptr,
-        const shared_ptr<const ProjData> template_sino_sptr,
-        const shared_ptr<ForwardProjectorByBin> fwd_projector_sptr,
+        const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+        const shared_ptr<const ProjData>& template_sino_sptr,
+        const shared_ptr<ForwardProjectorByBin>& fwd_projector_sptr,
         bool use_symmetries, int num_subsets=10);
     void test_back_projection_is_consistent(
         const ProjData &input_sino, const VoxelsOnCartesianGrid<float> &template_image,
@@ -63,8 +64,8 @@ protected:
     static shared_ptr<VoxelsOnCartesianGrid<float> > construct_projector_pair(
         const ProjDataInfo &template_projdatainfo);
     static shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> construct_projector_pair(
-      const shared_ptr<const ProjDataInfo> template_projdatainfo_sptr,
-      const shared_ptr<const VoxelsOnCartesianGrid<float> > template_image_sptr,
+      const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
+      const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
       bool use_symmetries=true);
 
 };
@@ -105,8 +106,8 @@ shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_tes
 }
 
 shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> TestProjDataInfoSubsets::construct_projector_pair(
-    const shared_ptr<const ProjDataInfo> template_projdatainfo_sptr,
-    const shared_ptr<const VoxelsOnCartesianGrid<float> > template_image_sptr,
+    const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
     bool use_symmetries)
 {
   cerr << "\tSetting up default projector pair, ProjectorByBinPairUsingProjMatrixByBin" << endl;
@@ -235,9 +236,9 @@ test_split(const ProjData &proj_data)
 
 void TestProjDataInfoSubsets::
 test_forward_projection_is_consistent(
-    const shared_ptr<const VoxelsOnCartesianGrid<float> > input_image_sptr,
-    const shared_ptr<const ProjData> template_sino_sptr,
-    const shared_ptr<ForwardProjectorByBin> fwd_projector_sptr,
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    const shared_ptr<ForwardProjectorByBin>& fwd_projector_sptr,
     bool use_symmetries, int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
@@ -258,6 +259,12 @@ test_forward_projection_is_consistent(
     cerr << "\tSubset " << subset_n << ", creating subset forward projector" << endl;
 
     ProjData& subset_forward_projection = *full_forward_projection.get_subset(subset_views);
+
+    if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_forward_projection.get_proj_data_info_sptr().get()))) {
+      cerr << "success" << endl;
+    } else {
+      cerr << "fail" << endl;
+    }
 
     cerr << "\tSubset " << subset_n << " c" << endl;
     auto subset_proj_pair_sptr = construct_projector_pair(

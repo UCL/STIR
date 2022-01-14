@@ -248,6 +248,18 @@ ProjData::get_subset(const std::vector<int>& views) const
             error("ProjData::get_subset failed to set a viewgram");
         }
     }
+
+  if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_proj_data_info_sptr.get()))) {
+    std::cerr << "success" << std::endl;
+  } else {
+    std::cerr << "fail" << std::endl;
+  }
+  if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_proj_data_ptr->get_proj_data_info_sptr().get()))) {
+    std::cerr << "success" << std::endl;
+  } else {
+    std::cerr << "fail" << std::endl;
+  }
+
   return unique_ptr<ProjDataInMemory>(subset_proj_data_ptr);
 }
 
