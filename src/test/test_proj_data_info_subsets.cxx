@@ -95,7 +95,8 @@ shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_tes
   shared_ptr<VoxelsOnCartesianGrid<float> > image = std::make_shared<VoxelsOnCartesianGrid<float> >(template_projdatainfo);
 
   // make radius 0.8 FOV
-  auto radius = image->get_physical_coordinates_for_indices(image->get_min_indices()) * 0.8;
+  auto radius = BasicCoordinate<3,float>(image->get_lengths()) * image->get_voxel_size() / 2.F;
+    //image->get_physical_coordinates_for_indices(image->get_min_indices()) * 0.8;
   auto centre = image->get_physical_coordinates_for_indices((image->get_min_indices() + image->get_max_indices()) / 2);
 
   // object at centre of image
@@ -256,24 +257,17 @@ test_forward_projection_is_consistent(
       subset_views.push_back(view);
       view += num_subsets;
     }
+    auto subset_forward_projection_sptr = full_forward_projection.get_subset(subset_views);
+
     cerr << "\tSubset " << subset_n << ", creating subset forward projector" << endl;
 
-    ProjData& subset_forward_projection = *full_forward_projection.get_subset(subset_views);
-
-    if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_forward_projection.get_proj_data_info_sptr().get()))) {
-      cerr << "success" << endl;
-    } else {
-      cerr << "fail" << endl;
-    }
-
-    cerr << "\tSubset " << subset_n << " c" << endl;
     auto subset_proj_pair_sptr = construct_projector_pair(
-      subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr,
+      subset_forward_projection_sptr->get_proj_data_info_sptr(), input_image_sptr,
       /*use_symmetries =*/false);
-    //fwd_projector_sptr->set_up(subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr);
+    //fwd_projector_sptr->set_up(subset_forward_projection_sptr->get_proj_data_info_sptr(), input_image_sptr);
 
     cerr << "\tSubset " << subset_n << ", forward projecting subset" << endl;
-    fwd_projector_sptr->forward_project(subset_forward_projection);
+    subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_sptr);
 
 
     // loop over views in the subset data and compare them against the original "full" data
@@ -287,7 +281,7 @@ test_forward_projection_is_consistent(
           {
             check_if_equal(
                            full_forward_projection.get_viewgram(subset_views[i], segment_num),
-                           subset_forward_projection.get_viewgram(i, segment_num), "Are viewgrams equal?");
+                           subset_forward_projection_sptr->get_viewgram(i, segment_num), "Are viewgrams equal?");
             // TODO also compare viewgram metadata
           }
       }

@@ -135,10 +135,7 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
   auto subset_proj_data_info_ptr = dynamic_cast<const ProjDataInfoSubsetByView *>(proj_data_info_ptr.get());
-  if (is_null_ptr(proj_data_info_ptr)) {
-    error("DataSymmetriesForBins_PET_CartesianGrid constructed with uninitialied ProjDataInfo");
-  }
-  else if(!is_null_ptr(subset_proj_data_info_ptr))
+  if(!is_null_ptr(subset_proj_data_info_ptr))
     {
       // special handling of subset case
       // will for now just switch view syms off
@@ -239,7 +236,9 @@ DataSymmetriesForBins_PET_CartesianGrid
   find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
                                          num_planes_per_axial_pos,
                                          axial_pos_to_z_offset,
-                                         static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
+                                         dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr ?
+                                                                                       subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get() :
+                                                                                       proj_data_info_ptr.get()),
                                          cartesian_grid_info_ptr);
 }
 
