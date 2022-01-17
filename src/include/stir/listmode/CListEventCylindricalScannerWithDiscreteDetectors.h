@@ -81,6 +81,7 @@ public:
        uncompressed_proj_data_info_sptr.reset
     (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>
     (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
      }
      shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_blk_sptr() const {
@@ -89,6 +90,7 @@ public:
        uncompressed_proj_data_info_sptr.reset
     (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>
     (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
     }
     shared_ptr<const ProjDataInfoGenericNoArcCorr>
     get_uncompressed_proj_data_info_generic_sptr() const {
@@ -97,6 +99,7 @@ public:
        uncompressed_proj_data_info_sptr.reset
     (dynamic_cast<const ProjDataInfoGenericNoArcCorr *>
     (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
     }
    shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const
