@@ -114,7 +114,7 @@ void DetectorCoordinateMap::set_detector_map( const DetectorCoordinateMap::det_p
               ", axial " +std::to_string(num_axial_coords) + ", radial " + std::to_string(num_radial_coords) +
               "\nOveral  size: " + std::to_string(coord_map.size()));
 
-    std::sort(coords_to_be_sorted.begin(), coords_to_be_sorted.end());
+//    std::sort(coords_to_be_sorted.begin(), coords_to_be_sorted.end());
     stir::DetectionPosition<> detpos(0,0,0);
     for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
       {

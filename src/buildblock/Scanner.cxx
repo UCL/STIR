@@ -779,10 +779,12 @@ void Scanner::set_up()
 {
   if (scanner_geometry == "Generic")
     {
-      if (crystal_map_file_name == "")
+      if (!this->detector_map_sptr){
+          if (crystal_map_file_name == "")          
         error("Scanner: scanner_geometry=Generic needs a crystal map");
-
+      
       read_detectormap_from_file(crystal_map_file_name);
+      }
     }
   else
     {

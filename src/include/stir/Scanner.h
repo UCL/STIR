@@ -99,7 +99,7 @@ class Succeeded;
 */
 class Scanner 
 {
-    friend class DetectionPosMapTests;
+    friend class BlocksTests;
     
  public:
 
