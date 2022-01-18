@@ -55,7 +55,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
 
 ProjDataInfoSubsetByView* ProjDataInfoSubsetByView::clone() const
 {
-  return new ProjDataInfoSubsetByView(this->org_proj_data_info_sptr, this->org_view_to_view_num);
+  return new ProjDataInfoSubsetByView(*this);
 }
 
 Bin ProjDataInfoSubsetByView::get_org_bin(const Bin& bin) const
