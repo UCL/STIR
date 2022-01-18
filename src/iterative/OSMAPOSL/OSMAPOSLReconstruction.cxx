@@ -231,6 +231,14 @@ set_minimum_relative_change(const double arg)
 {
   this->minimum_relative_change  = arg;
 }
+
+template <typename TargetT> 
+void 
+OSMAPOSLReconstruction<TargetT>::
+set_enforce_initial_positivity(const bool arg)
+{
+  this->enforce_initial_positivity = arg;
+}
   
 template <typename TargetT>
 void
