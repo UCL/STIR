@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2018, Palak Wadhwa
-    Copyright (C) 2021, University College London
+    Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -232,16 +232,29 @@ DataSymmetriesForBins_PET_CartesianGrid
 	    this->do_symmetry_swap_s = false;
 	}
     }
-  
-  find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
-                                         num_planes_per_axial_pos,
-                                         axial_pos_to_z_offset,
-                                         dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr ?
-                                                                                       subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get() :
-                                                                                       proj_data_info_ptr.get()),
-                                         cartesian_grid_info_ptr);
+
+  {
+    auto pdi_cyl_ptr = dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr ?
+                                                                     subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get() :
+                                                                     proj_data_info_ptr.get());
+
+    initialise_deltas(pdi_cyl_ptr);
+    find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
+                                             num_planes_per_axial_pos,
+                                             axial_pos_to_z_offset,
+                                             pdi_cyl_ptr,
+                                             cartesian_grid_info_ptr);
+  }
 }
 
+void DataSymmetriesForBins_PET_CartesianGrid::initialise_deltas(const ProjDataInfoCylindrical * pdi_ptr)
+{
+  this->deltas.resize(pdi_ptr->get_min_segment_num(), pdi_ptr->get_max_segment_num());
+  for (int segment_num=pdi_ptr->get_min_segment_num(); segment_num <= pdi_ptr->get_max_segment_num(); ++segment_num)
+    {
+      this->deltas[segment_num] = pdi_ptr->get_average_ring_difference(segment_num);
+    }
+}
 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins_PET_CartesianGrid *

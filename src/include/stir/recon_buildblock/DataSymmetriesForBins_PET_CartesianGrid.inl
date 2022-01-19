@@ -23,7 +23,6 @@
 
   KT 30/05/2002 added possibility for reduced symmetry in view_num
 */
-#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 
 
@@ -67,10 +66,7 @@ find_transform_z(
 		 const int segment_num, 
 		 const int  axial_pos_num) const
 {
-  const ProjDataInfoCylindrical* proj_data_info_cyl_ptr =
-    static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
-
-  const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
+  const float delta = this->deltas[segment_num];
 
    
   // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
