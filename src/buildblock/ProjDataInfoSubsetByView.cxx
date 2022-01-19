@@ -34,6 +34,8 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
   view_to_org_view_num(views),
   org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
+  // TODO check if view_to_org_view_num is ok (no duplication, all views within range)
+
   // initialise the org_view_to_view_num
   for (int subset_view_num=0; subset_view_num<static_cast<int>(views.size()); ++subset_view_num)
     {
@@ -174,10 +176,28 @@ Bin ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor) const
   return get_bin_from_org(this->org_proj_data_info_sptr->get_bin(lor));
 }
 
+bool ProjDataInfoSubsetByView::contains_full_data() const
+{
+  return view_to_org_view_num.size() == static_cast<std::size_t>(org_proj_data_info_sptr->get_num_views());
+}
+
 bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
 {
-  // TODO compare view table
-  return this->org_proj_data_info_sptr->operator>=(proj);
+   if (typeid(*this) != typeid(proj))
+     {
+       if (this->contains_full_data())
+         return (*this->org_proj_data_info_sptr) >= proj;
+       else
+         return false;
+     }
+
+   auto smaller_proj_data_info = static_cast<const ProjDataInfoSubsetByView&>(proj);
+
+   if (!((*this->org_proj_data_info_sptr) >= (*smaller_proj_data_info.org_proj_data_info_sptr)))
+    return false;
+
+   // TODO compare if view table is smaller, just checking equality for now
+   return this->org_view_to_view_num == smaller_proj_data_info.org_view_to_view_num;
 }
 
 std::string ProjDataInfoSubsetByView::parameter_info() const

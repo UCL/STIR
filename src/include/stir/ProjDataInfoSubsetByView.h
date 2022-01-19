@@ -46,6 +46,9 @@ public:
 
   ProjDataInfoSubsetByView* clone() const;
 
+  //! true if the subset is actually all of the data
+  bool contains_full_data() const;
+
   Bin get_org_bin(const Bin& bin) const;
   Bin get_bin_from_org(const Bin& org_bin) const;
 
