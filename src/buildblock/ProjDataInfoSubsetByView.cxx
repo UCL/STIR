@@ -1,7 +1,7 @@
 //
 //
 /*
-    Copyright (C) 2021, University College London
+    Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -208,10 +208,12 @@ std::string ProjDataInfoSubsetByView::parameter_info() const
   
 bool ProjDataInfoSubsetByView::blindly_equals(const root_type * const p) const
 {
-  if ((*this->org_proj_data_info_sptr) != (*p))
+  // can do static_cast as operator== already checked type
+  auto that = static_cast<const self_type *>(p);
+  if (this->org_view_to_view_num != that->org_view_to_view_num)
     return false;
-  // TODO compare view tables
-  return true;
+
+  return ((*this->org_proj_data_info_sptr) == (*that->org_proj_data_info_sptr));
 }
 
 shared_ptr<const ProjDataInfo> ProjDataInfoSubsetByView::get_org_proj_data_info_sptr() const
