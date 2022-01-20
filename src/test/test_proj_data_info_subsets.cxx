@@ -48,7 +48,10 @@ public:
     void test_forward_projection_is_consistent(
         const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
         const shared_ptr<const ProjData>& template_sino_sptr,
-        const shared_ptr<ForwardProjectorByBin>& fwd_projector_sptr,
+        bool use_symmetries, int num_subsets=10);
+    void test_forward_projection_is_consistent_with_unbalanced_subset(
+        const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+        const shared_ptr<const ProjData>& template_sino_sptr,
         bool use_symmetries, int num_subsets=10);
     void test_back_projection_is_consistent(
         const ProjData &input_sino, const VoxelsOnCartesianGrid<float> &template_image,
@@ -67,6 +70,16 @@ protected:
       const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
       bool use_symmetries=true);
+
+    ProjDataInMemory generate_full_forward_projection(
+      const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+      const shared_ptr<const ProjData>& template_sino_sptr,
+      bool use_symmetries);
+    void test_forward_projection_for_one_subset(
+      const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+      ProjDataInMemory& full_forward_projection,
+      std::unique_ptr<ProjDataInMemory>& subset_forward_projection_uptr,
+      bool use_symmetries);
 
 };
 
@@ -150,8 +163,13 @@ run_tests()
       // test_split_and_combine(*_input_sino_sptr);
 
       test_forward_projection_is_consistent(
-        _test_image_sptr, _input_sino_sptr, proj_pair->get_forward_projector_sptr(),
-        /*use_symmetries =*/false);
+        _test_image_sptr, _input_sino_sptr, /*use_symmetries =*/false);
+      cerr << "\trepeat with an 'unusual' number of subsets, 13" << endl;
+      test_forward_projection_is_consistent(
+        _test_image_sptr, _input_sino_sptr, /*use_symmetries =*/false, /*sum_subsets =*/ 13);
+
+      test_forward_projection_is_consistent_with_unbalanced_subset(
+        _test_image_sptr, _input_sino_sptr, /*use_symmetries =*/false);
 
       // test_back_projection_is_consistent(*_input_sino_sptr, *back_proj_sptr);
   }
@@ -237,24 +255,13 @@ void TestProjDataInfoSubsets::
 test_forward_projection_is_consistent(
     const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
     const shared_ptr<const ProjData>& template_sino_sptr,
-    const shared_ptr<ForwardProjectorByBin>& fwd_projector_sptr,
     bool use_symmetries, int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
 
-  if (input_image_sptr->find_max() == 0) {
-    cerr << "Tests are run with redundant empty image" << endl;
-    everything_ok = false;
-  }
-  
-  auto full_forward_projection = ProjDataInMemory(*template_sino_sptr);
-  fwd_projector_sptr->set_input(*input_image_sptr);
-  fwd_projector_sptr->forward_project(full_forward_projection);
+  auto full_forward_projection = generate_full_forward_projection(
+    input_image_sptr, template_sino_sptr, use_symmetries);
 
-  if (full_forward_projection.get_viewgram(0, 0).find_max() == 0) {
-    cerr << "segment 0, view 0 of reference forward projection is empty!" << endl;
-    everything_ok = false;
-  }
 
   //ProjData subset;
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n) {
@@ -267,32 +274,107 @@ test_forward_projection_is_consistent(
     }
     auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
-    cerr << "\tSubset " << subset_n << ", creating subset forward projector" << endl;
-
-    auto subset_proj_pair_sptr = construct_projector_pair(
-      subset_forward_projection_uptr->get_proj_data_info_sptr(), input_image_sptr,
-      /*use_symmetries =*/false);
-
-    cerr << "\tSubset " << subset_n << ", forward projecting subset" << endl;
-    subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_uptr);
-
-
-    // loop over views in the subset data and compare them against the original "full" data
-    for(std::size_t i = 0; i < subset_views.size(); ++i)
-      {
-        // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
-        // the corresponding view in the original data is at subset_views[i]
-
-        // loop over all segments to check viewgram for all segments
-        for (int segment_num = full_forward_projection.get_min_segment_num(); segment_num < full_forward_projection.get_max_segment_num(); ++segment_num)
-          {
-            check_if_equal(
-                           full_forward_projection.get_viewgram(subset_views[i], segment_num),
-                           subset_forward_projection_uptr->get_viewgram(i, segment_num), "Are viewgrams equal?");
-            // TODO also compare viewgram metadata
-          }
-      }
+    test_forward_projection_for_one_subset(
+      input_image_sptr, full_forward_projection, subset_forward_projection_uptr, use_symmetries);
   }
+}
+
+
+void TestProjDataInfoSubsets::
+test_forward_projection_is_consistent_with_unbalanced_subset(
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_symmetries, int num_subsets)
+{
+  cerr << "\tTesting Subset forward projection is consistent with unbalanced subset" << endl;
+
+  auto full_forward_projection = generate_full_forward_projection(
+    input_image_sptr, template_sino_sptr, use_symmetries);
+
+
+  for (int subset_n = 0; subset_n < num_subsets; ++subset_n) {
+    // subset 0 gets ~1/num_subsets of the views
+    // subset 1 gets the remainder
+    // remaining subset get no views, are empty!
+    std::vector<int> subset_views;
+
+    for (int view = 0; view < full_forward_projection.get_num_views(); view++) {
+      if ((subset_n == 0) & (view % num_subsets == 0))
+      {
+        subset_views.push_back(view);
+      } else if (subset_n == 1)
+      {
+        subset_views.push_back(view);
+      }
+    }
+    auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
+
+    cerr << "\tTesting ubalanced subset " << subset_n << endl;
+    test_forward_projection_for_one_subset(
+      input_image_sptr, full_forward_projection, subset_forward_projection_uptr, use_symmetries);
+  }
+}
+
+ProjDataInMemory TestProjDataInfoSubsets::
+generate_full_forward_projection(
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_symmetries)
+{
+  if (input_image_sptr->find_max() == 0) {
+    cerr << "Tests are run with redundant empty image" << endl;
+    everything_ok = false;
+  }
+
+  auto fwd_projector_sptr = construct_projector_pair(
+    template_sino_sptr->get_proj_data_info_sptr(), input_image_sptr, use_symmetries)
+      ->get_forward_projector_sptr();
+  
+  auto full_forward_projection = ProjDataInMemory(*template_sino_sptr);
+  fwd_projector_sptr->set_input(*input_image_sptr);
+  fwd_projector_sptr->forward_project(full_forward_projection);
+
+  if (full_forward_projection.get_viewgram(0, 0).find_max() == 0) {
+    cerr << "segment 0, view 0 of reference forward projection is empty!" << endl;
+    everything_ok = false;
+  }
+
+  return full_forward_projection;
+}
+
+
+void TestProjDataInfoSubsets::
+test_forward_projection_for_one_subset(
+  const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+  ProjDataInMemory& full_forward_projection,
+  std::unique_ptr<ProjDataInMemory>& subset_forward_projection_uptr,
+  bool use_symmetries)
+{
+  auto subset_proj_data_info_sptr = std::static_pointer_cast<const ProjDataInfoSubsetByView>(
+    subset_forward_projection_uptr->get_proj_data_info_sptr());
+
+  auto subset_proj_pair_sptr = construct_projector_pair(
+    subset_forward_projection_uptr->get_proj_data_info_sptr(), input_image_sptr, use_symmetries);
+
+  subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_uptr);
+
+  auto subset_views = subset_proj_data_info_sptr->get_org_views();
+
+  // loop over views in the subset data and compare them against the original "full" data
+  for(std::size_t i = 0; i < subset_views.size(); ++i)
+    {
+      // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
+      // the corresponding view in the original data is at subset_views[i]
+
+      // loop over all segments to check viewgram for all segments
+      for (int segment_num = full_forward_projection.get_min_segment_num(); segment_num < full_forward_projection.get_max_segment_num(); ++segment_num)
+        {
+          check_if_equal(
+                          full_forward_projection.get_viewgram(subset_views[i], segment_num),
+                          subset_forward_projection_uptr->get_viewgram(i, segment_num), "Are viewgrams equal?");
+          // TODO also compare viewgram metadata
+        }
+    }
 }
 
 
