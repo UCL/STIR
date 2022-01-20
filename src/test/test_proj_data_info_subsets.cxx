@@ -103,6 +103,8 @@ shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_tes
   Ellipsoid ellipsoid(radius, centre);
 
   ellipsoid.construct_volume(*image, Coordinate3D<int>(1,1,1));
+
+  cerr << boost::format("\t Generated ellipsoid image, min=%f, max=%f") % image->find_min() % image->find_max() << endl;
   return image;
 }
 
@@ -112,17 +114,13 @@ shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> TestProjDataInfoSubsets::cons
     bool use_symmetries)
 {
   cerr << "\tSetting up default projector pair, ProjectorByBinPairUsingProjMatrixByBin" << endl;
-  // shared_ptr<ProjectorByBinPair> proj_pair = std::make_shared<ProjectorByBinPair>(
-  //   *ProjectorByBinPair::ask_type_and_parameters());
-  shared_ptr<ProjMatrixByBinUsingRayTracing> proj_matrix_sptr;
-  proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
+  auto proj_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
   proj_matrix_sptr->set_do_symmetry_180degrees_min_phi(use_symmetries);
   proj_matrix_sptr->set_do_symmetry_90degrees_min_phi(use_symmetries);
   proj_matrix_sptr->set_do_symmetry_shift_z(use_symmetries);
   proj_matrix_sptr->set_do_symmetry_swap_s(use_symmetries);
   proj_matrix_sptr->set_do_symmetry_swap_segment(use_symmetries);
-  shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> proj_pair_sptr;
-  proj_pair_sptr.reset(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
+  auto proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingProjMatrixByBin>(proj_matrix_sptr);
 
   proj_pair_sptr->set_up(template_projdatainfo_sptr, template_image_sptr);
   return proj_pair_sptr;
@@ -243,10 +241,20 @@ test_forward_projection_is_consistent(
     bool use_symmetries, int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
+
+  if (input_image_sptr->find_max() == 0) {
+    cerr << "Tests are run with redundant empty image" << endl;
+    everything_ok = false;
+  }
   
   auto full_forward_projection = ProjDataInMemory(*template_sino_sptr);
   fwd_projector_sptr->set_input(*input_image_sptr);
   fwd_projector_sptr->forward_project(full_forward_projection);
+
+  if (full_forward_projection.get_viewgram(0, 0).find_max() == 0) {
+    cerr << "segment 0, view 0 of reference forward projection is empty!" << endl;
+    everything_ok = false;
+  }
 
   //ProjData subset;
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n) {
@@ -257,17 +265,16 @@ test_forward_projection_is_consistent(
       subset_views.push_back(view);
       view += num_subsets;
     }
-    auto subset_forward_projection_sptr = full_forward_projection.get_subset(subset_views);
+    auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
     cerr << "\tSubset " << subset_n << ", creating subset forward projector" << endl;
 
     auto subset_proj_pair_sptr = construct_projector_pair(
-      subset_forward_projection_sptr->get_proj_data_info_sptr(), input_image_sptr,
+      subset_forward_projection_uptr->get_proj_data_info_sptr(), input_image_sptr,
       /*use_symmetries =*/false);
-    //fwd_projector_sptr->set_up(subset_forward_projection_sptr->get_proj_data_info_sptr(), input_image_sptr);
 
     cerr << "\tSubset " << subset_n << ", forward projecting subset" << endl;
-    subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_sptr);
+    subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_uptr);
 
 
     // loop over views in the subset data and compare them against the original "full" data
@@ -281,7 +288,7 @@ test_forward_projection_is_consistent(
           {
             check_if_equal(
                            full_forward_projection.get_viewgram(subset_views[i], segment_num),
-                           subset_forward_projection_sptr->get_viewgram(i, segment_num), "Are viewgrams equal?");
+                           subset_forward_projection_uptr->get_viewgram(i, segment_num), "Are viewgrams equal?");
             // TODO also compare viewgram metadata
           }
       }
