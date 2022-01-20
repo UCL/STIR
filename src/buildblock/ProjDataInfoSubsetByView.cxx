@@ -67,6 +67,11 @@ Bin ProjDataInfoSubsetByView::get_org_bin(const Bin& bin) const
   return org_bin;
 }
 
+std::vector<int> ProjDataInfoSubsetByView::get_org_views() const
+{
+  return this->view_to_org_view_num;
+}
+
 
 Bin ProjDataInfoSubsetByView::get_bin_from_org(const Bin& org_bin) const
 {
