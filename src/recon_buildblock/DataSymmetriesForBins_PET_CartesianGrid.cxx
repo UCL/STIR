@@ -380,7 +380,8 @@ DataSymmetriesForBins_PET_CartesianGrid
        this->do_symmetry_90degrees_min_phi =
        this->do_symmetry_180degrees_min_phi =
        this->do_symmetry_swap_segment =
-       this->do_symmetry_swap_s = false;
+       this->do_symmetry_swap_s =
+       this->do_symmetry_shift_z=false;
      }
     if (!dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get())->axial_sampling_is_uniform())
       {
