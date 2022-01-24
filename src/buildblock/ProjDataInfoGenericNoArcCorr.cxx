@@ -75,18 +75,12 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   bin.axial_pos_num() = 0;
   bin.view_num() = 0;
   bin.tangential_pos_num() = 0;
+// setting shift_z to 0 before it is actually estimated. Otherwise the next function will use it
+  this->z_shift.z()=0;
   find_cartesian_coordinates_of_detection(b1,b2,bin);
   float shift=b1.z();
 
-  float shift2=(scanner_ptr->get_axial_block_spacing()
-                *scanner_ptr->get_num_axial_blocks_per_bucket()
-                *scanner_ptr->get_num_axial_buckets()
-                -scanner_ptr->get_axial_crystal_spacing() 
-                -ax_blocks_gap*(scanner_ptr->get_num_axial_blocks_per_bucket()
-                                *scanner_ptr->get_num_axial_buckets()-1)
-                )/2;
-  
-  this->z_shift.z()=shift2;
+  this->z_shift.z()=shift;
   this->z_shift.y()=0;
   this->z_shift.x()=0;
 }
