@@ -20,8 +20,6 @@
 #include "stir/ML_norm.h"
 
 #include "stir/ProjDataInterfile.h"
-#include "stir/multiply_crystal_factors.h"
-#include "stir/GeometryBlocksOnCylindrical.h"
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/stream.h"
 #include "stir/IndexRange2D.h"
