@@ -526,12 +526,13 @@ ProjDataInfoTests::run_Blocks_DOI_test()
 
 /*!
   The following tests the consistency of coordinates obtained with a cilindrical scanner
-  and those of a blocks on cylindrical scanner. For this test, a scanner with 1 ring and 
-  1 detector per block is used.
+  and those of a blocks on cylindrical scanner. For this test, a scanner with 4 rings, 2 
+  detector per block and 2 blcs per bucket is used axially. However, transaxially we have 
+  1 crystal per block a 1 block per bucket
   
   In this function, an extra test is performed to check that a roundtrip
   transformation: detector_ID->cartesian_coord_detection_pos->detector_ID 
-  provide the same as the starting point
+  provides the same as the starting point
 */
 void
 ProjDataInfoTests::run_coordinate_test()
@@ -879,9 +880,9 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
 
 /*!
   The following tests the function get_s() for the BlockOnCylindrical case. the first test 
-  checks that all lines passing for the center provide s=0. The second test check that 
+  checks that all lines passing for the center provide s=0. The second test checks that 
   parallel lines are always at the same angle phi, and that the step between consecutive 
-  lines is the same and equal to the one calculate geometrically.
+  lines is the same and equal to the one calculated geometrically.
 */
 void
 ProjDataInfoTests::

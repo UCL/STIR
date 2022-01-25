@@ -74,8 +74,8 @@ private:
   void run_axial_projection_test();
 };
 
-/*! The following is a test for axial symmetries: a simulated image is created with a line along the z direction
- *  the image is forward projected to a sinogram and the sinogram back projected to an image this image should 
+/*! The following is a test for axial symmetries: a simulated image is created with a line along the z direction.
+ *  The image is forward projected to a sinogram and the sinogram back projected to an image. This image should 
  *  be symmetrical along z
 */
 void
@@ -199,7 +199,7 @@ BlocksTests::run_axial_projection_test(){
 }
 
 /*! The following is a test for symmetries: a simulated image is created with a plane at known angles,
- *  the forward projected sinogram should show the makimum value at the bin corresponding to the angl phi 
+ *  the forward projected sinogram should show the maximum value at the bin corresponding to the angle phi 
  *  equal to the orientation of the plane
 */
 void
@@ -375,10 +375,10 @@ BlocksTests::run_plane_symmetry_test(){
 }
 
 /*! The following is a test for symmetries: a simulated image is created with spherical source in front of each detector block,
- *  the forward projected sinogram should show the same bin values in simmetric places (in this test a dodecagone scanner is 
- * used so we have symmetry every 30 degrees. The above is repeated for an image with sources in front of the dodecagone corners. 
- * the sinogram should have now different values at fixed bin compared the previous image. In this test we are testing a projdata_info
- * with a negative view offset.
+ *  the forward projected sinogram should show the same bin values in symmetric places (in this test a dodecagon scanner is 
+ * used so we have symmetry every 30 degrees. The above is repeated for an image with sources in front of the dodecagon corners. 
+ * The sinogram should have now different values at fixed bin compared the previous image. In this test we are also testing a 
+ * projdata_info with a negative view offset.
 */
 void
 BlocksTests::run_symmetry_test(){
