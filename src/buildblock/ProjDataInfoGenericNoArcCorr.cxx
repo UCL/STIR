@@ -64,6 +64,25 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   assert(!is_null_ptr(scanner_ptr));
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
+  
+  float ax_blocks_gap=scanner_ptr->get_axial_block_spacing()
+          -scanner_ptr->get_num_axial_crystals_per_block() 
+          *scanner_ptr->get_axial_crystal_spacing();
+  
+  CartesianCoordinate3D< float> b1,b2;
+  Bin bin;
+  bin.segment_num() = 0;
+  bin.axial_pos_num() = 0;
+  bin.view_num() = 0;
+  bin.tangential_pos_num() = 0;
+// setting shift_z to 0 before it is actually estimated. Otherwise the next function will use it
+  this->z_shift.z()=0;
+  find_cartesian_coordinates_of_detection(b1,b2,bin);
+  float shift=b1.z();
+
+  this->z_shift.z()=shift;
+  this->z_shift.y()=0;
+  this->z_shift.x()=0;
 }
 
 
@@ -372,6 +391,8 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
 
   coord_1 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos1);
   coord_2 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos2);
+  coord_1.z() += z_shift.z();
+  coord_2.z() += z_shift.z();
 }
 
 

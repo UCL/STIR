@@ -526,27 +526,28 @@ ProjDataInfoTests::run_Blocks_DOI_test()
 
 /*!
   The following tests the consistency of coordinates obtained with a cilindrical scanner
-  and those of a blocks on cylindrical scanner. For this test, a scanner with 1 ring and 
-  1 detector per block is used.
+  and those of a blocks on cylindrical scanner. For this test, a scanner with 4 rings, 2 
+  detector per block and 2 blcs per bucket is used axially. However, transaxially we have 
+  1 crystal per block a 1 block per bucket
   
   In this function, an extra test is performed to check that a roundtrip
   transformation: detector_ID->cartesian_coord_detection_pos->detector_ID 
-  provide the same as the starting point
+  provides the same as the starting point
 */
 void
 ProjDataInfoTests::run_coordinate_test()
 {
     CPUTimer timer;
     auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
-    scannerBlocks_ptr->set_num_axial_crystals_per_block(1);
+    scannerBlocks_ptr->set_num_axial_crystals_per_block(2);
     scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
                                                scannerBlocks_ptr->get_num_axial_crystals_per_block());
     scannerBlocks_ptr->set_num_transaxial_crystals_per_block(1);
-    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(1);
+    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(2);
     scannerBlocks_ptr->set_num_transaxial_blocks_per_bucket(1);
         scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
                                                     scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
-    scannerBlocks_ptr->set_num_rings(1);
+    scannerBlocks_ptr->set_num_rings(4);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
@@ -567,16 +568,16 @@ ProjDataInfoTests::run_coordinate_test()
     //float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
 
     auto scannerCyl_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
-    scannerCyl_ptr->set_num_axial_crystals_per_block(1);
+    scannerCyl_ptr->set_num_axial_crystals_per_block(2);
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
                                             scannerCyl_ptr->get_num_axial_crystals_per_block());
     scannerCyl_ptr->set_transaxial_block_spacing(scannerCyl_ptr->get_transaxial_crystal_spacing()*
                                                  scannerCyl_ptr->get_num_transaxial_crystals_per_block());
     scannerCyl_ptr->set_num_transaxial_crystals_per_block(1);
-    scannerCyl_ptr->set_num_axial_blocks_per_bucket(1);
+    scannerCyl_ptr->set_num_axial_blocks_per_bucket(2);
     scannerCyl_ptr->set_num_transaxial_blocks_per_bucket(1);
     
-    scannerCyl_ptr->set_num_rings(1);
+    scannerCyl_ptr->set_num_rings(4);
     scannerCyl_ptr->set_scanner_geometry("Cylindrical");
     scannerCyl_ptr->set_up();
         
@@ -730,9 +731,12 @@ ProjDataInfoTests::run_coordinate_test()
                                    " PHIB="+ std::to_string(lorB.phi())+ 
                                    " view="+ std::to_string(view)+
                    " Btest if BlocksOnCylindrical LOR.s is the same as the LOR produced by Cylindrical");//)
-                    check_if_equal(lorB.beta(),-lorC1.beta()," test if BlocksOnCylindrical LOR.beta is the same as the LOR produced by Cylindrical");
-                    check_if_equal(lorB.z1(),lorC1.z1()," test if BlocksOnCylindrical LOR.z1 is the same as the LOR produced by Cylindrical");
-                    check_if_equal(lorB.z2(),lorC1.z2()," test if BlocksOnCylindrical LOR.z2 is the same as the LOR produced by Cylindrical");
+                    check_if_equal(lorB.beta(),-lorC1.beta()," Btest if BlocksOnCylindrical LOR.beta is the same as the LOR produced by Cylindrical");
+                    check_if_equal(lorB.z1(),lorC1.z2(),"tang_pos="+ std::to_string(tang)+ 
+                                   " ax_pos="+ std::to_string(ax)+ 
+                                   " segment="+ std::to_string(seg)+ 
+                                   " view="+ std::to_string(view)+" Btest if BlocksOnCylindrical LOR.z1 is the same as the LOR produced by Cylindrical");
+                    check_if_equal(lorB.z2(),lorC1.z1()," Btest if BlocksOnCylindrical LOR.z2 is the same as the LOR produced by Cylindrical");
                     
                 }
                 else{
@@ -854,14 +858,20 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
                 
                 set_tolerance(max_tolerance);
                 
-                check_if_equal(b1.z(),c1.z(), " checking cartesian coordinate z1");
-                check_if_equal(b2.z(),c2.z(), " checking cartesian coordinate z2");
                 check_if_equal(b1.y(),c1.y(), " checking cartesian coordinate y1");
                 check_if_equal(b2.y(),c2.y(), " checking cartesian coordinate y2");
                 check_if_equal(b1.x(),c1.x(), " checking cartesian coordinate x1");
                 check_if_equal(b2.x(),c2.x(), " checking cartesian coordinate x2");
                                        
-                set_tolerance(10E-4);
+/*!calculate the max axial tolerance, the difference between m (blocks vs cylindrical) happens when the point A is at 
+ * the beginning of a transaxial bucket and the point B is in the middle of the bucket (which is the point where the radius of circle
+ *  and the radius of the poligon have the biggest difference
+ * !*/
+                float psi=atan(abs(lorB.z2()-lorB.z1())/r);
+                float max_ax_tolerance=abs(scannerBlocks_ptr->get_effective_ring_radius()-r)/cos(psi);
+                set_tolerance(max_ax_tolerance);
+                check_if_equal(b1.z(),c1.z(), " checking cartesian coordinate z1");
+                check_if_equal(b2.z(),c2.z(), " checking cartesian coordinate z2");
                 check_if_equal(proj_data_info_blocks_ptr->get_m(bin),proj_data_info_cyl_ptr->get_m(bin)," test get_m Cylindrical");
               }
     timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
@@ -870,9 +880,9 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
 
 /*!
   The following tests the function get_s() for the BlockOnCylindrical case. the first test 
-  checks that all lines passing for the center provide s=0. The second test check that 
+  checks that all lines passing for the center provide s=0. The second test checks that 
   parallel lines are always at the same angle phi, and that the step between consecutive 
-  lines is the same and equal to the one calculate geometrically.
+  lines is the same and equal to the one calculated geometrically.
 */
 void
 ProjDataInfoTests::

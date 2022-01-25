@@ -52,6 +52,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
 //#include "stir/Shape/Shape3D.h"
 
@@ -70,10 +71,135 @@ private:
   void run_symmetry_test();
   void run_plane_symmetry_test();
   void run_map_orientation_test();
+  void run_axial_projection_test();
 };
 
+/*! The following is a test for axial symmetries: a simulated image is created with a line along the z direction.
+ *  The image is forward projected to a sinogram and the sinogram back projected to an image. This image should 
+ *  be symmetrical along z
+*/
+void
+BlocksTests::run_axial_projection_test(){
+    
+    CartesianCoordinate3D<float> origin (0,0,0);  
+    CartesianCoordinate3D<float> grid_spacing (1.1,2.2,2.2); 
+    
+    const IndexRange<3> 
+      range(Coordinate3D<int>(0,-45,-45),
+            Coordinate3D<int>(24,44,44));
+    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    
+//    60 degrees
+    float phi1= 0*_PI/180;
+    const Array<2,float> direction_vectors=
+  make_array(make_1d_array(1.F,0.F,0.F),
+         make_1d_array(0.F,cos(float(_PI)-phi1),sin(float(_PI)-phi1)),
+         make_1d_array(0.F,-sin(float(_PI)-phi1),cos(float(_PI)-phi1)));
+
+    Ellipsoid
+      plane(CartesianCoordinate3D<float>(/*edge_z*/50*grid_spacing.z(),
+                                             /*edge_y*/2*grid_spacing.y(),
+                                             /*edge_x*/2*grid_spacing.x()),
+		        /*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(),
+                                                       0*grid_spacing.y(),
+                                                       0),
+                direction_vectors);
+    
+    plane.construct_volume(image, make_coordinate(3,3,3));
+    
+    
+    
+//    create projadata info
+    
+    auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
+//    scannerBlocks_ptr->set_num_axial_crystals_per_block(1);
+//    scannerBlocks_ptr->set_axial_block_spacing(scannerBlocks_ptr->get_axial_crystal_spacing()*
+//                                               scannerBlocks_ptr->get_num_axial_crystals_per_block());
+//    scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
+//                                                    scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
+////    scannerBlocks_ptr->set_num_transaxial_crystals_per_block(1);
+//    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(1);
+////    scannerBlocks_ptr->set_num_transaxial_blocks_per_bucket(1);
+//    scannerBlocks_ptr->set_num_rings(1);
+    
+    scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
+    scannerBlocks_ptr->set_up();
+    
+    VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
+    VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
+    VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
+    
+    for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
+        min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
+        max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
+        if (i<scannerBlocks_ptr->get_num_rings())
+            num_axial_pos_per_segment[i]=i+1;
+        else
+            num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
+        }
+    
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
+                    scannerBlocks_ptr,
+                    num_axial_pos_per_segment,
+                    min_ring_diff_v, max_ring_diff_v,
+                    scannerBlocks_ptr->get_max_num_views(),
+                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+//    now forward-project image
+    
+    shared_ptr<DiscretisedDensity<3,float> > image_sptr(image.clone());
+    shared_ptr<DiscretisedDensity<3,float> > bck_proj_image_sptr(image.clone());
+    write_to_file("axial_test",*image_sptr);
+        
+    auto PM=std::make_shared<ProjMatrixByBinUsingRayTracing>();
+//    PM->set_do_symmetry_90degrees_min_phi(false);
+//    PM->set_do_symmetry_shift_z(false);
+//    PM->set_do_symmetry_swap_segment(false);
+    
+    auto forw_projector_sptr=std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
+    auto bck_projector_sptr=std::make_shared<BackProjectorByBinUsingProjMatrixByBin>(PM);
+    info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector_sptr->parameter_info());
+    
+    forw_projector_sptr->set_up(proj_data_info_blocks_ptr,
+                                image_sptr);
+    bck_projector_sptr->set_up(proj_data_info_blocks_ptr,
+                                bck_proj_image_sptr);
+    
+    //-- ExamInfo
+    auto exam_info_sptr=std::make_shared<ExamInfo>();
+    exam_info_sptr->imaging_modality = ImagingModality::PT;
+    
+    auto projdata=std::make_shared<ProjDataInterfile>(exam_info_sptr,
+                                         proj_data_info_blocks_ptr,
+                                         "test_axial.hs",
+                                         std::ios::out | std::ios::trunc | std::ios::in);
+
+    forw_projector_sptr->forward_project(*projdata, *image_sptr);
+    
+    bck_projector_sptr->back_project(*bck_proj_image_sptr, *projdata,0,1);
+    write_to_file("back_proj_axial_test",*bck_proj_image_sptr);
+    
+    int min_z = bck_proj_image_sptr->get_min_index();
+    int max_z = bck_proj_image_sptr->get_max_index();
+    int min_y = (*bck_proj_image_sptr)[min_z].get_min_index();
+    int max_y = (*bck_proj_image_sptr)[min_z].get_max_index();
+    int min_x = (*bck_proj_image_sptr)[min_z][min_y].get_min_index();
+    int max_x = (*bck_proj_image_sptr)[min_z][min_y].get_max_index();
+    
+// get two planes in the image that are equidistant from the z center
+    int centre_z=(max_z-min_z)/2;
+    int plane_idA=centre_z-5;
+    int plane_idB=centre_z+5;
+    
+    for(int y=min_y; y<max_y; y++)
+        for(int x=min_x; x<max_x; x++){
+            check_if_equal((*bck_proj_image_sptr)[plane_idA][y][x],
+                           (*bck_proj_image_sptr)[plane_idB][y][x],
+                           "checking the symmetry along the axial direction");
+    }
+}
+
 /*! The following is a test for symmetries: a simulated image is created with a plane at known angles,
- *  the forward projected sinogram should show the makimum value at the bin corresponding to the angl phi 
+ *  the forward projected sinogram should show the maximum value at the bin corresponding to the angle phi 
  *  equal to the orientation of the plane
 */
 void
@@ -135,9 +261,9 @@ BlocksTests::run_plane_symmetry_test(){
     scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
                                                     scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
 //    scannerBlocks_ptr->set_num_transaxial_crystals_per_block(1);
-    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(1);
+    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(2);
 //    scannerBlocks_ptr->set_num_transaxial_blocks_per_bucket(1);
-    scannerBlocks_ptr->set_num_rings(1);
+    scannerBlocks_ptr->set_num_rings(2);
     
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
@@ -249,9 +375,10 @@ BlocksTests::run_plane_symmetry_test(){
 }
 
 /*! The following is a test for symmetries: a simulated image is created with spherical source in front of each detector block,
- *  the forward projected sinogram should show the same bin values in simmetric places (in this test a dodecagone scanner is 
- * used so we have symmetry every 30 degrees. The above is repeated for an image with sources in front of the dodecagone corners. 
- * the sinogram should have now different values at fixed bin compared the previous image
+ *  the forward projected sinogram should show the same bin values in symmetric places (in this test a dodecagon scanner is 
+ * used so we have symmetry every 30 degrees. The above is repeated for an image with sources in front of the dodecagon corners. 
+ * The sinogram should have now different values at fixed bin compared the previous image. In this test we are also testing a 
+ * projdata_info with a negative view offset.
 */
 void
 BlocksTests::run_symmetry_test(){
@@ -325,10 +452,10 @@ write_to_file("image_for2",*image2_sptr);
     scannerBlocks_ptr->set_transaxial_block_spacing(scannerBlocks_ptr->get_transaxial_crystal_spacing()*
                                                     scannerBlocks_ptr->get_num_transaxial_crystals_per_block());
 //    scannerBlocks_ptr->set_num_transaxial_crystals_per_block(1);
-    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(1);
+    scannerBlocks_ptr->set_num_axial_blocks_per_bucket(2);
 //    scannerBlocks_ptr->set_num_transaxial_blocks_per_bucket(1);
-    scannerBlocks_ptr->set_num_rings(1);
-    
+    scannerBlocks_ptr->set_num_rings(2);
+    scannerBlocks_ptr->set_intrinsic_azimuthal_tilt(-30);
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
     
@@ -407,6 +534,12 @@ write_to_file("image_for2",*image2_sptr);
     check(bin1_30!= bin2_30,"the two data have different symmetries, the values should be different");
     check(bin1_150!= bin2_150,"the two data have different symmetries, the values should be different");
 }
+
+/*!The following is a test for the crystal maps. Two scanners and ProjDataInfo are created, one with the standard map orientation 
+ * and the other with an orientation along the view which is opposite to the first one.  A simulated sphere was forward projected
+ * to look at bin values in the two cases. The bin obtained from the two different projdata will have different coordinates but 
+ * the same value.
+*/
 
 void
 BlocksTests::run_map_orientation_test()
@@ -561,16 +694,9 @@ BlocksTests::run_map_orientation_test()
         bin.view_num() = view;
         bin.tangential_pos_num() = 0;
         
-        
-//        bin_ord.segment_num() = 0;
-//        bin_ord.axial_pos_num() = 0;
-//        bin_ord.view_num() = proj_data_info_blocks_reord_ptr->get_max_view_num()-view;
-//        bin_ord.tangential_pos_num() = 0;
-        
         proj_data_info_blocks_ptr->get_det_pos_pair_for_bin(dp1,bin);
         proj_data_info_blocks_reord_ptr->get_det_pos_pair_for_bin(dp2,bin);
         
-//        rojDataInfoGenericNoArcCorr::get_
         proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin1,dp1);
         proj_data_info_blocks_reord_ptr->get_bin_for_det_pos_pair(bin2,dp2);
         
@@ -598,9 +724,10 @@ run_tests()
 {
     
     std::cerr << "-------- Testing Blocks Geometry --------\n";
+    run_axial_projection_test();
     run_map_orientation_test();
-//    run_symmetry_test();
-//    run_plane_symmetry_test();
+    run_symmetry_test();
+    run_plane_symmetry_test();
 }
 END_NAMESPACE_STIR
 
