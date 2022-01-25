@@ -535,6 +535,12 @@ write_to_file("image_for2",*image2_sptr);
     check(bin1_150!= bin2_150,"the two data have different symmetries, the values should be different");
 }
 
+/*!The following is a test for the crystal maps. Two scanners and ProjDataInfo are created, one with the standard map orientation 
+ * and the other with an orientation along the view which is opposite to the first one.  A simulated sphere was forward projected
+ * to look at bin values in the two cases. The bin obtained from the two different projdata will have different coordinates but 
+ * the same value.
+*/
+
 void
 BlocksTests::run_map_orientation_test()
 {
@@ -688,16 +694,9 @@ BlocksTests::run_map_orientation_test()
         bin.view_num() = view;
         bin.tangential_pos_num() = 0;
         
-        
-//        bin_ord.segment_num() = 0;
-//        bin_ord.axial_pos_num() = 0;
-//        bin_ord.view_num() = proj_data_info_blocks_reord_ptr->get_max_view_num()-view;
-//        bin_ord.tangential_pos_num() = 0;
-        
         proj_data_info_blocks_ptr->get_det_pos_pair_for_bin(dp1,bin);
         proj_data_info_blocks_reord_ptr->get_det_pos_pair_for_bin(dp2,bin);
         
-//        rojDataInfoGenericNoArcCorr::get_
         proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin1,dp1);
         proj_data_info_blocks_reord_ptr->get_bin_for_det_pos_pair(bin2,dp2);
         
