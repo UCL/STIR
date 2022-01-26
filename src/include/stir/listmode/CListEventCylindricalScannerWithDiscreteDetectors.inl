@@ -31,6 +31,13 @@ CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& sca
                                    scanner_sptr->get_num_detectors_per_ring()/2,
                                    scanner_sptr->get_default_num_arccorrected_bins(), 
                                    false));
+  if(this->proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical"){
+    this->scanner_type = CYL;
+  }else if(this->proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical"){
+    this->scanner_type = BLOCK;
+  }else{
+    this->scanner_type = GEN;
+  }
 }
 
 LORAs2Points<float>
@@ -47,36 +54,55 @@ get_LOR() const
   assert(det_pos.pos1().radial_coord()==0);
   assert(det_pos.pos2().radial_coord()==0);
   // TODO we're using an obsolete function here which uses a different coordinate system
-  if (this->proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical"){
+  switch (this->scanner_type)
+  {
+  case CYL:
+    {
     auto proj_data_info_cyl_ptr = this->get_uncompressed_proj_data_info_sptr();
-  proj_data_info_cyl_ptr->
+    proj_data_info_cyl_ptr->
     find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
                                                          det_pos.pos1().axial_coord(),
                                                          det_pos.pos2().axial_coord(),
                                                          det_pos.pos1().tangential_coord(),
                                                          det_pos.pos2().tangential_coord());
   // find shift in z
-  const float shift = this->scanner_sptr->get_ring_spacing()*
+    const float shift = this->scanner_sptr->get_ring_spacing()*
     (this->scanner_sptr->get_num_rings()-1)/2.F;
-  coord_1.z() -= shift;
-  coord_2.z() -= shift;
-  }else if(this->proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical"){
-    auto proj_data_info_blk_ptr = this->get_uncompressed_proj_data_info_blk_sptr();
+    coord_1.z() -= shift;
+    coord_2.z() -= shift;
+    }
+    break;
+  case BLOCK:
+   {
+    auto proj_data_info_blk_ptr = this->get_uncompressed_proj_data_info_geom_sptr<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
   proj_data_info_blk_ptr->
     find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
                                                          det_pos.pos1().axial_coord(),
                                                          det_pos.pos2().axial_coord(),
                                                          det_pos.pos1().tangential_coord(),
                                                          det_pos.pos2().tangential_coord());
-  }else{
-    auto proj_data_info_generic_ptr = this->get_uncompressed_proj_data_info_generic_sptr();
-  proj_data_info_generic_ptr->
+    const float shift = this->scanner_sptr->get_ring_spacing()*
+    (this->scanner_sptr->get_num_rings()-1)/2.F;
+    coord_1.z() -= shift;
+    coord_2.z() -= shift;
+    }
+    break;
+  case GEN:
+   {
+    auto proj_data_info_gen_ptr = this->get_uncompressed_proj_data_info_geom_sptr<ProjDataInfoGenericNoArcCorr>();
+  proj_data_info_gen_ptr->
     find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
                                                          det_pos.pos1().axial_coord(),
                                                          det_pos.pos2().axial_coord(),
                                                          det_pos.pos1().tangential_coord(),
                                                          det_pos.pos2().tangential_coord());
-  };
+    const float shift = this->scanner_sptr->get_ring_spacing()*
+    (this->scanner_sptr->get_num_rings()-1)/2.F;
+    coord_1.z() -= shift;
+    coord_2.z() -= shift;
+    }
+    break;
+  }
       
   return lor;
 }
@@ -88,24 +114,35 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
   assert(dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0 || dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr const*>(&proj_data_info)!= 0 || dynamic_cast<ProjDataInfoGenericNoArcCorr const*>(&proj_data_info)!= 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
+  switch (this->scanner_type)
+  {
+  case CYL:
+    {
     if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).
         get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
       bin.set_bin_value(0);
     else
       bin.set_bin_value(1);
-  }else if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical"){
+    }
+    break;
+  case BLOCK:
+    {
     if (static_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr const&>(proj_data_info).
         get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
       bin.set_bin_value(0);
     else
       bin.set_bin_value(1);
-  }else{
+    }
+    break;
+  case GEN:
+    {
     if (static_cast<ProjDataInfoGenericNoArcCorr const&>(proj_data_info).
         get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
       bin.set_bin_value(0);
     else
       bin.set_bin_value(1);
+    }
+    break;
   }
 }
 

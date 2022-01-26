@@ -73,6 +73,17 @@ public:
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
 
  protected:
+   template <typename T>
+   shared_ptr<const T>
+    get_uncompressed_proj_data_info_geom_sptr() const
+     {
+       shared_ptr<const T>
+       uncompressed_proj_data_info_sptr;
+       uncompressed_proj_data_info_sptr.reset
+    (dynamic_cast<const T *>
+    (this->proj_data_info_sptr.get()));
+    return uncompressed_proj_data_info_sptr;
+     }
    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
      {
@@ -83,24 +94,6 @@ public:
     (this->proj_data_info_sptr.get()));
     return uncompressed_proj_data_info_sptr;
      }
-     shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
-    get_uncompressed_proj_data_info_blk_sptr() const {
-      shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
-       uncompressed_proj_data_info_sptr;
-       uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>
-    (this->proj_data_info_sptr.get()));
-    return uncompressed_proj_data_info_sptr;
-    }
-    shared_ptr<const ProjDataInfoGenericNoArcCorr>
-    get_uncompressed_proj_data_info_generic_sptr() const {
-      shared_ptr<const ProjDataInfoGenericNoArcCorr>
-       uncompressed_proj_data_info_sptr;
-       uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<const ProjDataInfoGenericNoArcCorr *>
-    (this->proj_data_info_sptr.get()));
-    return uncompressed_proj_data_info_sptr;
-    }
    shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const
      {
@@ -111,7 +104,8 @@ public:
  private:
    shared_ptr<const ProjDataInfo>
      proj_data_info_sptr;
-
+   enum scanner_type {CYL, BLOCK, GEN};
+   scanner_type scanner_type;
 };
 
 END_NAMESPACE_STIR
