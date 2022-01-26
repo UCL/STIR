@@ -46,7 +46,6 @@ get_LOR() const
   this->get_detection_position(det_pos);
   assert(det_pos.pos1().radial_coord()==0);
   assert(det_pos.pos2().radial_coord()==0);
-  auto proj_data_info_ptr = this->proj_data_info_sptr;
   // TODO we're using an obsolete function here which uses a different coordinate system
   if (this->proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical"){
     auto proj_data_info_cyl_ptr = this->get_uncompressed_proj_data_info_sptr();
