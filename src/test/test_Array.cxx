@@ -56,7 +56,7 @@
 using std::ofstream;
 using std::ifstream;
 using std::plus;
-using std::bind2nd;
+using std::bind;
 using std::cerr;
 using std::endl;
 #endif
@@ -575,7 +575,7 @@ ArrayTests::run_tests()
 
 #if !defined(_MSC_VER) || _MSC_VER>1300
     // VC 6.0 cannot compile this
-    in_place_apply_function(test3ter, bind2nd(plus<float>(), 4.F));
+    in_place_apply_function(test3ter, bind(plus<float>(), std::placeholders::_1, 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat  , test3ter, 
                   "test in_place_apply_function and operator+=(NUMBER)");
