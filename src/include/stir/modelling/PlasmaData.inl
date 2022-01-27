@@ -18,6 +18,7 @@
 */
 #include "stir/decay_correction_factor.h"
 #include "stir/numerics/integrate_discrete_function.h"
+#include <functional>
 
 START_NAMESPACE_STIR
 
