@@ -409,8 +409,7 @@ rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weigh
   const int maxplane = FT_rebinned_data.get_max_index();
   //CON determine z position (sino identifier)
   const int z = round(z_in_mm/half_distance_between_rings);
-  // TODO replace call to error() by warning() and returning Succeeded::no
-  if(fabs(static_cast<float>(z_in_mm/half_distance_between_rings - z)) > .0001)
+  if(fabs(static_cast<float>(z_in_mm/half_distance_between_rings - z)) > .005F)
        error("FORE rebinning :: rebinning kernel expected integer z coordinate but found a non integer value %g\n", z_in_mm);
           
   //CL t is the tangent of the angle theta between the LOR and the transaxial plane
