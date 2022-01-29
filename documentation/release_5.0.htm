@@ -209,6 +209,8 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>CERN's <tt>ROOT</tt> library is now preferentially found by searching for
   its own exported <tt>ROOTConfig.cmake</tt>. Set the CMake variable <tt>ROOT_DIR</tt> accordingly. Older behaviour relying on <tt>ROOTSYS</tt> and <tt>root-config</tt> will be deprecated in a future version.
   </li>
+ <li>If you have CMake 3.14 or more recent, Python is found using the <a href="https://cmake.org/cmake/help/latest/module/FindPython.html">FindPython</a> module, as opposed to the deprecated <a href="https://cmake.org/cmake/help/v3.14/module/FindPythonLibs.html">FindPythonLibs</a>. <a href="https://cmake.org/cmake/help/v3.14/module/FindPythonInterp.html">FindPythonInterp</a> modules. You can set the <tt>Python_EXECUTABLE</tt> variable to a particular version (see the CMake doc for other hints you can provide).( If the old <tt>PYTHON_EXECUTABLE</tt> is set, we use it to initialise <tt>Python_EXECUTABLE</tt>).
+</li>
 </ul>
 
 
