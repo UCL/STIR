@@ -144,7 +144,7 @@ DataSymmetriesForBins_PET_CartesianGrid
               "(can only handle projection data corresponding to a cylinder)\n",
               typeid(*subset_proj_data_info_ptr->get_org_proj_data_info_sptr()).name());
         
-      if (do_symmetry_90degrees_min_phi or do_symmetry_180degrees_min_phi) {
+      if (do_symmetry_90degrees_min_phi || do_symmetry_180degrees_min_phi) {
         warning("Turning off 90 and 180 degrees minus phi symmetries for subsets.");
       }
       do_symmetry_90degrees_min_phi = false;
