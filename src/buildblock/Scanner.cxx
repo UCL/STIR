@@ -554,7 +554,10 @@ case PETMR_Signa:
                  1, 1,
                  1,
                  0.0944F, // energy resolution from Hsu et al. 2017
-                 511.F);
+                 511.F,
+                 (short int)(0),
+                 (float)(0), //TODO
+                 (float)(0));
       break;
   case HZLR:
 
