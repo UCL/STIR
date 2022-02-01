@@ -19,6 +19,7 @@
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Bin.h"
 #include "stir/Array.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -34,7 +35,32 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
   view_to_org_view_num(views),
   org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
-  // TODO check if view_to_org_view_num is ok (no duplication, all views within range)
+  // Check subset isn't empty
+  if (views.size() == 0) {
+    error("ProjDataInfoSubsetByView: views are empty");
+  }
+
+  auto num_views = full_proj_data_info_sptr->get_num_views();
+  for (size_t i = 0; i < views.size(); ++i) {
+    auto this_view = views[i];
+
+    // Check all views within range
+    if (!(0 <= this_view < num_views)) {
+      error(
+        boost::format("ProjDataInfoSubsetByView: views[%d]=%s out of range (%d).")
+        % i % this_view % num_views);
+    }
+
+    // Check all views are unique in this subset
+    for (size_t j = 0; i < j; ++i) {
+      auto prev_view = views[j];
+      if (this_view == prev_view) {
+        error(
+          boost::format("ProjDataInfoSubsetByView: repeated view: views[%d]=views[%s]=%s")
+          % i % j % this_view);
+      }
+    }
+  }
 
   // initialise the org_view_to_view_num
   for (int subset_view_num=0; subset_view_num<static_cast<int>(views.size()); ++subset_view_num)
