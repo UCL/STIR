@@ -288,28 +288,32 @@ test_forward_projection_is_consistent_with_unbalanced_subset(
 {
   cerr << "\tTesting Subset forward projection is consistent with unbalanced subset" << endl;
 
+  if (num_subsets >= template_sino_sptr->get_num_views()) {
+    cerr << "Error: Template provided doesn't have enough views to conduct this test with "
+         << num_subsets << " subsets." << std::endl;
+    everything_ok = false;
+  }
+
   auto full_forward_projection = generate_full_forward_projection(
     input_image_sptr, template_sino_sptr, use_symmetries);
 
 
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n) {
-    // subset 0 gets ~1/num_subsets of the views
-    // subset 1 gets the remainder
-    // remaining subset get no views, are empty!
+    // subset 0 to subset num_subsets-2 get 1 the view
+    // final subset (num_subsets-1) gets the remainder
     std::vector<int> subset_views;
 
-    for (int view = 0; view < full_forward_projection.get_num_views(); view++) {
-      if ((subset_n == 0) & (view % num_subsets == 0))
-      {
-        subset_views.push_back(view);
-      } else if (subset_n == 1)
-      {
+    if (subset_n < num_subsets - 1) {
+        subset_views.push_back(subset_n);
+    }
+    else {
+      for (unsigned int view = num_subsets - 1; view < full_forward_projection.get_num_views(); view++) {
         subset_views.push_back(view);
       }
     }
     auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
-    cerr << "\tTesting ubalanced subset " << subset_n << endl;
+    cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views << endl;
     test_forward_projection_for_one_subset(
       input_image_sptr, full_forward_projection, subset_forward_projection_uptr, use_symmetries);
   }
