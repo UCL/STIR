@@ -30,6 +30,7 @@ function(UseCXX VERSION)
       endif ()
     else ()
       set (CMAKE_CXX_STANDARD ${VERSION} PARENT_SCOPE)
+      set (CMAKE_CXX_STANDARD_REQUIRED ON PARENT_SCOPE)
     endif ()
 
     message(STATUS "Using C++ version ${VERSION}")

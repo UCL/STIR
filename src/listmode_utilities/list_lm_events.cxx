@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
-    Copyright (C) 2019, University College of London
+    Copyright (C) 2019, 2021, University College of London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   bool list_time=true;
   bool list_coincidence=false;
-  bool list_SPECT_event=false;
+  bool list_event_LOR=false;
   bool list_gating=true;
   bool list_unknown=false;
   unsigned long num_events_to_list = 0;
@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
         {
           list_coincidence = atoi(argv[1])!=0;
         }
-      else if (strcmp(argv[0], "--SPECT-event")==0)
+      else if (strcmp(argv[0], "--event-LOR")==0 || strcmp(argv[0], "--SPECT-event")==0)
         {
-          list_SPECT_event = atoi(argv[1])!=0;
+          list_event_LOR = atoi(argv[1])!=0;
         }
       else if (strcmp(argv[0], "--unknown")==0)
         {
@@ -98,11 +98,17 @@ int main(int argc, char *argv[])
            << "Options:\n"
            << "--time 0|1 : list time events or not (default: 1)\n"
            << "--gating 0|1 : list gating events or not (default: 1)\n"
-           << "--coincidence 0|1 : list coincidence events or not (default: 0)\n"
+           << "--coincidence 0|1  0|1): list coincidence event info or not (default: 0)\n"
+           << "--event-LOR 0|1 : ((identical to --SPECT-event) list LOR end-points if coincidence/gamma event or not (default: 0)\n"
            << "--unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
-           << "--num-events-to-list <num> : limit number of events written to stdout\n";
+           << "--num-events-to-list <num> : limit number of events written to stdout\n"
+           << "\nNote that for some PET scanners, coincidences are listed with crystal info.\n"
+           << "For others, you should list LOR coordinates (as well) as the 'coincidence' option will only list prompt/delayed info.\n";
       return EXIT_FAILURE;
     }
+
+  if ( list_event_LOR)
+    cout << "LORs will be listed as 2 points (z1,y1,x1)-(z2,y2,x2).\n";
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
@@ -149,40 +155,45 @@ int main(int argc, char *argv[])
         {
           recognised=true;
           if (list_coincidence)
-            {CListEventCylindricalScannerWithDiscreteDetectors * event_ptr = 
-                dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event());
-              if (event_ptr!=0)
+            {
+              if (auto event_ptr = 
+                   dynamic_cast<CListEvent *>(&record.event()))
+                {
+                  cout << "Coincidence " << (event_ptr->is_prompt() ? "p " : "d ");
+                }
+              if (auto event_ptr = 
+                   dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event()))
                 {
                   DetectionPositionPair<> det_pos;
                   event_ptr->get_detection_position(det_pos);
-                  cout << "Coincidence " << (event_ptr->is_prompt() ? "p " : "d ")
-                       << "(c:" << det_pos.pos1().tangential_coord()
+                  cout << "(c:" << det_pos.pos1().tangential_coord()
                        << ",r:" << det_pos.pos1().axial_coord()
                        << ",l:" << det_pos.pos1().radial_coord()
                        << ")-"
-                   << "(c:" << det_pos.pos2().tangential_coord()
+                       << "(c:" << det_pos.pos2().tangential_coord()
                        << ",r:" << det_pos.pos2().axial_coord()
                        << ",l:" << det_pos.pos2().radial_coord()
-                       << ")";
+                       << ")\t";
                   cout << " delta time: " << event_ptr->get_delta_time();
                   listed = true; 
                 }
             }
-          if (list_SPECT_event)
-            {ListEvent * event_ptr =
-                dynamic_cast<ListEvent *>(&record.event());
+          if (list_event_LOR)
+            { 
+              if (auto event_ptr = 
+                   dynamic_cast<CListEvent *>(&record.event())) // cast not necessary, but looks same as above
               if (event_ptr!=0)
                 {
                   LORAs2Points<float> lor;
                   lor=event_ptr->get_LOR();
-                  cout << "Gamma event: LOR as two points "
-                       << "(x1:" << lor.p1().x()
-                       << ",y1:" << lor.p1().y()
-                       << ",z1:" << lor.p1().z()
+                  cout << "LOR "
+                       << "(" << lor.p1().z()
+                       << "," << lor.p1().y()
+                       << "," << lor.p1().x()
                        << ")-"
-                   << "(x2:" << lor.p2().x()
-                       << ",y2:" << lor.p2().y()
-                       << ",z2:" << lor.p2().z()
+                       << "(" << lor.p2().z()
+                       << "," << lor.p2().y()
+                       << "," << lor.p2().x()
                        << ")";
                   listed = true;
                 }

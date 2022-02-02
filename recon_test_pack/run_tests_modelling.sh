@@ -155,7 +155,7 @@ extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f%dg1d0b0.hv dyn_
 # if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
 
 for fr in `count 23 28`; do
-    forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs
+    forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs > fwd_dyn_from_p0005-p5_f${fr}g1d0b0.log 2>&1
 done
 #fi
 

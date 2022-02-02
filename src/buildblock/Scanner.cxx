@@ -535,6 +535,30 @@ case PETMR_Signa:
                (float)(0) );
     break;
 
+    case DiscoveryMI5ring: // This is the 5-ring DMI
+      // as above, but one extra block
+      // Hsu et al. 2017 JNM
+      // crystal size 3.95 x 5.3 x 25
+      set_params(DiscoveryMI5ring, string_list("GE Discovery MI 5 rings", "Discovery MI5", "Discovery MI"), // needs to include last value as used by GE in RDF files
+                 45,
+                 415,
+                 401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+                 2 * 272,
+                 380.5F - 9.4F,//TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+                 9.4F,//TODO DOI
+                 5.52296F, // ring-spacing
+                 2.206F,//TODO currently using the central bin size default bin size. GE might be using something else
+                 static_cast<float>(-4.399*_PI/180), //TODO check sign
+                 5, 4,
+                 9, 4,
+                 1, 1,
+                 1,
+                 0.0944F, // energy resolution from Hsu et al. 2017
+                 511.F,
+                 (short int)(0),
+                 (float)(0), //TODO
+                 (float)(0));
+      break;
   case HZLR:
 
     set_params(HZLR, string_list("Positron HZL/R"),

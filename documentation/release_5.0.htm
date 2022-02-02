@@ -15,9 +15,15 @@ detailed below.
 <p>
 <ul>
   <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
-  <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors.
-    This code was contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL).</li>
-  <li>Calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
+  <li>View Offset Support enabled for the PET scanners, contributed by Palak Wadhwa (Leeds Univ), allowing fixing rotation of reconstructed images, see <a href="https://github.com/UCL/STIR/pull/181">PR 181</a>.
+    </li>
+  <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D, see <a href="https://github.com/UCL/STIR/pull/619">PR 619</a>.
+    This code was mostly contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL),
+    as well as capabilities to work with virtual crystals, see <a href="https://github.com/UCL/STIR/pull/833">PR 833</a> and <a href="https://github.com/UCL/STIR/pull/949">PR 949</a>.
+  </li>
+  <li> <tt>ROOT</tt> files produced by <tt>GATE</tt> can now be interpreted using ``virtual crystals", see <a href="https://github.com/UCL/STIR/pull/617/">PR #617</a>.
+  </li>
+  <li>A calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
 	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
 	  This  code was contributed by Daniel Deidda (NPL) and Kris Thielemans (UCL)</li>
   <li>Radionuclide information is saved into a JSON configuration file for a number of popular radionuclide for PET and SPECT. This can make operations like decay correction easier and accurate. 
@@ -26,7 +32,12 @@ detailed below.
 
   <li>KOSMAPOSL (HKEM) allows now to freeze the iterative part of the kernel at a specific subiteration. Code contributed by Daniel Deidda (NPL), Kris Thielemans (UCL) and Ashley Gillman (CSIRO)</li>
   <li>It is now possibly to call the <a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a>
-    projectors (using either OpenMP or CUDA).</li>
+    projectors (using either OpenMP or CUDA), see <a href="https://github.com/UCL/STIR/pull/817">PR 817</a>, contributed by Kris Thielemans (UCL) with Georg Schramm (KUL).
+  </li>
+  <li>
+    OpenMP loop scheduling changed to use <code>dynamic</code> instead of <code>runtime</code>, resulting in faster performance.
+  </li>
+
 </ul>
 </p>
 
@@ -40,7 +51,7 @@ improvements to the documentation.
 
     <h2>Patch release info</h2>
     <ul>
-      <li> 5.0.0 released ?/?/2020</li>
+      <li> 5.0.0 released ?/?/2022</li>
       <!--
       <li> 4.0.1 released 28/04/2020
         <ul>
@@ -80,6 +91,11 @@ Backward compatibility for reconstructed images can be achieved by setting the <
    Fixing this isssue means that images reconstructed with <tt>OSSPS</tt> are different from previous versions of STIR when the above conditions are met.
    See <a href=https://github.com/UCL/STIR/issues/873>Issue #873</a> and associated <a href=https://github.com/UCL/STIR/issues/893>PR #893</a>.
 </li>
+<li>
+  Parametric image reconstruction with <tt>POSMAPOSL</tt> could lead to zeroes being introduced
+  gradually during reconstruction.
+   See <a href=https://github.com/UCL/STIR/issues/906>Issue #906</a> and associated <a href=https://github.com/UCL/STIR/issues/978>PR #978</a>.
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -95,9 +111,9 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
     In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
     <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
-</li>
+  </li>
   <li>
-      Additional demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+    <code>calculate_attenuation_coefficients</code> utility now accepts an optional forward projection parameter file in the same format as the <code>forward_project</code> utility. Example usage has been added to <tt>src/recon_test_pack/simulate_data.sh</tt>.
   </li>
   <li>
     <tt>ROOT</tt> files produced by <tt>GATE</tt> can now be interpreted using ``virtual crystals", i.e. by inserting
@@ -123,7 +139,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>Addition of a new utility <tt>extract_single_images_from_parametric_image</tt> to
   get each parametric image in a single file.
 </li>
-<li><tt>generate_image</tt> parameter files now support the <tt>originating system</tt>.
+<li><tt>generate_image</tt> parameter files now support the <tt>originating system</tt> keyword.
 </li>
 <li><tt>list_image_info</tt> now works for dynamic images, with a new <tt>--per-volume</tt> option to list min/max/sum for every volume.
 </li>
@@ -142,16 +158,19 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li><code>Scanner</code> has now a new <code>static</code> member <code>get_names_of_predefined_scanners</code> returning a list of names.
 </li>
 <li>
-    Exposed <code>compute_total_ROI_values</code> and <code>ROIValues</code> via swig. Added python example <code>ROI_demo.py</code> to demonstrate usage.
+    Exposed <code>compute_total_ROI_values</code> and <code>ROIValues</code> to Python/MATLAB via swig. Added python example <code>ROI_demo.py</code> to demonstrate usage.
 </li>
-<li>
-  <code>calculate_attenuation_coefficients</code> utility now accepts an optional forward projection parameter file in the same format as the <code>forward_project</code> utility. Example usage has been added to <tt>src/recon_test_pack/simulate_data.sh</tt>.
-</li>
+  <li>
+      Additional C++ demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+  </li>
 </ul>
 
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>
+    OpenMP loop scheduling changed to use <code>dynamic</code> instead of <code>runtime</code>. On some machines, this was causing slower projection operations due to a <code>static</code> scheduler being selected by default. See <a href=https://github.com/UCL/STIR/issues/935>Issue #935</a> for more details.
+  </li>
 <li>Many operations with <code>ProjDataInMemory</code> are now much faster (it now uses an underlying 1D array).
 </li>
 <li>
@@ -164,9 +183,6 @@ Backward compatibility for reconstructed images can be achieved by setting the <
   </li>
   <li> If there are multiple buckets specified in the interfile header, we increase the symmetry size to a bucket in the <code>find_ML_normfactors3D</code>. Otherwise, we use a block.
      The use of an argument <code>--for-symmetry-per-block</code> in the <code>find_ML_normfactors3D</code> utility will use the symmetry size of a block.
-  </li>
-  <li> If there are multiple buckets specified in the interfile header, we increase the symmetry size to a bucket in the <code>apply_ML_normfactors3D</code>. Otherwise, we use a block.
-     The use of an argument <code>do_symmetry_per_block</code> in the <code>apply_ML_normfactors3D</code> utility will use the symmetry size of a block.
   </li>
  <li><tt>apply_patlak_to_images</tt> no longer uses an existing file as a template for the dynamic image but will overwrite it.</li>
 	<li><tt>ROOT</tt> file I/O improvements. An entire entry's tree is no longer loaded by default and instead individual branches are loaded as needed.
@@ -193,6 +209,8 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>CERN's <tt>ROOT</tt> library is now preferentially found by searching for
   its own exported <tt>ROOTConfig.cmake</tt>. Set the CMake variable <tt>ROOT_DIR</tt> accordingly. Older behaviour relying on <tt>ROOTSYS</tt> and <tt>root-config</tt> will be deprecated in a future version.
   </li>
+ <li>If you have CMake 3.14 or more recent, Python is found using the <a href="https://cmake.org/cmake/help/latest/module/FindPython.html">FindPython</a> module, as opposed to the deprecated <a href="https://cmake.org/cmake/help/v3.14/module/FindPythonLibs.html">FindPythonLibs</a>. <a href="https://cmake.org/cmake/help/v3.14/module/FindPythonInterp.html">FindPythonInterp</a> modules. You can set the <tt>Python_EXECUTABLE</tt> variable to a particular version (see the CMake doc for other hints you can provide).( If the old <tt>PYTHON_EXECUTABLE</tt> is set, we use it to initialise <tt>Python_EXECUTABLE</tt>).
+</li>
 </ul>
 
 
@@ -280,7 +298,7 @@ as used by <code>copy_to</code> and <code>fill_from</code>
   we would need multiple registries. However, this was already required by <code>write_to_file</code> anyway.
 </li>
 <li>
-  Generalised prior and Quadratic prior have a new method <code>accumulate_Hessian_times_input(output, current_estimate, input)</code>. This computes the hessian of the prior at the <code>current_image_estimate</code> and multiplies this by <code>input</code>.
+  <code>GeneralisedPrior</code> and <code>QuadraticPrior</code> have a new method <code>accumulate_Hessian_times_input(output, current_estimate, input)</code>. This computes the hessian of the prior at the <code>current_image_estimate</code> and multiplies this by <code>input</code>.
   Before this, the <code>add_multiplication_with_approximate_Hessian(output, input)</code> method was used that assumed a quadratic function and therefore <code>hessian = 1</code>.
 </li>
 <li><code>Exam_info</code>, <code>TimeFrameDefinition</code> and <code>PatientPosition </code> have now a <code>==</code> operator</li>
@@ -290,6 +308,9 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 </li>
 <li><code>KeyParser::parameter_info()</code> now outputs vectorised keys as well
 </li>
+<li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
+  nor psi to be between 0 and 2 pi. They will standardise the input automatically.
+  </li>
 </ul>
 
 
@@ -297,12 +318,6 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <ul>
     <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
     </li>
-<li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
-  nor psi to be between 0 and 2 pi. They will standardise the input automatically.
-  </li>
-  <li>
-    OpenMP loop scheduling changed to use <code>dynamic</code> instead of <code>runtime</code>. On some machines, this was causing slower projection operations due to a <code>static</code> scheduler being selected by default. See <a href=https://github.com/UCL/STIR/issues/935>Issue #935</a> for more details.
-  </li>
 </ul>
 
 </body>
