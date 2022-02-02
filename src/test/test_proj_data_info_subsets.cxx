@@ -31,17 +31,17 @@ START_NAMESPACE_STIR
 
 
 std::vector<int> _calc_regularly_sampled_views_for_subset(
-  unsigned int subset_n, unsigned int num_subsets, unsigned int num_views)
+  int subset_n, int num_subsets, int num_views)
 {
   // create a vector containg every num_subsest-th view starting at subset
   // for num_subsets = 4 and subset_n = 0 this is [0, 4, 8, 12, ...]
   // for num_subsets = 4 and subset_n = 1 this is [1, 5, 9, 13, ...]
   std::vector<int> subset_views;
-  int view = subset_n;
+  int view_n = subset_n;
 
-  while(view < num_views){
-    subset_views.push_back(view);
-    view += num_subsets;
+  while(view_n < num_views){
+    subset_views.push_back(view_n);
+    view_n += num_subsets;
   }
 
   return subset_views;
@@ -242,7 +242,6 @@ void TestProjDataInfoSubsets::
 test_split(const ProjData &proj_data)
 {
   cerr << "\tTesting ability to split a ProjData into consistent subsets" << endl;
-  int view;    
   int num_subsets = 4;
 
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n){
@@ -351,7 +350,7 @@ test_forward_projection_is_consistent_with_unbalanced_subset(
         subset_views.push_back(subset_n);
     }
     else {
-      for (unsigned int view = num_subsets - 1; view < full_forward_projection.get_num_views(); view++) {
+      for (int view = num_subsets - 1; view < full_forward_projection.get_num_views(); view++) {
         subset_views.push_back(view);
       }
     }
@@ -400,7 +399,7 @@ generate_full_back_projection(
     bool use_z_symmetries, bool use_other_symmetries)
 {
   bool input_is_nonzero = false;
-  for (unsigned int view_num = 0; view_num < input_sino_sptr->get_num_views(); ++view_num) {
+  for (int view_num = 0; view_num < input_sino_sptr->get_num_views(); ++view_num) {
     for (int segment_num = input_sino_sptr->get_min_segment_num();
          segment_num <= input_sino_sptr->get_max_segment_num();
          ++segment_num) {
@@ -486,7 +485,7 @@ test_back_projection_is_consistent(
   VoxelsOnCartesianGrid<float> back_projection_sum = *template_image_sptr->clone();
   back_projection_sum.fill(0.f);
 
-  for (unsigned int subset_n=0; subset_n<num_subsets; ++subset_n) {
+  for (int subset_n=0; subset_n<num_subsets; ++subset_n) {
     auto subset_views = _calc_regularly_sampled_views_for_subset(
       subset_n, num_subsets, input_sino_sptr->get_num_views());
 
