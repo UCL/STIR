@@ -480,7 +480,7 @@ test_back_projection_is_consistent(
     int num_subsets)
 {
   auto full_back_projection = generate_full_back_projection(
-    input_sino_sptr, template_image_sptr, /*use_syummetries=*/false);
+    input_sino_sptr, template_image_sptr);
 
   VoxelsOnCartesianGrid<float> back_projection_sum = *template_image_sptr->clone();
   back_projection_sum.fill(0.f);
@@ -492,11 +492,11 @@ test_back_projection_is_consistent(
     ProjData& subset = *input_sino_sptr->get_subset(subset_views);
 
     auto subset_back_projector_sptr = construct_projector_pair(
-      input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr, /*use_symmetries=*/false)
+      subset.get_proj_data_info_sptr(), template_image_sptr)
       ->get_back_projector_sptr() ;
 
     VoxelsOnCartesianGrid<float> subset_back_projection = *template_image_sptr->clone();
-    subset_back_projector_sptr->back_project(subset_back_projection, *input_sino_sptr);
+    subset_back_projector_sptr->back_project(subset_back_projection, subset);
     back_projection_sum += subset_back_projection;
   }
   back_projection_sum /= num_subsets;  // Why do I have to do this...?!
