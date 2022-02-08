@@ -2,9 +2,13 @@ name: Build and ctest and recon_test_pack CI
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
+      - tof_sino_UCL
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - tof_sino_UCL
 
 jobs:
   build:
