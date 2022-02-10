@@ -100,7 +100,6 @@ namespace RDF_HDF5 {
         //if (prompt) random=1; else random=0; return Succeeded::yes; 
         return Succeeded::no;
       }
- inline void get_detection_position(DetectionPositionPair<>& det_pos) const
       inline bool is_event() const
       { 
         return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
