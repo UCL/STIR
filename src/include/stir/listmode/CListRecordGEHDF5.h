@@ -101,14 +101,6 @@ namespace RDF_HDF5 {
         return Succeeded::no;
       }
  inline void get_detection_position(DetectionPositionPair<>& det_pos) const
-  {
-    // TODO 447->get_num_detectors_per_ring()-1
-    det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
-    det_pos.pos1().axial_coord() = loXtalAxialID;
-    det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
-//    std::cout << hiXtalTransAxID << " "  << loXtalTransAxID << std::endl;
-    det_pos.pos2().axial_coord() = hiXtalAxialID;
-  }
       inline bool is_event() const
       { 
         return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
@@ -136,53 +128,6 @@ namespace RDF_HDF5 {
 #endif
     }; /*-coincidence event*/
 
-
-#if 0
-//! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
-/*! \ingroup listmode
-  \ingroup GE
-  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
- */
-class CListGatingDataGESigna
-{
- public:
-  #if 0
-  inline unsigned long get_time_in_millisecs() const
-    { return (time_hi()<<24) | time_lo(); }
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-    {
-      words[0].value = ((1UL<<24)-1) & (time_in_millisecs);
-      words[1].value = (time_in_millisecs) >> 24;
-      // TODO return more useful value
-      return Succeeded::yes;
-    }
-  #endif
-  inline bool is_gating_input() const
-    { return (words[0].signature==21) && (words[1].signature==29); }
-  inline unsigned int get_gating() const
-    { return words[0].reserved; } // return "reserved" bits. might be something in there
-  inline Succeeded set_gating(unsigned int g)
-    { words[0].reserved = g&7; return Succeeded::yes; }
-
-private:
-  typedef union{
-    struct {
-#if STIRIsNativeByteOrderBigEndian
-      boost::uint32_t signature : 5;
-      boost::uint32_t reserved : 3;
-      boost::uint32_t value : 24; // timing info here in the first word, but we're ignoring it
-#else
-      boost::uint32_t value : 24;
-      boost::uint32_t reserved : 3;
-      boost::uint32_t signature : 5;
-#endif
-    };      
-    boost::uint32_t raw;
-  } oneword_t;
-  oneword_t words[2];
-};
-
-#endif
 
     //! A class for storing and using a timing 'event' from a GE RDF9 listmode file
     /*! \ingroup listmode
@@ -363,20 +308,8 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
     if (do_byte_swap)
       {
-        ByteOrder::swap_order(this->raw[0]);
-      }
-    if (this->is_event() || this->is_time())
-      {
-//	std::cout << "This is an event \n" ;
-        assert(size >= 6);
-
-        std::copy(data_ptr+6, data_ptr+6, reinterpret_cast<char *>(&this->raw[1]));
-//	std::cout << "after assert an event \n" ;
-      }
-    if (do_byte_swap)
-      {
-    error("don't know how to byteswap");
-        ByteOrder::swap_order(this->raw[1]);
+        error("ClistRecordGEHDF5: byte-swapping not supported yet. sorry");
+        //ByteOrder::swap_order(this->raw[0]);
       }
 
       if (this->is_event())
