@@ -140,7 +140,6 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
                                   const unique_ptr<SymmetryOperation>& symm_ptr)  STIR_MUTABLE_CONST
 {
 
-    CartesianCoordinate3D<float> voxel_center;
     float new_value = 0.f;
     float low_dist = 0.f;
     float high_dist = 0.f;
@@ -149,9 +148,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
     const CartesianCoordinate3D<float> diff = point2 - middle;
 
-    const float lor_length = 1.f / (std::sqrt(diff.x() * diff.x() +
-                                        diff.y() * diff.y() +
-                                        diff.z() * diff.z()));
+    const CartesianCoordinate3D<float> diff_unit_vector(diff/static_cast<float>(norm(diff)));
 
     for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
          element_ptr != probabilities.end(); ++element_ptr)
@@ -159,14 +156,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
         Coordinate3D<int> c(element_ptr->get_coords());
         symm_ptr->transform_image_coordinates(c);
 
-        voxel_center =
-                image_info_sptr->get_physical_coordinates_for_indices (c);
-
-        project_point_on_a_line(point1, point2, voxel_center);
-
-        const CartesianCoordinate3D<float> x = voxel_center - middle;
-
-        const float d2 = -inner_product(x, diff) * lor_length;
+        const float d2 = -inner_product(image_info_sptr->get_physical_coordinates_for_indices (c) - middle, diff_unit_vector);
 
         low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d2) * r_sqrt2_gauss_sigma);
         high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d2) * r_sqrt2_gauss_sigma);
