@@ -431,7 +431,12 @@ void distributable_computation(
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
     }
-#pragma omp for schedule(dynamic)  
+ #if _OPENMP <201107
+  #pragma omp for schedule(dynamic)
+ #else
+    // OpenMP loop over both vs_nums_to_process and tof_pos_num
+    #pragma omp for schedule(dynamic) collapse(2)
+  #endif
 #endif
 
   for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)

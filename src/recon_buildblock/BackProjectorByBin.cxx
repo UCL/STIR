@@ -200,21 +200,21 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
                                          subset_num, num_subsets);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel shared(proj_data, symmetries_sptr)
-#endif
-  {
-#ifdef STIR_OPENMP
-#pragma omp for schedule(dynamic)
+  #if _OPENMP <201107
+    #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)
+  #else
+    // OpenMP loop over both vs_nums_to_process and tof_pos_num
+    #pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic) collapse(2)
+  #endif
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
-        const ViewSegmentNumbers vs=vs_nums_to_process[i];
-
         for (int k=proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
               k<=proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num();
       		  ++k)
         {
+          const ViewSegmentNumbers vs=vs_nums_to_process[i];
 #ifdef STIR_OPENMP
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
@@ -228,7 +228,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
         back_project(viewgrams);
       }
   }
-  }
+
 #ifdef STIR_OPENMP
   // "reduce" data constructed by threads
   {
