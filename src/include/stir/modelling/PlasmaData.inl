@@ -18,6 +18,7 @@
 */
 #include "stir/decay_correction_factor.h"
 #include "stir/numerics/integrate_discrete_function.h"
+#include <functional>
 
 START_NAMESPACE_STIR
 
@@ -53,8 +54,8 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
     if (std::getline(data_stream, first_line))
     {
       // replace leading/trailing whitespace 
-      first_line.erase(std::find_if(first_line.rbegin(), first_line.rend(), std::bind1st(std::not_equal_to<char>(), ' ')).base(), first_line.end());
-      first_line.erase(first_line.begin(), std::find_if(first_line.begin(), first_line.end(), std::bind1st(std::not_equal_to<char>(), ' ')));
+      first_line.erase(std::find_if(first_line.rbegin(), first_line.rend(), std::bind(std::not_equal_to<char>(), ' ', std::placeholders::_1)).base(), first_line.end());
+      first_line.erase(first_line.begin(), std::find_if(first_line.begin(), first_line.end(), std::bind(std::not_equal_to<char>(), ' ', std::placeholders::_1)));
       // now first, check if the first line is a single character. 
       // this is best done in C style, cleaner than iterating over chars
       char* p;
