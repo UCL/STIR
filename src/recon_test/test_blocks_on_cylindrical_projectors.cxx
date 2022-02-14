@@ -73,12 +73,12 @@ private:
   void run_plane_symmetry_test();
   void run_map_orientation_test();
   void run_axial_projection_test();
-  void run_voxelOnCylindrical_with_negative_offset();
+  void run_voxelOnCartesianGrid_with_negative_offset();
 };
 
 
 void
-BlocksTests::run_voxelOnCylindrical_with_negative_offset(){
+BlocksTests::run_voxelOnCartesianGrid_with_negative_offset(){
     //    create projadata info
         
         auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
@@ -773,7 +773,7 @@ run_tests()
 {
     
     std::cerr << "-------- Testing Blocks Geometry --------\n";
-    run_voxelOnCylindrical_with_negative_offset();
+    run_voxelOnCartesianGrid_with_negative_offset();
     run_axial_projection_test();
     run_map_orientation_test();
     run_symmetry_test();
