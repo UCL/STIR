@@ -54,6 +54,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 //#include "stir/Shape/Shape3D.h"
 
 START_NAMESPACE_STIR
@@ -72,7 +73,55 @@ private:
   void run_plane_symmetry_test();
   void run_map_orientation_test();
   void run_axial_projection_test();
+  void run_voxelOnCylindrical_with_negative_offset();
 };
+
+
+void
+BlocksTests::run_voxelOnCylindrical_with_negative_offset(){
+    //    create projadata info
+        
+        auto scannerBlocks_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
+        
+        scannerBlocks_ptr->set_intrinsic_azimuthal_tilt(-30);
+        scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
+        scannerBlocks_ptr->set_up();
+        
+        VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_ptr->get_num_rings()*2-1);
+        VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
+        VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
+        
+        for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
+            min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
+            max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
+            if (i<scannerBlocks_ptr->get_num_rings())
+                num_axial_pos_per_segment[i]=i+1;
+            else
+                num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
+            }
+        
+        auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
+                        scannerBlocks_ptr,
+                        num_axial_pos_per_segment,
+                        min_ring_diff_v, max_ring_diff_v,
+                        scannerBlocks_ptr->get_max_num_views(),
+                        scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+
+        bool is_ok=true;
+        
+        try{
+        auto grid =std::make_shared<VoxelsOnCartesianGrid<float> >(*proj_data_info_blocks_ptr,
+                                                                   1,
+                                                                   CartesianCoordinate3D<float>(0.F,0.F,0.F),
+                                                                   CartesianCoordinate3D<int>(-1,-1,-1));
+        }
+        catch(...){
+            is_ok=false;
+        }
+        
+        check_if_equal(is_ok,true);
+}
+
 
 /*! The following is a test for axial symmetries: a simulated image is created with a line along the z direction.
  *  The image is forward projected to a sinogram and the sinogram back projected to an image. This image should 
@@ -724,6 +773,7 @@ run_tests()
 {
     
     std::cerr << "-------- Testing Blocks Geometry --------\n";
+    run_voxelOnCylindrical_with_negative_offset();
     run_axial_projection_test();
     run_map_orientation_test();
     run_symmetry_test();

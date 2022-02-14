@@ -287,10 +287,16 @@ construct_from_projdata_info(const shared_ptr < const ExamInfo > & exam_info_spt
 
   if (sizes.x()==-1 || sizes.y()==-1)
     {
+      std::vector<float> radii;
+      for (int view=0; view<proj_data_info.get_max_view_num(); view++){
+          radii.push_back(abs(max(proj_data_info.get_s(Bin(0,view,0,proj_data_info.get_max_tangential_pos_num())),
+                        -proj_data_info.get_s(Bin(0,view,0,proj_data_info.get_min_tangential_pos_num())))));
+      }
+      
       // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
       const float FOVradius_in_mm = 
-        max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
-            -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
+              *std::max_element(radii.begin(), radii.end());
+        
       if (sizes.x()==-1)
         x_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
       if (sizes.y()==-1)
