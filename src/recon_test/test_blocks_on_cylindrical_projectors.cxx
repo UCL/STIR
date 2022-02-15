@@ -8,7 +8,7 @@
   \author Daniel Deidda
 
 */
-/*  Copyright (C) 2021, National Physical Laboratory
+/*  Copyright (C) 2021-2022, National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/ExamInfo.h"
+#include "stir/Verbosity.h"
 #include "stir/LORCoordinates.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
@@ -129,6 +130,10 @@ BlocksTests::run_voxelOnCartesianGrid_with_negative_offset(){
 */
 void
 BlocksTests::run_axial_projection_test(){
+
+  //-- ExamInfo
+  auto exam_info_sptr = std::make_shared<ExamInfo>();
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
     
     CartesianCoordinate3D<float> origin (0,0,0);  
     CartesianCoordinate3D<float> grid_spacing (1.1,2.2,2.2); 
@@ -136,7 +141,7 @@ BlocksTests::run_axial_projection_test(){
     const IndexRange<3> 
       range(Coordinate3D<int>(0,-45,-45),
             Coordinate3D<int>(24,44,44));
-    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    VoxelsOnCartesianGrid<float> image(exam_info_sptr, range, origin, grid_spacing);
     
 //    60 degrees
     float phi1= 0*_PI/180;
@@ -212,11 +217,7 @@ BlocksTests::run_axial_projection_test(){
                                 image_sptr);
     bck_projector_sptr->set_up(proj_data_info_blocks_ptr,
                                 bck_proj_image_sptr);
-    
-    //-- ExamInfo
-    auto exam_info_sptr=std::make_shared<ExamInfo>();
-    exam_info_sptr->imaging_modality = ImagingModality::PT;
-    
+
     auto projdata=std::make_shared<ProjDataInterfile>(exam_info_sptr,
                                          proj_data_info_blocks_ptr,
                                          "test_axial.hs",
@@ -253,7 +254,11 @@ BlocksTests::run_axial_projection_test(){
 */
 void
 BlocksTests::run_plane_symmetry_test(){
-    
+
+  //-- ExamInfo
+  auto exam_info_sptr = std::make_shared<ExamInfo>();
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
+     
     CartesianCoordinate3D<float> origin (0,0,0);  
     CartesianCoordinate3D<float> grid_spacing (1.1,2.2,2.2); 
     float phi1;
@@ -261,7 +266,7 @@ BlocksTests::run_plane_symmetry_test(){
     const IndexRange<3> 
       range(Coordinate3D<int>(0,-45,-44),
             Coordinate3D<int>(24,44,45));
-    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    VoxelsOnCartesianGrid<float> image(exam_info_sptr, range, origin, grid_spacing);
     
 //    60 degrees
     phi1= 60*_PI/180;
@@ -355,10 +360,6 @@ BlocksTests::run_plane_symmetry_test(){
     forw_projector2_sptr->set_up(proj_data_info_blocks_ptr,
                                  image2_sptr);
 
-    //-- ExamInfo
-    auto exam_info_sptr=std::make_shared<ExamInfo>();
-    exam_info_sptr->imaging_modality = ImagingModality::PT;
-    
     auto projdata=std::make_shared<ProjDataInterfile>(exam_info_sptr,
                                          proj_data_info_blocks_ptr,
                                          "sino1_from_plane.hs",
@@ -432,14 +433,18 @@ BlocksTests::run_plane_symmetry_test(){
 void
 BlocksTests::run_symmetry_test(){
     
-    CartesianCoordinate3D<float> origin (0,0,0);  
+    //-- ExamInfo
+  auto exam_info_sptr = std::make_shared<ExamInfo>();
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+  CartesianCoordinate3D<float> origin(0, 0, 0);  
     CartesianCoordinate3D<float> grid_spacing (1.1,2.2,2.2); 
     float theta1=0;float theta2=0;
     
     const IndexRange<3> 
       range(Coordinate3D<int>(0,-45,-44),
             Coordinate3D<int>(24,44,45));
-    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    VoxelsOnCartesianGrid<float>  image(exam_info_sptr, range,origin, grid_spacing);
     
     const Array<2,float> direction_vectors=
   make_array(make_1d_array(1.F,0.F,0.F),
@@ -541,11 +546,7 @@ write_to_file("image_for2",*image2_sptr);
     auto forw_projector2_sptr=std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
     forw_projector2_sptr->set_up(proj_data_info_blocks_ptr,
                                 image2_sptr);
-
-    //-- ExamInfo
-    auto exam_info_sptr=std::make_shared<ExamInfo>();
-    exam_info_sptr->imaging_modality = ImagingModality::PT;
-    
+   
     auto projdata1=std::make_shared<ProjDataInterfile>(exam_info_sptr,
                                              proj_data_info_blocks_ptr,
                                          "sino1_from_image.hs",std::ios::out | std::ios::trunc | std::ios::in);
@@ -594,14 +595,17 @@ void
 BlocksTests::run_map_orientation_test()
 {
     CPUTimer timer;
-    
+  //-- ExamInfo
+  auto exam_info_sptr = std::make_shared<ExamInfo>();
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
+
     CartesianCoordinate3D<float> origin (0,0,0);  
     CartesianCoordinate3D<float> grid_spacing (1.1,2.2,2.2); 
     float theta1=0;
     
     const IndexRange<3> range(Coordinate3D<int>(0,-45,-44),
                               Coordinate3D<int>(24,44,45));
-    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    VoxelsOnCartesianGrid<float> image(exam_info_sptr, range, origin, grid_spacing);
     
     const Array<2,float> direction_vectors=make_array(make_1d_array(1.F,0.F,0.F),
                                                       make_1d_array(0.F,cos(theta1),sin(theta1)),
@@ -717,12 +721,8 @@ BlocksTests::run_map_orientation_test()
         
         auto forw_projector2_sptr= std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
         forw_projector2_sptr->set_up(proj_data_info_blocks_reord_ptr,
-                                    image1_sptr);
-    
-        //-- ExamInfo
-        auto exam_info_sptr= std::make_shared<ExamInfo>();
-        exam_info_sptr->imaging_modality = ImagingModality::PT;
-        
+                                    image1_sptr);    
+
         auto projdata1= std::make_shared<ProjDataInMemory>(exam_info_sptr,
                                                  proj_data_info_blocks_ptr);//,
 //                                             "sino1_map.hs",std::ios::out | std::ios::trunc | std::ios::in));
@@ -786,6 +786,7 @@ USING_NAMESPACE_STIR
 
 int main()
 {
+  Verbosity::set(1);
   BlocksTests tests;
   tests.run_tests();
   return tests.main_return_value();
