@@ -162,6 +162,10 @@ set_up(
         omp_init_lock(&this->cache_locks[view_num][seg_num]);
 #endif
     }
+
+  // Setup the custom erf code
+  erf_interpolation.set_num_samples(200000); //200,000 =~12.8MB
+  erf_interpolation.set_up();
 }
 
 

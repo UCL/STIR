@@ -26,6 +26,7 @@
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/geometry/line_distances.h"
+#include "stir/numerics/erf.h"
 
 START_NAMESPACE_STIR
 
@@ -169,17 +170,18 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
             continue;
         }
 
-        get_tof_value(low_dist, high_dist, new_value);
+        new_value = get_tof_value(low_dist, high_dist);
         new_value *= element_ptr->get_value();
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }
 
-void
+float
 ProjMatrixByBin::
-get_tof_value(const float d1, const float d2, float& val) const
+get_tof_value(const float d1, const float d2) const
 {
-    val = 0.5f * (erf(d2) - erf(d1));
+//    val = 0.5f * (erf(d2) - erf(d1));
+    return 0.5f * (erf_interpolation(d2) - erf_interpolation(d1));
 }
 
 END_NAMESPACE_STIR

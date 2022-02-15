@@ -19,8 +19,8 @@
   
 #include "stir/RunTests.h"
 #include "stir/numerics/erf.h"
+#include "stir/numerics/FastErf.h"
 #include <vector>
-
 START_NAMESPACE_STIR
 
 /*!
@@ -33,14 +33,33 @@ public:
   erfTests() 
   {}
   void run_tests();
+
+  /*!\brief Tests STIR's erf(x) function against known values */
+  void test_stir_erf();
+
+  /*!\brief Tests the FastErf object and its interpolation methods.
+   * This test will construct a FastErf object and compute a range of erf values and compare to erf(x)
+    */
+  void test_FastErf();
+
 private:
-  //istream& in;
+  //! Executes all the FastErf interpolation methods for a given xp
+  void actual_test_FastErf(const float xp);
+
+  FastErf e;
 };
 
 
 void erfTests::run_tests()
-{  
+{
   std::cerr << "Testing Error Functions..." << std::endl;
+  test_stir_erf();
+  test_FastErf();
+}
+
+void erfTests::test_stir_erf()
+{
+  std::cerr << "  Testing stir error functions..." << std::endl;
 
   set_tolerance(0.000000000000001);
  
@@ -104,6 +123,81 @@ void erfTests::run_tests()
       check_if_equal(1.0, (*cur_iter_STIR_c) + (*cur_iter_STIR),
                      "check erfc() and erf() results");    		  
   }	
+}
+
+void
+erfTests::test_FastErf()
+{
+  std::cerr << "  Testing stir FastErf ..." << std::endl;
+  set_tolerance(0.0001);
+
+  e.set_num_samples(200000);
+  e.set_up();
+
+  const float upper_samle_limit = 2 * e.get_maximum_sample_value() + 1;
+  const float lower_samle_limit = -(upper_samle_limit);
+  double sample_period = _PI/ 10000;  // Needed a number that wasn't regular and this worked...
+  // Test the FastErf interpolations 2* beyond the _maximum_sample_value.
+  // The while (-_maximum_sample_value > xp) or (_maximum_sample_value < xp),
+  // xp is clamped to -_maximum_sample_value or _maximum_sample_value
+  for (double xp = lower_samle_limit; xp < upper_samle_limit; xp += sample_period)
+    {
+      this->actual_test_FastErf(xp);
+      if (!this->everything_ok)
+        break;
+    }
+
+  // Test cases where x is just smaller or larger than the lower or upper limits of FastErf
+  // This is an additional sanity check ensure there are no rounding or out of limit errors.
+  const float epsilon = sample_period/100;
+  std::vector<float> extremity_test_xps(4);
+  extremity_test_xps[0] = e.get_maximum_sample_value() + epsilon; // above max
+  extremity_test_xps[1] = e.get_maximum_sample_value() - epsilon; // under max
+  extremity_test_xps[2] = -e.get_maximum_sample_value() + epsilon;  // above min
+  extremity_test_xps[3] = -e.get_maximum_sample_value() - epsilon;  // under min
+
+  for (float xp : extremity_test_xps)
+    {
+      this->actual_test_FastErf(xp);
+      if (!this->everything_ok)
+        break;
+    }
+}
+
+
+
+void erfTests::actual_test_FastErf(const float xp)
+{
+  //BSPlines
+  check_if_equal(e.get_erf_BSplines_interpolation(xp), erf(xp));
+  if (!this->is_everything_ok()){
+    std::cerr << "xp = " << xp
+              << "\tFastErf.get_erf_BSplines_interpolation(xp) = " << e.get_erf_BSplines_interpolation(xp)
+              << "\terf(xp) = " << erf(xp) << "\n";
+  }
+  // Linear
+  check_if_equal(e.get_erf_linear_interpolation(xp), erf(xp));
+  if (!this->is_everything_ok()){
+    std::cerr << "linear xp = " << xp
+              << "\tFastErf.get_erf_linear_interpolation(xp) = " << e.get_erf_linear_interpolation(xp)
+              << "\terf(xp) = " << erf(xp) << "\n";
+  }
+
+  //NN
+  check_if_equal(e.get_erf_nearest_neighbour_interpolation(xp), erf(xp));
+  if (!this->is_everything_ok()){
+    std::cerr << "NN xp = " << xp
+              << "\tFastErf.get_erf_nearest_neighbour_interpolation(xp) = " << e.get_erf_nearest_neighbour_interpolation(xp)
+              << "\terf(xp) = " << erf(xp) << "\n";
+  }
+
+  // Operator () - This acts as a wrapper for e.get_erf_linear_interpolation(xp)
+  check_if_equal(e(xp), erf(xp));
+  if (!this->is_everything_ok()){
+    std::cerr << "NN xp = " << xp
+              << "\tFastErf(xp) = " << e(xp)
+              << "\terf(xp) = " << erf(xp) << "\n";
+  }
 }
 
 END_NAMESPACE_STIR

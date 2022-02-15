@@ -33,6 +33,7 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/TimedObject.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/numerics/FastErf.h"
 #include <boost/cstdint.hpp>
 //#include <map>
 #include <boost/unordered_map.hpp>
@@ -249,8 +250,6 @@ private:
   //! 1/(2*sigma_in_mm)
   float r_sqrt2_gauss_sigma;
 
-  Array<1, float> cache_erf;
-
   //! The function which actually applies the TOF kernel on the LOR.
   inline void apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& probabilities,
                                const CartesianCoordinate3D<float>& point1,
@@ -260,7 +259,10 @@ private:
 
 
   //! Get the interal value erf(m - v_j) - erf(m -v_j)
-  inline void get_tof_value(const float d1, const float d2, float& val) const;
+  inline float get_tof_value(const float d1, const float d2) const;
+
+  //! erf map
+  FastErf erf_interpolation;
 
 };
 
