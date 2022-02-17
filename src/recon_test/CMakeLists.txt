@@ -31,6 +31,19 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_OSMAPOSL.cxx
 )
 
+if (HAVE_CERN_ROOT)
+    list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_view_offset_root)
+    foreach(n RANGE 1 12 1)
+        set(test_name test_consistency_root_${n})
+        ADD_TEST(NAME ${test_name}
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT-STIR-consistency
+                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root
+                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT-STIR-consistency/root_header_test${n}.hroot
+                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT-STIR-consistency/stir_image${n}.hv
+                )
+    endforeach()
+endif()
+
 include(stir_test_exe_targets)
 
 # a test that uses MPI
