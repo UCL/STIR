@@ -206,6 +206,7 @@ BlocksTests::run_axial_projection_test(){
     write_to_file("axial_test",*image_sptr);
         
     auto PM=std::make_shared<ProjMatrixByBinUsingRayTracing>();
+    PM->enable_cache(flase);
 //    PM->set_do_symmetry_90degrees_min_phi(false);
 //    PM->set_do_symmetry_shift_z(false);
 //    PM->set_do_symmetry_swap_segment(false);
@@ -341,6 +342,7 @@ BlocksTests::run_plane_symmetry_test(){
     write_to_file("plane30",*image2_sptr);
     
     auto PM=std::make_shared<ProjMatrixByBinUsingRayTracing>();
+    PM->enable_cache(flase);
     auto forw_projector_sptr=std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
     info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector_sptr->parameter_info());
     
@@ -515,6 +517,7 @@ write_to_file("image_for2",*image2_sptr);
 //    now forward-project images
     
     auto PM=std::make_shared<ProjMatrixByBinUsingRayTracing>();
+    PM->enable_cache(flase);
     auto forw_projector1_sptr=std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
     info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1_sptr->parameter_info());
     
@@ -680,7 +683,7 @@ BlocksTests::run_map_orientation_test()
     //    now forward-project images
 
         auto PM= std::make_shared<ProjMatrixByBinUsingRayTracing>();
-        
+        PM->enable_cache(flase);
         auto forw_projector1_sptr= std::make_shared<ForwardProjectorByBinUsingProjMatrixByBin>(PM);
         info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1_sptr->parameter_info());
         forw_projector1_sptr->set_up(proj_data_info_blocks_ptr,
