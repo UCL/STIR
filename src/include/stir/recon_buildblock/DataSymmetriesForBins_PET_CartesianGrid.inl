@@ -217,7 +217,7 @@ find_sym_op_bin0(
         || do_symmetry_swap_s
         || do_symmetry_180degrees_min_phi)
   {
-    warning("Currently, only symmetry along z is implemented for block geometry.\n");
+    warning("Currently, no symmetry  is implemented for block geometry.\n");
     return new TrivialSymmetryOperation();
   }
 

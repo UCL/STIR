@@ -100,11 +100,44 @@ class ProjDataInfoTests: public RunTests
 protected:  
   void test_generic_proj_data_info(ProjDataInfo& proj_data_info);
   
+  shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> set_blocks_projdata_info(VectorWithOffset<int>& num_axial_pos_per_segment,
+                                                                                VectorWithOffset<int>& min_ring_diff_v,
+                                                                                VectorWithOffset<int>& max_ring_diff_v,
+                                                                                shared_ptr<Scanner> scanner_ptr);
+  
   void run_coordinate_test();
   void run_coordinate_test_for_realistic_scanner();
   void run_Blocks_DOI_test();
   void run_lor_get_s_test();
 };
+
+/*! The following is a function to allow a projdata_info blocksONCylindrical to be created from the scanner.
+*/
+shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr>
+ProjDataInfoTests::
+set_blocks_projdata_info(VectorWithOffset<int>& num_axial_pos_per_segment,
+                         VectorWithOffset<int>& min_ring_diff_v,
+                         VectorWithOffset<int>& max_ring_diff_v,
+                         shared_ptr<Scanner> scanner_ptr){
+    
+    for (int i=0; i<2*scanner_ptr->get_num_rings()-1; i++){
+        min_ring_diff_v[i]=-scanner_ptr->get_num_rings()+1+i;
+        max_ring_diff_v[i]=-scanner_ptr->get_num_rings()+1+i;
+        if (i<scanner_ptr->get_num_rings())
+            num_axial_pos_per_segment[i]=i+1;
+        else
+            num_axial_pos_per_segment[i]=2*scanner_ptr->get_num_rings()-i-1;
+        }
+    
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
+                scanner_ptr,
+                num_axial_pos_per_segment,
+                min_ring_diff_v, max_ring_diff_v,
+                scanner_ptr->get_max_num_views(),
+                scanner_ptr->get_max_num_non_arccorrected_bins());
+    
+ return  proj_data_info_blocks_ptr;
+}
 
 void
 ProjDataInfoTests::
@@ -453,21 +486,11 @@ ProjDataInfoTests::run_Blocks_DOI_test()
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     
-    for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
-        min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        if (i<scannerBlocks_ptr->get_num_rings())
-            num_axial_pos_per_segment[i]=i+1;
-        else
-            num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
-        }
-    
-    auto proj_data_info_blocks_doi0_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
-                    scannerBlocks_ptr,
-                    num_axial_pos_per_segment,
-                    min_ring_diff_v, max_ring_diff_v,
-                    scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+    auto proj_data_info_blocks_doi0_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
+    proj_data_info_blocks_doi0_ptr=set_blocks_projdata_info(num_axial_pos_per_segment,
+                                                       min_ring_diff_v,
+                                                       max_ring_diff_v,
+                                                       scannerBlocks_ptr);
    
    auto scannerBlocksDOI_ptr=std::make_shared<Scanner>(*scannerBlocks_ptr);
    scannerBlocksDOI_ptr->set_average_depth_of_interaction(0.1);
@@ -552,21 +575,6 @@ ProjDataInfoTests::run_coordinate_test()
     scannerBlocks_ptr->set_scanner_geometry("BlocksOnCylindrical");
     scannerBlocks_ptr->set_up();
 
-    // int num_transaxial_blocks_per_bucket = scannerBlocks_ptr->get_num_transaxial_blocks_per_bucket();
-    // int num_transaxial_crystals_per_block = scannerBlocks_ptr->get_num_transaxial_crystals_per_block();
-    // int num_transaxial_buckets = scannerBlocks_ptr->get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
-    // float transaxial_block_spacing = scannerBlocks_ptr->get_transaxial_block_spacing();
-    // float transaxial_crystal_spacing = scannerBlocks_ptr->get_transaxial_crystal_spacing();
-//    estimate the angle covered by a bucket, alpha
-    
-    //float csi=_PI/num_transaxial_buckets;
-    //float trans_blocks_gap=transaxial_block_spacing-num_transaxial_crystals_per_block*transaxial_crystal_spacing;
-    /*float csi_minus_csiGaps=csi-(csi/transaxial_block_spacing/2)*
-      (transaxial_crystal_spacing/2+trans_blocks_gap);*/
-    
-    //float dx=scannerBlocks_ptr->get_effective_ring_radius()*sin(csi_minus_csiGaps);
-    //float dy=scannerBlocks_ptr->get_effective_ring_radius()-scannerBlocks_ptr->get_effective_ring_radius()*cos(csi_minus_csiGaps);
-
     auto scannerCyl_ptr=std::make_shared<Scanner> (Scanner::SAFIRDualRingPrototype);
     scannerCyl_ptr->set_num_axial_crystals_per_block(2);
     scannerCyl_ptr->set_axial_block_spacing(scannerCyl_ptr->get_axial_crystal_spacing()*
@@ -585,21 +593,12 @@ ProjDataInfoTests::run_coordinate_test()
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     
-    for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
-        min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        if (i<scannerBlocks_ptr->get_num_rings())
-            num_axial_pos_per_segment[i]=i+1;
-        else
-            num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
-        }
     
-    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
-                    scannerBlocks_ptr,
-                    num_axial_pos_per_segment,
-                    min_ring_diff_v, max_ring_diff_v,
-                    scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
+    proj_data_info_blocks_ptr=set_blocks_projdata_info(num_axial_pos_per_segment,
+                                                       min_ring_diff_v,
+                                                       max_ring_diff_v,
+                                                       scannerBlocks_ptr);
     
     auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
@@ -778,21 +777,12 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     
-    for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
-        min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        if (i<scannerBlocks_ptr->get_num_rings())
-            num_axial_pos_per_segment[i]=i+1;
-        else
-            num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
-        }
     
-    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
-                    scannerBlocks_ptr,
-                    num_axial_pos_per_segment,
-                    min_ring_diff_v, max_ring_diff_v,
-                    scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
+    proj_data_info_blocks_ptr=set_blocks_projdata_info(num_axial_pos_per_segment,
+                                                       min_ring_diff_v,
+                                                       max_ring_diff_v,
+                                                       scannerBlocks_ptr);
     
     auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
@@ -910,21 +900,11 @@ run_lor_get_s_test(){
     VectorWithOffset<int> min_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     VectorWithOffset<int> max_ring_diff_v(scannerBlocks_ptr->get_num_rings()*2-1);
     
-    for (int i=0; i<2*scannerBlocks_ptr->get_num_rings()-1; i++){
-        min_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        max_ring_diff_v[i]=-scannerBlocks_ptr->get_num_rings()+1+i;
-        if (i<scannerBlocks_ptr->get_num_rings())
-            num_axial_pos_per_segment[i]=i+1;
-        else
-            num_axial_pos_per_segment[i]=2*scannerBlocks_ptr->get_num_rings()-i-1;
-    }
-    
-    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
-                    scannerBlocks_ptr,
-                    num_axial_pos_per_segment,
-                    min_ring_diff_v, max_ring_diff_v,
-                    scannerBlocks_ptr->get_max_num_views(),
-                    scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+    auto proj_data_info_blocks_ptr=std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
+    proj_data_info_blocks_ptr=set_blocks_projdata_info(num_axial_pos_per_segment,
+                                                       min_ring_diff_v,
+                                                       max_ring_diff_v,
+                                                       scannerBlocks_ptr);
     
     auto proj_data_info_cyl_ptr=std::make_shared<ProjDataInfoCylindricalNoArcCorr>(
                 scannerCyl_ptr,
