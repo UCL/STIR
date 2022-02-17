@@ -17,7 +17,7 @@ Timing resolution (ps) :=75
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
 
-name of data file := RootLM_D690_test1.root
+name of data file := ROOTFILENAME
 
 name of input TChain := Coincidences
 
