@@ -61,7 +61,7 @@ ProjDataInfoGeneric::get_m(const Bin& bin) const
 {
 	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 	get_LOR(lor, bin);
-	return (static_cast<float>(lor.z1() + lor.z2()))/2.;
+	return (static_cast<float>(lor.z1() + lor.z2()))/2.F;
 }
 
 float
