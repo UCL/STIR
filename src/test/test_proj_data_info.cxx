@@ -947,7 +947,6 @@ run_lor_get_s_test(){
     int det_id_diff=scannerBlocks_ptr->get_num_detectors_per_ring()*(_PI/2)/(2*_PI);
     int Ctb=scannerCyl_ptr->get_num_transaxial_crystals_per_block();
     float transaxial_crystal_spacing=scannerBlocks_ptr->get_transaxial_crystal_spacing();
-    float block_trans_spacing=scannerBlocks_ptr->get_transaxial_block_spacing();
     float prev_s=0;
     float prev_phi=0;
     for (int i=0; i<scannerCyl_ptr->get_num_transaxial_crystals_per_block();i++){

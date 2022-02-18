@@ -89,9 +89,9 @@ public:
 	stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos( const stir::DetectionPosition<>& det_pos ) const
 	{ 
 		auto coord = det_pos_to_coord.at(det_pos);
-		coord.x() += distribution(generator);
-		coord.y() += distribution(generator);
-		coord.z() += distribution(generator);
+		coord.x() += static_cast<float>(distribution(generator));
+		coord.y() += static_cast<float>(distribution(generator));
+		coord.z() += static_cast<float>(distribution(generator));
 		return coord;
 	}
 	//! Returns a cartesian coordinate given an (unsorted) index.

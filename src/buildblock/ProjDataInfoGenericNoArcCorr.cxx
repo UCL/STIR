@@ -65,10 +65,6 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
   
-  float ax_blocks_gap=scanner_ptr->get_axial_block_spacing()
-          -scanner_ptr->get_num_axial_crystals_per_block() 
-          *scanner_ptr->get_axial_crystal_spacing();
-  
   CartesianCoordinate3D< float> b1,b2;
   Bin bin;
   bin.segment_num() = 0;
