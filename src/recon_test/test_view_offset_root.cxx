@@ -71,7 +71,7 @@ private:
      * @param original_coords Precomputed coordinates of the point source
      * @param grid_spacing Precomputed voxel sizes
      */
-    void test_lm_data_closest_approaches(
+    void process_list_data(
             const shared_ptr <DiscretisedDensity<3, float>> &test_discretised_density_sptr,
             const CartesianCoordinate3D<float> original_coords, CartesianCoordinate3D<float> grid_spacing);
 
@@ -109,12 +109,13 @@ ROOTconsistency_Tests::run_tests()
   CartesianCoordinate3D<float> original_coords = find_centre_of_gravity_in_mm(discretised_cartesian_grid);
   CartesianCoordinate3D<float> grid_spacing = discretised_cartesian_grid.get_grid_spacing();
 
-  test_lm_data_closest_approaches(discretised_density_sptr, original_coords, grid_spacing);
+  // Iterate through the list mode data and perform all needed operations.
+  process_list_data(discretised_density_sptr, original_coords, grid_spacing);
 }
 
 void
 ROOTconsistency_Tests::
-test_lm_data_closest_approaches(
+process_list_data(
         const shared_ptr <DiscretisedDensity<3, float>> &test_discretised_density_sptr,
         const CartesianCoordinate3D<float> original_coords, CartesianCoordinate3D<float> grid_spacing)
 {
