@@ -14,9 +14,17 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \ingroup recon_test
-  Implementation of stir::test_view_offset_root
-*/
+ *  \ingroup recon_test
+ *  \brief Test class to check the consistency between ROOT listmode and STIR backprojection
+ *  \author Elise Emond
+ *  \author Robert Twyman
+ *
+ * This test currently uses Root listmodes of single point sources.
+ * This test computes the distance between the original point source position and the closes voxel that the list mode
+ * event passes through. Ideally each event would travel directly through the original point source position but
+ * error may be present. Therefore we test that the majority of LORs travel close enough.
+ */
+
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -42,17 +50,6 @@ using std::ifstream;
 
 START_NAMESPACE_STIR
 
-/*!
- *  \ingroup recon_test
- *  \brief Test class to check the consistency between ROOT listmode and STIR backprojection
- *  \author Elise Emond
- *  \author Robert Twyman
- *
- * This test currently uses Root listmodes of single point sources.
- * This test computes the distance between the original point source position and the closes voxel that the list mode
- * event passes through. Ideally each event would travel directly through the original point source position but
- * error may be present. Therefore we test that the majority of LORs travel close enough.
- */
 
 class ROOTconsistency_Tests : public RunTests
 {
@@ -64,7 +61,10 @@ public:
 
 private:
     /*! Reads listmode event by event, computes the ProjMatrixElemsForOneBin (probabilities
-     * along a bin LOR). Passes ProjMatrixElemsForOneBin (LOR) to test_LOR_closest_approach() and if fails,
+     * along a bin LOR). This method should include all tests/ setup for additional test such that the list data is
+     * read only once.
+     *
+     * Passes ProjMatrixElemsForOneBin (LOR) to test_LOR_closest_approach() and if fails,
      * add 1 to `failed_events` (LOR's closest voxel was not within tolerance).
      * Check if the number of `failed_events` is greater than half the number of tested events to pass the test.
      * @param test_discretised_density_sptr Density containing a point source.
