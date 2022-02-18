@@ -117,6 +117,9 @@ public:
 
 
   Succeeded compute();
+  Succeeded save_image();
+  shared_ptr<DiscretisedDensity<3, float>> get_out_density_ptr();
+
 private:
 
   virtual void set_defaults();
@@ -129,6 +132,8 @@ private:
   ASCIIlist_type patient_rotation_values;
   int patient_orientation_index;
   int patient_rotation_index;
+
+  shared_ptr<DiscretisedDensity<3, float> > out_density_ptr;
 
   std::vector<shared_ptr<Shape3D> > shape_ptrs;
   shared_ptr<Shape3D> current_shape_ptr;
@@ -361,7 +366,7 @@ compute()
 #if 0
   shared_ptr<DiscretisedDensity<3,float> > density_ptr(
 						       read_from_file<DiscretisedDensity<3,float> >(template_filename));
-  shared_ptr<DiscretisedDensity<3,float> > out_density_ptr = 
+  this->out_density_ptr =
     density_ptr->clone();
   out_density_ptr->fill(0);
   VoxelsOnCartesianGrid<float> current_image =
@@ -391,7 +396,7 @@ compute()
 		  CartesianCoordinate3D<float>(output_voxel_size_z,
 					       output_voxel_size_y,
 					       output_voxel_size_x));
-  shared_ptr<DiscretisedDensity<3,float> > out_density_ptr(current_image.clone());
+  this->out_density_ptr.reset(current_image.clone());
 #endif
   std::vector<float >::const_iterator value_iter = values.begin();
   for (std::vector<shared_ptr<Shape3D> >::const_iterator iter = shape_ptrs.begin();
@@ -404,10 +409,24 @@ compute()
       current_image *= *value_iter;
       *out_density_ptr += current_image;
     }
-  return
-    output_file_format_sptr->write_to_file(output_filename, *out_density_ptr);  
-  
+  return Succeeded::yes;
 }
+
+Succeeded
+GenerateImage::
+save_image()
+{
+  output_file_format_sptr->write_to_file(output_filename, *out_density_ptr);
+}
+
+shared_ptr<DiscretisedDensity<3, float>>
+GenerateImage::
+get_out_density_ptr()
+{
+  return out_density_ptr;
+}
+  
+
 
 END_NAMESPACE_STIR
 
@@ -423,6 +442,7 @@ int main(int argc, char * argv[])
   }
   GenerateImage application(argc==2 ? argv[1] : 0);
   Succeeded success = application.compute();
+  application.save_image();
 
   return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
