@@ -39,7 +39,7 @@ if (HAVE_CERN_ROOT)
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency
                 COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root
                 ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency/root_header_test${n}.hroot
-                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency/stir_image${n}.hv
+                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency/generate_image${n}.par
                 )
     endforeach()
 endif()

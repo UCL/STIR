@@ -30,6 +30,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/RunTests.h"
+#include "stir/Shape/GenerateImage.h"
 #include "boost/lexical_cast.hpp"
 
 #include "stir/warning.h"
@@ -56,8 +57,8 @@ START_NAMESPACE_STIR
 class ROOTconsistency_Tests : public RunTests
 {
 public:
-  ROOTconsistency_Tests(const std::string& in, const std::string& image)
-    : root_header_filename(in), image_filename(image)
+  ROOTconsistency_Tests(const char * const in, const char * const generate_image_parameter_filename)
+    : root_header_filename(in), generate_image_parameter_filename(generate_image_parameter_filename)
     {}
     void run_tests();
 
@@ -88,14 +89,16 @@ private:
                                    const float grid_spacing);
 
 	std::string root_header_filename;
-	std::string image_filename;
+    const char * const generate_image_parameter_filename;
 };
 
 void
 ROOTconsistency_Tests::run_tests()
 {
-  // DiscretisedDensity for original image
-  shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr(DiscretisedDensity<3,float>::read_from_file(image_filename));
+  // Create the point source (discretised_density_sptr) with GenerateImage.
+  GenerateImage image_gen_application(this->generate_image_parameter_filename);
+  image_gen_application.compute();
+  shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr = image_gen_application.get_out_density_ptr();
 
   // needs to be cast to VoxelsOnCartesianGrid to be able to calculate the centre of gravity,
   // hence the location of the original source, stored in test_original_coords.
@@ -209,9 +212,7 @@ int main(int argc, char **argv)
 
   if (argc != 3)
   {
-    cerr << "Usage : " << argv[1] << " filename "
-         << argv[2] << "original image \n"
-         << "See source file for the format of this file.\n\n";
+    cerr << "Usage : hroot_filename generate_image_par_filename\n\n";
     return EXIT_FAILURE;
   }
 
@@ -220,7 +221,7 @@ int main(int argc, char **argv)
   if (!in)
   {
     cerr << argv[0]
-         << ": Error opening root file " << argv[1] << "\nExiting.\n";
+         << ": Error opening root header file: " << argv[1] << "\nExiting.\n";
 
     return EXIT_FAILURE;
   }
@@ -228,13 +229,13 @@ int main(int argc, char **argv)
   if (!in2)
   {
     cerr << argv[0]
-         << ": Error opening original image " << argv[2] << "\nExiting.\n";
+         << ": Error generate image parameter filename: " << argv[2] << "\nExiting.\n";
 
     return EXIT_FAILURE;
   }
-  std::string filename(argv[1]);
-  std::string image(argv[2]);
-    ROOTconsistency_Tests tests(filename,image);
-    tests.run_tests();
-    return tests.main_return_value();
+
+  // ROOT consistency tests
+  ROOTconsistency_Tests tests(argv[1], argv[2]);
+  tests.run_tests();
+  return tests.main_return_value();
 }
