@@ -98,7 +98,7 @@ ROOTconsistency_Tests::run_tests()
   // Create the point source (discretised_density_sptr) with GenerateImage.
   GenerateImage image_gen_application(this->generate_image_parameter_filename);
   image_gen_application.compute();
-  shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr = image_gen_application.get_out_density_ptr();
+  shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr = image_gen_application.get_output_sptr();
 
   // needs to be cast to VoxelsOnCartesianGrid to be able to calculate the centre of gravity,
   // hence the location of the original source, stored in test_original_coords.
@@ -217,22 +217,23 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  { // Check the program arguments exist
+    ifstream in(argv[1]);
+    if (!in)
+    {
+      cerr << argv[0]
+           << ": Error opening root header file: " << argv[1] << "\nExiting.\n";
 
-  ifstream in(argv[1]);
-  if (!in)
-  {
-    cerr << argv[0]
-         << ": Error opening root header file: " << argv[1] << "\nExiting.\n";
+      return EXIT_FAILURE;
+    }
+    ifstream in2(argv[2]);
+    if (!in2)
+    {
+      cerr << argv[0]
+           << ": Error opening generate image parameter filename: " << argv[2] << "\nExiting.\n";
 
-    return EXIT_FAILURE;
-  }
-  ifstream in2(argv[2]);
-  if (!in2)
-  {
-    cerr << argv[0]
-         << ": Error generate image parameter filename: " << argv[2] << "\nExiting.\n";
-
-    return EXIT_FAILURE;
+      return EXIT_FAILURE;
+    }
   }
 
   // ROOT consistency tests

@@ -1,6 +1,5 @@
 /*
-  Copyright (C) 2003-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2018-2022, University College London
+  Copyright (C) 2022, University College London
   This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

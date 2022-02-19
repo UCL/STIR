@@ -1,7 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2022, University College London
+    Copyright (C) 2003-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -45,7 +46,7 @@ class GenerateImage : public KeyParser
 {
 public:
     //! Constructor requires a parameter filename passed. See \generate_image utility for details.
-    GenerateImage(const char * const par_filename);
+    explicit GenerateImage(const char * const par_filename);
 
     //! Computes the shapes onto a discretised density
     Succeeded compute();
@@ -54,7 +55,7 @@ public:
     Succeeded save_image();
 
     //! Returns the discretised density with computed shapes.
-    shared_ptr<DiscretisedDensity<3, float>> get_out_density_ptr();
+    shared_ptr<DiscretisedDensity<3, float>> get_output_sptr();
 
 private:
 

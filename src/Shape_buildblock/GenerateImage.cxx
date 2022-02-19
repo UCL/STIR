@@ -1,7 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2022, University College London
+    Copyright (C) 2003-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -218,7 +219,7 @@ GenerateImage(const char * const par_filename)
   if (par_filename!=0)
   {
     if (parse(par_filename) == false)
-      exit(EXIT_FAILURE);
+      error("Failed to parse par_filename");
   }
   else
     ask_parameters();
@@ -280,7 +281,7 @@ compute()
           iter != shape_ptrs.end();
   ++iter, ++value_iter)
   {
-    std::cerr << "Next shape\n"; //(**iter).parameter_info() << '\n';
+    info("Processing next shape...", 2);
     current_image.fill(0);
     (**iter).construct_volume(current_image, num_samples);
     current_image *= *value_iter;
@@ -299,7 +300,7 @@ save_image()
 
 shared_ptr<DiscretisedDensity<3, float>>
 GenerateImage::
-get_out_density_ptr()
+get_output_sptr()
 {
   return out_density_ptr;
 }
