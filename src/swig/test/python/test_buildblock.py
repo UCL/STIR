@@ -217,7 +217,7 @@ def test_Bin():
     
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
-    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
