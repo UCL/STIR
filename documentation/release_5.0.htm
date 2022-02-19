@@ -15,6 +15,17 @@ detailed below.
 <p>
 <ul>
   <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
+  <li>Initial support for PET scanners with block detectors or even generic location of detectors (less tested feature), taking into account
+    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be change
+    in a future version. See <a href="https://github.com/UCL/STIR/pull/577/">PR #577</a>. This work is described in<br />
+    P. Khateri, J. Fischer, W. Lustermann, C. Tsoumpas, and G. Dissertori,<br />
+    <cite>Implementation of cylindrical PET scanners with block detector geometry in STIR</cite>,<br />
+    EJNMMI Physics, vol. 6, no. 1, p. 15, Jul. 2019, doi: <a href=https://doi.org/10.1186/s40658-019-0248-9>10.1186/s40658-019-0248-9.</a><br />
+    V. Dao, E. Mikhaylova, M. L. Ahnen, J. Fischer , K. Thielemans, C. Tsoumpas,<br />
+    <cite>Image Reconstruction for PET Scanners With Polygonal Prism Geometry Using STIR</cite>, proc. IEEE MIC 2021<br />
+    This code was initially developed by Parisa Khateri and Michael Roethlisberger (ETH), and further improved and tested by Viet Dao (Leeds),
+    Daniel Deidda (NPL) and Kris Thielemans (UCL and ASC) with funding by the University of Leeds and <a href=https://www.positrigo.com/>Positrigo AG</a>.
+  </li>    
   <li>View Offset Support enabled for the PET scanners, contributed by Palak Wadhwa (Leeds Univ), allowing fixing rotation of reconstructed images, see <a href="https://github.com/UCL/STIR/pull/181">PR 181</a>.
     </li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D, see <a href="https://github.com/UCL/STIR/pull/619">PR 619</a>.
@@ -80,7 +91,13 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     STIR usages of these methods (OSSPS and SqrtHessianRowSum) have been updated to see no effective change in functionality.
     However, calling the Hessian vector product methods, via python etc., will result in a change in functionality as the sign of the output voxel values has changed.
 </li>
+
+<li> Python/MATLAB wrappers no longer have <code>ProjDataInfo::ProjDataInfoCTI</code>, use <code>ProjDataInfo::construct_proj_data_info</code> instead.
+  However, this now returns an object of the appropriate (derived) type as opposed to just
+  <code>ProjDataInfo</code>. This should be transparant, except apparently for testing equality of objects.
+</li>
 </ul>
+
 
 
 <h3>Bug fixes</h3>
@@ -100,6 +117,20 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 
 <h3>New functionality</h3>
 <ul>
+  <li>Capability to model block and generic PET detectors was added. This is currently limited to span=1, no view mashing and the ray-tracing
+    matrix (single LOR). It is enabled by specifying appropriate keywords in the Interfile header of the projection data.
+    <pre>
+      Scanner parameters:=
+      normal parameters...
+      Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
+      Distance between crystals in axial direction (cm)           := 0.22
+      Distance between crystals in transaxial direction (cm)      := 0.22
+      Distance between blocks in axial direction (cm)             := 0.22
+      Distance between blocks in transaxial direction (cm)        := 3.3
+      end scanner parameters:=
+    </pre>
+    Scatter and normalisation code are still pending changes.
+    </li>
   <li><a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a> is an
     implementation of the Joseph algorithm for projection. If it has been installed
     in your system, and you tell CMake where to find it (`parallelproj_DIR=/wherever/lib/cmake`), the STIR user is
@@ -278,7 +309,13 @@ from the above):</H2>
     <li>Poisson log-likelihood hierarchy has changed for gradient methods to now use <tt>actual_compute_subset_gradient_without_penalty</tt>
 	in the derived classes (which has an extra argument <tt>add_sensitivity</tt>). Therefore developers that created their own derived class will need to
 	adjust their class accordingly. The <tt>public</tt> class interface is identical though.
-    </li>    
+    </li>
+    <li><code>DetectorCoordinateMapFromfile</code> (used by SAFIR listmode files) has been renamed to <code>DetectorCoordinateMap</code> and moved from <tt>listmode</tt> to <tt>buildblock</tt>.</li>
+    <li><code>Scanner</code> now has a <code>set_up()</code> function. This needs to be called after
+      using any of the <code>set_*()</code> functions (except <code>set_params</code>). For the blocks/generic
+      scanners, this will fill in the detector maps etc.
+      You will get a run-time exception if you forgot to do this.
+    </li>
 </ul>
 
 <h3>New functionality</h3>
@@ -307,6 +344,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
     This allows the ROI volume to be constructed during preprocessing for multiple image analysis.
 </li>
 <li><code>KeyParser::parameter_info()</code> now outputs vectorised keys as well
+</li>
+<li><code>DetectionPosition</code> now has all comparison operators.
 </li>
 <li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
   nor psi to be between 0 and 2 pi. They will standardise the input automatically.

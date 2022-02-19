@@ -306,6 +306,8 @@ void
 BackProjectorByBin::
 start_accumulating_in_new_target()
 {
+    if (!this->_already_set_up)
+      error("BackProjectorByBin method called without calling set_up first.");
 #ifdef STIR_OPENMP
   if (omp_get_num_threads()!=1)
       error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");

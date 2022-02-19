@@ -24,6 +24,7 @@
 #include "stir/Scanner.h"
 #include "stir/Viewgram.h"
 #include "stir/Succeeded.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/zoom.h"
@@ -93,9 +94,8 @@ test_downsampling_ProjDataInfo()
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
     sss->set_template_proj_data_info(*original_projdata);
-
     {
-        auto sss_projdata(sss->get_template_proj_data_info_sptr());
+        auto sss_projdata = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(sss->get_template_proj_data_info_sptr().get());
         check(*original_projdata == *sss_projdata, "Check the ProjDataInfo has been set correctly.");
     }
 
@@ -105,7 +105,7 @@ test_downsampling_ProjDataInfo()
         int down_dets = static_cast<int>(test_scanner->get_num_detectors_per_ring() * 0.5);
 
         sss->downsample_scanner(down_rings, down_dets);
-        auto sss_projdata(sss->get_template_proj_data_info_sptr());
+        auto sss_projdata = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(sss->get_template_proj_data_info_sptr().get());
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_rings(), 2*sss_projdata->get_scanner_ptr()->get_num_rings(), "Check the number of rings is correct");
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_detectors_per_ring(),
               2*sss_projdata->get_scanner_ptr()->get_num_detectors_per_ring(), "Check number of detectors per ring.");

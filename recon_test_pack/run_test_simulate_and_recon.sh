@@ -70,6 +70,7 @@ LC_ALL=C
 export LC_ALL
 
 ./simulate_PET_data_for_tests.sh
+
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
