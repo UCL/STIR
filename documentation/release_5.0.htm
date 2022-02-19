@@ -15,6 +15,17 @@ detailed below.
 <p>
 <ul>
   <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
+  <li>Initial support for PET scanners with block detectors or even generic location of detectors (less tested feature), taking into account
+    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be change
+    in a future version. See <a href="https://github.com/UCL/STIR/pull/577/">PR #577</a>. This work is described in<br />
+    P. Khateri, J. Fischer, W. Lustermann, C. Tsoumpas, and G. Dissertori,<br />
+    <cite>Implementation of cylindrical PET scanners with block detector geometry in STIR</cite>,<br />
+    EJNMMI Physics, vol. 6, no. 1, p. 15, Jul. 2019, doi: <a href=https://doi.org/10.1186/s40658-019-0248-9>10.1186/s40658-019-0248-9.</a><br />
+    V. Dao, E. Mikhaylova, M. L. Ahnen, J. Fischer , K. Thielemans, C. Tsoumpas,<br />
+    <cite>Image Reconstruction for PET Scanners With Polygonal Prism Geometry Using STIR</cite>, proc. IEEE MIC 2021<br />
+    This code was initially developed by Parisa Khateri and Michael Roethlisberger (ETH), and further improved and tested by Viet Dao (Leeds),
+    Daniel Deidda (NPL) and Kris Thielemans (UCL and ASC) with funding by the University of Leeds and <a href=https://www.positrigo.com/>Positrigo AG</a>.
+  </li>    
   <li>View Offset Support enabled for the PET scanners, contributed by Palak Wadhwa (Leeds Univ), allowing fixing rotation of reconstructed images, see <a href="https://github.com/UCL/STIR/pull/181">PR 181</a>.
     </li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D, see <a href="https://github.com/UCL/STIR/pull/619">PR 619</a>.
@@ -106,6 +117,20 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 
 <h3>New functionality</h3>
 <ul>
+  <li>Capability to model block and generic PET detectors was added. This is currently limited to span=1, no view mashing and the ray-tracing
+    matrix (single LOR). It is enabled by specifying appropriate keywords in the Interfile header of the projection data.
+    <pre>
+      Scanner parameters:=
+      normal parameters...
+      Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
+      Distance between crystals in axial direction (cm)           := 0.22
+      Distance between crystals in transaxial direction (cm)      := 0.22
+      Distance between blocks in axial direction (cm)             := 0.22
+      Distance between blocks in transaxial direction (cm)        := 3.3
+      end scanner parameters:=
+    </pre>
+    Scatter and normalisation code are still pending changes.
+    </li>
   <li><a href=https://github.com/gschramm/parallelproj>Georg's Schramm parallelproj</a> is an
     implementation of the Joseph algorithm for projection. If it has been installed
     in your system, and you tell CMake where to find it (`parallelproj_DIR=/wherever/lib/cmake`), the STIR user is
