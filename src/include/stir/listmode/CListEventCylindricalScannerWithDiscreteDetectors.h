@@ -6,10 +6,10 @@
   \brief Declarations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
     
   \author Kris Thielemans
-      
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -25,6 +25,7 @@
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/listmode/CListRecord.h"
+#include <memory>
 
 START_NAMESPACE_STIR
 
@@ -67,7 +68,7 @@ public:
 
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
+   *  For instance, most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
@@ -75,35 +76,26 @@ public:
  protected:
    template <typename T>
    shared_ptr<const T>
-    get_uncompressed_proj_data_info_geom_sptr() const
+    get_proj_data_info_sptr_cast() const
      {
-       shared_ptr<const T>
-       uncompressed_proj_data_info_sptr;
-       uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<const T *>
-    (this->proj_data_info_sptr.get()));
-    return uncompressed_proj_data_info_sptr;
+       assert(dynamic_cast<const T*>(this->proj_data_info_sptr.get()) != 0);
+       return std::static_pointer_cast<const T>(this->proj_data_info_sptr);
      }
+   //! legacy version for the cylindrical case
    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
      {
-       shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-       uncompressed_proj_data_info_sptr;
-       uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>
-    (this->proj_data_info_sptr.get()));
-    return uncompressed_proj_data_info_sptr;
+       return get_proj_data_info_sptr_cast<ProjDataInfoCylindricalNoArcCorr>();
      }
    shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const
      {
-       return proj_data_info_sptr;
+       return this->proj_data_info_sptr;
      }
 
    shared_ptr<Scanner> scanner_sptr;
  private:
-   shared_ptr<const ProjDataInfo>
-     proj_data_info_sptr;
+   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
    enum scanner_type {CYL, BLOCK, GEN};
    scanner_type scanner_type;
 };
