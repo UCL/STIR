@@ -32,7 +32,6 @@ set(${dir_LIB_SOURCES}
 	TrivialDataSymmetriesForBins.cxx
 	DataSymmetriesForBins_PET_CartesianGrid.cxx
 	SymmetryOperation.cxx
-	SymmetryOperations_PET_CartesianGrid.cxx
         find_basic_vs_nums_in_subset.cxx
 	ProjMatrixElemsForOneBin.cxx
 	ProjMatrixElemsForOneDensel.cxx

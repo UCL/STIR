@@ -62,14 +62,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel& ) const;
-
 private:
   int axial_pos_shift;
   int z_shift;
@@ -90,15 +82,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
@@ -126,15 +109,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -159,15 +133,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -191,15 +156,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -222,15 +178,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
@@ -256,15 +203,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -287,15 +225,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -317,15 +246,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
@@ -350,15 +270,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -381,15 +292,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
@@ -414,15 +316,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -445,15 +338,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -475,15 +359,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
@@ -508,15 +383,6 @@ public:
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
 
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
 private:
   int view180;
   int axial_pos_shift;
@@ -538,15 +404,6 @@ public:
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
     transform_image_coordinates(BasicCoordinate<3,int>& c) const;
-
-  void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
-
-
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
 
 private:
   int view180;
