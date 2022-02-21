@@ -44,8 +44,7 @@ ProjMatrixByBin:: get_symmetries_sptr() const
 
 inline void 
 ProjMatrixByBin::
-get_proj_matrix_elems_for_one_bin(
-                                  ProjMatrixElemsForOneBin& probabilities,
+get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& probabilities,
                                   const Bin& bin) STIR_MUTABLE_CONST
 {  
   // start_timers(); TODO, can't do this in a const member
@@ -55,91 +54,74 @@ get_proj_matrix_elems_for_one_bin(
 
   if (cache_stores_only_basic_bins)
   {
-    // find basic bin
+    // find symmetry operator and basic bin
     Bin basic_bin = bin;    
-    unique_ptr<SymmetryOperation> symm_ptr = 
-      symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
+    unique_ptr<SymmetryOperation> symm_ptr = symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
     
     probabilities.set_bin(basic_bin);
     // check if basic bin is in cache  
-    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
-      Succeeded::no)
-    {
-      // call 'calculate' just for the basic bin
-      calculate_proj_matrix_elems_for_one_bin(probabilities);
-#ifndef NDEBUG
-      probabilities.check_state();
-#endif
-      cache_proj_matrix_elems_for_one_bin(probabilities);
-    }
-    if ( proj_data_info_sptr->is_tof_data() &&
-                                 this->tof_enabled)
-    {
-        LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-        proj_data_info_sptr->get_LOR(lor, bin);
-        LORAs2Points<float> lor2(lor);
-        probabilities.set_bin(bin);
-        // now apply TOF kernel and transform to original bin
-        apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
-    }
-    else
-    {
-        // now transform to original bin
-        symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
-    }
-  }
-  else // !cache_stores_only_basic_bins
-  {
-    probabilities.set_bin(bin);
-    // check if in cache  
-    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
-      Succeeded::no)
-    {
-      // find basic bin
-      Bin basic_bin = bin;  
-      unique_ptr<SymmetryOperation> symm_ptr = 
-        symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
-
-      probabilities.set_bin(basic_bin);
-      // check if basic bin is in cache
-      if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
-        Succeeded::no)
+    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
       {
-        // call 'calculate' just for the basic bin
+        // basic bin is not in cache, compute lor probabilities for the basic bin
         calculate_proj_matrix_elems_for_one_bin(probabilities);
 #ifndef NDEBUG
         probabilities.check_state();
 #endif
+        if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
+          { // Apply TOF kernel to basic bin
+            apply_tof_kernel(probabilities);
+          }
         cache_proj_matrix_elems_for_one_bin(probabilities);
       }
-      if ( proj_data_info_sptr->is_tof_data() &&
-                                   this->tof_enabled)
-      {
-          LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-          proj_data_info_sptr->get_LOR(lor, bin);
-          LORAs2Points<float> lor2(lor);
-          probabilities.set_bin(bin);
-          // now apply TOF kernel and transform to original bin
-          apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
 
-      }
-      else
+    // now transform to original bin (inc. TOF)
+    symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
+  }
+  else
+  { // !cache_stores_only_basic_bins
+    probabilities.set_bin(bin);
+    // if bin is in the cache, get the probabilities
+    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
+    {
+      // bin probabilities not in the cache, check if basic bins are
+      // find basic bin
+      Bin basic_bin = bin;
+      unique_ptr<SymmetryOperation> symm_ptr = symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
+      probabilities.set_bin(basic_bin);
+
+      // check if basic bin is in cache
+      if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
       {
-          // now transform to original bin
-          symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
+        // basic bin is not in cache, compute lor probabilities for the basic bin
+        calculate_proj_matrix_elems_for_one_bin(probabilities);
+#ifndef NDEBUG
+        probabilities.check_state();
+#endif
+        if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
+        { // Apply TOF kernel to basic bin
+          apply_tof_kernel(probabilities);
+        }
       }
-      cache_proj_matrix_elems_for_one_bin(probabilities);      
+      // now transform basic bin probabilities into original bin probabilities
+      symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
+      // cache the probabilities for bin
+      cache_proj_matrix_elems_for_one_bin(probabilities);
     }
-  }  
+
+  }
   // stop_timers(); TODO, can't do this in a const member
 }
 
 void
-ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& probabilities,
-                                  const CartesianCoordinate3D<float>& point1,
-                                  const CartesianCoordinate3D<float>& point2,
-                                  const unique_ptr<SymmetryOperation>& symm_ptr)  STIR_MUTABLE_CONST
+ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
 {
+
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+    proj_data_info_sptr->get_LOR(lor, probabilities.get_bin());
+    LORAs2Points<float> lor2(lor);
+    probabilities.get_bin();
+    const CartesianCoordinate3D<float> point1 = lor2.p1();
+    const CartesianCoordinate3D<float> point2 = lor2.p2();
 
     float new_value = 0.f;
     float low_dist = 0.f;
@@ -159,7 +141,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
     while (element_ptr != probabilities.end())
     {
         Coordinate3D<int> c(element_ptr->get_coords());
-        symm_ptr->transform_image_coordinates(c);
+//        symm_ptr->transform_image_coordinates(c);
 
         const float d2 = -inner_product(image_info_sptr->get_physical_coordinates_for_indices (c) - middle, diff_unit_vector);
 
