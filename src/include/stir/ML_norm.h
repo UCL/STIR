@@ -44,6 +44,7 @@
 #include "stir/ProjData.h"
 #include "stir/Array.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/IndexRange2D.h"
 #include "stir/Sinogram.h"
 #include <iostream>
@@ -221,6 +222,11 @@ shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
 get_fan_info(int& num_rings, int& num_detectors_per_ring, 
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info);
+
+shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+get_fan_info_block(int& num_rings, int& num_detectors_per_ring,
+             int& max_ring_diff, int& fan_size,
+             const ProjDataInfo& proj_data_info);
 
 void make_fan_data_remove_gaps(FanProjData& fan_data,
                    const ProjData& proj_data);
