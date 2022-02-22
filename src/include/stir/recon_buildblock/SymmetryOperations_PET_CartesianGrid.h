@@ -523,6 +523,37 @@ private:
   int z_shift;
 };
 
+class SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt : public SymmetryOperation
+{
+private:
+  typedef SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt self;
+public:
+  SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt(const int num_views, const int axial_pos_shift, const int z_shift)
+      : view180(num_views), axial_pos_shift(axial_pos_shift), z_shift(z_shift)
+  {}
+
+  inline void
+  transform_bin_coordinates(Bin&) const;
+  inline void
+  transform_view_segment_indices(ViewSegmentNumbers&) const;
+  inline void
+  transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+
+  void
+  transform_proj_matrix_elems_for_one_bin(
+      ProjMatrixElemsForOneBin& lor) const;
+
+
+  virtual void
+  transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+
+private:
+  int view180;
+  int axial_pos_shift;
+  int z_shift;
+};
+
 class SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq : public SymmetryOperation
 {
 private:

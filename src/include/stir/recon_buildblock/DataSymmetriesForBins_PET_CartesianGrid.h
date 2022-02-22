@@ -204,7 +204,8 @@ private:
     int s, 
     int seg, 
     int view_num, 
-    int axial_pos_num) const;
+    int axial_pos_num,
+    int timing_pos_num) const;
   
   inline SymmetryOperation* 
     find_sym_op_bin0(   
