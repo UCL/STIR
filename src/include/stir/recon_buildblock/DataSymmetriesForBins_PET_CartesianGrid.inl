@@ -463,9 +463,9 @@ find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const
   return change;
 }
 
-bool  
+bool
 DataSymmetriesForBins_PET_CartesianGrid::
-find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num) const 
+find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num, int &timing_pos_num) const
 {
     bool change=false;
     //cylindrical implementaion
@@ -478,7 +478,12 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
   view_num = v_s.view_num();
   segment_num = v_s.segment_num();
 
-  if ( do_symmetry_swap_s && tangential_pos_num < 0      )  { tangential_pos_num   = - tangential_pos_num ; change=true;};
+  if ( do_symmetry_swap_s && tangential_pos_num < 0)
+    {
+      tangential_pos_num *= -1;
+      timing_pos_num *= -1;
+      change=true;
+    }
   if ( do_symmetry_shift_z && axial_pos_num != 0    )  { axial_pos_num  =  0;     change = true; }   
   
   return change;
@@ -661,8 +666,7 @@ bool
 DataSymmetriesForBins_PET_CartesianGrid::
 find_basic_bin(Bin& b) const 
 {
-  return 
-    find_basic_bin(b.segment_num(), b.view_num(), b.axial_pos_num(), b.tangential_pos_num());
+  return find_basic_bin(b.segment_num(), b.view_num(), b.axial_pos_num(), b.tangential_pos_num(), b.timing_pos_num());
 }
 
 

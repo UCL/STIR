@@ -192,7 +192,7 @@ private:
 
 
   inline bool
-  find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num) const;
+  find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num, int &timing_pos_num) const;
 
   
   inline int find_transform_z(
