@@ -124,8 +124,9 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 #endif
       elems_no_sym.sort();
       elems_with_sym.sort();
-      if (!check(elems_no_sym == elems_with_sym, "comparing lors") ||
-          !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing Bin"))
+
+      if (!check(elems_no_sym == elems_with_sym, "Comparing symmetry LORs") ||
+          !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing symmetry bin configuration"))
 	{
 	  // SYM const Bin bin=*bin_iter;
 
