@@ -351,8 +351,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
 {
   b.axial_pos_num() += axial_pos_shift;
   b.tangential_pos_num() *= -1;
-  if (b.tangential_pos_num() > 0)
-    b.timing_pos_num() *= -1;
+  b.timing_pos_num() *= -1;
 }
 
 void 
