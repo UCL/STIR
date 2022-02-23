@@ -248,8 +248,7 @@ find_sym_op_general_bin(
                         int s, 
                         int segment_num, 
                         int view_num, 
-                        int axial_pos_num,
-                        int timing_pos_num) const
+                        int axial_pos_num) const
 { 
   //cylindrical implementaion
  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
@@ -375,13 +374,7 @@ find_sym_op_general_bin(
       else // segment_num = 0 
       {
         if ( do_symmetry_swap_s && s < 0)
-        {
-          if (timing_pos_num < 0)
-            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt(view180, axial_pos_num, z_shift);
-          else
-            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift);
-
-        }
+          return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt(view180, axial_pos_shift, z_shift);
         else
         {
           if (z_shift==0)
@@ -488,6 +481,7 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
 
   if ( do_symmetry_swap_s && tangential_pos_num < 0)
     {
+      //when swap_s, must invert timing pos for lor probs. Symmetry operation should correct bin
       tangential_pos_num *= -1;
       timing_pos_num *= -1;
       change=true;
@@ -687,7 +681,7 @@ DataSymmetriesForBins_PET_CartesianGrid::
     sym_op(
       (b.tangential_pos_num()==0) ?
         find_sym_op_bin0(b.segment_num(), b.view_num(), b.axial_pos_num()) :
-        find_sym_op_general_bin(b.tangential_pos_num(), b.segment_num(), b.view_num(), b.axial_pos_num(), b.timing_pos_num())
+        find_sym_op_general_bin(b.tangential_pos_num(), b.segment_num(), b.view_num(), b.axial_pos_num())
       ); 
   find_basic_bin(b);
   return sym_op;
