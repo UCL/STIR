@@ -361,6 +361,10 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::
 transform_proj_matrix_elems_for_one_bin(
                                         ProjMatrixElemsForOneBin& lor) const
 {
+  Bin bin = lor.get_bin();
+  transform_bin_coordinates(bin);
+  lor.set_bin(bin);
+
   ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
   while (element_ptr != lor.end()) 
   {
