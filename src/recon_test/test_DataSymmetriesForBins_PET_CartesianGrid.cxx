@@ -808,6 +808,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
   cerr << "Tests for DataSymmetriesForBins_PET_CartesianGrid\n";
   if (template_proj_data_filename == 0)
     {
+#if 1
       {  
 	cerr << "Testing span=1\n";
 	shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
@@ -828,13 +829,14 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
 	proj_data_info_sptr.reset(
 	  ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
 					/*span=*/3, 
-					/*max_delta=*/12,
+					/*max_delta=*/13,
 					/*num_views=*/8,
 					/*num_tang_poss=*/16));
   
   
 	run_tests_for_1_projdata(proj_data_info_sptr);
       }
+#endif
       {
     cerr << "Testing with proj_data_info with time-of-flight";
     // warning: make sure that parameters are ok such that hard-wired
