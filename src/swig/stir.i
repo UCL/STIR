@@ -57,6 +57,7 @@
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
  #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListModeData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -1812,3 +1813,18 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 
 %shared_ptr(stir::ScatterEstimation);
 %include "stir/scatter/ScatterEstimation.h"
+
+%shared_ptr(stir::ListModeData);
+
+%include "stir/listmode/ListModeData.h"
+
+%extend stir::ListModeData {
+  // add read_from_file to this class, as currently there is no way
+  // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
+  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
+    {
+      using namespace stir;
+      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
+      return ret;
+    }
+ }
