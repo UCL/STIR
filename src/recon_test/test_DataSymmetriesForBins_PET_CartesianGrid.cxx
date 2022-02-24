@@ -138,8 +138,9 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
            << ", \tview = " << elems_with_sym.get_bin().view_num()
            << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num() << "\n\n";
 
-        if (elems_no_sym == elems_with_sym)
+        if (elems_no_sym != elems_with_sym)
         {
+        std::cerr << "No Symmetries Iterator || Symmetries Iterator " << std::endl;
 	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin();
 	    ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
 	    while (no_sym_iter!= elems_no_sym.end() || with_sym_iter!=elems_with_sym.end())
