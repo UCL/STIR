@@ -124,14 +124,23 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 #endif
       elems_no_sym.sort();
       elems_with_sym.sort();
-      if (!check(elems_no_sym == elems_with_sym, "comparing lors"))
+      if (!check(elems_no_sym == elems_with_sym, "comparing lors") ||
+          !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing Bin"))
 	{
 	  // SYM const Bin bin=*bin_iter;
-	  cerr << "Current bin:  segment = " << bin.segment_num() 
-		     << ", axial pos " << bin.axial_pos_num()
-		     << ", view = " << bin.view_num() 
-	       << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin(); 
+
+      cerr << "Current bin: \tsegment = " << bin.segment_num()
+           << ", \taxial pos " << bin.axial_pos_num()
+           << ", \tview = " << bin.view_num()
+           << ", \ttangential_pos_num = " << bin.tangential_pos_num()
+           << "\nSymm bin: \t\tsegment = " << elems_with_sym.get_bin().segment_num()
+           << ", \taxial pos " << elems_with_sym.get_bin().axial_pos_num()
+           << ", \tview = " << elems_with_sym.get_bin().view_num()
+           << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num() << "\n\n";
+
+        if (elems_no_sym == elems_with_sym)
+        {
+	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin();
 	    ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
 	    while (no_sym_iter!= elems_no_sym.end() || with_sym_iter!=elems_with_sym.end())
 	      {
@@ -173,6 +182,7 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 		      ++with_sym_iter;
 		  }
 	      }
+	    }
 	}
     }
 }
