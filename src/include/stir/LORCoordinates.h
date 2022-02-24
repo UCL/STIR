@@ -9,12 +9,14 @@
   \brief defines various classes for specifying a line in 3 dimensions
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
+  \author Parisa Khateri
 
 
 */
 /*
     Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2013, Kris Thielemans
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -300,6 +302,11 @@ class LORAs2Points : public LOR<coordT>
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
 				    const double radius) const;
+ 
+ //! Calculate intersections with block. Used in: ProjDataInfoBlocksOnCylindrical::get_LOR
+  Succeeded
+  change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
+          const double radius) const;
 
  private:
   CartesianCoordinate3D<coordT> _p1;
@@ -426,6 +433,10 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self_type;
   typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
 

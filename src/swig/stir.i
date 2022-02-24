@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2018, 2020 University College London
+    Copyright (C) 2013, 2018, 2020, 2021 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -40,6 +40,9 @@
  #include "stir/Bin.h"
  #include "stir/ProjDataInfoCylindricalArcCorr.h"
  #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+ #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+ #include "stir/ProjDataInfoGenericNoArcCorr.h"
+
  #include "stir/Viewgram.h"
  #include "stir/RelatedViewgrams.h"
  #include "stir/Sinogram.h"
@@ -61,6 +64,7 @@
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/LORCoordinates.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Array.h"
@@ -487,6 +491,7 @@
 #endif
 
 %include "attribute.i"
+%include "factory_shared.i"
 
 %init %{
 #if defined(SWIGPYTHON)
@@ -813,6 +818,10 @@ namespace std {
 %shared_ptr(stir::ProjDataInfoCylindrical);
 %shared_ptr(stir::ProjDataInfoCylindricalArcCorr);
 %shared_ptr(stir::ProjDataInfoCylindricalNoArcCorr);
+%shared_ptr(stir::ProjDataInfoGeneric);
+%shared_ptr(stir::ProjDataInfoGenericNoArcCorr);
+%shared_ptr(stir::ProjDataInfoBlocksOnCylindricalNoArcCorr);
+
 %shared_ptr(stir::ProjData);
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
@@ -829,6 +838,9 @@ namespace std {
 %shared_ptr(stir::Segment<float>);
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
+%shared_ptr(stir::LORAs2Points<float>);
+%shared_ptr(stir::LOR<float>);
+%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 #else
 namespace boost {
 template<class T> class shared_ptr
@@ -885,6 +897,10 @@ T * operator-> () const;
 
 %include "stir/BasicCoordinate.h"
 %include "stir/Coordinate3D.h"
+%include "stir/LORCoordinates.h"
+
+%template(FloatLOR) stir::LOR<float>;
+%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
 // ignore non-const versions
 %ignore  stir::CartesianCoordinate3D::z();
 %ignore  stir::CartesianCoordinate3D::y();
@@ -1107,6 +1123,7 @@ namespace stir {
 
   %ADD_indexaccess(int,T,VectorWithOffset);
   %template(FloatVectorWithOffset) VectorWithOffset<float>;
+  %template(IntVectorWithOffset) VectorWithOffset<int>;
 
   // TODO need to instantiate with name?
   %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
@@ -1225,7 +1242,7 @@ namespace stir {
   //  then setitem still doesn't modify the object for more than 1 level
 #if 1
   // note: next line has no memory allocation problems because all Array<1,...> objects
-  // are auto-converted to shared_ptrs.
+  // are auto-converted to _ptrs.
   // however, cannot use setitem to modify so ideally we would define getitem only (at least for python) (TODO)
   // TODO DISABLE THIS
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
@@ -1332,15 +1349,79 @@ namespace stir {
 
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
-
-// ignore this to avoid problems with unique_ptr, and add it later
+// ignore this to avoid problems with unique_ptr
 %ignore stir::ProjDataInfo::construct_proj_data_info;
+// make sure we can use the new name anyway (although this removes
+// ProjDataInfoCTI from the target language)
+// See also the %extend trick below which currently doesn't work
+%rename(construct_proj_data_info) ProjDataInfoCTI;
+
+%factory_shared(stir::ProjDataInfo*,
+                stir::ProjDataInfoCylindricalNoArcCorr,
+                stir::ProjDataInfoCylindricalArcCorr,
+                stir::ProjDataInfoBlocksOnCylindricalNoArcCorr,
+                stir::ProjDataInfoGenericNoArcCorr);
+%factory_shared(stir::ProjDataInfo const*,
+                stir::ProjDataInfoCylindricalNoArcCorr,
+                stir::ProjDataInfoCylindricalArcCorr,
+                stir::ProjDataInfoBlocksOnCylindricalNoArcCorr,
+                stir::ProjDataInfoGenericNoArcCorr);
 
 %include "stir/ProjDataInfo.h"
-%newobject *::construct_proj_data_info;
 
+%include "stir/ProjDataInfoCylindrical.h"
+%include "stir/ProjDataInfoCylindricalArcCorr.h"
+%include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+%include "stir/ProjDataInfoGeneric.h"
+%include "stir/ProjDataInfoGenericNoArcCorr.h"
+%include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+
+%extend stir::ProjDataInfoBlocksOnCylindricalNoArcCorr {
+    
+stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> get_lor(const Bin bin){
+    stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+    $self->get_LOR(lor,bin);
+    return lor;
+}
+
+stir::CartesianCoordinate3D<float>
+    find_cartesian_coordinate_of_detection_1(const Bin bin) const 
+{
+    CartesianCoordinate3D<float> coord_1;
+    CartesianCoordinate3D<float> coord_2;
+    $self->find_cartesian_coordinates_of_detection(coord_1,
+                                                   coord_2,
+                                                   bin);
+    
+    return coord_1;
+}
+
+stir::CartesianCoordinate3D<float>
+    find_cartesian_coordinate_of_detection_2(const Bin bin) const 
+{
+    CartesianCoordinate3D<float> coord_1;
+    CartesianCoordinate3D<float> coord_2;
+    $self->find_cartesian_coordinates_of_detection(coord_1,
+                                                   coord_2,
+                                                   bin);
+    
+    return coord_2;
+}
+}
+        
+%include "stir/Viewgram.h"
+%include "stir/RelatedViewgrams.h"
+%include "stir/Sinogram.h"
+%include "stir/Segment.h"
+%include "stir/SegmentByView.h"
+%include "stir/SegmentBySinogram.h"
+
+%include "stir/ProjData.h"
+
+#if 0
 %extend stir::ProjDataInfo 
 {
+  // TODO this does not work due to %ignore statement above
   // work around the current SWIG limitation that it doesn't wrap unique_ptr. 
   // we do this with the crazy (and ugly) way to let SWIG create a new function
   // which is the same as the original, but returns a bare pointer.
@@ -1359,18 +1440,7 @@ namespace stir {
                                arc_corrected).get();
   }
 }
-%include "stir/ProjDataInfoCylindrical.h"
-%include "stir/ProjDataInfoCylindricalArcCorr.h"
-%include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-
-%include "stir/Viewgram.h"
-%include "stir/RelatedViewgrams.h"
-%include "stir/Sinogram.h"
-%include "stir/Segment.h"
-%include "stir/SegmentByView.h"
-%include "stir/SegmentBySinogram.h"
-
-%include "stir/ProjData.h"
+#endif
 
 namespace stir {
 %extend ProjData

@@ -217,24 +217,32 @@ def test_Bin():
     
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
-    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
-    #print projdatainfo
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    #print( projdatainfo)
     assert projdatainfo.get_scanner().get_num_rings()==32
+    # use arc-correction specific keywords
+    projdatainfo.set_tangential_sampling(5) # dangerous of course, but just for the test
+    assert projdatainfo.get_tangential_sampling() == 5
+    # extract sinogram
     sinogram=projdatainfo.get_empty_sinogram(1,2)
     assert sinogram.sum()==0
     assert sinogram.get_segment_num()==2
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
-    assert sinogram.get_proj_data_info() == projdatainfo
+    print(sinogram.get_proj_data_info())
+    # TODO currently does not work due to TypeError
+    #assert sinogram.get_proj_data_info() == projdatainfo
+    assert sinogram.get_proj_data_info().parameter_info() == projdatainfo.parameter_info()
+
 
 def test_ProjData_from_to_Array3D():
     # define a projection with some dummy data (filled with segment no.)
     s=Scanner.get_scanner_from_name("ECAT 962")
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
     for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
         segment=projdata.get_empty_segment_by_sinogram(seg_idx)

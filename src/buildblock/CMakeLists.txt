@@ -88,6 +88,12 @@ set(${dir_LIB_SOURCES}
         GeneralisedPoissonNoiseGenerator.cxx
         FilePath.cxx
         date_time_functions.cxx
+        DetectorCoordinateMap.cxx
+       GeometryBlocksOnCylindrical.cxx
+        ProjDataInfoBlocksOnCylindricalNoArcCorr.cxx
+        ProjDataInfoGeneric.cxx
+        ProjDataInfoGenericNoArcCorr.cxx
+        date_time_functions.cxx
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}

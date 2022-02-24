@@ -66,11 +66,11 @@ def test_Array3Diterator():
 
 def test_ProjData():
     s=Scanner.get_scanner_from_name("ECAT 962")
-    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     #print projdatainfo
     projdata=ProjDataInMemory(ExamInfo(), projdatainfo)
     np=stirextra.to_numpy(projdata)
