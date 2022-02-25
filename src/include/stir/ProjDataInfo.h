@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2017-2018, 2020, University College London
+    Copyright (C) 2017-2018, 2020, 2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -168,6 +168,12 @@ public:
   //! Set maximum tangential position number
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_max_tangential_pos_num(const int max_tang_poss);
+  //! The tof mashing factor (for TOF scanners).
+  /*! Set to 0 for non-TOF
+
+    Min and Max timing position will be recalculated.
+  */
+  virtual void set_tof_mash_factor(const int new_num);
   //@}
 
   //! \name Functions that return info on the data size
@@ -198,6 +204,14 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get TOF mash factor
+  /* 0 indicates non-TOF data, as well as the max number of TOF bins for the scanner
+   (as all TOF bins will then be added). */
+  inline int get_tof_mash_factor() const;
+   //! Get the index of the first TOF position
+  inline int get_min_tof_pos_num() const;
+  //! Get the index of the last timgin position.
+  inline int get_max_tof_pos_num() const;
   //! Get the total number of sinograms
   inline int get_num_sinograms() const;
   //! Get the number of non-tof sinograms
