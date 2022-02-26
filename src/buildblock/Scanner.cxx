@@ -355,23 +355,10 @@ Scanner::Scanner(Type scanner_type)
            static_cast<float>(-4.5490*_PI/180),//sign?
            4, 2, 6, 8, 1, 1, 1,
                0.0F, 511.F,
-           (short int)(410),
-           (float)(10.0F),
-           (float)(400.0F) );// TODO not sure about sign of view_offset
-    break;
-
-  case DiscoverySTE_nonTOF:
-
-     set_params(DiscoverySTE_nonTOF, string_list("GE Discovery STE nonTOF", "Discovery STE nonTOF"),
-            24, 329, 293, 2 * 280,
-                886.2F/2.F, 8.4F, 6.54F, 2.397F,
-            static_cast<float>(-4.5490*_PI/180),//sign?
-            4, 2, 6, 8, 1, 1, 1,
-                0.0F, 511.F,
             (short int)(0.F),
             (float)(0.F),
             (float)(0.F) );// TODO not sure about sign of view_offset
-     break;
+    break;
 
   case ntest_TOF_50: // dummy
       // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
