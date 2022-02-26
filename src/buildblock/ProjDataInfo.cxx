@@ -27,6 +27,8 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
@@ -95,7 +97,7 @@ float
 ProjDataInfo::get_sampling_in_t(const Bin& bin) const
 {
   return
-    (get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+    abs(get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
      get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
      )/2;
 }
@@ -104,7 +106,7 @@ float
 ProjDataInfo::get_sampling_in_m(const Bin& bin) const
 {
   return
-    (get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+    abs(get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
      get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
      )/2;
 }
@@ -114,7 +116,7 @@ float
 ProjDataInfo::get_sampling_in_s(const Bin& bin) const
 {
   return
-    (get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()+1)) -
+    abs(get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()+1)) -
      get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()-1))
      )/2;
 }
@@ -261,7 +263,6 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         // we assume TOF mashing factor = 0 means non-TOF and the projecter won't use any boundary conditions
     }
 }
-
 
 ProjDataInfo::ProjDataInfo()
   : bed_position_horizontal(0.F), bed_position_vertical(0.F)
@@ -554,12 +555,25 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   
   const float bin_size = scanner->get_default_bin_size();
   
-  
-  if (arc_corrected)
+  if (scanner->get_scanner_geometry() == "BlocksOnCylindrical")
+    return
+      new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Generic")
+    return
+      new ProjDataInfoGenericNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Cylindrical" && arc_corrected)
     return
     new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
                                        num_axial_pos_per_segment,
-                                       min_ring_difference, 
+                                       min_ring_difference,
                                        max_ring_difference,
                                        num_views,num_tangential_poss,
                                        tof_mash_factor);
@@ -571,7 +585,6 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                                        max_ring_difference,
                                        num_views,num_tangential_poss,
                                          tof_mash_factor);
-
 }
 
 unique_ptr<ProjDataInfo>

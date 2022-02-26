@@ -46,6 +46,7 @@ has TOF info"
 template_sino=my_test_scanner_template.hs
 cat > my_input.txt <<EOF
 test_scanner
+
 1
 82
 N

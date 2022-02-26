@@ -193,9 +193,6 @@ private:
   CartesianCoordinate3D<int> min_index;
   CartesianCoordinate3D<int> max_index;
 
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
-
-
   virtual void 
     calculate_proj_matrix_elems_for_one_bin(
                                             ProjMatrixElemsForOneBin&) const;

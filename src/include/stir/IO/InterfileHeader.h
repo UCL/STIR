@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -17,6 +18,7 @@
   \author Sanida Mustafovic
   \author PARAPET project
   \author Richard Brown
+  \author Parisa Khateri
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -291,6 +293,21 @@ private:
   float timing_resolution;
 
   int tof_mash_factor;
+  
+  //! \name new variables for block geometry
+  //@{
+  std::string scanner_orientation;
+  std::string scanner_geometry;
+  float axial_distance_between_crystals_in_cm;
+  float transaxial_distance_between_crystals_in_cm;
+  float axial_distance_between_blocks_in_cm;
+  float transaxial_distance_between_blocks_in_cm;
+  //@}
+  
+  //! \name new variables for generic geometry
+  //@{
+  std::string crystal_map;
+  //@}
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

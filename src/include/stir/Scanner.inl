@@ -3,7 +3,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -20,9 +21,12 @@
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
   \author PARAPET project
+  \author Parisa Khateri
 
 
 */
+#include "stir/error.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -250,42 +254,91 @@ bool Scanner::is_tof_ready() const
             && timing_resolution > 0.0f);
 }
 
+std::string
+Scanner::get_scanner_orientation() const
+{
+  return scanner_orientation;
+}
+
+std::string
+Scanner::get_scanner_geometry() const
+{
+  return scanner_geometry;
+}
+
+float
+Scanner::get_axial_crystal_spacing() const
+{
+       return axial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_crystal_spacing() const
+{
+       return transaxial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_block_spacing() const
+{
+       return transaxial_block_spacing;
+}
+
+float
+Scanner::get_axial_block_spacing() const
+{
+       return axial_block_spacing;
+}
+
+std::string
+Scanner::get_crystal_map_file_name() const
+{
+  return crystal_map_file_name;
+}
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)
 {
    type = new_type;
+   _already_setup = false;
 }
 
 void Scanner::set_num_rings(const int & new_num)
 {
   num_rings = new_num;
+   _already_setup = false;
 }
   
 void Scanner::set_num_detectors_per_ring(const int & new_num) 
 {
   num_detectors_per_ring = new_num;  
+   _already_setup = false;
 }
 
 void Scanner::set_max_num_non_arccorrected_bins(const int&  new_num)
 {
   max_num_non_arccorrected_bins = new_num;
+   _already_setup = false;
 }
 
 void Scanner::set_default_num_arccorrected_bins(const int&  new_num)
 {
   default_num_arccorrected_bins = new_num;
+   _already_setup = false;
 }
 
 
 void Scanner::set_inner_ring_radius(const float & new_radius)
 {
   inner_ring_radius = new_radius;
+   _already_setup = false;
 }
 
 void Scanner::set_average_depth_of_interaction(const float & new_depth_of_interaction)
 {
   average_depth_of_interaction = new_depth_of_interaction;
+   _already_setup = false;
 }
 
 bool Scanner::has_energy_information() const
@@ -302,37 +355,44 @@ void Scanner::set_ring_spacing(const float&  new_spacing)
 void Scanner::set_default_bin_size(const float  & new_size)
 {
   bin_size = new_size;
+   _already_setup = false;
 }
 
 void Scanner::set_intrinsic_azimuthal_tilt(const float new_tilt)
 {
   intrinsic_tilt = new_tilt;
+   _already_setup = false;
 }
 
 void Scanner::set_num_transaxial_blocks_per_bucket(const int&  new_num)
 {
   num_transaxial_blocks_per_bucket = new_num;
+   _already_setup = false;
 }
 
 void Scanner::set_num_axial_blocks_per_bucket(const int&  new_num)
 {
   num_axial_blocks_per_bucket = new_num;
+   _already_setup = false;
 }
 
 void Scanner::set_num_detector_layers(const int& new_num)
 {
   num_detector_layers = new_num;
+   _already_setup = false;
 }
 
 
 void Scanner::set_num_axial_crystals_per_block(const int&  new_num)
 {
   num_axial_crystals_per_block = new_num;
+   _already_setup = false;
 }
 
 void Scanner::set_num_transaxial_crystals_per_block(const int& new_num)
 {
   num_transaxial_crystals_per_block = new_num;
+   _already_setup = false;
 }
 
 
@@ -340,23 +400,63 @@ void Scanner::set_num_transaxial_crystals_per_block(const int& new_num)
 void Scanner::set_num_axial_crystals_per_singles_unit(const int& new_num)
 {
   num_axial_crystals_per_singles_unit = new_num;
+   _already_setup = false;
 }
 
 void Scanner::set_num_transaxial_crystals_per_singles_unit(const int& new_num)
 {
   num_transaxial_crystals_per_singles_unit = new_num;
+   _already_setup = false;
 }
 
 void
 Scanner::set_energy_resolution(const float new_num)
 {
     energy_resolution = new_num;
+   _already_setup = false;
 }
 
 void
 Scanner::set_reference_energy(const float new_num)
 {
     reference_energy = new_num;
+   _already_setup = false;
+}
+
+void Scanner::set_scanner_orientation(const std::string& new_scanner_orientation)
+{
+  scanner_orientation = new_scanner_orientation;
+   _already_setup = false;
+}
+
+void Scanner::set_axial_crystal_spacing(const float&  new_spacing)
+{
+  axial_crystal_spacing = new_spacing;
+   _already_setup = false;
+}
+
+void Scanner::set_transaxial_crystal_spacing(const float&  new_spacing)
+{
+  transaxial_crystal_spacing = new_spacing;
+   _already_setup = false;
+}
+
+void Scanner::set_transaxial_block_spacing(const float&  new_spacing)
+{
+  transaxial_block_spacing = new_spacing;
+   _already_setup = false;
+}
+
+void Scanner::set_axial_block_spacing(const float&  new_spacing)
+{
+  axial_block_spacing = new_spacing;
+   _already_setup = false;
+}
+
+void Scanner::set_crystal_map_file_name(const std::string& new_crystal_map_file_name)
+{
+  crystal_map_file_name = new_crystal_map_file_name;
+   _already_setup = false;
 }
 
 void Scanner::set_num_max_of_timing_poss(const int new_num)
@@ -418,7 +518,49 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
   return(singles_bin_index % get_num_transaxial_singles_units());
 }
 
+// For retrieving the coordinates / detector, ring id from the scanner
+stir::DetectionPosition<>
+Scanner::get_det_pos_for_index(const stir::DetectionPosition<> & det_pos) const
+{
+    if (!detector_map_sptr)
+        stir::error("Scanner: detector_map not defined. Did you run set_up()?");
 
+    return detector_map_sptr->get_det_pos_for_index(det_pos);
+}
+
+stir::CartesianCoordinate3D<float>
+Scanner::get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const
+{
+  if (!_already_setup)
+    stir::error("Scanner: you forgot to call set_up().");
+  if (!detector_map_sptr)
+    stir::error("Scanner: detector_map not defined. Did you run set_up()?");
+
+  return detector_map_sptr->get_coordinate_for_det_pos(det_pos);
+}
+
+stir::CartesianCoordinate3D<float>
+Scanner::get_coordinate_for_index(const stir::DetectionPosition<>& index) const
+{
+  if (!_already_setup)
+    stir::error("Scanner: you forgot to call set_up().");
+  if (!detector_map_sptr)
+    stir::error("Scanner: detector_map not defined. Did you run set_up()?");
+
+  return detector_map_sptr->get_coordinate_for_index(index);
+}
+
+Succeeded
+Scanner::find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
+                                                            const CartesianCoordinate3D<float>& cart_coord) const
+{
+  if (!_already_setup)
+    stir::error("Scanner: you forgot to call set_up().");
+  if (!detector_map_sptr)
+    stir::error("Scanner: detector_map not defined. Did you run set_up()?");
+
+  return detector_map_sptr->find_detection_position_given_cartesian_coordinate(det_pos, cart_coord);
+}
 
 END_NAMESPACE_STIR
 
