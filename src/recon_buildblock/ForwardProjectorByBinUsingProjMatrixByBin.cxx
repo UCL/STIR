@@ -147,7 +147,9 @@ ForwardProjectorByBinUsingProjMatrixByBin::
   }
   else
   {
-	error("Need to do TOF stuff here");
+    if (viewgrams.get_proj_data_info_sptr()->get_num_tof_poss() > 1)
+      error("Need to implement TOF stuff in ForwardProjectorByBinUsingProjMatrixByBin::forward_project without cache");
+
     // Complicated version which handles the symmetries explicitly.
     // Faster when no caching is performed, about just as fast when there is caching, 
     // but of only basic bins.
