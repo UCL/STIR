@@ -887,18 +887,23 @@ LmToProjData::run_tof_test_function()
 #if 1
   error("TOF test function disabled");
 #else
+
   VectorWithOffset<VectorWithOffset<segment_type *> >
-            segments (template_proj_data_info_ptr->get_min_segment_num(),
-                      template_proj_data_info_ptr->get_max_segment_num());
-
-
+    segments (template_proj_data_info_ptr->get_min_tof_pos_num(),
+              template_proj_data_info_ptr->get_max_tof_pos_num());
+  for (int timing_pos_num=segments.get_min_index(); timing_pos_num<=segments.get_max_index(); ++timing_pos_num)
+    {
+      segments[timing_pos_num].resize(template_proj_data_info_ptr->get_min_segment_num(), 
+                                      template_proj_data_info_ptr->get_max_segment_num());
+    }
+ 
     // *********** open output file
     shared_ptr<iostream> output;
     shared_ptr<ProjData> proj_data_sptr;
 
-    ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_ptr());
+    ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_sptr());
     {
-      TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
+      TimeFrameDefinitions this_time_frame_defs(frame_defs, 1);
       this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
     }
 
@@ -924,28 +929,32 @@ LmToProjData::run_tof_test_function()
                     min( proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
 
             if (!interactive)
-                allocate_segments(segments, start_segment_index, end_segment_index,
-				  start_timing_pos_index, end_timing_pos_index,
-				  proj_data_sptr->get_proj_data_info_ptr(), current_timing_pos_index);
+                allocate_segments(segments,
+				  proj_data_sptr->get_min_tof_pos_num(),
+                                  proj_data_sptr->get_max_tof_pos_num(),
+                                  start_segment_index, end_segment_index,
+				  proj_data_sptr->get_proj_data_info_sptr());
 
-            for (int ax_num = proj_data_sptr->get_proj_data_info_ptr()->get_min_axial_pos_num(start_segment_index);
-                 ax_num <= proj_data_sptr->get_proj_data_info_ptr()->get_max_axial_pos_num(start_segment_index);
+            for (int ax_num = proj_data_sptr->get_proj_data_info_sptr()->get_min_axial_pos_num(start_segment_index);
+                 ax_num <= proj_data_sptr->get_proj_data_info_sptr()->get_max_axial_pos_num(start_segment_index);
                  ++ax_num)
             {
-                for (int view_num = proj_data_sptr->get_proj_data_info_ptr()->get_min_view_num();
-                     view_num <= proj_data_sptr->get_proj_data_info_ptr()->get_max_view_num(); ++view_num)
+                for (int view_num = proj_data_sptr->get_proj_data_info_sptr()->get_min_view_num();
+                     view_num <= proj_data_sptr->get_proj_data_info_sptr()->get_max_view_num(); ++view_num)
                 {
-                    for (int tang_num =  proj_data_sptr->get_proj_data_info_ptr()->get_min_tangential_pos_num();
-                         tang_num <=  proj_data_sptr->get_proj_data_info_ptr()->get_max_tangential_pos_num();
+                    for (int tang_num =  proj_data_sptr->get_proj_data_info_sptr()->get_min_tangential_pos_num();
+                         tang_num <=  proj_data_sptr->get_proj_data_info_sptr()->get_max_tangential_pos_num();
                          ++tang_num)
                     {
-                        (*segments[start_segment_index])[view_num][ax_num][tang_num] = current_timing_pos_index;
+                      (*(segments[current_timing_pos_index][start_segment_index]))[view_num][ax_num][tang_num] = current_timing_pos_index;
                     }
                 }
             }
 
             if (!interactive)
                 save_and_delete_segments(output, segments,
+                                         proj_data_sptr->get_min_tof_pos_num(),
+                                         proj_data_sptr->get_max_tof_pos_num(),
                                          start_segment_index, end_segment_index,
                                          *proj_data_sptr);
         } // end of for loop for segment range

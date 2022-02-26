@@ -26,7 +26,14 @@ if [ -n "$TRAVIS" ]; then
     set -e
 fi
 
-echo This script should work with STIR version '>'3.0. If you have
+echo "This test is currently broken. Do not use." 1>&2
+# Things that are wrong
+# - relies on LmToProjData.cxx to be compiled with a test function (which shouldn't be there)
+# - relies on output of list_projdata_info by TOF bin etc, which isn't the case anymore
+
+exit 1
+
+echo This script should work with STIR version '>'6.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
