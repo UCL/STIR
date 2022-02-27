@@ -373,6 +373,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
   nor psi to be between 0 and 2 pi. They will standardise the input automatically.
   </li>
+<li>Added <code>test_view_offset_root</code> to ensure reliability between GATE and STIR voxel positions by
+    comparing center of mass of ROOT data LORs with the original STIR position.</li>
 </ul>
 
 
@@ -380,6 +382,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <ul>
     <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
     </li>
+    <li>Modification to <code>generate_image</code> by moving the <code>GenerateImage</code> class to it's own
+        source and header files, enabling usage from other STIR utilities and tests.</li>
 </ul>
 
 </body>
