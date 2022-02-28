@@ -1696,8 +1696,21 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 
 %shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
 %shared_ptr(stir::OSSPSReconstruction<TargetT >);
+
 %shared_ptr(stir::AnalyticReconstruction);
+
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::FBP2DReconstruction,
+        stir::Reconstruction < TargetT >,
+        stir::AnalyticReconstruction
+            >);
 %shared_ptr(stir::FBP2DReconstruction);
+
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::FBP3DRPReconstruction,
+        stir::Reconstruction < TargetT > ,
+        stir::AnalyticReconstruction
+            >);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
 %shared_ptr(stir::SqrtHessianRowSum<TargetT >);
@@ -1726,8 +1739,6 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %include "stir/OSSPS/OSSPSReconstruction.h"
 
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
-%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
-%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 %include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
@@ -1801,8 +1812,23 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
+%template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
+        stir::FBP2DReconstruction,
+        stir::Reconstruction < TargetT >,
+        stir::AnalyticReconstruction
+            >;
+
+%template (RPFBP3DReconstruction3DFloat) stir::RegisteredParsingObject<
+        stir::FBP3DRPReconstruction,
+        stir::Reconstruction < TargetT > ,
+        stir::AnalyticReconstruction
+            >;
+
 #undef elemT
 #undef TargetT
+
+%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
 %include "stir/DataSymmetriesForViewSegmentNumbers.h"
