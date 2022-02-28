@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2022, UCL
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
@@ -16,6 +16,7 @@
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/DetectionPositionPair.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
@@ -91,9 +92,11 @@ public:
   \author Nikos Efthimiou
 
 
-  The following 2 tests are performed:
+  The following tests are performed:
 
   *. Compare the ProjDataInfo of the GE Signa scanner to known values.
+
+  *. Check if get_det_pos_pair_for_bin swaps detectors (or timing_pos) for bins with opposite timing_pos
 
   *. Check that the sum of the TOF LOR is the same as the non TOF.
 
@@ -107,6 +110,8 @@ public:
 
 private:
 
+    void test_tof_proj_data_info_kernel();
+    void test_tof_proj_data_info_det_pos();
     void test_tof_proj_data_info();
 
     //! This checks peaks a specific bin, finds the LOR and applies all the
@@ -187,7 +192,7 @@ TOF_Tests::run_tests()
 }
 
 void
-TOF_Tests::test_tof_proj_data_info()
+TOF_Tests::test_tof_proj_data_info_kernel()
 {
     const int correct_tof_mashing_factor = 39;
     const int num_timing_positions = 9;
@@ -225,6 +230,35 @@ TOF_Tests::test_tof_proj_data_info()
                    "Coincidence widths don't match.");
 
 
+}
+
+
+void
+TOF_Tests::test_tof_proj_data_info_det_pos()
+{
+
+  auto pdi_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*> (test_proj_data_info_sptr.get());
+
+  Bin b1(1,2,3,4,5);
+  Bin b2 = b1;
+  b2.timing_pos_num() = -b1.timing_pos_num();
+
+  DetectionPositionPair<> dp1, dp2;
+  pdi_ptr->get_det_pos_pair_for_bin(dp1, b1);
+  pdi_ptr->get_det_pos_pair_for_bin(dp2, b2);
+
+  check((dp1.timing_pos() == dp2.timing_pos() && dp1.pos1() == dp2.pos2() && dp1.pos2() == dp2.pos1())
+        || (static_cast<int>(dp1.timing_pos()) == -static_cast<int>(dp2.timing_pos()) && dp1.pos1() == dp2.pos1() && dp1.pos2() == dp2.pos2()),
+        "get_det_pos_for_bin with bins of opposite timing_pos");
+}
+
+
+void
+TOF_Tests::test_tof_proj_data_info()
+{
+  test_tof_proj_data_info_kernel();
+  test_tof_proj_data_info_det_pos();
 }
 
 void
