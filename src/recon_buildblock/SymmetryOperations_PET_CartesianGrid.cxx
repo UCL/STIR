@@ -634,43 +634,6 @@ transform_proj_matrix_elems_for_one_densel(
   }
 } 
 
-void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt::
-transform_proj_matrix_elems_for_one_bin(
-    ProjMatrixElemsForOneBin& lor) const
-{
-  Bin bin = lor.get_bin();
-  transform_bin_coordinates(bin);
-  lor.set_bin(bin);
-
-  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
-  while (element_ptr != lor.end())
-  {
-    Coordinate3D<int> c(element_ptr->get_coords());
-    self::transform_image_coordinates(c);
-    *element_ptr = ProjMatrixElemsForOneBin::value_type(c, element_ptr->get_value());
-    ++element_ptr;
-  }
-}
-
-void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt::
-transform_proj_matrix_elems_for_one_densel(
-    ProjMatrixElemsForOneDensel& probs) const
-{
-  Densel densel = probs.get_densel();
-  transform_image_coordinates(densel);
-  probs.set_densel(densel);
-
-  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
-  while (element_ptr != probs.end())
-  {
-    Bin c(*element_ptr);
-    self::transform_bin_coordinates(c);
-    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
-    ++element_ptr;
-  }
-}
 
 
 void

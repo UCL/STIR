@@ -374,7 +374,7 @@ find_sym_op_general_bin(
       else // segment_num = 0 
       {
         if ( do_symmetry_swap_s && s < 0)
-          return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_tmt(view180, axial_pos_shift, z_shift);
+          return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift);
         else
         {
           if (z_shift==0)
