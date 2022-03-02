@@ -118,43 +118,31 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) STIR_
 
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
     proj_data_info_sptr->get_LOR(lor, probabilities.get_bin());
-    LORAs2Points<float> lor2(lor);
+    const LORAs2Points<float> lor2(lor);
     const CartesianCoordinate3D<float> point1 = lor2.p1();
     const CartesianCoordinate3D<float> point2 = lor2.p2();
 
+    //
     float new_value = 0.f;
-    float low_dist = 0.f;
-    float high_dist = 0.f;
 
     // The direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
     const CartesianCoordinate3D<float> diff = point2 - middle;
     const CartesianCoordinate3D<float> diff_unit_vector(diff/static_cast<float>(norm(diff)));
 
-    ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
-
-    while (element_ptr != probabilities.end())
+    for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
+         element_ptr != probabilities.end(); ++element_ptr)
     {
         Coordinate3D<int> c(element_ptr->get_coords());
         const float d2 = -inner_product(image_info_sptr->get_physical_coordinates_for_indices (c) - middle, diff_unit_vector);
 
-        low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d2) * r_sqrt2_gauss_sigma);
-        high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d2) * r_sqrt2_gauss_sigma);
+        const float low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d2) * r_sqrt2_gauss_sigma);
+        const float high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d2) * r_sqrt2_gauss_sigma);
 
-        if ((low_dist >= 4.f && high_dist >= 4.f) ||
-                (low_dist <= -4.f && high_dist <= -4.f))
-        {
-//            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
-            element_ptr = probabilities.erase(element_ptr);
-            continue;
-        }
+        if ((low_dist >= 4.f && high_dist >= 4.f) ||  (low_dist <= -4.f && high_dist <= -4.f))
+          *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
         else
-        {
-          new_value = get_tof_value(low_dist, high_dist);
-          new_value *= element_ptr->get_value();
-          *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
-        }
-        ++element_ptr;
+          *element_ptr = ProjMatrixElemsForOneBin::value_type(c,element_ptr->get_value() * get_tof_value(low_dist, high_dist));
     }
 }
 
