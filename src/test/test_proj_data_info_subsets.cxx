@@ -400,7 +400,7 @@ generate_full_back_projection(
     input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_back_projector_sptr();
   
-  shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->clone());
+  shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->get_empty_copy());
   back_projector_sptr->back_project(*full_back_projection_sptr, *input_sino_sptr);
 
   check(full_back_projection_sptr->find_max() > 0, "full back projection is not empty");
