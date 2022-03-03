@@ -144,6 +144,9 @@ private:
     //! File-format to save images
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
 
+    /// Verbosity level
+    int _verbosity;
+
     //! used to check acceptable parameter ranges, etc...
     bool post_processing();
     void initialise_keymap();

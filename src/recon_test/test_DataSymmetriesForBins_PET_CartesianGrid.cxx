@@ -124,14 +124,24 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 #endif
       elems_no_sym.sort();
       elems_with_sym.sort();
-      if (!check(elems_no_sym == elems_with_sym, "comparing lors"))
+      if (!check(elems_no_sym == elems_with_sym, "comparing lors") ||
+          !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing Bin"))
 	{
 	  // SYM const Bin bin=*bin_iter;
-	  cerr << "Current bin:  segment = " << bin.segment_num() 
-		     << ", axial pos " << bin.axial_pos_num()
-		     << ", view = " << bin.view_num() 
-	       << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin(); 
+
+      cerr << "Current bin: \tsegment = " << bin.segment_num()
+           << ", \taxial pos " << bin.axial_pos_num()
+           << ", \tview = " << bin.view_num()
+           << ", \ttangential_pos_num = " << bin.tangential_pos_num()
+           << "\nSymm bin: \t\tsegment = " << elems_with_sym.get_bin().segment_num()
+           << ", \taxial pos " << elems_with_sym.get_bin().axial_pos_num()
+           << ", \tview = " << elems_with_sym.get_bin().view_num()
+           << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num() << "\n\n";
+
+        if (elems_no_sym != elems_with_sym)
+        {
+        std::cerr << "No Symmetries Iterator || Symmetries Iterator " << std::endl;
+	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin();
 	    ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
 	    while (no_sym_iter!= elems_no_sym.end() || with_sym_iter!=elems_with_sym.end())
 	      {
@@ -173,6 +183,7 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 		      ++with_sym_iter;
 		  }
 	      }
+	    }
 	}
     }
 }
@@ -557,6 +568,121 @@ run_tests_all_symmetries(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 	  run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
 	}
     }
+  {
+    cerr << "\t\tTesting with only swap_s\n";
+    ProjMatrixByBinUsingRayTracing proj_matrix_with_sym;
+
+    stringstream str;
+    str <<
+        "Ray Tracing Matrix Parameters :=\n"
+        "restrict to cylindrical FOV := 1\n"
+        "number of rays in tangential direction to trace for each bin := 1\n"
+        "use actual detector boundaries := 0\n"
+        "do symmetry 90degrees min phi := 0\n"
+        "do symmetry 180degrees min phi := 0\n"
+        "do_symmetry_swap_segment := 0\n"
+        "do_symmetry_swap_s := 1\n"
+        "do_symmetry_shift_z := 0\n"
+        "End Ray Tracing Matrix Parameters :=\n";
+    if (check(proj_matrix_with_sym.parse(str),
+              "parsing projection matrix parameters"))
+    {
+      proj_matrix_with_sym.set_up(proj_data_info_sptr, density_sptr);
+      run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
+    }
+  }
+  {
+    cerr << "\t\tTesting with only swap_segment\n";
+    ProjMatrixByBinUsingRayTracing proj_matrix_with_sym;
+
+    stringstream str;
+    str <<
+        "Ray Tracing Matrix Parameters :=\n"
+        "restrict to cylindrical FOV := 1\n"
+        "number of rays in tangential direction to trace for each bin := 1\n"
+        "use actual detector boundaries := 0\n"
+        "do symmetry 90degrees min phi := 0\n"
+        "do symmetry 180degrees min phi := 0\n"
+        "do_symmetry_swap_segment := 1\n"
+        "do_symmetry_swap_s := 0\n"
+        "do_symmetry_shift_z := 0\n"
+        "End Ray Tracing Matrix Parameters :=\n";
+    if (check(proj_matrix_with_sym.parse(str),
+              "parsing projection matrix parameters"))
+    {
+      proj_matrix_with_sym.set_up(proj_data_info_sptr, density_sptr);
+      run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
+    }
+  }
+  {
+    cerr << "\t\tTesting with shift_z and swap_s\n";
+    ProjMatrixByBinUsingRayTracing proj_matrix_with_sym;
+
+    stringstream str;
+    str <<
+        "Ray Tracing Matrix Parameters :=\n"
+        "restrict to cylindrical FOV := 1\n"
+        "number of rays in tangential direction to trace for each bin := 1\n"
+        "use actual detector boundaries := 0\n"
+        "do symmetry 90degrees min phi := 0\n"
+        "do symmetry 180degrees min phi := 0\n"
+        "do_symmetry_swap_segment := 0\n"
+        "do_symmetry_swap_s := 1\n"
+        "do_symmetry_shift_z := 1\n"
+        "End Ray Tracing Matrix Parameters :=\n";
+    if (check(proj_matrix_with_sym.parse(str),
+              "parsing projection matrix parameters"))
+    {
+      proj_matrix_with_sym.set_up(proj_data_info_sptr, density_sptr);
+      run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
+    }
+  }
+  {
+    cerr << "\t\tTesting with shift_z and swap_segment\n";
+    ProjMatrixByBinUsingRayTracing proj_matrix_with_sym;
+
+    stringstream str;
+    str <<
+        "Ray Tracing Matrix Parameters :=\n"
+        "restrict to cylindrical FOV := 1\n"
+        "number of rays in tangential direction to trace for each bin := 1\n"
+        "use actual detector boundaries := 0\n"
+        "do symmetry 90degrees min phi := 0\n"
+        "do symmetry 180degrees min phi := 0\n"
+        "do_symmetry_swap_segment := 1\n"
+        "do_symmetry_swap_s := 0\n"
+        "do_symmetry_shift_z := 1\n"
+        "End Ray Tracing Matrix Parameters :=\n";
+    if (check(proj_matrix_with_sym.parse(str),
+              "parsing projection matrix parameters"))
+    {
+      proj_matrix_with_sym.set_up(proj_data_info_sptr, density_sptr);
+      run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
+    }
+  }
+  {
+    cerr << "\t\tTesting with swap_s and swap_segment\n";
+    ProjMatrixByBinUsingRayTracing proj_matrix_with_sym;
+
+    stringstream str;
+    str <<
+        "Ray Tracing Matrix Parameters :=\n"
+        "restrict to cylindrical FOV := 1\n"
+        "number of rays in tangential direction to trace for each bin := 1\n"
+        "use actual detector boundaries := 0\n"
+        "do symmetry 90degrees min phi := 0\n"
+        "do symmetry 180degrees min phi := 0\n"
+        "do_symmetry_swap_segment := 1\n"
+        "do_symmetry_swap_s := 1\n"
+        "do_symmetry_shift_z := 0\n"
+        "End Ray Tracing Matrix Parameters :=\n";
+    if (check(proj_matrix_with_sym.parse(str),
+              "parsing projection matrix parameters"))
+    {
+      proj_matrix_with_sym.set_up(proj_data_info_sptr, density_sptr);
+      run_tests_2_proj_matrices(proj_matrix_no_sym, proj_matrix_with_sym);
+    }
+  }
 }
 
 void

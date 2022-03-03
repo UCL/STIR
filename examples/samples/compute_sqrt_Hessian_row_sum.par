@@ -51,4 +51,7 @@ SqrtHessianRowSum Parameters :=
 
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
+  ; Set the verbosity level (STIR default = 2)
+  ; verbosity := 1
+
 END :=

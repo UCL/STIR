@@ -48,20 +48,24 @@
 
 START_NAMESPACE_STIR
 
-/*! Class for reading SAFIR coincidence listmode data.
+/*! \brief Class for reading SAFIR coincidence listmode data.
 
 It reads a parameter file, which refers to 
-  - crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see DetectorCoordinateMapFromFile)
+  - optional crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see DetectorCoordinateMap)
   - the binary data file with the coincidence listmode data in SAFIR format (see CListModeDataSAFIR)
-  - a template projection data file, which is used to generate the virtual cylindrical scanner
+  - a template projection data file, which defines the scanner
+
+  If the map is not defined, the scanner detectors will be used. Otherwise, the nearest LOR of the scanner will be selected for each event.
 
   An example of such a parameter file would be
   \code
 	CListModeDataSAFIR Parameters:=
 		listmode data filename:= listmode_input.clm.safir
-		; the following two examples are also default to the key parser
-		crystal map filename:= crystal_map_front.txt 
-		template projection data filename:= safir_20.hs
+		template projection data filename:= <projdata-filename>
+        ; optional map specifying the actual location of the crystals
+		crystal map filename:= crystal_map.txt 
+		; optional random displacement of the LOR end-points in mm (only used of a map is present)
+        LOR randomization (Gaussian) sigma:=0
 	END CListModeDataSAFIR Parameters:=
   \endcode
 
@@ -144,8 +148,8 @@ protected:
 
 	void set_defaults() {
 		base_type::set_defaults();
-		crystal_map_filename = "crystal_map_front.txt";
-		template_proj_data_filename = "safir_20.hs";
+		crystal_map_filename = "";
+		template_proj_data_filename = "";
 		lor_randomization_sigma = 0.0;
 	}
 
@@ -161,7 +165,6 @@ protected:
 
 	bool post_processing() {
 		if( !file_exists(listmode_filename) ) return true;
-		else if( !file_exists(crystal_map_filename) ) return true; 
 		else if( !file_exists(template_proj_data_filename) ) return true;
 		else {
 			did_parsing = true;

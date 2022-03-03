@@ -122,7 +122,11 @@ public:
    (i.e. no axial compression), while it is half the 
    ring spacing for spanned data.
   */
-  inline float get_axial_sampling(int segment_num) const;
+  virtual inline float get_axial_sampling(int segment_num) const;
+  //! Return if axial sampling makes sense
+  /*! could be \c false for block/generic cases */
+  virtual inline bool axial_sampling_is_uniform() const
+  { return true; }
   
   //! Get average ring difference for the given segment
   inline float get_average_ring_difference(int segment_num) const;
