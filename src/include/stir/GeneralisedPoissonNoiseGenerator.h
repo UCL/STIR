@@ -19,7 +19,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <functional>
 // boost::serialization::make_array was moved in boost 1.64
 #if BOOST_VERSION == 106400
 #include <boost/serialization/array_wrapper.hpp>
@@ -63,7 +63,7 @@ class GeneralisedPoissonNoiseGenerator
     {
       std::transform(array_in.begin_all(), array_in.end_all(),
                      array_out.begin_all(),
-                     boost::bind(generate_scaled_poisson_random, _1, this->scaling_factor, this->preserve_mean));
+                     std::bind(generate_scaled_poisson_random, std::placeholders::_1, this->scaling_factor, this->preserve_mean));
     }
 
   void

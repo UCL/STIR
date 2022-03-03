@@ -53,6 +53,10 @@ int
 ProjDataInfo::get_num_tof_poss() const
 { return 1; /* always 1 at the moment */ }
 
+int
+ProjDataInfo::get_tof_mash_factor() const
+{ return 0; }
+
 int 
 ProjDataInfo::get_min_segment_num() const
 { return (max_axial_pos_per_seg.get_min_index()); }
@@ -87,6 +91,18 @@ ProjDataInfo::get_min_tangential_pos_num()const
 int 
 ProjDataInfo::get_max_tangential_pos_num()const
 { return max_tangential_pos_num; }
+
+int
+ProjDataInfo::get_min_tof_pos_num() const
+{
+    return 0;
+}
+
+int
+ProjDataInfo::get_max_tof_pos_num() const
+{
+    return 0;
+}
 
 float 
 ProjDataInfo::get_costheta(const Bin& bin) const

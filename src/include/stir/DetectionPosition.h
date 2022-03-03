@@ -18,6 +18,7 @@
 #define __stir_DetectionPosition_H__
 
 #include "stir/common.h"
+#include <boost/operators.hpp>
 
 START_NAMESPACE_STIR
 /*!   \ingroup projdata
@@ -54,7 +55,9 @@ START_NAMESPACE_STIR
  The class is templated to allow for systems with continuous detection.
 */
 template <typename coordT = unsigned int>
-class DetectionPosition
+  class DetectionPosition:
+  boost::partially_ordered<DetectionPosition<coordT>,  // have operator>, <= etc for free
+  boost::equality_comparable<DetectionPosition<coordT> > > // have operator!= for free
 {
 public: 
   inline explicit
@@ -71,7 +74,7 @@ public:
   //! \name comparison operators
   //@{
   inline bool operator==(const DetectionPosition&) const;
-  inline bool operator!=(const DetectionPosition&) const;
+  inline bool operator<(const DetectionPosition&) const;
   //@}
 private :
   coordT  tangential;  

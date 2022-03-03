@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014, 2018, 2020 University College London
+# Copyright 2014, 2018, 2020, 2022 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -90,15 +90,31 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 endif()
 
 if(BUILD_SWIG_PYTHON)
+  if (${CMAKE_VERSION} VERSION_LESS "3.14") # from 3.14 findPython has Numpy support
+      if (Python_EXECUTABLE)
+        set (PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+      endif()
+      # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
+      find_package(PythonInterp QUIET)
+      find_package(PythonLibs REQUIRED)
+      find_package(Numpy REQUIRED)
+      # TODO would be better to use target_include_directories
+      INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+      INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
+      set(STIR_Python_dependency ${PYTHON_LIBRARIES})
+  else()
+    if (PYTHON_EXECUTABLE)
+      message(WARNING "Usage of PYTHON_EXECUTABLE is deprecated. Use Python_EXECUTABLE instead.")
+      set (Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+    endif()
+    find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+    message(STATUS "We will use Python::Module Python::NumPy targets, but this is what CMake found:\n"
+      ".... Python_LIBRARIES: ${Python_LIBRARIES}\n"
+      ".... Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}\n"
+      ".... Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+    set(STIR_Python_dependency Python::Module Python::NumPy)
+  endif()
 
-  # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
-  find_package(PythonInterp)
-  # find libraries and include files
-  # TODO would be better to use target_include_directories
-  FIND_PACKAGE(PythonLibs REQUIRED)
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  FIND_PACKAGE(Numpy REQUIRED)
-  INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
@@ -109,7 +125,7 @@ if(BUILD_SWIG_PYTHON)
     SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
   SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
-  SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
+  SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${STIR_Python_dependency})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
 
