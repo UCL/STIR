@@ -350,7 +350,7 @@ void ScatterEstimation::set_max_scale_value(float value)
 { this->max_scale_value = value; }
 
 void ScatterEstimation::set_min_scale_value(float value)
-{ this->max_scale_value = value; }
+{ this->min_scale_value = value; }
 
 void ScatterEstimation::set_mask_projdata_filename(std::string name)
 { this->mask_projdata_filename = name; }

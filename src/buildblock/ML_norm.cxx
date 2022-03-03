@@ -129,27 +129,54 @@ void make_det_pair_data(DetPairData& det_pair_data,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general_type);
+  if(proj_data_info_general_type.get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+    {
+      const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info =
+        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info_general_type);
 
-  const int num_detectors = 
-    proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
-  const int fan_size = 
-    2*max(proj_data_info.get_max_tangential_pos_num(),
-          -proj_data_info.get_min_tangential_pos_num()) + 1;
-  // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
-  const int half_fan_size = fan_size/2;
+      const int num_detectors =
+        proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
+      const int fan_size =
+        2*max(proj_data_info.get_max_tangential_pos_num(),
+              -proj_data_info.get_min_tangential_pos_num()) + 1;
+      // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
+      const int half_fan_size = fan_size/2;
 
-  IndexRange<2> fan_indices;
-  fan_indices.grow(0,num_detectors-1);
-  for (int a = 0; a < num_detectors; ++a)
-  {
-    fan_indices[a] = 
-      IndexRange<1>(a+num_detectors/2-half_fan_size,
-                    a+num_detectors/2+half_fan_size);
-  }
-  det_pair_data.grow(fan_indices);
-  det_pair_data.fill(0);
+      IndexRange<2> fan_indices;
+      fan_indices.grow(0,num_detectors-1);
+      for (int a = 0; a < num_detectors; ++a)
+        {
+          fan_indices[a] =
+            IndexRange<1>(a+num_detectors/2-half_fan_size,
+                          a+num_detectors/2+half_fan_size);
+        }
+      det_pair_data.grow(fan_indices);
+      det_pair_data.fill(0);      
+    }
+  else
+    {
+      const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+	dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general_type);
+
+      const int num_detectors = 
+	proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
+      const int fan_size = 
+	2*max(proj_data_info.get_max_tangential_pos_num(),
+	      -proj_data_info.get_min_tangential_pos_num()) + 1;
+      // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
+      const int half_fan_size = fan_size/2;
+
+      IndexRange<2> fan_indices;
+      fan_indices.grow(0,num_detectors-1);
+      for (int a = 0; a < num_detectors; ++a)
+	{
+	  fan_indices[a] = 
+	    IndexRange<1>(a+num_detectors/2-half_fan_size,
+			  a+num_detectors/2+half_fan_size);
+	}
+      det_pair_data.grow(fan_indices);
+      det_pair_data.fill(0);
+    }
 }
 
 void make_det_pair_data(DetPairData& det_pair_data,
@@ -157,40 +184,80 @@ void make_det_pair_data(DetPairData& det_pair_data,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  make_det_pair_data(det_pair_data,
-		     *proj_data.get_proj_data_info_sptr(),
-		     segment_num,
-		     ax_pos_num);
-  const int num_detectors = 
-    det_pair_data.get_num_detectors();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
+  if(proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+    {
+     make_det_pair_data(det_pair_data,
+                         *proj_data.get_proj_data_info_sptr(),
+                         segment_num,
+                         ax_pos_num);
+      const int num_detectors =
+        det_pair_data.get_num_detectors();
+      const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info =
+        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
 
-  shared_ptr<Sinogram<float> > 
-    pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
-  shared_ptr<Sinogram<float> > neg_sino_ptr;
-  if (segment_num == 0)
-    neg_sino_ptr = pos_sino_ptr;
+      shared_ptr<Sinogram<float> >
+        pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
+      shared_ptr<Sinogram<float> > neg_sino_ptr;
+      if (segment_num == 0)
+        neg_sino_ptr = pos_sino_ptr;
+      else
+        neg_sino_ptr.
+          reset(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,-segment_num)));
+
+
+      for (int view_num = 0; view_num < num_detectors/2; view_num++)
+        for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
+             tang_pos_num <= proj_data.get_max_tangential_pos_num();
+             ++tang_pos_num)
+          {
+            int det_num_a = 0;
+            int det_num_b = 0;
+
+            proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
+
+            det_pair_data(det_num_a,det_num_b) =
+              (*pos_sino_ptr)[view_num][tang_pos_num];
+            det_pair_data(det_num_b,det_num_a) =
+              (*neg_sino_ptr)[view_num][tang_pos_num];
+          }      
+    }
   else
-    neg_sino_ptr.
-      reset(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,-segment_num)));
+    {
+      make_det_pair_data(det_pair_data,
+			 *proj_data.get_proj_data_info_sptr(),
+			 segment_num,
+			 ax_pos_num);
+      const int num_detectors = 
+	det_pair_data.get_num_detectors();
+      const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+	dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
+
+      shared_ptr<Sinogram<float> > 
+	pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
+      shared_ptr<Sinogram<float> > neg_sino_ptr;
+      if (segment_num == 0)
+	neg_sino_ptr = pos_sino_ptr;
+      else
+	neg_sino_ptr.
+	  reset(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,-segment_num)));
   
     
-  for (int view_num = 0; view_num < num_detectors/2; view_num++)
-    for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
-	 tang_pos_num <= proj_data.get_max_tangential_pos_num();
-	 ++tang_pos_num)
-      {
-	int det_num_a = 0;
-	int det_num_b = 0;
+      for (int view_num = 0; view_num < num_detectors/2; view_num++)
+	for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
+	     tang_pos_num <= proj_data.get_max_tangential_pos_num();
+	     ++tang_pos_num)
+	  {
+	    int det_num_a = 0;
+	    int det_num_b = 0;
 
-	proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
+	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
 
-	det_pair_data(det_num_a,det_num_b) =
-	  (*pos_sino_ptr)[view_num][tang_pos_num];
-	det_pair_data(det_num_b,det_num_a) =
-	  (*neg_sino_ptr)[view_num][tang_pos_num];
-      }
+	    det_pair_data(det_num_a,det_num_b) =
+	      (*pos_sino_ptr)[view_num][tang_pos_num];
+	    det_pair_data(det_num_b,det_num_a) =
+	      (*neg_sino_ptr)[view_num][tang_pos_num];
+	  }
+    }
 }
 
 void set_det_pair_data(ProjData& proj_data,
@@ -200,39 +267,78 @@ void set_det_pair_data(ProjData& proj_data,
 {
   const shared_ptr<const ProjDataInfo> proj_data_info_sptr =
     proj_data.get_proj_data_info_sptr();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
+  if(proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+    {
+      const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info =
+        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data_info_sptr);
 
-  const int num_detectors = det_pair_data.get_num_detectors();
-  assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
+      const int num_detectors = det_pair_data.get_num_detectors();
+      assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
 
-  shared_ptr<Sinogram<float> > 
-    pos_sino_ptr(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,segment_num)));
-  shared_ptr<Sinogram<float> > neg_sino_ptr;
-  if (segment_num != 0)
-    neg_sino_ptr.
-      reset(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,-segment_num)));
+      shared_ptr<Sinogram<float> >
+        pos_sino_ptr(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,segment_num)));
+      shared_ptr<Sinogram<float> > neg_sino_ptr;
+      if (segment_num != 0)
+        neg_sino_ptr.
+          reset(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,-segment_num)));
+
+
+      for (int view_num = 0; view_num < num_detectors/2; view_num++)
+        for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
+             tang_pos_num <= proj_data.get_max_tangential_pos_num();
+             ++tang_pos_num)
+          {
+            int det_num_a = 0;
+            int det_num_b = 0;
+
+            proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
+
+            (*pos_sino_ptr)[view_num][tang_pos_num] =
+              det_pair_data(det_num_a,det_num_b);
+            if (segment_num!=0)
+              (*neg_sino_ptr)[view_num][tang_pos_num] =
+                det_pair_data(det_num_b,det_num_a);
+          }
+      proj_data.set_sinogram(*pos_sino_ptr);
+      if (segment_num != 0)
+        proj_data.set_sinogram(*neg_sino_ptr);      
+    }
+  else
+    {
+      const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+	dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
+
+      const int num_detectors = det_pair_data.get_num_detectors();
+      assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
+
+      shared_ptr<Sinogram<float> > 
+	pos_sino_ptr(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,segment_num)));
+      shared_ptr<Sinogram<float> > neg_sino_ptr;
+      if (segment_num != 0)
+	neg_sino_ptr.
+	  reset(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,-segment_num)));
   
     
-  for (int view_num = 0; view_num < num_detectors/2; view_num++)
-    for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
-	 tang_pos_num <= proj_data.get_max_tangential_pos_num();
-	 ++tang_pos_num)
-      {
-	int det_num_a = 0;
-	int det_num_b = 0;
+      for (int view_num = 0; view_num < num_detectors/2; view_num++)
+	for (int tang_pos_num = proj_data.get_min_tangential_pos_num();
+	     tang_pos_num <= proj_data.get_max_tangential_pos_num();
+	     ++tang_pos_num)
+	  {
+	    int det_num_a = 0;
+	    int det_num_b = 0;
 
-	proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
+	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view_num, tang_pos_num);
 
-	(*pos_sino_ptr)[view_num][tang_pos_num] =
-          det_pair_data(det_num_a,det_num_b);
-        if (segment_num!=0)
-	  (*neg_sino_ptr)[view_num][tang_pos_num] =
-            det_pair_data(det_num_b,det_num_a);
-      }
-  proj_data.set_sinogram(*pos_sino_ptr);
-  if (segment_num != 0)
-    proj_data.set_sinogram(*neg_sino_ptr);
+	    (*pos_sino_ptr)[view_num][tang_pos_num] =
+	      det_pair_data(det_num_a,det_num_b);
+	    if (segment_num!=0)
+	      (*neg_sino_ptr)[view_num][tang_pos_num] =
+		det_pair_data(det_num_b,det_num_a);
+	  }
+      proj_data.set_sinogram(*pos_sino_ptr);
+      if (segment_num != 0)
+	proj_data.set_sinogram(*neg_sino_ptr);
+    }
 }
 
 
@@ -500,8 +606,6 @@ GeoData3D::operator=(const GeoData3D& other)
     ? (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b]
     : b < half_num_transaxial_crystals_per_block ? (*this)[rb][b%num_detectors_per_ring][ra][a<get_min_b(b%num_detectors_per_ring) ? a+num_detectors_per_ring: a] : (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b];
 }
-
-
 float GeoData3D::operator()(const int ra, const int a, const int rb, const int b) const
 {
    assert(a>=0);
@@ -974,6 +1078,42 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
 }
 
 
+shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+get_fan_info_block(int& num_rings, int& num_detectors_per_ring,
+             int& max_ring_diff, int& fan_size,
+             const ProjDataInfo& proj_data_info)
+{
+  const ProjDataInfoBlocksOnCylindricalNoArcCorr * const proj_data_info_ptr =
+    dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr * const>(&proj_data_info);
+  if (proj_data_info_ptr == 0)
+  {
+    error("Can only process not arc-corrected data\n");
+  }
+  if (proj_data_info_ptr->get_view_mashing_factor()>1)
+  {
+    error("Can only process data without mashing of views\n");
+  }
+  if (proj_data_info_ptr->get_max_ring_difference(0)>0)
+  {
+    error("Can only process data without axial compression (i.e. span=1)\n");
+  }
+  num_rings =
+    proj_data_info.get_scanner_ptr()->get_num_rings();
+  num_detectors_per_ring =
+    proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
+  const int half_fan_size =
+    min(proj_data_info.get_max_tangential_pos_num(),
+          -proj_data_info.get_min_tangential_pos_num());
+  fan_size = 2*half_fan_size+1;
+  max_ring_diff = proj_data_info_ptr->get_max_segment_num();
+
+  shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr>
+    ret_value(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr *>(proj_data_info_ptr->clone()));
+  return ret_value;
+
+}
+
+
 /// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
 void make_fan_data_remove_gaps(FanProjData& fan_data,
@@ -983,67 +1123,249 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
     int num_detectors_per_ring;
     int fan_size;
     int max_delta;
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
-                 *proj_data.get_proj_data_info_sptr());
-    
-    const int half_fan_size = fan_size/2;
+    if(proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+      {
+        shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr =
+          get_fan_info_block(num_rings, num_detectors_per_ring, max_delta, fan_size,
+                       *proj_data.get_proj_data_info_sptr());
+
+        const int half_fan_size = fan_size/2;
 
 
-    const int num_virtual_axial_crystals_per_block =
-            proj_data_info_ptr->get_scanner_sptr()->
-                    get_num_virtual_axial_crystals_per_block();
+        const int num_virtual_axial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_virtual_axial_crystals_per_block();
 
-    const int num_virtual_transaxial_crystals_per_block =
-            proj_data_info_ptr->get_scanner_sptr()->
-                    get_num_virtual_transaxial_crystals_per_block();
+        const int num_virtual_transaxial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_virtual_transaxial_crystals_per_block();
 
-    const int num_transaxial_blocks =
-            proj_data_info_ptr ->get_scanner_sptr()->
-                    get_num_transaxial_blocks();
-    const int num_axial_blocks =
-            proj_data_info_ptr->get_scanner_sptr()->
-                    get_num_axial_blocks();
-    const int num_transaxial_crystals_per_block =
-            proj_data_info_ptr->get_scanner_sptr()->
-                    get_num_transaxial_crystals_per_block();
-    const int num_axial_crystals_per_block =
-            proj_data_info_ptr->get_scanner_sptr()->
-                    get_num_axial_crystals_per_block();
+        const int num_transaxial_blocks =
+          proj_data_info_ptr ->get_scanner_sptr()->
+          get_num_transaxial_blocks();
+        const int num_axial_blocks =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_axial_blocks();
+        const int num_transaxial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_transaxial_crystals_per_block();
+        const int num_axial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_axial_crystals_per_block();
 
-    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+        const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
-    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
-
-
-    const int num_transaxial_blocks_in_fansize = fan_size/(num_transaxial_crystals_per_block);
-    const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*num_virtual_transaxial_crystals_per_block;
-    const int new_half_fan_size = new_fan_size/2;
-    const int num_axial_blocks_in_max_delta = max_delta/(num_axial_crystals_per_block);
-    const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
-    const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*num_virtual_transaxial_crystals_per_block;
-    const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
-
-    fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
+        const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
 
-    shared_ptr<SegmentBySinogram<float> > segment_ptr;
-    Bin bin;
+        const int num_transaxial_blocks_in_fansize = fan_size/(num_transaxial_crystals_per_block);
+        const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*num_virtual_transaxial_crystals_per_block;
+        const int new_half_fan_size = new_fan_size/2;
+        const int num_axial_blocks_in_max_delta = max_delta/(num_axial_crystals_per_block);
+        const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+        const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*num_virtual_transaxial_crystals_per_block;
+        const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
 
-    for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-    {
-        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+        fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
 
-        for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-             bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-             ++bin.axial_pos_num())
-            for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+
+        shared_ptr<SegmentBySinogram<float> > segment_ptr;
+        Bin bin;
+
+        for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+          {
+            segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+
+            for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+                 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+                 ++bin.axial_pos_num())
+              for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
                 for (bin.tangential_pos_num() = -half_fan_size;
                      bin.tangential_pos_num() <= half_fan_size;
                      ++bin.tangential_pos_num())
-                {
+                  {
                     int ra = 0, a = 0;
                     int rb = 0, b = 0;
+
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    int a_in_block = a % num_transaxial_crystals_per_block;
+
+                    if (a_in_block >= num_physical_transaxial_crystals_per_block)
+                      continue;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int ra_in_block = ra % num_axial_crystals_per_block;
+                    if (ra_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    int b_in_block = b % num_transaxial_crystals_per_block;
+                    if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int rb_in_block = rb % num_axial_crystals_per_block;
+                    if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    fan_data(new_ra, new_a, new_rb, new_b) =
+                    fan_data(new_rb, new_b, new_ra, new_a) =
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+                  }
+          }	
+      }
+    else
+      {
+	shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+	  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
+		       *proj_data.get_proj_data_info_sptr());
+    
+	const int half_fan_size = fan_size/2;
+
+
+	const int num_virtual_axial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_virtual_axial_crystals_per_block();
+
+	const int num_virtual_transaxial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_virtual_transaxial_crystals_per_block();
+
+	const int num_transaxial_blocks =
+	  proj_data_info_ptr ->get_scanner_sptr()->
+	  get_num_transaxial_blocks();
+	const int num_axial_blocks =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_axial_blocks();
+	const int num_transaxial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_transaxial_crystals_per_block();
+	const int num_axial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_axial_crystals_per_block();
+
+	const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+	const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
+
+	const int num_transaxial_blocks_in_fansize = fan_size/(num_transaxial_crystals_per_block);
+	const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize*num_virtual_transaxial_crystals_per_block;
+	const int new_half_fan_size = new_fan_size/2;
+	const int num_axial_blocks_in_max_delta = max_delta/(num_axial_crystals_per_block);
+	const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+	const int num_physical_detectors_per_ring = num_detectors_per_ring - num_transaxial_blocks*num_virtual_transaxial_crystals_per_block;
+	const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
+
+	fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
+
+
+	shared_ptr<SegmentBySinogram<float> > segment_ptr;
+	Bin bin;
+
+	for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+	  {
+	    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+	    
+	    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+		 ++bin.axial_pos_num())
+	      for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+                for (bin.tangential_pos_num() = -half_fan_size;
+                     bin.tangential_pos_num() <= half_fan_size;
+                     ++bin.tangential_pos_num())
+		  {
+                    int ra = 0, a = 0;
+                    int rb = 0, b = 0;
+
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+                    int a_in_block = a % num_transaxial_crystals_per_block;
+
+                    if (a_in_block >= num_physical_transaxial_crystals_per_block)
+		      continue;
+                    int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int ra_in_block = ra % num_axial_crystals_per_block;
+                    if (ra_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    int b_in_block = b % num_transaxial_crystals_per_block;
+                    if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                    int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+                    int rb_in_block = rb % num_axial_crystals_per_block;
+                    if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                    int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+                    fan_data(new_ra, new_a, new_rb, new_b) =
+                    fan_data(new_rb, new_b, new_ra, new_a) =
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+		  }
+	  }
+      }
+}
+
+
+/// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
+/// *** fan_data doesn't have gaps, proj_data has gaps *** ///
+void set_fan_data_add_gaps(ProjData& proj_data,
+                  const FanProjData& fan_data, const float gap_value)
+{
+    int num_rings;
+    int num_detectors_per_ring;
+    int fan_size;
+    int max_delta;
+    if(proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+      {
+       shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr =
+          get_fan_info_block(num_rings, num_detectors_per_ring, max_delta, fan_size,
+                       *proj_data.get_proj_data_info_sptr());
+
+        const int half_fan_size = fan_size/2;
+
+        const int num_virtual_axial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_virtual_axial_crystals_per_block();
+        const int num_virtual_transaxial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_virtual_transaxial_crystals_per_block();
+        const int num_transaxial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_transaxial_crystals_per_block();
+        const int num_axial_crystals_per_block =
+          proj_data_info_ptr->get_scanner_sptr()->
+          get_num_axial_crystals_per_block();
+
+        const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+        const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
+        Bin bin;
+        shared_ptr<SegmentBySinogram<float> > segment_ptr;
+
+        for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+          {
+            segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
+
+            for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+                 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+                 ++bin.axial_pos_num())
+              for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+                for (bin.tangential_pos_num() = -half_fan_size;
+                     bin.tangential_pos_num() <= half_fan_size;
+                     ++bin.tangential_pos_num())
+                  {
+                    int ra = 0, a = 0;
+                    int rb = 0, b = 0;
+
+                    proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = gap_value;
+
 
                     proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
                     int a_in_block = a % num_transaxial_crystals_per_block;
@@ -1067,64 +1389,55 @@ void make_fan_data_remove_gaps(FanProjData& fan_data,
                         continue;
                     int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-                    fan_data(new_ra, new_a, new_rb, new_b) =
-                    fan_data(new_rb, new_b, new_ra, new_a) =
-                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-                }
-    }
-}
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
+                    fan_data(new_ra, new_a, new_rb, new_b);
+                  }
+            proj_data.set_segment(*segment_ptr);
+          }
+      }
+    else
+      {
+	shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+	  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
+		       *proj_data.get_proj_data_info_sptr());
+
+	const int half_fan_size = fan_size/2;
+	//assert(num_rings == fan_data.get_num_rings());
+	//assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
 
 
-/// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
-/// *** fan_data doesn't have gaps, proj_data has gaps *** ///
-void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data, const float gap_value)
-{
-    int num_rings;
-    int num_detectors_per_ring;
-    int fan_size;
-    int max_delta;
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size,
-                 *proj_data.get_proj_data_info_sptr());
+	const int num_virtual_axial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_virtual_axial_crystals_per_block();
+	const int num_virtual_transaxial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_virtual_transaxial_crystals_per_block();
+	const int num_transaxial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_transaxial_crystals_per_block();
+	const int num_axial_crystals_per_block =
+	  proj_data_info_ptr->get_scanner_sptr()->
+	  get_num_axial_crystals_per_block();
 
-    const int half_fan_size = fan_size/2;
-    //assert(num_rings == fan_data.get_num_rings());
-    //assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
+	const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
+	const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
-    const int num_virtual_axial_crystals_per_block =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_virtual_axial_crystals_per_block();
-    const int num_virtual_transaxial_crystals_per_block =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_virtual_transaxial_crystals_per_block();
-    const int num_transaxial_crystals_per_block =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_transaxial_crystals_per_block();
-    const int num_axial_crystals_per_block =
-    proj_data_info_ptr->get_scanner_sptr()->
-    get_num_axial_crystals_per_block();
+	Bin bin;
+	shared_ptr<SegmentBySinogram<float> > segment_ptr;
 
-    const int num_physical_transaxial_crystals_per_block = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+	for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+	  {
+	    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
 
-    const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
-
-    Bin bin;
-    shared_ptr<SegmentBySinogram<float> > segment_ptr;
-
-    for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-    {
-        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
-
-        for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-             bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-             ++bin.axial_pos_num())
-            for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+	    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+		 ++bin.axial_pos_num())
+	      for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
                 for (bin.tangential_pos_num() = -half_fan_size;
                      bin.tangential_pos_num() <= half_fan_size;
                      ++bin.tangential_pos_num())
-                {
+		  {
                     int ra = 0, a = 0;
                     int rb = 0, b = 0;
 
@@ -1157,9 +1470,10 @@ void set_fan_data_add_gaps(ProjData& proj_data,
                     
                     (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
                     fan_data(new_ra, new_a, new_rb, new_b);
-                }
-        proj_data.set_segment(*segment_ptr);
-    }
+		  }
+	    proj_data.set_segment(*segment_ptr);
+	  }
+      }
 }
 
 
@@ -1342,38 +1656,76 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_sptr());
-  const int half_fan_size = fan_size/2;
-  data_fan_sums.fill(0);
+  if(proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+    {
+      shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr =
+        get_fan_info_block(num_rings, num_detectors_per_ring, max_delta, fan_size,
+                     *proj_data.get_proj_data_info_sptr());
+      const int half_fan_size = fan_size/2;
+      data_fan_sums.fill(0);
 
-  shared_ptr<SegmentBySinogram<float> > segment_ptr;      
-  Bin bin;
+      shared_ptr<SegmentBySinogram<float> > segment_ptr;
+      Bin bin;
 
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
-  {
-    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
-    
-    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-	 ++bin.axial_pos_num())
-       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size;
-	       bin.tangential_pos_num() <= half_fan_size;
-               ++bin.tangential_pos_num())
-          {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
+      for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+        {
+          segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+
+          for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+               bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+               ++bin.axial_pos_num())
+            for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+              for (bin.tangential_pos_num() = -half_fan_size;
+                   bin.tangential_pos_num() <= half_fan_size;
+                   ++bin.tangential_pos_num())
+                {
+                  int ra = 0, a = 0;
+                  int rb = 0, b = 0;
+
+	          proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+
+                  const float value =
+                    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+                  data_fan_sums[ra][a] += value;
+                  data_fan_sums[rb][b] += value;
+                }
+        }      
+    }
+  else
+    {
+      shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+	get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
+		     *proj_data.get_proj_data_info_sptr());
+      const int half_fan_size = fan_size/2;
+      data_fan_sums.fill(0);
+
+      shared_ptr<SegmentBySinogram<float> > segment_ptr;      
+      Bin bin;
+
+      for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+	{
+	  segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
+	  
+	  for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+	       bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+	       ++bin.axial_pos_num())
+	    for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+	      for (bin.tangential_pos_num() = -half_fan_size;
+		   bin.tangential_pos_num() <= half_fan_size;
+		   ++bin.tangential_pos_num())
+		{
+		  int ra = 0, a = 0;
+		  int rb = 0, b = 0;
             
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+		  proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
 
-	    const float value =            
-              (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-	    data_fan_sums[ra][a] += value;
-	    data_fan_sums[rb][b] += value;
-          }
-  }
+		  const float value =            
+		    (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+		  data_fan_sums[ra][a] += value;
+		  data_fan_sums[rb][b] += value;
+		}
+	}
+    }
 }
 
 void make_fan_sum_data(Array<2,float>& data_fan_sums,
@@ -1642,7 +1994,6 @@ double KL(const FanProjData& d1, const FanProjData& d2, const double threshold)
     const int num_transaxial_detectors = d1.get_num_detectors_per_ring();
     const int num_axial_crystals_per_block = d1.get_num_axial_crystals_per_block();
     const int num_transaxial_crystals_per_block = d1.get_half_num_transaxial_crystals_per_block()*2;
-
      double sum=0;
     
     for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)

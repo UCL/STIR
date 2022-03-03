@@ -74,7 +74,7 @@ It reads a parameter file, which refers to
 class SAFIRCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
-	SAFIRCListmodeInputFileFormat() : did_parsing(false) {}
+	SAFIRCListmodeInputFileFormat() {}
 	virtual const std::string get_name() const
 	{
 		return "SAFIR Coincidence Listmode File Format";
@@ -154,7 +154,6 @@ protected:
 	}
 
 	bool actual_do_parsing( const std::string& filename) const {
-		if( did_parsing) return true;
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
 		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str()) ) {
 			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
@@ -167,7 +166,6 @@ protected:
 		if( !file_exists(listmode_filename) ) return true;
 		else if( !file_exists(template_proj_data_filename) ) return true;
 		else {
-			did_parsing = true;
 			return false;
 		}
 		return true;
@@ -176,7 +174,6 @@ protected:
 
 
 private:
-	mutable bool did_parsing;
 	bool file_exists( const std::string& filename) {
 		std::ifstream infile(filename.c_str());
 		return infile.good();

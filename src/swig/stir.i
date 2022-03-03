@@ -118,6 +118,7 @@
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include "stir/multiply_crystal_factors.h"
+#include "stir/ML_norm.h"
 
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/ScatterSimulation.h"
@@ -155,12 +156,16 @@
     { return PyArg_ParseTuple(args, "ii", &c[1], &c[2]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<3, int>& c, PyObject* const args)
       { return PyArg_ParseTuple(args, "iii", &c[1], &c[2], &c[3]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<4, int>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "iiii", &c[1], &c[2], &c[3], &c[4]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<1, float>& c, PyObject* const args)
     { return PyArg_ParseTuple(args, "f", &c[1]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<2, float>& c, PyObject* const args)
     { return PyArg_ParseTuple(args, "ff", &c[1], &c[2]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<3, float>& c, PyObject* const args)
       { return PyArg_ParseTuple(args, "fff", &c[1], &c[2], &c[3]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<4, float>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "ffff", &c[1], &c[2], &c[3], &c[4]);  }
 
     template <int num_dimensions>
       PyObject* tuple_from_coord(const stir::BasicCoordinate<num_dimensions, int>& c)
@@ -1105,6 +1110,10 @@ namespace stir {
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
+  
+  %template(Int4BasicCoordinate) BasicCoordinate<4,int>;
+  %template(Size4BasicCoordinate) BasicCoordinate<4,std::size_t>;
+  %template(Float4BasicCoordinate) BasicCoordinate<4,float>;
   // TODO not needed in python case?
   %template(Float2Coordinate) Coordinate2D< float >;
   %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
@@ -1120,6 +1129,7 @@ namespace stir {
   %template(IndexRange2D) IndexRange<2>;
   //%template(IndexRange2DVectorWithOffset) VectorWithOffset<IndexRange<2> >;
   %template(IndexRange3D) IndexRange<3>;
+  %template(IndexRange4D) IndexRange<4>;
 
   %ADD_indexaccess(int,T,VectorWithOffset);
   %template(FloatVectorWithOffset) VectorWithOffset<float>;
@@ -1295,6 +1305,8 @@ namespace stir {
 #if 0
   %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
 #endif
+  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float>, float>;
+  %template(FloatArray4D) stir::Array<4,float>;
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
@@ -1812,17 +1824,17 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
-%template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
-        stir::FBP2DReconstruction,
-        stir::Reconstruction < TargetT >,
-        stir::AnalyticReconstruction
-            >;
+// %template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
+//         stir::FBP2DReconstruction,
+//         stir::Reconstruction < TargetT >,
+//         stir::AnalyticReconstruction
+//             >;
 
-%template (RPFBP3DReconstruction3DFloat) stir::RegisteredParsingObject<
-        stir::FBP3DRPReconstruction,
-        stir::Reconstruction < TargetT > ,
-        stir::AnalyticReconstruction
-            >;
+// %template (RPFBP3DReconstruction3DFloat) stir::RegisteredParsingObject<
+//         stir::FBP3DRPReconstruction,
+//         stir::Reconstruction < TargetT > ,
+//         stir::AnalyticReconstruction
+//             >;
 
 #undef elemT
 #undef TargetT
@@ -1915,8 +1927,6 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %include "stir/listmode/ListModeData.h"
 
 %extend stir::ListModeData {
-  // add read_from_file to this class, as currently there is no way
-  // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
     {
       using namespace stir;
@@ -1924,3 +1934,9 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
       return ret;
     }
  }
+
+ //void make_fan_data_remove_gaps(stir::FanProjData& fan_data, const stir::ProjData& proj_data);
+
+ %shared_ptr(stir::FanProjData);
+ %shared_ptr(stir::GeoData3D);
+ %include "stir/ML_norm.h"
