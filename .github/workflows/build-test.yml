@@ -18,21 +18,25 @@ jobs:
           compiler_version: 9
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
+          parallelproj: "OFF"
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
+          parallelproj: "ON"
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Debug"
+          parallelproj: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
+          parallelproj: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
@@ -110,6 +114,14 @@ jobs:
           esac
           python -m pip install pytest
 
+          if test "${{matrix.parallelproj}}XX" == "ONXX"; then
+             git clone --depth 1 --branch v0.8 https://github.com/gschramm/parallelproj
+             mkdir parallelproj/build
+             cd parallelproj/build
+             cmake .. -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+             cmake --build . --target install --config Release
+          fi
+          
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
