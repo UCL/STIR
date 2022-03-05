@@ -74,12 +74,19 @@ virtual void set_up(
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
+    /// set defaults
+    void set_defaults();
+
     /// Set verbosity
     void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
     /// Set use truncation - truncate before forward
     /// projection and after back projection
     void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
+
+    // set/get number of gpu chunks to use
+    void set_num_gpu_chunks(int num_gpu_chunks) {_num_gpu_chunks = num_gpu_chunks; }
+    int  get_num_gpu_chunks() { return _num_gpu_chunks; }
 
 protected:
 
@@ -94,9 +101,9 @@ private:
     bool _do_not_setup_helper;
     friend class ProjectorByBinPairUsingParallelproj;
     void set_helper(shared_ptr<detail::ParallelprojHelper>);
-    int _cuda_device;
     bool _cuda_verbosity;
     bool _use_truncation;
+    int _num_gpu_chunks;
 };
 
 END_NAMESPACE_STIR
