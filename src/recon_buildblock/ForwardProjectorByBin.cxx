@@ -169,6 +169,9 @@ void
 ForwardProjectorByBin::forward_project(ProjData& proj_data,
                                        int subset_num, int num_subsets, bool zero)
 {
+  if (!_density_sptr)
+    error("You need to call set_input() forward_project()");
+
     if (_density_sptr->get_exam_info().imaging_modality.is_unknown()
         || proj_data.get_exam_info().imaging_modality.is_unknown())
       warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
@@ -248,6 +251,9 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 {
   if (viewgrams.get_num_viewgrams()==0)
     return;
+  if (!_density_sptr)
+    error("You need to call set_input() forward_project()");
+
   check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
   start_timers();
 
