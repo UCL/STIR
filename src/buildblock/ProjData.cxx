@@ -235,32 +235,22 @@ ProjData::get_subset(const std::vector<int>& views) const
 {
   auto subset_proj_data_info_sptr =
     std::make_shared<ProjDataInfoSubsetByView>(proj_data_info_sptr, views);
-  auto subset_proj_data_ptr = new ProjDataInMemory(exam_info_sptr, subset_proj_data_info_sptr);
-  auto& subset_proj_data = *subset_proj_data_ptr;
+  unique_ptr<ProjDataInMemory> subset_proj_data_uptr(new ProjDataInMemory(exam_info_sptr, subset_proj_data_info_sptr));
 
+  //TODOTOF loop here
   for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
     {
       for (int subset_view_num=0; subset_view_num < static_cast<int>(views.size()); ++subset_view_num)
         {
           const Viewgram<float> viewgram = this->get_viewgram(views[subset_view_num], segment_num);
-          Viewgram<float> subset_viewgram = Viewgram<float>(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num);
-          if (subset_proj_data.set_viewgram(subset_viewgram) != Succeeded::yes)
+          // construct new one with data from viewgram, but appropriate meta-data
+          const Viewgram<float> subset_viewgram(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num);
+          if (subset_proj_data_uptr->set_viewgram(subset_viewgram) != Succeeded::yes)
             error("ProjData::get_subset failed to set a viewgram");
         }
     }
 
-  if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_proj_data_info_sptr.get()))) {
-    std::cerr << "success" << std::endl;
-  } else {
-    std::cerr << "fail" << std::endl;
-  }
-  if(!is_null_ptr(dynamic_cast<const ProjDataInfoSubsetByView *>(subset_proj_data_ptr->get_proj_data_info_sptr().get()))) {
-    std::cerr << "success" << std::endl;
-  } else {
-    std::cerr << "fail" << std::endl;
-  }
-
-  return unique_ptr<ProjDataInMemory>(subset_proj_data_ptr);
+  return subset_proj_data_uptr;
 }
 
   
