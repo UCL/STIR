@@ -45,7 +45,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
     auto this_view = views[i];
 
     // Check all views within range
-    if (!(0 <= this_view < num_views)) {
+    if (0 > this_view || this_view >= num_views) {
       error(
         boost::format("ProjDataInfoSubsetByView: views[%d]=%s out of range (%d).")
         % i % this_view % num_views);

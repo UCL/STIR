@@ -240,7 +240,7 @@ ProjData::get_subset(const std::vector<int>& views) const
 
   for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
     {
-      for (int subset_view_num=0; subset_view_num<views.size(); ++subset_view_num)
+      for (int subset_view_num=0; subset_view_num < static_cast<int>(views.size()); ++subset_view_num)
         {
           const Viewgram<float> viewgram = this->get_viewgram(views[subset_view_num], segment_num);
           Viewgram<float> subset_viewgram = Viewgram<float>(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num);
