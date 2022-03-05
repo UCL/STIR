@@ -19,6 +19,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
         test_FBP2D.cxx
         test_FBP3DRP.cxx
         test_priors.cxx
+        test_blocks_on_cylindrical_projectors.cxx
 )
 
 

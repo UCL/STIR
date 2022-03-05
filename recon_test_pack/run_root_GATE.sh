@@ -45,7 +45,19 @@ if [ $# -eq 1 ]; then
 fi
 
 command -v lm_to_projdata >/dev/null 2>&1 || { echo "lm_to_projdata not found or not executable. Aborting." >&2; exit 1; }
-command -v root >/dev/null 2>&1 || { echo "root not found or not executable. Aborting." >&2; exit 1; }
+if command -v root >/dev/null 2>&1
+then
+  ROOT=root
+elif command -v root.exe >/dev/null 2>&1
+then
+  # if you didn't build ROOT with X, it might not have root, but should have root.exe        
+  ROOT=root.exe
+else        
+  echo "root not found or not executable. Aborting." >&2
+  exit 1
+fi
+echo "Using `command -v ${ROOT}`"
+
 echo "Testing the following executable:"
 command -v lm_to_projdata
 
@@ -152,7 +164,7 @@ echo
 echo Reading true values from ROOT file ...
 
 log=root_output_true_events.log
-root -b -l ${INPUT_ROOT_FILE} << EOF >& ${log} 
+${ROOT} -b -l ${INPUT_ROOT_FILE} << EOF >& ${log} 
 Coincidences->Draw(">>eventlist","eventID1 == eventID2 && comptonPhantom1 == 0 && comptonPhantom2 == 0","goff");
 Int_t N = eventlist->GetN();
 cout<<endl<<"Number of trues stored in this time period:"<< N<<endl;

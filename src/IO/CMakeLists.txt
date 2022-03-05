@@ -80,7 +80,11 @@ endif()
 
 if (CERN_ROOT_FOUND)
   target_include_directories(IO PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
-  target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
+  if (TARGET ROOT::Tree)
+   target_link_libraries(IO ROOT::Tree)
+  else()
+   target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
+  endif()
 endif()
 
 if (HDF5_FOUND)
