@@ -1,11 +1,14 @@
 /*!
   \file
-  \ingroup stir::projector_test
-  \brief Test program for subsetting ProjDataInfo
+  \ingroup test
+  \ingroup projdata
+  \brief Test program for subsetting stir::ProjDataInfo
   \author Ashley Gillman
+  \author Kris Thielemans
 */
 
 #include "stir/RunTests.h"
+#include "stir/Verbosity.h"
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
@@ -85,7 +88,7 @@ protected:
     shared_ptr<ProjData> _input_sino_sptr;
     shared_ptr<VoxelsOnCartesianGrid<float> > _test_image_sptr;
     static shared_ptr<VoxelsOnCartesianGrid<float> > construct_test_image_data(
-        const ProjDataInfo &template_projdatainfo);
+        const ProjData& template_projdata);
     static shared_ptr<ProjData> construct_test_proj_data();
     // static shared_ptr<VoxelsOnCartesianGrid<float> > construct_projector_pair(
     //     const ProjDataInfo &template_projdatainfo);
@@ -101,14 +104,14 @@ protected:
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
       const shared_ptr<const ProjData>& template_sino_sptr,
       bool use_z_symmetries=false, bool use_other_symmetries=false);
-    VoxelsOnCartesianGrid<float> generate_full_back_projection(
+    shared_ptr<VoxelsOnCartesianGrid<float>> generate_full_back_projection(
       const shared_ptr<const ProjData>& input_sino_sptr,
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
       bool use_z_symmetries=false, bool use_other_symmetries=false);
     void test_forward_projection_for_one_subset(
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
-      ProjDataInMemory& full_forward_projection,
-      std::unique_ptr<ProjDataInMemory>& subset_forward_projection_uptr,
+      const ProjDataInMemory& full_forward_projection,
+      ProjData& subset_forward_projection,
       bool use_z_symmetries=false, bool use_other_symmetries=false);
 
 };
@@ -129,14 +132,17 @@ shared_ptr<ProjData> TestProjDataInfoSubsets::construct_test_proj_data()
                                                                /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
                                                                /*tang_pos*/64, 
                                                                /*arc_corrected*/ false));
-  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  auto exam_info_sptr = std::make_shared<ExamInfo>();
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
+  
   return std::make_shared<ProjDataInMemory>(exam_info_sptr, proj_data_info_sptr);
 }
 
-shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_test_image_data(const ProjDataInfo &template_projdatainfo)
+shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_test_image_data(const ProjData &template_projdata)
 {
   cerr << "\tGenerating default image of Ellipsoid" << endl;
-  shared_ptr<VoxelsOnCartesianGrid<float> > image = std::make_shared<VoxelsOnCartesianGrid<float> >(template_projdatainfo);
+  auto image = std::make_shared<VoxelsOnCartesianGrid<float> >(template_projdata.get_exam_info_sptr(),
+                                                               *template_projdata.get_proj_data_info_sptr());
 
   // make radius 0.8 FOV
   auto radius = BasicCoordinate<3,float>(image->get_lengths()) * image->get_voxel_size() / 2.F;
@@ -189,20 +195,18 @@ void
 TestProjDataInfoSubsets::
 run_tests()
 {
-  cerr << "-------- Testing ProjDataInfoCylindricalArcCorr --------\n";
+  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
   try
   {
-    // make an image (TODO: or open?)
-
     // Open sinogram
     if (_sinogram_filename.empty()) {
       _input_sino_sptr = construct_test_proj_data();
-      _test_image_sptr = construct_test_image_data(*_input_sino_sptr->get_proj_data_info_sptr());
+      _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
       fill_proj_data_with_forward_projection(_input_sino_sptr, _test_image_sptr);
     }
     else {
       _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
-      _test_image_sptr = construct_test_image_data(*_input_sino_sptr->get_proj_data_info_sptr());
+      _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
     }
 
     test_split(*_input_sino_sptr);
@@ -317,7 +321,7 @@ test_forward_projection_is_consistent(
     auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
     test_forward_projection_for_one_subset(
-      input_image_sptr, full_forward_projection, subset_forward_projection_uptr,
+      input_image_sptr, full_forward_projection, *subset_forward_projection_uptr,
       use_z_symmetries, use_other_symmetries);
   }
 }
@@ -358,7 +362,7 @@ test_forward_projection_is_consistent_with_unbalanced_subset(
 
     cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views << endl;
     test_forward_projection_for_one_subset(
-      input_image_sptr, full_forward_projection, subset_forward_projection_uptr,
+      input_image_sptr, full_forward_projection, *subset_forward_projection_uptr,
       use_z_symmetries, use_other_symmetries);
   }
 }
@@ -370,84 +374,57 @@ generate_full_forward_projection(
     const shared_ptr<const ProjData>& template_sino_sptr,
     bool use_z_symmetries, bool use_other_symmetries)
 {
-  if (input_image_sptr->find_max() == 0) {
-    cerr << "error: Tests are run with redundant empty image" << endl;
-    everything_ok = false;
-  }
+  check (input_image_sptr->find_max() > 0, "forward projection test run with empty image");
 
   auto fwd_projector_sptr = construct_projector_pair(
     template_sino_sptr->get_proj_data_info_sptr(), input_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_forward_projector_sptr();
   
-  auto full_forward_projection = ProjDataInMemory(*template_sino_sptr);
+  ProjDataInMemory full_forward_projection(*template_sino_sptr);
   fwd_projector_sptr->set_input(*input_image_sptr);
   fwd_projector_sptr->forward_project(full_forward_projection);
 
-  if (full_forward_projection.get_viewgram(0, 0).find_max() == 0) {
-    cerr << "error: segment 0, view 0 of reference forward projection is empty!" << endl;
-    everything_ok = false;
-  }
+  check(full_forward_projection.get_viewgram(0, 0).find_max() > 0, "segment 0, view 0 of reference forward projection is empty");
 
   return full_forward_projection;
 }
 
 
-VoxelsOnCartesianGrid<float> TestProjDataInfoSubsets::
+shared_ptr<VoxelsOnCartesianGrid<float>> TestProjDataInfoSubsets::
 generate_full_back_projection(
     const shared_ptr<const ProjData>& input_sino_sptr,
     const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
     bool use_z_symmetries, bool use_other_symmetries)
 {
-  bool input_is_nonzero = false;
-  for (int view_num = 0; view_num < input_sino_sptr->get_num_views(); ++view_num) {
-    for (int segment_num = input_sino_sptr->get_min_segment_num();
-         segment_num <= input_sino_sptr->get_max_segment_num();
-         ++segment_num) {
-      auto viewgram = input_sino_sptr->get_viewgram(view_num, segment_num);
-      if (viewgram.find_max() > 0) {
-        input_is_nonzero = true;
-        break;
-      }
-    }
-  }
-  if (!input_is_nonzero) {
-    cerr << "error: Tests are run with redundant empty input sinogram" << endl;
-    everything_ok = false;
-  }
-
   auto back_projector_sptr = construct_projector_pair(
     input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_back_projector_sptr();
   
-  back_projector_sptr->back_project(*input_sino_sptr);
-  auto full_back_projection = *template_image_sptr->clone();
-  back_projector_sptr->get_output(full_back_projection);
+  shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->clone());
+  back_projector_sptr->back_project(*full_back_projection_sptr, *input_sino_sptr);
 
-  if (full_back_projection.find_max() == 0) {
-    cerr << "error: full back projection is empty!" << endl;
-    everything_ok = false;
-  }
+  check(full_back_projection_sptr->find_max() > 0, "full back projection is not empty");
 
-  return full_back_projection;
+  return full_back_projection_sptr;
 }
 
 
 void TestProjDataInfoSubsets::
 test_forward_projection_for_one_subset(
   const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
-  ProjDataInMemory& full_forward_projection,
-  std::unique_ptr<ProjDataInMemory>& subset_forward_projection_uptr,
+  const ProjDataInMemory& full_forward_projection,
+  ProjData& subset_forward_projection,
   bool use_z_symmetries, bool use_other_symmetries)
 {
-  cerr << "\tTesting Subset back projection is consistent" << endl;
-  auto subset_proj_data_info_sptr = std::static_pointer_cast<const ProjDataInfoSubsetByView>(
-    subset_forward_projection_uptr->get_proj_data_info_sptr());
+  cerr << "\tTesting Subset forward projection is consistent" << endl;
+  auto subset_proj_data_info_sptr = std::dynamic_pointer_cast<const ProjDataInfoSubsetByView>(
+    subset_forward_projection.get_proj_data_info_sptr());
 
   auto subset_proj_pair_sptr = construct_projector_pair(
-    subset_forward_projection_uptr->get_proj_data_info_sptr(), input_image_sptr,
+    subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr,
     use_z_symmetries, use_other_symmetries);
 
-  subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(*subset_forward_projection_uptr);
+  subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(subset_forward_projection);
 
   auto subset_views = subset_proj_data_info_sptr->get_org_views();
 
@@ -462,7 +439,7 @@ test_forward_projection_for_one_subset(
         {
           if (!check_if_equal(
             full_forward_projection.get_viewgram(subset_views[i], segment_num),
-            subset_forward_projection_uptr->get_viewgram(i, segment_num), "Are viewgrams equal?"))
+            subset_forward_projection.get_viewgram(i, segment_num), "Are viewgrams equal?"))
           {
             cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
             break;
@@ -479,32 +456,26 @@ test_back_projection_is_consistent(
     const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
     int num_subsets)
 {
-  auto full_back_projection = generate_full_back_projection(
+  auto full_back_projection_sptr = generate_full_back_projection(
     input_sino_sptr, template_image_sptr);
 
-  VoxelsOnCartesianGrid<float> back_projection_sum = *template_image_sptr->clone();
-  back_projection_sum.fill(0.f);
+  shared_ptr<VoxelsOnCartesianGrid<float>> back_projection_sum_sptr(template_image_sptr->get_empty_copy());
 
   for (int subset_n=0; subset_n<num_subsets; ++subset_n) {
     auto subset_views = _calc_regularly_sampled_views_for_subset(
       subset_n, num_subsets, input_sino_sptr->get_num_views());
 
-    ProjData& subset = *input_sino_sptr->get_subset(subset_views);
+    auto subset = *input_sino_sptr->get_subset(subset_views);
 
     auto subset_back_projector_sptr = construct_projector_pair(
       subset.get_proj_data_info_sptr(), template_image_sptr)
       ->get_back_projector_sptr() ;
 
-    VoxelsOnCartesianGrid<float> subset_back_projection = *template_image_sptr->clone();
-    subset_back_projector_sptr->back_project(subset_back_projection, subset);
-    back_projection_sum += subset_back_projection;
+    shared_ptr<VoxelsOnCartesianGrid<float>> subset_back_projection_sptr(template_image_sptr->get_empty_copy());
+    subset_back_projector_sptr->back_project(*subset_back_projection_sptr, subset);
+    (*back_projection_sum_sptr) += *subset_back_projection_sptr;
   }
-  back_projection_sum /= num_subsets;  // Why do I have to do this...?!
-  if (!check_if_equal(
-    full_back_projection, back_projection_sum, "Are backprojections equal?"))
-  {
-    cerr << "test_back_projection_is_consisted failed: backprojections weren't equal" << endl;
-  }
+  check_if_equal(*full_back_projection_sptr, *back_projection_sum_sptr, "Are backprojections equal?");
 }
 
 
@@ -522,7 +493,8 @@ int main(int argc, char **argv)
     }
 
     set_default_num_threads();
-
+    Verbosity::set(0);
+    
     TestProjDataInfoSubsets test(argc>1? argv[1] : "");
     test.run_tests();
 
