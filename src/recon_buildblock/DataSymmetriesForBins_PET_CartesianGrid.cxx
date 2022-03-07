@@ -258,10 +258,10 @@ DataSymmetriesForBins_PET_CartesianGrid
     {
       // special handling of subset case
       // will for now just switch view syms off
-      if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get())))
+      if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get())))
         error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
               "(can only handle projection data corresponding to a cylinder)\n",
-              typeid(*subset_proj_data_info_ptr->get_org_proj_data_info_sptr()).name());
+              typeid(*subset_proj_data_info_ptr->get_original_proj_data_info_sptr()).name());
         
       if (do_symmetry_90degrees_min_phi || do_symmetry_180degrees_min_phi) {
         warning("Turning off 90 and 180 degrees minus phi symmetries for subsets.");
@@ -271,7 +271,7 @@ DataSymmetriesForBins_PET_CartesianGrid
     }
 
   auto pdi_cyl_ptr = dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr ?
-                                                                   subset_proj_data_info_ptr->get_org_proj_data_info_sptr().get() :
+                                                                   subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get() :
                                                                    proj_data_info_ptr.get());
   initialise_deltas(pdi_cyl_ptr);
 

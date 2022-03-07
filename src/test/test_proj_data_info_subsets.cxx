@@ -490,7 +490,7 @@ test_forward_projection_for_one_subset(
 
   subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(subset_forward_projection);
 
-  auto subset_views = subset_proj_data_info_sptr->get_org_views();
+  auto subset_views = subset_proj_data_info_sptr->get_original_view_nums();
 
   // loop over views in the subset data and compare them against the original "full" data
   for(std::size_t i = 0; i < subset_views.size(); ++i)

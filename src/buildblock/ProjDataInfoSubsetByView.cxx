@@ -86,20 +86,20 @@ ProjDataInfoSubsetByView* ProjDataInfoSubsetByView::clone() const
   return new ProjDataInfoSubsetByView(*this);
 }
 
-Bin ProjDataInfoSubsetByView::get_org_bin(const Bin& bin) const
+Bin ProjDataInfoSubsetByView::get_original_bin(const Bin& bin) const
 {
   Bin org_bin(bin);
   org_bin.view_num() = this->view_to_org_view_num[bin.view_num()];
   return org_bin;
 }
 
-std::vector<int> ProjDataInfoSubsetByView::get_org_views() const
+std::vector<int> ProjDataInfoSubsetByView::get_original_view_nums() const
 {
   return this->view_to_org_view_num;
 }
 
 
-Bin ProjDataInfoSubsetByView::get_bin_from_org(const Bin& org_bin) const
+Bin ProjDataInfoSubsetByView::get_bin_from_original(const Bin& org_bin) const
 {
   Bin bin(org_bin);
   bin.view_num() = this->org_view_to_view_num[org_bin.view_num()];
@@ -159,57 +159,58 @@ void ProjDataInfoSubsetByView::set_max_tangential_pos_num(const int max_tang_pos
 
 float ProjDataInfoSubsetByView::get_tantheta(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_tantheta(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_tantheta(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_phi(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_phi(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_phi(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_t(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_t(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_t(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_m(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_m(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_m(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_s(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_s(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_s(get_original_bin(bin));
 }
 
 void ProjDataInfoSubsetByView::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
                                        const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_LOR(lor, get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_LOR(lor, get_original_bin(bin));
 }
                                        
 float ProjDataInfoSubsetByView::get_sampling_in_t(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_sampling_in_t(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_sampling_in_t(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_sampling_in_m(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_sampling_in_m(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_sampling_in_m(get_original_bin(bin));
 }
 
 float ProjDataInfoSubsetByView::get_sampling_in_s(const Bin& bin) const
 {
-  return this->org_proj_data_info_sptr->get_sampling_in_s(get_org_bin(bin));
+  return this->org_proj_data_info_sptr->get_sampling_in_s(get_original_bin(bin));
 }
 
 Bin ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor) const
 {
-  return get_bin_from_org(this->org_proj_data_info_sptr->get_bin(lor));
+  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor));
 }
 
 bool ProjDataInfoSubsetByView::contains_full_data() const
 {
+  // Warning: this only checks size, so assumes no double-ups of views
   return view_to_org_view_num.size() == static_cast<std::size_t>(org_proj_data_info_sptr->get_num_views());
 }
 
@@ -248,7 +249,7 @@ bool ProjDataInfoSubsetByView::blindly_equals(const root_type * const p) const
   return ((*this->org_proj_data_info_sptr) == (*that->org_proj_data_info_sptr));
 }
 
-shared_ptr<const ProjDataInfo> ProjDataInfoSubsetByView::get_org_proj_data_info_sptr() const
+shared_ptr<const ProjDataInfo> ProjDataInfoSubsetByView::get_original_proj_data_info_sptr() const
 {
   return this->org_proj_data_info_sptr;
 }
