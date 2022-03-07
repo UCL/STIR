@@ -635,7 +635,6 @@ transform_proj_matrix_elems_for_one_densel(
 } 
 
 
-
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
 transform_proj_matrix_elems_for_one_bin(
