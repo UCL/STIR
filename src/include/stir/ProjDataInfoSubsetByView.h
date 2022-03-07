@@ -228,7 +228,9 @@ protected:
 private:
 
   shared_ptr<ProjDataInfo> org_proj_data_info_sptr;
+  // A vector of original view numbers indexed by the subset view
   std::vector<int> view_to_org_view_num;
+  // A vector of subset view numbers indexed by the original view. -100 for invalid views
   std::vector<int> org_view_to_view_num;
 };
 

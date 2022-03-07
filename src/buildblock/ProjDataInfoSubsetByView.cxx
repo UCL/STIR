@@ -111,7 +111,7 @@ void ProjDataInfoSubsetByView::reduce_segment_range(const int min_segment_num, c
   this->org_proj_data_info_sptr->reduce_segment_range(min_segment_num, max_segment_num);
   base_type::reduce_segment_range(min_segment_num, max_segment_num);
 }
- 
+
 void ProjDataInfoSubsetByView::set_num_views(const int)
 {
   error("ProjDataInfoSubsetByView does not allow changing the number of views");
@@ -187,7 +187,7 @@ void ProjDataInfoSubsetByView::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates
 {
   return this->org_proj_data_info_sptr->get_LOR(lor, get_original_bin(bin));
 }
-                                       
+
 float ProjDataInfoSubsetByView::get_sampling_in_t(const Bin& bin) const
 {
   return this->org_proj_data_info_sptr->get_sampling_in_t(get_original_bin(bin));
@@ -227,10 +227,18 @@ bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
    auto smaller_proj_data_info = static_cast<const ProjDataInfoSubsetByView&>(proj);
 
    if (!((*this->org_proj_data_info_sptr) >= (*smaller_proj_data_info.org_proj_data_info_sptr)))
-    return false;
+    { return false; }
 
-   // TODO compare if view table is smaller, just checking equality for now
-   return this->org_view_to_view_num == smaller_proj_data_info.org_view_to_view_num;
+  // check all of smaller_proj_data_info org_views are in this subset
+  for (int view_num_idx = 0; view_num_idx < smaller_proj_data_info.get_num_views(); ++view_num_idx)
+  {
+    int org_view_num = smaller_proj_data_info.view_to_org_view_num[view_num_idx];
+    if (std::find(this->view_to_org_view_num.begin(), this->view_to_org_view_num.end(), org_view_num)
+          == this->view_to_org_view_num.end())
+    { return false; }
+  }
+
+  return base_type::operator>=(proj);
 }
 
 std::string ProjDataInfoSubsetByView::parameter_info() const
@@ -238,7 +246,7 @@ std::string ProjDataInfoSubsetByView::parameter_info() const
   // TODO insert view info
   return this->org_proj_data_info_sptr->parameter_info();
 }
-  
+
 bool ProjDataInfoSubsetByView::blindly_equals(const root_type * const p) const
 {
   // can do static_cast as operator== already checked type

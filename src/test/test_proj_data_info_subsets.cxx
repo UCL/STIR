@@ -286,7 +286,35 @@ test_split(const ProjData &proj_data)
             // TODO also compare viewgram metadata
           }
       }
-  }      
+  }
+
+  // Test operator >=
+  auto full_pdi_sptr = proj_data.get_subset(
+    _calc_regularly_sampled_views_for_subset(0, 1, proj_data.get_num_views()))
+    ->get_proj_data_info_sptr();
+  auto sub_a_pdi_sptr = proj_data.get_subset(
+    _calc_regularly_sampled_views_for_subset(0, 2, proj_data.get_num_views()))
+    ->get_proj_data_info_sptr();
+  auto sub_b_pdi_sptr = proj_data.get_subset(
+    _calc_regularly_sampled_views_for_subset(1, 2, proj_data.get_num_views()))
+    ->get_proj_data_info_sptr();
+
+  // full == orig
+  if (!(*full_pdi_sptr >= *proj_data.get_proj_data_info_sptr())) {
+    cerr << typeid(*full_pdi_sptr).name() << " " << typeid(*sub_a_pdi_sptr).name() << endl;
+    cerr << "Failed: Expected full == original" << endl;
+    everything_ok = false;
+  }
+  // full >= sub_a
+  if (!(*full_pdi_sptr >= *sub_a_pdi_sptr)) {
+    cerr << "Failed: Expected full >= subset A" << endl;
+    everything_ok = false;
+  }
+  // sub_a not >= sub_b
+  if ((*sub_a_pdi_sptr >= *sub_b_pdi_sptr)) {
+    cerr << "Failed: Didn't expect subset A >= subset B" << endl;
+    everything_ok = false;
+  }
 }
 
 
