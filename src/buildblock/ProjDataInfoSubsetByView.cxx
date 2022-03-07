@@ -109,6 +109,7 @@ Bin ProjDataInfoSubsetByView::get_bin_from_org(const Bin& org_bin) const
 void ProjDataInfoSubsetByView::reduce_segment_range(const int min_segment_num, const int max_segment_num)
 {
   this->org_proj_data_info_sptr->reduce_segment_range(min_segment_num, max_segment_num);
+  base_type::reduce_segment_range(min_segment_num, max_segment_num);
 }
  
 void ProjDataInfoSubsetByView::set_num_views(const int)
