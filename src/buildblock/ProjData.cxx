@@ -2,7 +2,9 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
-    Copyright (C) 2015, 2020 University College London
+    Copyright (C) 2015, 2020, 2022 University College London
+    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021, Rutherford Appleton Laboratory STFC
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -16,6 +18,9 @@
   \brief Implementations for non-inline functions of class stir::ProjData
 
   \author Kris Thielemans
+  \author Ashley Gillman
+  \author Evgueni Ovtchinnikov
+  \author Gemma Fardell
   \author PARAPET project
 */
 #include "stir/ProjData.h"

@@ -1,5 +1,6 @@
 /*
-    Copyright (C) ...
+    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -30,7 +31,7 @@ class Succeeded;
   \ingroup projdata
   \brief Projection data info for data corresponding to a subset sampling by views.
 
-  The class maintains a reference to the 'original' fully sampled ProjData and defers to this
+  The class maintains a reference to the 'original' fully sampled ProjDataInfo and defers to this
   object where possible.
 */
 class ProjDataInfoSubsetByView: public ProjDataInfo
@@ -41,8 +42,8 @@ private:
 
 public:
   //! Constructor setting relevant info for a ProjDataInfoSubsetByView
-  /*!  org_proj_data_info_sptr is the original, fully sampled ProjDataInfo to subset.
-       views are the views to subset over.
+  /*!  \param[in] org_proj_data_info_sptr is the original, fully sampled ProjDataInfo to subset.
+       \param[in] views are the views to subset over.
    */
   ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> org_proj_data_info_sptr,
                            const std::vector<int>& views);
@@ -76,10 +77,8 @@ public:
   void set_num_tangential_poss(const int num_tang_poss) override;
 
   //! Set number of axial positions per segment
-  /*! \see ProjDataInfo::set_num_axial_poss_per_segment
-    \param num_axial_poss_per_segment is a vector with the new numbers,
-    where the index into the vector is the segment_num (i.e. it is not
-    related to the storage order of the segments or so). */
+  /*! Forwards ProjDataInfo::set_num_axial_poss_per_segment
+   */
   void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment) override;
 
   //! Set minimum axial position number for 1 segment
@@ -106,8 +105,7 @@ public:
   //@{
 
   //! Get tangent of the co-polar angle of the normal to the projection plane
-  /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis)
-      \see ProjDataInfo::get_tantheta
+  /*! Forwards ProjDataInfo::get_tantheta
    */
   float get_tantheta(const Bin&) const override;
 
@@ -118,35 +116,23 @@ public:
   float get_phi(const Bin&) const override;
 
   //! Get value of the (roughly) axial coordinate in the projection plane (in mm)
-  /*! t-axis is defined to be orthogonal to the s-axis (and to the vector
-      normal to the projection plane
-      \see ProjDataInfo::get_t
+  /*! Forwards ProjDataInfo::get_t
    */
   float get_t(const Bin&) const override;
 
   //! Return z-coordinate of the middle of the LOR (in mm)
-  /*!
-    The middle is defined as follows: imagine a cylinder centred around
-    the scanner axis. The LOR will intersect the cylinder at 2 opposite
-    ends. The middle of the LOR is exactly halfway those 2 points.
-
-    The 0 of the z-axis is chosen in the middle of the scanner.
-
-    \see ProjDataInfo::get_m
+  /*! Forwards ProjDataInfo::get_m
   */
   float get_m(const Bin&) const override;
 
   //! Get value of the tangential coordinate in the projection plane (in mm)
-  /*! s-axis is defined to be orthogonal to the scanner axis (and to the vector
-      normal to the projection plane
-      \see ProjDataInfo::get_s
+  /*! Forwards ProjDataInfo::get_s
    */
   float get_s(const Bin&) const override;
 
   //! Get LOR corresponding to a given bin
   /*!
-      \see get_bin()
-      \see ProjDataInfo::get_LOR
+      Forwards ProjDataInfo::get_LOR
   */
   void
     get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&,
@@ -158,54 +144,24 @@ public:
   //@{
 
   //! Get sampling distance in the \c t coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The
-      default implementation computes it as
-      \code
-      1/2(get_t(..., ax_pos+1,...)-get_t(..., ax_pos-1,...)))
-      \endcode
-
-      \see ProjDataInfo::get_sampling_in_t
+  /*! Forwards ProjDataInfo::get_sampling_in_t
   */
   float get_sampling_in_t(const Bin&) const override;
 
   //! Get sampling distance in the \c m coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The
-      default implementation computes it as
-      \code
-      1/2(get_m(..., ax_pos+1,...)-get_m(..., ax_pos-1,...)))
-      \endcode
-
-      \see ProjDataInfo::get_sampling_in_m
+  /*! Forwards ProjDataInfo::get_sampling_in_m
   */
   float get_sampling_in_m(const Bin&) const override;
 
   //! Get sampling distance in the \c s coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The
-      default implementation computes it as
-      \code
-      1/2(get_s(..., tang_pos+1)-get_s(..., tang_pos_pos-1)))
-      \endcode
-
-      \see ProjDataInfo::get_sampling_in_s
+  /*! Forwards ProjDataInfo::get_sampling_in_s
   */
   float get_sampling_in_s(const Bin&) const override;
 
   //@}
 
   //! Find the bin in the projection data that 'contains' an LOR
-  /*! Projection data corresponds to lines, so most Lines Of Response
-      (LORs) there is a bin in the projection data. Usually this will be
-      the bin which has a central LOR that is 'closest' to the LOR that
-      is passed as an argument.
-
-      If there is no such bin (e.g. the LOR does not intersect the
-      detectors, Bin::get_bin_value() will be less than 0, otherwise
-      it will be 1.
-
-      \warning This function might get a different type of arguments
-      in the next release.
-      \see get_LOR()
-      \see ProjDataInfo::get_bin
+  /*! Forwards ProjDataInfo::get_bin
   */
   Bin get_bin(const LOR<float>&) const override;
 
@@ -228,16 +184,14 @@ protected:
 private:
 
   shared_ptr<ProjDataInfo> org_proj_data_info_sptr;
-  // A vector of original view numbers indexed by the subset view
+  //! A vector of original view numbers indexed by the subset view
   std::vector<int> view_to_org_view_num;
-  // A vector of subset view numbers indexed by the original view. -100 for invalid views
+  //! A vector of subset view numbers indexed by the original view. -100 for invalid views
   std::vector<int> org_view_to_view_num;
 };
 
 
 END_NAMESPACE_STIR
-
-//#include "stir/ProjDataInfoSubsetByView.inl"
 
 #endif
 

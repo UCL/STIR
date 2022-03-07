@@ -1,8 +1,17 @@
+/*
+    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021-2022, University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup test
   \ingroup projdata
-  \brief Test program for subsetting stir::ProjDataInfo
+  \brief Test program for subsetting stir::ProjDataInfo via stir::ProjDataInfoSubsetByView
   \author Ashley Gillman
   \author Kris Thielemans
 */

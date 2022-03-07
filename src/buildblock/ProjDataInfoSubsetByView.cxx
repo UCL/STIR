@@ -1,6 +1,5 @@
-//
-//
 /*
+    Copyright (C) 2021-2022, CSIRO
     Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
@@ -14,6 +13,7 @@
   \brief Implementation of non-inline functions of class stir::ProjDataInfoSubsetByView
 
   \author Kris Thielemans
+  \author Ashley Gillman
 
 */
 #include "stir/ProjDataInfoSubsetByView.h"
