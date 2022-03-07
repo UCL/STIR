@@ -75,6 +75,10 @@ public:
         const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
         const shared_ptr<const ProjData>& template_sino_sptr,
         bool use_z_symmetries=false, bool use_other_symmetries=false, int num_subsets=10);
+    void test_forward_projection_is_consistent_with_reduced_segment_range(
+        const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+        const shared_ptr<const ProjData>& template_sino_sptr,
+        bool use_z_symmetries=false, bool use_other_symmetries=false, int num_subsets=10);
     // void test_back_projection_is_consistent(
     //     const ProjData &input_sino, const VoxelsOnCartesianGrid<float> &template_image,
     //     BackProjectorByBin& bck_projector, int num_subsets=2);
@@ -103,6 +107,11 @@ protected:
     ProjDataInMemory generate_full_forward_projection(
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
       const shared_ptr<const ProjData>& template_sino_sptr,
+      bool use_z_symmetries=false, bool use_other_symmetries=false);
+    ProjDataInMemory generate_full_forward_projection(
+      const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+      const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
+      const shared_ptr<const ExamInfo>& template_examinfo_sptr,
       bool use_z_symmetries=false, bool use_other_symmetries=false);
     shared_ptr<VoxelsOnCartesianGrid<float>> generate_full_back_projection(
       const shared_ptr<const ProjData>& input_sino_sptr,
@@ -226,6 +235,9 @@ run_tests()
       _test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/true, /*use_z_symmetries=*/true);
 
     test_forward_projection_is_consistent_with_unbalanced_subset(
+      _test_image_sptr, _input_sino_sptr);
+
+    test_forward_projection_is_consistent_with_reduced_segment_range(
       _test_image_sptr, _input_sino_sptr);
 
     // test_back_projection_is_consistent(*_input_sino_sptr, *back_proj_sptr);
@@ -368,19 +380,71 @@ test_forward_projection_is_consistent_with_unbalanced_subset(
 }
 
 
+void TestProjDataInfoSubsets::
+test_forward_projection_is_consistent_with_reduced_segment_range(
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_z_symmetries, bool use_other_symmetries, int num_subsets)
+{
+  cerr << "\tTesting Subset forward projection is consistent with reduced segment range" << endl;
+
+  if ((template_sino_sptr->get_min_segment_num() > 0) && (template_sino_sptr->get_max_segment_num() < 1)) {
+    cerr << "Error: Template provided doesn't have enough segments to conduct this test with "
+         << template_sino_sptr->get_num_segments() << " segments." << std::endl;
+    everything_ok = false;
+  }
+
+  // First we make a full forward projection with a reduced segment range
+  shared_ptr<ProjDataInfo> reduced_seg_range_pdi_sptr(template_sino_sptr->get_proj_data_info_sptr()->clone());
+  reduced_seg_range_pdi_sptr->reduce_segment_range(-1, 1);
+  auto full_forward_projection = generate_full_forward_projection(
+    input_image_sptr, reduced_seg_range_pdi_sptr, template_sino_sptr->get_exam_info_sptr(), use_z_symmetries, use_other_symmetries);
+
+  for (int subset_n = 0; subset_n < num_subsets; ++subset_n) {
+    auto subset_views = _calc_regularly_sampled_views_for_subset(
+      subset_n, num_subsets, full_forward_projection.get_num_views());
+
+    // Now we make a subset ProjData, but based on the full segment range
+    auto subset_template_projdata_uptr = template_sino_sptr->get_subset(subset_views);
+    // and independently reduce the segment range on the subset
+    shared_ptr<ProjDataInfo> subset_reduced_seg_range_pdi_sptr(subset_template_projdata_uptr->get_proj_data_info_sptr()->clone());
+    subset_reduced_seg_range_pdi_sptr->reduce_segment_range(-1, 1);
+    ProjDataInMemory subset_forward_projection(subset_template_projdata_uptr->get_exam_info_sptr(), subset_reduced_seg_range_pdi_sptr);
+
+    cerr << "\tTesting reduced segment range on subset " << subset_n << endl;
+    test_forward_projection_for_one_subset(
+      input_image_sptr, full_forward_projection, subset_forward_projection,
+      use_z_symmetries, use_other_symmetries);
+  }
+}
+
+
 ProjDataInMemory TestProjDataInfoSubsets::
 generate_full_forward_projection(
     const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
-    const shared_ptr<const ProjData>& template_sino_sptr,
+    const shared_ptr<const ProjData>& template_projdata_sptr,
+    bool use_z_symmetries, bool use_other_symmetries)
+{
+    return generate_full_forward_projection(
+      input_image_sptr, template_projdata_sptr->get_proj_data_info_sptr(),
+      template_projdata_sptr->get_exam_info_sptr(),
+      use_z_symmetries, use_other_symmetries);
+}
+
+ProjDataInMemory TestProjDataInfoSubsets::
+generate_full_forward_projection(
+    const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
+    const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
+    const shared_ptr<const ExamInfo>& template_examinfo_sptr,
     bool use_z_symmetries, bool use_other_symmetries)
 {
   check (input_image_sptr->find_max() > 0, "forward projection test run with empty image");
 
   auto fwd_projector_sptr = construct_projector_pair(
-    template_sino_sptr->get_proj_data_info_sptr(), input_image_sptr, use_z_symmetries, use_other_symmetries)
+    template_projdata_info_sptr, input_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_forward_projector_sptr();
   
-  ProjDataInMemory full_forward_projection(*template_sino_sptr);
+  ProjDataInMemory full_forward_projection(template_examinfo_sptr, template_projdata_info_sptr);
   fwd_projector_sptr->set_input(*input_image_sptr);
   fwd_projector_sptr->forward_project(full_forward_projection);
 
