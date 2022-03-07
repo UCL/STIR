@@ -391,6 +391,10 @@ public:
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
+  //! Implementation for operator>=
+  //! Check if \c *this contains \c proj
+  virtual bool is_superset(const ProjDataInfo& proj) const;
+
 private:
   shared_ptr<Scanner> scanner_ptr;
   int min_view_num;

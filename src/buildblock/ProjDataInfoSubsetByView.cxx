@@ -227,18 +227,24 @@ bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
    auto smaller_proj_data_info = static_cast<const ProjDataInfoSubsetByView&>(proj);
 
    if (!((*this->org_proj_data_info_sptr) >= (*smaller_proj_data_info.org_proj_data_info_sptr)))
-    { return false; }
+    return false;
 
   // check all of smaller_proj_data_info org_views are in this subset
-  for (int view_num_idx = 0; view_num_idx < smaller_proj_data_info.get_num_views(); ++view_num_idx)
+  for (int view_num = 0; view_num < smaller_proj_data_info.get_num_views(); ++view_num)
   {
-    int org_view_num = smaller_proj_data_info.view_to_org_view_num[view_num_idx];
+    int org_view_num = smaller_proj_data_info.view_to_org_view_num[view_num];
     if (std::find(this->view_to_org_view_num.begin(), this->view_to_org_view_num.end(), org_view_num)
           == this->view_to_org_view_num.end())
-    { return false; }
+    return false;
   }
 
-  return base_type::operator>=(proj);
+  // base_type::operator>= works by reducing the larger ProjDataInfo (this) until they're equal.
+  // We'll need to, therefore, compare with a subset of this that only includes the views of
+  // smaller_proj_data_info
+  ProjDataInfoSubsetByView this_projdata_info_with_other_views(
+    this->get_original_proj_data_info_sptr(), smaller_proj_data_info.view_to_org_view_num);
+
+  return this_projdata_info_with_other_views.is_superset(smaller_proj_data_info);
 }
 
 std::string ProjDataInfoSubsetByView::parameter_info() const

@@ -297,7 +297,7 @@ test_split(const ProjData &proj_data)
       }
   }
 
-  // Test operator >=
+  cerr << "\tTesting ProjDataSubsetByView >= operator" << endl;
   auto full_pdi_sptr = proj_data.get_subset(
     _calc_regularly_sampled_views_for_subset(0, 1, proj_data.get_num_views()))
     ->get_proj_data_info_sptr();
@@ -309,17 +309,18 @@ test_split(const ProjData &proj_data)
     ->get_proj_data_info_sptr();
 
   // full == orig
+  cerr << "\t\tchecking Full subset should >= original ProjDataInfo" << endl;
   if (!(*full_pdi_sptr >= *proj_data.get_proj_data_info_sptr())) {
     cerr << typeid(*full_pdi_sptr).name() << " " << typeid(*sub_a_pdi_sptr).name() << endl;
     cerr << "Failed: Expected full == original" << endl;
     everything_ok = false;
   }
-  // full >= sub_a
+  cerr << "\t\tchecking Full subset should >= Smaller subset" << endl;
   if (!(*full_pdi_sptr >= *sub_a_pdi_sptr)) {
     cerr << "Failed: Expected full >= subset A" << endl;
     everything_ok = false;
   }
-  // sub_a not >= sub_b
+  cerr << "\t\tchecking Independent subsets should not >= one another" << endl;
   if ((*sub_a_pdi_sptr >= *sub_b_pdi_sptr)) {
     cerr << "Failed: Didn't expect subset A >= subset B" << endl;
     everything_ok = false;
