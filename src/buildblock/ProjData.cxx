@@ -3,7 +3,7 @@
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
     Copyright (C) 2015, 2020, 2022 University College London
-    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2021, Rutherford Appleton Laboratory STFC
     This file is part of STIR.
 

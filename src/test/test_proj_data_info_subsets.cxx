@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
@@ -22,7 +22,6 @@
 #include "stir/CPUTimer.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-// #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Viewgram.h"
@@ -88,9 +87,6 @@ public:
         const shared_ptr<const VoxelsOnCartesianGrid<float> >& input_image_sptr,
         const shared_ptr<const ProjData>& template_sino_sptr,
         bool use_z_symmetries=false, bool use_other_symmetries=false, int num_subsets=10);
-    // void test_back_projection_is_consistent(
-    //     const ProjData &input_sino, const VoxelsOnCartesianGrid<float> &template_image,
-    //     BackProjectorByBin& bck_projector, int num_subsets=2);
     void test_back_projection_is_consistent(
         const shared_ptr<const ProjData>& input_sino_sptr,
         const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
@@ -103,8 +99,6 @@ protected:
     static shared_ptr<VoxelsOnCartesianGrid<float> > construct_test_image_data(
         const ProjData& template_projdata);
     static shared_ptr<ProjData> construct_test_proj_data();
-    // static shared_ptr<VoxelsOnCartesianGrid<float> > construct_projector_pair(
-    //     const ProjDataInfo &template_projdatainfo);
     static shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> construct_projector_pair(
       const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
       const shared_ptr<const VoxelsOnCartesianGrid<float> >& template_image_sptr,
@@ -147,12 +141,12 @@ shared_ptr<ProjData> TestProjDataInfoSubsets::construct_test_proj_data()
   shared_ptr<ProjDataInfo>
     proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(scanner_ptr,
                                                                /*span*/5, scanner_ptr->get_num_rings()-1,
-                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
-                                                               /*tang_pos*/64, 
+                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8,
+                                                               /*tang_pos*/64,
                                                                /*arc_corrected*/ false));
   auto exam_info_sptr = std::make_shared<ExamInfo>();
   exam_info_sptr->imaging_modality = ImagingModality::PT;
-  
+
   return std::make_shared<ProjDataInMemory>(exam_info_sptr, proj_data_info_sptr);
 }
 
@@ -164,7 +158,6 @@ shared_ptr<VoxelsOnCartesianGrid<float> > TestProjDataInfoSubsets::construct_tes
 
   // make radius 0.8 FOV
   auto radius = BasicCoordinate<3,float>(image->get_lengths()) * image->get_voxel_size() / 2.F;
-    //image->get_physical_coordinates_for_indices(image->get_min_indices()) * 0.8;
   auto centre = image->get_physical_coordinates_for_indices((image->get_min_indices() + image->get_max_indices()) / 2);
 
   // object at centre of image
@@ -208,7 +201,7 @@ void TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
   forward_projector->forward_project(*proj_data_sptr);
 }
 
-    
+
 void
 TestProjDataInfoSubsets::
 run_tests()
@@ -249,7 +242,6 @@ run_tests()
     test_forward_projection_is_consistent_with_reduced_segment_range(
       _test_image_sptr, _input_sino_sptr);
 
-    // test_back_projection_is_consistent(*_input_sino_sptr, *back_proj_sptr);
     test_back_projection_is_consistent(
       _input_sino_sptr, _test_image_sptr, /*num_subsets=*/10);
   }
@@ -481,7 +473,7 @@ generate_full_forward_projection(
   auto fwd_projector_sptr = construct_projector_pair(
     template_projdata_info_sptr, input_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_forward_projector_sptr();
-  
+
   ProjDataInMemory full_forward_projection(template_examinfo_sptr, template_projdata_info_sptr);
   fwd_projector_sptr->set_input(*input_image_sptr);
   fwd_projector_sptr->forward_project(full_forward_projection);
@@ -501,7 +493,7 @@ generate_full_back_projection(
   auto back_projector_sptr = construct_projector_pair(
     input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr, use_z_symmetries, use_other_symmetries)
       ->get_back_projector_sptr();
-  
+
   shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->get_empty_copy());
   back_projector_sptr->back_project(*full_back_projection_sptr, *input_sino_sptr);
 
@@ -596,7 +588,7 @@ int main(int argc, char **argv)
 
     set_default_num_threads();
     Verbosity::set(0);
-    
+
     TestProjDataInfoSubsets test(argc>1? argv[1] : "");
     test.run_tests();
 
