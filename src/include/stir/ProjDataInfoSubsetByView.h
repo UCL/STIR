@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022, CSIRO
+    Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
@@ -14,6 +14,7 @@
   \brief Declaration of class stir::ProjDataInfoSubsetByView
 
   \author Ashley Gillman
+  \author Kris Thielemans
 */
 #ifndef __stir_ProjDataInfoSubsetByView__H__
 #define __stir_ProjDataInfoSubsetByView__H__

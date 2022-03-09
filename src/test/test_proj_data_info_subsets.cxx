@@ -29,12 +29,6 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Shape/Ellipsoid.h"
-#include "stir/Shape/DiscretisedShape3D.h"
-// ^ should we have to include this? Should be included from Ellipsoid? Bug?
-#include "stir/Shape/EllipsoidalCylinder.h"
-#include "stir/Shape/Ellipsoid.h"
-#include "stir/Shape/Box3D.h"
-#include "stir/Shape/DiscretisedShape3D.h"
 
 using std::endl;
 using std::cerr;
