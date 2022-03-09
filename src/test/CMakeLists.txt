@@ -19,6 +19,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DynamicDiscretisedDensity.cxx
 	test_ScatterSimulation.cxx
         test_ML_norm.cxx
+	test_proj_data_info_subsets.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}

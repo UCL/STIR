@@ -43,6 +43,7 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
 class Succeeded;
+class ProjDataInMemory;
 //class ExamInfo;
 
 /*!
@@ -126,6 +127,10 @@ public:
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
+
+  //! construct projection data that stores a subset of the views
+  unique_ptr<ProjDataInMemory>
+    get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
