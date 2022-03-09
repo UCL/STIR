@@ -18,7 +18,6 @@
 #ifndef __stir_ProjDataInfoSubsetByView__H__
 #define __stir_ProjDataInfoSubsetByView__H__
 
-
 #include "stir/ProjDataInfo.h"
 #include <utility>
 #include <vector>
@@ -34,7 +33,7 @@ class Succeeded;
   The class maintains a reference to the 'original' fully sampled ProjDataInfo and defers to this
   object where possible.
 */
-class ProjDataInfoSubsetByView: public ProjDataInfo
+class ProjDataInfoSubsetByView : public ProjDataInfo
 {
 private:
   typedef ProjDataInfo base_type;
@@ -45,8 +44,7 @@ public:
   /*!  \param[in] org_proj_data_info_sptr is the original, fully sampled ProjDataInfo to subset.
        \param[in] views are the views to subset over.
    */
-  ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> org_proj_data_info_sptr,
-                           const std::vector<int>& views);
+  ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> org_proj_data_info_sptr, const std::vector<int>& views);
 
   //! Clone the object.
   ProjDataInfoSubsetByView* clone() const override;
@@ -68,8 +66,7 @@ public:
   void reduce_segment_range(const int min_segment_num, const int max_segment_num) override;
 
   //! Invalid for a subset! This will call error()
-  void
-    set_num_views(const int new_num_views) override;
+  void set_num_views(const int new_num_views) override;
 
   //! Set number of tangential positions
   /*! \see ProjDataInfo::set_num_tangential_poss
@@ -122,7 +119,7 @@ public:
 
   //! Return z-coordinate of the middle of the LOR (in mm)
   /*! Forwards ProjDataInfo::get_m
-  */
+   */
   float get_m(const Bin&) const override;
 
   //! Get value of the tangential coordinate in the projection plane (in mm)
@@ -134,9 +131,7 @@ public:
   /*!
       Forwards ProjDataInfo::get_LOR
   */
-  void
-    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&,
-	    const Bin&) const override;
+  void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&, const Bin&) const override;
 
   //@}
 
@@ -145,24 +140,24 @@ public:
 
   //! Get sampling distance in the \c t coordinate
   /*! Forwards ProjDataInfo::get_sampling_in_t
-  */
+   */
   float get_sampling_in_t(const Bin&) const override;
 
   //! Get sampling distance in the \c m coordinate
   /*! Forwards ProjDataInfo::get_sampling_in_m
-  */
+   */
   float get_sampling_in_m(const Bin&) const override;
 
   //! Get sampling distance in the \c s coordinate
   /*! Forwards ProjDataInfo::get_sampling_in_s
-  */
+   */
   float get_sampling_in_s(const Bin&) const override;
 
   //@}
 
   //! Find the bin in the projection data that 'contains' an LOR
   /*! Forwards ProjDataInfo::get_bin
-  */
+   */
   Bin get_bin(const LOR<float>&) const override;
 
   //! Check if \c *this contains \c proj
@@ -179,10 +174,9 @@ public:
   shared_ptr<const ProjDataInfo> get_original_proj_data_info_sptr() const;
 
 protected:
-  bool blindly_equals(const root_type * const) const override;
+  bool blindly_equals(const root_type* const) const override;
 
 private:
-
   shared_ptr<ProjDataInfo> org_proj_data_info_sptr;
   //! A vector of original view numbers indexed by the subset view
   std::vector<int> view_to_org_view_num;
@@ -190,8 +184,6 @@ private:
   std::vector<int> org_view_to_view_num;
 };
 
-
 END_NAMESPACE_STIR
 
 #endif
-
