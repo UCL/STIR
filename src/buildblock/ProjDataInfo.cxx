@@ -620,7 +620,7 @@ operator !=(const root_type& that) const
 */
 bool
 ProjDataInfo::
-is_superset(const ProjDataInfo& proj_data_info) const
+operator>=(const ProjDataInfo& proj_data_info) const
 {
   if (typeid(*this) != typeid(proj_data_info))
     return false;
@@ -663,13 +663,6 @@ is_superset(const ProjDataInfo& proj_data_info) const
     }
 
   return (proj_data_info == *smaller_proj_data_info_sptr);
-}
-
-bool
-ProjDataInfo::
-operator>=(const ProjDataInfo& proj_data_info) const
-{
-  return is_superset(proj_data_info);
 }
 
 END_NAMESPACE_STIR

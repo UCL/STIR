@@ -228,6 +228,9 @@ bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
 
    if (!((*this->org_proj_data_info_sptr) >= (*smaller_proj_data_info.org_proj_data_info_sptr)))
     return false;
+  // Assuming we've been careful to keep `this` subset and `org_proj_data_info_sptr` consistent,
+  // we can now be confident that we are >= proj in terms of segment, tangential pos, ans axial pos.
+  // Now just need to check views.
 
   // check all of smaller_proj_data_info org_views are in this subset
   for (int view_num = 0; view_num < smaller_proj_data_info.get_num_views(); ++view_num)
@@ -238,13 +241,7 @@ bool ProjDataInfoSubsetByView::operator>=(const ProjDataInfo& proj) const
     return false;
   }
 
-  // base_type::operator>= works by reducing the larger ProjDataInfo (this) until they're equal.
-  // We'll need to, therefore, compare with a subset of this that only includes the views of
-  // smaller_proj_data_info
-  ProjDataInfoSubsetByView this_projdata_info_with_other_views(
-    this->get_original_proj_data_info_sptr(), smaller_proj_data_info.view_to_org_view_num);
-
-  return this_projdata_info_with_other_views.is_superset(smaller_proj_data_info);
+  return true;
 }
 
 std::string ProjDataInfoSubsetByView::parameter_info() const
