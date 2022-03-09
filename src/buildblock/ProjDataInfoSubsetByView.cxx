@@ -120,6 +120,8 @@ void ProjDataInfoSubsetByView::set_num_views(const int)
 void ProjDataInfoSubsetByView::set_num_tangential_poss(const int num_tang_poss)
 {
   this->org_proj_data_info_sptr->set_num_tangential_poss(num_tang_poss);
+  // currently need to do this
+  ProjDataInfo::set_num_tangential_poss(num_tang_poss);
 }
 
 void ProjDataInfoSubsetByView::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment)
