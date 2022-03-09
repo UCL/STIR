@@ -59,6 +59,7 @@
  #include "stir/DataSymmetriesForViewSegmentNumbers.h"
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+ #include "stir/recon_buildblock/TrivialBinNormalisation.h"
  #include "stir/listmode/LmToProjData.h"
  #include "stir/listmode/ListModeData.h"
 
@@ -112,6 +113,10 @@
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/recon_buildblock/LogcoshPrior.h"
 
+
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
@@ -123,6 +128,8 @@
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/scatter/CreateTailMaskFromACFs.h"
+#include "stir/numerics/BSplines.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -1885,11 +1892,28 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 
+%shared_ptr(stir::ProjectorByBinPair);
+// explicitly ignore constructor, because SWIG tries to instantiate the abstract class otherwise
+%ignore stir::ProjectorByBinPair::ProjectorByBinPair();
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::ProjectorByBinPairUsingProjMatrixByBin,
+              stir::ProjectorByBinPair,
+              stir::ProjectorByBinPair>);
+%shared_ptr(stir::ProjectorByBinPairUsingProjMatrixByBin)
+%include "stir/recon_buildblock/ProjectorByBinPair.h"
+%template(internalRPProjectorByBinPairUsingProjMatrixByBin) stir::RegisteredParsingObject<
+        stir::ProjectorByBinPairUsingProjMatrixByBin,
+              stir::ProjectorByBinPair,
+              stir::ProjectorByBinPair>;
+%include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+
 %shared_ptr(stir::BinNormalisation);
 %shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromProjData, stir::BinNormalisation>);
 %shared_ptr(stir::BinNormalisationFromProjData);
 %shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>);
 %shared_ptr(stir::BinNormalisationFromAttenuationImage);
+%shared_ptr(stir::RegisteredParsingObject<stir::TrivialBinNormalisation, stir::BinNormalisation>);
+%shared_ptr(stir::TrivialBinNormalisation);
 
 %include "stir/recon_buildblock/BinNormalisation.h"
 
@@ -1901,7 +1925,10 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
   stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>;
 %include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
 
-//%include "stir/multiply_crystal_factors.h"
+%template (internalRPTrivialBinNormalisation) stir::RegisteredParsingObject<
+  stir::TrivialBinNormalisation, stir::BinNormalisation>;
+%include "stir/recon_buildblock/TrivialBinNormalisation.h"
+
 void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
 
 %shared_ptr(stir::LmToProjData);
@@ -1922,8 +1949,10 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::ScatterEstimation);
 %include "stir/scatter/ScatterEstimation.h"
 
-%shared_ptr(stir::ListModeData);
+%shared_ptr(stir::CreateTailMaskFromACFs);
+%include "stir/scatter/CreateTailMaskFromACFs.h"
 
+%shared_ptr(stir::ListModeData);
 %include "stir/listmode/ListModeData.h"
 
 %extend stir::ListModeData {
@@ -1933,10 +1962,11 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
       shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
       return ret;
     }
- }
+}
 
- //void make_fan_data_remove_gaps(stir::FanProjData& fan_data, const stir::ProjData& proj_data);
+%shared_ptr(stir::FanProjData);
+%shared_ptr(stir::GeoData3D);
+%include "stir/ML_norm.h"
 
- %shared_ptr(stir::FanProjData);
- %shared_ptr(stir::GeoData3D);
- %include "stir/ML_norm.h"
+//stir::BSpline;
+%include "stir/numerics/BSplines.h"
