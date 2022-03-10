@@ -194,9 +194,9 @@ set_up(
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const
 {
-  assert(static_cast<CacheKey>(abs(bin.axial_pos_num())) < (static_cast<CacheKey>(1)<<axial_pos_bits));
-  assert(static_cast<CacheKey>(abs(bin.tangential_pos_num())) < (static_cast<CacheKey>(1)<tang_pos_bits));
-  assert(static_cast<CacheKey>(abs(bin.timing_pos_num())) < (static_cast<CacheKey>(1)<timing_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.axial_pos_num())) < (static_cast<CacheKey>(1) << axial_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.tangential_pos_num())) < (static_cast<CacheKey>(1) << tang_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.timing_pos_num())) < (static_cast<CacheKey>(1) << timing_pos_bits));
 
   return static_cast<CacheKey>(
                                (static_cast<CacheKey>(bin.axial_pos_num()>=0?0:1) << (timing_pos_bits + tang_pos_bits + axial_pos_bits + 3))
