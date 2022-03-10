@@ -148,9 +148,6 @@ private:
     shared_ptr<DiscretisedDensity<3, float> > test_discretised_density_sptr;
     shared_ptr<ProjMatrixByBin> test_proj_matrix_sptr;
     shared_ptr<ProjMatrixByBin> test_nonTOF_proj_matrix_sptr;
-
-    shared_ptr<ProjectorByBinPair> projector_pair_sptr;
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used_sptr;
 };
 
 void
@@ -266,7 +263,7 @@ void
 TOF_Tests::test_tof_proj_data_info()
 {
   test_tof_proj_data_info_kernel();
-  test_tof_proj_data_info_det_pos();
+  // test_tof_proj_data_info_det_pos();
 }
 
 #ifdef HAVE_CERN_ROOT
