@@ -10,12 +10,13 @@
   \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
+  \author Robert Twyman
   \author PARAPET project
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2013, 2015, 2022 University College London
     Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
@@ -34,9 +35,9 @@
 #include "stir/TimedObject.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/numerics/FastErf.h"
-#include <boost/cstdint.hpp>
+#include <cstdint>
 //#include <map>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif
@@ -217,10 +218,16 @@ protected:
 
 private:
   
-  typedef boost::uint32_t CacheKey;
-
-	//  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
-  typedef boost::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
+  typedef std::uint64_t CacheKey;
+  //! \name bit-field sizes for the cache key
+  // note: sum needs to be less than  64 - 3  (for the 3 sign bits)
+  //@{
+  const CacheKey tang_pos_bits = 12;
+  const CacheKey axial_pos_bits = 28;
+  const CacheKey timing_pos_bits = 20;
+  //@}
+  //  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
+  typedef std::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
   typedef MapProjMatrixElemsForOneBin::iterator MapProjMatrixElemsForOneBinIterator;
   typedef MapProjMatrixElemsForOneBin::const_iterator const_MapProjMatrixElemsForOneBinIterator;
  

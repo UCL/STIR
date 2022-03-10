@@ -10,6 +10,7 @@
   \author Nikos Efthimiou
   \author Mustapha Sadki 
   \author Kris Thielemans
+  \author Robert Twyman
   \author PARAPET project
 
 */
@@ -17,6 +18,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2022 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
