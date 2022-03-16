@@ -201,10 +201,16 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>
     Exposed <code>compute_total_ROI_values</code> and <code>ROIValues</code> to Python/MATLAB via swig. Added python example <code>ROI_demo.py</code> to demonstrate usage.
 </li>
-  <li>
-      Additional C++ demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
-  </li>
+<li>
+    Additional C++ demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+</li>
 <li>A few functions related to TOF were added to <code>ProjDataInfo</code> and <code>Scanner</code> for future compatibility. However, this release still does not support TOF. (Check the GitHub site for the relevant PR).
+</li>
+<li>
+    Exposed <code>BinNormalisation</code>, <code>ListModeData</code>, <code>LmToProjData</code>, <code>ProjectorByBinPair</code>, <code>ScatterSimulation</code>, <code>ScatterEstimation</code> and a couple of support classes and functions to Python/MATLAB via swig. Added python example <code>listmode_demo.py</code> to demonstrate usage.
+</li>
+<li>
+    More setter functions on ScatterEstimation.
 </li>
 </ul>
 
@@ -266,6 +272,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <h3>Minor bug fixes</h3>
 <ul>
 <li>
+  Removed boolean state from SAFIR ListMode factory, to enable reading more than one listmode file in the same runtime environment.
 </li>
 </ul>
 

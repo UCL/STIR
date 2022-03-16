@@ -25,6 +25,7 @@
   \brief Declaration of class stir::SAFIRCListmodeInputFileFormat
 
   \author Jannis Fischer
+  \author Markus Jehl, Positrigo
 */
 
 #ifndef __stir_IO_SAFIRCListmodeInputFileFormat_H__

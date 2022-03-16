@@ -12,6 +12,7 @@
   \brief Interface file for SWIG
 
   \author Kris Thielemans 
+  \author Markus Jehl, Positrigo
 */
 
 
