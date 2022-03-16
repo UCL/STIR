@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2022 Nationcal Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -14,6 +15,7 @@
   
   \author Charalampos Tsoumpas
   \author Kris Thielemans
+  \author Daniel Deidda
 
 */
 

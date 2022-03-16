@@ -831,13 +831,30 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 
     const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
-
+    
     // preserve the length of the scanner
     float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
 
     new_scanner_sptr->set_num_rings(new_num_rings);
     new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
+    
+    //make a downsampled scanner with no gaps for blocksOnCylindrical
+    if (new_scanner_sptr->get_scanner_geometry()=="BlocksOnCylindrical"){
+        
+        int new_num_rings_per_block=new_num_rings/new_scanner_sptr->get_num_axial_crystals_per_block();
+        int new_num_dets_per_block=new_num_dets/new_scanner_sptr->get_num_transaxial_crystals_per_block();
+        
+        new_scanner_sptr->set_axial_block_spacing(
+                    new_scanner_sptr->get_axial_crystal_spacing()
+                    * new_num_rings_per_block);
+        new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
+        new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
+        new_scanner_sptr->set_transaxial_block_spacing(
+                    new_scanner_sptr->get_transaxial_crystal_spacing()
+                    * new_num_dets_per_block);
+    }
+    
     const float approx_num_non_arccorrected_bins =
       old_scanner_ptr->get_max_num_non_arccorrected_bins() * 
       (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring())

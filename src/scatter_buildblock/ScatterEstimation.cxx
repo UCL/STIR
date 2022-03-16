@@ -14,6 +14,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
@@ -424,11 +425,19 @@ set_up()
                     SSRB(*this->input_projdata_sptr->get_proj_data_info_sptr(),
                           this->input_projdata_sptr->get_num_segments(), 1, false));
 
-	this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                 proj_data_info_2d_sptr));
-
-        SSRB(*this->input_projdata_2d_sptr,
-             *input_projdata_sptr,false);
+        if (proj_data_info_2d_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
+            
+            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                    proj_data_info_2d_sptr));
+            
+            SSRB(*this->input_projdata_2d_sptr,
+                 *input_projdata_sptr,false);
+        }
+        else{ 
+            proj_data_info_2d_sptr->reduce_segment_range(0,0);
+            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                    proj_data_info_2d_sptr));
+        }
     }
     else
     {

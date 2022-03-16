@@ -14,6 +14,7 @@
 
 \author Charalampos Tsoumpas
 \author Kris Thielemans
+\author Daniel Deidda
 */
 
 #include "stir/ProjDataInfo.h"
