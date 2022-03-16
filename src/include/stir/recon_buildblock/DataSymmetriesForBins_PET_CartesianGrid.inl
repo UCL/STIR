@@ -26,7 +26,6 @@
 
   KT 30/05/2002 added possibility for reduced symmetry in view_num
 */
-#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoBlocksOnCylindrical.h"
 #include "stir/ProjDataInfoGeneric.h"
@@ -71,14 +70,11 @@ find_transform_z(
 		 const int segment_num, 
 		 const int  axial_pos_num) const
 {
+  const float delta = this->deltas[segment_num];
   int transform_z;
     //cylindrical implementaion
     if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
       {
-  const ProjDataInfoCylindrical* proj_data_info_cyl_ptr = 
-    static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
-
-  const float delta = proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
 
    
   // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
@@ -97,11 +93,6 @@ find_transform_z(
     //block implementaion
     else if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical")
       {
-  const ProjDataInfoBlocksOnCylindrical* proj_data_info_blk_ptr =
-      static_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get());
-
-    const float delta = proj_data_info_blk_ptr->get_average_ring_difference(segment_num);
-
 
     // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
     // Z+Q = 2*centre_of_LOR_in_image_coordinates == transform_z
@@ -119,11 +110,6 @@ find_transform_z(
     // generic implementation
     else
     {
-        const ProjDataInfoGeneric* proj_data_info_gen_ptr =
-        static_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get());
-
-        const float delta = proj_data_info_gen_ptr->get_average_ring_difference(segment_num);
-
         // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
         // Z+Q = 2*centre_of_LOR_in_image_coordinates == transform_z
         {
@@ -156,6 +142,9 @@ find_sym_op_bin0(
 	find_transform_z(abs(segment_num), 
 	do_symmetry_shift_z ? 0 : axial_pos_num);
 
+  // If doing z shifts, set the axial_pos_shift to axial_pos_num, else, set to 0
+  const int axial_pos_shift = do_symmetry_shift_z ? axial_pos_num : 0;
+
   const int z_shift = 
 	do_symmetry_shift_z ?
 	num_planes_per_axial_pos[segment_num]*axial_pos_num
@@ -178,34 +167,34 @@ find_sym_op_bin0(
 
   if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
     if ( !do_symmetry_swap_segment || segment_num >= 0)	
-      return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);          
+      return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_shift, z_shift);
     else               
-      return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_num, z_shift, transform_z);		   // seg < 0    				 			 
+      return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_shift, z_shift, transform_z);		   // seg < 0
   } 
   else if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  ) { // [ 45,  90] 		 
     if ( !do_symmetry_swap_segment || segment_num >= 0)  
-      return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_num, z_shift, transform_z);  					 			  			 
+      return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_shift, z_shift, transform_z);
     else
-      return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift); // seg < 0   //KT????????????  different for view90, TODO				  
+      return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_shift, z_shift); // seg < 0   //KT????????????  different for view90, TODO
   }  
   else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */){   // (135, 180) but (90,180) for reduced symmetry case
     if( !do_symmetry_swap_segment || segment_num >= 0)   
-      return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_num, z_shift, transform_z);  
+      return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_shift, z_shift, transform_z);
     else 	            
-      return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_num, z_shift);	  // seg < 0        				
+      return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_shift, z_shift);	  // seg < 0
   } 
   else 
   {
     assert( !do_symmetry_90degrees_min_phi || (view_num >= view0 && view_num <= view45));
     assert( !do_symmetry_180degrees_min_phi || (view_num >= view0 && view_num <= view90));
     if ( do_symmetry_swap_segment && segment_num < 0) 
-      return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z);                              
+      return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);
     else
     {
       if (z_shift==0)
        return new TrivialSymmetryOperation();
       else
-        return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_num, z_shift);
+        return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_shift, z_shift);
     }
   }
     }
@@ -269,6 +258,9 @@ find_sym_op_general_bin(
 	find_transform_z(abs(segment_num), 
 	do_symmetry_shift_z ? 0 : axial_pos_num);
 
+   // If doing z shifts, set the axial_pos_shift to axial_pos_num, else, set to 0
+   const int axial_pos_shift = do_symmetry_shift_z ? axial_pos_num : 0;
+
   const int z_shift = 
 	do_symmetry_shift_z ?
 	num_planes_per_axial_pos[segment_num]*axial_pos_num
@@ -293,64 +285,64 @@ find_sym_op_general_bin(
   if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
     if ( !do_symmetry_swap_segment || segment_num > 0) {	 // pos_plus90		 
       if ( !do_symmetry_swap_s || s > 0 ) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);           				    			   
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_shift, z_shift);
       else 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq(view180, axial_pos_num, z_shift, transform_z); // s < 0  					 
+        return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq(view180, axial_pos_shift, z_shift, transform_z); // s < 0
     }  
     else // neg_plus90
       /////
       if ( segment_num < 0 )	{   
         if ( !do_symmetry_swap_s || s > 0 )  
-          return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_num, z_shift, transform_z);   
+          return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_shift, z_shift, transform_z);
         else     
-          return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_num, z_shift);	     						  
+          return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_shift, z_shift);
       }   
       else { // segment_num == 0 							      
         if ( !do_symmetry_swap_s || s > 0 ) 
-          return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift); 
+          return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_shift, z_shift);
         else         
-          return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_num, z_shift);			 
+          return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_shift, z_shift);
       }			   			    					  
   }    
   else   if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  )  // [ 45,  90] 
   {		   
     if ( !do_symmetry_swap_segment || segment_num > 0){  
       if ( !do_symmetry_swap_s || s > 0 ) 	   
-        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_num, z_shift, transform_z); 					 				  
+        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_shift, z_shift, transform_z);
       else             
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_num, z_shift);	 			   
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_shift, z_shift);
     }
     else if ( segment_num < 0 ) { // {//101   segment_num < 0
       if ( !do_symmetry_swap_s || s > 0 )     
-        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift);			   
+        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_shift, z_shift);
       else    
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq(view180, axial_pos_num, z_shift, transform_z);     
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq(view180, axial_pos_shift, z_shift, transform_z);
       
     } 
     else // segment_num == 0
     {
       if ( !do_symmetry_swap_s || s > 0 ) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift);		
+        return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_shift, z_shift);
       else           
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_num, z_shift);				       
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_shift, z_shift);
     }
   }  
   else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */)   // (135, 180) but (90,180) for reduced symmetry case    
   {
     if( !do_symmetry_swap_segment || segment_num > 0){				    
       if ( !do_symmetry_swap_s || s > 0 )     
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_num, z_shift, transform_z);  					
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_shift, z_shift, transform_z);
       else             
-        return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_num, z_shift);     //  s <= 0  						
+        return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_shift, z_shift);     //  s <= 0
     }
     else //if ( segment_num < 0 )
     {// segment_num <= 0
       if ( !do_symmetry_swap_s || s > 0 ) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_num, z_shift);    				    
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_shift, z_shift);
       else 	         
-        return new SymmetryOperation_PET_CartesianGrid_swap_ymy_zq(view180, axial_pos_num, z_shift, transform_z);	 					     				   
+        return new SymmetryOperation_PET_CartesianGrid_swap_ymy_zq(view180, axial_pos_shift, z_shift, transform_z);
     }// segment_num == 0
-    // /*else{   if ( !do_symmetry_swap_s || s > 0 ) return new SymmetryOperation_PET_CartesianGrid_swap_xmx();	else 	return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_num, z_shift);}*/
+    // /*else{   if ( !do_symmetry_swap_s || s > 0 ) return new SymmetryOperation_PET_CartesianGrid_swap_xmx();	else 	return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_shift, z_shift);}*/
   }  
   else 
   {    
@@ -359,35 +351,35 @@ find_sym_op_general_bin(
     if ( !do_symmetry_swap_segment || segment_num > 0) 
     {   
       if ( do_symmetry_swap_s && s < 0) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_num, z_shift, transform_z);   									    						   
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_shift, z_shift, transform_z);
       else
       {
         if (z_shift==0)
           return new TrivialSymmetryOperation();
         else
-          return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_num, z_shift);
+          return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_shift, z_shift);
       }
     }
     else 
       if ( segment_num < 0 ) 	
       {
         /*KT if ( s == 0)   					 
-          return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z); 										
+          return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);
         else*/  
           if ( do_symmetry_swap_s && s < 0) 
-            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift);  
+            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift);
           else        
-            return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z);   // s > 0  						      						      						                         					
+            return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);   // s > 0
       }  
       else // segment_num = 0 
       {
-        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift); 
+        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift);
         else
         {
           if (z_shift==0)
             return new TrivialSymmetryOperation();
           else
-            return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_num, z_shift);
+            return new SymmetryOperation_PET_CartesianGrid_z_shift(axial_pos_shift, z_shift);
         }
       }
   }	

@@ -49,7 +49,7 @@ BackProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() :
-    _cuda_device(0), _cuda_verbosity(true)
+    _cuda_verbosity(true), _num_gpu_chunks(1)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -65,9 +65,18 @@ initialise_keymap()
 {
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
-  parser.add_key("CUDA device", &_cuda_device);
   parser.add_key("verbosity", &_cuda_verbosity);
+  parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
+
+void
+BackProjectorByBinParallelproj::
+set_defaults()
+{
+  _cuda_verbosity = true;
+  _num_gpu_chunks = 1;
+}
+
 
 void
 BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
@@ -127,16 +136,51 @@ get_output(DiscretisedDensity<3,float> &density) const
     info("Calling parallelproj backprojector", 2);
 
 #ifdef parallelproj_built_with_CUDA
-    joseph3d_back_cuda(_helper->xstart.data(),
-                       _helper->xend.data(),
-                       image_vec.data(),
-                       _helper->origin.data(),
-                       _helper->voxsize.data(),
-                       p.get_const_data_ptr(),
-                       static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                       _helper->imgdim.data(),
-                       /*threadsperblock*/ 64,
-                       /*num_devices*/ -1);
+
+    long long num_image_voxel = static_cast<long long>(image_vec.size());
+    long long num_lors = static_cast<long long>(p.get_proj_data_info_sptr()->size_all());
+
+    long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
+    long long remainder = num_lors % _num_gpu_chunks;
+
+    long long num_lors_per_chunk;
+    long long offset = 0;
+
+    // send image to all visible CUDA devices
+    float** image_on_cuda_devices;
+    image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+
+    // do (chuck-wise) back projection on the CUDA devices 
+    for(int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++){
+      if(chunk_num < remainder){
+        num_lors_per_chunk = num_lors_per_chunk_floor + 1;
+      }
+      else{
+        num_lors_per_chunk = num_lors_per_chunk_floor;
+      }
+
+      joseph3d_back_cuda(_helper->xstart.data() + 3*offset,
+                         _helper->xend.data() + 3*offset,
+                         image_on_cuda_devices,
+                         _helper->origin.data(),
+                         _helper->voxsize.data(),
+                         p.get_const_data_ptr() + offset,
+                         num_lors_per_chunk,
+                         _helper->imgdim.data(),
+                         /*threadsperblock*/ 64);
+
+      offset += num_lors_per_chunk;
+    }
+
+    // sum backprojected images on the first CUDA device
+    sum_float_arrays_on_first_device(image_on_cuda_devices, num_image_voxel);
+
+    // copy summed image back to host
+    get_float_array_from_device(image_on_cuda_devices, num_image_voxel, 0, image_vec.data());
+
+    // free image array from CUDA devices
+    free_float_array_on_all_devices(image_on_cuda_devices);
+
 #else
     joseph3d_back(_helper->xstart.data(),
                   _helper->xend.data(),

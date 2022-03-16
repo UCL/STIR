@@ -107,6 +107,12 @@
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+#ifdef STIR_WITH_Parallelproj_PROJECTOR
+#include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif
+
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
@@ -1434,8 +1440,6 @@ stir::CartesianCoordinate3D<float>
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 
-%include "stir/ProjData.h"
-
 #if 0
 %extend stir::ProjDataInfo 
 {
@@ -1460,9 +1464,21 @@ stir::CartesianCoordinate3D<float>
 }
 #endif
 
+// ignore this to avoid problems with unique_ptr, and add it later
+%ignore stir::ProjData::get_subset;
+%include "stir/ProjData.h"
+
+%newobject stir::ProjData::get_subset;
+
 namespace stir {
 %extend ProjData
   {
+    // work around the current SWIG limitation that it doesn't wrap unique_ptr. See above
+    ProjDataInMemory* get_subset(const std::vector<int>& views)
+    {
+      return get_subset(views).get();
+    }
+
 #ifdef SWIGPYTHON
     %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
     %newobject to_array;
@@ -1854,6 +1870,7 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);
+
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
     stir::ForwardProjectorByBin>);
 %shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
@@ -1861,6 +1878,8 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 %shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
     stir::BackProjectorByBin>);
 %shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
+
+
 %shared_ptr(stir::ProjMatrixByBin);
 %shared_ptr(stir::RegisteredParsingObject<
 	      stir::ProjMatrixByBinUsingRayTracing,
@@ -1886,6 +1905,7 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
   stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+
 
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
@@ -1967,3 +1987,22 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
 %include "stir/ML_norm.h"
+
+#ifdef HAVE_parallelproj
+%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::ForwardProjectorByBinParallelproj);
+%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::BackProjectorByBinParallelproj);
+
+%template (internalRPForwardProjectorByBinParallelproj)  
+  stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+
+%template (internalRPBackProjectorByBinParallelproj)  
+  stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
+     stir::BackProjectorByBin>;
+%include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif

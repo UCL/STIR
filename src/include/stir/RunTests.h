@@ -142,7 +142,7 @@ public:
       if(!check_if_equal(t1[i], t2[i], str))
       {
         std::cerr << "(at VectorWithOffset<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
-        return false;
+        return everything_ok = false;
       }
     }
     return true;
