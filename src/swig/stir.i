@@ -129,7 +129,6 @@
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
-#include "stir/numerics/BSplines.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -1831,6 +1830,7 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
+// Unfortunately, the below two templates currently break the SWIG interface
 // %template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
 //         stir::FBP2DReconstruction,
 //         stir::Reconstruction < TargetT >,
@@ -1967,6 +1967,3 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
 %include "stir/ML_norm.h"
-
-//stir::BSpline;
-%include "stir/numerics/BSplines.h"
