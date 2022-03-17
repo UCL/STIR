@@ -18,6 +18,7 @@
   
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Markus Jehl
 */
 
 #include "stir/DiscretisedDensity.h"

@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2013, 2018, 2020, 2021 University College London
+    Copyright (C) 2022 Positrigo
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,7 +13,7 @@
   \brief Interface file for SWIG
 
   \author Kris Thielemans 
-  \author Markus Jehl, Positrigo
+  \author Markus Jehl
 */
 
 
@@ -1952,6 +1953,7 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
 
+%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
 %shared_ptr(stir::LmToProjData);
 %include "stir/listmode/LmToProjData.h"
 

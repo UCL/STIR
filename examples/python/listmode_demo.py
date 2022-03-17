@@ -6,8 +6,8 @@
 # In ipython, you can use
 #  %run listmode_demo.py
 
-# Author: Markus Jehl, Positrigo
-# Copyright 2022 - University College London
+# Author: Markus Jehl
+# Copyright 2022 - Positrigo
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -28,8 +28,7 @@ lm_to_projdata = stir.LmToProjData()
 lm_to_projdata.set_output_filename_prefix("output_projdata")
 
 # Read in the listmode data from file.
-os.chdir("../../recon_test_pack")  # required because read_from_file does not like paths containing "../"
-listmode_data = stir.ListModeData.read_from_file("PET_ACQ_small.l.hdr.STIR")
+listmode_data = stir.ListModeData.read_from_file("../../recon_test_pack/PET_ACQ_small.l.hdr.STIR")
 lm_to_projdata.set_input_data(listmode_data)
 
 # Define the time frames - we are just defining one timeframe starting at 0 and ending at 10s.
@@ -39,15 +38,15 @@ time_frames.set_time_frame(1, 0, 10)
 lm_to_projdata.set_time_frame_definitions(time_frames)
 
 # Read template ProjData.
-template_projdata = stir.ProjData.read_from_file("Siemens_mMR_seg2.hs")
-lm_to_projdata.set_template_proj_data_info_sptr(template_projdata.get_proj_data_info())
-os.chdir("../examples/python")  # now we are allowed to come back to write the output in this folder
+template_projdata = stir.ProjData.read_from_file("../../recon_test_pack/Siemens_mMR_seg2.hs")
+lm_to_projdata.set_template_proj_data_info(template_projdata.get_proj_data_info())
 
 # Perform the actual processing.
 lm_to_projdata.set_up()
 lm_to_projdata.process_data()
 
-# Read in the generated proj data and visualise them (looks a bit like abstract art).
+# Read in the generated proj data and visualise them (looks a bit like abstract art, 
+# as there are very few counts in this example data).
 generated_projdata = stir.ProjData.read_from_file("output_projdata_f1g1d0b0.hs")
 first_segment = generated_projdata.get_segment_by_sinogram(0)
 projdata_np = stirextra.to_numpy(first_segment)
