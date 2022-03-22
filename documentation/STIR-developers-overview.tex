@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 4.1}}
+\textbf{\textit{version 5.0}}
 
 \end{center}
 
@@ -205,9 +205,10 @@ In any case, currently STIR always assumes for each segment that
 the middle of the scanner corresponds to the middle of the set 
 of sinograms (taking into account the ring difference). 
 
-View 0 currently corresponds to a vertical projection (for some 
-scanners, this is not true. STIR currently ignores this, so will 
-reconstruct a rotated image). Finally, in STIR code, the first 
+Without view offset, view 0 currently corresponds to a vertical projection.
+It also assumes that the first detector is at $x=0$, $y=-R$ (i.e.
+on the top of the scanner).
+Finally, in STIR code, the first 
 ring of the scanner is the ring furthest from the bed. This corresponds 
 to how the data are stored in ECAT6,7 and Interfile files.
 
