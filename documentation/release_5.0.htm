@@ -16,7 +16,7 @@ detailed below.
 <ul>
   <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
   <li>Initial support for PET scanners with block detectors or even generic location of detectors (less tested feature), taking into account
-    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be change
+    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be changed
     in a future version. See <a href="https://github.com/UCL/STIR/pull/577/">PR #577</a>. This work is described in<br />
     P. Khateri, J. Fischer, W. Lustermann, C. Tsoumpas, and G. Dissertori,<br />
     <cite>Implementation of cylindrical PET scanners with block detector geometry in STIR</cite>,<br />
@@ -30,7 +30,11 @@ detailed below.
     </li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D, see <a href="https://github.com/UCL/STIR/pull/619">PR 619</a>.
     This code was mostly contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL),
-    as well as capabilities to work with virtual crystals, see <a href="https://github.com/UCL/STIR/pull/833">PR 833</a> and <a href="https://github.com/UCL/STIR/pull/949">PR 949</a>.
+    as well as capabilities to work with virtual crystals, see <a href="https://github.com/UCL/STIR/pull/833">PR 833</a> and <a href="https://github.com/UCL/STIR/pull/949">PR 949</a>.  See the following proceedings for the initial work<br />
+    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
+    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
   </li>
   <li>A new <code>ProjDataInfoSubsetByView</code> class has been implemented which allows for subsets of projection data.
       Previously, subset projections could only be stored in fully sampled ProjData. This is still possible, the implementation is backward compatible, and subset reconstructions such as OSMAPSOL have not been changed.
@@ -62,12 +66,16 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys), Robert Twyman (UCL) and Daniel Deidda (NPL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL),
+  Parisa Khateri and Michael Roethlisberger (ETHZ),
+  Robert Twyman (UCL), Daniel Deidda (NPL), Tahereh Nikjenad (PETsys), Palak Wadhwa (Univ of Leeds),
+  Viet Ahn Dao (Univ of Leeds), Ashley Gillman (CSIRO), Georg Schramm (KUL),
+  Markus Jehl (Positrigo), Gefei Chen (Univ of Macao)
 </p>
 
     <h2>Patch release info</h2>
     <ul>
-      <li> 5.0.0 released ?/?/2022</li>
+      <li> 5.0.0 released 23/03/2022</li>
       <!--
       <li> 4.0.1 released 28/04/2020
         <ul>
@@ -142,11 +150,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     now able to select an additional projector, called <code>Parallelproj</code>. This will use the CUDA
     version if available, otherwise will fall-back to the OpenMP version. Check the new sample files in
     <tt>examples/samples</tt> and the section in the User's Guide.</li>
-  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well. See<br />
-    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
-    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
-    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
-    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
+  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well
   </li>
   <li>The (also preliminary) <code>ProjDataInfoSubsetByView</code> is backwards compatible and allows a new, memory efficient method for subset projections.
       Subset projections are created with with <code>ProjData::get_subset</code>, which is the only addition to the <code>ProjData</code> class (additions are mostly in the aforementioned new Info class).
@@ -246,7 +250,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     of CMake to avoid problems with libraries or compilers which are more recent than your CMake version.
     </li>
 <li>
-  At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. When building,
+  <strong>At least C++-11 is now required</strong>. We are not aware of any problems with most recent versions of C++. When building,
   you can change the C++ version
   by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
   documentation</a> for supported values.<br />
