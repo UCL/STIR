@@ -36,10 +36,10 @@ if (HAVE_CERN_ROOT)
     foreach(n RANGE 1 12 1)
         set(test_name test_consistency_root_${n})
         ADD_TEST(NAME ${test_name}
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
                 COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root
-                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency/root_header_test${n}.hroot
-                ${CMAKE_SOURCE_DIR}/recon_test_pack/ROOT_STIR_consistency/generate_image${n}.par
+                ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/pretest_output/root_header_test${n}.hroot
+                ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/SourceFiles/generate_image${n}.par
                 )
     endforeach()
 endif()
