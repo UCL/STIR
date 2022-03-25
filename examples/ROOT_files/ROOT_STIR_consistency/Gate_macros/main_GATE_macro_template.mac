@@ -3,7 +3,7 @@
 /vis/disable
 
 #-----------------#
-# G êE O M êE T R Y #
+# G E O M E T R Y #
 #-----------------#
 
 
@@ -47,14 +47,14 @@
 # R A D I O A C T I V E   S O U R C E #
 #-------------------------------------#
 
-/control/execute source_SOURCENAME.mac
+/control/execute ../SourceFiles/source_SOURCENAME.mac
 
 #-----------------------#
 # O U T P U T   D A T A #
 #-----------------------#
 
 /gate/output/root/enable
-/gate/output/root/setFileName             RootLM_D690_SOURCENAME
+/gate/output/root/setFileName             root_data_SOURCENAME
 /gate/output/root/setRootHitFlag          0
 /gate/output/root/setRootSinglesFlag      0
 /gate/output/root/setRootCoincidencesFlag 1

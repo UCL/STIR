@@ -1,17 +1,49 @@
 #! /bin/bash
 
+# Copyright (C) 2022, University College London
+#   This file is part of STIR.
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
+
+# Authors: Elise Emond and Robert Twyman
+
+#### Discription ####
+# This script generates STIR volumes and runs a GATE sumulation of 12 point sources.
+# This data is designed to be used by the `test_view_offset_root` test in STIR.
+
+
+# This script should be run from the directory containing this file `run_pretest_script.sh`
+if ! [ -f "run_pretest_script.sh" ]; then
+    echo "'run_pretest_script.sh' should be run from the directory containing the script."
+    exit 1
+fi
+
+# Create a directory for the STIR images
+PRE_TEST_OUTPUT_DIR=pretest_output
+mkdir -p ${PRE_TEST_OUTPUT_DIR}
+
 for I in {1..12}
 do
-	generate_image generate_image${I}.par
+	# Generate images and move to the pretest output directory
+	generate_image SourceFiles/generate_image${I}.par
+	mv stir_image${I}.ahv ${PRE_TEST_OUTPUT_DIR}
+	mv stir_image${I}.hv ${PRE_TEST_OUTPUT_DIR}
+	mv stir_image${I}.v ${PRE_TEST_OUTPUT_DIR}
+
 	cd Gate_macros
 	# Create main GATE macro files from template
-	sed -e s/SOURCENAME/test${I}/ main_D690_template.mac > main_D690_test${I}.mac
+	gsed -e s/SOURCENAME/test${I}/ main_GATE_macro_template.mac > main_GATE_macro_test${I}.mac
 
 	# Run Gate
-	Gate main_D690_test${I}.mac
-	cd ..
+	Gate main_GATE_macro_test${I}.mac
+	cd ..  # Back up to ROOT_STIR_consistency
+	
+	# Move ROOT files into pretest output direcotry
+	mv Gate_macros/root_data_test${I}.root ${PRE_TEST_OUTPUT_DIR}/
+
 	# Create hroot files from template
-	sed -e s/ROOTFILENAME/RootLM_D690_test${I}.root/ root_header_test_template.hroot > root_header_test${I}.hroot
+	echo " "
+	echo "Creating .hroot for test ${I}"
+	gsed -e s/ROOTFILENAME/root_data_test${I}.root/ root_header_test_template.hroot > ${PRE_TEST_OUTPUT_DIR}/root_header_test${I}.hroot
 done;
 
-mv Gate_macros/*.root .
