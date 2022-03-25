@@ -339,6 +339,11 @@ from the above):</H2>
       scanners, this will fill in the detector maps etc.
       You will get a run-time exception if you forgot to do this.
     </li>
+    <li>
+        Rotational changes to STIR's interface with ROOT files as subtraction of a <code>half_block</code> has been remove the from the determination of the crystalIDs.
+        Rotations should use the new view offset support described above.
+        Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>.
+    </li>
 </ul>
 
 <h3>New functionality</h3>
