@@ -90,6 +90,9 @@ private:
 
 	std::string root_header_filename;
     const char * const generate_image_parameter_filename;
+
+    //! A vector to store the coordinates of the closest approach voxels.
+    std::vector<CartesianCoordinate3D<float>> min_distances_coords_list;
 };
 
 void
@@ -128,10 +131,15 @@ process_list_data(
 
   ProjMatrixElemsForOneBin proj_matrix_row;
 
+  // For debugging, create a list of the closest LOR coords. Also first entry is the original.
+  min_distances_coords_list.empty();
+  min_distances_coords_list.push_back(original_coords);
+
   // The number of LORs with closes approach greater than the threshold.
   int failed_events = 0;
   int tested_events = 0;
   const auto tolerance = 1.5 * static_cast<float>(norm(grid_spacing)); // Using norm(grid_spacing) as a tolerance
+  cerr << "Tolerance is set to " << tolerance << std::endl;
 
   {
     // loop over all events in the listmode file
@@ -166,6 +174,17 @@ process_list_data(
   check_if_less(failed_events, 0.5 * tested_events,
                 "the number of failed events is more than half the number of tested events.");
 
+  { // Save the closest coordinate for each LOR to file.
+    std::string lor_pos_filename = root_header_filename.substr(0, root_header_filename.size() - 6) + "_lor_pos.txt";
+    cerr << "\nSaving debug information as: " << lor_pos_filename <<
+            "\n The first entry is the original coordinate position." << std::endl;
+    std::ofstream myfile;
+    myfile.open(lor_pos_filename.c_str());
+    for (std::vector<CartesianCoordinate3D<float>>::iterator coord_entry = min_distances_coords_list.begin();
+         coord_entry != min_distances_coords_list.end(); ++coord_entry)
+        myfile << coord_entry->x() << " " << coord_entry->y() << " " << coord_entry->z() << std::endl;
+    myfile.close();
+  }
 }
 
 bool
@@ -196,6 +215,9 @@ test_LOR_closest_approach(const ProjMatrixElemsForOneBin &probabilities,
     }
     ++element_ptr;
   }
+  // Log position in vector
+  min_distances_coords_list.push_back(closest_LOR_voxel_to_origin);
+
 //  if (!check_if_less(min_distance, 3*norm(grid_spacing), "ERR msgs"))
   if (min_distance > tolerance)
   {
