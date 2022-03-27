@@ -5,16 +5,16 @@
 
 
 /gate/digitizer/Singles/insert                        blurring
-/gate/digitizer/Singles/blurring/setResolution        0.124           #checked
+#/gate/digitizer/Singles/blurring/setResolution        0.124           #checked but removed to improve geometry test...
 /gate/digitizer/Singles/blurring/setEnergyOfReference 511. keV
 
 
 
 /gate/digitizer/Singles/insert                        thresholder
-/gate/digitizer/Singles/thresholder/setThreshold      425. keV     #checked
+/gate/digitizer/Singles/thresholder/setThreshold      500. keV     #checked but modified from 425keV to reduce the acceptance of scattered events
 /gate/digitizer/Singles/insert                        upholder
-/gate/digitizer/Singles/upholder/setUphold            650. keV     #checked
+/gate/digitizer/Singles/upholder/setUphold            522. keV     #checked but modified from 650 keV to reduce the acceptance of scattered events
 
 
 /gate/digitizer/Singles/insert timeResolution 
-/gate/digitizer/Singles/timeResolution/setTimeResolution 53 ps # WARNING: not the correct timing resolution for D690
+/gate/digitizer/Singles/timeResolution/setTimeResolution 10 ps # WARNING: this not the correct timing resolution for the GE Discovery 690.
