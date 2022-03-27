@@ -339,6 +339,15 @@ from the above):</H2>
       scanners, this will fill in the detector maps etc.
       You will get a run-time exception if you forgot to do this.
     </li>
+    <li>
+        Rotational changes to STIR's interface to ROOT files, <a href=https://github.com/UCL/STIR/pull/1012>PR #1012</a>. In previous versions (roughly) half a bucket,
+        <code>(module_repeater_y * submodule_repeater_y * crystal_repeater_y) /2 - 1)</code>
+        in the <tt>Cylindrical</tt> case, was subtracted from the crystalIDs, in an attempt to rotate
+        the scanner. However, this was incompatible with the STIR code to find normalisation factors,
+        and could be surprising for odd numbers etc.
+        Rotations should use the new view offset support described above.
+        Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>.
+    </li>
 </ul>
 
 <h3>New functionality</h3>
