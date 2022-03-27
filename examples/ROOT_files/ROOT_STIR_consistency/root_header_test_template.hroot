@@ -24,13 +24,13 @@ name of input TChain := Coincidences
 ; As the GATE repeaters. 
 ; If you skip a level in GATE's hierarchy, 
 ; use 1.
-number of Rsectors := 64
+number of Rsectors := 32
 number of modules_X := 1 
 number of modules_Y := 1
-number of modules_Z := 4
+number of modules_Z := 1
 number of submodules_X := 1
-number of submodules_Y := 1
-number of submodules_Z := 1
+number of submodules_Y := 2
+number of submodules_Z := 4
 number of crystals_X := 1
 number of crystals_Y := 9
 number of crystals_Z := 6
