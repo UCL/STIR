@@ -6,7 +6,10 @@
 ## Geometry for Ge Discovery 690 Scanner, given by:
 ## Bettinardi, V., et. al., (2011). Physical Performance of the new hybrid PETCT Discovery-690. Medical Physics, 38(10), 5394–5411. https://doi.org/10.1118/1.3635220
 
-## This is a copy of the GE D690 scanner used as an example in the STIR-GATE-Connection https://github.com/UCL/STIR-GATE-Connection
+## This was a copy of the GE D690 scanner used as an example in the STIR-GATE-Connection https://github.com/UCL/STIR-GATE-Connection
+## HOWEVER, this scanner has been heavily modified from the regular D690 for usage in `test_view_offset_root`. Changes include:
+## - Shorter cystals (5mm instead of 25mm) to minimise DOI artifacts
+## - BGO instead of LYSO crystals to increase attenuation/sensitivity to events, e.g. 155 LYSO events and 2404 for BGO.
 
 
 
@@ -39,7 +42,7 @@
 /gate/cylindricalPET/daughters/name           rsector
 /gate/cylindricalPET/daughters/insert         box
 /gate/rsector/placement/setTranslation           41.76 0.0 0.0 cm
-/gate/rsector/geometry/setXLength                25  mm
+/gate/rsector/geometry/setXLength                5  mm
 /gate/rsector/geometry/setYLength                75.6 mm
 /gate/rsector/geometry/setZLength                151.2 mm
 /gate/rsector/setMaterial                        Air
@@ -52,7 +55,7 @@
 /gate/rsector/daughters/name endshielding
 /gate/rsector/daughters/insert box
 /gate/endshielding/placement/setTranslation 0.0 0.0 0.0 cm
-/gate/endshielding/geometry/setXLength 25 mm
+/gate/endshielding/geometry/setXLength 5 mm
 /gate/endshielding/geometry/setYLength 75.6 mm
 /gate/endshielding/geometry/setZLength 1.0 mm
 /gate/endshielding/setMaterial Lead
@@ -71,7 +74,7 @@
 /gate/rsector/daughters/name                     module
 /gate/rsector/daughters/insert                   box
 /gate/module/placement/setTranslation          0 0.0 0.0 cm
-/gate/module/geometry/setXLength               25 mm
+/gate/module/geometry/setXLength               5 mm
 /gate/module/geometry/setYLength               75.6 mm
 /gate/module/geometry/setZLength               151.2 mm
 /gate/module/setMaterial                       Air
@@ -85,7 +88,7 @@
 /gate/module/daughters/name                     submodule
 /gate/module/daughters/insert                   box
 /gate/submodule/placement/setTranslation          0 0.0 0.0 cm
-/gate/submodule/geometry/setXLength               25 mm
+/gate/submodule/geometry/setXLength               5 mm
 /gate/submodule/geometry/setYLength               37.8 mm
 /gate/submodule/geometry/setZLength               37.8 mm
 /gate/submodule/setMaterial                       Air
@@ -99,11 +102,11 @@
 /gate/submodule/daughters/name                    crystal
 /gate/submodule/daughters/insert                  box
 /gate/crystal/placement/setTranslation        0.0 0.0 0.0 cm
-/gate/crystal/geometry/setXLength             25 mm
+/gate/crystal/geometry/setXLength             5 mm
 # Radian Crystal size (radXtalSize)
 /gate/crystal/geometry/setYLength             4.2 mm 
 /gate/crystal/geometry/setZLength             6.3 mm
-/gate/crystal/setMaterial                     LYSO
+/gate/crystal/setMaterial                     BGO  # Usually LYSO but modified for test for more attenuation
 /gate/crystal/vis/setColor                    red
 /gate/crystal/vis/setVisible 			   	  false
 /gate/crystal/vis/forceSolid

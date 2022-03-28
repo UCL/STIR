@@ -10,13 +10,8 @@
 # Material database
 /gate/geometry/setMaterialDatabase GateMaterials.db
 
-# World dimensions
-/gate/world/geometry/setXLength 600. cm
-/gate/world/geometry/setYLength 600. cm
-/gate/world/geometry/setZLength 600. cm
-
 # Scanner
-/control/execute geometry_D690.mac
+/control/execute geometry.mac
 
 
 #---------------#
@@ -35,13 +30,13 @@
 # D I G I T I S E R #
 #-------------------#
 
-/control/execute digitiser_D690.mac
+/control/execute digitiser.mac
 
 #-------------------------------------#
 # C O I N C I D E N C E   S O R T E R #
 #-------------------------------------#
 
-/control/execute csorter_D690.mac
+/control/execute csorter.mac
 
 #-------------------------------------#
 # R A D I O A C T I V E   S O U R C E #
