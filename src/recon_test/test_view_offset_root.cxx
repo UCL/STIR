@@ -177,7 +177,7 @@ process_list_data(
   { // Save the closest coordinate for each LOR to file.
     std::string lor_pos_filename = root_header_filename.substr(0, root_header_filename.size() - 6) + "_lor_pos.txt";
     cerr << "\nSaving debug information as: " << lor_pos_filename <<
-            "\n The first entry is the original coordinate position." << std::endl;
+            "\nThe first entry is the original coordinate position." << std::endl;
     std::ofstream myfile;
     myfile.open(lor_pos_filename.c_str());
     for (std::vector<CartesianCoordinate3D<float>>::iterator coord_entry = min_distances_coords_list.begin();
