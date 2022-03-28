@@ -38,8 +38,7 @@ if (HAVE_CERN_ROOT)
         ADD_TEST(NAME ${test_name}
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
                 COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root
-                ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/pretest_output/root_header_test${n}.hroot
-                ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/SourceFiles/generate_image${n}.par
+                ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
                 )
     endforeach()
 endif()

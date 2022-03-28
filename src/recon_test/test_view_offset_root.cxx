@@ -54,8 +54,8 @@ START_NAMESPACE_STIR
 class ROOTconsistency_Tests : public RunTests
 {
 public:
-  ROOTconsistency_Tests(const char * const in, const char * const generate_image_parameter_filename)
-    : root_header_filename(in), generate_image_parameter_filename(generate_image_parameter_filename)
+  ROOTconsistency_Tests(const char * const root_header_filename, const char * const generate_image_parameter_filename)
+    : root_header_filename(root_header_filename), generate_image_parameter_filename(generate_image_parameter_filename)
     {}
     void run_tests();
 
@@ -232,34 +232,43 @@ END_NAMESPACE_STIR
 int main(int argc, char **argv)
 {
   USING_NAMESPACE_STIR
+  // Should be called from `STIR/examples/ROOT_files/ROOT_STIR_consistency`
 
-  if (argc != 3)
+  int num_test = 12;
+  bool exit_status = EXIT_SUCCESS;
+  cerr << "Testing the view offset consistency between GATE/ROOT and STIR. \n";
+  for (int i = 1; i <= num_test; ++i)
   {
-    cerr << "Usage : hroot_filename generate_image_par_filename\n\n";
-    return EXIT_FAILURE;
-  }
+    const std::string root_header_filename = "pretest_output/root_header_test" + std::to_string(i) + ".hroot";
+    const std::string generate_image_filename = "SourceFiles/generate_image" + std::to_string(i) + ".par";
+    const char *root_filename_as_char = root_header_filename.c_str();
+    const char *gen_image_par_filename_as_char = generate_image_filename.c_str();
 
-  { // Check the program arguments exist
-    ifstream in(argv[1]);
-    if (!in)
+    // Check the program arguments exist
     {
-      cerr << argv[0]
-           << ": Error opening root header file: " << argv[1] << "\nExiting.\n";
-
-      return EXIT_FAILURE;
+      ifstream in1(root_header_filename);
+      if (!in1)
+      {
+        cerr << argv[0] << ": Error opening root header file: " << root_header_filename << "\nExiting.\n";
+        return EXIT_FAILURE;
+      }
+      ifstream in2(generate_image_filename);
+      if (!in2)
+      {
+        cerr << argv[0]  << ": Error opening generate image parameter filename: " << generate_image_filename << "\nExiting.\n";
+        return EXIT_FAILURE;
+      }
     }
-    ifstream in2(argv[2]);
-    if (!in2)
-    {
-      cerr << argv[0]
-           << ": Error opening generate image parameter filename: " << argv[2] << "\nExiting.\n";
+    cerr << "Testing point source " << std::to_string(i) << " of " << std::to_string(num_test) << std::endl;
+    ROOTconsistency_Tests test(root_filename_as_char, gen_image_par_filename_as_char);
+    test.run_tests();
 
-      return EXIT_FAILURE;
+    // Rather than using the exit status of each test, use the exit status of the program
+    if (test.main_return_value() != EXIT_SUCCESS)
+    {
+      cerr << "Test " << std::to_string(i) << " FAILED!\n";
+      exit_status = EXIT_FAILURE;
     }
   }
-
-  // ROOT consistency tests
-  ROOTconsistency_Tests tests(argv[1], argv[2]);
-  tests.run_tests();
-  return tests.main_return_value();
+  return exit_status;
 }
