@@ -30,9 +30,7 @@ do
 	# Generate images and move to the pretest output directory
 	echo "Generating STIR image..."
 	generate_image SourceFiles/generate_image${I}.par
-	mv stir_image${I}.ahv ${PRE_TEST_OUTPUT_DIR}
-	mv stir_image${I}.hv ${PRE_TEST_OUTPUT_DIR}
-	mv stir_image${I}.v ${PRE_TEST_OUTPUT_DIR}
+	mv stir_image${I}.*v ${PRE_TEST_OUTPUT_DIR}
 
 	cd Gate_macros
 	# Create main GATE macro files from template
@@ -43,12 +41,12 @@ do
 	Gate main_GATE_macro_test${I}.mac > GATE_log_test${I}.log
 	cd ..  # Back up to ROOT_STIR_consistency
 	
-	# Move ROOT files into pretest output direcotry
+	# Move ROOT files into pretest output directory
 	mv Gate_macros/root_data_test${I}.root ${PRE_TEST_OUTPUT_DIR}/
 
 	# Create hroot files from template
 	echo "Creating .hroot..."
 	sed -e s/ROOTFILENAME/root_data_test${I}.root/ root_header_test_template.hroot > ${PRE_TEST_OUTPUT_DIR}/root_header_test${I}.hroot
 	echo "Data generated for test${I}!"
-done;
+done
 
