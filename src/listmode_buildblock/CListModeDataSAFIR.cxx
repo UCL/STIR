@@ -77,6 +77,19 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
     }
 }
 
+template <class CListRecordT>
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+    : listmode_filename(listmode_filename)
+{
+  this->exam_info_sptr.reset(new ExamInfo);
+  this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: Could not open listmode file " + listmode_filename + "\n");
+    }
+}
 
 template <class CListRecordT>
 std::string
