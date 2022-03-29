@@ -138,7 +138,7 @@ process_list_data(
   // The number of LORs with closes approach greater than the threshold.
   int failed_events = 0;
   int tested_events = 0;
-  const auto tolerance = 1.5 * static_cast<float>(norm(grid_spacing)); // Using norm(grid_spacing) as a tolerance
+  const auto tolerance = 1.5 * norm(grid_spacing); // Using norm(grid_spacing) as a tolerance
   cerr << "Tolerance is set to " << tolerance << std::endl;
 
   {
@@ -171,7 +171,7 @@ process_list_data(
     }
 
   cerr << "\nNUMBER OF FAILED EVENTS = " << failed_events << "\t NUMBER OF TESTED EVENTS = " << tested_events << std::endl;
-  check_if_less(failed_events, 0.5 * tested_events,
+  check_if_less(failed_events, 0.05 * tested_events,
                 "the number of failed events is more than half the number of tested events.");
 
   { // Save the closest coordinate for each LOR to file.
