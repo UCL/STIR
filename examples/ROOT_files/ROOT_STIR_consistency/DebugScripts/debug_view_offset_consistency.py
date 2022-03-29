@@ -65,6 +65,8 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
     median = np.median(distances)
     axs.axvline(mean, color='r')
     axs.axvline(median, color='g')
+    plt.ylabel("Number of events")
+    plt.xlabel("Distance to original (mm)")
     axs.legend(["Mean", "Median"])
     axs.title.set_text(
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
@@ -182,7 +184,6 @@ def print_axis_biases():
     total_bias_x = 0
     total_bias_y = 0
     total_bias_z = 0
-    string_length = 10
 
     # Construct the table header
     header_entries = ["SourceID", "Mean Offset (x)", "Mean Offset (y)", "Mean Offset (z)"]
@@ -229,19 +230,24 @@ def print_axis_biases():
 print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
       "run `debug_view_offset_consistency` from `pretest_output` directory or input that directory as an argument.\n")
 
+# Optional argument to set the directory of the output of the view_offset_root test.
 working_directory = getcwd()
 if len(sys.argv) > 1:
     working_directory = sys.argv[1]
 
 point_sources_data = dict()
+# Assumeing the prefix's and suffix's of the file names
 filename_prefix = "root_header_test"
 filename_suffix = "_lor_pos.txt"
 
+# Loop over all files in the working directory and load the data into the point_sources_data dictionary
 for i in range(1, 12, 1):
     point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
     # plot_1D_distance_histogram(point_sources_data[i].err_l2, pretitle=f"Point {i}:")
 
+# Print the number of events, number of failed events and failure percentage for each point source
 print_pass_and_fail()
+# Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
 print_axis_biases()
 
 print("Done")
