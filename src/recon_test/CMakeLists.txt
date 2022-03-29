@@ -31,6 +31,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_OSMAPOSL.cxx
 )
 
+if (0) # DISABLE test_view_offset_root test for now
 if (HAVE_CERN_ROOT)
     # test_view_offset_root requires working directory to be examples/ROOT_files/ROOT_STIR_consistency
     list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_view_offset_root)
@@ -39,6 +40,7 @@ if (HAVE_CERN_ROOT)
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
             COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root
             )
+endif()
 endif()
 
 include(stir_test_exe_targets)
