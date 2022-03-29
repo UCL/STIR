@@ -15,6 +15,39 @@ def round_sig(x, sig=2):
     return round(x, sig - int(floor(log10(abs(x)))) - 1)
 
 
+def pad_string(s, length=10, pad_char=" "):
+    """
+    Pads a string to a certain length with a certain character
+    :param s: variable to be covnerted to a string and padded on either side
+    :param length: Length of padded string
+    :param pad_char: Character to pad with (assumes length 1)
+    :return: Padded string
+    """
+    s = str(s)
+    assert len(pad_char) == 1
+
+    total_padding = max(length - len(s), 0)
+    if (length - len(s)) % 2 == 0:
+        # Pad equally on both sides
+        padding = " " * (total_padding // 2)
+        return padding + s + padding
+    else:
+        # Pad unevenly on both sides (prefer right)
+        right_padding = pad_char * (total_padding // 2)
+        left_padding = pad_char * (total_padding // 2 + 1)
+        return left_padding + s + right_padding
+
+
+def table_row_as_string(row, entry_length):
+    """
+    Constructs a string from a list of entries, each entry is padded to a certain length
+    :param row: List of entries to be converted to a string
+    :param entry_length: Length of each entry
+    :return: String of row entries with padding
+    """
+    return "|".join([pad_string(entry, entry_length) for entry in row])
+
+
 def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
     """
     Plot distances to original on a 1D histogram
@@ -72,7 +105,6 @@ class ViewOffsetConsistencyClosestLORInfo:
         coord = line[:-2].split(" ")
         return np.array([float(coord[0]), float(coord[1]), float(coord[2])])
 
-
     def __extract_coords_from_lines(self, lines):
         """
         Assumes that lines comes in as a string with three numbers, each split by a space.
@@ -116,34 +148,53 @@ def print_pass_and_fail(allowed_fraction_of_failed_events=0.5):
     :param allowed_fraction_of_failed_events: Fraction of events that could "fail" before the test failed
     :return: None
     """
-    print(f"\n\nInformation regarding pass fail rate of the view offset test\n"
-          f" ID || The Number of Events  ||  The Number of Failed Events  ||  Percentage Error\n"
-          f"-----------------------------------------------------------------------------------")
+
+    # Construct Table Header
+    header_entries = ["SourceID", "Number of Events", "Failed Events", "Failure (%)"]
+    string_length = 2 + max([len(col) for col in header_entries])
+    header_string = table_row_as_string(header_entries, string_length)
+
+    # Print table header
+    print(f"\nInformation regarding pass fail rate of the view offset test\n"
+          f"{header_string}\n"
+          f"{'-' * len(header_string)}")
+
+    # Loop over each point source and print the number of events, number of failed events and failure percentage
     for key in point_sources_data.keys():
         num_events = point_sources_data[key].get_num_events()
         num_failed_events = point_sources_data[key].get_num_failed_events()
         percentage = num_failed_events / num_events * 100
+        row = [key, num_events, num_failed_events, round_sig(percentage, 3)]
+        row_string = table_row_as_string(row, string_length)
         if percentage > allowed_fraction_of_failed_events * 100:
             warning_msg = "HIGH VALUE WARNING!"
         else:
             warning_msg = ""
-        print(f"{key}  ||           {num_events}         "
-              f"||              {num_failed_events}                "
-              f"||      {round_sig(percentage, 3)}      {warning_msg}")
+        print(f"{row_string} {warning_msg}")
 
 
 def print_axis_biases():
     """
-    Print the mean offset in each axis (x,y,z) for each point source file and the total bias in each axix
+    Print the mean offset in each axis (x,y,z) for each point source file and the total bias in each axis
     :return: None
     """
+
     total_bias_x = 0
     total_bias_y = 0
     total_bias_z = 0
-    print(f"\nMean offset in each axis for each source position\n"
-          f" ID ||   x   ||   y   ||   z\n"
-          f"------------------------")
+    string_length = 10
 
+    # Construct the table header
+    header_entries = ["SourceID", "Mean Offset (x)", "Mean Offset (y)", "Mean Offset (z)"]
+    string_length = 2 + max([len(entry) for entry in header_entries])
+    header_string = table_row_as_string(header_entries, string_length)
+    # Print the table header
+    print(f"\nMean offset in each axis for each source position\n"
+          f"{header_string}\n"
+          f"{'-' * len(header_string)}")
+
+    # Loop over each point source and print the mean offset in each axis
+    # Also compute the total bias in each axis
     for key in point_sources_data.keys():
         mean_err_x = np.mean(point_sources_data[key].err_x)
         mean_err_y = np.mean(point_sources_data[key].err_y)
@@ -151,19 +202,28 @@ def print_axis_biases():
         total_bias_x += mean_err_x
         total_bias_y += mean_err_y
         total_bias_z += mean_err_z
-        print(f"{key}  "
-              f"|| {round_sig(mean_err_x)}  "
-              f"|| {round_sig(mean_err_y)}  "
-              f"|| {round_sig(mean_err_z)}  ")
+        row = [key, round_sig(mean_err_x, 3), round_sig(mean_err_y, 3), round_sig(mean_err_z, 3)]
+        row_string = table_row_as_string(row, string_length)
+        print(f"{row_string}")
 
     # Print the total bias, the mean of aforementioned offsets for each point sources axis.
     # This should only raise alarm if one of these numbers is large.
+
+    # Construct the table header
     num_entries = len(point_sources_data.keys())
-    print("\nTOTAL BIAS\n"
-          f"   ||   x    ||   y    ||   z\n"
-          f"   || {round_sig(total_bias_x / num_entries)}"
-          f"   || {round_sig(total_bias_y / num_entries)}"
-          f"   || {round_sig(total_bias_z / num_entries)}")
+    header_entries = ["Total Bias (x)", "Total Bias (y)", "Total Bias (z)"]
+    string_length = 2 + max([len(entry) for entry in header_entries])
+    header_string = table_row_as_string(header_entries, string_length)
+
+    # Print the table header
+    print(f"\nTOTAL BIAS IN EACH AXIS\n"
+          f"\n{header_string}\n"
+          f"{'-' * len(header_string)}")
+    row = [round_sig(total_bias_x / num_entries, 3),
+           round_sig(total_bias_y / num_entries, 3),
+           round_sig(total_bias_z / num_entries, 3)]
+    row_string = table_row_as_string(row, string_length)
+    print(f"{row_string}")
 
 
 print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
@@ -172,7 +232,6 @@ print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
 working_directory = getcwd()
 if len(sys.argv) > 1:
     working_directory = sys.argv[1]
-
 
 point_sources_data = dict()
 filename_prefix = "root_header_test"
