@@ -831,6 +831,20 @@ in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
 
+\subsubsubsection{STIR GATE geometry alignment}
+STIR's first crystal/detector index is along the \texttt{y} axis while GATE's is (by default) along the \texttt{x} axis.
+This results in a rotation of 90 degrees unless accounted for.
+Two possible correction methods exist:
+\begin{enumerate}
+    \item (Recommended) Rotate the GATE scanner geometry by 90 degrees. See example:
+    \url{https://github.com/UCL/STIR/blob/master/examples/ROOT_files/ROOT_STIR_consistency/Gate_macros/geometry.mac}{ROOT\_STIR\_consistency/Gate\_macros/geometry.mac}
+    \item Use the \texttt{View offset (degrees)} parameter in the scanner definition of the ROOT header files.
+    However, this requires modification of the sinogram headers but
+    allows for backwards compatibility with older GATE simulations.
+\end{enumerate}
+Note, pre-STIR version 5.0, a number of rotations were used in STIR to rotate the scanner and align GATE simulation
+with STIR. However, these were removed because with the addition of \texttt{View offset (degrees)} into scanner definitions.
+
 \subsubsubsection{ROOT exclusion keys configurations}
 The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
 Below are sets event types that will be processed with an exclusion or combination of exclusions.
