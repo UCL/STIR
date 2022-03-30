@@ -289,7 +289,6 @@ private:
   
   //! \name new variables for block geometry
   //@{
-  std::string scanner_orientation;
   std::string scanner_geometry;
   float axial_distance_between_crystals_in_cm;
   float transaxial_distance_between_crystals_in_cm;
