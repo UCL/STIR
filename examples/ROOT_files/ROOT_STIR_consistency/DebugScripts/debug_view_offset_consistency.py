@@ -90,11 +90,19 @@ class ViewOffsetConsistencyClosestLORInfo:
         print(f"Loading data: {self.filename}")
         with open(filename) as f:
             self.lines = f.readlines()
-        self.original_coord, self.coord_list = self.__extract_coords_from_lines(self.lines)
-        self.err_l2 = self.compute_distance_to_original()
-        self.err_x = self.compute_distance_to_original(0)
-        self.err_y = self.compute_distance_to_original(1)
-        self.err_z = self.compute_distance_to_original(2)
+
+        # Extract the original coordinate and voxel coordinates as 2D numpy arrays
+        self.original_coord, self.voxel_coords = self.__extract_coords_from_lines(self.lines)
+
+        if self.voxel_coords.size == 0:
+            raise Exception("No voxel coordinates found in file")
+
+        # Mean coordinate of the lor voxels voxels
+        self.mean_coord = np.mean(self.voxel_coords, axis=0)
+
+        self.voxel_offset = self.voxel_coords - self.original_coord
+        self.entrywise_l2_norm = np.linalg.norm(self.voxel_offset, axis=1)
+        self.l2 = np.linalg.norm(self.voxel_offset)
 
         self.tolerance = tolerance
 
@@ -117,34 +125,46 @@ class ViewOffsetConsistencyClosestLORInfo:
         :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
         """
         is_first = True
-        coord_list = []
+        entry_coords = np.zeros(shape=(len(lines) - 1, 3))
+        original_coord = np.zeros(shape=3)
+        line_index = 0
         for line in lines:
             if is_first:
                 original_coord = self.__process_line(line)
                 is_first = False
                 continue
-            coord_list.append(self.__process_line(line))
-        return (original_coord, coord_list)
-
-    def compute_distance_to_original(self, axis=None):
-        if axis is None:
-            # Compute l2
-            return [np.linalg.norm(self.original_coord - coord) for coord in self.coord_list]
-        else:
-            # compute distance in 1 dimension, but extends negative
-            return [coord[axis] - self.original_coord[axis] for coord in self.coord_list]
+            entry_coords[line_index] = self.__process_line(line)
+            line_index += 1
+        return original_coord, entry_coords
 
     def get_num_events(self):
-        return len(self.coord_list)
+        return len(self.voxel_coords)
 
-    def get_num_failed_events(self, tolerance=None):
+    def set_tolerance(self, tolerance):
         if tolerance is not None:
             print(f"Overwriting tolerance value as {tolerance}")
             self.tolerance = tolerance
-        return sum(errs > self.tolerance for errs in self.err_l2)
+
+    def get_num_failed_events(self, tolerance=None):
+        """
+        Returns the number of events that are outside the tolerance
+        :param tolerance: l2-norm tolerance that classified a "failed" event.
+        """
+        if tolerance is None:
+            tolerance = self.tolerance
+        return len([err for err in self.entrywise_l2_norm if err > tolerance])
+
+    def get_failure_percentage(self, tolerance=None):
+        """
+        Returns the percentage of events that are outside the tolerance
+        :param tolerance: l2-norm tolerance that classified a "failed" event.
+        """
+        if tolerance is None:
+            tolerance = self.tolerance
+        return self.get_num_failed_events(tolerance) / self.get_num_events()
 
 
-def print_pass_and_fail(allowed_fraction_of_failed_events=0.5):
+def print_pass_and_fail(allowed_fraction_of_failed_events=0.05):
     """
     Prints the number of events, how many events failed and the percentage
     :param allowed_fraction_of_failed_events: Fraction of events that could "fail" before the test failed
@@ -177,34 +197,53 @@ def print_pass_and_fail(allowed_fraction_of_failed_events=0.5):
 
 def print_axis_biases():
     """
-    Print the mean offset in each axis (x,y,z) for each point source file and the total bias in each axis
+    Prints the LOR COM and the axis bias for each point source and the overall bias in each axis.
     :return: None
     """
 
-    total_bias_x = 0
-    total_bias_y = 0
-    total_bias_z = 0
+    class TotalBias:
+        def __init__(self):
+            self.total_bias = np.zeros(shape=(3,))
+
+        def add_bias(self, bias):
+            self.total_bias += bias
+
+    total_bias = TotalBias()
 
     # Construct the table header
-    header_entries = ["SourceID", "Mean Offset (x)", "Mean Offset (y)", "Mean Offset (z)"]
-    string_length = 2 + max([len(entry) for entry in header_entries])
-    header_string = table_row_as_string(header_entries, string_length)
-    # Print the table header
-    print(f"\nMean offset in each axis for each source position\n"
-          f"{header_string}\n"
-          f"{'-' * len(header_string)}")
-
+    header_entries = ["SourceID", "x (offset)", "y (offset)", "z (offset)"]
     # Loop over each point source and print the mean offset in each axis
     # Also compute the total bias in each axis
+    row_entries = dict()
     for key in point_sources_data.keys():
-        mean_err_x = np.mean(point_sources_data[key].err_x)
-        mean_err_y = np.mean(point_sources_data[key].err_y)
-        mean_err_z = np.mean(point_sources_data[key].err_z)
-        total_bias_x += mean_err_x
-        total_bias_y += mean_err_y
-        total_bias_z += mean_err_z
-        row = [key, round_sig(mean_err_x, 3), round_sig(mean_err_y, 3), round_sig(mean_err_z, 3)]
-        row_string = table_row_as_string(row, string_length)
+        x = point_sources_data[key].mean_coord[0]
+        y = point_sources_data[key].mean_coord[1]
+        z = point_sources_data[key].mean_coord[2]
+        err_x = np.mean(point_sources_data[key].voxel_offset[:, 0])
+        err_y = np.mean(point_sources_data[key].voxel_offset[:, 1])
+        err_z = np.mean(point_sources_data[key].voxel_offset[:, 2])
+
+        # Construct an row of entries for the table: e.g., ['1', '188.0 (-0.361)', '0.61 (-0.361)','146.0 (-0.361)']
+        row_entries[key] = [str(key),
+                            f"{round_sig(x, 3)} ({round_sig(err_x, 3)})",
+                            f"{round_sig(y, 3)} ({round_sig(err_y, 3)})",
+                            f"{round_sig(z, 3)} ({round_sig(err_z, 3)})"]
+
+        # Add the bias to the total bias
+        total_bias.add_bias(np.array([err_x, err_y, err_z]))
+
+    # Get the max entry length of both the heading entries or row entries
+    string_length = 2 + max(max([len(entry) for entry in header_entries]),
+                            max([max([len(i) for i in entry]) for entry in row_entries.values()]))
+
+    # Print the table header row
+    header_string = table_row_as_string(header_entries, string_length)
+    print(f"\nMean closest lor voxel position for each data set in each axis (with offset) \n"
+          f"{header_string}\n"
+          f"{'-' * len(header_string)}")
+    # Iteratively print the table rows
+    for key in row_entries.keys():
+        row_string = table_row_as_string(row_entries[key], string_length)
         print(f"{row_string}")
 
     # Print the total bias, the mean of aforementioned offsets for each point sources axis.
@@ -217,16 +256,19 @@ def print_axis_biases():
     header_string = table_row_as_string(header_entries, string_length)
 
     # Print the table header
-    print(f"\nTOTAL BIAS IN EACH AXIS\n"
+    print(f"\nTOTAL BIAS IN EACH AXIS"
           f"\n{header_string}\n"
           f"{'-' * len(header_string)}")
-    row = [round_sig(total_bias_x / num_entries, 3),
-           round_sig(total_bias_y / num_entries, 3),
-           round_sig(total_bias_z / num_entries, 3)]
+    row = [round_sig(total_bias.total_bias[0] / num_entries, 3),
+           round_sig(total_bias.total_bias[1] / num_entries, 3),
+           round_sig(total_bias.total_bias[2] / num_entries, 3)]
     row_string = table_row_as_string(row, string_length)
     print(f"{row_string}")
 
 
+# =====================================================================================================
+# Main Script
+# =====================================================================================================
 print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
       "run `debug_view_offset_consistency` from `pretest_output` directory or input that directory as an argument.\n")
 
@@ -243,7 +285,8 @@ filename_suffix = "_lor_pos.txt"
 # Loop over all files in the working directory and load the data into the point_sources_data dictionary
 for i in range(1, 12, 1):
     point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
-    # plot_1D_distance_histogram(point_sources_data[i].err_l2, pretitle=f"Point {i}:")
+    if i == 1:
+        plot_1D_distance_histogram(point_sources_data[i].entrywise_l2_norm, pretitle=f"Point {i}:")
 
 # Print the number of events, number of failed events and failure percentage for each point source
 print_pass_and_fail()
