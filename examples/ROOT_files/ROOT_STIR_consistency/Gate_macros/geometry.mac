@@ -31,6 +31,12 @@
 /gate/cylindricalPET/geometry/setRmin         40.5 cm
 /gate/cylindricalPET/geometry/setHeight       15.716 cm
 /gate/cylindricalPET/setMaterial              Air
+
+# Allign STIR and Gate geometries first cystals on y axis 
+# by rotate the cylindricalPET -90 degrees around z
+/gate/cylindricalPET/placement/setRotationAxis  0 0 1
+/gate/cylindricalPET/placement/setRotationAngle -90 deg
+
 /gate/cylindricalPET/vis/forceWireframe
 /gate/cylindricalPET/vis/setColor             white
 /gate/cylindricalPET/vis/setVisible           false
