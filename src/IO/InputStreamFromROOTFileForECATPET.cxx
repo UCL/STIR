@@ -99,12 +99,11 @@ get_next_record(CListRecordROOT& record)
 #if STIR_ROOT_ROTATION_AS_V4
     crystal1 -= half_block;
     crystal2 -= half_block;
-#endif
 
     // Add offset
     crystal1 += offset_dets;
     crystal2 += offset_dets;
-
+#endif
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,

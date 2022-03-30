@@ -72,7 +72,7 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
     det1 = crystal1 + quarter_of_detectors;
     det2 = crystal2 + quarter_of_detectors;
 #else
-    // STIR and GATE assume that 0 is on y axis
+    // STIR and GATE assume that 0 is on y axis by rotation of GATE geometries
     det1 = crystal1;
     det2 = crystal2;
 #endif
