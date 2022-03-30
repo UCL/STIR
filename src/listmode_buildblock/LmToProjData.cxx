@@ -590,7 +590,7 @@ start_new_time_frame(const unsigned int)
 ***************************************************************/
 void
 LmToProjData::
-process_data()
+process_data(shared_ptr<ProjData> proj_data_sptr)
 {
   if (!_already_setup)
     error("LmToProjData: you need to call set_up() first");
@@ -664,8 +664,8 @@ process_data()
 
       // *********** open output file
       shared_ptr<iostream> output;
-      shared_ptr<ProjData> proj_data_sptr;
-
+      //shared_ptr<ProjData> proj_data_sptr;
+      if (!proj_data_sptr)
       {
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);

@@ -20,6 +20,7 @@
 */
 
 #include "stir/ParsingObject.h"
+#include "stir/ProjData.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -46,7 +47,7 @@ public:
     virtual Succeeded set_up() { return Succeeded::yes; }
 
     //! This function does the actual work
-    virtual void process_data() = 0;
+    virtual void process_data(shared_ptr<ProjData> proj_data_sptr = nullptr) = 0;
 };
 
 END_NAMESPACE_STIR

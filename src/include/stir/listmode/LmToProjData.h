@@ -210,7 +210,7 @@ public:
   virtual Succeeded set_up();
 
   //! This function does the actual work
-  virtual void process_data();
+  virtual void process_data(shared_ptr<ProjData> proj_data_sptr = nullptr);
 
 protected:
   
