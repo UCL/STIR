@@ -13,7 +13,7 @@ These files were included to :
 Directories
 -----
 
-- `SourceFiles/`: Contains 12 generate_image parameter files and GATE macro files for the emission source positions. One pair of files for each test.
+- `SourceFiles/`: Contains 8 `generate_image` parameter files and GATE macro files for the emission source positions. One pair of files for each test.
 - `Gate_macros/`: Contains the GATE macro files for generating the data
 
 
@@ -35,3 +35,34 @@ Methodology
  2. Run the STIR test: `src/recon_test/test_view_offset_root`.
     This test should tell you whether it failed or not by testing if the LOR passes by, 
     or close to, the original point source position.
+
+_____
+
+SOURCE POSITION CONFIGURATION
+-----
+In GATE coordinates (`mm`), the point sources positions are as follows:
+
+| ID | x | y | z | comment |
+| :---: | :---: | :----: | :---: | :---: |
+| **1** | 0 | 0 | 0 | center scanner |
+| **2** | 190 | 0 | 0 | +x |
+| **3** | 0 | 190 | 0 | +y  |
+| **4** | 95 | 95 | 0 | +x +y |
+| **5** | 0 | 0 | 70 | +z | 
+| **6** | 190 | 0 | 70 | +x +z |
+| **7** | 0 | 190 | 70 |  +y +z |
+| **8** | 95 | 95 | 70 |  +x +y +z |
+
+GATE defines its origin at the center of the scanner.
+STIR defines its origin in the center of the first ring of the scanner.
+Hence, a translation is needed to convert between from GATE's origin to STIR's.
+This is given by:
+
+```
+stir_z = (L-d)/2 + gate_z
+``` 
+
+where `L` is the scanner z-length (`157.16 mm`) and `d = 6.54mm` is the distance between rings .
+For the data currently used in this test, `(L-d)/2 = 75.31mm`.
+There are no translations in x or y. 
+

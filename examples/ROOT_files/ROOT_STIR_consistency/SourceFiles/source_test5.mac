@@ -21,6 +21,6 @@
 
 #Shape of the source
 /gate/source/posiFDG/gps/pos/type Point
-/gate/source/posiFDG/gps/pos/centre 9.5 9.5 7. cm
+/gate/source/posiFDG/gps/pos/centre 0 0 70 mm
 
 /gate/source/list

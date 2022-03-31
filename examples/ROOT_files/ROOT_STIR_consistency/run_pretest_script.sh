@@ -22,7 +22,7 @@ fi
 PRE_TEST_OUTPUT_DIR=pretest_output
 mkdir -p ${PRE_TEST_OUTPUT_DIR}
 
-for I in {1..12}
+for I in {1..8}
 do
 	echo ""
 	echo "Generating data for test${I}..."

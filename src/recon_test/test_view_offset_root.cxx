@@ -234,7 +234,7 @@ int main(int argc, char **argv)
   USING_NAMESPACE_STIR
   // Should be called from `STIR/examples/ROOT_files/ROOT_STIR_consistency`
 
-  int num_test = 12;
+  int num_test = 8;
   bool exit_status = EXIT_SUCCESS;
   cerr << "Testing the view offset consistency between GATE/ROOT and STIR. \n";
   for (int i = 1; i <= num_test; ++i)

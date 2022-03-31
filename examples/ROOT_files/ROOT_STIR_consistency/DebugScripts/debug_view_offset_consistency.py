@@ -276,7 +276,7 @@ filename_prefix = "root_header_test"
 filename_suffix = "_lor_pos.txt"
 
 # Loop over all files in the working directory and load the data into the point_sources_data dictionary
-for i in range(1, 12, 1):
+for i in range(1, 9, 1):
     point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
 
 # Print the number of events, number of failed events and failure percentage for each point source
