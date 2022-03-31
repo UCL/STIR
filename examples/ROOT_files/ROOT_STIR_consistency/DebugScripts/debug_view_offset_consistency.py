@@ -201,14 +201,7 @@ def print_axis_biases():
     :return: None
     """
 
-    class TotalBias:
-        def __init__(self):
-            self.total_bias = np.zeros(shape=(3,))
-
-        def add_bias(self, bias):
-            self.total_bias += bias
-
-    total_bias = TotalBias()
+    total_bias = np.zeros(shape=(3,))
 
     # Construct the table header
     header_entries = ["SourceID", "x (offset)", "y (offset)", "z (offset)"]
@@ -230,7 +223,7 @@ def print_axis_biases():
                             f"{round_sig(z, 3)} ({round_sig(err_z, 3)})"]
 
         # Add the bias to the total bias
-        total_bias.add_bias(np.array([err_x, err_y, err_z]))
+        total_bias += np.array([err_x, err_y, err_z])
 
     # Get the max entry length of both the heading entries or row entries
     string_length = 2 + max(max([len(entry) for entry in header_entries]),
@@ -259,9 +252,9 @@ def print_axis_biases():
     print(f"\nTOTAL BIAS IN EACH AXIS"
           f"\n{header_string}\n"
           f"{'-' * len(header_string)}")
-    row = [round_sig(total_bias.total_bias[0] / num_entries, 3),
-           round_sig(total_bias.total_bias[1] / num_entries, 3),
-           round_sig(total_bias.total_bias[2] / num_entries, 3)]
+    row = [round_sig(total_bias[0] / num_entries, 3),
+           round_sig(total_bias[1] / num_entries, 3),
+           round_sig(total_bias[2] / num_entries, 3)]
     row_string = table_row_as_string(row, string_length)
     print(f"{row_string}")
 
@@ -285,8 +278,6 @@ filename_suffix = "_lor_pos.txt"
 # Loop over all files in the working directory and load the data into the point_sources_data dictionary
 for i in range(1, 12, 1):
     point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
-    if i == 1:
-        plot_1D_distance_histogram(point_sources_data[i].entrywise_l2_norm, pretitle=f"Point {i}:")
 
 # Print the number of events, number of failed events and failure percentage for each point source
 print_pass_and_fail()
