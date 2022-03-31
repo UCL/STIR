@@ -354,8 +354,10 @@ from the above):</H2>
             crystals/detectors to be factorisable by 4, which may not always be the case.
             This addition of <code>quarter_of_detectors</code> has been removed and GATE scanners are expected
             to be rotated by -90 degrees so the 0th crystal is on the on the y axis. </li>
+            <li>The <code>offset (num of detectors)</code> parameter has been removed from ROOT header files and
+            and all underlying methodology removed.</li>
         </ul>
-        Rotations should use the new view offset support described above.
+        Rotations should use the new <code>View offset (degrees)</code> support described above.
         Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>.
     </li>
 </ul>
