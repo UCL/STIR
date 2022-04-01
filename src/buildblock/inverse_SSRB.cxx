@@ -2,7 +2,6 @@
 //
 /*
   Copyright (C) 2005- 2007, Hammersmith Imanet Ltd
-  Copyright (C) 2022 Nationcal Physical Laboratory
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -16,7 +15,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  \author Daniel Deidda
   
 */
 #include "stir/ProjData.h"
@@ -77,9 +75,6 @@ inverse_SSRB(ProjData& proj_data_4D,
 					proj_data_4D_info_sptr->
 					get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));				
 				int num_contributing_sinos = 0;
-                
-                const float out_m_edge1=out_m-proj_data_3D_info_sptr->get_scanner_sptr()->get_axial_crystal_spacing()/2;
-                const float out_m_edge2=out_m+proj_data_3D_info_sptr->get_scanner_sptr()->get_axial_crystal_spacing()/2;
 								
 				for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); 
 				     in_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0);
@@ -88,17 +83,11 @@ inverse_SSRB(ProjData& proj_data_4D,
 					sino_3D = proj_data_3D.get_sinogram(in_ax_pos_num,0);					
 					const float in_m = 
 						proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
-                    const float in_m_edge1=in_m-proj_data_3D_info_sptr->get_scanner_sptr()->get_axial_crystal_spacing()/2;
-                    const float in_m_edge2=in_m+proj_data_3D_info_sptr->get_scanner_sptr()->get_axial_crystal_spacing()/2;
-                    const float overlap=in_m_edge2 - out_m_edge1;
 
                     
 					if (fabs(out_m - in_m) < 1E-2)
 					{
 					        ++num_contributing_sinos;
-                        if(proj_data_3D_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
-						sino_4D += sino_3D*overlap;	
-                        else 
                         sino_4D += sino_3D;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;
@@ -112,9 +101,6 @@ inverse_SSRB(ProjData& proj_data_4D,
 					        ++num_contributing_sinos;
 						sino_4D += sino_3D;
 						sino_4D += proj_data_3D.get_sinogram(in_ax_pos_num+1,0);
-                        if(proj_data_3D_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
-						sino_4D *= .5F*overlap;
-                        else
                         sino_4D *= .5F;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;

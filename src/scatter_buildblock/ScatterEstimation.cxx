@@ -14,7 +14,6 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
-  \author Daniel Deidda
 */
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/SingleScatterSimulation.h"

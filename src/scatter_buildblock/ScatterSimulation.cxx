@@ -229,7 +229,7 @@ ScatterSimulation::set_defaults()
     this->zoom_z = -1.f;
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
-    this->downsample_scanner_bool = false;
+    this->downsample_scanner_bool = true;
     this->downsample_scanner_dets = 64;
     this->downsample_scanner_rings = -1;
     this->density_image_filename = "";
@@ -381,13 +381,17 @@ set_up()
             auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
             ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
         }
-        assert(detector_coord_A.z() == 0);
-        assert(detector_coord_B.z() == 0);
+        
+        if(this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
+            assert(detector_coord_A.z() == 0);
+            assert(detector_coord_B.z() == 0);
+        }
         // check that get_m refers to the middle of the scanner
         const float m_first =
                 this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
         const float m_last =
                 this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
+        if(this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
         assert(fabs(m_last + m_first) < m_last * 10E-4);
     }
 #endif
@@ -826,33 +830,48 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
         if(downsample_scanner_dets > 0)
             new_num_dets = downsample_scanner_dets;
         else
-            return Succeeded::no;
+            new_num_dets=proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
     }
 
     const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
-    
     // preserve the length of the scanner
     float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
 
     new_scanner_sptr->set_num_rings(new_num_rings);
-    new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
-    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
-    
     //make a downsampled scanner with no gaps for blocksOnCylindrical
     if (new_scanner_sptr->get_scanner_geometry()=="BlocksOnCylindrical"){
         
-        int new_num_rings_per_block=new_num_rings/new_scanner_sptr->get_num_axial_crystals_per_block();
-        int new_num_dets_per_block=new_num_dets/new_scanner_sptr->get_num_transaxial_crystals_per_block();
-        
-        new_scanner_sptr->set_axial_block_spacing(
-                    new_scanner_sptr->get_axial_crystal_spacing()
-                    * new_num_rings_per_block);
         new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
         new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
-        new_scanner_sptr->set_transaxial_block_spacing(
-                    new_scanner_sptr->get_transaxial_crystal_spacing()
-                    * new_num_dets_per_block);
+        
+        float transaxial_bucket_spacing=old_scanner_ptr->get_transaxial_block_spacing()
+                *old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
+        float new_ring_spacing=scanner_length/new_scanner_sptr->get_num_rings();
+        int num_trans_buckets=new_scanner_sptr->get_num_transaxial_buckets();
+// get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
+        float frac,whole;
+        frac = std::modf(float(new_num_dets/new_scanner_sptr->get_num_transaxial_buckets()), &whole);
+        int newest_num_dets=whole*new_scanner_sptr->get_num_transaxial_buckets();
+        new_scanner_sptr->set_num_detectors_per_ring(newest_num_dets);
+        int new_transaxial_dets_per_bucket=newest_num_dets/num_trans_buckets;
+        float new_det_spacing=transaxial_bucket_spacing/new_transaxial_dets_per_bucket;
+        
+        new_scanner_sptr->set_axial_crystal_spacing(new_ring_spacing);
+        new_scanner_sptr->set_ring_spacing(new_ring_spacing);
+        new_scanner_sptr->set_num_axial_crystals_per_block(new_num_rings);
+        new_scanner_sptr->set_axial_block_spacing(new_ring_spacing
+                    * new_scanner_sptr->get_num_axial_crystals_per_block());
+        
+        new_scanner_sptr->set_num_transaxial_crystals_per_block(new_transaxial_dets_per_bucket);
+        new_scanner_sptr->set_transaxial_crystal_spacing(new_det_spacing);
+        new_scanner_sptr->set_transaxial_block_spacing(new_det_spacing
+                    * new_scanner_sptr->get_num_transaxial_crystals_per_block());
+    }
+    else{
+        new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
+        new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
+        
     }
     
     const float approx_num_non_arccorrected_bins =
@@ -867,6 +886,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     int delta_ring = proj_data_info_cyl_noarc_cor_sptr->get_num_segments() == 1 ?  0 :
             new_scanner_sptr->get_num_rings()-1;
 
+    new_scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> templ_proj_data_info_sptr(
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
                                                                                     1, delta_ring,
@@ -878,6 +898,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 	 % templ_proj_data_info_sptr->parameter_info(),
 	 3);
     this->set_template_proj_data_info(*templ_proj_data_info_sptr);
+    this->set_output_proj_data(this->output_proj_data_filename);
 
     return Succeeded::yes;
 }

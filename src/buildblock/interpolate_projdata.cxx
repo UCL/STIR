@@ -30,6 +30,7 @@
 #include "stir/numerics/BSplines.h"
 #include "stir/numerics/BSplinesRegularGrid.h"
 #include "stir/interpolate_projdata.h"
+#include "stir/interpolate_axial_position.h"
 #include "stir/extend_projdata.h"
 #include "stir/numerics/sampling_functions.h"
 #include <typeinfo>
@@ -200,6 +201,14 @@ interpolate_projdata(ProjData& proj_data_out,
       error("interpolate_projdata needs both projection data  to be of the same type\n"
             "(e.g. both arc-corrected or both not arc-corrected)");
     }
+  
+  //do!!! check if projdatainfoare equal we fill and get out
+  if (proj_data_out.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring()==
+      proj_data_in.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring())
+  {
+      interpolate_axial_position(proj_data_out,proj_data_in);
+      return Succeeded::yes;
+  }
   // check for the same ring radius
   // This is strictly speaking only necessary for non-arccorrected data, but
   // we leave it in for all cases.
