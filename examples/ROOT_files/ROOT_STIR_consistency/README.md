@@ -14,7 +14,8 @@ Directories
 -----
 
 - `SourceFiles/`: Contains 8 `generate_image` parameter files and GATE macro files for the emission source positions. One pair of files for each test.
-- `Gate_macros/`: Contains the GATE macro files for generating the data
+- `Gate_macros/`: Contains the GATE macro files for generating the data.
+- `DebugScripts`: Contains scripts for better understanding the tests.
 
 
 FILES
@@ -28,6 +29,7 @@ FILES
 ______
 
 Methodology
+----
  1. Generate the ROOT data. 
      1. Run `./run_pretest_script.sh` in the terminal to generate the ROOT files (requires Gate) for different point sources, or
      2. Download the ROOT data and proceed without Gate simulation.
@@ -35,6 +37,8 @@ Methodology
  2. Run the STIR test: `src/recon_test/test_view_offset_root`.
     This test should tell you whether it failed or not by testing if the LOR passes by, 
     or close to, the original point source position.
+ 3. Run the python scripts in `DebugScripts` to better understand erros and to give a more in-depth analysis.
+
 
 _____
 

@@ -12,6 +12,8 @@ def round_sig(x, sig=2):
     :param sig: number of significant figures
     :return: float that is rounded to a number of significant figures
     """
+    if x == 0.0:
+        return 0.0  # Avoid log(0)
     return round(x, sig - int(floor(log10(abs(x)))) - 1)
 
 
