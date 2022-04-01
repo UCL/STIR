@@ -32,8 +32,9 @@
 /gate/cylindricalPET/geometry/setHeight       15.716 cm
 /gate/cylindricalPET/setMaterial              Air
 
-# Allign STIR and Gate geometries first cystals on y axis 
-# by rotate the cylindricalPET -90 degrees around z
+# Rotate Gate geometry such that the first module will be on "top" of the scanner (i.e. x=0, y>0)
+# by rotating the cylindricalPET -90 degrees around z.
+# Note that STIR still needs view-offset according to half the module size.
 /gate/cylindricalPET/placement/setRotationAxis  0 0 1
 /gate/cylindricalPET/placement/setRotationAngle -90 deg
 
