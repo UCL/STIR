@@ -53,6 +53,8 @@ In GATE coordinates (`mm`), the point sources positions are as follows:
 | **7** | 0 | 190 | 70 |  +y +z |
 | **8** | 95 | 95 | 70 |  +x +y +z |
 
+_Note_: The activity of testIDs 5-8 are 10x that of 1-4 because of the large z-shift.
+
 GATE defines its origin at the center of the scanner.
 STIR defines its origin in the center of the first ring of the scanner.
 Hence, a translation is needed to convert between from GATE's origin to STIR's.

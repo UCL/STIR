@@ -12,7 +12,7 @@
 # The gammas have a high activity mono energy of 511 keV
 /gate/source/posiFDG/gps/ene/type Mono
 /gate/source/posiFDG/gps/ene/mono 0.511 MeV
-/gate/source/posiFDG/setActivity                               5000000 becquerel
+/gate/source/posiFDG/setActivity                               500000 becquerel #500 kBq
 
 /gate/source/posiFDG/setForcedUnstableFlag                     true
 /gate/source/posiFDG/setForcedHalfLife                         6586 s
