@@ -62,7 +62,7 @@ private:
     int det2;
     //! Indicates if swap segments
     bool swapped;
-#if STIR_ROOT_ROTATION_AS_V4
+#ifdef STIR_ROOT_ROTATION_AS_V4
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.
     int quarter_of_detectors;

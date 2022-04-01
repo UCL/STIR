@@ -156,7 +156,7 @@ public:
 
     inline void set_exclude_random_events(bool);
 
-#if STIR_ROOT_ROTATION_AS_V4
+#ifdef STIR_ROOT_ROTATION_AS_V4
     inline void set_detectors_offset(int);
 #endif
 
@@ -269,7 +269,7 @@ public:
     float low_energy_window;
     //! Upper energy threshold. Default is 0 (keV)
     float up_energy_window;
-#if STIR_ROOT_ROTATION_AS_V4
+#ifdef STIR_ROOT_ROTATION_AS_V4
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
 #endif

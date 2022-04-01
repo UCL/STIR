@@ -135,7 +135,7 @@ InputStreamFromROOTFile::set_exclude_random_events(bool val)
     exclude_randoms = val;
 }
 
-#if STIR_ROOT_ROTATION_AS_V4
+#ifdef STIR_ROOT_ROTATION_AS_V4
 void
 InputStreamFromROOTFile::set_detectors_offset(int val)
 {

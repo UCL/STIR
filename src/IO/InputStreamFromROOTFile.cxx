@@ -86,7 +86,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("exclude unscattered events", &this->exclude_unscattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("check energy window information", &this->check_energy_window_information);
-#if STIR_ROOT_ROTATION_AS_V4
+#ifdef STIR_ROOT_ROTATION_AS_V4
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
 #endif
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
