@@ -100,6 +100,29 @@ Note: start angle was already supported for SPECT<br />
 Backward compatibility for reconstructed images can be achieved by setting the <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> CMake option to <tt>ON</tt>. (However, copied sinogram data will then always have the offset set to 0, in contrast to earlier versions of STIR).
 </li>
 <li>
+        Rotational changes to STIR's interface to ROOT files, <a href=https://github.com/UCL/STIR/pull/1012>PR #1012</a>
+        and <a href=https://github.com/UCL/STIR/pull/1016>PR #1016</a>.
+        Pre STIR 5.0, STIR renumbered crystals obtained from the ROOT file to rotate the reconstructed image.
+        This was because GATE macros that we used placed the first &quot;bucket&quot; (i.e. Gate &quot;module&quot;) on the <i>right</i>
+        of the scanner (as is the GATE default), while STIR by default places the 0th crystal is on the <i>top</i>.
+        To obtain images that were correctly rotated, various offsets were added to the crystal ID. However, this was incompatible with the
+        STIR code to find normalisation factors, which assumes that a bucket starts at crystal 0.
+        Moreover, the offsets used integer division which could be surprising for odd numbers (see below).
+        Specific offsets that have been removed:
+        <ul>
+            <li> (roughly) half a bucket,
+            <code>(module_repeater_y * submodule_repeater_y * crystal_repeater_y) /2 - 1)</code>
+            in the <tt>Cylindrical</tt> case, was subtracted from the crystalIDs</li>
+            <li>(roughly) 90 degrees, <code>quarter_of_detectors=get_num_detectors_per_ring()/4</code>.</li>
+            <li>An optional<code>offset (num of detectors)</code> parameter in the `.hroot` and
+            and all underlying methodology has been removed.</li>
+        </ul>
+        Rotations should use the new <code>View offset (degrees)</code> support described above.
+        See also the expanded section on ROOT data in the STIR User's guide.<br />
+        Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>,
+        but this defaults to <tt>OFF</tt>.
+</li>
+<li>
     PoissonLogLikelihood Hessian methods have been corrected to reflect the concavity of the function. Hessian vector products now return non-positive voxels, if the vector (input) is non-negative.
     STIR usages of these methods (OSSPS and SqrtHessianRowSum) have been updated to see no effective change in functionality.
     However, calling the Hessian vector product methods, via python etc., will result in a change in functionality as the sign of the output voxel values has changed.
@@ -338,28 +361,6 @@ from the above):</H2>
       using any of the <code>set_*()</code> functions (except <code>set_params</code>). For the blocks/generic
       scanners, this will fill in the detector maps etc.
       You will get a run-time exception if you forgot to do this.
-    </li>
-    <li>
-        Rotational changes to STIR's interface to ROOT files, <a href=https://github.com/UCL/STIR/pull/1012>PR #1012</a>
-        and <a href=https://github.com/UCL/STIR/pull/1016>PR #1016</a>.
-        Pre STIR 5..0, STIR renumbered crystals obtained from the ROOT file to rotate the reconstructed image.
-        This was because GATE macros that we used placed the first bucket (i.e. Gate module) on the <i>right</i>
-        of the scanner, while STIR by default places the 0th crystal is on the <i>top</i>.
-        This was done by adding various offsets to the crystal ID. However, this was incompatible with the 
-        STIR code to find normalisation factors, which assumes that a bucket starts at crystal 0.
-        Moreover, the offsets used integer division which could be surprising for odd numbers.
-        Specific offsets that have been removed:
-        <ul>
-            <li> (roughly) half a bucket,
-            <code>(module_repeater_y * submodule_repeater_y * crystal_repeater_y) /2 - 1)</code>
-            in the <tt>Cylindrical</tt> case, was subtracted from the crystalIDs</li>
-            <li>(roughly) 90 degrees, <code>quarter_of_detectors=get_num_detectors_per_ring()/4</code>.</li>
-            <li>An optional<code>offset (num of detectors)</code> parameter in the `.hroot` and
-            and all underlying methodology has been removed.</li>
-        </ul>
-        Rotations should use the new <code>View offset (degrees)</code> support described above.
-        See also the STIR User's guide.
-        Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>.
     </li>
 </ul>
 
