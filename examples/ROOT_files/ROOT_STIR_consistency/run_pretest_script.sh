@@ -22,15 +22,16 @@ fi
 PRE_TEST_OUTPUT_DIR=pretest_output
 mkdir -p ${PRE_TEST_OUTPUT_DIR}
 
-for I in {1..12}
+for I in {1..8}
 do
 	echo ""
 	echo "Generating data for test${I}..."
 	
-	# Generate images and move to the pretest output directory
-	echo "Generating STIR image..."
-	generate_image SourceFiles/generate_image${I}.par
-	mv stir_image${I}.*v ${PRE_TEST_OUTPUT_DIR}
+	# Generate images and move to the pretest output directory 
+	# `generate_image` is not actually needed for test so commented out for now.
+	# echo "Generating STIR image..."
+	# generate_image SourceFiles/generate_image${I}.par
+	# mv stir_image${I}.*v ${PRE_TEST_OUTPUT_DIR}
 
 	cd Gate_macros
 	# Create main GATE macro files from template

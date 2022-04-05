@@ -56,7 +56,6 @@ START_NAMESPACE_STIR
         Singles readout depth := 1
         exclude scattered events := ${EXCLUDE_SCATTERED}
         exclude random events := ${EXCLUDE_RANDOM}
-        offset (num of detectors) := 0
         low energy window (keV) := 0
         upper energy window (keV):= 10000
        \endverbatim
@@ -157,7 +156,9 @@ public:
 
     inline void set_exclude_random_events(bool);
 
+#ifdef STIR_ROOT_ROTATION_AS_V4
     inline void set_detectors_offset(int);
+#endif
 
     inline void set_low_energy_window(float);
 
@@ -268,8 +269,10 @@ public:
     float low_energy_window;
     //! Upper energy threshold. Default is 0 (keV)
     float up_energy_window;
+#ifdef STIR_ROOT_ROTATION_AS_V4
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
+#endif
     //!For the singles_readout_depth from GATE's online documentation:
     //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
     //! > the readout depth depends upon how the electronic readout functions.

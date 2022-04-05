@@ -16,7 +16,7 @@ Ellipsoid Parameters:=
    radius-x (in mm):=2
    radius-y (in mm):=2
    radius-z (in mm):=2
-   origin (in mm):={145.21,-190,0}
+   origin (in mm):={75.31,95,95}
    END:=
 value :=1
 
