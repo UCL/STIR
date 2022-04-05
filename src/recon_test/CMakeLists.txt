@@ -10,10 +10,7 @@
 
 # A simple function used to get the Zenodo data
 function(get_zenodo_file path url md5)
-#    message(STATUS "Downloading (if not already done)...
-#		Path:     ${path}
-#		URL:      ${url}
-#		MD5:      ${md5}")
+    message(STATUS "Downloading ${url} ...")
     file(DOWNLOAD "${url}" "${path}" EXPECTED_MD5 "${md5}")
 endfunction()
 
@@ -45,9 +42,9 @@ if (HAVE_CERN_ROOT)
     if (DOWNLOAD_ZENODO_TEST_DATA)
         ## DOWNLOAD THE ROOT CONSISTENCY TEST DATA FROM ZENODO (root file and corresponding header)
         ## TOTAL SIZE: ~3MB
-        set(ROOT_STIR_consistency_data_dir ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/pretest_data)
+        set(ROOT_STIR_consistency_data_dir ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/pretest_output)
         set(ROOT_DATA_URL "https://zenodo.org/record/6410309/files")
-        message(STATUS "Downloading ROOT consistency test data (if not already done)... ")
+        message(STATUS "Downloading ROOT consistency test data [~3MB] (if not already done)... ")
 
 
         # 1
