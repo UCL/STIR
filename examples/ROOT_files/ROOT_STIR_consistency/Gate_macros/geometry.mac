@@ -1,0 +1,179 @@
+## AUTHOR: Elise Emond
+## AUTHOR: Ludovica Brusaferri
+## AUTHOR: Robert Twyman
+## Copyright (C) 2018-2022 University College London
+## Licensed under the Apache License, Version 2.0
+## Geometry for Ge Discovery 690 Scanner, given by:
+## Bettinardi, V., et. al., (2011). Physical Performance of the new hybrid PETCT Discovery-690. Medical Physics, 38(10), 5394–5411. https://doi.org/10.1118/1.3635220
+
+## This was a copy of the GE D690 scanner used as an example in the STIR-GATE-Connection https://github.com/UCL/STIR-GATE-Connection
+## HOWEVER, this scanner has been heavily modified from the regular D690 for usage in `test_view_offset_root`. Changes include:
+## - Shorter cystals (5mm instead of 25mm) to minimise DOI artifacts
+## - BGO instead of LYSO crystals to increase attenuation/sensitivity to events, e.g. 155 LYSO events and 2404 for BGO.
+
+
+
+#    WORLD
+
+/gate/world/geometry/setXLength 100. cm
+/gate/world/geometry/setYLength 100. cm
+/gate/world/geometry/setZLength 50. cm
+/gate/world/vis/setVisible                     true
+
+
+
+#	CYLINDRICAL
+
+/gate/world/daughters/name                    cylindricalPET
+/gate/world/daughters/insert                  cylinder
+/gate/cylindricalPET/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/cylindricalPET/geometry/setRmax         43.1 cm
+/gate/cylindricalPET/geometry/setRmin         40.5 cm
+/gate/cylindricalPET/geometry/setHeight       15.716 cm
+/gate/cylindricalPET/setMaterial              Air
+
+# Rotate Gate geometry such that the first module will be on "top" of the scanner (i.e. x=0, y>0)
+# by rotating the cylindricalPET -90 degrees around z.
+# Note that STIR still needs view-offset according to half the module size.
+/gate/cylindricalPET/placement/setRotationAxis  0 0 1
+/gate/cylindricalPET/placement/setRotationAngle -90 deg
+
+/gate/cylindricalPET/vis/forceWireframe
+/gate/cylindricalPET/vis/setColor             white
+/gate/cylindricalPET/vis/setVisible           false
+
+
+
+#	RSECTOR 
+
+/gate/cylindricalPET/daughters/name           rsector
+/gate/cylindricalPET/daughters/insert         box
+/gate/rsector/placement/setTranslation           41.76 0.0 0.0 cm
+/gate/rsector/geometry/setXLength                5  mm
+/gate/rsector/geometry/setYLength                75.6 mm
+/gate/rsector/geometry/setZLength                151.2 mm
+/gate/rsector/setMaterial                        Air
+/gate/rsector/vis/setVisible                     false
+
+
+
+#  END-SHIELDING
+
+/gate/rsector/daughters/name endshielding
+/gate/rsector/daughters/insert box
+/gate/endshielding/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/endshielding/geometry/setXLength 5 mm
+/gate/endshielding/geometry/setYLength 75.6 mm
+/gate/endshielding/geometry/setZLength 1.0 mm
+/gate/endshielding/setMaterial Lead
+/gate/endshielding/repeaters/insert cubicArray
+/gate/endshielding/cubicArray/setRepeatNumberX 1
+/gate/endshielding/cubicArray/setRepeatNumberY 1
+/gate/endshielding/cubicArray/setRepeatNumberZ 2
+/gate/endshielding/cubicArray/setRepeatVector 0.0 0.0 152.2 mm  # +1mm in z
+/gate/endshielding/vis/setColor blue
+/gate/endshielding/vis/setVisible true
+
+
+
+#	MODULE (Bucket)
+
+/gate/rsector/daughters/name                     module
+/gate/rsector/daughters/insert                   box
+/gate/module/placement/setTranslation          0 0.0 0.0 cm
+/gate/module/geometry/setXLength               5 mm
+/gate/module/geometry/setYLength               75.6 mm
+/gate/module/geometry/setZLength               151.2 mm
+/gate/module/setMaterial                       Air
+/gate/module/vis/setColor                      green
+/gate/module/vis/setVisible                    true
+
+
+
+#	SUBMODULE (Block)
+
+/gate/module/daughters/name                     submodule
+/gate/module/daughters/insert                   box
+/gate/submodule/placement/setTranslation          0 0.0 0.0 cm
+/gate/submodule/geometry/setXLength               5 mm
+/gate/submodule/geometry/setYLength               37.8 mm
+/gate/submodule/geometry/setZLength               37.8 mm
+/gate/submodule/setMaterial                       Air
+/gate/submodule/vis/setColor                      magenta
+/gate/submodule/vis/setVisible                    true
+
+
+
+#	C R Y S T A L (Crystal)
+
+/gate/submodule/daughters/name                    crystal
+/gate/submodule/daughters/insert                  box
+/gate/crystal/placement/setTranslation        0.0 0.0 0.0 cm
+/gate/crystal/geometry/setXLength             5 mm
+# Radian Crystal size (radXtalSize)
+/gate/crystal/geometry/setYLength             4.2 mm 
+/gate/crystal/geometry/setZLength             6.3 mm
+/gate/crystal/setMaterial                     BGO  # Usually LYSO but modified for test for more attenuation
+/gate/crystal/vis/setColor                    red
+/gate/crystal/vis/setVisible 			   	  false
+/gate/crystal/vis/forceSolid
+
+
+
+
+#	R E P E A T    C R Y S T A L
+
+# Construct a block from crystals
+/gate/crystal/repeaters/insert                cubicArray
+/gate/crystal/cubicArray/setRepeatNumberX     1
+/gate/crystal/cubicArray/setRepeatNumberY     9 
+/gate/crystal/cubicArray/setRepeatNumberZ     6	
+/gate/crystal/cubicArray/setRepeatVector      0.0 4.2 6.3 mm
+
+
+
+#	R E P E A T    SUBMODULE
+
+# Construct a bucket from blocks
+/gate/submodule/repeaters/insert                  cubicArray
+/gate/submodule/cubicArray/setRepeatNumberX       1
+/gate/submodule/cubicArray/setRepeatNumberY       2
+/gate/submodule/cubicArray/setRepeatNumberZ       4
+/gate/submodule/cubicArray/setRepeatVector        0.0 37.8 37.8 mm
+
+
+
+#	R E P E A T    MODULE
+
+# Construct a "Plane" from buckets
+/gate/module/repeaters/insert                  cubicArray
+/gate/module/cubicArray/setRepeatNumberX       1
+/gate/module/cubicArray/setRepeatNumberY       1
+/gate/module/cubicArray/setRepeatNumberZ       1
+/gate/module/cubicArray/setRepeatVector        0.0 0.0 0.0 mm
+
+
+
+#	R E P E A T    RSECTOR
+
+/gate/rsector/repeaters/insert                   ring
+/gate/rsector/ring/setRepeatNumber            	32
+
+
+
+#	A T T A C H    S Y S T E M 
+
+/gate/systems/cylindricalPET/rsector/attach   	rsector
+/gate/systems/cylindricalPET/module/attach    	module
+/gate/systems/cylindricalPET/submodule/attach  	submodule
+/gate/systems/cylindricalPET/crystal/attach   	crystal
+
+
+
+#	A T T A C H    C R Y S T A L  SD
+
+/gate/crystal/attachCrystalSD
+
+
+
+/gate/systems/cylindricalPET/describe

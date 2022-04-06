@@ -166,12 +166,11 @@ class Scanner
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
-          float energy_resolution_v,
-          float reference_energy_v,
-          short int max_num_of_timing_poss,
-          float size_timing_pos,
-          float timing_resolution,
-          const std::string& scanner_orientation_v = "X",
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f,
+          short int max_num_of_timing_poss = -1.0f,
+          float size_timing_pos = -1.0f,
+          float timing_resolution = -1.0f,
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
@@ -195,12 +194,11 @@ class Scanner
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
-          float energy_resolution_v,
-          float reference_energy_v,
-          short int max_num_of_timing_poss,
-          float size_timing_pos,
-          float timing_resolution,
-          const std::string& scanner_orientation_v = "X",
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f,
+          short int max_num_of_timing_poss = -1.0f,
+          float size_timing_pos = -1.0f,
+          float timing_resolution = -1.0f,
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
@@ -339,8 +337,6 @@ class Scanner
 
   //! \name functions to get block geometry info
   //@{
-  //! get scanner orientation
-  inline std::string get_scanner_orientation() const;
   //! get scanner geometry
   inline std::string get_scanner_geometry() const;
   //! get crystal spacing in axial direction
@@ -417,8 +413,6 @@ class Scanner
   // TODO accomodate more complex geometries of singles units.
   //@{
   //! name functions to set block geometry info
-  //! set scanner orientation
-  inline void set_scanner_orientation(const std::string& new_scanner_orientation);
   //! set scanner geometry
   /*! Will also read the detector map from file if the geometry is \c Generic */
   void set_scanner_geometry(const std::string& new_scanner_geometry);
@@ -529,7 +523,6 @@ private:
   //! \brief scanner info needed for block geometry
   //! \author Parisa Khateri
   //! A negative value indicates unknown.
-  std::string scanner_orientation;       /*! scanner orientation */
   std::string scanner_geometry;          /*! scanner geometry */
   float axial_crystal_spacing;           /*! crystal pitch in axial direction in mm*/
   float transaxial_crystal_spacing;      /*! crystal pitch in transaxial direction in mm*/
@@ -559,12 +552,11 @@ private:
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
-                  float energy_resolution_v,
-                  float reference_energy,
-                  short int max_num_of_timing_poss_v,
-                  float size_timing_pos_v,
-                  float timing_resolution_v,
-                  const std::string& scanner_orientation_v = "",
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = -1.0f,
+                  short int max_num_of_timing_poss_v = -1.0f,
+                  float size_timing_pos_v = -1.0f,
+                  float timing_resolution_v = -1.0f,
                   const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,
                   float transaxial_crystal_spacing_v = -1.0f,

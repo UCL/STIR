@@ -87,6 +87,7 @@ public:
   */
   virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
+  using base_type::apply;
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 

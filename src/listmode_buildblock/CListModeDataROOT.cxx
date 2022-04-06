@@ -265,6 +265,7 @@ set_defaults()
     ring_spacing = -.1f;
     bin_size = -1.f;
     view_offset = 0.f;
+    tof_mash_factor = 1;
 }
 
 Succeeded

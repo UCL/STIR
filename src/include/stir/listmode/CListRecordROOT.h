@@ -62,11 +62,13 @@ private:
     int det1;
     //! Second detector, in order to detector tangestial index
     int det2;
-
+    //! Indicates if swap segments
+    bool swapped;
+#ifdef STIR_ROOT_ROTATION_AS_V4
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.
     int quarter_of_detectors;
-
+#endif
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner

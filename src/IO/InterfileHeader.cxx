@@ -631,10 +631,6 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Timing resolution (ps)",
           &timing_resolution);
   // new keys for block geometry
-  scanner_orientation = "X";
-  add_key("Scanner orientation (X or Y)",
-          KeyArgument::ASCII, &scanner_orientation);
-
   scanner_geometry = "Cylindrical";
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
           KeyArgument::ASCII, &scanner_geometry);
@@ -1447,7 +1443,6 @@ bool InterfilePDFSHeader::post_processing()
                 max_num_timing_poss,
                 size_of_timing_pos,
                 timing_resolution,
-                scanner_orientation,
                 scanner_geometry,
                 static_cast<float>(axial_distance_between_crystals_in_cm*10.),
                 static_cast<float>(transaxial_distance_between_crystals_in_cm*10.),

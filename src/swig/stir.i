@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2013, 2018, 2020, 2021 University College London
+    Copyright (C) 2022 Positrigo
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,6 +13,7 @@
   \brief Interface file for SWIG
 
   \author Kris Thielemans 
+  \author Markus Jehl
 */
 
 
@@ -55,6 +57,13 @@
  #include "stir/ProjDataInMemory.h"
  #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
+
+ #include "stir/DataSymmetriesForViewSegmentNumbers.h"
+ #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+ #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+ #include "stir/recon_buildblock/TrivialBinNormalisation.h"
+ #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListModeData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -101,16 +110,34 @@
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+#ifdef STIR_WITH_Parallelproj_PROJECTOR
+#include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif
+
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/recon_buildblock/LogcoshPrior.h"
 
+
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
+
+#include "stir/multiply_crystal_factors.h"
+#include "stir/ML_norm.h"
+
+#include "stir/scatter/ScatterEstimation.h"
+#include "stir/scatter/ScatterSimulation.h"
+#include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/scatter/CreateTailMaskFromACFs.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
@@ -144,12 +171,16 @@
     { return PyArg_ParseTuple(args, "ii", &c[1], &c[2]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<3, int>& c, PyObject* const args)
       { return PyArg_ParseTuple(args, "iii", &c[1], &c[2], &c[3]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<4, int>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "iiii", &c[1], &c[2], &c[3], &c[4]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<1, float>& c, PyObject* const args)
     { return PyArg_ParseTuple(args, "f", &c[1]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<2, float>& c, PyObject* const args)
     { return PyArg_ParseTuple(args, "ff", &c[1], &c[2]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<3, float>& c, PyObject* const args)
       { return PyArg_ParseTuple(args, "fff", &c[1], &c[2], &c[3]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<4, float>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "ffff", &c[1], &c[2], &c[3], &c[4]);  }
 
     template <int num_dimensions>
       PyObject* tuple_from_coord(const stir::BasicCoordinate<num_dimensions, int>& c)
@@ -1163,6 +1194,10 @@ namespace stir {
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
+  
+  %template(Int4BasicCoordinate) BasicCoordinate<4,int>;
+  %template(Size4BasicCoordinate) BasicCoordinate<4,std::size_t>;
+  %template(Float4BasicCoordinate) BasicCoordinate<4,float>;
   // TODO not needed in python case?
   %template(Float2Coordinate) Coordinate2D< float >;
   %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
@@ -1355,6 +1390,8 @@ namespace stir {
 #if 0
   %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
 #endif
+  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float>, float>;
+  %template(FloatArray4D) stir::Array<4,float>;
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
@@ -1476,8 +1513,6 @@ stir::CartesianCoordinate3D<float>
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 
-%include "stir/ProjData.h"
-
 #if 0
 %extend stir::ProjDataInfo 
 {
@@ -1502,9 +1537,21 @@ stir::CartesianCoordinate3D<float>
 }
 #endif
 
+// ignore this to avoid problems with unique_ptr, and add it later
+%ignore stir::ProjData::get_subset;
+%include "stir/ProjData.h"
+
+%newobject stir::ProjData::get_subset;
+
 namespace stir {
 %extend ProjData
   {
+    // work around the current SWIG limitation that it doesn't wrap unique_ptr. See above
+    ProjDataInMemory* get_subset(const std::vector<int>& views)
+    {
+      return get_subset(views).get();
+    }
+
 #ifdef SWIGPYTHON
     %feature("autodoc", "create a stir 4D Array from the projection data (internal)") to_array;
     %newobject to_array;
@@ -1766,8 +1813,21 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 
 %shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
 %shared_ptr(stir::OSSPSReconstruction<TargetT >);
+
 %shared_ptr(stir::AnalyticReconstruction);
+
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::FBP2DReconstruction,
+        stir::Reconstruction < TargetT >,
+        stir::AnalyticReconstruction
+            >);
 %shared_ptr(stir::FBP2DReconstruction);
+
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::FBP3DRPReconstruction,
+        stir::Reconstruction < TargetT > ,
+        stir::AnalyticReconstruction
+            >);
 %shared_ptr(stir::FBP3DRPReconstruction);
 
 %shared_ptr(stir::SqrtHessianRowSum<TargetT >);
@@ -1796,8 +1856,6 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %include "stir/OSSPS/OSSPSReconstruction.h"
 
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
-%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
-%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 %include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
@@ -1871,11 +1929,31 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 
 %template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
 
+// Unfortunately, the below two templates currently break the SWIG interface
+// %template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
+//         stir::FBP2DReconstruction,
+//         stir::Reconstruction < TargetT >,
+//         stir::AnalyticReconstruction
+//             >;
+
+// %template (RPFBP3DReconstruction3DFloat) stir::RegisteredParsingObject<
+//         stir::FBP3DRPReconstruction,
+//         stir::Reconstruction < TargetT > ,
+//         stir::AnalyticReconstruction
+//             >;
+
 #undef elemT
 #undef TargetT
 
+%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+%shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
+%include "stir/DataSymmetriesForViewSegmentNumbers.h"
+
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);
+
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
     stir::ForwardProjectorByBin>);
 %shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
@@ -1883,6 +1961,8 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
 %shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
     stir::BackProjectorByBin>);
 %shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
+
+
 %shared_ptr(stir::ProjMatrixByBin);
 %shared_ptr(stir::RegisteredParsingObject<
 	      stir::ProjMatrixByBinUsingRayTracing,
@@ -1909,7 +1989,104 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 
+
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+%shared_ptr(stir::ProjectorByBinPair);
+// explicitly ignore constructor, because SWIG tries to instantiate the abstract class otherwise
+%ignore stir::ProjectorByBinPair::ProjectorByBinPair();
+%shared_ptr(stir::RegisteredParsingObject<
+        stir::ProjectorByBinPairUsingProjMatrixByBin,
+              stir::ProjectorByBinPair,
+              stir::ProjectorByBinPair>);
+%shared_ptr(stir::ProjectorByBinPairUsingProjMatrixByBin)
+%include "stir/recon_buildblock/ProjectorByBinPair.h"
+%template(internalRPProjectorByBinPairUsingProjMatrixByBin) stir::RegisteredParsingObject<
+        stir::ProjectorByBinPairUsingProjMatrixByBin,
+              stir::ProjectorByBinPair,
+              stir::ProjectorByBinPair>;
+%include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+
+%shared_ptr(stir::BinNormalisation);
+%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromProjData, stir::BinNormalisation>);
+%shared_ptr(stir::BinNormalisationFromProjData);
+%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>);
+%shared_ptr(stir::BinNormalisationFromAttenuationImage);
+%shared_ptr(stir::RegisteredParsingObject<stir::TrivialBinNormalisation, stir::BinNormalisation>);
+%shared_ptr(stir::TrivialBinNormalisation);
+
+%include "stir/recon_buildblock/BinNormalisation.h"
+
+%template (internalRPBinNormalisationFromProjData) stir::RegisteredParsingObject<
+  stir::BinNormalisationFromProjData, stir::BinNormalisation>;
+%include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+
+%template (internalRPBinNormalisationFromAttenuationImage) stir::RegisteredParsingObject<
+  stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>;
+%include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+
+%template (internalRPTrivialBinNormalisation) stir::RegisteredParsingObject<
+  stir::TrivialBinNormalisation, stir::BinNormalisation>;
+%include "stir/recon_buildblock/TrivialBinNormalisation.h"
+
+void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
+
+%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
+%shared_ptr(stir::LmToProjData);
+%include "stir/listmode/LmToProjData.h"
+
+%shared_ptr(stir::ScatterSimulation);
+%shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
+  stir::ScatterSimulation, stir::ScatterSimulation>);
+%shared_ptr(stir::SingleScatterSimulation);
+
+%include "stir/scatter/ScatterSimulation.h"
+
+%template (internalRPSingleScatterSimulation) 
+  stir::RegisteredParsingObject<stir::SingleScatterSimulation,
+  stir::ScatterSimulation, stir::ScatterSimulation>;
+%include "stir/scatter/SingleScatterSimulation.h"
+
+%shared_ptr(stir::ScatterEstimation);
+%include "stir/scatter/ScatterEstimation.h"
+
+%shared_ptr(stir::CreateTailMaskFromACFs);
+%include "stir/scatter/CreateTailMaskFromACFs.h"
+
+%shared_ptr(stir::ListModeData);
+%include "stir/listmode/ListModeData.h"
+
+%extend stir::ListModeData {
+  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
+    {
+      using namespace stir;
+      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
+      return ret;
+    }
+}
+
+%shared_ptr(stir::FanProjData);
+%shared_ptr(stir::GeoData3D);
+%include "stir/ML_norm.h"
+
+#ifdef HAVE_parallelproj
+%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::ForwardProjectorByBinParallelproj);
+%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::BackProjectorByBinParallelproj);
+
+%template (internalRPForwardProjectorByBinParallelproj)  
+  stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
+
+%template (internalRPBackProjectorByBinParallelproj)  
+  stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
+     stir::BackProjectorByBin>;
+%include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif

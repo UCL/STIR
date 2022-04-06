@@ -1,8 +1,8 @@
 # add registries
 list(APPEND STIR_REGISTRIES 
 #  ${STIR_LOCAL}/listmode_buildblock/UCL_listmode_registries 
-  ${CMAKE_CURRENT_SOURCE_DIR}/buildblock/local_buildblock_registries
-  ${CMAKE_CURRENT_SOURCE_DIR}/recon_buildblock/local_recon_buildblock_registries)
+  ${CMAKE_CURRENT_SOURCE_DIR}/buildblock/local_buildblock_registries.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/recon_buildblock/local_recon_buildblock_registries.cxx)
 
 # add to list of libraries to include in linking
 #list(APPEND STIR_LIBRARIES UCL_listmode_buildblock) 
