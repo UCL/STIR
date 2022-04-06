@@ -1443,7 +1443,6 @@ bool InterfilePDFSHeader::post_processing()
                 max_num_timing_poss,
                 size_of_timing_pos,
                 timing_resolution,
-                scanner_orientation,
                 scanner_geometry,
                 static_cast<float>(axial_distance_between_crystals_in_cm*10.),
                 static_cast<float>(transaxial_distance_between_crystals_in_cm*10.),

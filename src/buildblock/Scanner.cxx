@@ -655,7 +655,6 @@ case PETMR_Signa:
              -1, //energy_resolution_v
              -1, //reference_energy_v
              (short int)0, 0.F, 0.F, // non-TOF
-             "", //scanner_orientation_v
              "", //scanner_geometry_v
              2.2, //axial_crystal_spacing_v
              2.2, //transaxial_crystal_spacing_v
@@ -707,7 +706,6 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  short int max_num_of_timing_poss_v,
                  float size_timing_pos_v,
                  float timing_resolution_v,
-                 const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
@@ -733,7 +731,6 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              max_num_of_timing_poss_v,
              size_timing_pos_v,
              timing_resolution_v,
-             scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
@@ -758,7 +755,6 @@ Scanner::Scanner(Type type_v, const string& name,
                  short int max_num_of_timing_poss_v,
                  float size_timing_pos_v,
                  float timing_resolution_v,
-                 const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
@@ -784,7 +780,6 @@ Scanner::Scanner(Type type_v, const string& name,
              max_num_of_timing_poss_v,
              size_timing_pos_v,
              timing_resolution_v,
-             scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
@@ -792,53 +787,6 @@ Scanner::Scanner(Type type_v, const string& name,
              transaxial_block_spacing_v,
              crystal_map_file_name_v);
 }
-
-void
-Scanner::
-set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v,
-           float energy_resolution_v,
-           float reference_energy_v,
-           const string& scanner_geometry_v,
-           float axial_crystal_spacing_v,
-           float transaxial_crystal_spacing_v,
-           float axial_block_spacing_v,
-           float transaxial_block_spacing_v,
-           const std::string& crystal_map_file_name_v)
-{
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-	     max_num_non_arccorrected_bins_v,
-	     num_detectors_per_ring_v, 
-	     inner_ring_radius_v, 
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-	     num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-	     num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v, 
-             num_transaxial_crystals_per_singles_unit_v,
-	     num_detector_layers_v,
-             energy_resolution_v,
-             reference_energy_v,
-             scanner_geometry_v,
-             axial_crystal_spacing_v,
-             transaxial_crystal_spacing_v,
-             axial_block_spacing_v,
-             transaxial_block_spacing_v,
-             crystal_map_file_name_v);
-}
-
 
 void
 Scanner::
@@ -861,7 +809,6 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            short int max_num_of_timing_poss_v,
            float size_timing_pos_v,
            float timing_resolution_v,
-           const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
            float transaxial_crystal_spacing_v,
@@ -1514,7 +1461,6 @@ Scanner* Scanner::ask_parameters()
                         Num_TOF_bins,
                         Size_TOF_bin,
                         TOF_resolution,
-                        ScannerOrientation,
                         ScannerGeometry,
                         TransaxialCrystalSpacing,
                         AxialCrystalSpacing,

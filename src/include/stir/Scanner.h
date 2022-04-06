@@ -171,7 +171,6 @@ class Scanner
           short int max_num_of_timing_poss = -1.0f,
           float size_timing_pos = -1.0f,
           float timing_resolution = -1.0f,
-          const std::string& scanner_orientation_v = "X",
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
@@ -200,7 +199,6 @@ class Scanner
           short int max_num_of_timing_poss = -1.0f,
           float size_timing_pos = -1.0f,
           float timing_resolution = -1.0f,
-          const std::string& scanner_orientation_v = "X",
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
@@ -539,30 +537,6 @@ private:
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );
 
-
-  // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v, 
-                  int max_num_non_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v,
-                  float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f,
-                  const std::string& scanner_geometry_v = "",
-                  float axial_crystal_spacing_v = -1.0f,
-                  float transaxial_crystal_spacing_v = -1.0f,
-                  float axial_block_spacing_v = -1.0f,
-                  float transaxial_block_spacing_v = -1.0f,
-                  const std::string& crystal_map_file_name = "");
-
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v,
@@ -583,7 +557,6 @@ private:
                   short int max_num_of_timing_poss_v = -1.0f,
                   float size_timing_pos_v = -1.0f,
                   float timing_resolution_v = -1.0f,
-                  const std::string& scanner_orientation_v = "",
                   const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,
                   float transaxial_crystal_spacing_v = -1.0f,
