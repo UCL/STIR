@@ -210,12 +210,6 @@ set_up(const std::string & header_path)
     if (nentries == 0)
         error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
 
-    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
-    if (half_block < 0 )
-        half_block = 0;
-
-    offset_dets -= half_block;
-
     return Succeeded::yes;
 }
 
