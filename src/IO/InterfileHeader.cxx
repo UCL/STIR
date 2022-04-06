@@ -631,10 +631,6 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Timing resolution (ps)",
           &timing_resolution);
   // new keys for block geometry
-  scanner_orientation = "X";
-  add_key("Scanner orientation (X or Y)",
-          KeyArgument::ASCII, &scanner_orientation);
-
   scanner_geometry = "Cylindrical";
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
           KeyArgument::ASCII, &scanner_geometry);

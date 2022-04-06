@@ -35,6 +35,7 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
+class ProjDataInfoCylindrical;
 
 /*!
   \ingroup symmetries
@@ -171,6 +172,10 @@ private:
   VectorWithOffset<int> num_planes_per_axial_pos;
   //! a list of values for every segment_num
   VectorWithOffset<float> axial_pos_to_z_offset;
+  //! a list with the average ring difference for every segment_num
+  VectorWithOffset<float> deltas;
+
+  void initialise_deltas(const ProjDataInfoCylindrical*);
 
 #if 0
   // at the moment, we don't need the following 2 members

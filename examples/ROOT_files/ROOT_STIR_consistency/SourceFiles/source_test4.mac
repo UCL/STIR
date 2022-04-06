@@ -1,0 +1,26 @@
+#=====================================================
+#  P A R T I C L E   S O U R C E 4
+#=====================================================
+
+/gate/source/addSource                                         posiFDG
+
+# The particles emitted by the source are back-to-back gammas
+/gate/source/posiFDG/setType backtoback
+/gate/source/posiFDG/gps/particle gamma
+
+
+# The gammas have a high activity mono energy of 511 keV
+/gate/source/posiFDG/gps/ene/type Mono
+/gate/source/posiFDG/gps/ene/mono 0.511 MeV
+/gate/source/posiFDG/setActivity                               500000 becquerel #500 kBq
+
+/gate/source/posiFDG/setForcedUnstableFlag                     true
+/gate/source/posiFDG/setForcedHalfLife                         6586 s
+/gate/source/posiFDG/gps/ang/type                               iso
+
+
+#Shape of the source
+/gate/source/posiFDG/gps/pos/type Point
+/gate/source/posiFDG/gps/pos/centre 95 95 0 mm
+
+/gate/source/list

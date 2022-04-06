@@ -3,7 +3,9 @@
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
     Copyright (C) 2016, University of Hull
-    Copyright (C) 2015, 2020 University College London
+    Copyright (C) 2015, 2020, 2022 University College London
+    Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
+    Copyright (C) 2021, Rutherford Appleton Laboratory STFC
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -18,6 +20,9 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Ashley Gillman
+  \author Evgueni Ovtchinnikov
+  \author Gemma Fardell
   \author PARAPET project
 */
 #include "stir/ProjData.h"
@@ -33,6 +38,10 @@
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
+#include "stir/ProjDataInMemory.h" // needed for subsets
+#include "stir/ProjDataInfoSubsetByView.h"
+#include "stir/Viewgram.h"
+
 
 #ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
@@ -226,6 +235,30 @@ read_from_file(const string& filename,
 //{
 //  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
 //}
+
+
+unique_ptr<ProjDataInMemory>
+ProjData::get_subset(const std::vector<int>& views) const
+{
+  auto subset_proj_data_info_sptr =
+    std::make_shared<ProjDataInfoSubsetByView>(proj_data_info_sptr, views);
+  unique_ptr<ProjDataInMemory> subset_proj_data_uptr(new ProjDataInMemory(exam_info_sptr, subset_proj_data_info_sptr));
+
+  //TODOTOF loop here
+  for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
+    {
+      for (int subset_view_num=0; subset_view_num < static_cast<int>(views.size()); ++subset_view_num)
+        {
+          const Viewgram<float> viewgram = this->get_viewgram(views[subset_view_num], segment_num);
+          // construct new one with data from viewgram, but appropriate meta-data
+          const Viewgram<float> subset_viewgram(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num);
+          if (subset_proj_data_uptr->set_viewgram(subset_viewgram) != Succeeded::yes)
+            error("ProjData::get_subset failed to set a viewgram");
+        }
+    }
+
+  return subset_proj_data_uptr;
+}
 
   
 Viewgram<float> 

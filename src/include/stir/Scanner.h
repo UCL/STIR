@@ -166,8 +166,8 @@ class Scanner
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
-          float energy_resolution_v,
-          float reference_energy_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f,
           short int max_num_of_timing_poss,
           float size_timing_pos,
           float timing_resolution,
@@ -195,8 +195,8 @@ class Scanner
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
-          float energy_resolution_v,
-          float reference_energy_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f,
           short int max_num_of_timing_poss,
           float size_timing_pos,
           float timing_resolution,
@@ -339,8 +339,6 @@ class Scanner
 
   //! \name functions to get block geometry info
   //@{
-  //! get scanner orientation
-  inline std::string get_scanner_orientation() const;
   //! get scanner geometry
   inline std::string get_scanner_geometry() const;
   //! get crystal spacing in axial direction
@@ -417,8 +415,6 @@ class Scanner
   // TODO accomodate more complex geometries of singles units.
   //@{
   //! name functions to set block geometry info
-  //! set scanner orientation
-  inline void set_scanner_orientation(const std::string& new_scanner_orientation);
   //! set scanner geometry
   /*! Will also read the detector map from file if the geometry is \c Generic */
   void set_scanner_geometry(const std::string& new_scanner_geometry);
@@ -529,7 +525,6 @@ private:
   //! \brief scanner info needed for block geometry
   //! \author Parisa Khateri
   //! A negative value indicates unknown.
-  std::string scanner_orientation;       /*! scanner orientation */
   std::string scanner_geometry;          /*! scanner geometry */
   float axial_crystal_spacing;           /*! crystal pitch in axial direction in mm*/
   float transaxial_crystal_spacing;      /*! crystal pitch in transaxial direction in mm*/
@@ -543,6 +538,30 @@ private:
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );
+
+
+  // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
+  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
+                  int num_rings_v, 
+                  int max_num_non_arccorrected_bins_v,
+                  int num_detectors_per_ring_v,
+                  float inner_ring_radius_v,
+                  float average_depth_of_interaction_v,
+                  float ring_spacing_v,
+                  float bin_size_v, float intrinsic_tilt_v,
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_axial_crystals_per_singles_unit_v,
+                  int num_transaxial_crystals_per_singles_unit_v,
+                  int num_detector_layers_v,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = -1.0f,
+                  const std::string& scanner_geometry_v = "",
+                  float axial_crystal_spacing_v = -1.0f,
+                  float transaxial_crystal_spacing_v = -1.0f,
+                  float axial_block_spacing_v = -1.0f,
+                  float transaxial_block_spacing_v = -1.0f,
+                  const std::string& crystal_map_file_name = "");
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -559,8 +578,8 @@ private:
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
-                  float energy_resolution_v,
-                  float reference_energy,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = -1.0f,
                   short int max_num_of_timing_poss_v,
                   float size_timing_pos_v,
                   float timing_resolution_v,

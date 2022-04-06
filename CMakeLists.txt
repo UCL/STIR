@@ -53,7 +53,7 @@ endif()
 ####### Set Version number etc
 set(VERSION_MAJOR   5)
 set(VERSION_MINOR   0)
-set(VERSION_PATCH   0-prealpha)
+set(VERSION_PATCH   0)
 set(VERSION   050000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
@@ -141,6 +141,7 @@ endif()
 # Legacy options
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
 option(STIR_LEGACY_IGNORE_VIEW_OFFSET "Ignore using scanner view-offset (or intrinsic azimuthal tilt), as in STIR 4 or earlier" OFF)
+option(STIR_ROOT_ROTATION_AS_V4 "Ignore the changes to the ROOT rotation introduced in STIR version 5" OFF)
 
 # NiftyPET projector
 if(NOT DISABLE_NiftyPET_PROJECTOR OR NOT DISABLE_Parallelproj_PROJECTOR)
@@ -163,7 +164,7 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj)
+    find_package(parallelproj 0.8)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
       if (parallelproj_built_with_CUDA)
