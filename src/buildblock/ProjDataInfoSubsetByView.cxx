@@ -221,9 +221,9 @@ ProjDataInfoSubsetByView::get_sampling_in_s(const Bin& bin) const
 }
 
 Bin
-ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor) const
+ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor, const double delta_time) const
 {
-  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor));
+  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor, delta_time));
 }
 
 bool

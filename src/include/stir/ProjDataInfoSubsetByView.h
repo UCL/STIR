@@ -159,7 +159,7 @@ public:
   //! Find the bin in the projection data that 'contains' an LOR
   /*! Forwards ProjDataInfo::get_bin
    */
-  Bin get_bin(const LOR<float>&) const override;
+  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
   //! Check if \c *this contains \c proj
   /*!
