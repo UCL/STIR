@@ -140,7 +140,6 @@ private:
   /// TOF VARIABLES
   //! A copy of the scanner timing resolution in mm
   const float failure_tolerance_TOF = 0.05;
-  float gauss_sigma_in_mm; // Currently unused.
   std::vector<WeightedCoordinate> TOF_LOR_peak_value_coords;
   double TOF_distance_threshold;
   int num_failed_TOF_lor_events = 0;
@@ -219,10 +218,6 @@ ROOTConsistencyTests::process_list_data()
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr(new ProjMatrixByBinUsingRayTracing());
   proj_matrix_sptr.get()->set_up(lm_data_sptr->get_proj_data_info_sptr(),
                                  discretised_density_sptr);
-
-  // TOF requirements
-  proj_matrix_sptr->enable_tof(lm_data_sptr->get_proj_data_info_sptr());
-  gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(lm_data_sptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
 
   // loop over all events in the listmode file
   shared_ptr<CListRecord> record_sptr = lm_data_sptr->get_empty_record_sptr();
