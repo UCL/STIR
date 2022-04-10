@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from os import getcwd
+from os import chdir
 import sys
 import numpy as np
 from math import log10, floor
@@ -74,12 +74,12 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
 
 
-class ViewOffsetConsistencyClosestLORInfo:
+class ROOTConsistencyDataHandler:
     """
     Helper class.
-    Loads and converts the data outputs by the `test_view_offset_root` test in STIR into coordinates.
+    Loads and converts the data output by the `test_consistency_with_root` test.
     The first line of the text file should be the original coordinate of the point source and
-    the rest the closest voxel along the LOR to the original.
+    the rest correspond to a selected voxel position along the LOR.
     Each line is expected to be formatted as [ x y z ], e.g., '190.048 0 145.172\n'
     """
 
@@ -143,9 +143,8 @@ class ViewOffsetConsistencyClosestLORInfo:
         return len(self.voxel_coords)
 
     def set_tolerance(self, tolerance):
-        if tolerance is not None:
-            print(f"Overwriting tolerance value as {tolerance}")
-            self.tolerance = tolerance
+        print(f"Overwriting tolerance value as {tolerance}")
+        self.tolerance = tolerance
 
     def get_num_failed_events(self, tolerance=None):
         """
@@ -161,12 +160,10 @@ class ViewOffsetConsistencyClosestLORInfo:
         Returns the percentage of events that are outside the tolerance
         :param tolerance: l2-norm tolerance that classified a "failed" event.
         """
-        if tolerance is None:
-            tolerance = self.tolerance
         return self.get_num_failed_events(tolerance) / self.get_num_events()
 
 
-def print_pass_and_fail(allowed_fraction_of_failed_events=0.05):
+def print_pass_and_fail(point_sources_data, allowed_fraction_of_failed_events=0.05):
     """
     Prints the number of events, how many events failed and the percentage
     :param allowed_fraction_of_failed_events: Fraction of events that could "fail" before the test failed
@@ -197,7 +194,7 @@ def print_pass_and_fail(allowed_fraction_of_failed_events=0.05):
         print(f"{row_string} {warning_msg}")
 
 
-def print_axis_biases():
+def print_axis_biases(point_sources_data):
     """
     Prints the LOR COM and the axis bias for each point source and the overall bias in each axis.
     :return: None
@@ -264,26 +261,31 @@ def print_axis_biases():
 # =====================================================================================================
 # Main Script
 # =====================================================================================================
-print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
-      "run `debug_view_offset_consistency` from `pretest_output` directory or input that directory as an argument.\n")
+def main():
+    print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
+          "run `debug_view_offset_consistency` from `ROOT_STIR_consistency` directory or input that directory as an "
+          "argument.\n")
 
-# Optional argument to set the directory of the output of the view_offset_root test.
-working_directory = getcwd()
-if len(sys.argv) > 1:
-    working_directory = sys.argv[1]
+    # Optional argument to set the directory of the output of the test_consistency_with_root CTest.
+    if len(sys.argv) > 1:
+        chdir(sys.argv[1])
 
-point_sources_data = dict()
-# Assumeing the prefix's and suffix's of the file names
-filename_prefix = "root_header_test"
-filename_suffix = "_lor_pos.txt"
+    # Assuming the prefix's and suffix's of the file names
+    filename_prefix = "non_TOF_voxel_data_"
+    filename_suffix = ".txt"
 
-# Loop over all files in the working directory and load the data into the point_sources_data dictionary
-for i in range(1, 9, 1):
-    point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
+    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
+    point_sources_data = dict()
+    for i in range(1, 9, 1):
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{filename_suffix}")
 
-# Print the number of events, number of failed events and failure percentage for each point source
-print_pass_and_fail()
-# Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
-print_axis_biases()
+    # Print the number of events, number of failed events and failure percentage for each point source
+    print_pass_and_fail(point_sources_data)
+    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
+    print_axis_biases(point_sources_data)
 
-print("Done")
+    print("Done")
+
+
+if __name__ == "__main__":
+    main()
