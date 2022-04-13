@@ -55,19 +55,17 @@ interpolate_axial_position(ProjData& proj_data_out,
     {
       error("interpolate_axial_position needs both projection to be of a scanner with the same ring radius");
     }
-
+  
+  float m_offset_in=proj_data_in_info.get_m(Bin(0,0,0,0));
   for (int segment=proj_data_out.get_min_segment_num();segment<=proj_data_out.get_max_segment_num();segment++)
       for (int axial_pos=proj_data_out.get_min_axial_pos_num(segment); axial_pos<=proj_data_out.get_max_axial_pos_num(segment);axial_pos++)
       {
           Bin bin(segment,0,axial_pos,0);
           int relative_pos=0;
           float m = proj_data_out_info.get_m(bin);
-          
-          float in_m_sampling= proj_data_in_info.get_sampling_in_m(bin);
-          relative_pos=(m / in_m_sampling);
-          relative_pos=+1;
-          Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
-          
+          float in_m_sampling= proj_data_in_info.get_sampling_in_m(bin)*2;
+          relative_pos=abs(round((m -m_offset_in)/ in_m_sampling));
+           Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
           for (int view=proj_data_out.get_min_view_num(); view<=proj_data_out.get_max_view_num();view++)
               for (int tan=proj_data_out.get_min_tangential_pos_num(); tan<=proj_data_out.get_max_tangential_pos_num();tan++)
               {
