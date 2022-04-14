@@ -37,8 +37,13 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_OSMAPOSL.cxx
 )
 
+if (DOWNLOAD_ZENODO_TEST_DATA)
+    message(STATUS "Download Zenodo test data enabled.")
+else()
+    message(STATUS "Download Zenodo test data disabled.")
+endif()
+
 if (HAVE_CERN_ROOT)
-    OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" ON)
     if (DOWNLOAD_ZENODO_TEST_DATA)
         ## DOWNLOAD THE ROOT CONSISTENCY TEST DATA FROM ZENODO (root file and corresponding header)
         ## TOTAL SIZE: ~3MB
