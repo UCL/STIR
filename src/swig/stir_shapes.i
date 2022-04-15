@@ -1,3 +1,18 @@
+/*
+    Copyright (C) 2018 University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG: stir::Shape3D hierarchy
+
+  \author Kris Thielemans
+*/
+
 %shared_ptr(stir::Shape3D)
 %shared_ptr(stir::Shape3DWithOrientation)
 %shared_ptr(stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>)

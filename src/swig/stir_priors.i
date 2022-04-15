@@ -1,3 +1,19 @@
+/*
+    Copyright (C) 2018, 2020, 2021 University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG
+
+  \author Kris Thielemans
+  \author Robert Twyman
+*/
+
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
 

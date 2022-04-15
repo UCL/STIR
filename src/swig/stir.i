@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2018, 2020, 2021 University College London
+    Copyright (C) 2013, 2014, 2015, 2018, 2019, 2020, 2021 University College London
+    Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
 
@@ -9,10 +10,11 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
-  \brief Interface file for SWIG
+  \file
+  \brief Interface file for SWIG: main
 
-  \author Kris Thielemans 
+  \author Kris Thielemans
+  \author Daniel Deidda
   \author Markus Jehl
 */
 

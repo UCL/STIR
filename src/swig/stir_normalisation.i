@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2022 University College London
+    Copyright (C) 2022 Positrigo
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG: stir::BinNormalisation hierarchy
+
+  \author Kris Thielemans
+  \author Markus Jehl
+
+*/
+
 %shared_ptr(stir::BinNormalisation);
 %shared_ptr(stir::RegisteredObject<stir::BinNormalisation>);
 %shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromProjData, stir::BinNormalisation>);

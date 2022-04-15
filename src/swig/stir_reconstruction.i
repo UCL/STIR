@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2013, 2014, 2022 University College London
+    Copyright (C) 2022 Positrigo
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG: stir::Reconstruction hierarchy
+
+  \author Kris Thielemans
+  \author Markus Jehl
+*/
+
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
 

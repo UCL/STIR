@@ -1,4 +1,23 @@
-/// projectors
+/*
+    Copyright (C) 2014, 2022 University College London
+    Copyright (C) 2022 Positrigo
+    Copyright (C) 2022 Katholieke Universiteit London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG: projectors
+
+  \author Kris Thielemans
+  \author Markus Jehl
+  \author Georg Schramm
+*/
+
+
 %shared_ptr(stir::ForwardProjectorByBin);
 
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,

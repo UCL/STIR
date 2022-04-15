@@ -1,3 +1,20 @@
+/*
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2013, 2018, 2020, 2021 University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \brief Interface file for SWIG: stir::GeneralisedObjectiveFunction function hierarchy
+
+  \author Kris Thielemans
+  \author Robert Twyman
+*/
+
 %ignore *::get_exam_info_uptr_for_target;
 
 #define TargetT stir::DiscretisedDensity<3,float>
