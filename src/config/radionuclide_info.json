@@ -7,8 +7,8 @@
     {   "PET":
       {  "properties": [
                {
-                "kev": 511,
-                "BRatio": 0.9686,
+                "keV": 511,
+                "branching_ratio": 0.9686,
                 "half_life": 6584.04
                 }      ]
       }
@@ -21,8 +21,8 @@
      {   "PET":
       {  "properties": [
                {
-               "kev": 511,
-               "BRatio": 0.9975,
+               "keV": 511,
+               "branching_ratio": 0.9975,
                "half_life": 1221.66
                }      ]
      }
@@ -35,8 +35,8 @@
       {   "PET":
         {  "properties": [
                  {
-                  "kev": 511,
-                  "BRatio": 0.99818,
+                  "keV": 511,
+                  "branching_ratio": 0.99818,
                   "half_life": 598.02
                   }      ]
          }
@@ -49,8 +49,8 @@
       {   "PET":
         {  "properties": [
                  {
-                  "kev": 511,
-                  "BRatio": 0.99885,
+                  "keV": 511,
+                  "branching_ratio": 0.99885,
                   "half_life": 122.46
                   }      ]
         }
@@ -63,8 +63,8 @@
        {   "PET":
          {  "properties": [
                   {
-                   "kev": 511,
-                   "BRatio": 0.1752,
+                   "keV": 511,
+                   "branching_ratio": 0.1752,
                    "half_life": 45721.144
                    }      ]
          }
@@ -77,8 +77,8 @@
       {   "PET":
         {  "properties": [
                  {
-                  "kev": 511,
-                  "BRatio": 0.8768,
+                  "keV": 511,
+                  "branching_ratio": 0.8768,
                   "half_life": 4069.8
                   }      ]
         }
@@ -91,8 +91,8 @@
     {   "nucmed":
       {  "properties": [
                {
-                "kev": 140.511,
-                "BRatio": 0.885,
+                "keV": 140.511,
+                "branching_ratio": 0.885,
                 "half_life": 21624.12
                 }       ]
       }  
@@ -105,8 +105,8 @@
      {   "nucmed":
        {  "properties": [
                 {
-                 "kev": 364.489,
-                     "BRatio": 0.812,
+                 "keV": 364.489,
+                     "branching_ratio": 0.812,
                      "half_life": 693446.4
                      }       ]
        }  
@@ -119,8 +119,8 @@
      {   "nucmed":
       {  "properties": [
                {
-               "kev": 184.577,
-               "BRatio": 0.213,
+               "keV": 184.577,
+               "branching_ratio": 0.213,
                 "half_life": 281776.32
                }       ]
       }  
@@ -133,8 +133,8 @@
       {   "nucmed":
         {  "properties": [
                  {
-                  "kev": 208.3662,
-                  "BRatio": 0.1109,
+                  "keV": 208.3662,
+                  "branching_ratio": 0.1109,
                   "half_life": 574300.8
                  }       ]
         }  
@@ -148,16 +148,16 @@
       {   "nucmed":
         {  "properties": [
                  {
-                  "kev": 150,
-                  "BRatio": 0.99983,
+                  "keV": 150,
+                  "branching_ratio": 0.99983,
                   "half_life": 230549.76
                  }       ]
         }, 
          "PET":
         {  "properties": [
                  {
-                  "kev": 511,
-                  "BRatio": 0.0000319,
+                  "keV": 511,
+                  "branching_ratio": 0.0000319,
                   "half_life": 230549.76
                   }       ]
         }

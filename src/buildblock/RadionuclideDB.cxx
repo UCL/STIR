@@ -81,7 +81,7 @@ get_radionuclide_name_from_lookup_table(const std::string& rname) const
   std::ifstream json_file_stream(this->radionuclide_lookup_table_filename);
     
   if (!json_file_stream)
-    error("Could not open radionuclude lookup file:'" + this->radionuclide_lookup_table_filename + "'");
+    error("Could not open radionuclide lookup file:'" + this->radionuclide_lookup_table_filename + "'");
     
   nlohmann::json table_json;
   json_file_stream >> table_json;
@@ -126,17 +126,17 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
   auto rnuclide_entry = radionuclide_json["nuclide"].find(name);
   if (rnuclide_entry == radionuclide_json["nuclide"].end())
     {
-      error("RadionuclideDB: radionuclude " + rname + " not found in JSON database");
+      error("RadionuclideDB: radionuclide " + rname + " not found in JSON database");
     }
   auto rnuclide_entry2 = (*rnuclide_entry)["modality"].find(rmodality.get_name());
   if (rnuclide_entry2 == (*rnuclide_entry)["modality"].end())
     {
-      error("RadionuclideDB: radionuclude " + rname + " modality " + rmodality.get_name() + " not found in JSON database");
+      error("RadionuclideDB: radionuclide " + rname + " modality " + rmodality.get_name() + " not found in JSON database");
     }
   auto rnuclide_entry3 = rnuclide_entry2->find("properties");
   if (rnuclide_entry3 == rnuclide_entry2->end())
     {
-      error("RadionuclideDB: radionuclude " + rname + " modality " + rmodality.get_name() + " found but properties not in JSON database");
+      error("RadionuclideDB: radionuclide " + rname + " modality " + rmodality.get_name() + " found but properties not in JSON database");
     }
   auto& target = *rnuclide_entry3;
 
@@ -160,7 +160,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
   }
   try
     {
-      keV = properties["kev"];
+      keV = properties["keV"];
     }
   catch (...)
     {
@@ -168,11 +168,11 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
     }
   try
     {
-  branching_ratio = properties["BRatio"];
+  branching_ratio = properties["branching_ratio"];
     }
   catch (...)
     {
-      error("RadionuclideDB: BRatio not set for " + rname);
+      error("RadionuclideDB: branching_ratio not set for " + rname);
     }
   try
     {
