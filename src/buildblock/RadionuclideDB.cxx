@@ -42,8 +42,6 @@ read_from_file(const std::string& arg)
 #ifdef nlohmann_json_FOUND
     this->database_filename = arg;
     
-//    modality_str=modality.get_name();
-    
     //Read Radionuclide file and set JSON member for DB
     
     std::string s =this->database_filename;
@@ -123,20 +121,31 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
 #ifdef nlohmann_json_FOUND
   //Extract appropriate chunk of JSON file for given nuclide.
   //nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][rmodality.get_name()]["properties"];
+  std::string modality_string;
+  switch (rmodality.get_modality())
+    {
+    case ImagingModality::PT:
+      modality_string = "PET"; break;
+    case ImagingModality::NM:
+      modality_string = "nucmed"; break;
+    default:
+      error("RadionuclideDB::get_radionuclide_from_json called with unknown modality");
+    }
+
   auto rnuclide_entry = radionuclide_json["nuclide"].find(name);
   if (rnuclide_entry == radionuclide_json["nuclide"].end())
     {
       error("RadionuclideDB: radionuclide " + rname + " not found in JSON database");
     }
-  auto rnuclide_entry2 = (*rnuclide_entry)["modality"].find(rmodality.get_name());
+  auto rnuclide_entry2 = (*rnuclide_entry)["modality"].find(modality_string);
   if (rnuclide_entry2 == (*rnuclide_entry)["modality"].end())
     {
-      error("RadionuclideDB: radionuclide " + rname + " modality " + rmodality.get_name() + " not found in JSON database");
+      error("RadionuclideDB: radionuclide " + rname + " modality " + modality_string + " not found in JSON database");
     }
   auto rnuclide_entry3 = rnuclide_entry2->find("properties");
   if (rnuclide_entry3 == rnuclide_entry2->end())
     {
-      error("RadionuclideDB: radionuclide " + rname + " modality " + rmodality.get_name() + " found but properties not in JSON database");
+      error("RadionuclideDB: radionuclide " + rname + " modality " + modality_string + " found but properties not in JSON database");
     }
   auto& target = *rnuclide_entry3;
 
