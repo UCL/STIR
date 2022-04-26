@@ -29,6 +29,7 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
+#include "stir/recon_buildblock/distributable.h"
 START_NAMESPACE_STIR
 
 
@@ -110,7 +111,10 @@ protected:
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
-  shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> projector_pair_sptr;
+  shared_ptr<ProjectorByBinPair> projector_pair_sptr;
+
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
 
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
