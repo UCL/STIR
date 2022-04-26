@@ -117,9 +117,11 @@ public:
   /*!
     If \a rname is \c "default" or empty, use ^18F^Fluorine" for PET and "^99m^Technetium" for NM.
     Otherwise, first looks-up \a rname to translate to standard naming convention, then finds it in the database.
-    If not found in the database, this function calls error().
+    If not found in the database, this function uses warning() and returns
+    a default constructed Radionuclide() object (i.e. unknown).
 
-    If STIR is compiled without nlohmann_json support, this function calls error().
+    If STIR is compiled without nlohmann_json support, a hard-coded database is
+    used (currently only containing values for the above default radionuclides).
   */
   Radionuclide get_radionuclide(ImagingModality rmodality, const std::string& rname);
   
@@ -137,6 +139,9 @@ private:
   //! Finds the radionuclide info in the database
   /*!
     \a rname should have been standardised already.
+
+    If not found in the database, this function uses warning() and returns
+    a default constructed Radionuclide() object (i.e. unknown).
   */
   Radionuclide get_radionuclide_from_json(ImagingModality rmodality, const std::string& rname) const;
   
