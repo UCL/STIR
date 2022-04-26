@@ -542,7 +542,6 @@ break;
              1, //num_detector_layers_v
              -1, //energy_resolution_v
              -1, //reference_energy_v
-             "", //scanner_orientation_v
              "", //scanner_geometry_v
              2.2, //axial_crystal_spacing_v
              2.2, //transaxial_crystal_spacing_v
@@ -611,7 +610,6 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
-                 const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
@@ -634,7 +632,6 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
@@ -658,7 +655,6 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
-                 const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
@@ -681,7 +677,6 @@ Scanner::Scanner(Type type_v, const string& name,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
@@ -713,7 +708,6 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
-           const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
            float transaxial_crystal_spacing_v,
@@ -735,7 +729,6 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 	     num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
@@ -763,7 +756,6 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
-           const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
            float transaxial_crystal_spacing_v,
@@ -795,8 +787,6 @@ set_params(Type type_v,const list<string>& list_of_names_v,
       reference_energy = 511.f;
   else
       reference_energy = reference_energy_v;
-  
-  scanner_orientation = scanner_orientation_v;
   
   axial_crystal_spacing = axial_crystal_spacing_v;
   transaxial_crystal_spacing = transaxial_crystal_spacing_v;
@@ -936,7 +926,7 @@ check_consistency() const
 	  get_num_transaxial_blocks() *
 	  get_num_transaxial_crystals_per_block();
     // exclusion of generic as 'get_num_transaxial_crystals_per_block()' is sometimes false for asymmetric detectors and not important for generic
-	if ( dets_per_ring != get_num_detectors_per_ring() && scanner_orientation != "Generic")
+	if ( dets_per_ring != get_num_detectors_per_ring() && scanner_geometry != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent transaxial block info",
 		    this->get_name().c_str()); 
@@ -955,7 +945,7 @@ check_consistency() const
 	  get_num_transaxial_buckets() *
 	  get_num_transaxial_blocks_per_bucket();
     // exclusion of generic as 'get_num_transaxial_blocks_per_bucket()' is sometimes false for asymmetric detectors and not important for generic
-	if ( blocks_per_ring != get_num_transaxial_blocks() && scanner_orientation != "Generic")
+	if ( blocks_per_ring != get_num_transaxial_blocks() && scanner_geometry != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent transaxial block/bucket info",
 		    this->get_name().c_str()); 
@@ -975,7 +965,7 @@ check_consistency() const
 	  get_num_axial_crystals_per_block();
 
 	// exclusion of generic as 'get_num_axial_crystals_per_block()' is sometimes false for asymmetric detectors and not important for generic
-  if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block())  && scanner_orientation != "Generic")
+  if ( dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block())  && scanner_geometry != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent axial block info: %d vs %d",
 		    this->get_name().c_str(),
@@ -995,7 +985,7 @@ check_consistency() const
 	  get_num_axial_buckets() *
 	  get_num_axial_blocks_per_bucket();
     // exclusion of generic as 'get_num_axial_blocks_per_bucket()' is sometimes false for asymmetric detectors and not important for generic
-	if ( blocks_axial != get_num_axial_blocks() && scanner_orientation != "Generic")
+	if ( blocks_axial != get_num_axial_blocks() && scanner_geometry != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent axial block/bucket info",
 		    this->get_name().c_str()); 
@@ -1221,11 +1211,6 @@ Scanner::parameter_info() const
     s << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
       <<get_scanner_geometry() << '\n';
   }
-  if (get_scanner_orientation() != "")
-  {
-    s << "Scanner orientation (X or Y)                                := "
-      <<get_scanner_orientation() << '\n';
-  }
   if (get_axial_crystal_spacing() >=0)
     s << "Distance between crystals in axial direction (cm)           := "
       << get_axial_crystal_spacing()/10 << '\n';
@@ -1362,8 +1347,6 @@ Scanner* Scanner::ask_parameters()
       int num_detector_layers =
     ask_num("Enter number of detector layers per block: ",1,100,1);
            
-      const string ScannerOrientation =
-  ask_string("Enter the scanner orientation, i.e. which axis passes through two opposite blocks ('X' or 'Y')", "Y");
       const string ScannerGeometry =
   ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
       
@@ -1396,7 +1379,6 @@ Scanner* Scanner::ask_parameters()
                         num_detector_layers,
                         EnergyResolution,
                         ReferenceEnergy,
-                        ScannerOrientation,
                         ScannerGeometry,
                         TransaxialCrystalSpacing,
                         AxialCrystalSpacing,

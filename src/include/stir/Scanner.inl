@@ -233,12 +233,6 @@ Scanner::get_reference_energy() const
 }
 
 std::string
-Scanner::get_scanner_orientation() const
-{
-  return scanner_orientation;
-}
-
-std::string
 Scanner::get_scanner_geometry() const
 {
   return scanner_geometry;
@@ -398,12 +392,6 @@ void
 Scanner::set_reference_energy(const float new_num)
 {
     reference_energy = new_num;
-   _already_setup = false;
-}
-
-void Scanner::set_scanner_orientation(const std::string& new_scanner_orientation)
-{
-  scanner_orientation = new_scanner_orientation;
    _already_setup = false;
 }
 

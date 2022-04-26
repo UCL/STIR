@@ -112,13 +112,14 @@ get_next_record(CListRecordROOT& record)
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
+#ifdef STIR_ROOT_ROTATION_AS_V4
     crystal1 -= half_block;
     crystal2 -= half_block;
 
     // Add offset
     crystal1 += offset_dets;
     crystal2 += offset_dets;
-
+#endif
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
@@ -146,6 +147,13 @@ InputStreamFromROOTFileForCylindricalPET::set_defaults()
     module_repeater_y = -1;
     module_repeater_z = -1;
     rsector_repeater = -1;
+#ifdef STIR_ROOT_ROTATION_AS_V4
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2  - 1;
+    if (half_block < 0 )
+      half_block = 0;
+#else
+    half_block = 0;
+#endif
 }
 
 void

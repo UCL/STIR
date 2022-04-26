@@ -60,7 +60,6 @@ START_NAMESPACE_STIR
         Singles readout depth := 1
         exclude scattered events := ${EXCLUDE_SCATTERED}
         exclude random events := ${EXCLUDE_RANDOM}
-        offset (num of detectors) := 0
         low energy window (keV) := 0
         upper energy window (keV):= 10000
 

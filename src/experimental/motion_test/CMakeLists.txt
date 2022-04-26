@@ -14,7 +14,7 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
-    test_BSpline_transformations
+    test_BSpline_transformations.cxx
 )
 
 # create_stir_involved_test (test_BSpline_transformations.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")

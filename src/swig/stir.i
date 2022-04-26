@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2018, 2020, 2021 University College London
+    Copyright (C) 2013, 2014, 2015, 2018, 2019, 2020, 2021 University College London
+    Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
 
@@ -9,10 +10,11 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
-  \brief Interface file for SWIG
+  \file
+  \brief Interface file for SWIG: main
 
-  \author Kris Thielemans 
+  \author Kris Thielemans
+  \author Daniel Deidda
   \author Markus Jehl
 */
 
@@ -1434,7 +1436,10 @@ stir::CartesianCoordinate3D<float>
     return coord_2;
 }
 }
-        
+
+%shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
+%include "stir/DataSymmetriesForViewSegmentNumbers.h"
+
 %include "stir/Viewgram.h"
 %include "stir/RelatedViewgrams.h"
 %include "stir/Sinogram.h"
@@ -1478,7 +1483,7 @@ namespace stir {
     // work around the current SWIG limitation that it doesn't wrap unique_ptr. See above
     ProjDataInMemory* get_subset(const std::vector<int>& views)
     {
-      return get_subset(views).get();
+      return self->get_subset(views).release();
     }
 
 #ifdef SWIGPYTHON
@@ -1579,23 +1584,7 @@ namespace stir {
 }
 
 // shapes
-%shared_ptr(stir::Shape3D)
-%shared_ptr(stir::Shape3DWithOrientation)
-%shared_ptr(stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>)
-%shared_ptr(stir::Ellipsoid)
-%shared_ptr(stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>)
-%shared_ptr(stir::EllipsoidalCylinder)
-%shared_ptr(stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>)
-%shared_ptr(stir::Box3D)
-
-%include "stir/Shape/Shape3D.h"
-%include "stir/Shape/Shape3DWithOrientation.h"
-%template(RPEllipsoid) stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>;
-%template(RPEllipsoidalCylinder) stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>;
-%template(RPBox3D) stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>;
-%include "stir/Shape/Ellipsoid.h"
-%include "stir/Shape/EllipsoidalCylinder.h"
-%include "stir/Shape/Box3D.h"
+%include "stir_shapes.i"
 
 // ROIValues class and compute compute_ROI_values
 %shared_ptr(stir::ROIValues)
@@ -1603,353 +1592,17 @@ namespace stir {
 %include "stir/evaluation/compute_ROI_values.h"
 
 // filters
-#ifdef STIRSWIG_SHARED_PTR
-#define elemT float
-%shared_ptr(stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >)
-%shared_ptr(stir::RegisteredParsingObject<
-             stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
-%shared_ptr(stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >)
-
-%shared_ptr(stir::RegisteredParsingObject<stir::SeparableCartesianMetzImageFilter<elemT>,
-	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
-%shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
-
-%shared_ptr(stir::RegisteredParsingObject<stir::SeparableGaussianImageFilter<elemT>,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
-%shared_ptr(stir::SeparableGaussianImageFilter<elemT>)
-
-%shared_ptr(stir::RegisteredParsingObject<stir::SeparableConvolutionImageFilter<elemT>,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
-%shared_ptr(stir::SeparableConvolutionImageFilter<elemT>)
-
-#ifdef HAVE_JSON
-%shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
-	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
-%shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
-#endif
-#undef elemT
-#endif
-
-%include "stir/DataProcessor.h"
-%include "stir/ChainedDataProcessor.h"
-%include "stir/SeparableCartesianMetzImageFilter.h"
-%include "stir/SeparableGaussianImageFilter.h"
-%include "stir/SeparableConvolutionImageFilter.h"
-#ifdef HAVE_JSON
-%include "stir/HUToMuImageProcessor.h"
-#endif
-
-#define elemT float
-%template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
-%template(RPChainedDataProcessor3DFloat) stir::RegisteredParsingObject<
-             stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-%template(ChainedDataProcessor3DFloat) stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >;
-
-%template(RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
-             stir::SeparableCartesianMetzImageFilter<elemT>,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-%template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
-
-%template(RPSeparableGaussianImageFilter3DFloat) stir::RegisteredParsingObject<
-        stir::SeparableGaussianImageFilter<elemT>,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-%template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
-
-%template(RPSeparableConvolutionImageFilter3DFloat) stir::RegisteredParsingObject<
-        stir::SeparableConvolutionImageFilter<elemT>,
-        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-%template(SeparableConvolutionImageFilter3DFloat) stir::SeparableConvolutionImageFilter<elemT>;
-
-#ifdef HAVE_JSON
-%template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
-             stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
-             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
-
-%template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
-#endif
-#undef elemT
+%include "stir_dataprocessors.i"
 
 %include "stir/GeneralisedPoissonNoiseGenerator.h"
 
- // reconstruction
-#ifdef STIRSWIG_SHARED_PTR
-#define TargetT stir::DiscretisedDensity<3,float>
-#define elemT float
+%include "stir_projectors.i"
+%include "stir_normalisation.i"
 
-%ignore *::get_exam_info_uptr_for_target;
-%shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
-%shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
-	    stir::GeneralisedObjectiveFunction<TargetT >,
-	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
+%include "stir_priors.i"
+%include "stir_objectivefunctions.i"
+%include "stir_reconstruction.i"
 
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
-
-%shared_ptr(stir::GeneralisedPrior<TargetT >);
-%shared_ptr(stir::PriorWithParabolicSurrogate<TargetT >);
-%shared_ptr(stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
-            stir::GeneralisedPrior<TargetT >,
-            stir::PriorWithParabolicSurrogate<TargetT  > >);
-%shared_ptr(stir::QuadraticPrior<elemT>);
-%shared_ptr(stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
-            stir::GeneralisedPrior<TargetT >,
-            stir::GeneralisedPrior<TargetT > >);
-%shared_ptr(stir::PLSPrior<elemT>);
-%shared_ptr(stir::RegisteredParsingObject< stir::RelativeDifferencePrior<elemT>,
-         stir::GeneralisedPrior<TargetT >,
-         stir::GeneralisedPrior<TargetT > >);
-%shared_ptr(stir::RelativeDifferencePrior<elemT>);
-%shared_ptr(stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
-        stir::GeneralisedPrior<TargetT >,
-        stir::PriorWithParabolicSurrogate<TargetT  > >);
-%shared_ptr(stir::LogcoshPrior<elemT>);
-
-%shared_ptr(stir::Reconstruction<TargetT >);
-%shared_ptr(stir::IterativeReconstruction<TargetT >);
-
-%shared_ptr(stir::RegisteredParsingObject<
-	      stir::OSMAPOSLReconstruction <TargetT > ,
-	      stir::Reconstruction < TargetT >,
-	      stir::IterativeReconstruction < TargetT >
-            >)
-%shared_ptr(stir::RegisteredParsingObject<
-	      stir::OSSPSReconstruction <TargetT > ,
-	      stir::Reconstruction < TargetT >,
-	      stir::IterativeReconstruction < TargetT >
-            >)
-
-%shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
-%shared_ptr(stir::OSSPSReconstruction<TargetT >);
-
-%shared_ptr(stir::AnalyticReconstruction);
-
-%shared_ptr(stir::RegisteredParsingObject<
-        stir::FBP2DReconstruction,
-        stir::Reconstruction < TargetT >,
-        stir::AnalyticReconstruction
-            >);
-%shared_ptr(stir::FBP2DReconstruction);
-
-%shared_ptr(stir::RegisteredParsingObject<
-        stir::FBP3DRPReconstruction,
-        stir::Reconstruction < TargetT > ,
-        stir::AnalyticReconstruction
-            >);
-%shared_ptr(stir::FBP3DRPReconstruction);
-
-%shared_ptr(stir::SqrtHessianRowSum<TargetT >);
-
-#undef TargetT
-#undef elemT
-#endif
-
-%include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
-%include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
-%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-
-%include "stir/recon_buildblock/GeneralisedPrior.h"
-%include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
-%include "stir/recon_buildblock/QuadraticPrior.h"
-%include "stir/recon_buildblock/PLSPrior.h"
-%include "stir/recon_buildblock/RelativeDifferencePrior.h"
-%include "stir/recon_buildblock/LogcoshPrior.h"
-
-%include "stir/recon_buildblock/Reconstruction.h"
- // there's a get_objective_function, so we'll ignore the sptr version
-%ignore *::get_objective_function_sptr;
-%include "stir/recon_buildblock/IterativeReconstruction.h"
-%include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
-%include "stir/OSSPS/OSSPSReconstruction.h"
-
-%include "stir/recon_buildblock/AnalyticReconstruction.h"
-
-%include "stir/recon_buildblock/SqrtHessianRowSum.h"
-
-#define TargetT stir::DiscretisedDensity<3,float>
-#define elemT float
-
-%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
-//%template () stir::GeneralisedObjectiveFunction<TargetT >;
-%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >;
-
-// TODO do we really need this name?
-// Without it we don't see the parsing functions in python...
-// Note: we cannot start it with __ as then we we get a run-time error when we're not using the builtin option
-%template(RPPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat)  stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
-  stir::GeneralisedObjectiveFunction<TargetT >,
-  stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
-
-%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
-
-%inline %{
-  template <class T>
-    stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T> *
-    ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData(stir::GeneralisedObjectiveFunction<T> *b) {
-    return dynamic_cast<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T>*>(b);
-}
-%}
-
-%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
-
-%template (GeneralisedPrior3DFloat) stir::GeneralisedPrior<TargetT >;
-%template (PriorWithParabolicSurrogate3DFloat) stir::PriorWithParabolicSurrogate<TargetT >;
-%template (RPQuadraticPrior3DFloat)
-  stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
-      stir::GeneralisedPrior<TargetT >,
-      stir::PriorWithParabolicSurrogate<TargetT  > >;
-%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT>;
-%template (RPPLSPrior3DFloat)
-  stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
-      stir::GeneralisedPrior<TargetT >,
-      stir::GeneralisedPrior<TargetT > >;
-%template (PLSPrior3DFloat) stir::PLSPrior<elemT>;
-%template (RPRelativeDifferencePrior3DFloat)
-    stir::RegisteredParsingObject< stir::RelativeDifferencePrior<elemT>,
-       stir::GeneralisedPrior<TargetT >,
-       stir::GeneralisedPrior<TargetT > >;
-%template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT>;
-%template (RPLogcoshPrior3DFloat)
-stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
-        stir::GeneralisedPrior<TargetT >,
-        stir::PriorWithParabolicSurrogate<TargetT  > >;
-%template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
-
-%template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
-//%template () stir::Reconstruction<TargetT >;
-%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<TargetT >;
-//%template () stir::IterativeReconstruction<TargetT >;
-
-%template (RPOSMAPOSLReconstruction3DFloat) stir::RegisteredParsingObject<
-	      stir::OSMAPOSLReconstruction <TargetT > ,
-	      stir::Reconstruction < TargetT >,
-	      stir::IterativeReconstruction < TargetT >
-              >;
-%template (RPOSSPSReconstruction) stir::RegisteredParsingObject<
-	      stir::OSSPSReconstruction <TargetT > ,
-	      stir::Reconstruction < TargetT >,
-	      stir::IterativeReconstruction < TargetT >
-            >;
-
-%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
-%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
-
-%template (SqrtHessianRowSum3DFloat) stir::SqrtHessianRowSum<TargetT >;
-
-// Unfortunately, the below two templates currently break the SWIG interface
-// %template (RPFBP2DReconstruction3DFloat) stir::RegisteredParsingObject<
-//         stir::FBP2DReconstruction,
-//         stir::Reconstruction < TargetT >,
-//         stir::AnalyticReconstruction
-//             >;
-
-// %template (RPFBP3DReconstruction3DFloat) stir::RegisteredParsingObject<
-//         stir::FBP3DRPReconstruction,
-//         stir::Reconstruction < TargetT > ,
-//         stir::AnalyticReconstruction
-//             >;
-
-#undef elemT
-#undef TargetT
-
-%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
-%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
-
-%shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
-%include "stir/DataSymmetriesForViewSegmentNumbers.h"
-
-/// projectors
-%shared_ptr(stir::ForwardProjectorByBin);
-
-%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
-    stir::ForwardProjectorByBin>);
-%shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
-%shared_ptr(stir::BackProjectorByBin);
-%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
-    stir::BackProjectorByBin>);
-%shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
-
-
-%shared_ptr(stir::ProjMatrixByBin);
-%shared_ptr(stir::RegisteredParsingObject<
-	      stir::ProjMatrixByBinUsingRayTracing,
-              stir::ProjMatrixByBin,
-              stir::ProjMatrixByBin
-	    >);
-%shared_ptr(stir::ProjMatrixByBinUsingRayTracing);
-
-%include "stir/recon_buildblock/ForwardProjectorByBin.h"
-%include "stir/recon_buildblock/BackProjectorByBin.h"
-
-%include "stir/recon_buildblock/ProjMatrixByBin.h"
-
-%template (internalRPProjMatrixByBinUsingRayTracing) stir::RegisteredParsingObject<
-	      stir::ProjMatrixByBinUsingRayTracing,
-              stir::ProjMatrixByBin,
-              stir::ProjMatrixByBin
-  >;
-
-%include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-
-%template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
-  stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
-     stir::ForwardProjectorByBin>;
-%include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-
-
-%template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
-  stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
-     stir::BackProjectorByBin>;
-%include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-
-%shared_ptr(stir::ProjectorByBinPair);
-// explicitly ignore constructor, because SWIG tries to instantiate the abstract class otherwise
-%ignore stir::ProjectorByBinPair::ProjectorByBinPair();
-%shared_ptr(stir::RegisteredParsingObject<
-        stir::ProjectorByBinPairUsingProjMatrixByBin,
-              stir::ProjectorByBinPair,
-              stir::ProjectorByBinPair>);
-%shared_ptr(stir::ProjectorByBinPairUsingProjMatrixByBin)
-%include "stir/recon_buildblock/ProjectorByBinPair.h"
-%template(internalRPProjectorByBinPairUsingProjMatrixByBin) stir::RegisteredParsingObject<
-        stir::ProjectorByBinPairUsingProjMatrixByBin,
-              stir::ProjectorByBinPair,
-              stir::ProjectorByBinPair>;
-%include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
-
-%shared_ptr(stir::BinNormalisation);
-%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromProjData, stir::BinNormalisation>);
-%shared_ptr(stir::BinNormalisationFromProjData);
-%shared_ptr(stir::RegisteredParsingObject<stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>);
-%shared_ptr(stir::BinNormalisationFromAttenuationImage);
-%shared_ptr(stir::RegisteredParsingObject<stir::TrivialBinNormalisation, stir::BinNormalisation>);
-%shared_ptr(stir::TrivialBinNormalisation);
-
-%include "stir/recon_buildblock/BinNormalisation.h"
-
-%template (internalRPBinNormalisationFromProjData) stir::RegisteredParsingObject<
-  stir::BinNormalisationFromProjData, stir::BinNormalisation>;
-%include "stir/recon_buildblock/BinNormalisationFromProjData.h"
-
-%template (internalRPBinNormalisationFromAttenuationImage) stir::RegisteredParsingObject<
-  stir::BinNormalisationFromAttenuationImage, stir::BinNormalisation>;
-%include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
-
-%template (internalRPTrivialBinNormalisation) stir::RegisteredParsingObject<
-  stir::TrivialBinNormalisation, stir::BinNormalisation>;
-%include "stir/recon_buildblock/TrivialBinNormalisation.h"
 
 void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
 
@@ -1990,22 +1643,3 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
 %include "stir/ML_norm.h"
-
-#ifdef HAVE_parallelproj
-%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
-    stir::ForwardProjectorByBin>);
-%shared_ptr(stir::ForwardProjectorByBinParallelproj);
-%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
-    stir::BackProjectorByBin>);
-%shared_ptr(stir::BackProjectorByBinParallelproj);
-
-%template (internalRPForwardProjectorByBinParallelproj)  
-  stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
-     stir::ForwardProjectorByBin>;
-%include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
-
-%template (internalRPBackProjectorByBinParallelproj)  
-  stir::RegisteredParsingObject<stir::BackProjectorByBinParallelproj,
-     stir::BackProjectorByBin>;
-%include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
-#endif

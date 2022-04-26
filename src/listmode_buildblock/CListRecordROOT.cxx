@@ -26,7 +26,9 @@ CListEventROOT::
 CListEventROOT(const shared_ptr<Scanner>& scanner_sptr) :
     CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
 {
+#ifdef STIR_ROOT_ROTATION_AS_V4
     quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring()/4.f);
+#endif
 }
 
 //!
@@ -65,9 +67,15 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
 //    else
 //        det2 = crystal2;
 
-    // STIR assumes that 0 is on y whill GATE on the x axis
+#ifdef STIR_ROOT_ROTATION_AS_V4
+    // STIR assumes that 0 is on y while GATE on the x axis
     det1 = crystal1 + quarter_of_detectors;
     det2 = crystal2 + quarter_of_detectors;
+#else
+    // STIR and GATE assume that 0 is on y axis by rotation of GATE geometries
+    det1 = crystal1;
+    det2 = crystal2;
+#endif
 
     if  (det1 < 0 )
         det1 = scanner_sptr->get_num_detectors_per_ring() + det1;

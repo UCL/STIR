@@ -40,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 4.1}}
+ Version 5.0}}
 \end{center}
 
 \end{spacing}
@@ -317,7 +317,19 @@ the developer's guide.}\\
 \hline
 % ROW 
 {\raggedright \textit{STIR\_CONFIG\_DIR}} & 
-{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more information.}\\
+{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more info
+rmation.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_LEGACY\_\\IGNORE\_VIEW\_\\OFFSET}} & 
+{\raggedright Default to OFF. Introduced in v5.0.0 for backwards compatibility (will be removed in a future version).
+When setting to ON, STIR will ignore the \texttt{view offset (degrees)} keyword in Interfile headers and similar information in other places.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_ROOT\_\\ROTATION\_AS\_V4}} & 
+{\raggedright Default to OFF. Introduced in v5.0.1 for backwards compatibility (will be removed in a future version).
+When setting to ON, STIR re-enables ad-hoc additions to the correspondence between GATE and STIR crystal indices ``along'' the ring.
+See section \ref{sec:ROOTIO} for more info.}\\
 \hline
 \end{longtable}
 
@@ -347,9 +359,9 @@ Here are some standard CMake variables that might be useful.
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
 \item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
-a particular version of the C++ standard (if it supports it). It is now recommended to set 
-this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
-\texttt{98}, \texttt{14} and \texttt{17}.
+a particular version of the C++ standard (if it supports it). It is set 
+to \texttt{11} since STIR 5.0. Other possible allowed values are
+\texttt{14} and \texttt{17}. More recent version have not yet been tested.
 \end{itemize}
 
 When building the Python code, and you have multiple versions of Python installed,
@@ -712,18 +724,27 @@ these may be incorrectly treated as a single volume.
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
-\subsubsection{ROOT files as output by OpenGATE}
+\subsubsection{ROOT files as output by OpenGATE \label{sec:ROOTIO}}
+We highly recommend
+\url{https://github.com/UCL/STIR-GATE-Connection}{STIR-GATE-Connection} to be sure that GATE input
+and STIR images are aligned etc.
+We give information on the details here.
+
 You need to create a text file header for your ROOT file
 to specify the scanner (as this information is not stored in the ROOT file).
 We tend to name this header \texttt{something.hroot} but this is not mandatory.
 
 We currently support only ROOT output using the CylindricalPET and ECAT systems
-from GATE.
+from GATE.\footnote{There are some unfinished classes
+available on the \textit{STIR} web-site to read \textit{LMF} format files,
+in conjunction with the \textit{LMF} library. However, these might be out-dated.
+.}
 
-\textbf{Warning:} There is a check of consistent scanner geometry information between \textit{STIR}
-and OpenGATE as discrepancies can lead to crashes if the actual number of blocks/crystals etc is
-larger than what is specified in the scanner info. However, this check requires the \texttt{.hroot}
-file to accurately correspond to your GATE macro.
+\textbf{Warning:} There is a check of consistent scanner geometry information between \textit{STIR} template projection data headers that are used for \texttt{lm\_to\_projdata}
+with the information in the \texttt{.hroot} file
+as discrepancies can lead to crashes if the actual number of blocks/crystals etc is
+larger than what is specified in the scanner info. However, this check still requires the \texttt{.hroot}
+file to accurately correspond to your GATE macro (which are not read by STIR).
 
 \textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
 ``virtual crystals" to accomodate for gaps between blocks. If you use
@@ -769,7 +790,8 @@ End GATE_Cylindrical_PET Parameters :=
 
 end ROOT header := 
 \end{verbatim}
-Below is an example using a user-defined scanner. 
+This is of course very brief, but it is hard to know if the STIR defined scanner is
+compatibile with your GATE macros. Below is an example using a user-defined scanner. 
 \begin{verbatim}
 ROOT header := 
 Originating system := User_defined_scanner
@@ -781,7 +803,7 @@ Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
 Default number of arc-corrected bins     := 344 ; default is same as previous value
-View offset (degrees)                    := 0 ; default
+View offset (degrees)                    := 0 ; default, but see info below
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
@@ -796,8 +818,8 @@ GATE_Cylindrical_PET Parameters :=
   number of modules_X := 1 
   number of modules_Y := 1
   number of modules_Z := 1
-  number of submodules_X := 1
-  number of submodules_Y := 1
+  number of submodules_X := 1 
+ number of submodules_Y := 1
   number of submodules_Z := 1
   number of crystals_X := 1
   number of crystals_Y := 1
@@ -810,8 +832,6 @@ GATE_Cylindrical_PET Parameters :=
   exclude unscattered events := 0
   exclude scattered events := 0
   exclude random events := 0
-
-  offset (num of detectors) := 0
 
   low energy window (keV) := 0      ; Default 0
   upper energy window (keV):= 10000 ; Default 10000
@@ -827,11 +847,43 @@ OpenGATE energy information is recorded in MeV units into the ROOT file.
 For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
 STIR assumes this convention and will convert this automatically.
 
-There are some unfinished classes
-available on the \textit{STIR} web-site to read \textit{LMF} format files,
-in conjunction with the \textit{LMF} library. However, these might be obsolete
-as the OpenGATE project might be distributing files
-to enable STIR to read \textit{LMF} format files.
+\subsubsubsection{STIR GATE geometry alignment}
+
+\noindent \underline{Rotation}
+
+When \texttt{View offset} is 0, STIR's first crystal/detector index is at $y=-R$, while GATE (by default)
+places the centre of the first module at $x=+R$.
+This results in a rotation of about 90 degrees in the reconstructed images unless accounted for.
+Two possible correction methods exist:
+\begin{enumerate}
+    \item Rotate the GATE scanner geometry using \texttt{/gate/cylindricalPET/placement/setRotationAngle}.
+    \item Use the \texttt{View offset (degrees)} parameter in the scanner definition of the \texttt{.hroot} header file.
+\end{enumerate}
+Of course, these 2 methods can be combined. This can be necessary if you want to reproduce the
+gemoetry of an existing scanner. For instance, most GE scanners have the first ``bucket''
+horizontally on ``top'' of the scanner.
+See an example to accomodate this by using a rotation by -90 degrees in the GATE macro
+\url{https://github.com/UCL/STIR/blob/master/examples/ROOT_files/ROOT_STIR_consistency/Gate_macros/geometry.mac}{ROOT\_STIR\_consistency/Gate\_macros/geometry.mac}
+and a small rotation for the ``bucket'' in
+\url{https://github.com/UCL/STIR/blob/master/examples/ROOT_files/ROOT_STIR_consistency/root_header_test_template.hroot}{ROOT\_STIR\_consistency/root\_header\_test\_template.hroot}.
+    
+Note, pre-STIR version 5.0.1, a number of rotations were used in STIR to rotate the scanner and align GATE simulation
+with STIR. However, these were removed because with the addition of \texttt{View offset (degrees)} into scanner definitions.
+More information can be found in the
+\url{http://stir.sourceforge.net/documentation/release_5.0.htm}{documentation/release\_5.0.htm notes}.
+
+\noindent \underline{Translation}
+
+At present, STIR image coordinates are such that the origin is in the centre of the first plane,
+normally corresponding to the centre of the first detector ring. GATE macros usually
+define the origin in the centre of the scanner. Therefore, when comparing shapes generated
+with STIR (e.g. via  \texttt{generate\_image}), and geometric shapes from GATE, you need to use
+the following
+\begin{equation}
+z_\textrm{STIR} = (N-1) d/2 + z_\textrm{GATE}
+\end{equation}
+\noindent
+with $d$ the ring spacing (as given in the STIR files) and $N$ the number of rings.
 
 \subsubsubsection{ROOT exclusion keys configurations}
 The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
@@ -903,7 +955,7 @@ also possible to reconstruct images directly from list mode data.
 
 Currently supported list mode formats are specific to the ECAT 
 HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
-as output by OpenGATE (see above).
+as output by OpenGATE (see section \ref{sec:ROOTIO}).
 
 \subsubsection{
 lm\_to\_projdata}
@@ -3276,7 +3328,8 @@ It will require access to a run-time license for \textit{AVW}.
 
 { \subsubsubsection{conv\_GATE\_projdata\_to\_interfile}
 }
-This program converts GATE raw sinogram output (.ima) into STIR interfile format. 
+This program converts GATE raw sinogram output (.ima) into STIR interfile format. This utility
+has not been used recently however, so beware.
 
 { \subsubsubsection{conv\_gipl\_to\_interfile and conv\_interfile\_to\_gipl}
 }
