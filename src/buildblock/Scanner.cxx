@@ -551,6 +551,29 @@ break;
              ""//crystal_map_file_name_v
             );  
   break;
+
+  case UPENN_5rings:
+    // same as 710
+    set_params(UPENN_5rings, string_list("UPENN_5rings"),
+               56*5,
+               331, 331, // TODO
+               576+18,
+               382.0F, 7.0F,
+               3.9655, 3.86F,
+               static_cast<float>(0),//sign? TODO value
+               7, 4,
+               8, 8,
+               8*7*5, 8*4,
+               1,
+               0.109F, 511.F
+           #if 0
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
   
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support
 
