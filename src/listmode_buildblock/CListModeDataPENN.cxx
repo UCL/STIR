@@ -17,7 +17,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of class CListModeDataPENN
+  \brief Implementation of class stir::CListModeDataPENN
 
   \author Nikos Efthimiou
 */
