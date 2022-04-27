@@ -88,7 +88,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 					if (fabs(out_m - in_m) < 1E-2)
 					{
 					        ++num_contributing_sinos;
-                        sino_4D += sino_3D;
+					        sino_4D += sino_3D;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;
 						break;
@@ -101,7 +101,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 					        ++num_contributing_sinos;
 						sino_4D += sino_3D;
 						sino_4D += proj_data_3D.get_sinogram(in_ax_pos_num+1,0);
-                        sino_4D *= .5F;
+						sino_4D *= .5F;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;
 						break;

@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2018,2019,2020 University College London
   Copyright (C) 2018-2019, University of Hull
+  Copyright (C) 2022 National Physical Laboratory
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -14,7 +15,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
-  \
+  \author Daniel Deidda
 */
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/SingleScatterSimulation.h"

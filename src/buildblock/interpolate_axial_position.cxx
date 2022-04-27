@@ -12,7 +12,7 @@
 /*!
  \file
  \ingroup projdata
- \brief Perform B-Splines Interpolation of axial position
+ \brief Perform B-Splines Interpolation of axial position. At present, it uses nearest neighbour interpolation in segment 0 if projdata_in only
 
  \author Daniel Deidda
  \author Kris Thielemans
