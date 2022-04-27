@@ -217,8 +217,7 @@ set_up()
     if ( !list::decodeHeader( *inputList, &listHeader )
          || !list::isCoincListHeader( listHeader ) )
     {
-        std::cerr << "error: cannot read valid header from input list\n";
-        std::exit( EXIT_FAILURE );
+        error("cannot read valid header from input list");
     }
 
     eventFormat = list::eventFormat( listHeader );
