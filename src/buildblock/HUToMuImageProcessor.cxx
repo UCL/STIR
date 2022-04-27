@@ -20,7 +20,9 @@
 #include "stir/HUToMuImageProcessor.h"
 #include "stir/info.h"
 #include "stir/round.h"
-#include <nlohmann/json.hpp>
+#ifdef HAVE_JSON
+  #include <nlohmann/json.hpp>
+#endif
 
 START_NAMESPACE_STIR
 
@@ -101,75 +103,91 @@ Succeeded
 HUToMuImageProcessor<TargetT>::
 virtual_set_up(const TargetT& image)
 {
+#ifdef HAVE_JSON
   this->get_record_from_json();
+#endif
   return Succeeded::yes;
 }
 
-template <typename TargetT>
-void
-HUToMuImageProcessor<TargetT>::
-get_record_from_json()
-{
-  if (this->filename.empty())
-    error("HUToMu: no filename set for the slope info");
-  if (this->manufacturer_name.empty())
-    error("HUToMu: no manufacturer set for the slope info");
-
-  //Read slope file
-  std::ifstream slope_json_file_stream(this->filename);
-  nlohmann::json slope_json;
-  slope_json_file_stream >> slope_json;
-
-  if (slope_json.find("scale") == slope_json.end())
-    {
-      error("HUToMu: No or incorrect JSON slopes set (could not find \"scale\" in file \""
-            + filename + "\")");
-    }
-  //Put user-specified manufacturer into upper case.
-  std::string manufacturer_upper_case = this->manufacturer_name;
-  std::locale loc;
-  for (std::string::size_type i=0; i<manufacturer_name.length(); ++i)
-    manufacturer_upper_case[i] = std::toupper(manufacturer_name[i],loc);
-
-  //Get desired keV as integer value
-  const int keV = stir::round(this->target_photon_energy);
-  //Get desired kVp as integer value
-  const int kVp = stir::round(this->kilovoltage_peak);
-  stir::info(boost::format("HUToMu: finding record with manufacturer: '%s', keV=%d, kVp=%d in file '%s'")
-             % manufacturer_upper_case % keV % kVp % this->filename, 2);
-
-  //Extract appropriate chunk of JSON file for given manufacturer.
-  nlohmann::json target = slope_json["scale"][manufacturer_upper_case]["transform"];
-
-  int location = -1;
-  int pos = 0;
-  for (auto entry : target){
-    if ( (stir::round(float(entry["kev"])) == keV) && (stir::round(float(entry["kvp"])) == kVp) )
-      location = pos;
-    pos++;
-  }
-
-  if (location == -1){
-    stir::error("HUToMu: Desired slope not found!");
-  }
-
-  //Extract transform for specific keV and kVp.
-  nlohmann::json transform = target[location];
+#ifdef HAVE_JSON
+  template <typename TargetT>
+  void
+  HUToMuImageProcessor<TargetT>::
+  get_record_from_json()
   {
-    std::stringstream str;
-    str << transform.dump(4);
-    info("HUToMu: JSON record found:" + str.str(),2);
+    if (this->filename.empty())
+      error("HUToMu: no filename set for the slope info");
+    if (this->manufacturer_name.empty())
+      error("HUToMu: no manufacturer set for the slope info");
+
+    //Read slope file
+    std::ifstream slope_json_file_stream(this->filename);
+    nlohmann::json slope_json;
+    slope_json_file_stream >> slope_json;
+
+    if (slope_json.find("scale") == slope_json.end())
+      {
+        error("HUToMu: No or incorrect JSON slopes set (could not find \"scale\" in file \""
+              + filename + "\")");
+      }
+    //Put user-specified manufacturer into upper case.
+    std::string manufacturer_upper_case = this->manufacturer_name;
+    std::locale loc;
+    for (std::string::size_type i=0; i<manufacturer_name.length(); ++i)
+      manufacturer_upper_case[i] = std::toupper(manufacturer_name[i],loc);
+
+    //Get desired keV as integer value
+    const int keV = stir::round(this->target_photon_energy);
+    //Get desired kVp as integer value
+    const int kVp = stir::round(this->kilovoltage_peak);
+    stir::info(boost::format("HUToMu: finding record with manufacturer: '%s', keV=%d, kVp=%d in file '%s'")
+              % manufacturer_upper_case % keV % kVp % this->filename, 2);
+
+    //Extract appropriate chunk of JSON file for given manufacturer.
+    nlohmann::json target = slope_json["scale"][manufacturer_upper_case]["transform"];
+
+    int location = -1;
+    int pos = 0;
+    for (auto entry : target){
+      if ( (stir::round(float(entry["kev"])) == keV) && (stir::round(float(entry["kvp"])) == kVp) )
+        location = pos;
+      pos++;
+    }
+
+    if (location == -1){
+      stir::error("HUToMu: Desired slope not found!");
+    }
+
+    //Extract transform for specific keV and kVp.
+    nlohmann::json transform = target[location];
+    {
+      std::stringstream str;
+      str << transform.dump(4);
+      info("HUToMu: JSON record found:" + str.str(),2);
+    }
+    this->a1 = transform["a1"];
+    this->b1 = transform["b1"];
+
+    this->a2 = transform["a2"];
+    this->b2 = transform["b2"];
+
+    this->breakPoint = transform["break"];
+
+    //std::cout << transform.dump(4);
   }
-  this->a1 = transform["a1"];
-  this->b1 = transform["b1"];
-
-  this->a2 = transform["a2"];
-  this->b2 = transform["b2"];
-
-  this->breakPoint = transform["break"];
-
-  //std::cout << transform.dump(4);
-}
+#else
+  template <typename TargetT>
+  void
+  HUToMuImageProcessor<TargetT>::
+  set_slope(float a1, float a2, float b1, float b2, float breakPoint)
+  {
+    this->a1 = a1;
+    this->a2 = a2;
+    this->b1 = b1;
+    this->b2 = b2;
+    this->breakPoint = breakPoint;
+  }
+#endif
 
 template <typename TargetT>
 void

@@ -108,9 +108,9 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt.c)
 endif()
 
-if (HAVE_JSON)
+#if (HAVE_JSON)
   list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor.cxx)
-endif()
+#endif()
 
 include(stir_lib_target)
 

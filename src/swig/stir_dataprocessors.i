@@ -22,12 +22,10 @@
         stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableConvolutionImageFilter<elemT>)
 
-#ifdef HAVE_JSON
 %shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
-#endif
 #undef elemT
 #endif
 
@@ -36,9 +34,7 @@
 %include "stir/SeparableCartesianMetzImageFilter.h"
 %include "stir/SeparableGaussianImageFilter.h"
 %include "stir/SeparableConvolutionImageFilter.h"
-#ifdef HAVE_JSON
 %include "stir/HUToMuImageProcessor.h"
-#endif
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -66,12 +62,10 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(SeparableConvolutionImageFilter3DFloat) stir::SeparableConvolutionImageFilter<elemT>;
 
-#ifdef HAVE_JSON
 %template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
              stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 
 %template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
-#endif
 #undef elemT

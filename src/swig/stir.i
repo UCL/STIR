@@ -102,9 +102,7 @@
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/SeparableConvolutionImageFilter.h"
 
-#ifdef HAVE_JSON
 #include "stir/HUToMuImageProcessor.h"
-#endif
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -134,6 +132,7 @@
 
 #include "stir/multiply_crystal_factors.h"
 #include "stir/ML_norm.h"
+#include "stir/spatial_transformation/InvertAxis.h"
 
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/ScatterSimulation.h"
@@ -1649,3 +1648,6 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
 %include "stir/ML_norm.h"
+
+%shared_ptr(stir::InvertAxis);
+%include "stir/spatial_transformation/InvertAxis.h"

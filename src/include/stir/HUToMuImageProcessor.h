@@ -112,6 +112,10 @@ public:
   //! same as apply
   void apply_scaling_to_HU(TargetT& output_image,
                            const TargetT& input_image) const;
+
+#ifndef HAVE_JSON  // if we don't have JSON, we need another way to set the slope
+  void set_slope(float a1, float a2, float b1, float b2, float breakPoint);
+#endif
   
 protected:
 
@@ -143,8 +147,10 @@ private:
   float a2;
   float b2;
   float breakPoint;
-
+  
+#ifdef HAVE_JSON
   void get_record_from_json();
+#endif
 };
 
 END_NAMESPACE_STIR
