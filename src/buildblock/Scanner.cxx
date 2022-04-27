@@ -565,7 +565,7 @@ break;
                8*7*5, 8*4,
                1,
                0.109F, 511.F
-           #if 0
+           #ifdef STIR_TOF
                ,
                (short int)(512),
                (float)(19.53125),
