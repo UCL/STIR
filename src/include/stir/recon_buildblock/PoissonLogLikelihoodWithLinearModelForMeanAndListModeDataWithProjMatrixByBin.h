@@ -135,6 +135,15 @@ protected:
 
   void
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
+
+
+  std::vector<Bin>  record_cache;//(new std::vector<CListEventROOT>(0));
+  std::vector<float> additive_cache;
+  //! The size of a single
+  unsigned long int cache_size;
+  //! If set, the cache only keeps unique bins. Not very well tested, risky when
+  //! timeframes are relevant.
+  bool accumulate_cache;
 };
 
 END_NAMESPACE_STIR

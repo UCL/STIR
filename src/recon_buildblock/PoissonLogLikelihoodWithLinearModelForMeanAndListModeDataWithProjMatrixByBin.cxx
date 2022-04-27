@@ -83,6 +83,7 @@ set_defaults()
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
+  cache_size = 0;
 } 
  
 template <typename TargetT> 
@@ -96,9 +97,10 @@ initialise_keymap()
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
- 
-  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
 
+  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
+  this->parser.add_key("cache for serialization", &this->cache_size);
+  this->parser.add_key("accumulate events in cache", &this->accumulate_cache);
 } 
 template <typename TargetT> 
 int 
@@ -121,7 +123,9 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         Array<1,int> num_bins_in_subset(this->num_subsets);
         num_bins_in_subset.fill(0);
 
-
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
         for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
         {
             for (int segment_num = -this->max_ring_difference_num_to_process;
@@ -350,7 +354,64 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
       "set-up of normalisation failed.");
 return true;
     }
+//-new
+  info( boost::format("Listmode reconstruction: Serializing inputs ..."));
+  info( boost::format("Listmode reconstruction: Creating cache..."));
 
+  record_cache.reserve(cache_size);
+  additive_cache.reserve(cache_size);
+
+  this->list_mode_data_sptr->reset();
+  const shared_ptr<ListRecord> & record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+  info(boost::format("Caching... "));
+
+  if(is_null_ptr(additive_proj_data_sptr))
+  {
+      while (true)
+      {
+          Bin tmp;
+          if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+          {
+              break;
+          }
+
+          if (record_sptr->is_event() && record_sptr->event().is_prompt())
+          {
+              record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
+
+              if (tmp.get_bin_value() != 1.0f
+                      ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                      ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                      ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                      ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                      ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
+                      ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())
+#ifdef STIR_TOF
+                      ||  tmp.timing_pos_num() < proj_data_info_sptr->get_min_tof_pos_num()
+                      ||  tmp.timing_pos_num() > proj_data_info_sptr->get_max_tof_pos_num()
+#endif
+                      )
+              {
+                  continue;
+              }
+              record_cache.push_back(tmp);
+
+              if (record_cache.size() > 1 && record_cache.size()%500000L==0)
+                  info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
+
+              if (record_cache.size() >= this->num_events_to_use)
+                  break;
+          }
+
+      }
+  }
+  else // With additive correction we should be interpolating the TOF positions.
+  {
+
+  }
+
+  info( boost::format("Cached Events: %1% ") % record_cache.size());
+//-old
    return false; 
 
 } 
@@ -523,10 +584,50 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
     VectorWithOffset<ListModeData::SavedPosition>
             frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
-    long int more_events =
-            this->do_time_frame? 1 : this->num_events_to_use;
+    std::vector<float> * additive_ptr = is_null_ptr(additive_proj_data_sptr) ? nullptr : &additive_cache;
 
-    while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
+    if (record_cache.size() > 0)
+    {
+        LM_distributable_computation(this->PM_sptr,
+                                     proj_data_info_sptr,
+                                     &gradient, &current_estimate,
+                                     record_cache,
+                                     subset_num, this->num_subsets,
+                                     additive_ptr);
+    }
+    info(boost::format("Finished!"));
+
+  if (!add_sensitivity)
+    {
+      // subtract the subset sensitivity
+      // compute gradient -= sub_sensitivity
+      typename TargetT::full_iterator gradient_iter =
+              gradient.begin_all();
+      const typename TargetT::full_iterator gradient_end =
+              gradient.end_all();
+      typename TargetT::const_full_iterator sensitivity_iter =
+              this->get_subset_sensitivity(subset_num).begin_all_const();
+      while (gradient_iter != gradient_end)
+      {
+        *gradient_iter -= (*sensitivity_iter);
+        ++gradient_iter; ++sensitivity_iter;
+      }
+    }
+}
+
+#  ifdef _MSC_VER
+// prevent warning message on instantiation of abstract class 
+#  pragma warning(disable:4661)
+#  endif
+
+template class
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3,float> >;
+
+
+END_NAMESPACE_STIR
+
+/*
+ *    while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
     {
 
         if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
@@ -604,32 +705,4 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
         }
     }
     info(boost::format("Number of used events: %1%") % num_used_events);
-
-  if (!add_sensitivity)
-    {
-      // subtract the subset sensitivity
-      // compute gradient -= sub_sensitivity
-      typename TargetT::full_iterator gradient_iter =
-              gradient.begin_all();
-      const typename TargetT::full_iterator gradient_end =
-              gradient.end_all();
-      typename TargetT::const_full_iterator sensitivity_iter =
-              this->get_subset_sensitivity(subset_num).begin_all_const();
-      while (gradient_iter != gradient_end)
-      {
-        *gradient_iter -= (*sensitivity_iter);
-        ++gradient_iter; ++sensitivity_iter;
-      }
-    }
-}
-
-#  ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class 
-#  pragma warning(disable:4661)
-#  endif
-
-template class
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3,float> >;
-
-
-END_NAMESPACE_STIR
+    */
