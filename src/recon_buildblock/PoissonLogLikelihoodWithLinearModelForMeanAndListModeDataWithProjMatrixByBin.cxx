@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2014, 2016, 2018, University College London
+    Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -49,6 +50,9 @@
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
 
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
 
 #include <vector>
 START_NAMESPACE_STIR
@@ -188,13 +192,35 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
 
-    // set projector to be used for the calculations
-    this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
+    // set projectors to be used for the calculations
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
     this->projector_pair_sptr.reset(
-                new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
+                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
     this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
+    if (is_null_ptr(this->projector_pair_sptr))
+      { error("You need to specify a projector pair"); return Succeeded::no; }
+
+    setup_distributable_computation(this->projector_pair_sptr,
+                                    this->list_mode_data_sptr->get_exam_info_sptr(),
+                                    proj_data_info_sptr,
+                                    target_sptr,
+                                    1,
+                                    1);
+
+    this->projector_pair_sptr->set_up(proj_data_info_sptr,target_sptr);
+#if 0
+    // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
+    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
+    if (!this->use_tofsens)
+        this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
+#else
+    // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
+    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr().get());
+    this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_shared_clone(), target_sptr);
+#endif
     if (is_null_ptr(this->normalisation_sptr))
     {
         warning("Invalid normalisation object");
@@ -338,21 +364,63 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
-    this->projector_pair_sptr->get_back_projector_sptr()->
+#if 0
+    int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
+    int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
+#endif
+
+    this->sens_backprojector_sptr->
       start_accumulating_in_new_target();
 
     // warning: has to be same as subset scheme used as in distributable_computation
+#ifdef STIR_OPENMP
+#pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
       for (int view = proj_data_info_sptr->get_min_view_num() + subset_num;
           view <= proj_data_info_sptr->get_max_view_num();
           view += this->num_subsets)
       {
-        const ViewSegmentNumbers view_segment_num(view, segment_num);
+          const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-        if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
-          continue;
-        this->add_view_seg_to_sensitivity(view_segment_num);
+          if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
+            continue;
+          //        this->add_view_seg_to_sensitivity(view_segment_num);
+  #ifdef STIR_OPENMP
+          const int thread_num=omp_get_thread_num();
+  #else
+          const int thread_num = 0;
+  #endif
+          info(boost::format("%1%: Calculating sensitivity for segment %2% view.: %3%") %thread_num %segment_num % view);
+
+          //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
+          {
+              shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
+              (this->projector_pair_sptr->get_symmetries_used()->clone());
+
+              RelatedViewgrams<float> viewgrams =
+                  proj_data_info_sptr->get_empty_related_viewgrams(
+                      view_segment_num, symmetries_used, false);//, timing_pos_num);
+
+              viewgrams.fill(1.F);
+              // find efficiencies
+              {
+                  //const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+                  //const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+                  this->normalisation_sptr->undo(viewgrams);//, &start_frame, end_frame);
+              }
+              // backproject
+              {
+                  const int min_ax_pos_num =
+                      viewgrams.get_min_axial_pos_num();
+                  const int max_ax_pos_num =
+                      viewgrams.get_max_axial_pos_num();
+
+                  this->sens_backprojector_sptr->back_project(viewgrams,
+                      min_ax_pos_num, max_ax_pos_num);
+              }
+          }
       }
     }
     this->projector_pair_sptr->get_back_projector_sptr()->
@@ -364,30 +432,30 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 {
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-            (this->projector_pair_sptr->get_symmetries_used()->clone());
+//    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
+//            (this->projector_pair_sptr->get_symmetries_used()->clone());
 
-  RelatedViewgrams<float> viewgrams =
-    proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
+//  RelatedViewgrams<float> viewgrams =
+//    proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
 
-  viewgrams.fill(1.F);
-  // find efficiencies
-  {
-    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-    this->normalisation_sptr->undo(viewgrams);
-  }
-  // backproject
-  {
-    const int min_ax_pos_num =
-      viewgrams.get_min_axial_pos_num();
-    const int max_ax_pos_num =
-       viewgrams.get_max_axial_pos_num();
+//  viewgrams.fill(1.F);
+//  // find efficiencies
+//  {
+//    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+//    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+//    this->normalisation_sptr->undo(viewgrams);
+//  }
+//  // backproject
+//  {
+//    const int min_ax_pos_num =
+//      viewgrams.get_min_axial_pos_num();
+//    const int max_ax_pos_num =
+//       viewgrams.get_max_axial_pos_num();
 
-    this->projector_pair_sptr->get_back_projector_sptr()->
-      back_project(viewgrams,
-                   min_ax_pos_num, max_ax_pos_num);
-  }
+//    this->projector_pair_sptr->get_back_projector_sptr()->
+//      back_project(viewgrams,
+//                   min_ax_pos_num, max_ax_pos_num);
+//  }
 
 }
 
