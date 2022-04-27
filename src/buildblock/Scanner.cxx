@@ -559,7 +559,7 @@ break;
                576+18,
                382.0F, 7.0F,
                3.9655, 3.86F,
-               static_cast<float>(0),//sign? TODO value
+               static_cast<float>(0),
                7, 4,
                8, 8,
                8*7*5, 8*4,
