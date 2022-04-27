@@ -1,7 +1,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Implementation of class stir::InputStreamWithRecordsFromUPENN
+  \brief Implementation of class stir::InputStreamWithRecordsFromUPENNtxt
 
   \author Nikos Efthimiou
 */
