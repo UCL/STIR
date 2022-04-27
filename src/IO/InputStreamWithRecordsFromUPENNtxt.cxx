@@ -112,6 +112,7 @@ void
 InputStreamWithRecordsFromUPENNtxt::set_current_record()
 {
     //set_record(current_record);
+    error("InputStreamWithRecordsFromUPENNtxt::set_current_record not implemented");
 }
 
 void
