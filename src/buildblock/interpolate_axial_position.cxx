@@ -63,7 +63,7 @@ interpolate_axial_position(ProjData& proj_data_out,
           Bin bin(segment,0,axial_pos,0);
           int relative_pos=0;
           float m = proj_data_out_info.get_m(bin);
-          float in_m_sampling= proj_data_in_info.get_sampling_in_m(bin)*2;
+          float in_m_sampling= proj_data_in_info.get_sampling_in_m(bin);
           relative_pos=abs(round((m -m_offset_in)/ in_m_sampling));
            Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
           for (int view=proj_data_out.get_min_view_num(); view<=proj_data_out.get_max_view_num();view++)
