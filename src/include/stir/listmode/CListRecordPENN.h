@@ -2,15 +2,7 @@
     Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -28,15 +20,13 @@
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 
 START_NAMESPACE_STIR
-//!
-/*! \ingroup listmode
-*/
-class CListEventDataPENN
-{
-public:
 
-};
+/*!
+  \brief Class for handling PENNPet Explorer events.
+  \ingroup listmode
 
+  \todo Fix the rotation
+  */
 class CListEventPENN : public CListEventCylindricalScannerWithDiscreteDetectors
 {
 public:
@@ -72,8 +62,10 @@ private:
 #endif
     int d1, d2;
     int z1, z2;
+#if 0
+    // Most likely, most people will not need these.
     unsigned short int orig_z1, orig_z2;
-
+#endif
     int quarter_of_detectors;
 
 };
@@ -100,6 +92,8 @@ private:
 
 };
 
+/*! \ingroup listmode
+ */
 class CListRecordPENN : public CListRecord // currently no gating yet
 {
 

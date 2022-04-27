@@ -1,16 +1,8 @@
 /*
-    Copyright (C) 2021-2022 University of Pennsylvania
+    Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -72,10 +64,6 @@ CListModeDataPENN(const std::string& listmode_filename)
                                                                                                               ,1
                                                                                                           #endif
                                                                                                               )->create_shared_clone());
-
-    if (this->open_lm_file() == Succeeded::no)
-        error("CListModeDataPENN: error opening the first listmode file for filename %s\n",
-              listmode_filename.c_str());
 }
 
 std::string
@@ -92,16 +80,6 @@ get_empty_record_sptr() const
 {
     shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
     return sptr;
-}
-
-
-Succeeded
-CListModeDataPENN::
-open_lm_file()
-{
-    //    info(boost::format("CListModeDataPENN: used PENN file %s") %
-    //             this->lm_data_ptr->get_file_header());
-    return Succeeded::yes;
 }
 
 Succeeded

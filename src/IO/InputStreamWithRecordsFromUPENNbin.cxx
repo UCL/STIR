@@ -1,7 +1,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Implementation of class stir::InputStreamWithRecordsFromUPENN
+  \brief Implementation of class stir::InputStreamWithRecordsFromUPENNbin
 
   \author Nikos Efthimiou
 */
@@ -65,7 +65,7 @@ get_next_record(CListRecordPENN& record)
     while (in->next())
     {
         list::Event event( *eventCodec, in->data() );
-        if(abrupt)
+        if(abrupt_stop)
         {
             abrupt_counter--;
             if (abrupt_counter < 0)
@@ -133,7 +133,7 @@ get_next_record(CListRecordPENN& record)
 
     if(found)
     {
-        if(abrupt)
+        if(abrupt_stop)
             if(abrupt_counter < 0)
                 return Succeeded::no;
         return

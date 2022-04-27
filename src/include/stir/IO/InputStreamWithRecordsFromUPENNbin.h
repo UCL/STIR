@@ -12,15 +12,7 @@
     Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -35,6 +27,12 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \brief Class for reading binary listmode files from the PENNPet Explorer scanner.
+
+  \ingroup IO
+
+  */
 class InputStreamWithRecordsFromUPENNbin : public
         RegisteredParsingObject< InputStreamWithRecordsFromUPENNbin ,
         InputStreamWithRecordsFromUPENN,
@@ -107,19 +105,19 @@ private:
     list::EventCodec* olistCodec = nullptr;
     std::filebuf outputListFile;
     std::streambuf* outputList;
+
     list::OutputBuffer* out = nullptr;
-    long int abrupt_counter = 0;
+
     std::streampos starting_stream_position;
+
     std::vector<std::streampos> saved_get_positions;
 
     //    uint8_t current_record[8];
     const uint8_t* current_record;
 
     int eventSize = 0;
-    int timeout = 0;
 
     bool has_output = false;
-    bool abrupt = false;
 };
 
 END_NAMESPACE_STIR

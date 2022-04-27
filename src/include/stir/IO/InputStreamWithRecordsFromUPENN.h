@@ -1,5 +1,3 @@
-//
-//
 /*!
   \file
   \ingroup IO
@@ -12,15 +10,7 @@
     Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -34,6 +24,19 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \brief Abstract class for reading listmode files from the PENNPet Explorer scanner.
+  \ingroup IO
+
+  \par abrupt_stop is a lower level counter to make the listmode operations be more consistent on
+  how they process the total number of events. For example, if a file has 1M events (prompts + delay)
+  and the user wishes to process 50% of the file. If in the e.g. lm_to_projdata sets 500K then each type of
+  event (either prompt or delay) will continue until 500K events have been processed. This breaks the randoms'
+  fraction. Setting the abrupt_stop to 500K, the InputStream will stop on the 500K^{th} event of either type.
+
+  \par Requirements
+    \c This needs access to the IRX libraries.
+  */
 class InputStreamWithRecordsFromUPENN: public RegisteredObject< InputStreamWithRecordsFromUPENN >
 {
 public:
@@ -54,7 +57,7 @@ public:
     Succeeded get_next_record(CListRecordPENN& record) = 0;
 
     //! go back to starting position
-    virtual Succeeded reset();
+    virtual Succeeded reset() = 0;
 
     virtual SavedPosition save_get_position() = 0;
 
@@ -92,10 +95,6 @@ protected:
 
     //    uint8_t current_record[8];
     const uint8_t* current_record;
-    // 0: all
-    // 1: prompts
-    // 2: delay
-//    int keep_type;
 
     int eventSize = 0;
 
@@ -105,8 +104,13 @@ protected:
     int timeout = 0;
     //! Total number of events
     long unsigned int N;
+    //! Stop after a predefined number of records, regardless of their type.
+    long unsigned int abrupt_counter;
+    //! This is a flag about a low lever function that replicates a listmode file preserving
+    //! control records that are skipped in normal operations.
     bool has_output = false;
-    bool abrupt = false;
+    //! This is a lower counter to abruptly stop the listmode file.
+    bool abrupt_stop;
     //! Minimum energy channel
     int minE_chan;
     //! Maximum energy channel

@@ -1,5 +1,3 @@
-//
-//
 /*!
   \file
   \ingroup IO
@@ -9,18 +7,10 @@
 
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -32,6 +22,15 @@
 #include "stir/IO/InputStreamWithRecordsFromUPENN.h"
 
 START_NAMESPACE_STIR
+
+/*!
+  \brief Class for reading listmode files in text format from the PENNPet Explorer scanner.
+
+  \ingroup IO
+
+  \todo write functions
+
+  */
 
 class InputStreamWithRecordsFromUPENNtxt : public
         RegisteredParsingObject< InputStreamWithRecordsFromUPENNtxt ,
@@ -94,8 +93,9 @@ protected:
 
 private:
     shared_ptr<std::istream> stream_ptr;
-    const std::string filename;
+
     std::streampos starting_stream_position;
+
     std::vector<std::streampos> saved_get_positions;
 
     shared_ptr<std::string> line;
@@ -106,27 +106,3 @@ END_NAMESPACE_STIR
 #include "stir/IO/InputStreamWithRecordsFromUPENNtxt.inl"
 
 #endif
-
-
-/*
- *   inline
-  unsigned long int get_total_number_events(CListRecordPENN& record)
-  {
-    reset();
-//    return current_lm_data_ptr->get_next_record(record);
-    unsigned long int counter = 0;
-
-    while(true)
-    {
-        if(get_next_record(record) == Succeeded::no)
-            break;
-        if (counter > 1 && counter%1000000L==0)
-//            info( boost::format("Counting records: %1% ") % counter);
-            std::cout << "\r" << counter << " events counted "<<std::flush;
-        counter++;
-    }
-
-    reset();
-    return counter;
-  }
-  */

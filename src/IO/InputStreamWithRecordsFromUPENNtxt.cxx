@@ -112,7 +112,7 @@ void
 InputStreamWithRecordsFromUPENNtxt::set_current_record()
 {
     //set_record(current_record);
-    error("InputStreamWithRecordsFromUPENNtxt::set_current_record not implemented");
+    error("InputStreamWithRecordsFromUPENNtxt::set_current_record not implemented, yet.");
 }
 
 void
@@ -123,6 +123,7 @@ InputStreamWithRecordsFromUPENNtxt::set_new_record(const bool& d,
                                                    const unsigned short int& _ea, const unsigned short int& _eb)
 {
  // Create a new line and replace the old one
+    error("InputStreamWithRecordsFromUPENNtxt::set_new_record not implemented, yet.");
 }
 
 Succeeded
@@ -130,31 +131,7 @@ InputStreamWithRecordsFromUPENNtxt::
 set_up()
 {
 
-/*    if ( !this->filename.empty() )
-    {
-        if ( !inputListFile.open( filename.c_str(), std::ios_base::in | std::ios_base::binary ) )
-        {
-            std::cerr << "error: cannot open file " << filename.c_str() << '\n';
-            std::exit( EXIT_FAILURE );
-        }
-
-        inputList = &inputListFile;
-    }
-
-    if ( !list::decodeHeader( *inputList, &listHeader )
-         || !list::isCoincListHeader( listHeader ) )
-    {
-        std::cerr << "error: cannot read valid header from input list\n";
-        std::exit( EXIT_FAILURE );
-    }
-
-    eventFormat = list::eventFormat( listHeader );
-    eventCodec = new list::EventCodec( eventFormat );
-    eventSize = list::eventSize( eventFormat );
-    in = new list::InputBuffer( *inputList, eventSize );
-    pos = inputListFile.pubseekoff(0, std::ios_base::cur);
-
-    return Succeeded::yes;*/
+    return Succeeded::yes;
 }
 
 std::string
@@ -175,7 +152,9 @@ InputStreamWithRecordsFromUPENNtxt::set_defaults()
 void
 InputStreamWithRecordsFromUPENNtxt::initialise_keymap()
 {
-
+    base_type::initialise_keymap();
+    this->parser.add_start_key("UPENN_text_listmode Parameters");
+    this->parser.add_stop_key("End UPENN_text_listmode Parameters");
 }
 
 bool
@@ -229,42 +208,3 @@ set_get_position(const typename InputStreamWithRecordsFromUPENNtxt::SavedPositio
 }
 
 END_NAMESPACE_STIR
-
-
-//if (is_null_ptr(stream_ptr))
-//  return Succeeded::no;
-
-//while(true)
-//{
-//    std::getline(*stream_ptr, *line);
-
-//    if (stream_ptr->eof())
-//        return Succeeded::no;
-//    else if (stream_ptr->bad())
-//    {
-//        warning("InputStreamWithRecordsFromUPENNtxt: Error after reading from list mode stream in get_next_record");
-//        return Succeeded::no;
-//    }
-//    else if (keep_type == 1 && line->at(0)=='p')
-//        break;
-//    else if (keep_type ==2 && line->at(0)=='d')
-//        break;
-//    else if (keep_type == 0)
-//        break;
-
-//}
-////  // rely on file caching by the C++ library or the OS
-////  assert(this->size_of_record_signature <= this->max_size_of_record);
-////  boost::shared_array<char> data_sptr(new char[this->max_size_of_record]);
-////  char * data_ptr = data_sptr.get();
-////  stream_ptr->read(data_ptr, this->size_of_record_signature);
-////  if (stream_ptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
-////    return Succeeded::no;
-////  const std::size_t size_of_record = record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature,options);
-////  assert(size_of_record <= this->max_size_of_record);
-////  if (size_of_record > this->size_of_record_signature)
-////    stream_ptr->read(data_ptr + this->size_of_record_signature,
-////                     size_of_record - this->size_of_record_signature);
-
-//return
-//  record.init_from_data_ptr(line.get());

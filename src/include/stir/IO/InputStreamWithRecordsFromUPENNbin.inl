@@ -6,18 +6,10 @@
   \author Nikos Efthimiou
 */
 /*
-    Copyright (C) 2020-2022 University of Pennsylvania
+ *  Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -55,7 +47,7 @@ create_output_file(std::string ofilename)
     out = new list::OutputBuffer(*outputList, eventSize );
     has_output = true;
 
-    if(keep_delayed == 2 && has_output)
+    if(keep_delayed == 1 && has_output)
     {
         error("You cannot keep delayed events and pass output.");
     }

@@ -27,14 +27,14 @@ InputStreamWithRecordsFromUPENN::
 InputStreamWithRecordsFromUPENN()
 {
     set_defaults();
-    reset();
 }
 
 unsigned long int
 InputStreamWithRecordsFromUPENN::get_total_number_of_events(CListRecordPENN& record)
 {
+
+    this->save_get_position();
     this->reset();
-    //    return current_lm_data_ptr->get_next_record(record);
     unsigned long int counter = 0;
 
     while(true)
@@ -48,14 +48,8 @@ InputStreamWithRecordsFromUPENN::get_total_number_of_events(CListRecordPENN& rec
     }
 
     this->reset();
+    this->set_get_position(get_saved_get_positions().back());
     return counter;
-}
-
-Succeeded
-InputStreamWithRecordsFromUPENN::
-reset()
-{
-    return Succeeded::yes;
 }
 
 Succeeded
@@ -70,10 +64,12 @@ InputStreamWithRecordsFromUPENN::set_defaults()
 {
     starting_stream_position = 0;
     N = 0;
+    abrupt_counter = N;
     minE_chan = 0;
     maxE_chan = 1000;
     keep_prompt = true;
     keep_delayed = true;
+    abrupt_stop = false;
 }
 
 void

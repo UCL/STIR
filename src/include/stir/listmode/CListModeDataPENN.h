@@ -2,15 +2,7 @@
     Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -28,7 +20,6 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordPENN.h"
 #include "stir/IO/InputStreamWithRecordsFromUPENN.h"
-//#include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -95,16 +86,7 @@ private:
     std::string listmode_filename;
     shared_ptr<InputStreamWithRecordsFromUPENN> lm_data_sptr;
 
-    Succeeded open_lm_file();
-
     std::string filename;
-
-    //! Keep either prompts (1), delayed (2) or all (0) type of events
-    int keep_type = 0;
-
-    //! Handles "binary" or "text" files
-    std::string input_type = " ";
-
 };
 
 END_NAMESPACE_STIR
