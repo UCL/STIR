@@ -15,7 +15,7 @@
 */
 
 
-#include "/autofs/space/celer_001/users/nikos/src/UPENN/penn/include/liboption.h"
+#include "liboption.h"
 
 
 START_NAMESPACE_STIR

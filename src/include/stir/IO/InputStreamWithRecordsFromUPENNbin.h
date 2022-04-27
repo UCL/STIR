@@ -22,8 +22,8 @@
 #include "stir/IO/InputStreamWithRecordsFromUPENN.h"
 #include "stir/RegisteredParsingObject.h"
 
-#include "/autofs/space/celer_001/users/nikos/src/UPENN/penn/include/liblist.h"
-#include "/autofs/space/celer_001/users/nikos/src/UPENN/penn/include/libmhdr.h"
+#include "liblist.h"
+#include "libmhdr.h"
 
 START_NAMESPACE_STIR
 
