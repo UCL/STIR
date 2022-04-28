@@ -16,7 +16,7 @@ detailed below.
 <ul>
   <li>At least C++-11 is now required. We are not aware of any problems with more recent versions of C++.</li>
   <li>Initial support for PET scanners with block detectors or even generic location of detectors (less tested feature), taking into account
-    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be change
+    appropriate geometry. This is currently kept independent of the cylindrical scanner modelling used normally, but this will be changed
     in a future version. See <a href="https://github.com/UCL/STIR/pull/577/">PR #577</a>. This work is described in<br />
     P. Khateri, J. Fischer, W. Lustermann, C. Tsoumpas, and G. Dissertori,<br />
     <cite>Implementation of cylindrical PET scanners with block detector geometry in STIR</cite>,<br />
@@ -30,7 +30,16 @@ detailed below.
     </li>
   <li>Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D, see <a href="https://github.com/UCL/STIR/pull/619">PR 619</a>.
     This code was mostly contributed by Tahereh Niknejad (work completed at University of Lisbao, Portugal and PETsys Electronics, together with Kris Thielemans, UCL),
-    as well as capabilities to work with virtual crystals, see <a href="https://github.com/UCL/STIR/pull/833">PR 833</a> and <a href="https://github.com/UCL/STIR/pull/949">PR 949</a>.
+    as well as capabilities to work with virtual crystals, see <a href="https://github.com/UCL/STIR/pull/833">PR 833</a> and <a href="https://github.com/UCL/STIR/pull/949">PR 949</a>.  See the following proceedings for the initial work<br />
+    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
+    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
+  </li>
+  <li>A new <code>ProjDataInfoSubsetByView</code> class has been implemented which allows for subsets of projection data.
+      Previously, subset projections could only be stored in fully sampled ProjData. This is still possible, the implementation is backward compatible, and subset reconstructions such as OSMAPSOL have not been changed.
+      However, there is now an option to create subsets with <code>ProjData::get_subset</code> which only store a subset of views and so are more memory efficient when subsets might be handled separately.
+      <code>ProjDataInfoSubsetByView</code> currently does not support file I/O.
   </li>
   <li> <tt>ROOT</tt> files produced by <tt>GATE</tt> can now be interpreted using ``virtual crystals", see <a href="https://github.com/UCL/STIR/pull/617/">PR #617</a>.
   </li>
@@ -57,19 +66,29 @@ detailed below.
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL), Tahereh Nikjenad (PETsys), Robert Twyman (UCL) and Daniel Deidda (NPL).
+<p>This release contains mainly code written by Kris Thielemans (UCL), Richard Brown (UCL),
+  Parisa Khateri and Michael Roethlisberger (ETHZ),
+  Robert Twyman (UCL), Daniel Deidda (NPL), Tahereh Nikjenad (PETsys), Palak Wadhwa (Univ of Leeds),
+  Viet Ahn Dao (Univ of Leeds), Ashley Gillman (CSIRO), Georg Schramm (KUL),
+  Markus Jehl (Positrigo), Gefei Chen (Univ of Macao)
 </p>
 
-    <h2>Patch release info</h2>
+<h2>Patch release info</h2>
+<ul>
+  <li> 5.0.0 released 23/03/2022</li>
+  <li> 5.0.1 released ???
     <ul>
-      <li> 5.0.0 released ?/?/2022</li>
-      <!--
-      <li> 4.0.1 released 28/04/2020
-        <ul>
-          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
-          </ul>
-          -->
+      <li><a href=https://github.com/UCL/STIR/pull/1019>PR 1019</a>: fixes for SWIG and hence Python interface.
+      </li>
+      <li>
+        <a href=https://github.com/UCL/STIR/pull/1012>PR #1012</a>
+        and <a href=https://github.com/UCL/STIR/pull/1016>PR #1016</a>:
+        rotational changes to STIR's interface to ROOT files, breaking compatibility with 4.x (and 5.0.0 but this was broken).
+        See below for more information.
+      </li>
     </ul>
+  </li>
+</ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
@@ -85,6 +104,29 @@ View Offset Support enabled for the PET scanners.
 To reflect this change, <code>Scanner::get_default_intrinsic_tilt()</code> has been renamed to <code>get_intrinsic_azimuthal_tilt()</code>.<br />
 Note: start angle was already supported for SPECT<br />
 Backward compatibility for reconstructed images can be achieved by setting the <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> CMake option to <tt>ON</tt>. (However, copied sinogram data will then always have the offset set to 0, in contrast to earlier versions of STIR).
+</li>
+<li>
+        Rotational changes to STIR's interface to ROOT files, <a href=https://github.com/UCL/STIR/pull/1012>PR #1012</a>
+        and <a href=https://github.com/UCL/STIR/pull/1016>PR #1016</a>.
+        Pre STIR 5.0, STIR renumbered crystals obtained from the ROOT file to rotate the reconstructed image.
+        This was because GATE macros that we used placed the first &quot;bucket&quot; (i.e. Gate &quot;module&quot;) on the <i>right</i>
+        of the scanner (as is the GATE default), while STIR by default places the 0th crystal is on the <i>top</i>.
+        To obtain images that were correctly rotated, various offsets were added to the crystal ID. However, this was incompatible with the
+        STIR code to find normalisation factors, which assumes that a bucket starts at crystal 0.
+        Moreover, the offsets used integer division which could be surprising for odd numbers (see below).
+        Specific offsets that have been removed:
+        <ul>
+            <li> (roughly) half a bucket,
+            <code>(module_repeater_y * submodule_repeater_y * crystal_repeater_y) /2 - 1)</code>
+            in the <tt>Cylindrical</tt> case, was subtracted from the crystalIDs</li>
+            <li>(roughly) 90 degrees, <code>quarter_of_detectors=get_num_detectors_per_ring()/4</code>.</li>
+            <li>An optional<code>offset (num of detectors)</code> parameter in the `.hroot` and
+            and all underlying methodology has been removed.</li>
+        </ul>
+        Rotations should use the new <code>View offset (degrees)</code> support described above.
+        See also the expanded section on ROOT data in the STIR User's guide.<br />
+        Backwards compatibility can be maintained with the CMake switch, <tt>STIR_ROOT_ROTATION_AS_V4</tt>,
+        but this defaults to <tt>OFF</tt>.
 </li>
 <li>
     PoissonLogLikelihood Hessian methods have been corrected to reflect the concavity of the function. Hessian vector products now return non-positive voxels, if the vector (input) is non-negative.
@@ -137,12 +179,13 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     now able to select an additional projector, called <code>Parallelproj</code>. This will use the CUDA
     version if available, otherwise will fall-back to the OpenMP version. Check the new sample files in
     <tt>examples/samples</tt> and the section in the User's Guide.</li>
-  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well. See<br />
-    Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
-    <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
-    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
-    <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
+  <li>The (still preliminary) code for Maximum Likelihood estimation of normalisation factors now includes estimation of geometric factors in 3D as well
   </li>
+  <li>The (also preliminary) <code>ProjDataInfoSubsetByView</code> is backwards compatible and allows a new, memory efficient method for subset projections.
+      Subset projections are created with with <code>ProjData::get_subset</code>, which is the only addition to the <code>ProjData</code> class (additions are mostly in the aforementioned new Info class).
+      <code>ProjDataInfoSubsetByView</code> can be used to set up projectors, which will project only the subset.
+      <code>ProjDataInfoSubsetByView</code> currently does not support file I/O. Therefore, the interface is not yet accessible through parameter files, only through C++ interface.<br/>
+    <a href="https://github.com/UCL/STIR/pull/969/">PR #969</a>
   <li>
     <code>calculate_attenuation_coefficients</code> utility now accepts an optional forward projection parameter file in the same format as the <code>forward_project</code> utility. Example usage has been added to <tt>src/recon_test_pack/simulate_data.sh</tt>.
   </li>
@@ -191,9 +234,17 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>
     Exposed <code>compute_total_ROI_values</code> and <code>ROIValues</code> to Python/MATLAB via swig. Added python example <code>ROI_demo.py</code> to demonstrate usage.
 </li>
-  <li>
-      Additional C++ demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
-  </li>
+<li>
+    Additional C++ demo demonstrating the use the objective function and gradient ascent optimisation, see <tt>examples/src/demo4_obj_fun.cxx</tt>.
+</li>
+<li>A few functions related to TOF were added to <code>ProjDataInfo</code> and <code>Scanner</code> for future compatibility. However, this release still does not support TOF. (Check the GitHub site for the relevant PR).
+</li>
+<li>
+    Exposed <code>BinNormalisation</code>, <code>ListModeData</code>, <code>LmToProjData</code>, <code>ProjectorByBinPair</code>, <code>ScatterSimulation</code>, <code>ScatterEstimation</code> and a couple of support classes and functions to Python/MATLAB via swig. Added python example <code>listmode_demo.py</code> to demonstrate usage.
+</li>
+<li>
+    More setter functions on ScatterEstimation.
+</li>
 </ul>
 
 
@@ -228,7 +279,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
     of CMake to avoid problems with libraries or compilers which are more recent than your CMake version.
     </li>
 <li>
-  At least C++-11 is now required. We are not aware of any problems with most recent versions of C++. When building,
+  <strong>At least C++-11 is now required</strong>. We are not aware of any problems with most recent versions of C++. When building,
   you can change the C++ version
   by setting <code>CMAKE_CXX_STANDARD</code>, see <a href="https://cmake.org/cmake/help/v3.17/prop_tgt/CXX_STANDARD.html">the CMake
   documentation</a> for supported values.<br />
@@ -254,6 +305,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <h3>Minor bug fixes</h3>
 <ul>
 <li>
+  Removed boolean state from SAFIR ListMode factory, to enable reading more than one listmode file in the same runtime environment.
 </li>
 </ul>
 
@@ -350,6 +402,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <li><code>LOR</code> classes now no longer require phi at input to be between 0 and pi,
   nor psi to be between 0 and 2 pi. They will standardise the input automatically.
   </li>
+<li>Added <code>test_view_offset_root</code> to ensure reliability between GATE and STIR voxel positions by
+    comparing center of mass of ROOT data LORs with the original STIR position.</li>
 </ul>
 
 
@@ -357,6 +411,8 @@ as used by <code>copy_to</code> and <code>fill_from</code>
 <ul>
     <li>store data in <code>ProjDataInMemory</code> in the same order as what is used by <code>copy_to</code> and <code>fill_from</code>. This enabled using straight-forward copy. (This change should not affect anyone, except if you relied on a specific order in the buffer before.)
     </li>
+    <li>Modification to <code>generate_image</code> by moving the <code>GenerateImage</code> class to its own
+        source and header files, enabling usage from other STIR utilities and tests.</li>
 </ul>
 
 </body>

@@ -230,8 +230,8 @@ static void Array2DtoSCImg (
 		      int scale, double maxi)
 {
   image_t   *pimage;
-  register  image_t *pix;
-  register  int y_count,x_count,i;
+  image_t *pix;
+  int y_count,x_count,i;
 
   // length x,y of original image
   const int org_length_y = plane.get_length();

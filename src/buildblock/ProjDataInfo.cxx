@@ -153,6 +153,11 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
+void
+ProjDataInfo::set_tof_mash_factor(const int)
+{
+  warning("TOF support not yet enabled.");
+}
 
 ProjDataInfo::ProjDataInfo()
   : bed_position_horizontal(0.F), bed_position_vertical(0.F)

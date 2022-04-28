@@ -60,11 +60,6 @@ exclude random events := 0
 ; If check events are within the specified energy window (Default := 1)
 check energy window information := 1
 
-; 
-; STIR will try to align the data. 
-; If you have used non standart GATE axes, 
-; rotate using: 
-offset (num of detectors) := 0 
 
 ; If want to deactivate set to [0, 1000]
 low energy window (keV) := 0

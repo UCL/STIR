@@ -76,10 +76,8 @@ build_crystal_maps(const Scanner& scanner)
 	float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
 	float axial_crystal_spacing = scanner.get_axial_crystal_spacing();
 	float transaxial_crystal_spacing = scanner.get_transaxial_crystal_spacing();
-	std::string scanner_orientation = scanner.get_scanner_orientation();
 
 	det_pos_to_coord_type cartesian_coord_map_given_detection_position_keys;
-	// check for the scanner orientation
 	/*Building starts from a bucket perpendicular to y axis, from its first crystal.
 		see start_x*/
 

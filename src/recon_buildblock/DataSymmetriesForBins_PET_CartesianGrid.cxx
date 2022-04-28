@@ -5,6 +5,7 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C) 2018, Palak Wadhwa
+    Copyright (C) 2021-2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -25,6 +26,7 @@
 */
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
@@ -251,13 +253,34 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_swap_s(do_symmetry_swap_s_v),
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
-    //Cylindrical implementation
-    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+  auto subset_proj_data_info_ptr = dynamic_cast<const ProjDataInfoSubsetByView *>(proj_data_info_ptr.get());
+  if(!is_null_ptr(subset_proj_data_info_ptr))
     {
-  if(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
-    error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
-          "(can only handle projection data corresponding to a cylinder)\n",
-      typeid(*proj_data_info_ptr).name());
+      // special handling of subset case
+      // will for now just switch view syms off
+      if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get())))
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
+              "(can only handle projection data corresponding to a cylinder)\n",
+              typeid(*subset_proj_data_info_ptr->get_original_proj_data_info_sptr()).name());
+        
+      if (do_symmetry_90degrees_min_phi || do_symmetry_180degrees_min_phi) {
+        warning("Turning off 90 and 180 degrees minus phi symmetries for subsets.");
+      }
+      do_symmetry_90degrees_min_phi = false;
+      do_symmetry_180degrees_min_phi = false;      
+    }
+
+  auto pdi_cyl_ptr = dynamic_cast<const ProjDataInfoCylindrical *>(subset_proj_data_info_ptr ?
+                                                                   subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get() :
+                                                                   proj_data_info_ptr.get());
+  initialise_deltas(pdi_cyl_ptr);
+
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+    {
+      if(dynamic_cast<const ProjDataInfoCylindrical *>(pdi_cyl_ptr) == NULL)
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+              "(can only handle projection data corresponding to a cylinder)\n",
+              typeid(*pdi_cyl_ptr).name());
 
   const DiscretisedDensityOnCartesianGrid<3,float> *
     cartesian_grid_info_ptr =
@@ -336,20 +359,19 @@ DataSymmetriesForBins_PET_CartesianGrid
 	    this->do_symmetry_swap_s = false;
 	}
     }
-  
-  find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
-                                         num_planes_per_axial_pos,
-                                         axial_pos_to_z_offset,
-                                         static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
-                                         cartesian_grid_info_ptr);
+    find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
+                                             num_planes_per_axial_pos,
+                                             axial_pos_to_z_offset,
+                                             pdi_cyl_ptr,
+                                             cartesian_grid_info_ptr);
     }
   //Block implementation
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical")
   {
-    if (dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get()) == NULL)
+    if (dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(pdi_cyl_ptr) == NULL)
       error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
             "(can only handle projection data corresponding to blocks on a cylinder)\n",
-            typeid(*proj_data_info_ptr).name());
+            typeid(*pdi_cyl_ptr).name());
 
     const DiscretisedDensityOnCartesianGrid<3,float> *
       cartesian_grid_info_ptr =
@@ -383,7 +405,7 @@ DataSymmetriesForBins_PET_CartesianGrid
        this->do_symmetry_swap_s =
        this->do_symmetry_shift_z=false;
      }
-    if (!dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get())->axial_sampling_is_uniform())
+    if (!dynamic_cast<const ProjDataInfoBlocksOnCylindrical *>(pdi_cyl_ptr)->axial_sampling_is_uniform())
       {
         this->do_symmetry_shift_z = false;
         this->do_symmetry_swap_segment = false;
@@ -394,16 +416,16 @@ DataSymmetriesForBins_PET_CartesianGrid
             num_planes_per_scanner_ring,
             num_planes_per_axial_pos,
             axial_pos_to_z_offset,
-            dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
+            pdi_cyl_ptr,
             cartesian_grid_info_ptr);
   }
     // generic implementation
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
   {
-    if (dynamic_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get()) == NULL)
+    if (dynamic_cast<const ProjDataInfoGeneric *>(pdi_cyl_ptr) == NULL)
         error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
         "(can only handle projection data corresponding to a generig geometry)\n",
-        typeid(*proj_data_info_ptr).name());
+        typeid(*pdi_cyl_ptr).name());
 
     const DiscretisedDensityOnCartesianGrid<3,float> *
         cartesian_grid_info_ptr =
@@ -438,7 +460,7 @@ DataSymmetriesForBins_PET_CartesianGrid
         this->do_symmetry_shift_z = false;
     }
 
-    if (!dynamic_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get())->axial_sampling_is_uniform())
+    if (!dynamic_cast<const ProjDataInfoGeneric *>(pdi_cyl_ptr)->axial_sampling_is_uniform())
       {
         this->do_symmetry_shift_z = false;
         this->do_symmetry_swap_segment = false;
@@ -449,11 +471,19 @@ DataSymmetriesForBins_PET_CartesianGrid
           num_planes_per_scanner_ring,
           num_planes_per_axial_pos,
           axial_pos_to_z_offset,
-          dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
+          pdi_cyl_ptr,
           cartesian_grid_info_ptr);
     }
 }
 
+void DataSymmetriesForBins_PET_CartesianGrid::initialise_deltas(const ProjDataInfoCylindrical * pdi_ptr)
+{
+  this->deltas.resize(pdi_ptr->get_min_segment_num(), pdi_ptr->get_max_segment_num());
+  for (int segment_num=pdi_ptr->get_min_segment_num(); segment_num <= pdi_ptr->get_max_segment_num(); ++segment_num)
+    {
+      this->deltas[segment_num] = pdi_ptr->get_average_ring_difference(segment_num);
+    }
+}
 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins_PET_CartesianGrid *

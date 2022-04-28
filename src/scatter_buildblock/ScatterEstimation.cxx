@@ -16,6 +16,7 @@
   \author Nikos Efthimiou
   \author Kris Thielemans
   \author Daniel Deidda
+  \author Markus Jehl
 */
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
@@ -347,6 +348,24 @@ void ScatterEstimation::set_export_scatter_estimates_of_each_iteration(bool arg)
 {
   this->export_scatter_estimates_of_each_iteration = arg;
 }
+
+void ScatterEstimation::set_max_scale_value(float value)
+{ this->max_scale_value = value; }
+
+void ScatterEstimation::set_min_scale_value(float value)
+{ this->min_scale_value = value; }
+
+void ScatterEstimation::set_mask_projdata_filename(std::string name)
+{ this->mask_projdata_filename = name; }
+
+void ScatterEstimation::set_mask_image_filename(std::string name)
+{ this->mask_image_filename = name; }
+
+void ScatterEstimation::set_output_additive_estimate_prefix(std::string name)    
+{ this->output_additive_estimate_prefix = name; }
+
+void ScatterEstimation::set_run_debug_mode(bool debug)
+{ this->run_debug_mode = debug; }
 
 
 void

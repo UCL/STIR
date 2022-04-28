@@ -16,6 +16,7 @@ set(${dir_LIB_SOURCES}
   ProjDataInfoCylindrical.cxx
   ProjDataInfoCylindricalArcCorr.cxx
   ProjDataInfoCylindricalNoArcCorr.cxx
+  ProjDataInfoSubsetByView.cxx
   ArcCorrection.cxx
   ProjDataFromStream.cxx
   ProjDataGEAdvance.cxx
