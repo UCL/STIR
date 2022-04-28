@@ -27,6 +27,7 @@
   \author PARAPET project
 */
 #include "stir/shared_ptr.h"
+#include <vector>
 
 START_NAMESPACE_STIR
 
