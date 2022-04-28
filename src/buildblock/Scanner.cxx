@@ -553,9 +553,9 @@ break;
 
   case UPENN_5rings:
     set_params(UPENN_5rings, string_list("UPENN_5rings"),
-               56*5,
+               (40+16)*5,
                331, 331,
-               576, //+18 << Commented to pass the test_Scanner.
+               576+18, //<< Commented to pass the test_Scanner.
                382.0F, 7.0F,
                3.9655, 2.0F,
                static_cast<float>(0),
@@ -565,6 +565,31 @@ break;
                8, //            int num_transaxial_crystals_per_block_v,
                8*7,  //            int num_axial_crystals_per_singles_unit_v,
                8 * 4, // +1 gap     //            int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.109F, 511.F
+           #ifdef STIR_TOF
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
+
+  case UPENN_5rings_no_gaps:
+    set_params(UPENN_5rings_no_gaps, string_list("UPENN_5rings_no_gaps"),
+               40*5,
+               301, 301,
+               576,
+               382.0F, 7.0F,
+               3.9655, 2.0F,
+               static_cast<float>(0),
+               7,     //            int num_axial_blocks_per_bucket_v,
+               4,     //            int num_transaxial_blocks_per_bucket_v,
+               8,  //            int num_axial_crystals_per_block_v,
+               8, //            int num_transaxial_crystals_per_block_v,
+               8*7,  //            int num_axial_crystals_per_singles_unit_v,
+               8 * 4,  //            int num_transaxial_crystals_per_singles_unit_v,
                1,
                0.109F, 511.F
            #ifdef STIR_TOF
