@@ -60,8 +60,8 @@ CListEventPENN::init_from_data(bool d,
     d1 = xa ;//+ quarter_of_detectors;
     d2 = xb ;//+ quarter_of_detectors;
 
-    d1 = d1 + static_cast<int>((d1+16) / 32); // add gap
-    d2 = d2 + static_cast<int>((d2+16) / 32); // add gap
+    d1 = d1 + static_cast<int>(d1 / 32) + 1; // add gap
+    d2 = d2 + static_cast<int>(d2 / 32) + 1; // add gap
 
     // get ring 1
     int r = za * 0.025f;

@@ -218,8 +218,8 @@ int main(int argc, const char *argv[])
             Sinogram<float> cur_sino = seg.get_sinogram(i_axial);
             for(int i_phi = 0; i_phi <= output_projdata_sptr->get_max_view_num(); ++i_phi)
             {
-                for(int i_tang = template_projdata_sptr->get_min_tangential_pos_num();
-                    i_tang <= template_projdata_sptr->get_max_tangential_pos_num();
+                for(int i_tang = output_projdata_sptr->get_min_tangential_pos_num();
+                    i_tang <= output_projdata_sptr->get_max_tangential_pos_num();
                     ++i_tang)
                 {
                     float value = 0.f;
@@ -229,6 +229,12 @@ int main(int argc, const char *argv[])
                     Bin tmp_bin(segment_num, i_phi, i_axial, i_tang, value);
 #endif
 
+                    if (i_tang < template_projdata_sptr->get_min_tangential_pos_num() ||
+                            i_tang > template_projdata_sptr->get_max_tangential_pos_num())
+                    {
+                        cur_sino[i_phi][i_tang] = 0;
+                        continue;
+                    }
                     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sino;
                     LORInCylinderCoordinates<float> lor_cyl;
                     int d1, d2, dr1, dr2;
@@ -237,15 +243,15 @@ int main(int argc, const char *argv[])
 
                     if(addgaps)
                     {
-                        if ((d1 % 32 == 0) ||
-                                (d2 % 32 == 0)  )
+                        if ((d1 % 33 == 0) ||
+                                (d2 % 33 == 0)  )
                         {
                             cur_sino[i_phi][i_tang] = 0;
                             continue;
                         }
 
-                        d1 -= static_cast<int>(d1/32);
-                        d2 -= static_cast<int>(d2/32); // a detector in the smaller geometry
+                        d1 -= static_cast<int>(d1/33) + 1;
+                        d2 -= static_cast<int>(d2/33) + 1; // a detector in the smaller geometry
                     }
 
                     int cur_tilt, cur_slice, cur_phi, cur_rad;
