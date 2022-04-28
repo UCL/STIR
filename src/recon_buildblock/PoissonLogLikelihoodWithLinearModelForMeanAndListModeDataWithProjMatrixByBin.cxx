@@ -288,9 +288,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
     {
       info(boost::format("Reading additive projdata data '%1%'")
            % additive_projection_data_filename  );
-      shared_ptr <ProjData> temp_additive_proj_data_sptr =
-        ProjData::read_from_file(this->additive_projection_data_filename);
-      this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
+      //      shared_ptr <ProjData> temp_additive_proj_data_sptr =
+      //      ProjData::read_from_file(this->additive_projection_data_filename);
+      //      this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
+      additive_proj_data_sptr =
+              ProjData::read_from_file(this->additive_projection_data_filename);
     }
 
    proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
@@ -407,7 +409,47 @@ return true;
   }
   else // With additive correction we should be interpolating the TOF positions.
   {
+#ifdef STIR_TOF
 
+#else
+
+      ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
+
+      while (true)
+      {
+          Bin tmp;
+          if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+          {
+              break;
+          }
+
+          if (record_sptr->is_event() && record_sptr->event().is_prompt())
+          {
+              record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
+
+              if (tmp.get_bin_value() != 1.0f
+                      ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                      ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                      ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                      ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                      ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
+                      ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())                      )
+              {
+                  continue;
+              }
+              record_cache.push_back(tmp);
+
+              additive_cache.push_back(add->get_bin_value(tmp));
+
+              if (record_cache.size() > 1 && record_cache.size()%500000L==0)
+                  info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
+
+              if (record_cache.size() >= this->num_events_to_use)
+                  break;
+          }
+
+      }
+#endif
   }
 
   info( boost::format("Cached Events: %1% ") % record_cache.size());
@@ -453,7 +495,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   #else
           const int thread_num = 0;
   #endif
-          info(boost::format("%1%: Calculating sensitivity for segment %2% view.: %3%") %thread_num %segment_num % view);
+          if (view == proj_data_info_sptr->get_max_view_num())
+            info(boost::format("%1%: Calculated sensitivity for segment %2%") %thread_num %segment_num);
 
           //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
           {

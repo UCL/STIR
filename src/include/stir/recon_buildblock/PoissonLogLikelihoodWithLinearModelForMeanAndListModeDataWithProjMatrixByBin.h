@@ -26,7 +26,6 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
-#include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
 #include "stir/recon_buildblock/distributable.h"
@@ -117,7 +116,7 @@ protected:
   shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
 
   //! points to the additive projection data
-  shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
+  shared_ptr<ProjData> additive_proj_data_sptr;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
