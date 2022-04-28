@@ -88,6 +88,10 @@
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
 
+//#ifdef HAVE_ITK  // for unknown reasons this doesn't work
+  #include "stir/IO/ITKOutputFileFormat.h"
+//#endif
+
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
@@ -1343,12 +1347,18 @@ namespace stir {
 %shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::RegisteredObject< stir::OutputFileFormat< stir::DiscretisedDensity< 3,float > > >);
 %shared_ptr(stir::RegisteredParsingObject< stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
-#undef DataT
 %shared_ptr(stir::InterfileOutputFileFormat);
 #ifdef HAVE_LLN_MATRIX
 %shared_ptr(stir::RegisteredParsingObject<stir::ecat::ecat7::ECAT7OutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
 %shared_ptr(stir::ecat::ecat7::ECAT7OutputFileFormat);
 #endif
+
+//#ifdef HAVE_ITK  // for unknown reasons this doesn't work
+  %shared_ptr(stir::RegisteredParsingObject< stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
+  %shared_ptr(stir::ITKOutputFileFormat);
+//#endif
+
+#undef DataT
 #endif
 
 %include "stir/IO/OutputFileFormat.h"
@@ -1357,13 +1367,22 @@ namespace stir {
 %template(Float3DDiscretisedDensityOutputFileFormat) stir::OutputFileFormat<DataT >;
   //cannot do that as pure virtual functions
   //%template(ROOutputFileFormat3DFloat) RegisteredObject< OutputFileFormat< DiscretisedDensity< 3,float > > >;
-  %template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
-  #undef DataT
+%template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
+
+//#ifdef HAVE_ITK  // for unknown reasons this doesn't work
+  %template(RPITKOutputFileFormat) stir::RegisteredParsingObject<stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
+//#endif
 
 %include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 %include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
+
+//#ifdef HAVE_ITK  // for unknown reasons this doesn't work
+  %include "stir/IO/ITKOutputFileFormat.h"
+//#endif
+
+#undef DataT
 
  /* Now do ProjDataInfo, Sinogram et al
  */
