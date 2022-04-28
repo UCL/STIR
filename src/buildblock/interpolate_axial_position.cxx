@@ -33,6 +33,10 @@
 #include "stir/extend_projdata.h"
 #include "stir/numerics/sampling_functions.h"
 #include <typeinfo>
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
 
 START_NAMESPACE_STIR
 
@@ -57,6 +61,8 @@ interpolate_axial_position(ProjData& proj_data_out,
     }
   
   float m_offset_in=proj_data_in_info.get_m(Bin(0,0,0,0));
+  
+
   for (int segment=proj_data_out.get_min_segment_num();segment<=proj_data_out.get_max_segment_num();segment++)
       for (int axial_pos=proj_data_out.get_min_axial_pos_num(segment); axial_pos<=proj_data_out.get_max_axial_pos_num(segment);axial_pos++)
       {
@@ -66,10 +72,18 @@ interpolate_axial_position(ProjData& proj_data_out,
           float in_m_sampling= proj_data_in_info.get_sampling_in_m(bin);
           relative_pos=abs(round((m -m_offset_in)/ in_m_sampling));
            Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
+           const auto sino_in=proj_data_in.get_sinogram(relative_pos,0);
+#ifdef STIR_OPENMP
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(2) schedule(dynamic)
+#  endif
+#endif
           for (int view=proj_data_out.get_min_view_num(); view<=proj_data_out.get_max_view_num();view++)
               for (int tan=proj_data_out.get_min_tangential_pos_num(); tan<=proj_data_out.get_max_tangential_pos_num();tan++)
               {
-                  sino[view][tan]=proj_data_in.get_sinogram(relative_pos,0)[view][tan]; //proj_data_interpolator(relative_pos));
+                  sino[view][tan]=sino_in[view][tan];
               }
           if (proj_data_out.set_sinogram(sino) == Succeeded::no)
               return Succeeded::no;
