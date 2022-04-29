@@ -102,6 +102,7 @@ initialise_keymap()
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
   this->parser.add_key("cache for serialization", &this->cache_size);
   this->parser.add_key("accumulate events in cache", &this->accumulate_cache);
+  this->parser.add_key("long axial fov", &this->long_axial_fov);
 } 
 template <typename TargetT> 
 int 
