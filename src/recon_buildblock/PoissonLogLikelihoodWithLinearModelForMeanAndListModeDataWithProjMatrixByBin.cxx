@@ -125,9 +125,6 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         Array<1,int> num_bins_in_subset(this->num_subsets);
         num_bins_in_subset.fill(0);
 
-#ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
         for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
         {
             for (int segment_num = -this->max_ring_difference_num_to_process;
