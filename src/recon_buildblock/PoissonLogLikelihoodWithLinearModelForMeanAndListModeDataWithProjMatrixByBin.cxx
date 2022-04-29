@@ -34,11 +34,13 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/recon_array_functions.h"
-
+#include "stir/FilePath.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include "stir/stream.h"
+
+#include <fstream>
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -86,6 +88,7 @@ set_defaults()
   cache_size = 0;
   long_axial_fov = false;
   cache_lm_file = false;
+  recompute_cache = false;
 } 
  
 template <typename TargetT> 
@@ -102,7 +105,7 @@ initialise_keymap()
 
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
   this->parser.add_key("max cache size", &cache_size);
-  this->parser.add_key("accumulate events in cache", &accumulate_cache);
+  this->parser.add_key("recompute cache", &recompute_cache);
   this->parser.add_key("long axial fov", &long_axial_fov);
 } 
 template <typename TargetT> 
@@ -337,6 +340,53 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
       "set-up of normalisation failed.");
 return true;
     }
+
+  if(!recompute_cache)
+  {
+      std::string curr_dir = FilePath::get_current_working_directory();
+      std::string cache_filename = "my_CACHE00.bin";
+      FilePath icache(cache_filename, false);
+      icache.prepend_directory_name(curr_dir);
+
+      bool with_add = !is_null_ptr(additive_proj_data_sptr);
+
+      if (icache.is_regular_file())
+      {
+          info( boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
+          std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
+                            | std::ios::ate);
+
+          unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
+          record_cache.reserve(num_of_records);
+          if(with_add)
+            additive_cache.reserve(num_of_records);
+          fin.clear();
+          fin.seekg(0);
+          //fout.write((char*)&student[0], student.size() * sizeof(Student));
+          while(!fin.eof())
+          {
+              Bin tmp;
+              fin.read((char*)&tmp, sizeof(Bin));
+              if (with_add)
+              {
+                  additive_cache.push_back(tmp.get_bin_value());
+                  tmp.set_bin_value(1);
+              }
+              record_cache.push_back(tmp);
+          }
+          fin.close();
+      }
+      else
+      {
+          error("Cannot find Listmode cache on disk. Please recompute or comment out the  max cache size. Abort.");
+          return true;
+      }
+
+      info( boost::format("Cached Events: %1% ") % record_cache.size());
+      return false; // Stop here!!!
+  }
+
+
   if(cache_size > 0)
       cache_lm_file = true;
 
@@ -441,8 +491,44 @@ return true;
           }
 #endif
       }
-
       info( boost::format("Cached Events: %1% ") % record_cache.size());
+
+      if(recompute_cache)
+      {
+          info( boost::format("Storing Cached Events ... "));
+
+          std::string curr_dir = FilePath::get_current_working_directory();
+          std::string cache_filename = "my_CACHE00.bin";
+          FilePath ocache(cache_filename, false);
+          ocache.prepend_directory_name(curr_dir);
+
+          bool with_add = !is_null_ptr(additive_proj_data_sptr);
+
+//          if (ocache.is_regular_file())
+          {
+              info( boost::format("Storing Listmode cache from disk %1%") % ocache.get_as_string());
+              std::ofstream fin(ocache.get_as_string(), std::ios::out | std::ios::binary);
+
+              //fout.write((char*)&student[0], student.size() * sizeof(Student));
+              for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
+              {
+                  Bin tmp = record_cache.at(ie);
+                  if(with_add)
+                    tmp.set_bin_value(additive_cache.at(ie));
+
+                  fin.write((char*)&tmp, sizeof(Bin));
+              }
+              fin.close();
+          }
+//          else
+//          {
+//              error("File Path for storing the cache is not writable! Abort.");
+//              return true;
+//          }
+
+
+          return false; // Stop here!!!
+      }
   }
    return false; 
 
