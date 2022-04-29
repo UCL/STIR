@@ -552,7 +552,11 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
     // warning: has to be same as subset scheme used as in distributable_computation
 #ifdef STIR_OPENMP
-#pragma omp parallel for collapse(2) schedule(dynamic)
+#ifdef _WIN32
+    #pragma omp parallel for
+#else
+    #pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
 #endif
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
