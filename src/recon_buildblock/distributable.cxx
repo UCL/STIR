@@ -649,7 +649,7 @@ void LM_distributable_computation(
         }
 #endif
         // Putting the Bins here I avoid rellocation.
-        for (unsigned long int ievent = 0; ievent < record_ptr.size(); ++ievent)
+        for (long int ievent = 0; ievent < record_ptr.size(); ++ievent)
         {
 #ifdef STIR_OPENMP
             const int thread_num=omp_get_thread_num();

@@ -85,6 +85,7 @@ set_defaults()
   this->do_time_frame = false;
   cache_size = 0;
   long_axial_fov = false;
+  cache_lm_file = false;
 } 
  
 template <typename TargetT> 
@@ -100,9 +101,9 @@ initialise_keymap()
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
 
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
-  this->parser.add_key("cache for serialization", &this->cache_size);
-  this->parser.add_key("accumulate events in cache", &this->accumulate_cache);
-  this->parser.add_key("long axial fov", &this->long_axial_fov);
+  this->parser.add_key("max cache size", &cache_size);
+  this->parser.add_key("accumulate events in cache", &accumulate_cache);
+  this->parser.add_key("long axial fov", &long_axial_fov);
 } 
 template <typename TargetT> 
 int 
@@ -337,6 +338,9 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
 return true;
     }
   if(cache_size > 0)
+      cache_lm_file = true;
+
+  if(cache_lm_file)
   {
       info( boost::format("Listmode reconstruction: Serializing inputs ..."));
       info( boost::format("Listmode reconstruction: Creating cache..."));
@@ -352,7 +356,6 @@ return true;
       {
           while (true)
           {
-              Bin tmp;
               if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
               {
                   break;
@@ -360,6 +363,8 @@ return true;
 
               if (record_sptr->is_event() && record_sptr->event().is_prompt())
               {
+                  Bin tmp;
+                  tmp.set_bin_value(1.0);
                   record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
 
                   if (tmp.get_bin_value() != 1.0f
@@ -382,8 +387,9 @@ return true;
                   if (record_cache.size() > 1 && record_cache.size()%500000L==0)
                       info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
 
-                  if (record_cache.size() >= this->num_events_to_use)
-                      break;
+                  if(this->num_events_to_use > 0)
+                      if (record_cache.size() >= this->num_events_to_use)
+                          break;
               }
 
           }
@@ -398,7 +404,6 @@ return true;
 
           while (true)
           {
-              Bin tmp;
               if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
               {
                   break;
@@ -406,6 +411,7 @@ return true;
 
               if (record_sptr->is_event() && record_sptr->event().is_prompt())
               {
+                  Bin tmp;
                   record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
 
                   if (tmp.get_bin_value() != 1.0f
@@ -425,8 +431,11 @@ return true;
                   if (record_cache.size() > 1 && record_cache.size()%500000L==0)
                       info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
 
-                  if (record_cache.size() >= this->num_events_to_use)
-                      break;
+                  if(this->num_events_to_use > 0)
+                      if (record_cache.size() >= this->num_events_to_use)
+                      {
+                          break;
+                      }
               }
 
           }
@@ -596,7 +605,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
     this->list_mode_data_sptr->reset();
 
 
-    if (cache_size > 0)
+    if (cache_lm_file)
     {
         VectorWithOffset<ListModeData::SavedPosition>
                 frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));

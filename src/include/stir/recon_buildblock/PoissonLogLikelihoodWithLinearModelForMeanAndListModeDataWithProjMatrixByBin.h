@@ -139,6 +139,8 @@ protected:
   std::vector<float> additive_cache;
   //! The size of a single
   unsigned long int cache_size;
+
+  bool cache_lm_file;
   //! If set, the cache only keeps unique bins. Not very well tested, risky when
   //! timeframes are relevant.
   bool accumulate_cache;
