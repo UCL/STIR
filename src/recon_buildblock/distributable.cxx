@@ -682,8 +682,8 @@ void LM_distributable_computation(
 
             if (!is_null_ptr(additive_binwise_correction))
             {
-                float value = local_fwd_bin[thread_num].get_bin_value() + additive_binwise_correction->at(ievent);
-                local_fwd_bin[thread_num].set_bin_value(value);
+                local_fwd_bin[thread_num].set_bin_value(
+                            local_fwd_bin[thread_num].get_bin_value() + additive_binwise_correction->at(ievent));
             }
 
             measured_div_fwd[thread_num] = 0.0;
@@ -702,11 +702,6 @@ void LM_distributable_computation(
             local_measured_bin[thread_num].set_bin_value(measured_div_fwd[thread_num]);
             local_row[thread_num].back_project(*local_output_image_sptrs[thread_num], local_measured_bin[thread_num]);
         }
-
-        CPU_timer.stop();
-        wall_clock_timer.stop();
-        info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s")
-             % CPU_timer.value() % wall_clock_timer.value());
     }
 #ifdef STIR_OPENMP
     // "reduce" data constructed by threads
@@ -720,6 +715,10 @@ void LM_distributable_computation(
 
     }
 #endif
+    CPU_timer.stop();
+    wall_clock_timer.stop();
+    info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s")
+         % CPU_timer.value() % wall_clock_timer.value());
 }
 
 END_NAMESPACE_STIR
