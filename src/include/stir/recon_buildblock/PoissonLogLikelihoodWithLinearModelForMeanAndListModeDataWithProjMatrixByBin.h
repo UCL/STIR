@@ -27,6 +27,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
 #include "stir/recon_buildblock/distributable.h"
@@ -144,6 +145,8 @@ protected:
   //! If set, the cache only keeps unique bins. Not very well tested, risky when
   //! timeframes are relevant.
   bool accumulate_cache;
+  //! The additive sinogram will not be read in memory
+  bool long_axial_fov;
 };
 
 END_NAMESPACE_STIR
