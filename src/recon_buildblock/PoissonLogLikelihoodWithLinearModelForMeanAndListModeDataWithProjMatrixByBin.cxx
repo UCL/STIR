@@ -341,7 +341,10 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
 return true;
     }
 
-  if(!recompute_cache)
+  if(cache_size > 0)
+      cache_lm_file = true;
+
+  if(!recompute_cache && cache_lm_file)
   {
       std::string curr_dir = FilePath::get_current_working_directory();
       std::string cache_filename = "my_CACHE00.bin";
@@ -385,10 +388,6 @@ return true;
       info( boost::format("Cached Events: %1% ") % record_cache.size());
       return false; // Stop here!!!
   }
-
-
-  if(cache_size > 0)
-      cache_lm_file = true;
 
   if(cache_lm_file)
   {
