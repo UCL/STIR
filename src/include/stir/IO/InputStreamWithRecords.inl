@@ -73,6 +73,9 @@ get_next_record(RecordT& record) const
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
+#ifdef STIR_OPENMP
+#pragma omp critical(LISTMODEIO)
+#endif
   // rely on file caching by the C++ library or the OS
   assert(this->size_of_record_signature <= this->max_size_of_record);
   boost::shared_array<char> data_sptr(new char[this->max_size_of_record]);
