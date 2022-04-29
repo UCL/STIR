@@ -114,9 +114,6 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_sptr;
 
-  //! Backprojector used for sensitivity computation
-  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
-
   //! points to the additive projection data
   shared_ptr<ProjData> additive_proj_data_sptr;
  

@@ -195,35 +195,12 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
 
-    // set projectors to be used for the calculations
-    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    // set projector to be used for the calculations
+    this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     this->projector_pair_sptr.reset(
-                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+                new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
     this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
-
-    if (is_null_ptr(this->projector_pair_sptr))
-      { error("You need to specify a projector pair"); return Succeeded::no; }
-
-    setup_distributable_computation(this->projector_pair_sptr,
-                                    this->list_mode_data_sptr->get_exam_info_sptr(),
-                                    proj_data_info_sptr,
-                                    target_sptr,
-                                    1,
-                                    1);
-
-    this->projector_pair_sptr->set_up(proj_data_info_sptr,target_sptr);
-#if 0
-    // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
-    if (!this->use_tofsens)
-        this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
-#else
-    // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr().get());
-    this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_shared_clone(), target_sptr);
-#endif
     if (is_null_ptr(this->normalisation_sptr))
     {
         warning("Invalid normalisation object");
@@ -476,7 +453,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
 #endif
 
-    this->sens_backprojector_sptr->
+    this->projector_pair_sptr->get_back_projector_sptr()->
       start_accumulating_in_new_target();
 
     // warning: has to be same as subset scheme used as in distributable_computation
@@ -494,11 +471,11 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
           if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
           //        this->add_view_seg_to_sensitivity(view_segment_num);
-  #ifdef STIR_OPENMP
+#ifdef STIR_OPENMP
           const int thread_num=omp_get_thread_num();
-  #else
+#else
           const int thread_num = 0;
-  #endif
+#endif
           if (view == proj_data_info_sptr->get_max_view_num())
             info(boost::format("%1%: Calculated sensitivity for segment %2%") %thread_num %segment_num);
 
@@ -525,8 +502,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                   const int max_ax_pos_num =
                       viewgrams.get_max_axial_pos_num();
 
-                  this->sens_backprojector_sptr->back_project(viewgrams,
-                      min_ax_pos_num, max_ax_pos_num);
+                  this->projector_pair_sptr->get_back_projector_sptr()->
+                    back_project(viewgrams,
+                                 min_ax_pos_num, max_ax_pos_num);
               }
           }
       }
@@ -661,7 +639,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
         long int more_events =
                 this->do_time_frame? 1 : this->num_events_to_use;
 
-        while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
+        while (more_events)
        {
 
            if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
