@@ -645,10 +645,10 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
         double current_time = 0.;
 
-        ProjDataFromStream* add;
+        shared_ptr<ProjDataFromStream> add;
 
         if (!is_null_ptr(this->additive_proj_data_sptr))
-            add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
+            add = std::dynamic_pointer_cast<ProjDataFromStream>(additive_proj_data_sptr);
 
         ProjMatrixElemsForOneBin proj_matrix_row;
         gradient.fill(0);
