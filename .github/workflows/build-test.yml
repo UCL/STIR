@@ -239,6 +239,7 @@ jobs:
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        if: failure()
         retention-days: 7
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
