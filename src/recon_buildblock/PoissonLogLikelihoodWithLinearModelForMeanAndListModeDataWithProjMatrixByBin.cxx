@@ -542,7 +542,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
-#if 0
+#ifdef STIR_TOF
     int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
 #endif
