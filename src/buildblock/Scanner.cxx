@@ -903,6 +903,8 @@ get_num_virtual_axial_crystals_per_module() const
 {
   switch(get_type())
     {
+    case UPENN_5rings:
+      return 1;
     default:
       return 0;
     }
