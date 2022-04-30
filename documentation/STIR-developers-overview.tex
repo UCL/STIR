@@ -59,6 +59,15 @@ This can produce an HTML version but also various other output
 formats (you can get e.g. RTF or LaTeX output by simply running 
 doxygen on the source files that come in the STIR distribution). 
 
+\subsection{Language support}
+STIR is written in C++ and currently requires C++-11, but it should be compatible with nNewer versions of the C++ standard.
+
+Python and MATLAB support is provided via \R2Lurl{http://www.swig.org/}{SWIG}. This means that Python/MATLAB interfaces follow
+the C++ classes closely, although some differences are required as these languages do not support templates for instance.
+Naming currently therefore often includes the type, e.g.~\texttt{FloatVoxelsOnCartesianGrid} corresponds to
+C++ \texttt{stir::VoxelsOnCartesianGrid<float>}. Python/MATLAB documentation is auto-generated from the C++
+documentation. This is not entirely satisfactory, but the best we can do at present.
+The SWIG interface files are located in \texttt{STIR/src/SWIG/*.i}.
 
 \section{
 General conventions}
@@ -1321,6 +1330,15 @@ static myOutputFileFormat::RegisterIt dummy1;
 If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeListst.txt}
 as above, everything should work as expected.
 
+\section{Contributing to STIR}
+See
+\R2Lurl{https://github.com/UCL/STIR/blob/master/CONTRIBUTING.md}{STIR/CONTRIBUTING.md}.
+
+\subsection{Continuous integration testing}
+We use GitHub Actions and Appveyor for testing of every pull-request that was submitted on GitHub. PRs
+need to pass all checks before they will be accepted of course.
+To help debugging, we upload \texttt{recon\_test\_pack} log files as artefacts on
+GitHub if a job fails. You can see these in the Summary of every job that was triggered.
 
 \section{
 Conclusion}
