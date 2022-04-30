@@ -237,7 +237,7 @@ jobs:
     - name: Upload log files for debugging
       uses: actions/upload-artifact@v3
       with:
-        name: recon_test_pack_log_files ${{ github.job }}
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: ${{ github.workspace }}/recon_test_pack/**/*.log
         retention-days: 7
 
