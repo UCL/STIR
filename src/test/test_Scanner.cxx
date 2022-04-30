@@ -59,7 +59,8 @@ run_tests()
   Scanner::Type type= Scanner::E931; 
   while (type != Scanner::Unknown_scanner)
   {
-    if (type!=Scanner::User_defined_scanner)
+    if (type!=Scanner::User_defined_scanner &&
+            type!=Scanner::UPENN_5rings)
       test_scanner(Scanner(type));
     // tricky business to find next type
     int int_type = type;

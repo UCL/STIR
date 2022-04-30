@@ -557,14 +557,14 @@ break;
                331, 331,
                576+18, //<< Commented to pass the test_Scanner.
                382.0F, 7.0F,
-               3.9655, 2.08F,
+               3.9655, 2.0F,
                static_cast<float>(0),
-               7 * 5,     //            int num_axial_blocks_per_bucket_v,
+               7,     //            int num_axial_blocks_per_bucket_v,
                4,     //            int num_transaxial_blocks_per_bucket_v,
                8,  //            int num_axial_crystals_per_block_v,
                8, //            int num_transaxial_crystals_per_block_v,
-               8,  //            int num_axial_crystals_per_singles_unit_v,
-               8, // +1 gap     //int num_transaxial_crystals_per_singles_unit_v,
+               8*7,  //            int num_axial_crystals_per_singles_unit_v,
+               8 * 4, // +1 gap     //            int num_transaxial_crystals_per_singles_unit_v,
                1,
                0.109F, 511.F
            #ifdef STIR_TOF
@@ -578,18 +578,18 @@ break;
 
   case UPENN_5rings_no_gaps:
     set_params(UPENN_5rings_no_gaps, string_list("UPENN_5rings_no_gaps"),
-               40 * 5,
+               40*5,
                301, 301,
                576,
                382.0F, 7.0F,
-               3.9655, 2.08F,
+               3.9655, 2.0F,
                static_cast<float>(0),
-               5 * 5,     //            int num_axial_blocks_per_bucket_v,
+               7,     //            int num_axial_blocks_per_bucket_v,
                4,     //            int num_transaxial_blocks_per_bucket_v,
                8,  //            int num_axial_crystals_per_block_v,
                8, //            int num_transaxial_crystals_per_block_v,
-               8,  //            int num_axial_crystals_per_singles_unit_v,
-               8,  //            int num_transaxial_crystals_per_singles_unit_v,
+               8*7,  //            int num_axial_crystals_per_singles_unit_v,
+               8 * 4,  //            int num_transaxial_crystals_per_singles_unit_v,
                1,
                0.109F, 511.F
            #ifdef STIR_TOF
@@ -897,19 +897,6 @@ get_num_virtual_axial_crystals_per_block() const
     }
 }
 
-int
-Scanner::
-get_num_virtual_axial_crystals_per_module() const
-{
-  switch(get_type())
-    {
-    case UPENN_5rings:
-      return 1;
-    default:
-      return 0;
-    }
-}
-
 /*! \todo The current list is bound to be incomplete. would be better to stick it in set_params().
  */
 int
@@ -926,33 +913,6 @@ get_num_virtual_transaxial_crystals_per_block() const
       return 0;
     }
 }
-
-int
-Scanner::
-get_num_virtual_transaxial_crystals_per_module() const
-{
-  switch(get_type())
-    {
-    case UPENN_5rings:
-      return 1;
-    default:
-      return 0;
-    }
-}
-
-int
-Scanner::
-get_num_transaxial_modules() const
-{
-  switch(get_type())
-    {
-    case UPENN_5rings:
-      return 18;
-    default:
-      return 0;
-    }
-}
-
 /*! \todo Can currently only set to hard-wired values. Otherwise calls error() */
 void
 Scanner::
@@ -991,8 +951,7 @@ check_consistency() const
       {
 	const int dets_per_ring =
 	  get_num_transaxial_blocks() *
-      (get_num_transaxial_crystals_per_block() + get_num_virtual_transaxial_crystals_per_block())
-            +(get_num_transaxial_modules() * get_num_virtual_transaxial_crystals_per_module());
+	  get_num_transaxial_crystals_per_block();
     // exclusion of generic as 'get_num_transaxial_crystals_per_block()' is sometimes false for asymmetric detectors and not important for generic
 	if ( dets_per_ring != get_num_detectors_per_ring() && scanner_geometry != "Generic")
 	  { 
@@ -1068,7 +1027,7 @@ check_consistency() const
 	      this->get_name().c_str());
     else
       {
-    if ( (get_num_detectors_per_ring() - (get_num_transaxial_modules() * get_num_virtual_transaxial_crystals_per_module()))% get_num_transaxial_crystals_per_singles_unit() != 0)
+	if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
 	  { 
 	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
 		    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
