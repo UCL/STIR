@@ -103,6 +103,9 @@ protected:
  
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+
+  //! This function caches the listmode file. It is run during post-processing.
+  bool cache_listmode_file();
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
@@ -134,14 +137,20 @@ protected:
   void
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
 
-
-  std::vector<Bin>  record_cache;//(new std::vector<CListEventROOT>(0));
+  //! Cache of the listmode file
+  std::vector<Bin>  record_cache;
+  //! Cache for additive corrections.
   std::vector<float> additive_cache;
-  //! The size of a single
+  //! This is the number of records to be cached. If this parameter is more than zero, then the
+  //! flag cache_lm_file will be set to true. The listmode file up to this size will be loaded in
+  //! the RAM, alongside with any additive sinograms.
   unsigned long int cache_size;
-
+  //! This flag is true when cache_size is more than zero.
   bool cache_lm_file;
-
+  //! On the first cached run, the cache will be written in the working path of the reconstruction.
+  //! If recompute_cache is set to zero then every consecutive reconstruction will use that cache file.
+  //! If you want to create a new, either delete the previous or set this 1. \todo multiple cache files
+  //! need to be supported!
   bool recompute_cache;
   //! The additive sinogram will not be read in memory
   bool long_axial_fov;

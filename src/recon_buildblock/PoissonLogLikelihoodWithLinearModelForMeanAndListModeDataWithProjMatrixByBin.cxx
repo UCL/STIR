@@ -342,196 +342,206 @@ return true;
     }
 
   if(cache_size > 0)
+  {
       cache_lm_file = true;
-
-  if(!recompute_cache && cache_lm_file)
-  {
-      std::string curr_dir = FilePath::get_current_working_directory();
-      std::string cache_filename = "my_CACHE00.bin";
-      FilePath icache(cache_filename, false);
-      icache.prepend_directory_name(curr_dir);
-
-      bool with_add = !is_null_ptr(additive_proj_data_sptr);
-
-      if (icache.is_regular_file())
-      {
-          info( boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
-          std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
-                            | std::ios::ate);
-
-          unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
-          record_cache.reserve(num_of_records);
-          if(with_add)
-            additive_cache.reserve(num_of_records);
-          fin.clear();
-          fin.seekg(0);
-          //fout.write((char*)&student[0], student.size() * sizeof(Student));
-          while(!fin.eof())
-          {
-              Bin tmp;
-              fin.read((char*)&tmp, sizeof(Bin));
-              if (with_add)
-              {
-                  additive_cache.push_back(tmp.get_bin_value());
-                  tmp.set_bin_value(1);
-              }
-              record_cache.push_back(tmp);
-          }
-          fin.close();
-      }
-      else
-      {
-          error("Cannot find Listmode cache on disk. Please recompute or comment out the  max cache size. Abort.");
-          return true;
-      }
-
-      info( boost::format("Cached Events: %1% ") % record_cache.size());
-      return false; // Stop here!!!
+      return cache_listmode_file();
   }
 
-  if(cache_lm_file)
-  {
-      info( boost::format("Listmode reconstruction: Serializing inputs ..."));
-      info( boost::format("Listmode reconstruction: Creating cache..."));
-
-      record_cache.reserve(cache_size);
-      additive_cache.reserve(cache_size);
-
-      this->list_mode_data_sptr->reset();
-      const shared_ptr<ListRecord> & record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-      info(boost::format("Caching... "));
-
-      if(is_null_ptr(additive_proj_data_sptr))
-      {
-          while (true)
-          {
-              if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
-              {
-                  break;
-              }
-
-              if (record_sptr->is_event() && record_sptr->event().is_prompt())
-              {
-                  Bin tmp;
-                  tmp.set_bin_value(1.0);
-                  record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
-
-                  if (tmp.get_bin_value() != 1.0f
-                          ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
-                          ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
-                          ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
-                          ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
-                          ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
-                          ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())
-        #ifdef STIR_TOF
-                          ||  tmp.timing_pos_num() < proj_data_info_sptr->get_min_tof_pos_num()
-                          ||  tmp.timing_pos_num() > proj_data_info_sptr->get_max_tof_pos_num()
-        #endif
-                          )
-                  {
-                      continue;
-                  }
-                  record_cache.push_back(tmp);
-
-                  if (record_cache.size() > 1 && record_cache.size()%500000L==0)
-                      info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
-
-                  if(this->num_events_to_use > 0)
-                      if (record_cache.size() >= this->num_events_to_use)
-                          break;
-              }
-
-          }
-      }
-      else // With additive correction we should be interpolating the TOF positions.
-      {
-#ifdef STIR_TOF
-
-#else
-
-          ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
-
-          while (true)
-          {
-              if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
-              {
-                  break;
-              }
-
-              if (record_sptr->is_event() && record_sptr->event().is_prompt())
-              {
-                  Bin tmp;
-                  record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
-
-                  if (tmp.get_bin_value() != 1.0f
-                          ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
-                          ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
-                          ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
-                          ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
-                          ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
-                          ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())                      )
-                  {
-                      continue;
-                  }
-                  record_cache.push_back(tmp);
-
-                  additive_cache.push_back(add->get_bin_value(tmp));
-
-                  if (record_cache.size() > 1 && record_cache.size()%500000L==0)
-                      info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
-
-                  if(this->num_events_to_use > 0)
-                      if (record_cache.size() >= this->num_events_to_use)
-                      {
-                          break;
-                      }
-              }
-
-          }
-#endif
-      }
-      info( boost::format("Cached Events: %1% ") % record_cache.size());
-
-      if(recompute_cache)
-      {
-          info( boost::format("Storing Cached Events ... "));
-
-          std::string curr_dir = FilePath::get_current_working_directory();
-          std::string cache_filename = "my_CACHE00.bin";
-          FilePath ocache(cache_filename, false);
-          ocache.prepend_directory_name(curr_dir);
-
-          bool with_add = !is_null_ptr(additive_proj_data_sptr);
-
-//          if (ocache.is_regular_file())
-          {
-              info( boost::format("Storing Listmode cache from disk %1%") % ocache.get_as_string());
-              std::ofstream fin(ocache.get_as_string(), std::ios::out | std::ios::binary);
-
-              //fout.write((char*)&student[0], student.size() * sizeof(Student));
-              for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
-              {
-                  Bin tmp = record_cache.at(ie);
-                  if(with_add)
-                    tmp.set_bin_value(additive_cache.at(ie));
-
-                  fin.write((char*)&tmp, sizeof(Bin));
-              }
-              fin.close();
-          }
-//          else
-//          {
-//              error("File Path for storing the cache is not writable! Abort.");
-//              return true;
-//          }
-
-
-          return false; // Stop here!!!
-      }
-  }
    return false; 
 
-} 
+}
+
+template<typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
+{
+    if(!recompute_cache && cache_lm_file)
+    {
+        std::string curr_dir = FilePath::get_current_working_directory();
+        std::string cache_filename = "my_CACHE00.bin";
+        FilePath icache(cache_filename, false);
+        icache.prepend_directory_name(curr_dir);
+
+        bool with_add = !is_null_ptr(additive_proj_data_sptr);
+
+        if (icache.is_regular_file())
+        {
+            info( boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
+            std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
+                              | std::ios::ate);
+
+            unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
+            record_cache.reserve(num_of_records);
+            if(with_add)
+              additive_cache.reserve(num_of_records);
+            fin.clear();
+            fin.seekg(0);
+            //fout.write((char*)&student[0], student.size() * sizeof(Student));
+            while(!fin.eof())
+            {
+                Bin tmp;
+                fin.read((char*)&tmp, sizeof(Bin));
+                if (with_add)
+                {
+                    additive_cache.push_back(tmp.get_bin_value());
+                    tmp.set_bin_value(1);
+                }
+                record_cache.push_back(tmp);
+            }
+            fin.close();
+        }
+        else
+        {
+            error("Cannot find Listmode cache on disk. Please recompute or comment out the  max cache size. Abort.");
+            return true;
+        }
+
+        info( boost::format("Cached Events: %1% ") % record_cache.size());
+        return false; // Stop here!!!
+    }
+
+    if(cache_lm_file)
+    {
+        info( boost::format("Listmode reconstruction: Serializing inputs ..."));
+        info( boost::format("Listmode reconstruction: Creating cache..."));
+
+        record_cache.reserve(cache_size);
+        additive_cache.reserve(cache_size);
+
+        this->list_mode_data_sptr->reset();
+        const shared_ptr<ListRecord> & record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+        info(boost::format("Caching... "));
+
+        if(is_null_ptr(additive_proj_data_sptr))
+        {
+            while (true)
+            {
+                if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+                {
+                    break;
+                }
+
+                if (record_sptr->is_event() && record_sptr->event().is_prompt())
+                {
+                    Bin tmp;
+                    tmp.set_bin_value(1.0);
+                    record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
+
+                    if (tmp.get_bin_value() != 1.0f
+                            ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                            ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                            ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                            ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                            ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
+                            ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())
+          #ifdef STIR_TOF
+                            ||  tmp.timing_pos_num() < proj_data_info_sptr->get_min_tof_pos_num()
+                            ||  tmp.timing_pos_num() > proj_data_info_sptr->get_max_tof_pos_num()
+          #endif
+                            )
+                    {
+                        continue;
+                    }
+                    record_cache.push_back(tmp);
+
+                    if (record_cache.size() > 1 && record_cache.size()%500000L==0)
+                        info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
+
+                    if(this->num_events_to_use > 0)
+                        if (record_cache.size() >= this->num_events_to_use)
+                            break;
+                }
+
+            }
+        }
+        else // With additive correction we should be interpolating the TOF positions.
+        {
+  #ifdef STIR_TOF
+
+  #else
+
+            ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
+
+            while (true)
+            {
+                if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+                {
+                    break;
+                }
+
+                if (record_sptr->is_event() && record_sptr->event().is_prompt())
+                {
+                    Bin tmp;
+                    record_sptr->event().get_bin(tmp, *proj_data_info_sptr);
+
+                    if (tmp.get_bin_value() != 1.0f
+                            ||  tmp.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                            ||  tmp.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                            ||  tmp.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                            ||  tmp.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                            ||  tmp.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(tmp.segment_num())
+                            ||  tmp.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(tmp.segment_num())                      )
+                    {
+                        continue;
+                    }
+                    record_cache.push_back(tmp);
+
+                    additive_cache.push_back(add->get_bin_value(tmp));
+
+                    if (record_cache.size() > 1 && record_cache.size()%500000L==0)
+                        info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
+
+                    if(this->num_events_to_use > 0)
+                        if (record_cache.size() >= this->num_events_to_use)
+                        {
+                            break;
+                        }
+                }
+
+            }
+  #endif
+        }
+        info( boost::format("Cached Events: %1% ") % record_cache.size());
+
+        if(recompute_cache)
+        {
+            info( boost::format("Storing Cached Events ... "));
+
+            std::string curr_dir = FilePath::get_current_working_directory();
+            std::string cache_filename = "my_CACHE00.bin";
+            FilePath ocache(cache_filename, false);
+            ocache.prepend_directory_name(curr_dir);
+
+            bool with_add = !is_null_ptr(additive_proj_data_sptr);
+
+  //          if (ocache.is_regular_file())
+            {
+                info( boost::format("Storing Listmode cache from disk %1%") % ocache.get_as_string());
+                std::ofstream fin(ocache.get_as_string(), std::ios::out | std::ios::binary);
+
+                //fout.write((char*)&student[0], student.size() * sizeof(Student));
+                for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
+                {
+                    Bin tmp = record_cache.at(ie);
+                    if(with_add)
+                      tmp.set_bin_value(additive_cache.at(ie));
+
+                    fin.write((char*)&tmp, sizeof(Bin));
+                }
+                fin.close();
+            }
+  //          else
+  //          {
+  //              error("File Path for storing the cache is not writable! Abort.");
+  //              return true;
+  //          }
+
+
+            return false; // Stop here!!!
+        }
+    }
+    return true;
+}
  
 template<typename TargetT>
 void
@@ -696,6 +706,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
     if (cache_lm_file)
     {
+        std::cout << "Nikos 11 " << std::endl;
         VectorWithOffset<ListModeData::SavedPosition>
                 frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 

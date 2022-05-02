@@ -607,7 +607,6 @@ std::vector<float>measured_div_fwd;
 #ifdef STIR_OPENMP
 #pragma omp parallel shared(local_output_image_sptrs,local_row, local_log_likelihoods, local_counts, local_count2s, local_measured_bin, local_fwd_bin)
 #endif
-
     // start of threaded section if openmp
     {
 #ifdef STIR_OPENMP
@@ -625,7 +624,7 @@ std::vector<float>measured_div_fwd;
             local_row.resize(omp_get_max_threads(), ProjMatrixElemsForOneBin());
         }
 
-#pragma omp for schedule(runtime) //collapse(2)
+#pragma omp for schedule(runtime)
 #else
         {
             std::cerr << "Starting loop with " << 1 << " threads\n";
@@ -644,7 +643,7 @@ std::vector<float>measured_div_fwd;
         for (long int ievent = 0; ievent < record_ptr.size(); ++ievent)
         {
 #ifdef STIR_OPENMP
-            const int thread_num=omp_get_thread_num();
+            const int thread_num = omp_get_thread_num();
 #else
             const int thread_num=0;
 #endif
