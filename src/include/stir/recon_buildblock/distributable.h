@@ -188,7 +188,7 @@ void LM_distributable_computation(
         const DiscretisedDensity<3,float>* input_image_ptr,
         const std::vector<Bin>& record_ptr,
         int subset_num, int num_subsets,
-        const std::vector<float>* additive_binwise_correctio);
+        const std::vector<float>* additive_binwise_correction);
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0
      \ingroup distributable
