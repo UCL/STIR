@@ -82,12 +82,12 @@ echo "=== Reconstruct listmode data without cache"
 export filename=my_output_t_lm_pr_seg2
 export cache=0
 export recompute_cache=0
-${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
+${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm_1.log 2>&1
 echo "=== Reconstruct listmode data with cache and store it in the disk"
 export filename=my_output_t_lm_pr_seg2_with_new_cache
 export cache=40000
 export recompute_cache=1
-${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
+${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm_2.log 2>&1
 
 echo "=== Compare reconstructed images with and without caching LM file"
 if compare_image my_output_t_lm_pr_seg2_1.hv my_output_t_lm_pr_seg2_with_new_cache_1.hv 2>my_output_comparison_stderr.log;
@@ -102,7 +102,7 @@ echo "=== Reconstruct listmode data with cache loaded from the disk"
 export filename=my_output_t_lm_pr_seg2_with_old_cache
 export cache=40000
 export recompute_cache=0
-${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
+${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm_3.log 2>&1
 
 echo "=== Compare reconstructed images without caching LM file and with loading cache from disk"
 if compare_image my_output_t_lm_pr_seg2_1.hv my_output_t_lm_pr_seg2_with_old_cache_1.hv 2>my_output_comparison_stderr.log;

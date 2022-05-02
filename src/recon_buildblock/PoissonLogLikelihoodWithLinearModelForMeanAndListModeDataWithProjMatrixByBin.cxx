@@ -376,7 +376,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
               additive_cache.reserve(num_of_records);
             fin.clear();
             fin.seekg(0);
-            //fout.write((char*)&student[0], student.size() * sizeof(Student));
+
             while(!fin.eof())
             {
                 Bin tmp;
@@ -388,6 +388,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 }
                 record_cache.push_back(tmp);
             }
+            //The while will push one junk record
+            record_cache.pop_back();
+            if (with_add)
+                additive_cache.pop_back();
+
             fin.close();
         }
         else
