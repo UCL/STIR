@@ -187,6 +187,62 @@ ScatterEstimation(const std::string& parameter_filename)
     }
 }
 
+
+shared_ptr<ProjData> 
+ScatterEstimation::
+make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr)
+{
+    shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+    shared_ptr<ProjData> out_2d_sptr;
+    if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+    {
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                               out_info_2d_sptr));
+        
+        SSRB(*out_2d_sptr,
+             *in_3d_sptr,false);
+    }
+    else
+    { 
+        out_info_2d_sptr->reduce_segment_range(0,0);
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                                                out_info_2d_sptr));
+        
+        SegmentBySinogram<float> segment=in_3d_sptr->get_segment_by_sinogram(0);
+        out_2d_sptr->set_segment(segment);
+//        std::cout<<" value "<<out_2d_sptr->get_sinogram(8,0)[0][0]<<std::endl;
+    }
+    return out_2d_sptr;
+}
+
+shared_ptr<ProjData> 
+ScatterEstimation::
+make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr, string template_filename)
+{
+    shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+    shared_ptr<ProjData> out_2d_sptr;
+    if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+    {
+        out_2d_sptr = create_new_proj_data(template_filename, 
+                                           this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        
+        SSRB(*out_2d_sptr,
+             *in_3d_sptr,false);
+    }
+    else
+    { 
+        out_info_2d_sptr->reduce_segment_range(0,0);
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                                                out_info_2d_sptr));
+        
+        SegmentBySinogram<float> segment=in_3d_sptr->get_segment_by_sinogram(0);
+        out_2d_sptr->set_segment(segment);
+//        std::cout<<" value "<<out_2d_sptr->get_sinogram(8,0)[0][0]<<std::endl;
+    }
+    return out_2d_sptr;
+}
+
 bool
 ScatterEstimation::
 post_processing()
@@ -441,21 +497,7 @@ set_up()
     if (input_projdata_sptr->get_num_segments() > 1)
     {
         info("ScatterEstimation: Running SSRB on input data...");
-        shared_ptr<ProjDataInfo> proj_data_info_2d_sptr(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-
-        if (this->input_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
-            
-            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                    proj_data_info_2d_sptr));
-            
-            SSRB(*this->input_projdata_2d_sptr,
-                 *input_projdata_sptr,false);
-        }
-        else{ 
-            proj_data_info_2d_sptr->reduce_segment_range(0,0);
-            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                    proj_data_info_2d_sptr));
-        }
+        this->input_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(this->input_projdata_sptr)));
     }
     else
     {
@@ -604,9 +646,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
       this->get_attenuation_correction_factors_sptr(this->multiplicative_binnorm_sptr);
     shared_ptr<ProjData> atten_projdata_2d_sptr;
     
-    //the following can be used in different points below
-    shared_ptr<ProjDataInfo> projdata_info_2d_sptr(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -614,20 +653,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
         std::string out_filename = "tmp_atten_sino_2d.hs";
-         if (tmp_atten_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-         {
-             atten_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-             
-             SSRB(*atten_projdata_2d_sptr,
-                  *tmp_atten_projdata_sptr, true);
-         }
-         else
-         {
-             projdata_info_2d_sptr->reduce_segment_range(0,0);
-             atten_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                 projdata_info_2d_sptr));
-         }
+        atten_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(tmp_atten_projdata_sptr, out_filename)));
+        
     }
     else
     {
@@ -668,14 +695,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
               info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 
-              if (norm_projdata_2d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-              {
-              SSRB(*norm_projdata_2d_sptr,
-                   *inv_projdata_3d_sptr,false);
-              }
-              else
-              norm_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                        projdata_info_2d_sptr->create_shared_clone()));
+              norm_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(inv_projdata_3d_sptr)));
 
               // Crucial: Avoid divisions by zero!!
               // This should be resolved after https://github.com/UCL/STIR/issues/348
@@ -715,17 +735,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
 
-	    this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-								   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+//	    this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+//								   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
-            if (back_projdata_2d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-            {
-            SSRB(*this->back_projdata_2d_sptr,
-                 *this->back_projdata_sptr, false);
-            }
-            else
-                back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                          projdata_info_2d_sptr->create_shared_clone()));
+            this->back_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(back_projdata_sptr)));
         }
         else
         {

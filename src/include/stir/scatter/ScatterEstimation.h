@@ -117,6 +117,10 @@ public:
 
     //! Get current scatter estimate
     shared_ptr<ProjData> get_output() const;
+    
+    //!make projdata 2D shared pointer
+    shared_ptr<ProjData> make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr);
+    shared_ptr<ProjData> make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
 
     //!
     //! \brief set_up
