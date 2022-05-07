@@ -37,8 +37,13 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_OSMAPOSL.cxx
 )
 
+if (DOWNLOAD_ZENODO_TEST_DATA)
+    message(STATUS "Download Zenodo test data enabled.")
+else()
+    message(STATUS "Download Zenodo test data disabled.")
+endif()
+
 if (HAVE_CERN_ROOT)
-    OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" ON)
     if (DOWNLOAD_ZENODO_TEST_DATA)
         ## DOWNLOAD THE ROOT CONSISTENCY TEST DATA FROM ZENODO (root file and corresponding header)
         ## TOTAL SIZE: ~3MB
@@ -107,7 +112,7 @@ if (HAVE_CERN_ROOT)
 
     # Add test if the data is downloaded (only checking root_header_test1.hroot)
     if(EXISTS "${ROOT_STIR_consistency_data_dir}/root_header_test1.hroot")
-        list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_view_offset_root)
+        list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_view_offset_root.cxx)
         set(test_name test_view_offset_root)
         # test_view_offset_root requires working directory to be examples/ROOT_files/ROOT_STIR_consistency
         # for output files to be written there
