@@ -12,7 +12,7 @@ set(dir scripts)
 
 #set(dir_scripts ${dir}_SCRIPTS)
 
-set(dir_scripts1}
+set(dir_scripts1
   stir_subtract
   stir_divide
   stir_print_voxel_sizes.sh
