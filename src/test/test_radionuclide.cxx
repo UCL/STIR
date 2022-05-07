@@ -84,6 +84,24 @@ RadionuclideTest::run_tests()
   }
 
 #ifdef nlohmann_json_FOUND
+  std::cerr << "Testing Yttrium-90\n";
+  {
+    const auto Y90_rnuclide_SPECT = db.get_radionuclide(nm_mod, "^90^Yttrium");
+    std::cerr << "Y90 (SPECT) radionuclide: " << Y90_rnuclide_SPECT.parameter_info();
+    check_if_equal(Y90_rnuclide_SPECT.get_half_life(), 230549.76, "check on Y90 (SPECT) half-life");
+    check_if_equal(Y90_rnuclide_SPECT.get_energy(), 150.F, "check on Y90 (SPECT) energy");
+    check_if_equal(Y90_rnuclide_SPECT.get_branching_ratio(), 0.99983F, "check on Y90 (SPECT) branching ratio");
+    check(Y90_rnuclide_SPECT.get_modality() == nm_mod, "check on Y90 (SPECT) modality");
+
+    const auto Y90_rnuclide_PET = db.get_radionuclide(pt_mod, "^90^Yttrium");
+    std::cerr << "Y90 (PET) radionuclide: " << Y90_rnuclide_PET.parameter_info();
+    check_if_equal(Y90_rnuclide_PET.get_half_life(), 230549.76, "check on Y90 (PET) half-life");
+    check_if_equal(Y90_rnuclide_PET.get_energy(), 511.F, "check on Y90 (PET) energy");
+    check_if_equal(Y90_rnuclide_PET.get_branching_ratio(), 0.0000319F, "check on Y90 (PET) branching ratio");
+    check(Y90_rnuclide_PET.get_modality() == pt_mod, "check on Y90 (PET) modality");
+
+  }
+  
   std::cerr << "Testing lookup-table and database\n";
   {
     check(F18_rnuclide == db.get_radionuclide(pt_mod, "F-18"), "alias F-18");
