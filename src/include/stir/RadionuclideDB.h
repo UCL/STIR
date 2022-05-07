@@ -43,42 +43,37 @@
 
   This file is in JSON format. An example is distributed with STIR, a brief extract follows
   \verbatim
-{   "nuclide": 
+{
+    "nuclides": [
 
- {  "^18^Fluorine":
-
-  {  "modality": 
-    {   "PET":
-      {  "properties": [
-               {
-                "kev": 511,
-                "BRatio": 0.9686,
-                "half_life": 6584.04
-                }      ]
-      }
-    }
- },  
-
-   "^99m^Technetium":
-
-  {  "modality": 
-    {   "NM":
-      {  "properties": [
-               {
-                "kev": 140.511,
-                "BRatio": 0.885,
-                "half_life": 21624.12,
-                }       ]
-      }  
-    }
-  },
+        {
+            "name":  "^18^Fluorine",
+            "decays": [                
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.9686,
+                   "half_life": 6584.04
+                }
+            ]
+        },
+        {
+            "name": "^99m^Technetium",
+            "decays": [
+                {  "modality": "nucmed",
+                   "keV": 140.511,
+                   "branching_ratio": 0.885,
+                   "half_life": 21624.12
+                }
+            ]
+            
+        },
       # more entries like the above
-   }
+   ]
 }
 
 \endverbatim
 
-  \par Format of the radionuclide database
+  \par Format of the radionuclide name look-up database
 
   This file is in JSON format. An example is distributed with STIR, a brief extract follows
   \verbatim
@@ -87,6 +82,7 @@
      [ "^11^Carbon", "11C", "C-11" ]
 ]
   \endverbatim
+  The first name is the one that will be used to find an entry in the radionuclide database.
 
   Note that both files need to have the same number of radionuclides..
 */

@@ -55,9 +55,9 @@ read_from_file(const std::string& arg)
   //  radionuclide_json.parse(json_file_stream);
   //  
     
-    if (radionuclide_json.find("nuclide") == radionuclide_json.end())
+    if (radionuclide_json.find("nuclides") == radionuclide_json.end())
     {
-      error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclide\" in file \""
+      error("RadionuclideDB: No or incorrect JSON radionuclide set (could not find \"nuclides\" in file \""
             + this->database_filename + "\")");
     }
 #else
@@ -85,7 +85,7 @@ get_radionuclide_name_from_lookup_table(const std::string& rname) const
   json_file_stream >> table_json;
     
 //    Check that lookup table and database have the same number of elements
-    if (radionuclide_json["nuclide"].size() != table_json.size())
+    if (radionuclide_json["nuclides"].size() != table_json.size())
         error("The lookup table and the radionuclide database do not have the same number of elements. " 
               "If you added a radionuclide you also need to add the same in the lookup table");
     
@@ -116,11 +116,11 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
   float  h_life ;
   float branching_ratio;
   
+#ifdef nlohmann_json_FOUND
   info("RadionuclideDB: finding record radionuclide: " + rname+
        " in file "+ this->database_filename);
-#ifdef nlohmann_json_FOUND
-  //Extract appropriate chunk of JSON file for given nuclide.
-  //nlohmann::json target = radionuclide_json["nuclide"][name]["modality"][rmodality.get_name()]["properties"];
+
+  // convert modality string
   std::string modality_string;
   switch (rmodality.get_modality())
     {
@@ -133,80 +133,96 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
       return Radionuclide();
     }
 
-  auto rnuclide_entry = radionuclide_json["nuclide"].find(name);
-  if (rnuclide_entry == radionuclide_json["nuclide"].end())
+  //Extract appropriate chunk of JSON file for given nuclide.
+  auto all_nuclides = radionuclide_json["nuclides"];
+  auto rnuclide_entry = all_nuclides.end();
+  try
+    {
+      rnuclide_entry = std::find_if(all_nuclides.begin(), all_nuclides.end(),
+                                    [&rname](const nlohmann::json::reference& entry)
+                                    { return entry.at("name") == rname; });
+    }
+  catch (...)
+    {
+      error("RadionucldeDB: \"name\" keyword not found for at least one entry in the database. JSON database malformed.");
+      return Radionuclide(); // add return to avoid compiler warning
+    }
+
+  if (rnuclide_entry == all_nuclides.end())
     {
       warning("RadionuclideDB: radionuclide " + rname + " not found in JSON database. Returning \"unknown\" radionuclide.");
       return Radionuclide();
     }
-  auto rnuclide_entry2 = (*rnuclide_entry)["modality"].find(modality_string);
-  if (rnuclide_entry2 == (*rnuclide_entry)["modality"].end())
-    {
-     warning("RadionuclideDB: radionuclide " + rname + " modality " + modality_string + " not found in JSON database. Returning \"unknown\" radionuclide.");
-      return Radionuclide();
-    }
-  auto rnuclide_entry3 = rnuclide_entry2->find("properties");
-  if (rnuclide_entry3 == rnuclide_entry2->end())
-    {
-      warning("RadionuclideDB: radionuclide " + rname + " modality " + modality_string + " found but properties not in JSON database. Returning \"unknown\" radionuclide.");
-      return Radionuclide();
-    }
-  auto& target = *rnuclide_entry3;
 
-  int location = -1;
-  int pos = 0;
-  for (auto entry : target){
-      location = pos;
-    pos++;
-  }
-
-  if (location == -1)
+  nlohmann::json decays;
+  try
     {
-      warning("RadionuclideDB: Desired radionuclide not found! Returning \"unknown\" radionuclide.");
+      decays = rnuclide_entry->at("decays");
+    }
+  catch (...)
+    {
+      error("\"decays\" keyword not found for radionuclide " + rname + ". JSON database malformed.");
+      return Radionuclide(); // return to avoid compiler warning
+    }
+  auto decay_entry = decays.end();
+  try
+    {
+      decay_entry = std::find_if(decays.begin(), decays.end(),
+                                 [&modality_string](const nlohmann::json::reference& entry)
+                                 { return entry.at("modality") == modality_string; });
+    }
+  catch (...)
+    {
+      error("RadionucldeDB: \"modality\" keyword not found for at least one entry of radionuclide " + rname + ". JSON database malformed.");
+      return Radionuclide(); // add return to avoid compiler warning
+    }
+        
+  if (decay_entry == decays.end())
+    {
+      warning("RadionuclideDB: radionuclide " + rname + ": modality " + modality_string + " not found in JSON database. Returning \"unknown\" radionuclide.");
       return Radionuclide();
     }
 
   //Extract properties for specific nuclide and modality.
-  nlohmann::json properties = target[location];
-  {
-    std::stringstream str;
-    str << properties.dump(6);
-    info("RadionuclideDB: JSON record found:" + str.str(),2);
-  }
+  const auto properties = *decay_entry;
+  info("RadionuclideDB: JSON record found:" + properties.dump(6),2);
+
   try
     {
-      keV = properties["keV"];
+      keV = properties.at("keV");
     }
   catch (...)
     {
-      error("RadionuclideDB: energy not set for " + rname);
+      error("RadionuclideDB: energy not set for " + rname + " with modality " + modality_string);
     }
   try
     {
-  branching_ratio = properties["branching_ratio"];
+      branching_ratio = properties.at("branching_ratio");
     }
   catch (...)
     {
-      error("RadionuclideDB: branching_ratio not set for " + rname);
+      error("RadionuclideDB: branching_ratio not set for " + rname + " with modality " + modality_string);
     }
   try
     {
-      h_life = properties["half_life"];
+      h_life = properties.at("half_life");
     }
   catch (...)
     {
-      error("RadionuclideDB: half_life not set for " + rname);
+      error("RadionuclideDB: half_life not set for " + rname + " with modality " + modality_string);
     }
-  
+
   Radionuclide rnuclide(rname,
                         keV,
                         branching_ratio,
                         h_life,
                         rmodality);
-  
+
   return rnuclide;
+
 #else
   error("Internal error: RadioNuclideDB::get_radionuclide_from_json should never be called when JSON support is not enabled.");
+  return Radionuclide(); // return to avoid compiler warning
 #endif
 }
 
