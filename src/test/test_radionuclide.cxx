@@ -105,7 +105,7 @@ RadionuclideTest::run_tests()
   std::cerr << "Testing lookup-table and database\n";
   {
     check(F18_rnuclide == db.get_radionuclide(pt_mod, "F-18"), "alias F-18");
-    check(F18_rnuclide == db.get_radionuclide(pt_mod, "F-18"), "alias 18F");
+    check(F18_rnuclide == db.get_radionuclide(pt_mod, "18F"), "alias 18F");
     check(Tc99m_rnuclide == db.get_radionuclide(nm_mod, "Tc-99m"), "alias Tc-99m");
     check(Tc99m_rnuclide == db.get_radionuclide(nm_mod, "99mTc"), "alias 99mTc");
     check_if_equal(db.get_radionuclide(pt_mod, "^11^Carbon").get_half_life(), 1221.66F,
