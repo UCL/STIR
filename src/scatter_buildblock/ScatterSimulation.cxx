@@ -232,7 +232,7 @@ ScatterSimulation::set_defaults()
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
     this->downsample_scanner_bool = false;
-    this->downsample_scanner_dets = 64;
+    this->downsample_scanner_dets = -1;
     this->downsample_scanner_rings = -1;
     this->density_image_filename = "";
     this->activity_image_filename = "";

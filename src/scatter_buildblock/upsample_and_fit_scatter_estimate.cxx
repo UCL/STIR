@@ -62,6 +62,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   if(emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
   {
       bool remove_interleaving_block=false;
+      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
       interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving_block);
   }
   else
