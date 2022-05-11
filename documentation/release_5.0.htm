@@ -41,7 +41,11 @@ detailed below.
       However, there is now an option to create subsets with <code>ProjData::get_subset</code> which only store a subset of views and so are more memory efficient when subsets might be handled separately.
       <code>ProjDataInfoSubsetByView</code> currently does not support file I/O.
   </li>
-  <li> <tt>ROOT</tt> files produced by <tt>GATE</tt> can now be interpreted using ``virtual crystals", see <a href="https://github.com/UCL/STIR/pull/617/">PR #617</a>.
+  <li>Support for <tt>ROOT</tt> files produced by <tt>GATE</tt>:
+    <ul>
+      <li>can now be interpreted using ``virtual crystals", see <a href="https://github.com/UCL/STIR/pull/617/">PR #617</a>.</li>
+      <li>rotational changes to STIR's interface to ROOT files, breaking compatibility with 4.x (see below).</li>
+    </ul>
   </li>
   <li>A calibration factor can be applied in the normalisation with a new <code>BinNormalisation</code> derived class <code>BinNormalisationWithCalibration</code>; 
 	  Interfile now reads/writes isotope name and calibration factor. See <a href=https://github.com/UCL/STIR/pull/672>PR 672</a>.
@@ -76,7 +80,7 @@ improvements to the documentation.
 <h2>Patch release info</h2>
 <ul>
   <li> 5.0.0 released 23/03/2022</li>
-  <li> 5.0.1 released ???
+  <li> 5.0.1 released 11/05/2022</li>
     <ul>
       <li><a href=https://github.com/UCL/STIR/pull/1019>PR 1019</a>: fixes for SWIG and hence Python interface.
       </li>
@@ -85,6 +89,11 @@ improvements to the documentation.
         and <a href=https://github.com/UCL/STIR/pull/1016>PR #1016</a>:
         rotational changes to STIR's interface to ROOT files, breaking compatibility with 4.x (and 5.0.0 but this was broken).
         See below for more information.
+      </li>
+      <li>
+        <a href=https://github.com/UCL/STIR/pull/1026>PR #1026</a>:
+        various fixes to the radionuclide database code. WARNING: This PR changed the file format for
+        <tt>radionuclide_info.json</tt> file to be more future proof.
       </li>
     </ul>
   </li>
@@ -297,10 +306,7 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 
 
 <h3>Known problems</h3>
-<ul>
-<li>
-</li>
-</ul>
+See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
 
 <h3>Minor bug fixes</h3>
 <ul>
