@@ -118,7 +118,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
   
 #ifdef nlohmann_json_FOUND
   info("RadionuclideDB: finding record radionuclide: " + rname+
-       " in file "+ this->database_filename);
+       " in file "+ this->database_filename, 3);
 
   // convert modality string
   std::string modality_string;
@@ -185,7 +185,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
 
   //Extract properties for specific nuclide and modality.
   const auto properties = *decay_entry;
-  info("RadionuclideDB: JSON record found:" + properties.dump(6),2);
+  info("RadionuclideDB: JSON record found:" + properties.dump(6), 3);
 
   try
     {
