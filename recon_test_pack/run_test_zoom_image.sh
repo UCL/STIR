@@ -168,7 +168,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '{ print $2}'`
+org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 ./simulate_data.sh my_zoom_test4.hv my_atten_image.hv ${template_sino} 0
 if [ $? -ne 0 ]; then
@@ -176,7 +176,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '{ print $2}'`
+new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then
