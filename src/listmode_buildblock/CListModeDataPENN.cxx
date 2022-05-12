@@ -54,7 +54,7 @@ CListModeDataPENN(const std::string& listmode_filename)
     if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
         error(boost::format("CListModeDataPENN: Unknown value for originating_system keyword: '%s") % originating_system );
 
-    proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+    proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                                                               1,
                                                                                                               this_scanner_sptr->get_num_rings()-1,
                                                                                                               this_scanner_sptr->get_num_detectors_per_ring()/2,
@@ -63,7 +63,7 @@ CListModeDataPENN(const std::string& listmode_filename)
                                                                                                           #ifdef STIR_TOF
                                                                                                               ,1
                                                                                                           #endif
-                                                                                                              )->create_shared_clone());
+                                                                                                              );
 }
 
 std::string
