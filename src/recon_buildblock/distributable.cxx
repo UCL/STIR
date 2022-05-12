@@ -627,7 +627,7 @@ std::vector<float>measured_div_fwd;
 #pragma omp for schedule(runtime)
 #else
         {
-            std::cerr << "Starting loop with " << 1 << " threads\n";
+           info("Starting loop with 1 thread", 2);
             local_output_image_sptrs.resize(1, shared_ptr<DiscretisedDensity<3,float> >());
             //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
             local_counts.resize(1, 0);
