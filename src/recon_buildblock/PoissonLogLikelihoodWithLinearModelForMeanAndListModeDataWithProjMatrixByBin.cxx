@@ -467,6 +467,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   #else
 
             ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
+            if (is_null_ptr(add))
+               error("Additive projection data is in unsupported file format for the caching. You need to create an Interfile copy. sorry.");
 
             while (true)
             {
