@@ -41,8 +41,7 @@ create_output_file(std::string ofilename)
 
     if ( !list::encodeHeader( *outputList, listHeader ) )
     {
-        std::cerr << "error: cannot write header to output list\n";
-        std::exit( EXIT_FAILURE );
+       error("cannot write header to output list");
     }
     out = new list::OutputBuffer(*outputList, eventSize );
     has_output = true;
