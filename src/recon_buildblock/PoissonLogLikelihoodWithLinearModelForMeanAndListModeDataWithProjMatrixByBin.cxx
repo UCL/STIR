@@ -711,7 +711,6 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
     if (cache_lm_file)
     {
-        std::cout << "Nikos 11 " << std::endl;
         VectorWithOffset<ListModeData::SavedPosition>
                 frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
