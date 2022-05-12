@@ -375,7 +375,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
                               | std::ios::ate);
 
-            unsigned long int num_of_records = fin.tellg()/sizeof (BinAndCorr);
+            unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
             record_cache.reserve(num_of_records);
 
             fin.clear();
@@ -384,7 +384,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             while(!fin.eof())
             {
                 BinAndCorr tmp;
-                fin.read((char*)&tmp, sizeof(BinAndCorr));
+                fin.read((char*)&tmp, sizeof(Bin));
                 if (with_add)
                 {
                     tmp.my_corr = tmp.my_bin.get_bin_value();
@@ -548,10 +548,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 //fout.write((char*)&student[0], student.size() * sizeof(Student));
                 for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
                 {
-                    BinAndCorr tmp = record_cache.at(ie);
+                    Bin tmp = record_cache.at(ie).my_bin;
                     if(with_add)
-                      tmp.my_bin.set_bin_value(tmp.my_corr);
-                    fin.write((char*)&tmp, sizeof(BinAndCorr));
+                      tmp.set_bin_value(record_cache.at(ie).my_corr);
+                    fin.write((char*)&tmp, sizeof(Bin));
                 }
                 fin.close();
             }
