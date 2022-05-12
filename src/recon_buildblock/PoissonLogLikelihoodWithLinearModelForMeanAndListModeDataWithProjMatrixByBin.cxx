@@ -462,7 +462,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         else // With additive correction we should be interpolating the TOF positions.
         {
   #ifdef STIR_TOF
-
+         // TODO
+         error("listmode processing with caching is not yet supported for TOF");
   #else
 
             ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
