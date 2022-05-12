@@ -25,7 +25,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \brief Abstract class for reading listmode files from the PENNPet Explorer scanner.
+  \brief Base class for reading listmode files from the PENNPet Explorer scanner.
   \ingroup IO
 
   \par abrupt_stop is a lower level counter to make the listmode operations be more consistent on

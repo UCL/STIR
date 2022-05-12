@@ -26,6 +26,7 @@ InputStreamWithRecordsFromUPENNtxt::
 InputStreamWithRecordsFromUPENNtxt():
     base_type()
 {
+    error("The text variant of the listmode files has several pending TODOs. Don't use right now.");
     set_defaults();
 }
 
@@ -58,32 +59,42 @@ get_next_record(CListRecordPENN& record)
     int ea = 0;
     int eb = 0;
     bool is_delay = false;
+    bool found = false;
 
-//#ifdef STIR_OPENMP
-//#pragma omp critical(LISTMODEIO)
-//#endif
+#ifdef STIR_OPENMP
+#pragma omp critical(LISTMODEIO)
+#endif
     while(true)
     {
         std::getline(*stream_ptr, *line);
 
         if (stream_ptr->eof())
-            return Succeeded::no;
+        {
+            found = false;
+            break;
+        }
         else if (stream_ptr->bad())
         {
             warning("InputStreamWithRecordsFromUPENNtxt: Error after reading from list mode stream in get_next_record");
-            return Succeeded::no;
+            found = false;
+            break;
         }
         else if (keep_prompt == true && line->at(0)=='p')
         {
             is_delay = false;
+            found = true;
             break;
         }
         else if (keep_delayed == true && line->at(0)=='d')
         {
             is_delay = true;
+            found = true;
             break;
         }
     }
+
+    if(!found)
+        return Succeeded::no;
 
     std::istringstream iss(*line);
     std::vector<std::string> results((std::istream_iterator<std::string>(iss)),

@@ -162,9 +162,9 @@ method_info() const
 void
 InputStreamWithRecordsFromUPENNbin::set_record(const uint8_t* e)
 {
-//#ifdef STIR_OPENMP
-//#pragma omp critical(LISTMODEIO)
-//#endif
+#ifdef STIR_OPENMP
+#pragma omp critical(LISTMODEIO)
+#endif
     {
         out->put(e);
     }

@@ -92,7 +92,7 @@ protected:
     virtual bool post_processing();
 
 private:
-    shared_ptr<std::istream> stream_ptr;
+    shared_ptr<std::istream> stream_ptr = nullptr;
 
     std::streampos starting_stream_position;
 

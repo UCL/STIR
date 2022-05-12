@@ -135,7 +135,7 @@ class Scanner
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa,
 	     Discovery690, DiscoveryMI3ring, DiscoveryMI4ring, DiscoveryMI5ring,
          HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype,
-             UPENN_5rings, UPENN_5rings_no_gaps,
+             UPENN_5rings, UPENN_5rings_no_gaps, UPENN_6rings, UPENN_6rings_no_gaps,
          User_defined_scanner,
 	     Unknown_scanner};
 
