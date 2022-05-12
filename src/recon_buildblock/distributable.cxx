@@ -624,7 +624,7 @@ std::vector<float>measured_div_fwd;
             local_row.resize(omp_get_max_threads(), ProjMatrixElemsForOneBin());
         }
 
-#pragma omp for schedule(runtime)
+#pragma omp for schedule(dynamic)
 #else
         {
            info("Starting loop with 1 thread", 2);
