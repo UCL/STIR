@@ -187,7 +187,7 @@ InputStreamWithRecordsFromUPENNbin::set_new_record(const bool& d,
     list::EventCodec out_event(eventFormat);
 
     int la = 0, lb = 0;
-    uint8_t* e = new uint8_t[8];
+    std::uint8_t e[8];
     out_event.init(e, d,
                    static_cast<int>(_dt),
                    la, lb,
