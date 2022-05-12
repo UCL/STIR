@@ -138,9 +138,7 @@ std::string
 InputStreamWithRecordsFromUPENNtxt::
 method_info() const
 {
-    std::ostringstream s;
-    s << this->registered_name;
-    return s.str();
+    return this->registered_name;
 }
 
 void
