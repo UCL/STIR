@@ -138,9 +138,7 @@ protected:
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
 
   //! Cache of the listmode file
-  std::vector<Bin>  record_cache;
-  //! Cache for additive corrections.
-  std::vector<float> additive_cache;
+  std::vector<BinAndCorr>  record_cache;
   //! This is the number of records to be cached. If this parameter is more than zero, then the
   //! flag cache_lm_file will be set to true. The listmode file up to this size will be loaded in
   //! the RAM, alongside with any additive sinograms.
@@ -153,7 +151,10 @@ protected:
   //! need to be supported!
   bool recompute_cache;
   //! The additive sinogram will not be read in memory
-  bool long_axial_fov;
+  bool reduce_memory_usage;
+  //! If you know, or have previously checked that the number of subsets is balanced for your
+  //! Scanner geometry, you can skip future checks.
+  bool skip_balanced_subsets;
 };
 
 END_NAMESPACE_STIR

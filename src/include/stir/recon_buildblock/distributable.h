@@ -27,6 +27,7 @@
   \author PARAPET project
 */
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -42,7 +43,6 @@ class ForwardProjectorByBin;
 class BackProjectorByBin;
 class ProjectorByBinPair;
 class DistributedCachingInformation;
-class Bin;
 class ProjMatrixByBin;
 
 //! \name Task-ids currently understood by stir::DistributedWorker
@@ -186,9 +186,9 @@ void LM_distributable_computation(
         const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
         DiscretisedDensity<3,float>* output_image_ptr,
         const DiscretisedDensity<3,float>* input_image_ptr,
-        const std::vector<Bin>& record_ptr,
-        int subset_num, int num_subsets,
-        const std::vector<float>* additive_binwise_correction);
+        const std::vector<BinAndCorr>& record_ptr,
+        const int subset_num, const int num_subsets,
+        const bool has_add);
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0
      \ingroup distributable

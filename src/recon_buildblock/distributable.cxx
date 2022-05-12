@@ -581,9 +581,9 @@ void LM_distributable_computation(
         const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
         DiscretisedDensity<3,float>* output_image_ptr,
         const DiscretisedDensity<3,float>* input_image_ptr,
-        const std::vector<Bin>& record_ptr,
-        int subset_num, int num_subsets,
-        const std::vector<float>* additive_binwise_correction)
+        const std::vector<BinAndCorr>& record_ptr,
+        const int subset_num, const int num_subsets,
+        const bool has_add)
 {
 
     CPUTimer CPU_timer;
@@ -647,8 +647,8 @@ std::vector<float>measured_div_fwd;
 #else
             const int thread_num=0;
 #endif
-//            local_measured_bin[thread_num].set_bin_value(1.0f);
-            local_measured_bin[thread_num] = record_ptr.at(ievent);
+
+            local_measured_bin[thread_num] = record_ptr.at(ievent).my_bin;
 
             if (local_measured_bin[thread_num].get_bin_value() == 0.0f)
                 continue;
@@ -671,10 +671,10 @@ std::vector<float>measured_div_fwd;
             local_fwd_bin[thread_num].set_bin_value(0.0f);
             local_row[thread_num].forward_project(local_fwd_bin[thread_num], *input_image_ptr);
 
-            if (!is_null_ptr(additive_binwise_correction))
+            if (has_add)
             {
                 local_fwd_bin[thread_num].set_bin_value(
-                            local_fwd_bin[thread_num].get_bin_value() + additive_binwise_correction->at(ievent));
+                            local_fwd_bin[thread_num].get_bin_value() + record_ptr.at(ievent).my_corr);
             }
 
             measured_div_fwd[thread_num] = 0.0;
@@ -695,7 +695,7 @@ std::vector<float>measured_div_fwd;
         }
     }
 #ifdef STIR_OPENMP
-    // "reduce" data constructed by threads
+    // flatten data constructed by threads
     {
         if (output_image_ptr != NULL)
         {
