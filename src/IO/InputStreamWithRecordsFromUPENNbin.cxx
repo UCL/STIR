@@ -207,8 +207,7 @@ set_up()
     {
         if ( !inputListFile.open( filename.c_str(), std::ios_base::in | std::ios_base::binary ) )
         {
-            std::cerr << "error: cannot open file " << filename.c_str() << '\n';
-            std::exit( EXIT_FAILURE );
+            error("cannot open file " + filename);
         }
 
         inputList = &inputListFile;
