@@ -232,7 +232,7 @@ ScatterSimulation::set_defaults()
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
     this->downsample_scanner_bool = false;
-    this->downsample_scanner_dets = -1;
+    this->downsample_scanner_dets = 64;
     this->downsample_scanner_rings = -1;
     this->density_image_filename = "";
     this->activity_image_filename = "";
@@ -837,15 +837,19 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 
     const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
-    // preserve the length of the scanner the following includes gaps
-    float scanner_length = new_scanner_sptr->get_num_axial_buckets()*
-            new_scanner_sptr->get_num_axial_blocks_per_bucket()*
-            new_scanner_sptr->get_axial_block_spacing();
+    // preserve the length of the scanner the following includes no gaps
+    float scanner_length; 
+    scanner_length = new_scanner_sptr->get_num_rings()*
+            new_scanner_sptr->get_ring_spacing();
 
     new_scanner_sptr->set_num_rings(new_num_rings);
     //make a downsampled scanner with no gaps for blocksOnCylindrical
     if (new_scanner_sptr->get_scanner_geometry()=="BlocksOnCylindrical"){
         
+        // preserve the length of the scanner the following includes gaps
+        scanner_length = new_scanner_sptr->get_num_axial_buckets()*
+                new_scanner_sptr->get_num_axial_blocks_per_bucket()*
+                new_scanner_sptr->get_axial_block_spacing();
         new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
         new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
         
