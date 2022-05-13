@@ -90,6 +90,7 @@ set_defaults()
   cache_lm_file = false;
   recompute_cache = false;
   skip_balanced_subsets = false;
+  cache_path = "";
 } 
  
 template <typename TargetT> 
@@ -106,6 +107,7 @@ initialise_keymap()
 
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
   this->parser.add_key("max cache size", &cache_size);
+  this->parser.add_key("cache path", &cache_path);
   this->parser.add_key("recompute cache", &recompute_cache);
   this->parser.add_key("reduce memory usage", &reduce_memory_usage);
   this->parser.add_key("skip checking balanced subsets", &skip_balanced_subsets);
@@ -362,7 +364,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 {
     if(!recompute_cache && cache_lm_file)
     {
-        std::string curr_dir = FilePath::get_current_working_directory();
+
+        std::string curr_dir;
+        if (cache_path.size() > 0)
+            curr_dir = cache_path;
+        else
+            curr_dir = FilePath::get_current_working_directory();
         std::string cache_filename = "my_CACHE00.bin";
         FilePath icache(cache_filename, false);
         icache.prepend_directory_name(curr_dir);

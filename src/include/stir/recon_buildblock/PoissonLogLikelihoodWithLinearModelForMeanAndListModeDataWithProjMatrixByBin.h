@@ -155,6 +155,8 @@ protected:
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;
+  //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
+  std::string cache_path;
 };
 
 END_NAMESPACE_STIR
