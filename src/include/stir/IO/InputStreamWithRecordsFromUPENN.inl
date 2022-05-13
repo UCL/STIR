@@ -1,4 +1,11 @@
+/*
+ *  Copyright (C) 2020-2022 University of Pennsylvania
+    This file is part of STIR.
 
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
 START_NAMESPACE_STIR
 
 std::vector<std::streampos>
