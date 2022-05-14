@@ -23,7 +23,7 @@
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
-//! A class that reads the listmode data for PENNPET Explorer scanner in text format.
+//! Base class for listmode data for PENNPET Explorer scanner
 class CListModeDataPENN : public CListModeData
 {
 public:
