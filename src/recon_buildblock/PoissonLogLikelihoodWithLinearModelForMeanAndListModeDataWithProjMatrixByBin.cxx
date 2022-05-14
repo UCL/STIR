@@ -488,7 +488,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 {
 
                     num_threads = omp_get_num_threads();
-                    info("Caching add background with " + sd::to_string(omp_get_num_threads()) + " threads");
+                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
                 }
             }
 #endif
