@@ -26,9 +26,11 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
+#include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
+#include "stir/recon_buildblock/distributable.h"
 START_NAMESPACE_STIR
 
 
@@ -101,6 +103,9 @@ protected:
  
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+
+  //! This function caches the listmode file. It is run during post-processing.
+  bool cache_listmode_file();
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
@@ -110,10 +115,10 @@ protected:
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
-  shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> projector_pair_sptr;
+  shared_ptr<ProjectorByBinPair> projector_pair_sptr;
 
   //! points to the additive projection data
-  shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
+  shared_ptr<ProjData> additive_proj_data_sptr;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
@@ -131,6 +136,27 @@ protected:
 
   void
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
+
+  //! Cache of the listmode file
+  std::vector<BinAndCorr>  record_cache;
+  //! This is the number of records to be cached. If this parameter is more than zero, then the
+  //! flag cache_lm_file will be set to true. The listmode file up to this size will be loaded in
+  //! the RAM, alongside with any additive sinograms.
+  unsigned long int cache_size;
+  //! This flag is true when cache_size is more than zero.
+  bool cache_lm_file;
+  //! On the first cached run, the cache will be written in the working path of the reconstruction.
+  //! If recompute_cache is set to zero then every consecutive reconstruction will use that cache file.
+  //! If you want to create a new, either delete the previous or set this 1. \todo multiple cache files
+  //! need to be supported!
+  bool recompute_cache;
+  //! The additive sinogram will not be read in memory
+  bool reduce_memory_usage;
+  //! If you know, or have previously checked that the number of subsets is balanced for your
+  //! Scanner geometry, you can skip future checks.
+  bool skip_balanced_subsets;
+  //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
+  std::string cache_path;
 };
 
 END_NAMESPACE_STIR

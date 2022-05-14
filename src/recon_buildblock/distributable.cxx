@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011, Hammersmith Imanet Ltd
     Copyright (C) 2013-2014, University College London
+    Copyright (C) 2022, Univeristy of Pennsylvania
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,6 +16,7 @@
 
   \brief Implementation of stir::distributable_computation() and related functions
 
+  \author Nikos Efthimiou
   \author Kris Thielemans  
   \author Alexey Zverovich 
   \author Matthew Jacobson
@@ -50,6 +52,10 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <algorithm>
+
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/Bin.h"
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
@@ -568,6 +574,142 @@ void distributable_computation(
   wall_clock_timer.stop();
   info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s") 
        % CPU_timer.value() % wall_clock_timer.value());
+}
+
+void LM_distributable_computation(
+        const shared_ptr<ProjMatrixByBin> PM_sptr,
+        const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+        DiscretisedDensity<3,float>* output_image_ptr,
+        const DiscretisedDensity<3,float>* input_image_ptr,
+        const std::vector<BinAndCorr>& record_ptr,
+        const int subset_num, const int num_subsets,
+        const bool has_add)
+{
+
+    CPUTimer CPU_timer;
+    CPU_timer.start();
+    HighResWallClockTimer wall_clock_timer;
+    wall_clock_timer.start();
+
+    assert(!record_ptr.empty());
+
+    const float max_quotient = 10000.F;
+
+    if (output_image_ptr != NULL)
+      output_image_ptr->fill(0.F);
+
+std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
+std::vector<double> local_log_likelihoods;
+std::vector<int> local_counts, local_count2s;
+std::vector<Bin> local_measured_bin, local_basic_bin, local_fwd_bin;
+std::vector<ProjMatrixElemsForOneBin> local_row;
+std::vector<float>measured_div_fwd;
+#ifdef STIR_OPENMP
+#pragma omp parallel shared(local_output_image_sptrs,local_row, local_log_likelihoods, local_counts, local_count2s, local_measured_bin, local_fwd_bin)
+#endif
+    // start of threaded section if openmp
+    {
+#ifdef STIR_OPENMP
+#pragma omp single
+        {
+            std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n";
+            local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+            //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
+            local_counts.resize(omp_get_max_threads(), 0);
+            local_count2s.resize(omp_get_max_threads(), 0);
+            measured_div_fwd.resize(omp_get_max_threads(), 0.f);
+            local_measured_bin.resize(omp_get_max_threads(), Bin());
+            local_basic_bin.resize(omp_get_max_threads(), Bin());
+            local_fwd_bin.resize(omp_get_max_threads(), Bin());
+            local_row.resize(omp_get_max_threads(), ProjMatrixElemsForOneBin());
+        }
+
+#pragma omp for schedule(dynamic)
+#else
+        {
+           info("Starting loop with 1 thread", 2);
+            local_output_image_sptrs.resize(1, shared_ptr<DiscretisedDensity<3,float> >());
+            //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
+            local_counts.resize(1, 0);
+            local_count2s.resize(1, 0);
+            measured_div_fwd.resize(1, 0.f);
+            local_measured_bin.resize(1, Bin());
+            local_basic_bin.resize(1, Bin());
+            local_fwd_bin.resize(1, Bin());
+            local_row.resize(1, ProjMatrixElemsForOneBin());
+        }
+#endif
+        // Putting the Bins here I avoid rellocation.
+        for (long int ievent = 0; ievent < record_ptr.size(); ++ievent)
+        {
+#ifdef STIR_OPENMP
+            const int thread_num = omp_get_thread_num();
+#else
+            const int thread_num=0;
+#endif
+
+            local_measured_bin[thread_num] = record_ptr.at(ievent).my_bin;
+
+            if (local_measured_bin[thread_num].get_bin_value() == 0.0f)
+                continue;
+
+            if (num_subsets > 1)
+            {
+                local_basic_bin[thread_num] = local_measured_bin[thread_num];
+                if (!PM_sptr->get_symmetries_ptr()->is_basic(local_measured_bin[thread_num]) )
+                    PM_sptr->get_symmetries_ptr()->find_basic_bin(local_basic_bin[thread_num]);
+
+                if (subset_num != static_cast<int>(local_basic_bin[thread_num].view_num() % num_subsets))
+                {
+                    continue;
+                }
+            }
+
+            PM_sptr->get_proj_matrix_elems_for_one_bin(local_row[thread_num],
+                                                              local_measured_bin[thread_num]);
+
+            local_fwd_bin[thread_num].set_bin_value(0.0f);
+            local_row[thread_num].forward_project(local_fwd_bin[thread_num], *input_image_ptr);
+
+            if (has_add)
+            {
+                local_fwd_bin[thread_num].set_bin_value(
+                            local_fwd_bin[thread_num].get_bin_value() + record_ptr.at(ievent).my_corr);
+            }
+
+            measured_div_fwd[thread_num] = 0.0;
+
+            if (output_image_ptr != NULL)
+            {
+                if(is_null_ptr(local_output_image_sptrs[thread_num]))
+                    local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
+            }
+
+            if ( local_measured_bin[thread_num].get_bin_value() <= max_quotient *local_fwd_bin[thread_num].get_bin_value())
+                measured_div_fwd[thread_num] = local_measured_bin[thread_num].get_bin_value() /local_fwd_bin[thread_num].get_bin_value();
+            else
+                continue;
+
+            local_measured_bin[thread_num].set_bin_value(measured_div_fwd[thread_num]);
+            local_row[thread_num].back_project(*local_output_image_sptrs[thread_num], local_measured_bin[thread_num]);
+        }
+    }
+#ifdef STIR_OPENMP
+    // flatten data constructed by threads
+    {
+        if (output_image_ptr != NULL)
+        {
+            for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
+                if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+                    *output_image_ptr += *(local_output_image_sptrs[i]);
+        }
+
+    }
+#endif
+    CPU_timer.stop();
+    wall_clock_timer.stop();
+    info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s")
+         % CPU_timer.value() % wall_clock_timer.value());
 }
 
 END_NAMESPACE_STIR
