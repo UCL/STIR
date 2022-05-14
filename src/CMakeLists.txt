@@ -42,6 +42,13 @@ else()
     message(STATUS "CERN ROOT support disabled.")
 endif()
 
+if (UPENN_FOUND)
+	set(HAVE_UPENN ON)
+	message(STATUS "UPENN libs support enabled.")
+else()
+	message(STATUS "UPENN libs support disabled.")
+endif()
+
 if (AVW_FOUND)
   set(HAVE_AVW ON)
   message(STATUS "AVW library IO added.")

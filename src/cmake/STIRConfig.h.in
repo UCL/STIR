@@ -53,6 +53,8 @@ namespace stir {
 
 #cmakedefine HAVE_CERN_ROOT
 
+#cmakedefine HAVE_UPENN
+
 #cmakedefine HAVE_AVW
 
 #cmakedefine HAVE_RDF

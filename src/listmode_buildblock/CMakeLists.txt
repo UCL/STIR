@@ -32,6 +32,12 @@ if (HAVE_ECAT)
   )
 endif()
 
+if (HAVE_UPENN)
+	list(APPEND ${dir_LIB_SOURCES}
+	CListModeDataPENN.cxx
+	CListRecordPENN.cxx)
+endif()
+
 if (HAVE_CERN_ROOT)
 	list(APPEND ${dir_LIB_SOURCES}
 		CListModeDataROOT.cxx

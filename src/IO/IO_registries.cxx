@@ -67,6 +67,12 @@
 #include "stir/IO/InputStreamFromROOTFileForECATPET.h"
 #endif
 
+#ifdef HAVE_UPENN
+#include "stir/IO/PENNListmodeInputFileFormat.h"
+#include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
+#include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
+#endif
+
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/ITKImageInputFileFormat.h"
@@ -96,6 +102,8 @@ static RegisterInputFileFormat<ROOTListmodeInputFileFormat> LMdummyROOT(6);
 static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
 static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
 #endif
+
+
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
@@ -140,6 +148,14 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdu
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
 #ifdef HAVE_HDF5
 static RegisterInputFileFormat<GE::RDF_HDF5::GEHDF5ListmodeInputFileFormat> LMdummyGEHDF5(7);
+#endif
+
+#ifdef HAVE_UPENN
+static RegisterInputFileFormat<PENNListmodeInputFileFormat> LMdummyPENN(8);
+static InputStreamWithRecordsFromUPENNbin::RegisterIt dummy68606;
+static InputStreamWithRecordsFromUPENNtxt::RegisterIt dummy686062;
+//static RegisterInputFileFormat<PENNbinListmodeInputFileFormat> LMdummyPENNbin(9);
+//static RegisterInputFileFormat<PENNImageInputFileFormat> idummy1(2);
 #endif
 
 END_NAMESPACE_STIR

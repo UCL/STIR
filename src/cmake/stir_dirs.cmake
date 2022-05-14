@@ -88,6 +88,10 @@ if (HAVE_ECAT)
   list(APPEND STIR_DIRS utilities/ecat)
 endif()
 
+if (HAVE_UPENN)
+  list(APPEND STIR_DIRS utilities/UPENN)
+endif()
+
 
 SET( STIR_TEST_DIRS
      recon_test  
