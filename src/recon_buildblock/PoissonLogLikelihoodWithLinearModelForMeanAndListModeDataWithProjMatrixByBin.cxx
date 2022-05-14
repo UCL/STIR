@@ -41,6 +41,7 @@
 #include "stir/stream.h"
 
 #include <fstream>
+#include <string>
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -483,16 +484,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #ifdef STIR_OPENMP
 #pragma omp parallel
             {
-#ifdef STIR_OPENMP
 #pragma omp single
                 {
 
                     num_threads = omp_get_num_threads();
-                    std::cerr << "Caching add background with " << omp_get_num_threads() << " threads\n";
-#endif
+                    info("Caching add background with " + sd::to_string(omp_get_num_threads()) + " threads");
                 }
-#endif
             }
+#endif
 
 #ifdef STIR_OPENMP
 #pragma omp parallel for schedule(dynamic) //collapse(2)
