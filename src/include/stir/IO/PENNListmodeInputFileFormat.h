@@ -20,8 +20,7 @@
 START_NAMESPACE_STIR
 
 //!
-//! \brief The ROOTListmodeInputFileFormat class
-//! \details Class for being able to read list mode data from the ROOT via the listmode-data registry.
+//! \brief Base class for PENN listmode file format support
 //! \author Nikos Efthimiou
 //!
 class PENNListmodeInputFileFormat :
