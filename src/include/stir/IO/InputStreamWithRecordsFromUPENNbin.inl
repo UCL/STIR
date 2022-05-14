@@ -33,8 +33,7 @@ create_output_file(std::string ofilename)
 
         if ( !outputListFile.open( ofilename.c_str(), writeonly ) )
         {
-            std::cerr << "error: cannot create file " << ofilename << '\n';
-            std::exit( EXIT_FAILURE );
+            error("Cannot create file " + ofilename);
         }
         outputList = &outputListFile;
     }
