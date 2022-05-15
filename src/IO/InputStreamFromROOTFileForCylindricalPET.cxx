@@ -60,9 +60,8 @@ Succeeded
 InputStreamFromROOTFileForCylindricalPET::
 get_next_record(CListRecordROOT& record)
 {
-
     int ring1, ring2, crystal1, crystal2;
-    bool return_no = false;
+    bool eof = false;
 
 #ifdef STIR_OPENMP
 #pragma omp critical(LISTMODEIO)
@@ -71,7 +70,10 @@ get_next_record(CListRecordROOT& record)
     while(true)
     {
       if (current_position == nentries)
-          return_no = true;
+        {
+          eof = true;
+          break;
+        }
 
       Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
       current_position ++ ;
@@ -130,7 +132,7 @@ get_next_record(CListRecordROOT& record)
 #endif
     }
 
-    if(return_no)
+    if(eof)
         return Succeeded::no;
 
     return
