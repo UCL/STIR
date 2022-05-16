@@ -21,14 +21,14 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DBUILD_EXECUTABLES=OFF test_data_processor_projectors"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "OFF"
           ROOT: "OFF"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: ""
+          BUILD_FLAGS: "-DBUILD_EXECUTABLES=OFF test_data_processor_projectors"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
