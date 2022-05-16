@@ -18,32 +18,18 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: macOS-latest
           compiler: gcc
-          compiler_version: 9
+          compiler_version: 11
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Release"
-          parallelproj: "ON"
-          ROOT: "ON"
-        - os: ubuntu-latest
-          compiler: clang
-          #compiler_version:
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Release"
-          parallelproj: "ON"
-          ROOT: "OFF"
-        - os: ubuntu-latest
-          compiler: gcc
-          compiler_version: 10
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Debug"
+          BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "OFF"
           ROOT: "OFF"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Release"
+          BUILD_FLAGS: ""
+          BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
 
@@ -198,6 +184,13 @@ jobs:
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
 
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
     - name: ctest
       shell: bash
       env:
@@ -241,12 +234,6 @@ jobs:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: ${{ github.workspace }}/recon_test_pack/**/*.log
         retention-days: 7
-
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session if triggered
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - name: examples
       shell: bash
