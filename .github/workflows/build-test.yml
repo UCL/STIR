@@ -21,14 +21,14 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DBUILD_EXECUTABLES=OFF test_data_processor_projectors"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DBUILD_EXECUTABLES=OFF"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "OFF"
           ROOT: "OFF"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DBUILD_EXECUTABLES=OFF test_data_processor_projectors"
+          BUILD_FLAGS: "-DBUILD_EXECUTABLES=OFF"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
@@ -182,7 +182,7 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+          cmake --build . -j 2 --config ${BUILD_TYPE}} --target test_data_processor_projectors
 
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
