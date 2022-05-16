@@ -73,6 +73,44 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
     axs.title.set_text(
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
 
+def PointCloud3D(DataHandler):
+    # import matplotlib.pyplot as plt
+    # import random
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(projection='3d')
+
+    # Plot all the points (intensity increases for multiple points)
+    ax.scatter(DataHandler.voxel_coords[:, 0], DataHandler.voxel_coords[:, 1], DataHandler.voxel_coords[:, 2])
+
+    # Plot the original point and tolerance
+    ox = DataHandler.original_coord[0]
+    oy = DataHandler.original_coord[1]
+    oz = DataHandler.original_coord[2]
+    tol = DataHandler.tolerance
+    ax.plot(ox, oy, oz, c='r', marker='o')
+    #plot tolerence around original point
+    ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy+tol, oy-tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
+
+    #plot Mean position and standard deviation
+    fx = DataHandler.mean_coord[0]
+    fy = DataHandler.mean_coord[1]
+    fz = DataHandler.mean_coord[2]
+    xerror = np.std(DataHandler.voxel_coords[:, 0])
+    yerror = np.std(DataHandler.voxel_coords[:, 1])
+    zerror = np.std(DataHandler.voxel_coords[:, 2])
+    ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
+    ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy, fy], [fz+zerror, fz-zerror], marker="_", c='g', label='_nolegend_')
+
+    ax.set_xlabel('x (mm)')
+    ax.set_ylabel('y (mm)')
+    ax.set_zlabel('z (mm)')
+    ax.legend(['Origin and Tolerance', 'Mean coords and stddev ', 'Voxel Positions'])
+    plt.show()
 
 class ROOTConsistencyDataHandler:
     """
@@ -83,10 +121,11 @@ class ROOTConsistencyDataHandler:
     Each line is expected to be formatted as [ x y z ], e.g., '190.048 0 145.172\n'
     """
 
-    def __init__(self, filename, tolerance=6.66983):
+    def __init__(self, filename, tolerance=1.5 * 4.447):
         """
         :param filename: Filename of the file output by `test_view_offset_root` (.txt file)
-        :param tolerance: l2-norm tolerance that classified a "failed" event. Default = 6.66983, from previous studies.
+        :param tolerance: l2-norm tolerance that classified a "failed" event. Default = 6.66983 = 1.5 * 4.447mm,
+        from previous studies.
         """
         self.filename = filename
         print(f"Loading data: {self.filename}")
@@ -258,6 +297,30 @@ def print_axis_biases(point_sources_data):
     print(f"{row_string}")
 
 
+def nonTOF_evaluation(filename_prefix, file_extension=".txt"):
+    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
+    point_sources_data = dict()
+    for i in range(1, 9, 1):
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}")
+
+    # Print the number of events, number of failed events and failure percentage for each point source
+    print_pass_and_fail(point_sources_data)
+    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
+    print_axis_biases(point_sources_data)
+
+def TOF_evaluation(filename_prefix, file_extension=".txt"):
+    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
+    point_sources_data = dict()
+    for i in range(1, 9, 1):
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}", tolerance=2.5*4.447)
+
+    # Print the number of events, number of failed events and failure percentage for each point source
+    print_pass_and_fail(point_sources_data)
+    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
+    print_axis_biases(point_sources_data)
+
+    PointCloud3D(point_sources_data[1])
+
 # =====================================================================================================
 # Main Script
 # =====================================================================================================
@@ -270,19 +333,10 @@ def main():
     if len(sys.argv) > 1:
         chdir(sys.argv[1])
 
-    # Assuming the prefix's and suffix's of the file names
-    filename_prefix = "non_TOF_voxel_data_"
-    filename_suffix = ".txt"
+    nonTOF_evaluation("non_TOF_voxel_data_")
 
-    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
-    point_sources_data = dict()
-    for i in range(1, 9, 1):
-        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{filename_suffix}")
+    TOF_evaluation("TOF_voxel_data_")
 
-    # Print the number of events, number of failed events and failure percentage for each point source
-    print_pass_and_fail(point_sources_data)
-    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
-    print_axis_biases(point_sources_data)
 
     print("Done")
 
