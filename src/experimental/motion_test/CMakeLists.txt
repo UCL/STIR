@@ -17,6 +17,8 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
     test_BSpline_transformations.cxx
 )
 
+include(stir_test_exe_targets)
+
 # create_stir_involved_test (test_BSpline_transformations.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 
 if (BUILD_TESTING)
@@ -26,7 +28,6 @@ if (BUILD_TESTING)
 				${CMAKE_CURRENT_SOURCE_DIR}/input/to_transform.nii.gz
 				${CMAKE_CURRENT_SOURCE_DIR}/input/ground_truth.nii.gz
 				${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii.gz)
+                add_STIR_CONFIG_DIR(test_BSpline_transformations)
 	endif()
 endif(BUILD_TESTING)
-
-include(stir_test_exe_targets)

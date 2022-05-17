@@ -22,9 +22,10 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_modelling.cxx
 )
 
+include(stir_test_exe_targets)
+
 ADD_TEST(test_modelling
    ${CMAKE_CURRENT_BINARY_DIR}/test_modelling ${CMAKE_CURRENT_SOURCE_DIR}/input
 )
-
-include(stir_test_exe_targets)
+add_STIR_CONFIG_DIR(test_modelling)
 

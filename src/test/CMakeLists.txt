@@ -92,6 +92,7 @@ ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
 set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
+add_STIR_CONFIG_DIR(test_stir_math)
 # Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 endif()
 
@@ -126,23 +127,30 @@ endif()
 foreach(file_format ${file_format_tests})
 	set(test_name test_IO_DiscretisedDensity_${file_format})
   ADD_TEST(${test_name}
-		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
+    ${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
+  add_STIR_CONFIG_DIR(${test_name})
 endforeach()
 
 # Parametric tests
-ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+add_STIR_CONFIG_DIR(test_IO_ParametricDiscretisedDensity_Interfile)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+add_STIR_CONFIG_DIR(test_IO_ParametricDiscretisedDensity_Interfile_short)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Multi
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+add_STIR_CONFIG_DIR(test_IO_ParametricDiscretisedDensity_Multi)
 
 # Dynamic tests
-ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+add_STIR_CONFIG_DIR(test_IO_DynamicDiscretisedDensity_Interfile)
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+add_STIR_CONFIG_DIR(test_IO_DynamicDiscretisedDensity_Interfile_short)
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+  ${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+add_STIR_CONFIG_DIR(test_IO_DynamicDiscretisedDensity_Multi)
 
 endif(BUILD_TESTING)

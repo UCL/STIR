@@ -119,6 +119,8 @@ if (HAVE_CERN_ROOT)
         ADD_TEST(NAME ${test_name}
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
                 COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root)
+        add_STIR_CONFIG_DIR(${test_name})
+
     endif()
 endif()
 
@@ -134,12 +136,15 @@ endif()
 
 # test_data_processor_projectors requires input argument
 ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_SOURCE_DIR}/recon_test_pack/Utahscat600k_ca_seg4.hs)
+add_STIR_CONFIG_DIR(test_data_processor_projectors)
 
 
 # test_OSMAPOSL can take input argument
 ADD_TEST(test_OSMAPOSL_ray_tracing_matrix  test_OSMAPOSL)
+add_STIR_CONFIG_DIR(test_OSMAPOSL_ray_tracing_matrix)
 
 if (parallelproj_FOUND)
   ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
+  add_STIR_CONFIG_DIR(test_OSMAPOSL_parallelproj)
 endif()
 

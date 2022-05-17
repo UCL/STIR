@@ -17,7 +17,8 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_ProjectorNiftyPET_adjoint
 )
 
+include(stir_test_exe_targets)
+
 ADD_TEST(test_ProjectorNiftyPET_adjoint
    ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET_adjoint 3)
-
-include(stir_test_exe_targets)
+add_STIR_CONFIG_DIR(test_ProjectorNiftyPET_adjoint)
