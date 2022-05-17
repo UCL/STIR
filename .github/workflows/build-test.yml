@@ -182,7 +182,11 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . -j 2 --config ${BUILD_TYPE}} --target test_data_processor_projectors
+          cmake --version
+          cmake --build . -j 2 --config ${BUILD_TYPE} --target test_OSMAPOSL
+          cmake --build . -j 2 --config ${BUILD_TYPE} --target test_radionuclide
+          cat src/recon_test/CTestTestfile.cmake
+          cat src/test/CTestTestfile.cmake
 
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
