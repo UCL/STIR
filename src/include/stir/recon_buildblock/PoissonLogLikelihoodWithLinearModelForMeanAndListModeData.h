@@ -92,6 +92,8 @@ public:
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
+    virtual void set_cache_path(const std::string _cache_path);
+    virtual std::string get_cache_path() const;
 protected:
   std::string frame_defs_filename;
 
@@ -126,6 +128,18 @@ protected:
    virtual void start_new_time_frame(const unsigned int new_frame_num);
 
    ParseAndCreateFrom<TargetT, ListModeData> target_parameter_parser;
+   //! This flag is true when cache_size is more than zero.
+   bool cache_lm_file;
+   //! On the first cached run, the cache will be written in the working path of the reconstruction.
+   //! If recompute_cache is set to zero then every consecutive reconstruction will use that cache file.
+   //! If you want to create a new, either delete the previous or set this 1. \todo multiple cache files
+   //! need to be supported!
+   bool recompute_cache;
+   //! This flag is set when we don't set an input lm filename and rely only on the cache file.
+   //! This is the preferred case for SIRF.
+   bool skip_lm_input_file;
+   //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
+   std::string cache_path;
 };
 
 END_NAMESPACE_STIR
