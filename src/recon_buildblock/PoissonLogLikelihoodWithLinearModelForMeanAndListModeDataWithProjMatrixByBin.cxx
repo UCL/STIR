@@ -127,7 +127,7 @@ set_proj_matrix(const shared_ptr<ProjMatrixByBin>& arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_proj_data_info_sptr(const shared_ptr<ProjData>& arg)
+set_proj_data_info(const ProjData& arg)
 {
     this->proj_data_info_sptr = arg->get_proj_data_info_sptr()->create_shared_clone();
     if(this->skip_lm_input_file)
