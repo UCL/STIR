@@ -119,7 +119,7 @@ set_num_subsets(const int new_num_subsets)
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_proj_matrix_bybin(const shared_ptr<ProjMatrixByBin>& arg)
+set_proj_matrix(const shared_ptr<ProjMatrixByBin>& arg)
 {
     this->PM_sptr = arg;
 }
