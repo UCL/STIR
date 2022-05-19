@@ -128,6 +128,7 @@
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
