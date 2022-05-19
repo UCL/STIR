@@ -149,7 +149,6 @@ protected:
    //! need to be supported!
    bool recompute_cache;
    //! This flag is set when we don't set an input lm filename and rely only on the cache file.
-   //! This is the preferred case for SIRF.
    bool skip_lm_input_file;
    //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
    std::string cache_path;
