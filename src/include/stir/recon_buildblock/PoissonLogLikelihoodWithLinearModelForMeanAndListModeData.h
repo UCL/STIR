@@ -92,7 +92,10 @@ public:
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
-    virtual void set_cache_path(const std::string _cache_path);
+    virtual void set_cache_path(const std::string _cache_path,
+                                const bool use_add);
+
+    void set_skip_lm_input_file(const bool arg);
 
     virtual void set_cache_max_size(const unsigned long int arg);
 
@@ -150,6 +153,8 @@ protected:
    bool skip_lm_input_file;
    //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
    std::string cache_path;
+   //! The data set has additive corrections
+   bool has_add;
 };
 
 END_NAMESPACE_STIR

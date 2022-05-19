@@ -134,16 +134,32 @@ get_cache_max_size() const
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_cache_path(const std::string _cache_path)
+set_cache_path(const std::string _cache_path, const bool use_add)
 {
     cache_path = _cache_path;
-    skip_lm_input_file = true;
+    has_add = use_add;
+}
 
-    //!\todo in the future the following statements should be removed.
-    this->set_recompute_sensitivity(false);
-    this->set_use_subset_sensitivities(true);
-    this->set_subsensitivity_filenames(cache_path+"sens_%d.hv");
-//    info(boost::format("Reading sensitivity from '%1%'") % this->get_subsensitivity_filenames());
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_skip_lm_input_file(const bool arg)
+{
+    if(cache_path.length() > 0)
+    {
+        skip_lm_input_file = arg;
+
+        std::cout << "PoissonLogLikelihoodWithLinearModelForMeanAndListModeData: Skipping input!" << std::endl;
+        //!\todo in the future the following statements should be removed.
+        {
+            this->set_recompute_sensitivity(!arg);
+            this->set_use_subset_sensitivities(arg);
+            this->set_subsensitivity_filenames(cache_path+"sens_%d.hv");
+        }
+        //    info(boost::format("Reading sensitivity from '%1%'") % this->get_subsensitivity_filenames());
+    }
+    else
+        warning("set_skip_lm_input_file(): First set the cache path!");
 }
 
 template <typename TargetT>

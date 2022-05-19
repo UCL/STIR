@@ -114,7 +114,7 @@ protected:
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
   //! This function caches the listmode file. It is run during post-processing.
-  bool cache_listmode_file();
+  Succeeded cache_listmode_file();
 
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */

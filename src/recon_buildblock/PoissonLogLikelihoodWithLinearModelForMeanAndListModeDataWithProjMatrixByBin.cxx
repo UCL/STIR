@@ -130,12 +130,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 set_proj_data_info_sptr(const shared_ptr<ProjData>& arg)
 {
     this->proj_data_info_sptr = arg->get_proj_data_info_sptr()->create_shared_clone();
+    if(this->skip_lm_input_file)
+    {
+        std::cout << "Dummy LM file" << std::endl;
+        this->list_mode_data_sptr.reset(new ListModeData_dummy(
+                                            arg->get_exam_info_sptr(),
+                                            proj_data_info_sptr));
+        this->frame_defs = arg->get_exam_info_sptr()->get_time_frame_definitions();
+    }
+    max_ring_difference_num_to_process = this->proj_data_info_sptr->get_scanner_sptr()->
+            get_num_rings() - 1;
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_skip_balanced_subsets_(const bool arg)
+set_skip_balanced_subsets(const bool arg)
 {
   skip_balanced_subsets = arg;
 }
@@ -146,6 +156,16 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 set_max_ring_difference(const int arg)
 {
     max_ring_difference_num_to_process = arg;
+    if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
+    {
+        error("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
+                "in the listmode file. Abort.");
+    }
+    else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
+    {
+        proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
+                                                      max_ring_difference_num_to_process);
+    }
 }
 
 
@@ -154,12 +174,10 @@ bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
-    std::cout << "Checking balanced subsets" << std::endl;
     if (skip_balanced_subsets)
     {
-            warning(boost::format("I know that are balanced"));
+        warning(boost::format("We presume balaned subsets!"));
         return true;
-
     }
 
     assert(this->num_subsets>0);
@@ -238,7 +256,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     //broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
     distributed::send_int_value(100, -1);
 #endif
-    std::cout << "Before sensitivity" << std::endl;
+
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
@@ -267,7 +285,19 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
                     this->current_frame_num, this->frame_defs.get_num_frames());
             return Succeeded::no;
         }
-    warning(boost::format("Before sensitivity end"));
+
+    if(this->cache_size > 0 && this->skip_lm_input_file)
+    {
+        this->cache_lm_file = true;
+        return cache_listmode_file();
+    }
+    else if (this->cache_size == 0 && this->skip_lm_input_file)
+    {
+        warning("Please set the max cache size for the listmode file");
+        this->cache_lm_file = true;
+        return cache_listmode_file();
+    }
+
     return Succeeded::yes;
 } 
  
@@ -300,7 +330,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
   if (this->max_ring_difference_num_to_process == -1)
     {
-      this->max_ring_difference_num_to_process = 
+      this->max_ring_difference_num_to_process =
         scanner_sptr->get_num_rings()-1;
     }
 
@@ -371,6 +401,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                       % proj.parameter_info());
               return true;
           }
+          this->has_add = true;
       }
 
   if( this->normalisation_sptr->set_up(this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr)
@@ -381,23 +412,17 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
 return true;
     }
 
-  if(this->cache_size > 0)
-  {
-      this->cache_lm_file = true;
-      return cache_listmode_file();
-  }
-
-   return false; 
+   return false;
 
 }
 
 template<typename TargetT>
-bool
+Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
 {
     if(!this->recompute_cache && this->cache_lm_file)
     {
-
+        info("Reading cache from disk...");
         std::string curr_dir;
         if (this->cache_path.size() > 0)
             curr_dir = this->cache_path;
@@ -406,8 +431,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         std::string cache_filename = "my_CACHE00.bin";
         FilePath icache(cache_filename, false);
         icache.prepend_directory_name(curr_dir);
-
-        bool with_add = !is_null_ptr(additive_proj_data_sptr);
 
         if (icache.is_regular_file())
         {
@@ -425,7 +448,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             {
                 BinAndCorr tmp;
                 fin.read((char*)&tmp, sizeof(Bin));
-                if (with_add)
+                if (this->has_add)
                 {
                     tmp.my_corr = tmp.my_bin.get_bin_value();
                     tmp.my_bin.set_bin_value(1);
@@ -439,11 +462,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         else
         {
             error("Cannot find Listmode cache on disk. Please recompute or comment out the  max cache size. Abort.");
-            return true;
+            return Succeeded::no;
         }
 
         info( boost::format("Cached Events: %1% ") % record_cache.size());
-        return false; // Stop here!!!
+        return Succeeded::yes; // Stop here!!!
     }
 
     if(this->cache_lm_file)
@@ -499,7 +522,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         }
 
 
-        if(!is_null_ptr(additive_proj_data_sptr))
+        if(this->has_add)
         {
   #ifdef STIR_TOF
          // TODO
@@ -600,12 +623,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   //          }
 
 
-            return false; // Stop here!!!
+            return Succeeded::yes; // Stop here!!!
         }
     }
-    return true;
+    return Succeeded::no;
 }
- 
+
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
@@ -769,7 +792,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                          &gradient, &current_estimate,
                                          record_cache,
                                          subset_num, this->num_subsets,
-                                         !is_null_ptr(additive_proj_data_sptr));
+                                         this->has_add);
         }
     }
     else

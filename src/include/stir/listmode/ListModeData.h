@@ -238,6 +238,41 @@ protected:
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
+
+class ListModeData_dummy : public ListModeData
+{
+public:
+    ListModeData_dummy(shared_ptr<const ExamInfo> exam_info,
+                         shared_ptr<const ProjDataInfo> proj_data_info)
+    {
+        this->exam_info_sptr = exam_info;
+        this->proj_data_info_sptr = proj_data_info;
+    }
+
+    virtual std::string get_name() const
+    {
+
+    }
+
+    virtual Succeeded reset(){}
+
+    virtual SavedPosition save_get_position()
+    {error("ListModeData_trivial has not save_get_position()");}
+
+    virtual Succeeded set_get_position(const SavedPosition&)
+    {error("ListModeData_trivial has not set_get_position()");}
+
+    virtual bool has_delayeds() const
+    {error("ListModeData_trivial has not has_delayeds()");}
+
+protected:
+    virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const
+    {error("ListModeData_trivial has not get_empty_record_helper_sptr()");}
+    virtual Succeeded get_next(ListRecord& event) const
+    {error("ListModeData_trivial has not get_next()");}
+
+};
+
 END_NAMESPACE_STIR
 
 #endif
