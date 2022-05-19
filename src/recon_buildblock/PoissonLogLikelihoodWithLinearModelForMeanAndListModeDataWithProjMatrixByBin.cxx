@@ -138,6 +138,7 @@ set_proj_data_info(const ProjData& arg)
                                             proj_data_info_sptr));
         this->frame_defs = arg.get_exam_info_sptr()->get_time_frame_definitions();
     }
+    warning("The default max ring difference is set based full Scanner geometry");
     max_ring_difference_num_to_process = this->proj_data_info_sptr->get_scanner_sptr()->
             get_num_rings() - 1;
 }
