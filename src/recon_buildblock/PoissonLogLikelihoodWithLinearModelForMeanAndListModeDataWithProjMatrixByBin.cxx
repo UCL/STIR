@@ -176,7 +176,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
     if (skip_balanced_subsets)
     {
-        warning(boost::format("We presume balaned subsets!"));
+        warning("We skip the check on balanced subsets and presume they are balanced!"));
         return true;
     }
 
