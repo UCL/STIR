@@ -134,9 +134,9 @@ get_cache_max_size() const
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_cache_path(const std::string _cache_path, const bool use_add)
+set_cache_path(const std::string cache_path_v, const bool use_add)
 {
-    cache_path = _cache_path;
+    cache_path = cache_path_v;
     has_add = use_add;
 }
 

@@ -89,9 +89,9 @@ public:
 
   virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
 
-  void set_proj_matrix_bybin(const shared_ptr<ProjMatrixByBin>&);
+  void set_proj_matrix(const shared_ptr<ProjMatrixByBin>&);
 
-  void set_proj_data_info_sptr(const shared_ptr<ProjData>&);
+  void set_proj_data_info(const ProjData& arg);
 
   void set_skip_balanced_subsets(const bool arg);
 

@@ -92,7 +92,7 @@ public:
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
-    virtual void set_cache_path(const std::string _cache_path,
+    virtual void set_cache_path(const std::string cache_path_v,
                                 const bool use_add);
 
     void set_skip_lm_input_file(const bool arg);

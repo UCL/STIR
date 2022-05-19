@@ -129,14 +129,14 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 set_proj_data_info(const ProjData& arg)
 {
-    this->proj_data_info_sptr = arg->get_proj_data_info_sptr()->create_shared_clone();
+    this->proj_data_info_sptr = arg.get_proj_data_info_sptr()->create_shared_clone();
     if(this->skip_lm_input_file)
     {
         std::cout << "Dummy LM file" << std::endl;
         this->list_mode_data_sptr.reset(new ListModeData_dummy(
-                                            arg->get_exam_info_sptr(),
+                                            arg.get_exam_info_sptr(),
                                             proj_data_info_sptr));
-        this->frame_defs = arg->get_exam_info_sptr()->get_time_frame_definitions();
+        this->frame_defs = arg.get_exam_info_sptr()->get_time_frame_definitions();
     }
     max_ring_difference_num_to_process = this->proj_data_info_sptr->get_scanner_sptr()->
             get_num_rings() - 1;
