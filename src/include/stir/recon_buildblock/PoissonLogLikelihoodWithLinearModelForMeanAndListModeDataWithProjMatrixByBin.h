@@ -93,7 +93,7 @@ public:
 
   void set_proj_data_info_sptr(const shared_ptr<ProjData>&);
 
-  void set_skip_balanced_subsets_(const bool arg);
+  void set_skip_balanced_subsets(const bool arg);
 
   void set_max_ring_difference(const int arg);
 
