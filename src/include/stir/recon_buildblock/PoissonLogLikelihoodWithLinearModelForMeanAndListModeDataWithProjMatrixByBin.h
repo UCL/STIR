@@ -93,6 +93,11 @@ public:
 
   void set_proj_data_info_sptr(const shared_ptr<ProjData>&);
 
+  void set_skip_balanced_subsets_(const bool arg);
+
+  void set_max_ring_difference(const int arg);
+
+
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -143,24 +148,11 @@ protected:
 
   //! Cache of the listmode file
   std::vector<BinAndCorr>  record_cache;
-  //! This is the number of records to be cached. If this parameter is more than zero, then the
-  //! flag cache_lm_file will be set to true. The listmode file up to this size will be loaded in
-  //! the RAM, alongside with any additive sinograms.
-  unsigned long int cache_size;
-  //! This flag is true when cache_size is more than zero.
-  bool cache_lm_file;
-  //! On the first cached run, the cache will be written in the working path of the reconstruction.
-  //! If recompute_cache is set to zero then every consecutive reconstruction will use that cache file.
-  //! If you want to create a new, either delete the previous or set this 1. \todo multiple cache files
-  //! need to be supported!
-  bool recompute_cache;
   //! The additive sinogram will not be read in memory
   bool reduce_memory_usage;
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;
-  //! Path to read/write the cached listmode file. \todo add the ability to set a filename.
-  std::string cache_path;
 };
 
 END_NAMESPACE_STIR

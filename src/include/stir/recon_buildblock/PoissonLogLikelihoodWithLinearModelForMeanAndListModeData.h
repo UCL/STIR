@@ -93,6 +93,11 @@ public:
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
     virtual void set_cache_path(const std::string _cache_path);
+
+    virtual void set_cache_max_size(const unsigned long int arg);
+
+    virtual unsigned long int get_cache_max_size() const;
+
     virtual std::string get_cache_path() const;
 protected:
   std::string frame_defs_filename;
@@ -128,6 +133,11 @@ protected:
    virtual void start_new_time_frame(const unsigned int new_frame_num);
 
    ParseAndCreateFrom<TargetT, ListModeData> target_parameter_parser;
+
+   //! This is the number of records to be cached. If this parameter is more than zero, then the
+   //! flag cache_lm_file will be set to true. The listmode file up to this size will be loaded in
+   //! the RAM, alongside with any additive sinograms.
+   unsigned long int cache_size;
    //! This flag is true when cache_size is more than zero.
    bool cache_lm_file;
    //! On the first cached run, the cache will be written in the working path of the reconstruction.

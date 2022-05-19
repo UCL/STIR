@@ -86,10 +86,7 @@ set_defaults()
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
-  cache_size = 0;
   reduce_memory_usage = false;
-  cache_lm_file = false;
-  recompute_cache = false;
   skip_balanced_subsets = false;
 } 
  
@@ -106,8 +103,6 @@ initialise_keymap()
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
 
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
-  this->parser.add_key("max cache size", &cache_size);
-  this->parser.add_key("recompute cache", &recompute_cache);
   this->parser.add_key("reduce memory usage", &reduce_memory_usage);
   this->parser.add_key("skip checking balanced subsets", &skip_balanced_subsets);
 } 
@@ -134,16 +129,38 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 set_proj_data_info_sptr(const shared_ptr<ProjData>& arg)
 {
-  this->proj_data_info_sptr = arg->get_proj_data_info_sptr()->create_shared_clone();
+    this->proj_data_info_sptr = arg->get_proj_data_info_sptr()->create_shared_clone();
 }
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_skip_balanced_subsets_(const bool arg)
+{
+  skip_balanced_subsets = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_max_ring_difference(const int arg)
+{
+    max_ring_difference_num_to_process = arg;
+}
+
 
 template<typename TargetT>
 bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
+    std::cout << "Checking balanced subsets" << std::endl;
     if (skip_balanced_subsets)
+    {
+            warning(boost::format("I know that are balanced"));
         return true;
+
+    }
 
     assert(this->num_subsets>0);
         const DataSymmetriesForBins& symmetries =
@@ -221,7 +238,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     //broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
     distributed::send_int_value(100, -1);
 #endif
-
+    std::cout << "Before sensitivity" << std::endl;
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
@@ -250,7 +267,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
                     this->current_frame_num, this->frame_defs.get_num_frames());
             return Succeeded::no;
         }
-
+    warning(boost::format("Before sensitivity end"));
     return Succeeded::yes;
 } 
  
@@ -364,9 +381,9 @@ warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrix
 return true;
     }
 
-  if(cache_size > 0)
+  if(this->cache_size > 0)
   {
-      cache_lm_file = true;
+      this->cache_lm_file = true;
       return cache_listmode_file();
   }
 
@@ -378,7 +395,7 @@ template<typename TargetT>
 bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
 {
-    if(!recompute_cache && cache_lm_file)
+    if(!this->recompute_cache && this->cache_lm_file)
     {
 
         std::string curr_dir;
@@ -429,12 +446,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         return false; // Stop here!!!
     }
 
-    if(cache_lm_file)
+    if(this->cache_lm_file)
     {
         info( boost::format("Listmode reconstruction: Serializing inputs ..."));
         info( boost::format("Listmode reconstruction: Creating cache..."));
 
-        record_cache.reserve(cache_size);
+        record_cache.reserve(this->cache_size);
 
         this->list_mode_data_sptr->reset();
         const shared_ptr<ListRecord> & record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
@@ -550,7 +567,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         }
         info( boost::format("Cached Events: %1% ") % record_cache.size());
 
-        if(recompute_cache)
+        if(this->recompute_cache)
         {
             info( boost::format("Storing Cached Events ... "));
 
@@ -743,7 +760,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
               "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
               "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
-    if (cache_lm_file)
+    if (this->cache_lm_file)
     {
         if (record_cache.size() > 0)
         {
