@@ -51,25 +51,44 @@ public:
 
     virtual std::string get_name() const
     {
-
+        return std::string("ListModeData_dummy");
     }
 
-    virtual Succeeded reset(){}
+    virtual Succeeded reset()
+    {
+        error("ListModeData_dummy does not have reset()");
+        return Succeeded::no;
+    }
 
     virtual SavedPosition save_get_position()
-    {error("ListModeData_dummy does not have save_get_position()");}
+    {
+        error("ListModeData_dummy does not have save_get_position()");
+        return 0;
+    }
 
     virtual Succeeded set_get_position(const SavedPosition&)
-    {error("ListModeData_dummy does not have set_get_position()");}
+    {
+        error("ListModeData_dummy does not have set_get_position()");
+        return Succeeded::no;
+    }
 
     virtual bool has_delayeds() const
-    {error("ListModeData_dummy does not have has_delayeds()");}
+    {
+        error("ListModeData_dummy does not have has_delayeds()");
+        return false;
+    }
 
 protected:
     virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const
-    {error("ListModeData_dummy does not have get_empty_record_helper_sptr()");}
+    {
+        error("ListModeData_dummy does not have get_empty_record_helper_sptr()");
+        return nullptr;
+    }
     virtual Succeeded get_next(ListRecord& event) const
-    {error("ListModeData_dummy does not have get_next()");}
+    {
+        error("ListModeData_dummy does not have get_next()");
+        return Succeeded::no;
+    }
 
 };
 
