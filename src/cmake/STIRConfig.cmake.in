@@ -72,9 +72,9 @@ if (@HDF5_FOUND@)
     # We try to work-around this by first looking for both C and CXX, and then only for CXX.
     # Note that this only solves the problem if in the "client" code,
     # find_package(STIR) is called BEFORE find_package(HDF5)
-    find_package(HDF5 @HDF5_VERSION@ COMPONENTS C CXX SILENT)
+    find_package(HDF5 @HDF5_VERSION@ QUIET COMPONENTS C CXX)
   endif()
-  find_package(HDF5 @HDF5_VERSION@ COMPONENTS CXX REQUIRED)
+  find_package(HDF5 @HDF5_VERSION@ REQUIRED COMPONENTS CXX )
   include_directories(${HDF5_INCLUDE_DIRS})
 
   set(STIR_BUILT_WITH_HDF5 TRUE)
