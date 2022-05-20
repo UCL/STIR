@@ -143,7 +143,7 @@ protected:
    unsigned long int cache_size;
    //! This flag is true when cache_size is more than zero.
    bool cache_lm_file;
-   //! On the first cached run, the cache will be written in the working path of the reconstruction.
+   //! On the first cached run, the cache will be written in the cache_path.
    //! If recompute_cache is set to zero then every consecutive reconstruction will use that cache file.
    //! If you want to create a new, either delete the previous or set this 1. \todo multiple cache files
    //! need to be supported!
