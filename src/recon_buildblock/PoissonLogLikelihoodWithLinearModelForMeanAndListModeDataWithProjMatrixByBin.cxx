@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <sstream>
 #include "stir/stream.h"
+#include "stir/listmode/ListModeData_dummy.h"
 
 #include <fstream>
 #include <string>
