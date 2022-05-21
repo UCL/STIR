@@ -21,7 +21,7 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DBUILD_EXECUTABLES=OFF"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF -DBUILD_EXECUTABLES=OFF"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "OFF"
           ROOT: "OFF"
