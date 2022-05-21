@@ -288,12 +288,12 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
             return Succeeded::no;
         }
 
-    if(this->cache_size > 0 && this->skip_lm_input_file)
+    if(this->cache_size > 0 || this->skip_lm_input_file)
     {
         this->cache_lm_file = true;
         return cache_listmode_file();
     }
-    else if (this->cache_size == 0 && this->skip_lm_input_file)
+    else if (this->cache_size == 0 || this->skip_lm_input_file)
     {
         warning("Please set the max cache size for the listmode file");
         this->cache_lm_file = true;
@@ -349,6 +349,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       else
           additive_proj_data_sptr =
                   ProjData::read_from_file(this->additive_projection_data_filename);
+      has_add = true;
     }
 
    proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
