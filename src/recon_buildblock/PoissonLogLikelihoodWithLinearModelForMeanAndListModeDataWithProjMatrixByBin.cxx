@@ -349,7 +349,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       else
           additive_proj_data_sptr =
                   ProjData::read_from_file(this->additive_projection_data_filename);
-      has_add = true;
+      this->has_add = true;
     }
 
    proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
