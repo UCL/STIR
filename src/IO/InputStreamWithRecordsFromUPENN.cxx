@@ -56,6 +56,12 @@ Succeeded
 InputStreamWithRecordsFromUPENN::
 set_up()
 {
+  if(abrupt_counter_perm > 0)
+    {
+    abrupt_stop = true;
+    abrupt_counter = abrupt_counter_perm;
+    }
+
     return Succeeded::yes;
 }
 
@@ -64,6 +70,7 @@ InputStreamWithRecordsFromUPENN::set_defaults()
 {
     starting_stream_position = 0;
     N = 0;
+    abrupt_counter_perm = 0;
     abrupt_counter = N;
     minE_chan = 0;
     maxE_chan = 1000;
@@ -80,6 +87,7 @@ InputStreamWithRecordsFromUPENN::initialise_keymap()
     this->parser.add_key("upper energy window (chan)", &this->maxE_chan);
     this->parser.add_key("keep prompts", &this->keep_prompt);
     this->parser.add_key("keep delayed", &this->keep_delayed);
+    this->parser.add_key("number of records to process", &this->abrupt_counter_perm);
 }
 
 bool

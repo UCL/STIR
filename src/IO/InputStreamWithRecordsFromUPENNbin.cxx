@@ -36,7 +36,7 @@ reset()
     inputListFile.pubseekpos(pos);
     inputList->pubsync();
 
-    abrupt_counter = N;
+    abrupt_counter = abrupt_counter_perm;
     if(!is_null_ptr(in))
     {
         delete in;
@@ -203,6 +203,8 @@ Succeeded
 InputStreamWithRecordsFromUPENNbin::
 set_up()
 {
+  if(base_type::set_up() == Succeeded::no)
+    return Succeeded::no;
     if ( !this->filename.empty() )
     {
         if ( !inputListFile.open( filename.c_str(), std::ios_base::in | std::ios_base::binary ) )

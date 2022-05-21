@@ -105,7 +105,7 @@ protected:
     //! Total number of events
     long unsigned int N;
     //! Stop after a predefined number of records, regardless of their type.
-    long unsigned int abrupt_counter;
+    long int abrupt_counter, abrupt_counter_perm;
     //! This is a flag about a low lever function that replicates a listmode file preserving
     //! control records that are skipped in normal operations.
     bool has_output = false;
