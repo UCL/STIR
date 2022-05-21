@@ -293,7 +293,7 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
         this->cache_lm_file = true;
         return cache_listmode_file();
     }
-    else if (this->cache_size == 0 || this->skip_lm_input_file)
+    else if (this->cache_size == 0 && this->skip_lm_input_file)
     {
         warning("Please set the max cache size for the listmode file");
         this->cache_lm_file = true;
