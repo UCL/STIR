@@ -183,7 +183,9 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --version
+          cmake --build . -j 2 --config ${BUILD_TYPE} --target test_DataSymmetriesForBins_PET_CartesianGrid
           cmake --build . -j 2 --config ${BUILD_TYPE} --target test_OSMAPOSL
+          cmake --build . -j 2 --config ${BUILD_TYPE} --target test_FBP2D
           cmake --build . -j 2 --config ${BUILD_TYPE} --target test_radionuclide
           cat src/recon_test/CTestTestfile.cmake
           cat src/test/CTestTestfile.cmake
