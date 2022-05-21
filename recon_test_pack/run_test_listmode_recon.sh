@@ -63,7 +63,7 @@ if [ $# -eq 1 ]; then
 fi
 
 # first delete any files remaining from a previous run
-rm -f my_*v my_*s my_*S
+rm -f my_*
 
 ThereWereErrors=0
 
