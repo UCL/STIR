@@ -633,7 +633,7 @@ ProjDataInfoTests::run_coordinate_test()
 
                 check_if_equal(proj_data_info_blocks_ptr->get_s(bin), lorB.s(),
                                "B get_s() from projdata is different from Block on Cylindrical LOR.s()");
-                check_if_equal(proj_data_info_blocks_ptr->get_phi(bin), phi - _PI,
+                check_if_equal(proj_data_info_blocks_ptr->get_phi(bin), phi,
                                "B get_phi() from projdata Cylinder is different from Block on Cylindrical");
 
                 check_if_equal(lorB.s(), -lorC1.s(),
