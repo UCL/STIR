@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2022, University College London
     Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
@@ -157,6 +157,18 @@ void
 ProjDataInfo::set_tof_mash_factor(const int)
 {
   warning("TOF support not yet enabled.");
+}
+
+std::vector<int>
+ProjDataInfo::get_original_view_nums() const
+{
+  std::vector<int> views(this->get_num_views());
+  int view_num = this->get_min_view_num();
+  for (std::size_t i = 0; i < views.size(); ++i)
+    {
+      views[i] = view_num++;
+    }
+  return views;
 }
 
 ProjDataInfo::ProjDataInfo()

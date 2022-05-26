@@ -300,6 +300,9 @@ public:
   inline int get_num_non_tof_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
+  //! forward ProjDataInfo::get_original_view_nums()
+  inline std::vector<int> get_original_view_nums() const;
+
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
