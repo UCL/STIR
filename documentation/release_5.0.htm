@@ -80,7 +80,7 @@ improvements to the documentation.
 <h2>Patch release info</h2>
 <ul>
   <li> 5.0.0 released 23/03/2022</li>
-  <li> 5.0.1 released 11/05/2022</li>
+  <li> 5.0.1 released 11/05/2022
     <ul>
       <li><a href=https://github.com/UCL/STIR/pull/1019>PR 1019</a>: fixes for SWIG and hence Python interface.
       </li>
@@ -95,6 +95,12 @@ improvements to the documentation.
         various fixes to the radionuclide database code. WARNING: This PR changed the file format for
         <tt>radionuclide_info.json</tt> file to be more future proof.
       </li>
+    </ul>
+    </li>
+  <li> 5.0.2 released 26/05/2022
+    <ul>
+      <li>fix in exported <tt>STIRConfig.cmake</tt> for HDF5</li>
+      <li>fix Block/Generic <code>get_phi()<code> which could cause 180 degrees swaps</li>
     </ul>
   </li>
 </ul>
