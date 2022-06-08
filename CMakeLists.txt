@@ -52,9 +52,9 @@ endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   5)
-set(VERSION_MINOR   0)
+set(VERSION_MINOR   1)
 set(VERSION_PATCH   0)
-set(VERSION   050000) # only used in STIRConfig.h.in
+set(VERSION   050100) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -97,6 +97,8 @@ option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # d
 option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
 OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
+option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
+
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -137,6 +139,26 @@ if(NOT DISABLE_NLOHMANN_JSON)
     else()
       message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
     endif()
+endif()
+
+if(NOT DISABLE_UPENN)
+	find_package(JANSSON)
+		if(JANSSON_FOUND)
+			find_package(ZLIB)
+			if(ZLIB_FOUND)
+				find_package(UPENN) 
+				if (UPENN_FOUND)
+					message(STATUS "UPENN libary found.")
+					#set(HAVE_UPENN ON)
+				else()
+					message(STATUS "UPENN library not found. Try and set the DIR manually.")
+				endif()
+			else()
+				message(STATUS "UPENN library needs Zlib")
+			endif()
+		else()
+			message(STATUS "UPENN library needs Jansson")
+		endif()
 endif()
 
 # Legacy options

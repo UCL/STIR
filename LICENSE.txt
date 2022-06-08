@@ -1,4 +1,4 @@
-Licensing information for STIR 5.0.0
+Licensing information for STIR 5.0.2
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.

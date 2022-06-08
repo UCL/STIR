@@ -48,6 +48,10 @@ if(NOT TARGET BUILD_TESTS)
 endif()
 
 #### define macros
+macro(add_STIR_CONFIG_DIR test_target)
+  set_tests_properties(${test_target}
+    PROPERTIES ENVIRONMENT "STIR_CONFIG_DIR=${PROJECT_SOURCE_DIR}/src/config")
+endmacro()
 
 macro (create_stir_involved_test source  libraries dependencies)
  if(BUILD_TESTING)
@@ -65,6 +69,7 @@ macro (create_stir_test source  libraries dependencies)
  if(BUILD_TESTING)
    create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
    ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+   add_STIR_CONFIG_DIR(${executable})
  endif()
 endmacro( create_stir_test)
 
@@ -74,6 +79,7 @@ macro (create_stir_mpi_test source  libraries dependencies)
    if(STIR_MPI)
      create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
      ADD_TEST(${executable}  ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}  ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${executable} ${MPIEXEC_POSTFLAGS})
+     add_STIR_CONFIG_DIR(${executable})
    else()
      create_stir_test(${source}  "${libraries}" "${dependencies}")
    endif()

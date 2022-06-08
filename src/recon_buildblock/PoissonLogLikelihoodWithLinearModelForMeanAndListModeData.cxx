@@ -50,7 +50,11 @@ set_defaults()
   this->num_events_to_use = 0L;
  
   this->target_parameter_parser.set_defaults();
- 
+  cache_lm_file = false;
+  recompute_cache = false;
+  skip_lm_input_file = false;
+  cache_path = "";
+  cache_size = 0;
 } 
 
 template <typename TargetT>  
@@ -65,6 +69,9 @@ initialise_keymap()
   // SM TODO -- later do not parse
   this->parser.add_key("time frame number", &this->current_frame_num);
        this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
+    this->parser.add_key("cache path", &cache_path);
+  this->parser.add_key("max cache size", &cache_size);
+  this->parser.add_key("recompute cache", &recompute_cache);
 } 
 
 template <typename TargetT>     
@@ -74,11 +81,17 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   if (base_type::post_processing() == true) 
   return true; 
 
-  if (this->list_mode_filename.length() == 0) 
+  if (this->list_mode_filename.length() == 0 && !cache_lm_file)
   { warning("You need to specify an input file\n"); return true; }
-
-  this->list_mode_data_sptr=
-    read_from_file<ListModeData>(this->list_mode_filename);
+  else if (this->list_mode_filename.length() > 0 && !cache_lm_file)
+  {
+      this->list_mode_data_sptr=
+          read_from_file<ListModeData>(this->list_mode_filename);
+  }
+  else if (this->list_mode_filename.length() == 0 && cache_lm_file)
+  {
+       skip_lm_input_file = true;
+  }
 
   if (this->frame_defs_filename.size()!=0)
     this->frame_defs = TimeFrameDefinitions(this->frame_defs_filename);
@@ -99,6 +112,62 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
     this->list_mode_data_sptr = dynamic_pointer_cast<ListModeData>(arg);
+}
+
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_cache_max_size(const unsigned long int arg)
+{
+    cache_size = arg;
+}
+
+
+template <typename TargetT>
+unsigned long int
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_cache_max_size() const
+{
+    return cache_size;
+}
+
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_cache_path(const std::string cache_path_v, const bool use_add)
+{
+    cache_path = cache_path_v;
+    has_add = use_add;
+}
+
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_skip_lm_input_file(const bool arg)
+{
+    if(cache_path.length() > 0)
+    {
+        skip_lm_input_file = arg;
+
+        std::cout << "PoissonLogLikelihoodWithLinearModelForMeanAndListModeData: Skipping input!" << std::endl;
+        //!\todo in the future the following statements should be removed.
+        {
+            this->set_recompute_sensitivity(!arg);
+            this->set_use_subset_sensitivities(arg);
+            this->set_subsensitivity_filenames(cache_path+"sens_%d.hv");
+        }
+        //    info(boost::format("Reading sensitivity from '%1%'") % this->get_subsensitivity_filenames());
+    }
+    else
+        warning("set_skip_lm_input_file(): First set the cache path!");
+}
+
+template <typename TargetT>
+std::string
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_cache_path() const
+{
+    return cache_path;
 }
 
 template <typename TargetT>

@@ -128,7 +128,7 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(buildblock PRIVATE "${TMP}")
+  target_include_directories(buildblock PUBLIC "${TMP}")
 endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef

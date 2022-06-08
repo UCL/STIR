@@ -1,167 +1,123 @@
 {
-    "nuclide": 
+    "nuclides": [
 
- {  "^18^Fluorine":
-
-  {  "modality": 
-    {   "PET":
-      {  "properties": [
-               {
-                "kev": 511,
-                "BRatio": 0.9686,
-                "half_life": 6584.04
-                }      ]
-      }
-    }
- },  
-        
-    "^11^Carbon":
-       
-    {  "modality": 
-     {   "PET":
-      {  "properties": [
-               {
-               "kev": 511,
-               "BRatio": 0.9975,
-               "half_life": 1221.66
-               }      ]
-     }
-   }
-},  
-    
-    "^13^Nitrogen":
-   
-    {  "modality": 
-      {   "PET":
-        {  "properties": [
-                 {
-                  "kev": 511,
-                  "BRatio": 0.99818,
-                  "half_life": 598.02
-                  }      ]
-         }
-       }
-    },  
-
-    "^15^Oxygen":
-       
-    {  "modality": 
-      {   "PET":
-        {  "properties": [
-                 {
-                  "kev": 511,
-                  "BRatio": 0.99885,
-                  "half_life": 122.46
-                  }      ]
-        }
-      }
-   },  
-       
-    "^64^Copper":
-     
-     {  "modality": 
-       {   "PET":
-         {  "properties": [
-                  {
-                   "kev": 511,
-                   "BRatio": 0.1752,
+        {
+            "name":  "^18^Fluorine",
+            "decays": [                
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.9686,
+                   "half_life": 6584.04
+                }
+            ]
+        },
+        {
+            "name": "^11^Carbon",
+            "decays": [
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.9975,
+                   "half_life": 1221.66
+                }
+            ]
+        },
+        {
+            "name": "^13^Nitrogen",
+            "decays": [
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.99818,
+                   "half_life": 598.02
+                }
+            ]
+        },
+        {
+            "name": "^15^Oxygen",
+            "decays": [
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.99885,
+                   "half_life": 122.46
+                }
+            ]
+        },
+        {
+            "name": "^64^Copper",
+            "decays": [
+                {  "modality": "PET",
+                   
+                   "branching_ratio": 0.1752,
                    "half_life": 45721.144
-                   }      ]
-         }
-       }
-    },  
-        
-    "^68^Gallium":
-  
-    {  "modality": 
-      {   "PET":
-        {  "properties": [
-                 {
-                  "kev": 511,
-                  "BRatio": 0.8768,
-                  "half_life": 4069.8
-                  }      ]
-        }
-      }
-   },  
-
-   "^99m^Technetium":
-
-  {  "modality": 
-    {   "nucmed":
-      {  "properties": [
-               {
-                "kev": 140.511,
-                "BRatio": 0.885,
-                "half_life": 21624.12
-                }       ]
-      }  
-    }
-  },
-        
-    "^131^Iodine":
- 
-   {  "modality": 
-     {   "nucmed":
-       {  "properties": [
+                }      ]
+            
+        },
+        {
+            "name": "^68^Gallium",
+            "decays": [
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 0.8768,
+                   "half_life": 4069.8
+                }
+            ]
+        },
+        {
+            "name": "^99m^Technetium",
+            "decays": [
+                {  "modality": "nucmed",
+                   "keV": 140.511,
+                   "branching_ratio": 0.885,
+                   "half_life": 21624.12
+                }
+            ]            
+        },
+        {
+            "name": "^131^Iodine",
+            "decays": [
+                {  "modality": "nucmed",
+                   "kev": 364.489,
+                   "branching_ratio": 0.812,
+                   "half_life": 693446.4
+                }
+            ]
+            
+        },
+        {
+            "name": "^67^Gallium",
+            "decays": [
+                {  "modality": "nucmed",
+                   "keV": 184.577,
+                   "branching_ratio": 0.213,
+                   "half_life": 281776.32
+                }
+            ]
+            
+        },
+        {
+            "name": "^177^Lutetium",
+            "decays": [
+                {  "modality": "nucmed",
+                   "keV": 208.3662,
+                   "branching_ratio": 0.1109,
+                   "half_life": 574300.8
+                }
+            ]
+        },
+        {
+            "name": "^90^Yttrium",
+            "decays": [
+                {  "modality": "nucmed",
+                   "keV": 150,
+                   "branching_ratio": 0.99983,
+                   "half_life": 230549.76
+                },
                 {
-                 "kev": 364.489,
-                     "BRatio": 0.812,
-                     "half_life": 693446.4
-                     }       ]
-       }  
-     }
-   },
-
-    "^67^Gallium":
-                          
-    {  "modality": 
-     {   "nucmed":
-      {  "properties": [
-               {
-               "kev": 184.577,
-               "BRatio": 0.213,
-                "half_life": 281776.32
-               }       ]
-      }  
-     }
-    },
-                                
-    "^177^Lutetium":
-     
-    {  "modality": 
-      {   "nucmed":
-        {  "properties": [
-                 {
-                  "kev": 208.3662,
-                  "BRatio": 0.1109,
-                  "half_life": 574300.8
-                 }       ]
-        }  
-      }
-    },
-                                
-    "^90^Yttrium":
-
-    {  "modality": 
-                
-      {   "nucmed":
-        {  "properties": [
-                 {
-                  "kev": 150,
-                  "BRatio": 0.99983,
-                  "half_life": 230549.76
-                 }       ]
-        }, 
-         "PET":
-        {  "properties": [
-                 {
-                  "kev": 511,
-                  "BRatio": 0.0000319,
-                  "half_life": 230549.76
-                  }       ]
+                    "modality": "PET",
+                    "keV": 511,
+                    "branching_ratio": 0.0000319,
+                    "half_life": 230549.76
+                }
+            ]
         }
-      }
-    }
- }
+    ]
 }

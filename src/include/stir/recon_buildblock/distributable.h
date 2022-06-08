@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
+    Copyright (C) 2022, University of Pennsylvania
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -18,6 +19,7 @@
 
   \brief Declaration of the main functions that perform parallel processing
 
+  \author Nikos Efthimiou
   \author Alexey Zverovich
   \author Kris Thielemans
   \author Matthew Jacobson
@@ -25,6 +27,8 @@
   \author PARAPET project
 */
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
+#include <vector>
 
 START_NAMESPACE_STIR
 
@@ -39,7 +43,7 @@ class ForwardProjectorByBin;
 class BackProjectorByBin;
 class ProjectorByBinPair;
 class DistributedCachingInformation;
-
+class ProjMatrixByBin;
 
 //! \name Task-ids currently understood by stir::DistributedWorker
 /*! \ingroup distributable */
@@ -173,6 +177,18 @@ void distributable_computation(
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
                                DistributedCachingInformation* caching_info_ptr);
 
+/*!
+  \brief This function essentially implements a loop over a cached listmode file
+  \ingroup distributable
+!*/
+void LM_distributable_computation(
+        const shared_ptr<ProjMatrixByBin> PM_sptr,
+        const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+        DiscretisedDensity<3,float>* output_image_ptr,
+        const DiscretisedDensity<3,float>* input_image_ptr,
+        const std::vector<BinAndCorr>& record_ptr,
+        const int subset_num, const int num_subsets,
+        const bool has_add);
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0
      \ingroup distributable

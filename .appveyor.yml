@@ -1,5 +1,12 @@
 shallow_clone: true
 
+skip_commits:
+  files:
+    - .github/**/*
+    - '**/*.md'
+    - '**/*.html'
+    - '**/*.tex'
+
 version: '{build}'
 
 os:
