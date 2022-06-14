@@ -497,7 +497,7 @@ set_up()
     if (input_projdata_sptr->get_num_segments() > 1)
     {
         info("ScatterEstimation: Running SSRB on input data...");
-        this->input_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(this->input_projdata_sptr)));
+        this->input_projdata_2d_sptr = make_2D_projdata(this->input_projdata_sptr));
     }
     else
     {
