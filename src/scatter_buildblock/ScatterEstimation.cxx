@@ -735,8 +735,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
 
-//	    this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-//								   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
             this->back_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(back_projdata_sptr)));
         }
