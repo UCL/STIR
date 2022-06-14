@@ -119,8 +119,8 @@ public:
     shared_ptr<ProjData> get_output() const;
     
     //!make projdata 2D shared pointer
-    shared_ptr<ProjData> make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr);
-    shared_ptr<ProjData> make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
+    shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr);
+    shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
 
     //!
     //! \brief set_up

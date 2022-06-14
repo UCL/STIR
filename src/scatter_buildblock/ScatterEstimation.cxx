@@ -190,12 +190,12 @@ ScatterEstimation(const std::string& parameter_filename)
 
 shared_ptr<ProjData> 
 ScatterEstimation::
-make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr)
+make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr)
 {
-    shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     shared_ptr<ProjData> out_2d_sptr;
     if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
     {
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(SSRB(*in_3d_sptr->get_proj_data_info_sptr(),in_3d_sptr->get_num_segments(), 1, false));
         out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
                                                out_info_2d_sptr));
         
@@ -204,6 +204,7 @@ make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr)
     }
     else
     { 
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         out_info_2d_sptr->reduce_segment_range(0,0);
         out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
                                                                 out_info_2d_sptr));
@@ -217,12 +218,12 @@ make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr)
 
 shared_ptr<ProjData> 
 ScatterEstimation::
-make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr, string template_filename)
+make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename)
 {
-    shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     shared_ptr<ProjData> out_2d_sptr;
     if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
     {
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(SSRB(*in_3d_sptr->get_proj_data_info_sptr(),in_3d_sptr->get_num_segments(), 1, false));
         out_2d_sptr = create_new_proj_data(template_filename, 
                                            this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                            this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
@@ -232,6 +233,7 @@ make_2D_projdata(const shared_ptr<ProjData> in_3d_sptr, string template_filename
     }
     else
     { 
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         out_info_2d_sptr->reduce_segment_range(0,0);
         out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
                                                                 out_info_2d_sptr));
@@ -497,7 +499,7 @@ set_up()
     if (input_projdata_sptr->get_num_segments() > 1)
     {
         info("ScatterEstimation: Running SSRB on input data...");
-        this->input_projdata_2d_sptr = make_2D_projdata(this->input_projdata_sptr));
+        this->input_projdata_2d_sptr = make_2D_projdata_sptr(this->input_projdata_sptr);
     }
     else
     {
@@ -653,7 +655,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
         std::string out_filename = "tmp_atten_sino_2d.hs";
-        atten_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(tmp_atten_projdata_sptr, out_filename)));
+        atten_projdata_2d_sptr=make_2D_projdata_sptr(tmp_atten_projdata_sptr, out_filename);
         
     }
     else
@@ -695,7 +697,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
               info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 
-              norm_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(inv_projdata_3d_sptr)));
+              norm_projdata_2d_sptr=make_2D_projdata_sptr(inv_projdata_3d_sptr);
 
               // Crucial: Avoid divisions by zero!!
               // This should be resolved after https://github.com/UCL/STIR/issues/348
@@ -736,7 +738,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             info("ScatterEstimation: Running SSRB on the background data ...");
 
 
-            this->back_projdata_2d_sptr.reset(new ProjDataInMemory(*make_2D_projdata(back_projdata_sptr)));
+            this->back_projdata_2d_sptr=make_2D_projdata_sptr(back_projdata_sptr);
         }
         else
         {
