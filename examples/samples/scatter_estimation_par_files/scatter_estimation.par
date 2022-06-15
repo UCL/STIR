@@ -51,6 +51,7 @@ run in 2d projdata := 1
 Scatter Simulation type := PET Single Scatter Simulation
   PET Single Scatter Simulation Parameters :=
     ; could change some parameters here if you need to (not recommended)
+    downsampled scanner number of detectors per ring := 64
   End PET Single Scatter Simulation Parameters:=
 
 ; next option is the default
