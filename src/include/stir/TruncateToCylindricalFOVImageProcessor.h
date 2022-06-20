@@ -64,6 +64,14 @@ public:
   //! Default constructor
   TruncateToCylindricalFOVImageProcessor();
 
+  void set_truncate_rim(const int truncate_rim) {
+    this->_truncate_rim = truncate_rim;
+  }
+
+  int get_truncate_rim() {
+    return this->_truncate_rim;
+  }
+
   void set_strictly_less_than_radius(const bool arg) {
 	  this->_strictly_less_than_radius = arg;
   }
@@ -73,6 +81,7 @@ public:
 
 private:
   bool _strictly_less_than_radius;
+  int _truncate_rim;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
