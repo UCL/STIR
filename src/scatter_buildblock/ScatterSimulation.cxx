@@ -813,27 +813,6 @@ set_exam_info_sptr(const shared_ptr<const ExamInfo> arg)
 Succeeded
 ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
-    if (new_num_rings <= 0)
-    {
-	if(downsample_scanner_rings > 0)
-            new_num_rings = downsample_scanner_rings;
-        else if (!is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
-	  {
-	    const float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
-	      proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
-
-	    new_num_rings = round(total_axial_length / 20.F + 0.5F);
-	  }
-	else
-            return Succeeded::no;
-    }
-    if (new_num_dets <= 0)
-    {
-        if(downsample_scanner_dets > 0)
-            new_num_dets = downsample_scanner_dets;
-        else
-            new_num_dets=proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
-    }
 
     const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
@@ -874,6 +853,28 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 //                    * new_scanner_sptr->get_num_transaxial_crystals_per_block());
     }
     else{
+        if (new_num_rings <= 0)
+        {
+        if(downsample_scanner_rings > 0)
+                new_num_rings = downsample_scanner_rings;
+            else if (!is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+          {
+            const float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
+              proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
+
+            new_num_rings = round(total_axial_length / 20.F + 0.5F);
+          }
+        else
+                return Succeeded::no;
+        }
+        if (new_num_dets <= 0)
+        {
+            if(downsample_scanner_dets > 0)
+                new_num_dets = downsample_scanner_dets;
+            else
+                new_num_dets=64;
+        }
+
         // preserve the length of the scanner the following includes no gaps
         float scanner_length_cyl = new_scanner_sptr->get_num_rings()*
                 new_scanner_sptr->get_ring_spacing();
