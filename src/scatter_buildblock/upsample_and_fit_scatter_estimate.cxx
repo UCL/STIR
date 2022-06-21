@@ -59,17 +59,14 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
   
-  if(emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
+  bool actual_remove_interleaving = remove_interleaving;
+  if (remove_interleaving && emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
   {
-      bool remove_interleaving_block=false;
-      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
-      interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving_block);
+     warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata");
+     actual_remove_interleaving = false;
   }
-  else
-  {
-      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
-      interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
-  }
+  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+  interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
 
   const TimeFrameDefinitions& time_frame_defs =
     emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
