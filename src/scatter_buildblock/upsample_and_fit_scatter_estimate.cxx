@@ -54,6 +54,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 {
   shared_ptr<ProjDataInfo> 
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
@@ -65,7 +66,6 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
      warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata");
      actual_remove_interleaving = false;
   }
-  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
 
   const TimeFrameDefinitions& time_frame_defs =
