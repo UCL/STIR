@@ -219,7 +219,7 @@ public:
   virtual bool post_processing();
 
 
-  /*! choose between compact_compute_kernelised_image() and  full_compute_kernelised_image()*/
+  //! Function that applies the kernel to the image_to_kernelise
   void compute_kernelised_image(TargetT& kernelised_image_out,
                               const TargetT& image_to_kernelise,
                               const TargetT& current_alpha_estimate);
