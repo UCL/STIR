@@ -104,8 +104,6 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
   sampling_corresponds_to_physical_rings =
     scanner_ptr->get_type() != Scanner::HiDAC;
   
-  if (scanner_ptr->get_scanner_geometry()!= "Cylindrical")
-      sampling_corresponds_to_physical_rings =false;
 
   assert(min_ring_diff.get_length() == max_ring_diff.get_length());
   assert(min_ring_diff.get_length() == num_axial_pos_per_segment.get_length());
@@ -296,7 +294,10 @@ initialise_ring_diff_arrays() const
         const int ring1_plus_ring2 =
           round(ring1_plus_ring2_float);
         // check that it was integer
+        if (get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+        {
         assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4) ;
+        }
         segment_axial_pos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
       }
     }
