@@ -103,6 +103,7 @@ public:
     \see check()
   */
   //@{
+  bool check_if_equal(const std::string& a, const std::string& b, const std::string& str = "");
   bool check_if_equal(const double a, const double b, const std::string& str = "");
   // Note: due to current C++ overloading rules, we need copies for every integer type
   bool check_if_equal(const short a, const short b, const std::string& str = "");
@@ -340,6 +341,9 @@ bool RunTests::check(const bool result, const std::string& str)
   return result;
 }
 
+bool
+RunTests::check_if_equal(const std::string& a, const std::string& b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
 
 /*! tolerance is used to account for floating point rounding error. First the absolute difference
  * is checked and afterwards the relative.
