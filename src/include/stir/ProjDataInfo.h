@@ -223,6 +223,15 @@ public:
   inline std::size_t size_all() const;
   //@}
 
+  //! Return a list of view numbers in the "original" data if subsets are used
+  /*! ProjDataInfoSubsetByView can be used to construct a subset of data. It might
+    be useful to know what the original view numbers were.
+
+    The default implementation just returns a list from \c min_view_num to \c max_view_num,
+    but ProjDataInfoSubsetByView overrides it.
+  */
+  virtual std::vector<int> get_original_view_nums() const;
+
   //| \name Functions that return geometrical info for a Bin
   //@{
   //! Get tangent of the co-polar angle of the normal to the projection plane
