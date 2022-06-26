@@ -55,6 +55,7 @@ set(buildblock_simple_tests
 	test_VoxelsOnCartesianGrid.cxx
 	test_zoom_image.cxx
 	test_ByteOrder.cxx
+        test_ImagingModality.cxx
 	test_Scanner.cxx
 	test_ArcCorrection.cxx
 	test_find_fwhm_in_image.cxx
