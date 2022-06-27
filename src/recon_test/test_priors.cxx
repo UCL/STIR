@@ -75,11 +75,7 @@ public:
   void run_tests();
 
   //! Set methods that control which tests are run.
-  //@{
-  void set_do_test_gradient(bool d);
-  void set_do_test_Hessian_convexity(bool d);
-  void set_do_test_Hessian_against_numerical(bool d);
-  //@}
+  void configure_prior_tests(const bool gradient, const bool Hessian_convexity, const bool Hessian_numerical);
 
 protected:
   char const * density_filename;
@@ -139,24 +135,11 @@ GeneralisedPriorTests(char const * const density_filename)
 {}
 
 void
-GeneralisedPriorTests::
-set_do_test_gradient(const bool d)
+GeneralisedPriorTests::configure_prior_tests(const bool gradient, const bool Hessian_convexity, const bool Hessian_numerical)
 {
-  do_test_gradient = d;
-}
-
-void
-GeneralisedPriorTests::
-set_do_test_Hessian_convexity(const bool d)
-{
-  do_test_Hessian_convexity = d;
-}
-
-void
-GeneralisedPriorTests::
-set_do_test_Hessian_against_numerical(const bool d)
-{
-  do_test_Hessian_against_numerical = d;
+  do_test_gradient = gradient;
+  do_test_Hessian_convexity = Hessian_convexity;
+  do_test_Hessian_against_numerical = Hessian_numerical;
 }
 
 void
@@ -467,27 +450,21 @@ run_tests()
   std::cerr << "\n\nTests for QuadraticPrior\n";
   {
     QuadraticPrior<float> objective_function(false, 1.F);
-    set_do_test_gradient(true);
-    set_do_test_Hessian_convexity(true);
-    set_do_test_Hessian_against_numerical(true);
+    this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
   }
   std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
   {
     // gamma is default and epsilon is 0.0
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
-    set_do_test_gradient(true);
-    set_do_test_Hessian_convexity(true);
-    set_do_test_Hessian_against_numerical(false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test
+    this->configure_prior_tests(true, true, false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test
     this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
   }
   std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.1\n";
   {
     // gamma is default and epsilon is "small"
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.1F);
-    set_do_test_gradient(true);
-    set_do_test_Hessian_convexity(true);
-    set_do_test_Hessian_against_numerical(true);  // With a large enough epsilon the RDP numerical test will pass
+    this->configure_prior_tests(true, true, true); // With a large enough epsilon the RDP Hessian numerical test will pass
     this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
   }
 
@@ -498,18 +475,14 @@ run_tests()
     anatomical_image_sptr->fill(1.F);
     objective_function.set_anatomical_image_sptr(anatomical_image_sptr);
     // Disabled PLS due to known issue
-    set_do_test_gradient(false);
-    set_do_test_Hessian_convexity(false);
-    set_do_test_Hessian_against_numerical(false);
+    this->configure_prior_tests(false, false, false);
     this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
   }
   std::cerr << "\n\nTests for Logcosh Prior\n";
   {
     // scalar is off
     LogcoshPrior<float> objective_function(false, 1.F, 1.F);
-    set_do_test_gradient(true);
-    set_do_test_Hessian_convexity(true);
-    set_do_test_Hessian_against_numerical(true);
+    this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Logcosh_no_kappa", objective_function, density_sptr);
   }
 } 
