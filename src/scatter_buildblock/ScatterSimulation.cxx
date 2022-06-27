@@ -1,8 +1,9 @@
 /*
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016, 2019, 2020 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020, 2022  University College London
     Copyright (C) 2018-2019, University of Hull
     Copyright (C) 2021, University of Leeds
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -18,6 +19,7 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   \author Viet Ahn Dao
+  \author Daniel Deidda
 */
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -108,30 +110,30 @@ process_data()
     int axial_bins = 0 ;
     wall_clock_timer.start();
 
-    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
-         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+    for (vs_num.segment_num() = this->proj_data_info_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_sptr->get_max_segment_num();
          ++vs_num.segment_num())
-        axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
+        axial_bins += this->proj_data_info_sptr->get_num_axial_poss(vs_num.segment_num());
 
     const int total_bins =
-            this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
-            this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
+            this->proj_data_info_sptr->get_num_views() * axial_bins *
+            this->proj_data_info_sptr->get_num_tangential_poss();
     /* ////////////////// end SCATTER ESTIMATION TIME //////////////// */
     float total_scatter = 0 ;
 
     info("ScatterSimulator: Initialization finished ...");
-    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
-         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+    for (vs_num.segment_num() = this->proj_data_info_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_sptr->get_max_segment_num();
          ++vs_num.segment_num())
     {
-        for (vs_num.view_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_view_num();
-             vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
+        for (vs_num.view_num() = this->proj_data_info_sptr->get_min_view_num();
+             vs_num.view_num() <= this->proj_data_info_sptr->get_max_view_num();
              ++vs_num.view_num())
         {
             total_scatter += this->process_data_for_view_segment_num(vs_num);
             bin_counter +=
-                    this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
-                    this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
+                    this->proj_data_info_sptr->get_num_axial_poss(vs_num.segment_num()) *
+                    this->proj_data_info_sptr->get_num_tangential_poss();
             /* ////////////////// SCATTER ESTIMATION TIME //////////////// */
             {
                 wall_clock_timer.stop(); // must be stopped before getting the value
@@ -175,12 +177,12 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     {
         Bin bin(vs_num.segment_num(), vs_num.view_num(), 0, 0);
 
-        for (bin.axial_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(bin.segment_num());
-             bin.axial_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(bin.segment_num());
+        for (bin.axial_pos_num() = this->proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= this->proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num());
              ++bin.axial_pos_num())
         {
-            for (bin.tangential_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_tangential_pos_num();
-                 bin.tangential_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_tangential_pos_num();
+            for (bin.tangential_pos_num() = this->proj_data_info_sptr->get_min_tangential_pos_num();
+                 bin.tangential_pos_num() <= this->proj_data_info_sptr->get_max_tangential_pos_num();
                  ++bin.tangential_pos_num())
             {
                 all_bins.push_back(bin);
@@ -230,7 +232,7 @@ ScatterSimulation::set_defaults()
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
     this->downsample_scanner_bool = false;
-    this->downsample_scanner_dets = 64;
+    this->downsample_scanner_dets = -1;
     this->downsample_scanner_rings = -1;
     this->density_image_filename = "";
     this->activity_image_filename = "";
@@ -321,10 +323,10 @@ Succeeded
 ScatterSimulation::
 set_up()
 {
-    if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+    if (is_null_ptr(proj_data_info_sptr))
         error("ScatterSimulation: projection data info not set. Aborting.");
 
-    if (!proj_data_info_cyl_noarc_cor_sptr->has_energy_information())
+    if (!proj_data_info_sptr->has_energy_information())
         error("ScatterSimulation: scanner energy resolution information not set. Aborting.");
 
     if (is_null_ptr(template_exam_info_sptr))
@@ -356,7 +358,7 @@ set_up()
 
 //    {
 //        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
-//                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
+//                                                               this->proj_data_info_sptr->create_shared_clone()));
 //        this->output_proj_data_sptr->fill(0.0);
 //        info("ScatterSimulation: output projection data created.");
 //    }
@@ -374,31 +376,35 @@ set_up()
     {
         CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
         // check above statement
-        if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
-            auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+        if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_sptr.get())){
+            auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_sptr.get());
             ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
         }else{
-            auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+            auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_sptr.get());
             ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
         }
-        assert(detector_coord_A.z() == 0);
-        assert(detector_coord_B.z() == 0);
+        
+//        if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
+            assert(detector_coord_A.z() == 0);
+            assert(detector_coord_B.z() == 0);
+//        }
         // check that get_m refers to the middle of the scanner
         const float m_first =
-                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
+                this->proj_data_info_sptr->get_m(Bin(0, 0, this->proj_data_info_sptr->get_min_axial_pos_num(0), 0));
         const float m_last =
-                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
+                this->proj_data_info_sptr->get_m(Bin(0, 0, this->proj_data_info_sptr->get_max_axial_pos_num(0), 0));
+//        if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
         assert(fabs(m_last + m_first) < m_last * 10E-4);
     }
 #endif
-    if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+    if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_sptr.get())){
             this->shift_detector_coordinates_to_origin =
-            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+            CartesianCoordinate3D<float>(this->proj_data_info_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
     }else{
-        if(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+        if(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_sptr.get())){
             // align BlocksOnCylindrical scanner ring 0 to z=0.
             this->shift_detector_coordinates_to_origin =
-            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+            CartesianCoordinate3D<float>(this->proj_data_info_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
         }
         // align Generic geometry here.
     }
@@ -428,7 +434,7 @@ check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const st
     (image.get_max_index() + image.get_min_index())*image.get_voxel_size().z()/2.F;
 
 # if 0
-  const Scanner& scanner = *this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
+  const Scanner& scanner = *this->proj_data_info_sptr->get_scanner_ptr();
   const float z_to_middle_standard =
     (scanner.get_num_rings()-1) * scanner.get_ring_spacing()/2;
 #endif
@@ -568,7 +574,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 
     if (_zoom_xy < 0 || _zoom_z < 0)
     {
-        VoxelsOnCartesianGrid<float> tmpl_density(this->density_image_sptr->get_exam_info_sptr(), *proj_data_info_cyl_noarc_cor_sptr);
+        VoxelsOnCartesianGrid<float> tmpl_density(this->density_image_sptr->get_exam_info_sptr(), *proj_data_info_sptr);
 	info(boost::format("ScatterSimulation: template density to find zoom factors: voxel-sizes %1%, size %2%, product %3%")
 	     % tmpl_density.get_voxel_size()
 	     % tmpl_density.get_lengths()
@@ -640,7 +646,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
     {
         float image_plane_spacing = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_grid_spacing()[1];
         const float num_planes_per_scanner_ring_float =
-                proj_data_info_cyl_noarc_cor_sptr->get_ring_spacing() / image_plane_spacing;
+                proj_data_info_sptr->get_ring_spacing() / image_plane_spacing;
 
         int num_planes_per_scanner_ring = round(num_planes_per_scanner_ring_float);
 
@@ -649,7 +655,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                                   "equal to the ring spacing of the scanner divided by an integer. This is not a problem here."
                                   "However, if you are planning to use this in an Scatter Estimation loop it might create problems."
                                   "Reconsider your z-axis downsampling."
-                                  "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_cyl_noarc_cor_sptr->get_ring_spacing());
+                                  "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_sptr->get_ring_spacing());
     }
 #endif
 
@@ -698,7 +704,7 @@ ScatterSimulation::
 set_output_proj_data(const std::string& filename)
 {
 
-    if(is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
+    if(is_null_ptr(this->proj_data_info_sptr))
     {
         error("ScatterSimulation: Template ProjData has not been set. Aborting.");
     }
@@ -710,13 +716,13 @@ set_output_proj_data(const std::string& filename)
     {
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
         tmp_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-                                                       this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
+                                                       this->proj_data_info_sptr->create_shared_clone(),
                                                        this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
     }
     else
     {
         tmp_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
-                                             this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
+                                             this->proj_data_info_sptr->create_shared_clone(),
                                              this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
 
     }
@@ -736,7 +742,7 @@ shared_ptr<const ProjDataInfo>
 ScatterSimulation::
 get_template_proj_data_info_sptr() const
 {
-    return this->proj_data_info_cyl_noarc_cor_sptr;
+    return this->proj_data_info_sptr;
 }
 
 shared_ptr<const ExamInfo>
@@ -761,19 +767,19 @@ void
 ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
     this->_already_set_up = false;
-    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr* >(arg.clone()));
+    this->proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr* >(arg.clone()));
 
-    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
-        this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
-        if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
+    if (is_null_ptr(this->proj_data_info_sptr)){
+        this->proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+        if (is_null_ptr(this->proj_data_info_sptr)){
             error("ScatterSimulation: Can only handle non-arccorrected data");
         }
     }
 
     // find final size of detection_points_vector
     this->total_detectors =
-            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
-            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+            this->proj_data_info_sptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
 
     // get rid of any previously stored points
     this->detection_points_vector.clear();
@@ -811,33 +817,73 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     {
 	if(downsample_scanner_rings > 0)
             new_num_rings = downsample_scanner_rings;
-        else if (!is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+        else if (!is_null_ptr(proj_data_info_sptr))
 	  {
-	    const float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
-	      proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
+        const float total_axial_length = proj_data_info_sptr->get_scanner_sptr()->get_num_rings() *
+          proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
 
 	    new_num_rings = round(total_axial_length / 20.F + 0.5F);
 	  }
 	else
             return Succeeded::no;
     }
-    if (new_num_dets <= 0)
-    {
-        if(downsample_scanner_dets > 0)
-            new_num_dets = downsample_scanner_dets;
-        else
-            return Succeeded::no;
-    }
 
-    const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
+    const Scanner *const old_scanner_ptr = this->proj_data_info_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
 
-    // preserve the length of the scanner
-    float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
-
-    new_scanner_sptr->set_num_rings(new_num_rings);
-    new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
-    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
+    //make a downsampled scanner with no gaps for blocksOnCylindrical
+    if (new_scanner_sptr->get_scanner_geometry()!="Cylindrical")
+    {
+        new_num_dets=proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
+        // preserve the length of the scanner the following includes gaps
+        float scanner_length_block = new_scanner_sptr->get_num_axial_buckets()*
+                new_scanner_sptr->get_num_axial_blocks_per_bucket()*
+                new_scanner_sptr->get_axial_block_spacing();
+        new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
+//        new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
+        
+        
+        new_scanner_sptr->set_num_rings(new_num_rings);
+//        float transaxial_bucket_spacing=old_scanner_ptr->get_transaxial_block_spacing()
+//                *old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
+        float new_ring_spacing=scanner_length_block/new_scanner_sptr->get_num_rings();
+//        int num_trans_buckets=old_scanner_ptr->get_num_transaxial_buckets();
+// get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
+//        float frac,whole;
+//        frac = std::modf(float(new_num_dets/new_scanner_sptr->get_num_transaxial_buckets()), &whole);
+//        int newest_num_dets=whole*new_scanner_sptr->get_num_transaxial_buckets();
+//        new_scanner_sptr->set_num_detectors_per_ring(newest_num_dets);
+//        int new_transaxial_dets_per_bucket=newest_num_dets/num_trans_buckets;
+//        float new_det_spacing=transaxial_bucket_spacing/new_transaxial_dets_per_bucket;
+        
+        new_scanner_sptr->set_axial_crystal_spacing(new_ring_spacing);
+        new_scanner_sptr->set_ring_spacing(new_ring_spacing);
+        new_scanner_sptr->set_num_axial_crystals_per_block(new_num_rings);
+        new_scanner_sptr->set_axial_block_spacing(new_ring_spacing
+                    * new_scanner_sptr->get_num_axial_crystals_per_block());
+        
+//        new_scanner_sptr->set_num_transaxial_crystals_per_block(new_transaxial_dets_per_bucket);
+//        new_scanner_sptr->set_transaxial_crystal_spacing(new_det_spacing);
+//        new_scanner_sptr->set_transaxial_block_spacing(new_det_spacing
+//                    * new_scanner_sptr->get_num_transaxial_crystals_per_block());
+    }
+    else{
+        if (new_num_dets <= 0)
+        {
+            if(downsample_scanner_dets > 0)
+                new_num_dets = downsample_scanner_dets;
+            else
+                new_num_dets=64;
+        }
+        // preserve the length of the scanner the following includes no gaps
+        float scanner_length_cyl = new_scanner_sptr->get_num_rings()*
+                new_scanner_sptr->get_ring_spacing();
+        new_scanner_sptr->set_num_rings(new_num_rings);
+        new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
+        new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl/new_scanner_sptr->get_num_rings()));
+        
+    }
+    
     const float approx_num_non_arccorrected_bins =
       old_scanner_ptr->get_max_num_non_arccorrected_bins() * 
       (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring())
@@ -847,9 +893,10 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     // Find how much is the delta ring
     // If the previous projdatainfo had max segment == 1 then should be from SSRB
     // in ScatterEstimation. Otherwise use the max possible.
-    int delta_ring = proj_data_info_cyl_noarc_cor_sptr->get_num_segments() == 1 ?  0 :
+    int delta_ring = proj_data_info_sptr->get_num_segments() == 1 ?  0 :
             new_scanner_sptr->get_num_rings()-1;
 
+    new_scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> templ_proj_data_info_sptr(
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
                                                                                     1, delta_ring,
@@ -861,17 +908,18 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 	 % templ_proj_data_info_sptr->parameter_info(),
 	 3);
     this->set_template_proj_data_info(*templ_proj_data_info_sptr);
+    this->set_output_proj_data(this->output_proj_data_filename);
 
     return Succeeded::yes;
 }
 
 Succeeded ScatterSimulation::downsample_images_to_scanner_size()
 {
-    if(is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+    if(is_null_ptr(proj_data_info_sptr))
             return Succeeded::no;
 
     // Downsample the activity and attenuation images
-    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_image( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
+    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_image( new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr));
 
     if(!is_null_ptr(activity_image_sptr))
     {

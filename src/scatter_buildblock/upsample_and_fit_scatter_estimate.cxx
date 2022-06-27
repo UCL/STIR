@@ -14,6 +14,7 @@
 
 \author Charalampos Tsoumpas
 \author Kris Thielemans
+\author Daniel Deidda
 */
 
 #include "stir/ProjDataInfo.h"
@@ -53,12 +54,21 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 {
   shared_ptr<ProjDataInfo> 
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
-  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+
 
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
-  interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
+  
+      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+      bool actual_remove_interleaving = remove_interleaving;
+
+      if (remove_interleaving && emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
+      {
+          warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata");
+               actual_remove_interleaving = false;
+      }
+        interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
 
   const TimeFrameDefinitions& time_frame_defs =
     emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
@@ -67,7 +77,12 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
 					    emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
-      inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
+      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
+      {
+          interpolated_scatter.fill_from(interpolated_direct_scatter.begin());
+      }
+      else
+          inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
       scatter_normalisation.set_up(emission_proj_data.get_exam_info_sptr(), emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
       scatter_normalisation.undo(interpolated_scatter);
@@ -135,7 +150,10 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     }
   else // min/max_scale_factor equal to 1 and no norm
     {
-      inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
+          scaled_scatter_proj_data.fill_from(interpolated_direct_scatter.begin());
+      else
+          inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
     }
 }
 

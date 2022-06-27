@@ -1140,9 +1140,9 @@ check_consistency() const
               get_transaxial_crystal_spacing(), get_num_transaxial_crystals_per_block(), get_transaxial_block_spacing());
           return Succeeded::no;
         }
-  
-        if (get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()
-            < round (2*inner_ring_radius*tan(_PI/get_num_transaxial_blocks()/get_num_transaxial_blocks_per_bucket())*1000.0)/1000.0)
+        
+        if (round(get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()*1000.0)/1000.0
+            < round (2*inner_ring_radius*tan(_PI/2/get_num_transaxial_buckets())*1000.0)/1000.0)
       {
          warning("Scanner %s: inconsistent transaxial spacing:\n"
               "\ttransaxial_block_spacing %f muliplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that encircles a cylinder with inner_ring_radius %f",
