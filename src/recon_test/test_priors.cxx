@@ -42,7 +42,6 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
 
 START_NAMESPACE_STIR
 
@@ -68,14 +67,14 @@ public:
       \todo it would be better to parse an objective function. That would allow us to set
       all parameters from the command line.
   */
-  GeneralisedPriorTests(char const * const density_filename = 0);
+  explicit GeneralisedPriorTests(char const * density_filename = nullptr);
   typedef DiscretisedDensity<3,float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
-  void run_tests();
+  void run_tests() override;
 
   //! Set methods that control which tests are run.
-  void configure_prior_tests(const bool gradient, const bool Hessian_convexity, const bool Hessian_numerical);
+  void configure_prior_tests(bool gradient, bool Hessian_convexity, bool Hessian_numerical);
 
 protected:
   char const * density_filename;
@@ -85,12 +84,12 @@ protected:
   /*! Note that this function is not specific to a particular prior */
   void run_tests_for_objective_function(const std::string& test_name,
                                         GeneralisedPrior<target_type>& objective_function,
-                                        shared_ptr<target_type> target_sptr);
+                                        const shared_ptr<target_type>& target_sptr);
 
   //! Tests the prior's gradient by comparing to the numerical gradient computed using perturbation response.
   void test_gradient(const std::string& test_name,
                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                     shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+                     const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
   //! Test various configurations of the Hessian of the prior via accumulate_Hessian_times_input() for convexity
   /*!
@@ -102,7 +101,7 @@ protected:
   */
   void test_Hessian_convexity(const std::string& test_name,
                               GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                              shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+                              const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
   //! Tests the compute_Hessian method implemented into convex priors
   /*! Performs a perturbation response using compute_gradient to determine if the compute_Hessian (for a single densel)
@@ -110,16 +109,16 @@ protected:
   */
   void test_Hessian_against_numerical(const std::string& test_name,
                                       GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                      shared_ptr<GeneralisedPriorTests::target_type> target_sptr);
+                                      const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
 private:
   //! Hessian test for a particular configuration of the Hessian concave condition
   bool test_Hessian_convexity_configuration(const std::string& test_name,
                                             GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                            shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
-                                            const float beta,
-                                            const float input_multiplication, const float input_addition,
-                                            const float current_image_multiplication, const float current_image_addition);
+                                            const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr,
+                                            float beta,
+                                            float input_multiplication, float input_addition,
+                                            float current_image_multiplication, float current_image_addition);
 
   //! Variables to control which tests are run, see the set methods
   //@{
@@ -146,7 +145,7 @@ void
 GeneralisedPriorTests::
 run_tests_for_objective_function(const std::string& test_name,
                                  GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                 shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+                                 const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
   std::cerr << "----- test " << test_name << '\n';
   if (!check(objective_function.set_up(target_sptr)==Succeeded::yes, "set-up of objective function"))
@@ -176,7 +175,7 @@ void
 GeneralisedPriorTests::
 test_gradient(const std::string& test_name,
               GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-              shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+              const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
   // setup images
   target_type& target(*target_sptr);
@@ -206,7 +205,7 @@ test_gradient(const std::string& test_name,
     *target_iter += eps;  // perturb current voxel
     const double value_at_inc = objective_function.compute_value(target);
     *target_iter = org_image_value; // restore
-    const float ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
+    const auto ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
     *gradient_2_iter = ngradient_at_iter;
     testOK = testOK && this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
     //for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
@@ -227,7 +226,7 @@ void
 GeneralisedPriorTests::
 test_Hessian_convexity(const std::string& test_name,
                        GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                       shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+                       const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
   if (!objective_function.is_convex())
     return;
@@ -261,7 +260,7 @@ bool
 GeneralisedPriorTests::
 test_Hessian_convexity_configuration(const std::string& test_name,
                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                     shared_ptr<GeneralisedPriorTests::target_type> target_sptr,
+                                     const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr,
                                      const float beta,
                                      const float input_multiplication, const float input_addition,
                                      const float current_image_multiplication, const float current_image_addition)
@@ -318,7 +317,7 @@ void
 GeneralisedPriorTests::
 test_Hessian_against_numerical(const std::string &test_name,
                                GeneralisedPrior<GeneralisedPriorTests::target_type> &objective_function,
-                               shared_ptr<GeneralisedPriorTests::target_type> target_sptr)
+                               const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
   if (!objective_function.is_convex())
     return;
@@ -388,7 +387,7 @@ test_Hessian_against_numerical(const std::string &test_name,
           // Loop over each of the voxels and compare the numerical-Hessian with Hessian
           target_type::full_iterator numerical_Hessian_iter = pert_grad_and_numerical_Hessian_sptr->begin_all();
           target_type::full_iterator Hessian_iter = Hessian_sptr->begin_all();
-          while(numerical_Hessian_iter != pert_grad_and_numerical_Hessian_sptr->end_all() && testOK)
+          while(numerical_Hessian_iter != pert_grad_and_numerical_Hessian_sptr->end_all())
           {
             testOK = testOK && this->check_if_equal(*Hessian_iter, *numerical_Hessian_iter, "Hessian");
             ++numerical_Hessian_iter; ++ Hessian_iter;
@@ -410,7 +409,7 @@ void
 GeneralisedPriorTests::
 construct_input_data(shared_ptr<target_type>& density_sptr)
 {
-  if (this->density_filename == 0)
+  if (this->density_filename == nullptr)
     {
       // construct a small image with random voxel values between 0 and 1
 
@@ -437,7 +436,6 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       shared_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
       density_sptr = aptr;
     }
-    return;
 }
 
 void
@@ -496,7 +494,7 @@ int main(int argc, char **argv)
 {
   set_default_num_threads();
 
-  GeneralisedPriorTests tests(argc>1? argv[1] : 0);
+  GeneralisedPriorTests tests(argc>1? argv[1] : nullptr);
   tests.run_tests();
   return tests.main_return_value();
 }
