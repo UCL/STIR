@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016, 2019, 2020 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020, 2022 University College London
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -98,7 +99,7 @@ public:
     //! \name check functions
     //@{
     inline bool has_template_proj_data_info() const
-    { return !stir::is_null_ptr(proj_data_info_cyl_noarc_cor_sptr); }
+    { return !stir::is_null_ptr(proj_data_info_sptr); }
     //! Returns true if template_exam_info_sptr has been set.
     inline bool has_exam_info() const
     { return !stir::is_null_ptr(template_exam_info_sptr);}
@@ -347,7 +348,7 @@ protected:
 
     std::string template_proj_data_filename;
 
-    shared_ptr<ProjDataInfo> proj_data_info_cyl_noarc_cor_sptr;
+    shared_ptr<ProjDataInfo> proj_data_info_sptr;
     //! \details Exam info extracted from the scanner template
     shared_ptr<ExamInfo> template_exam_info_sptr;
 

@@ -84,10 +84,11 @@ inverse_SSRB(ProjData& proj_data_4D,
 					const float in_m = 
 						proj_data_3D_info_sptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
 
+                    
 					if (fabs(out_m - in_m) < 1E-2)
 					{
 					        ++num_contributing_sinos;
-						sino_4D += sino_3D;	
+					        sino_4D += sino_3D;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;
 						break;

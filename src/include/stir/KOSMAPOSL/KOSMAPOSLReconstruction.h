@@ -218,6 +218,11 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
+
+  //! Function that applies the kernel to the image_to_kernelise
+  void compute_kernelised_image(TargetT& kernelised_image_out,
+                              const TargetT& image_to_kernelise,
+                              const TargetT& current_alpha_estimate);
  
 private:
   friend void do_sensitivity(const char * const par_filename);
@@ -261,10 +266,6 @@ private:
 //                                        const TargetT& image_to_kernelise,
 //                                        const TargetT& current_alpha_estimate);
 #endif
-  /*! choose between compact_compute_kernelised_image() and  full_compute_kernelised_image()*/
-    void compute_kernelised_image(TargetT& kernelised_image_out,
-                                const TargetT& image_to_kernelise,
-                                const TargetT& current_alpha_estimate);
 
   double calc_emission_kernel(const double current_alpha_estimate_zyx,
                          const double current_alpha_estimate_zyx_dr,

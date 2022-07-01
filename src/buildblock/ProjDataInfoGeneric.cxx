@@ -109,8 +109,8 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 	CartesianCoordinate3D<float> _p2;
 	find_cartesian_coordinates_of_detection(_p1, _p2, bin);
     
-    _p1.z()-=z_shift.z();
-    _p2.z()-=z_shift.z();
+    _p1.z()+=z_shift.z();
+    _p2.z()+=z_shift.z();
     
 	LORAs2Points<float> lor_as_2_points(_p1, _p2);
 	const double R = sqrt(max(square(_p1.x())+square(_p1.y()), square(_p2.x())+square(_p2.y())));

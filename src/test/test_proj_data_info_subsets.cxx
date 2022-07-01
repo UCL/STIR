@@ -206,6 +206,13 @@ TestProjDataInfoSubsets::run_tests()
           _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
         }
 
+      // check get_original_view_nums() on the original data
+      {
+        auto views = _input_sino_sptr->get_original_view_nums();
+        check_if_equal(views[0], _input_sino_sptr->get_min_view_num(), "check get_original_view_nums on non-subset data: first view");
+        check_if_equal(views[views.size()-1], _input_sino_sptr->get_max_view_num(), "check get_original_view_nums on non-subset data: last view");
+      }
+
       test_split(*_input_sino_sptr);
 
       // test_split_and_combine(*_input_sino_sptr);

@@ -42,7 +42,7 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
