@@ -715,16 +715,34 @@ set_output_proj_data(const std::string& filename)
     if (is_null_ptr(this->template_exam_info_sptr))
     {
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-        tmp_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-                                                       this->proj_data_info_sptr->create_shared_clone(),
-                                                       this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
+        if (filename.empty())
+        {
+            tmp_sptr.reset(new ProjDataInMemory(exam_info_sptr,
+                                                this->proj_data_info_sptr->create_shared_clone()));
+        }
+        else
+        {
+            tmp_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+                                                 this->proj_data_info_sptr->create_shared_clone(),
+                                                 this->output_proj_data_filename,
+                                                 std::ios::in | std::ios::out | std::ios::trunc));
+        }
+        
     }
     else
     {
-        tmp_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
-                                             this->proj_data_info_sptr->create_shared_clone(),
-                                             this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
-
+        if (filename.empty())
+        {
+            tmp_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
+                                                this->proj_data_info_sptr->create_shared_clone()));
+        }
+        else
+        {
+            tmp_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
+                                                 this->proj_data_info_sptr->create_shared_clone(),
+                                                 this->output_proj_data_filename,
+                                                 std::ios::in | std::ios::out | std::ios::trunc));
+        }
     }
 
     set_output_proj_data_sptr(tmp_sptr);
@@ -908,8 +926,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 	 % templ_proj_data_info_sptr->parameter_info(),
 	 3);
     this->set_template_proj_data_info(*templ_proj_data_info_sptr);
-    if (!this->output_proj_data_filename.empty())
-        this->set_output_proj_data(this->output_proj_data_filename);
+    this->set_output_proj_data(this->output_proj_data_filename);
 
     return Succeeded::yes;
 }
