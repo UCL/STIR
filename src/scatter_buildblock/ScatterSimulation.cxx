@@ -908,7 +908,8 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 	 % templ_proj_data_info_sptr->parameter_info(),
 	 3);
     this->set_template_proj_data_info(*templ_proj_data_info_sptr);
-    this->set_output_proj_data(this->output_proj_data_filename);
+    if (!this->output_proj_data_filename.empty())
+        this->set_output_proj_data(this->output_proj_data_filename);
 
     return Succeeded::yes;
 }
