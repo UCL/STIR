@@ -207,7 +207,7 @@ test_LOR_closest_approach(const ProjMatrixElemsForOneBin &probabilities,
             test_discretised_density_sptr->get_physical_coordinates_for_indices(element_ptr->get_coords());
 
     float dist_to_original = norm(voxel_coords - original_coords);
-    if (dist_to_original < min_distance || first_entry)
+    if (first_entry || (dist_to_original < min_distance))
     {
       closest_LOR_voxel_to_origin = voxel_coords;
       min_distance = dist_to_original;

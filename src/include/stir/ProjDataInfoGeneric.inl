@@ -48,8 +48,6 @@ ProjDataInfoGeneric::get_phi(const Bin& bin)const
 {
 	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 	get_LOR(lor, bin);
-	if (bin.view_num()==0 && lor.phi()>0.1)
-		return static_cast<float>(lor.phi()-_PI);
 	return lor.phi();
 }
 
@@ -93,7 +91,7 @@ float
 ProjDataInfoGeneric::get_sampling_in_m(const Bin& bin) const
 {
   // TODOBLOCK
-  return get_scanner_ptr()->get_ring_spacing()/2; // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
+  return get_scanner_ptr()->get_ring_spacing(); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
   //return get_axial_sampling(bin.segment_num());
 }
 
@@ -101,7 +99,7 @@ float
 ProjDataInfoGeneric::get_sampling_in_t(const Bin& bin) const
 {
   // TODOBLOCK
-  return get_scanner_ptr()->get_ring_spacing()/2*get_costheta(bin); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
+  return get_scanner_ptr()->get_ring_spacing()*get_costheta(bin); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
   //return get_axial_sampling(bin.segment_num())*get_costheta(bin);
 }
 
@@ -109,7 +107,7 @@ float
 ProjDataInfoGeneric::get_axial_sampling(int segment_num) const
 {
   // TODOBLOCK should check sampling
-  return get_ring_spacing()/2; // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
+  return get_ring_spacing(); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
 }
 
 bool ProjDataInfoGeneric::axial_sampling_is_uniform() const

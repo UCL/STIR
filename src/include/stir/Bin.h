@@ -101,6 +101,14 @@ private :
   
 };
 
+//! A small bundle of a Bin and its additive correction value
+//!
+struct BinAndCorr
+{
+    Bin my_bin;
+    float my_corr;
+};
+
 
 
 END_NAMESPACE_STIR

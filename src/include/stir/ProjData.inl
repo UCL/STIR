@@ -78,4 +78,7 @@ int ProjData::get_num_sinograms() const
 std::size_t ProjData::size_all() const
 { return proj_data_info_sptr->size_all(); }
 
+std::vector<int> ProjData::get_original_view_nums() const
+{ return proj_data_info_sptr->get_original_view_nums(); }
+  
 END_NAMESPACE_STIR

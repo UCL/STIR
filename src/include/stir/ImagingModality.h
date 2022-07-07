@@ -24,7 +24,10 @@
 namespace stir {
 
 /*! \ingroup buildblock
-  Class for encoding the modality
+  \brief Class for encoding the modality.
+
+  Modality-names follow DICOM conventions, i.e.
+  "PT", "NM", "MR", "CT", "US", "Optical".
 */
 class ImagingModality
 {
@@ -41,10 +44,20 @@ class ImagingModality
     }
 
   //! Construct from string, set enum accordingly
+  /*!
+    The argument is first stripped of white-space and converted to lower-case. Then
+    the following are supported:
+    - \c PT: "pt" or "pet"
+    - \c NM: "nm" or "nucmed" or "spect"
+    - \c MR: "mr" or "mri"
+    - \c CT: "ct" or "cat"
+    - \c US: ""us" or "ultrasound"
+    - \c Optical: "optical"
+    - else the modality is set to \c Unknown
+  */
   explicit ImagingModality(const std::string& modality_string_v)
-    : modality_string(modality_string_v)
     {
-      this->set_enum();
+      this->set_from_string(modality_string_v);
     }
 
   ImagingModalityValue get_modality() const
@@ -52,6 +65,7 @@ class ImagingModality
       return this->modality;
     }
 
+  //! Returns name as a standardised string (in DICOM conventions)
   std::string get_name() const
     {
       return this->modality_string;
@@ -92,9 +106,9 @@ class ImagingModality
       }
   }
 
-  void set_enum()
+  void set_from_string(const std::string& modality)
   {
-    const std::string mod = standardise_interfile_keyword(this->modality_string);
+    const std::string mod = standardise_interfile_keyword(modality);
     if (mod=="pt" || mod=="pet")
       this->modality=PT;
     else if ( mod=="nm" || mod=="nucmed" || mod=="spect")
@@ -108,7 +122,12 @@ class ImagingModality
     else if ( mod=="optical")
       this->modality=Optical;
     else
-      this->modality=Unknown;
+      {
+        if (!mod.empty() && mod != "unknown")
+          warning("Unrecognised modality: '" + mod + "'. Setting to Unknown");
+        this->modality=Unknown;
+      }
+    this->set_string();
   }
 };
 

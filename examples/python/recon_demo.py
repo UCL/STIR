@@ -41,27 +41,31 @@ target.fill(1)
 # Switch 'interactive' mode on for pylab.
 # Without it, the python shell will wait after every pylab.show() for you
 # to close the window.
-with pylab.ion():
-    s = recon.set_up(target)
-    if (s == stir.Succeeded(stir.Succeeded.yes)):
-        pylab.figure()
-        for iter in range(1, 4):
-            print('\n--------------------- Subiteration ', iter)
-            recon.set_start_subiteration_num(iter)
-            recon.set_num_subiterations(iter)
-            s = recon.reconstruct(target)
-            # currently we need to explicitly prevent recomputing sensitivity
-            # when we call reconstruct() again in the next iteration
-            poissonobj.set_recompute_sensitivity(False)
-            # extract to python for plotting
-            npimage = stirextra.to_numpy(target)
-            pylab.plot(npimage[10, 30, :])
-            pylab.show()
+try:
+    pylab.ion()
+except:
+    print("Enabling interactive-mode for plotting failed. Continuing.")
 
-        # plot slice of final image
-        pylab.figure()
-        pylab.imshow(npimage[10, :, :])
-        # Keep figures open until user closes them
-        pylab.show(block=True)
-    else:
-        print('Error setting-up reconstruction object')
+s = recon.set_up(target)
+if (s == stir.Succeeded(stir.Succeeded.yes)):
+    pylab.figure()
+    for iter in range(1, 4):
+        print('\n--------------------- Subiteration ', iter)
+        recon.set_start_subiteration_num(iter)
+        recon.set_num_subiterations(iter)
+        s = recon.reconstruct(target)
+        # currently we need to explicitly prevent recomputing sensitivity
+        # when we call reconstruct() again in the next iteration
+        poissonobj.set_recompute_sensitivity(False)
+        # extract to python for plotting
+        npimage = stirextra.to_numpy(target)
+        pylab.plot(npimage[10, 30, :])
+        pylab.show()
+
+    # plot slice of final image
+    pylab.figure()
+    pylab.imshow(npimage[10, :, :])
+    # Keep figures open until user closes them
+    pylab.show(block=True)
+else:
+    print('Error setting-up reconstruction object')

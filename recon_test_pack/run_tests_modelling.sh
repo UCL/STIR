@@ -1,3 +1,4 @@
+
 #! /bin/bash
 #
 #  Copyright (C) 2009 - 2011, Hammersmith Imanet Ltd
@@ -202,7 +203,7 @@ extract_single_images_from_parametric_image test_mult_dyn_with_model_img_f%dg1d0
 echo " "
 echo "Min Counts for Par 1 "
 
-value_1=`list_image_info --min test_mult_dyn_with_model_img_f1g1d0b0.hv | awk '{print $3}' `
+value_1=`list_image_info --min test_mult_dyn_with_model_img_f1g1d0b0.hv | awk '/min/ {print $3}' `
 is_differ=`echo ${value_1} | awk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
@@ -212,7 +213,7 @@ else
 fi
 
 echo "Min Counts for Par 2 "
-value_2=`list_image_info --min test_mult_dyn_with_model_img_f2g1d0b0.hv | awk '{print $3}' `
+value_2=`list_image_info --min test_mult_dyn_with_model_img_f2g1d0b0.hv | awk '/min/ {print $3}' `
 is_differ=`echo ${value_2} | awk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
@@ -222,7 +223,7 @@ else
 fi
 
 echo "Max Counts for Par 1 "
-value_3=`list_image_info --max test_mult_dyn_with_model_img_f1g1d0b0.hv | awk '{print $3}' `
+value_3=`list_image_info --max test_mult_dyn_with_model_img_f1g1d0b0.hv | awk '/max/ {print $3}' `
 # 6.391818 is the scale due to the zoom factor.
 is_differ=`echo ${value_3} | awk ' { print (($1-1619.32*6.391818*6.391818)*($1-1619.32*6.391818*6.391818)>.5*6.391818*6.391818*6.391818*6.391818*.5) } '` 
 if [  ${is_differ} -eq 1 ]; then   
@@ -233,7 +234,7 @@ else
 fi
 
 echo "Max Counts for Par 2 "
-value_4=`list_image_info --max test_mult_dyn_with_model_img_f2g1d0b0.hv | awk '{print $3}' `
+value_4=`list_image_info --max test_mult_dyn_with_model_img_f2g1d0b0.hv | awk '/max/ {print $3}' `
 is_differ=`echo ${value_4} | awk ' { print (($1-0.356552*6.391818*6.391818)*($1-0.356552*6.391818*6.391818)>.001*6.391818*6.391818*.001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate max_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"

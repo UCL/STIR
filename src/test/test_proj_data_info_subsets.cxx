@@ -29,6 +29,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Shape/Ellipsoid.h"
+#include <string>
 
 using std::endl;
 using std::cerr;
@@ -95,6 +96,10 @@ protected:
                            bool use_z_symmetries = false, bool use_other_symmetries = false);
   static void fill_proj_data_with_forward_projection(const std::shared_ptr<ProjData>& proj_data_sptr,
                                                      const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr);
+
+  void check_viewgrams(const ProjData& proj_data, const ProjData& subset_proj_data,
+                       const std::vector<int>& subset_views,
+                       const std::string& str);
 
   ProjDataInMemory generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                     const shared_ptr<const ProjData>& template_sino_sptr,
@@ -201,6 +206,13 @@ TestProjDataInfoSubsets::run_tests()
           _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
         }
 
+      // check get_original_view_nums() on the original data
+      {
+        auto views = _input_sino_sptr->get_original_view_nums();
+        check_if_equal(views[0], _input_sino_sptr->get_min_view_num(), "check get_original_view_nums on non-subset data: first view");
+        check_if_equal(views[views.size()-1], _input_sino_sptr->get_max_view_num(), "check get_original_view_nums on non-subset data: last view");
+      }
+
       test_split(*_input_sino_sptr);
 
       // test_split_and_combine(*_input_sino_sptr);
@@ -234,6 +246,32 @@ TestProjDataInfoSubsets::run_tests()
 }
 
 void
+TestProjDataInfoSubsets::check_viewgrams(const ProjData& proj_data,
+                                         const ProjData& subset_proj_data,
+                                         const std::vector<int>& subset_views,
+                                         const std::string& str)
+{
+  // loop over views in the subset data and compare them against the original "full" data
+  for (std::size_t i = 0; i < subset_views.size(); ++i)
+    {
+      // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
+      // the corresponding view in the original data is at subset_views[i]
+
+      // loop over all segments to check viewgram for all segments
+      for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
+        {
+          if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num),
+                              subset_proj_data.get_viewgram(i, segment_num), str + "Are viewgrams equal?"))
+            {
+              cerr << "test_split failed: viewgrams weren't equal" << endl;
+              break;
+            }
+          // TODO also compare viewgram metadata
+        }
+    }
+}
+
+void
 TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
 {
   cerr << "\tTesting ability to split a ProjData into consistent subsets" << endl;
@@ -246,24 +284,28 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
       auto subset_proj_data_uptr = proj_data.get_subset(subset_views);
       auto& subset_proj_data = *subset_proj_data_uptr;
 
-      // loop over views in the subset data and compare them against the original "full" data
-      for (std::size_t i = 0; i < subset_views.size(); ++i)
-        {
-          // i runs from 0, 1, ... views_in_subset - 1 and indicates the view number in the subset
-          // the corresponding view in the original data is at subset_views[i]
+      // check basic sizes
+      {
+        check_if_equal(proj_data.get_num_views() / num_subsets, subset_proj_data.get_num_views(), "check on get_num_views()");
+        check_if_equal(proj_data.get_min_tangential_pos_num(), subset_proj_data.get_min_tangential_pos_num(), "check on get_min_tangential_pos_num()");
+        check_if_equal(proj_data.get_max_tangential_pos_num(), subset_proj_data.get_max_tangential_pos_num(), "check on get_max_tangential_pos_num()");
+        check_if_equal(proj_data.get_min_segment_num(), subset_proj_data.get_min_segment_num(), "check on get_min_segment_num()");
+        check_if_equal(proj_data.get_max_segment_num(), subset_proj_data.get_max_segment_num(), "check on get_max_segment_num()");
+        for (int segment_num = proj_data.get_min_segment_num(); segment_num <= proj_data.get_max_segment_num(); ++ segment_num)
+          {
+            check_if_equal(proj_data.get_min_axial_pos_num(segment_num), subset_proj_data.get_min_axial_pos_num(segment_num),
+                           "check on get_min_axial_pos_num() for seg " + std::to_string(segment_num));
+            check_if_equal(proj_data.get_max_axial_pos_num(segment_num), subset_proj_data.get_max_axial_pos_num(segment_num),
+                           "check on get_max_axial_pos_num() for seg " + std::to_string(segment_num));
+          }
+      }
+      check_viewgrams(proj_data, subset_proj_data, subset_views, "get_subset: ");
 
-          // loop over all segments to check viewgram for all segments
-          for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
-            {
-              if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num),
-                                  subset_proj_data.get_viewgram(i, segment_num), "Are viewgrams equal?"))
-                {
-                  cerr << "test_split failed: viewgrams weren't equal" << endl;
-                  break;
-                }
-              // TODO also compare viewgram metadata
-            }
-        }
+      // check if we can make a copy
+      {
+        ProjDataInMemory a_copy(subset_proj_data);
+        check_viewgrams(proj_data, subset_proj_data, subset_views, "a copy: ");
+      }
     }
 
   cerr << "\tTesting ProjDataSubsetByView >= operator" << endl;

@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2018,2019,2020 University College London
   Copyright (C) 2018-2019, University of Hull
+  Copyright (C) 2022 National Physical Laboratory
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -14,6 +15,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Daniel Deidda
   \author Markus Jehl
 */
 #include "stir/scatter/ScatterEstimation.h"
@@ -183,6 +185,64 @@ ScatterEstimation(const std::string& parameter_filename)
     {
       error("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
     }
+}
+
+
+shared_ptr<ProjData> 
+ScatterEstimation::
+make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr)
+{
+    shared_ptr<ProjData> out_2d_sptr;
+    if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+    {
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(SSRB(*in_3d_sptr->get_proj_data_info_sptr(),in_3d_sptr->get_num_segments(), 1, false));
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                               out_info_2d_sptr));
+        
+        SSRB(*out_2d_sptr,
+             *in_3d_sptr,false);
+    }
+    else
+    { 
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        out_info_2d_sptr->reduce_segment_range(0,0);
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                                                out_info_2d_sptr));
+        
+        SegmentBySinogram<float> segment=in_3d_sptr->get_segment_by_sinogram(0);
+        out_2d_sptr->set_segment(segment);
+//        std::cout<<" value "<<out_2d_sptr->get_sinogram(8,0)[0][0]<<std::endl;
+    }
+    return out_2d_sptr;
+}
+
+shared_ptr<ProjData> 
+ScatterEstimation::
+make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename)
+{
+    shared_ptr<ProjData> out_2d_sptr;
+    if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+    {
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(SSRB(*in_3d_sptr->get_proj_data_info_sptr(),in_3d_sptr->get_num_segments(), 1, false));
+        out_2d_sptr = create_new_proj_data(template_filename, 
+                                           this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        
+        SSRB(*out_2d_sptr,
+             *in_3d_sptr,false);
+    }
+    else
+    { 
+        shared_ptr<ProjDataInfo> out_info_2d_sptr(in_3d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        out_info_2d_sptr->reduce_segment_range(0,0);
+        out_2d_sptr.reset(new ProjDataInMemory(in_3d_sptr->get_exam_info_sptr(),
+                                                                out_info_2d_sptr));
+        
+        SegmentBySinogram<float> segment=in_3d_sptr->get_segment_by_sinogram(0);
+        out_2d_sptr->set_segment(segment);
+//        std::cout<<" value "<<out_2d_sptr->get_sinogram(8,0)[0][0]<<std::endl;
+    }
+    return out_2d_sptr;
 }
 
 bool
@@ -439,15 +499,7 @@ set_up()
     if (input_projdata_sptr->get_num_segments() > 1)
     {
         info("ScatterEstimation: Running SSRB on input data...");
-        shared_ptr<ProjDataInfo> proj_data_info_2d_sptr(
-                    SSRB(*this->input_projdata_sptr->get_proj_data_info_sptr(),
-                          this->input_projdata_sptr->get_num_segments(), 1, false));
-
-	this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                 proj_data_info_2d_sptr));
-
-        SSRB(*this->input_projdata_2d_sptr,
-             *input_projdata_sptr,false);
+        this->input_projdata_2d_sptr = make_2D_projdata_sptr(this->input_projdata_sptr);
     }
     else
     {
@@ -595,7 +647,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     shared_ptr<ProjData> tmp_atten_projdata_sptr =
       this->get_attenuation_correction_factors_sptr(this->multiplicative_binnorm_sptr);
     shared_ptr<ProjData> atten_projdata_2d_sptr;
-
+    
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -603,12 +655,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
         std::string out_filename = "tmp_atten_sino_2d.hs";
-
-        atten_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-
-        SSRB(*atten_projdata_2d_sptr,
-             *tmp_atten_projdata_sptr, true);
+        atten_projdata_2d_sptr=make_2D_projdata_sptr(tmp_atten_projdata_sptr, out_filename);
+        
     }
     else
     {
@@ -649,8 +697,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
               info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 
-              SSRB(*norm_projdata_2d_sptr,
-                   *inv_projdata_3d_sptr,false);
+              norm_projdata_2d_sptr=make_2D_projdata_sptr(inv_projdata_3d_sptr);
 
               // Crucial: Avoid divisions by zero!!
               // This should be resolved after https://github.com/UCL/STIR/issues/348
@@ -690,11 +737,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
 
-	    this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-								   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
-            SSRB(*this->back_projdata_2d_sptr,
-                 *this->back_projdata_sptr, false);
+            this->back_projdata_2d_sptr=make_2D_projdata_sptr(back_projdata_sptr);
         }
         else
         {
