@@ -61,7 +61,7 @@ compute_Hessian(TargetT& output,
   if (this->is_convex())
     error("GeneralisedPrior:\n  compute_Hessian implementation is not overloaded by your convex prior.");
   else
-    error("GeneralisedPrior:\n  compute_Hessian is not implemented because the prior is not convex.");
+    error("GeneralisedPrior:\n  compute_Hessian is not implemented for this (non-convex) prior.");
 }
 
 template <typename TargetT>

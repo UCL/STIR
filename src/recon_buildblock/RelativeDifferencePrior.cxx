@@ -498,7 +498,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
         }
         else
         {
-          // The j != k vases (off-diagonal Hessian elements)
+          // The j != k cases (off-diagonal Hessian elements), no summing over neighbourhood
           current = weights[dz][dy][dx] * derivative_11(current_image_estimate[z][y][x],
                                                         current_image_estimate[z + dz][y + dy][x + dx]);
           if (do_kappa)
@@ -544,7 +544,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
   if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
+    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
