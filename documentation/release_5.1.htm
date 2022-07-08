@@ -25,7 +25,8 @@
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Nikos Eftimiou (UPenn and MGH), with support by Kris Thielemans (UCL)
+<p>This release contains mainly code written by Nikos Eftimiou (UPenn and MGH), with support by Kris Thielemans (UCL).
+  Additional changes to penalty functions were made by Robert Twyman (UCL).
 </p>
 
 <h2>Patch release info</h2>
@@ -43,6 +44,8 @@ none
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li>    
+  <li> Improvements to penalty functions including Hessian methods, see <a href="https://github.com/UCL/STIR/pull/901/">PR #901</a>.
+  </li>
 </ul>
 
 
@@ -66,6 +69,11 @@ See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
 <h3>recon_test_pack changes</h3>
 
 <h3>Other changes to tests</h3>
+  <li> Significant changes made to <code>test_priors</code> that tests the Hessian's convexity, given
+    <code>x(Hx) > 0</code>, and a perturbation response, using gradients, was added to determine the Hessian
+    (for a single densel) is within tolerance.
+    Tests the Quadratic, Relative Difference (in two configurations) and Log-Cosh Penalties (Robert Twyman, UCL).
+  </li>
 
 </body>
 

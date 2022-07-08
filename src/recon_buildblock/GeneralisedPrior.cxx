@@ -52,18 +52,30 @@ set_up(shared_ptr<const TargetT> const&)
 }
 
 template <typename TargetT>
-Succeeded 
+void
+GeneralisedPrior<TargetT>::
+compute_Hessian(TargetT& output,
+                const BasicCoordinate<3,int>& coords,
+                const TargetT& current_image_estimate) const
+{
+  if (this->is_convex())
+    error("GeneralisedPrior:\n  compute_Hessian implementation is not overloaded by your convex prior.");
+  else
+    error("GeneralisedPrior:\n  compute_Hessian is not implemented for this (non-convex) prior.");
+}
+
+template <typename TargetT>
+void
 GeneralisedPrior<TargetT>::
 add_multiplication_with_approximate_Hessian(TargetT& output,
               const TargetT& input) const
 {
   error("GeneralisedPrior:\n"
   "add_multiplication_with_approximate_Hessian implementation is not overloaded by your prior.");
-  return Succeeded::no;
 }
 
 template <typename TargetT>
-Succeeded
+void
 GeneralisedPrior<TargetT>::
 accumulate_Hessian_times_input(TargetT& output,
         const TargetT& current_estimate,
@@ -71,7 +83,6 @@ accumulate_Hessian_times_input(TargetT& output,
 {
   error("GeneralisedPrior:\n"
         "accumulate_Hessian_times_input implementation is not overloaded by your prior.");
-  return Succeeded::no;
 }
 
 template <typename TargetT> 

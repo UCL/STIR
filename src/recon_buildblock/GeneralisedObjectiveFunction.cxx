@@ -263,10 +263,7 @@ add_multiplication_with_approximate_sub_Hessian(TargetT& output,
     {
       // TODO used boost:scoped_ptr
       shared_ptr<TargetT>  prior_output_sptr(output.get_empty_copy());
-      if (this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output) ==
-	  Succeeded::no)
-	return Succeeded::no;
-
+      this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output);
 
        // (*prior_output_sptr)/= num_subsets;
        // output -= *prior_output_sptr;
@@ -383,9 +380,7 @@ accumulate_sub_Hessian_times_input(TargetT& output,
   {
     // TODO used boost:scoped_ptr
     shared_ptr<TargetT>  prior_output_sptr(output.get_empty_copy());
-    if (this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, output) ==
-        Succeeded::no)
-      return Succeeded::no;
+    this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, output);
 
     typename TargetT::const_full_iterator prior_output_iter = prior_output_sptr->begin_all_const();
     const typename TargetT::const_full_iterator end_prior_output_iter = prior_output_sptr->end_all_const();

@@ -60,6 +60,19 @@ public:
   virtual void compute_gradient(DataT& prior_gradient, 
 		   const DataT &current_estimate) =0; 
 
+  //! This computes a single row of the Hessian
+  /*! Default implementation just call error(). This function needs to be overridden by the
+      derived class.
+      
+      The method computes a row (i.e. at a densel/voxel, indicated by \c coords) of the Hessian at \c current_estimate. 
+      Note that a row corresponds to an object of `DataT`.
+      The method (as implemented in derived classes) should store the result in \c prior_Hessian_for_single_densel.
+   */
+  virtual void
+    compute_Hessian(DataT& prior_Hessian_for_single_densel,
+                    const BasicCoordinate<3,int>& coords,
+                    const DataT& current_image_estimate) const;
+
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output
   /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
@@ -67,7 +80,7 @@ public:
       Instead, accumulate_Hessian_times_input() should be used. This method remains for backwards comparability.
        \warning The derived class should accumulate in \a output.
   */
-  virtual Succeeded 
+  virtual void
     add_multiplication_with_approximate_Hessian(DataT& output,
 						const DataT& input) const;
 
@@ -76,7 +89,7 @@ public:
         derived class.
         \warning The derived class should accumulate in \a output.
     */
-  virtual Succeeded
+  virtual void
   accumulate_Hessian_times_input(DataT& output,
           const DataT& current_estimate,
           const DataT& input) const;
@@ -88,6 +101,10 @@ public:
   //! Has to be called before using this object
   virtual Succeeded 
     set_up(shared_ptr<const DataT> const& target_sptr);
+
+  //! Indicates if the prior is a smooth convex function
+  /*! If true, the prior is expected to have 0th, 1st and 2nd order behaviour implemented.*/
+  virtual bool is_convex() const = 0;
 
 protected:
   float penalisation_factor;

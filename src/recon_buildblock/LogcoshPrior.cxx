@@ -144,6 +144,14 @@ LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_facto
   this->scalar = scalar_v;
 }
 
+template <typename elemT>
+bool
+LogcoshPrior<elemT>::
+is_convex() const
+{
+  return true;
+}
+
 //! get penalty weights for the neighbourhood
 template <typename elemT>
 Array<3,float>
@@ -380,7 +388,7 @@ void
 LogcoshPrior<elemT>::
 compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
                 const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate)
+                const DiscretisedDensity<3,elemT> &current_image_estimate) const
 {
   assert(  prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   prior_Hessian_for_single_densel.fill(0);
@@ -388,6 +396,9 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   {
     return;
   }
+
+  this->check(current_image_estimate);
+
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
           dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
 
@@ -421,19 +432,34 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     for (int dy=min_dy;dy<=max_dy;++dy)
       for (int dx=min_dx;dx<=max_dx;++dx)
       {
-        // sech^2(x * scalar); sech(x) = 1/cosh(x)
-        elemT voxel_diff= current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx];
-        elemT current = weights[dz][dy][dx] * Hessian(voxel_diff, this->scalar);
-
-        if (do_kappa)
-          current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-
-        diagonal += current;
-        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
+        elemT current = 0.0;
+        if (dz == 0 && dy == 0 && dx == 0)
+        {
+          // The j == k case (diagonal Hessian element), which is a sum over the neighbourhood.
+          for (int ddz=min_dz;ddz<=max_dz;++ddz)
+            for (int ddy=min_dy;ddy<=max_dy;++ddy)
+              for (int ddx=min_dx;ddx<=max_dx;++ddx)
+              {
+                elemT diagonal_current = weights[ddz][ddy][ddx] *
+                        derivative_20(current_image_estimate[z][y][x],
+                                      current_image_estimate[z + ddz][y + ddy][x + ddx]);
+                if (do_kappa)
+                  diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+ddz][y+ddy][x+ddx];
+                current += diagonal_current;
+              }
+        }
+        else
+        {
+          // The j != k vases (off-diagonal Hessian elements)
+          current = weights[dz][dy][dx] * derivative_11(current_image_estimate[z][y][x],
+                                                        current_image_estimate[z + dz][y + dy][x + dx]);
+          if (do_kappa)
+            current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+        }
+        prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = + current*this->penalisation_factor;
       }
-
-  prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
 }
+
 
 template <typename elemT>
 void
@@ -505,7 +531,7 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& 
 }
 
 template <typename elemT>
-Succeeded
+void
 LogcoshPrior<elemT>::
 accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                const DiscretisedDensity<3,elemT>& current_estimate,
@@ -517,7 +543,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
   assert( output.has_same_characteristics(input));
   if (this->penalisation_factor==0)
   {
-    return Succeeded::yes;
+    return;
   }
 
   DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
@@ -561,8 +587,18 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
           for (int dy=min_dy;dy<=max_dy;++dy)
             for (int dx=min_dx;dx<=max_dx;++dx)
             {
-              elemT voxel_diff= current_estimate[z][y][x] - current_estimate[z+dz][y+dy][x+dx];
-              elemT current = weights[dz][dy][dx] * Hessian( voxel_diff, this->scalar) * input[z+dz][y+dy][x+dx];
+              elemT current = weights[dz][dy][dx];
+              if (dz == dy == dz == 0) {
+                // The j == k case
+                current *= derivative_20(current_estimate[z][y][x],
+                                         current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
+              } else {
+                current *= (derivative_20(current_estimate[z][y][x],
+                                          current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x] +
+                        derivative_11(current_estimate[z][y][x],
+                                      current_estimate[z + dz][y + dy][x + dx]) *
+                            input[z + dz][y + dy][x + dx]);
+              }
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -574,7 +610,22 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
       }
     }
   }
-  return Succeeded::yes;
+}
+
+template <typename elemT>
+elemT
+LogcoshPrior<elemT>::
+derivative_20(const elemT x_j, const elemT x_k) const
+{
+  return square((1/ cosh((x_j - x_k) * scalar)));
+}
+
+template <typename elemT>
+elemT
+LogcoshPrior<elemT>::
+derivative_11(const elemT x_j, const elemT x_k) const
+{
+  return -derivative_20(x_j, x_k);
 }
 
 #  ifdef _MSC_VER
