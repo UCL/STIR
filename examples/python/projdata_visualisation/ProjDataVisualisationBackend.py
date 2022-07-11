@@ -6,7 +6,13 @@ import stirextra
 
 
 class ProjDataVisualisationBackend:
-    def __init__(self, *args, **kwargs):  # real signature unknown
+    """
+    Class used as STIR interface to the projection data for ProjDataVisualisation.
+    """
+    def __init__(self, *args, **kwargs) -> None:
+        """
+        Sets up the STIR interface for projection data.
+        """
         print("ProjDataVisualisationBackend.__init__")
 
         self.proj_data_filename = None
@@ -20,17 +26,20 @@ class ProjDataVisualisationBackend:
 
         print("ProjDataVisualisationBackend.__init__: Done.")
 
-    def load_proj_data(self):
+    def load_proj_data(self) -> None:
         """
         Loads STIR projection data from a file.
         """
         print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.proj_data_filename)
         self.proj_data_stream = stir.ProjData_read_from_file(self.proj_data_filename)
-        time.sleep(0.01)
+        time.sleep(0.01)  # Wait for the log to be written...
         print("ProjDataVisualisationBackend.load_data: Data loaded.")
         self.print_proj_data_configuration()
 
-    def print_proj_data_configuration(self):
+    def print_proj_data_configuration(self) -> None:
+        """
+        Prints the configuration of the projection data.
+        """
         print(
             f"\nProjection data configuration for:\n"
             f"\t'{self.proj_data_filename}':\n"
@@ -42,7 +51,10 @@ class ProjDataVisualisationBackend:
             f"\tNumber of non-tof sinograms:\t\t{self.proj_data_stream.get_num_non_tof_sinograms()}\n\n"
         )
 
-    def print_segment_data_configuration(self):
+    def print_segment_data_configuration(self) -> None:
+        """
+        Prints the configuration of the segment data.
+        """
         print(
             f"\nSegment data configuration for:\n"
             f"\t'{self.proj_data_filename}':\n"
@@ -52,9 +64,9 @@ class ProjDataVisualisationBackend:
             f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
         )
 
-    def refresh_segment_data(self, segment_number=0):
+    def refresh_segment_data(self, segment_number=0) -> stir.FloatSegmentByView:
         """
-        Loads a segment from the projection data.
+        Loads a segment data, from the projection data, into memory allowing for faster access.
         """
         if self.segment_data is None:
             self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)

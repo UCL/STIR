@@ -6,7 +6,6 @@ class UISliderSpinboxItem:
     """
     Class for the UI of the ProjDataVisualisationBackend.
     """
-
     def __init__(self, groupbox: QGroupBox,
                  label: str,
                  min_range: int,
