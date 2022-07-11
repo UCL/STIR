@@ -13,7 +13,6 @@ class ProjDataVisualisationBackend:
         self.proj_data_stream = None
 
         self.segment_data = None
-        self.segment_number = None
 
         if len(args[0]) > 1:
             self.proj_data_filename = args[0][1]
@@ -57,8 +56,10 @@ class ProjDataVisualisationBackend:
         """
         Loads a segment from the projection data.
         """
-        if segment_number != self.segment_number:
-            self.segment_number = segment_number
+        if self.segment_data is None:
+            self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
+
+        elif segment_number != self.segment_data.get_segment_num():
             self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
         return self.segment_data
 
