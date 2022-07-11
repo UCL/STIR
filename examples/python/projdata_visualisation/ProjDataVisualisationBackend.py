@@ -1,5 +1,6 @@
 import time
 
+import numpy
 import stir
 import stirextra
 
@@ -99,13 +100,11 @@ class ProjDataVisualisationBackend:
         Loads a segment from the projection data.
         """
         if segment_number != self.segment_number:
-            print("ProjDataVisualisationBackend.refresh_segment_data: "
-                  "Segment number changed, reloading segment data: " + str(segment_number))
             self.segment_number = segment_number
             self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
         return self.segment_data
 
-    def as_numpy(self, data):
+    def as_numpy(self, data: stir.ProjData) -> numpy.array:
         """
         Converts a STIR data object to a numpy array.
         """
