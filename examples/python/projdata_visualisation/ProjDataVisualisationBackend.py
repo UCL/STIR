@@ -32,7 +32,6 @@ class ProjDataVisualisationBackend:
         self.print_proj_data_configuration()
 
     def print_proj_data_configuration(self):
-        print("ProjDataVisualisationBackend.print_proj_data_configuration:")
         print(
             f"\nProjection data configuration for:\n"
             f"\t'{self.proj_data_filename}':\n"
@@ -45,55 +44,14 @@ class ProjDataVisualisationBackend:
         )
 
     def print_segment_data_configuration(self):
-        print("ProjDataVisualisationBackend.print_proj_data_configuration:")
         print(
             f"\nSegment data configuration for:\n"
             f"\t'{self.proj_data_filename}':\n"
-            f"\tNumber of views:\t\t\t\t\t{self.proj_data_stream.get_num_views()}\n"
-            f"\tNumber of tangential positions:\t\t{self.proj_data_stream.get_num_tangential_poss()}\n"
-            f"\tNumber of segments:\t\t\t\t\t{self.proj_data_stream.get_num_segments()}\n"
-            f"\tNumber of axial positions:\t\t\t{self.proj_data_stream.get_num_axial_poss(0)}\n"
-            f"\tNumber of tof positions:\t\t\t{self.proj_data_stream.get_num_tof_poss()}\n"
-            f"\tNumber of non-tof sinograms:\t\t{self.proj_data_stream.get_num_non_tof_sinograms()}\n\n"
+            f"\tSegment Number: {self.segment_data.get_segment_num()}\n"
+            f"\tNumber of views:\t\t\t\t\t{self.segment_data.get_num_views()}\n"
+            f"\tNumber of tangential positions:\t\t{self.segment_data.get_num_tangential_poss()}\n"
+            f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
         )
-
-    # def check_range(self, dimension: str, value: int):
-    #     """
-    #     Checks if a value is within the range of the given dimension.
-    #     """
-    #     dimension = dimension.lower()
-    #     if dimension == "axial":
-    #         return 0 <= value < self.proj_data.get_num_axial_poss(0)
-    #     elif dimension == "view":
-    #         return 0 <= value < self.proj_data.get_num_views()
-    #     elif dimension == "tangential":
-    #         return 0 <= value < self.proj_data.get_num_tangential_poss()
-    #     elif dimension == "segment":
-    #         return 0 <= value < self.proj_data.get_num_segments()
-    #     # elif dimension == "tof":
-    #     #     return 0 <= value < self.proj_data.get_num_tof_poss()
-    #     else:
-    #         return False
-
-    def get_sinogram(self, ax_pos_num, segment_num, as_numpy_array=False):
-        """
-        todo: REMOVE BECAUASE OLD
-        Returns a sinogram for a given axial position and segment combination.
-        """
-        sinogram = self.proj_data_stream.get_sinogram(ax_pos_num, segment_num)
-        if as_numpy_array:
-            return stirextra.to_numpy(sinogram)
-        return sinogram
-
-    def get_viewgram(self, view_num, segment_num, as_numpy_array=False):
-        """
-        todo: REMOVE BECAUASE OLD
-        Returns a viewgram for a given view and segment combination.
-        """
-        viewgram = self.proj_data_stream.get_viewgram(view_num, segment_num)
-        if as_numpy_array:
-            return stirextra.to_numpy(viewgram)
-        return viewgram
 
     def refresh_segment_data(self, segment_number=0):
         """
