@@ -12,8 +12,10 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from projdata_visualisation.ProjDataVisualisationBackend import ProjDataVisualisationBackend, SinogramDimensions
-from projdata_visualisation.ProjDataVisualisationUITools import UISliderSpinboxItem, construct_slider_spinboxes
+from projdata_visualisation.ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend, \
+    SinogramDimensions
+from projdata_visualisation.ProjDataVisualisationBackendTools.UITools import \
+    construct_slider_spinboxes
 
 
 class ProjDataVisualisationWidgetGallery(QDialog):
@@ -246,8 +248,8 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if self.sinogram_radio_button.isChecked():
             # Disable the tangential position slider and spinbox
             self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].disable()
-            if (self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[0] -
-                self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[1]) == 0:
+            if 0 == (self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[0] -
+                     self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[1]):
                 self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].disable()
             else:
                 self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].enable()

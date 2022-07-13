@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel, QSpinBox, QSlider, QGroupBox, QGridLayout
 
-from projdata_visualisation.ProjDataVisualisationBackend import ProjDataVisualisationBackend
+from projdata_visualisation.ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend
 
 
 class UISliderSpinboxItem:
