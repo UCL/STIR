@@ -1,11 +1,14 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel, QSpinBox, QSlider, QGroupBox, QGridLayout
 
+from projdata_visualisation.ProjDataVisualisationBackend import ProjDataVisualisationBackend
+
 
 class UISliderSpinboxItem:
     """
     Class for the UI of the ProjDataVisualisationBackend.
     """
+
     def __init__(self, groupbox: QGroupBox,
                  label: str,
                  min_range: int,
@@ -21,7 +24,7 @@ class UISliderSpinboxItem:
         :param value: The initial value for the spinbox/slider.
         :param connect_method: Called method when the spinbox or slider value is changed.
         """
-        
+
         # Connect method. This is called after the spinbox or slider value is changed.
         self._connect_method = connect_method
 
@@ -65,16 +68,22 @@ class UISliderSpinboxItem:
         """
         self.enable(not disable)
 
-    def update_range(self, min_range: int, max_range: int, value=None) -> None:
+    def update_limits(self, limits: tuple, value=None) -> None:
         """
         Updates the range of the spinbox and slider and adjusts the value to be within range.
         """
-        self.spinbox.setRange(min_range, max_range)
-        self.slider.setRange(min_range, max_range)
-        if value is None or value < min_range or value > max_range:
-            value = min(max_range, max(self.slider.value(), min_range))
+        self.spinbox.setRange(limits[0], limits[1])
+        self.slider.setRange(limits[0], limits[1])
+        if value is None or value < limits[0] or value > limits[1]:
+            value = min(limits[1], max(self.slider.value(), limits[0]))
         self.spinbox.setValue(value)
         self.slider.setValue(value)
+
+    def get_limits(self) -> (int, int):
+        """
+        Returns the range (min, max) of the spinbox and slider.
+        """
+        return self.spinbox.minimum(), self.spinbox.maximum()
 
     def value(self) -> int:
         """
@@ -106,3 +115,34 @@ class UISliderSpinboxItem:
         """
         if self._connect_method is not None:
             self._connect_method()
+
+
+def construct_slider_spinboxes(stir_interface: ProjDataVisualisationBackend,
+                               UI_groupbox: QGroupBox,
+                               configuration: dict) -> dict:
+    """
+    Constructs the UI for the slider and spinbox items based upon the configuration in my_dict.
+    :param stir_interface: The stir interface  to get the values from.
+    :param UI_groupbox: The groupbox to add the slider and spinbox to.
+    :param configuration: The configuration for the slider and spinbox items.
+    :return: A dictionary of the slider and spinbox items.
+    """
+    output_dict = {}
+    for item in configuration.items():
+        if stir_interface.proj_data_stream is None:
+            max_range, min_range = 0, 0
+        else:
+            max_range, min_range = stir_interface.get_limits(item[0], stir_interface.segment_data.get_segment_number())
+
+        value = 0
+        if 'value' in item[1]:
+            value = item[1]['value']
+
+        output_dict[item[0]] = UISliderSpinboxItem(groupbox=UI_groupbox,
+                                                   label=f"{item[1]['label']}:",
+                                                   min_range=min_range,
+                                                   max_range=max_range,
+                                                   value=value,
+                                                   connect_method=item[1]['connect_method']
+                                                   )
+    return output_dict

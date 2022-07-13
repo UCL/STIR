@@ -4,37 +4,54 @@ import numpy
 import stir
 import stirextra
 
+from enum import Enum, auto
+
+
+class SinogramDimensions(Enum):
+    """
+    Enum for the dimensions of a sinogram.
+    """
+    SEGMENT_NUM = auto()
+    AXIAL_POS = auto()
+    VIEW_NUMBER = auto()
+    TANGENTIAL_POS = auto()
+
 
 class ProjDataVisualisationBackend:
     """
     Class used as STIR interface to the projection data for ProjDataVisualisation.
     """
+
     def __init__(self, *args, **kwargs) -> None:
         """
         Sets up the STIR interface for projection data.
         """
         print("ProjDataVisualisationBackend.__init__")
 
-        self.proj_data_filename = None
+        self.proj_data_filename = ""
         self.proj_data_stream = None
 
         self.segment_data = None
 
         if len(args[0]) > 1:
             self.proj_data_filename = args[0][1]
-            self.load_proj_data()
 
         print("ProjDataVisualisationBackend.__init__: Done.")
 
-    def load_proj_data(self) -> None:
+    def load_projdata(self, filename=None) -> None:
         """
         Loads STIR projection data from a file.
         """
-        print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.proj_data_filename)
-        self.proj_data_stream = stir.ProjData_read_from_file(self.proj_data_filename)
-        time.sleep(0.01)  # Wait for the log to be written...
-        print("ProjDataVisualisationBackend.load_data: Data loaded.")
-        self.print_proj_data_configuration()
+        if filename is not None:
+            self.proj_data_filename = filename
+
+        if self.proj_data_filename != "":
+            print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.proj_data_filename)
+            self.proj_data_stream = stir.ProjData_read_from_file(self.proj_data_filename)
+            self.segment_data = self.refresh_segment_data()
+            time.sleep(0.01)  # Wait for the log to be written...
+            print("ProjDataVisualisationBackend.load_data: Data loaded.")
+            self.print_proj_data_configuration()
 
     def print_proj_data_configuration(self) -> None:
         """
@@ -42,7 +59,7 @@ class ProjDataVisualisationBackend:
         """
         print(
             f"\nProjection data configuration for:\n"
-            f"\t'{self.proj_data_filename}':\n"
+            f"\t'{self.proj_data_filename}'\n"
             f"\tNumber of views:\t\t\t\t\t{self.proj_data_stream.get_num_views()}\n"
             f"\tNumber of tangential positions:\t\t{self.proj_data_stream.get_num_tangential_poss()}\n"
             f"\tNumber of segments:\t\t\t\t\t{self.proj_data_stream.get_num_segments()}\n"
@@ -58,7 +75,7 @@ class ProjDataVisualisationBackend:
         print(
             f"\nSegment data configuration for:\n"
             f"\t'{self.proj_data_filename}':\n"
-            f"\tSegment Number: {self.segment_data.get_segment_num()}\n"
+            f"\tSegment Number: {self.get_current_segment_num()}\n"
             f"\tNumber of views:\t\t\t\t\t{self.segment_data.get_num_views()}\n"
             f"\tNumber of tangential positions:\t\t{self.segment_data.get_num_tangential_poss()}\n"
             f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
@@ -68,12 +85,19 @@ class ProjDataVisualisationBackend:
         """
         Loads a segment data, from the projection data, into memory allowing for faster access.
         """
-        if self.segment_data is None:
-            self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
+        if self.proj_data_stream is None:
+            self.load_projdata()
 
-        elif segment_number != self.segment_data.get_segment_num():
-            self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
-        return self.segment_data
+        if self.proj_data_stream is not None:
+            print(f"DEBUG: refresh_segment_data:\n"
+                  f"\t{self.proj_data_filename}\n"
+                  f"\tsegment_number: {segment_number}")
+            if self.segment_data is None:
+                self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
+
+            elif segment_number != self.get_current_segment_num():
+                self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
+            return self.segment_data
 
     @staticmethod
     def as_numpy(data: stir.ProjData) -> numpy.array:
@@ -81,3 +105,46 @@ class ProjDataVisualisationBackend:
         Converts a STIR data object to a numpy array.
         """
         return stirextra.to_numpy(data)
+
+    def get_limits(self, dimension: SinogramDimensions, segment_number: int) -> tuple:
+        """
+        Returns the limits of the projection data in the indicated dimension.
+        :param dimension: The dimension to get the limits for, type SinogramDimensions.
+        :param segment_number: The segment number to get the limits for. Only required for axial position.
+        :return: A tuple containing the minimum and maximum value of the dimension.
+        """
+        if dimension == SinogramDimensions.SEGMENT_NUM:
+            return self.proj_data_stream.get_min_segment_num(), \
+                   self.proj_data_stream.get_max_segment_num()
+        elif dimension == SinogramDimensions.AXIAL_POS:
+            return self.proj_data_stream.get_min_axial_pos_num(self.get_current_segment_num()), \
+                   self.proj_data_stream.get_max_axial_pos_num(self.get_current_segment_num())
+        elif dimension == SinogramDimensions.VIEW_NUMBER:
+            return self.proj_data_stream.get_min_view_num(), \
+                   self.proj_data_stream.get_max_view_num()
+        elif dimension == SinogramDimensions.TANGENTIAL_POS:
+            return self.proj_data_stream.get_min_tangential_pos_num(), \
+                   self.proj_data_stream.get_min_tangential_pos_num()
+        else:
+            raise ValueError("Unknown sinogram dimension: " + str(dimension))
+
+    def get_num_indices(self, dimension: SinogramDimensions):
+        """
+        Returns the number of indices in the given dimension.
+        """
+        if dimension == SinogramDimensions.SEGMENT_NUM:
+            return self.proj_data_stream.get_num_segments()
+        elif dimension == SinogramDimensions.AXIAL_POS:
+            return self.proj_data_stream.get_num_axial_poss(self.get_current_segment_num())
+        elif dimension == SinogramDimensions.VIEW_NUMBER:
+            return self.proj_data_stream.get_num_views()
+        elif dimension == SinogramDimensions.TANGENTIAL_POS:
+            return self.proj_data_stream.get_num_tangential_poss()
+        else:
+            raise ValueError("Unknown sinogram dimension: " + str(dimension))
+
+    def get_current_segment_num(self) -> int:
+        """
+        Returns the segment number of the current segment data.
+        """
+        return self.segment_data.get_segment_num()
