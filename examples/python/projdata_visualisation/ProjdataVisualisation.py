@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-ProjDataVisualisation.py
+ProjdataVisualisation.py
 """
+import sys
 
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel,
                              QRadioButton, QPushButton, QStyleFactory, QVBoxLayout, QFileDialog, QLineEdit)
@@ -13,9 +14,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 
 from projdata_visualisation.ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend, \
-    SinogramDimensions
-from projdata_visualisation.ProjDataVisualisationBackendTools.UITools import \
-    construct_slider_spinboxes
+    ProjdataDims
+from projdata_visualisation.ProjDataVisualisationBackendTools.UIGroupboxProjdataDimensions import \
+    UIGroupboxProjdataDimensions
 
 
 class ProjDataVisualisationWidgetGallery(QDialog):
@@ -52,7 +53,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         mainLayout.addWidget(self.topLeftGroupBox, 1, 0)
         mainLayout.addWidget(self.topRightGroupBox, 1, 1)
         # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
-        mainLayout.addWidget(self.bottomLeftGroupBox, 2, 0)
+        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 0)
         mainLayout.setRowStretch(1, 1)
         mainLayout.setRowStretch(2, 1)
         mainLayout.setColumnStretch(0, 1)
@@ -61,7 +62,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
         self.change_UI_style('Fusion')
 
-        self.update_UI_configuration()
+        self.refresh_UI_configuration()
 
     def configure_backend(self):
         ### Backend ###
@@ -96,8 +97,8 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         self.viewgram_radio_button = QRadioButton("Viewgram")
 
         self.sinogram_radio_button.setChecked(True)
-        self.sinogram_radio_button.toggled.connect(self.update_UI_configuration)
-        self.viewgram_radio_button.toggled.connect(self.update_UI_configuration)
+        self.sinogram_radio_button.toggled.connect(self.refresh_UI_configuration)
+        self.viewgram_radio_button.toggled.connect(self.refresh_UI_configuration)
 
         # Configure Layout
         layout = QGridLayout()
@@ -142,132 +143,27 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         self.topRightGroupBox.setLayout(layout)
 
     def create_bottom_left_groupbox(self):
-        self.bottomLeftGroupBox = QGroupBox("Projection Data Dimensions")
-
-        UI_config_dict = {
-            SinogramDimensions.SEGMENT_NUM: {
-                'label': 'Segment number',
-                'value': 0,
-                'connect_method': self.segment_number_refresh
-            },
-            SinogramDimensions.AXIAL_POS: {
-                'label': 'Axial position',
-                'connect_method': self.axial_pos_refresh
-            },
-            SinogramDimensions.VIEW_NUMBER: {
-                'label': 'View number',
-                'value': 0,
-                'connect_method': self.view_num_refresh
-            },
-            SinogramDimensions.TANGENTIAL_POS: {
-                'label': 'Tangential position',
-                'connect_method': self.tangential_pos_refresh
-            }
-        }
-
-        self.UI_slider_spinboxes = construct_slider_spinboxes(stir_interface=self.stir_interface,
-                                                              UI_groupbox=self.bottomLeftGroupBox,
-                                                              configuration=UI_config_dict)
-
-        ##### LAYOUT ####
-        layout = QGridLayout()
-        # layout.addWidget(lineEdit, 0, 0, 1, 2)
-        self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].add_to_layout(layout, row=0)
-        self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].add_to_layout(layout, row=2)
-        self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].add_to_layout(layout, row=4)
-        self.UI_slider_spinboxes[SinogramDimensions.TANGENTIAL_POS].add_to_layout(layout, row=6)
-
-        layout.setRowStretch(5, 1)
-        self.bottomLeftGroupBox.setLayout(layout)
-
-    def segment_number_refresh(self):
-        """
-        This function is called when the user changes the segment number value.
-        """
-        self.stir_interface.refresh_segment_data(self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].value())
-        self.update_UI_configuration()
-
-    def axial_pos_refresh(self):
-        """
-        This function is called when the user changes the axial position value.
-        """
-        self.update_UI_configuration()
-
-    def view_num_refresh(self):
-        """
-        This function is called when the user changes the view number value.
-        """
-        self.update_UI_configuration()
-
-    def tangential_pos_refresh(self):
-        """
-        This function is called when the user changes the tangential position value.
-        """
-        self.update_UI_configuration()
+        self.UI_groupbox_projdata_dimensions = UIGroupboxProjdataDimensions(self.stir_interface)
+        methods = [self.refresh_UI_configuration]
+        self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=methods)
 
     ######## UI CONFIGURATION CHANGES #########
 
-    def update_sliders_and_spinboxs_ranges(self) -> None:
-        """
-
-        """
-        if self.stir_interface.proj_data_stream is None:
-            return
-        for dimension in SinogramDimensions:
-            self.UI_slider_spinboxes[dimension].update_limits(
-                self.stir_interface.get_limits(dimension, self.stir_interface.get_current_segment_num()))
-
-    def update_axial_pos_slider_spinbox_limits(self):
-        """
-        This function is called when the segment number is changed to automatically update the axial position slider
-        and spinbox.
-        Also, it updates the axial position value for both the slider and spinbox to keep within range.
-        """
-        self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].update_limits(
-            self.stir_interface.get_limits(SinogramDimensions.SEGMENT_NUM,
-                                           self.stir_interface.get_current_segment_num()
-                                           ))
-
-    def update_UI_configuration(self):
+    def refresh_UI_configuration(self):
         """
         This function is called when the user changes any of the projection data parameters.
         It updates the UI to reflect the new projection data parameters.
         It calls the updateDisplayImage function to update the display image.
         """
-        self.update_sliders_and_spinboxs_ranges()
-
-        # Segment slider and scroll box handling
-        if self.stir_interface.proj_data_stream is not None:
-            if self.stir_interface.proj_data_stream.get_max_segment_num() == 0 and \
-                    self.stir_interface.proj_data_stream.get_min_segment_num() == 0:
-                self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].disable()
-            else:
-                self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].enable()
-
-        # Check if sinogram or viewgram is selected and disable the appropriate sliders and spinboxs
-        if self.sinogram_radio_button.isChecked():
-            # Disable the tangential position slider and spinbox
-            self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].disable()
-            if 0 == (self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[0] -
-                     self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].get_limits()[1]):
-                self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].disable()
-            else:
-                self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].enable()
-
-        elif self.viewgram_radio_button.isChecked():
-            self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].disable()
-            self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].enable()
-
-        if True:  # Until I work out what to do with tangential position
-            self.UI_slider_spinboxes[SinogramDimensions.TANGENTIAL_POS].disable()
-
+        self.stir_interface
+        self.UI_groupbox_projdata_dimensions.refresh_sliders_and_spinboxes_ranges()
+        self.UI_groupbox_projdata_dimensions.update_enable_disable(self.sinogram_radio_button.isChecked())
         self.update_display_image()
 
     def update_display_image(self):
         """
         This method updates the displayed image based uon the current UI configuration parameters.
         """
-
         if self.stir_interface.proj_data_stream is None:
             return None
 
@@ -279,14 +175,15 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if self.sinogram_radio_button.isChecked():
             image = self.get_sinogram_numpy_array()
             ax.title.set_text(
-                f"Sinogram - Segment: {self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].value()}, "
-                f"Axial Position: {self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].value()}")
+                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.SEGMENT_NUM)}, "
+                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.AXIAL_POS)}")
             ax.yaxis.set_label_text("Views/projection angle")
             ax.xaxis.set_label_text("Tangential positions")
         elif self.viewgram_radio_button.isChecked():
             image = self.get_viewgram_numpy_array()
-            ax.title.set_text(f"Sinogram - Segment: {self.UI_slider_spinboxes[SinogramDimensions.SEGMENT_NUM].value()},"
-                              f"View Number: {self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].value()}")
+            ax.title.set_text(
+                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.SEGMENT_NUM)},"
+                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.VIEW_NUMBER)}")
             ax.yaxis.set_label_text("Axial positions")
             ax.xaxis.set_label_text("Tangential positions")
         else:
@@ -306,24 +203,23 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         """
         if self.stir_interface.proj_data_stream is None:
             return None
+
+        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjdataDims.AXIAL_POS)
         return self.stir_interface.as_numpy(
-            self.stir_interface.segment_data.get_sinogram(
-                self.UI_slider_spinboxes[SinogramDimensions.AXIAL_POS].value())
-        )
+            self.stir_interface.segment_data.get_sinogram(axial_pos))
 
     def get_viewgram_numpy_array(self):
         if self.stir_interface.proj_data_stream is None:
             return None
-        return self.stir_interface.as_numpy(
-            self.stir_interface.segment_data.get_viewgram(
-                self.UI_slider_spinboxes[SinogramDimensions.VIEW_NUMBER].value())
-        )
+
+        view_num = self.UI_groupbox_projdata_dimensions.value(ProjdataDims.VIEW_NUMBER)
+        return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(view_num))
 
     def browse_file_system_for_projdata(self):
         initial = self.projdata_filename_box.text()
-        fname = QFileDialog.getOpenFileName(self, "Open ProjData File", "", "ProjData Files (*.hs)")
-        if len(fname[0]) > 0:
-            self.projdata_filename_box.setText(fname[0])
+        filename = QFileDialog.getOpenFileName(self, "Open ProjData File", "", "ProjData Files (*.hs)")
+        if len(filename[0]) > 0:
+            self.projdata_filename_box.setText(filename[0])
             self.load_projdata()
         else:
             self.projdata_filename_box.setText(initial)
@@ -333,13 +229,15 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         This function loads the projdata file and updates the UI.
         """
         self.stir_interface.load_projdata(self.projdata_filename_box.text())
-        self.update_UI_configuration()
+        self.refresh_UI_configuration()
 
 
-if __name__ == '__main__':
-    import sys
-
+def main():
     app = QApplication(sys.argv)
     gallery = ProjDataVisualisationWidgetGallery()
     gallery.show()
     sys.exit(app.exec())
+
+
+if __name__ == '__main__':
+    main()

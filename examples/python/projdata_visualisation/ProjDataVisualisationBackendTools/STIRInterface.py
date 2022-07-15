@@ -7,7 +7,7 @@ import stirextra
 from enum import Enum, auto
 
 
-class SinogramDimensions(Enum):
+class ProjdataDims(Enum):
     """
     Enum for the dimensions of a sinogram.
     """
@@ -89,9 +89,6 @@ class ProjDataVisualisationBackend:
             self.load_projdata()
 
         if self.proj_data_stream is not None:
-            print(f"DEBUG: refresh_segment_data:\n"
-                  f"\t{self.proj_data_filename}\n"
-                  f"\tsegment_number: {segment_number}")
             if self.segment_data is None:
                 self.segment_data = self.proj_data_stream.get_segment_by_view(segment_number)
 
@@ -106,39 +103,42 @@ class ProjDataVisualisationBackend:
         """
         return stirextra.to_numpy(data)
 
-    def get_limits(self, dimension: SinogramDimensions, segment_number: int) -> tuple:
+    def get_limits(self, dimension: ProjdataDims, segment_number: int) -> tuple:
         """
         Returns the limits of the projection data in the indicated dimension.
         :param dimension: The dimension to get the limits for, type SinogramDimensions.
         :param segment_number: The segment number to get the limits for. Only required for axial position.
         :return: A tuple containing the minimum and maximum value of the dimension.
         """
-        if dimension == SinogramDimensions.SEGMENT_NUM:
+        if self.proj_data_stream is None:
+            return (0, 0)
+
+        if dimension == ProjdataDims.SEGMENT_NUM:
             return self.proj_data_stream.get_min_segment_num(), \
                    self.proj_data_stream.get_max_segment_num()
-        elif dimension == SinogramDimensions.AXIAL_POS:
+        elif dimension == ProjdataDims.AXIAL_POS:
             return self.proj_data_stream.get_min_axial_pos_num(self.get_current_segment_num()), \
                    self.proj_data_stream.get_max_axial_pos_num(self.get_current_segment_num())
-        elif dimension == SinogramDimensions.VIEW_NUMBER:
+        elif dimension == ProjdataDims.VIEW_NUMBER:
             return self.proj_data_stream.get_min_view_num(), \
                    self.proj_data_stream.get_max_view_num()
-        elif dimension == SinogramDimensions.TANGENTIAL_POS:
+        elif dimension == ProjdataDims.TANGENTIAL_POS:
             return self.proj_data_stream.get_min_tangential_pos_num(), \
                    self.proj_data_stream.get_min_tangential_pos_num()
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
 
-    def get_num_indices(self, dimension: SinogramDimensions):
+    def get_num_indices(self, dimension: ProjdataDims):
         """
         Returns the number of indices in the given dimension.
         """
-        if dimension == SinogramDimensions.SEGMENT_NUM:
+        if dimension == ProjdataDims.SEGMENT_NUM:
             return self.proj_data_stream.get_num_segments()
-        elif dimension == SinogramDimensions.AXIAL_POS:
+        elif dimension == ProjdataDims.AXIAL_POS:
             return self.proj_data_stream.get_num_axial_poss(self.get_current_segment_num())
-        elif dimension == SinogramDimensions.VIEW_NUMBER:
+        elif dimension == ProjdataDims.VIEW_NUMBER:
             return self.proj_data_stream.get_num_views()
-        elif dimension == SinogramDimensions.TANGENTIAL_POS:
+        elif dimension == ProjdataDims.TANGENTIAL_POS:
             return self.proj_data_stream.get_num_tangential_poss()
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
@@ -147,4 +147,6 @@ class ProjDataVisualisationBackend:
         """
         Returns the segment number of the current segment data.
         """
-        return self.segment_data.get_segment_num()
+        if self.segment_data is not None:
+            return self.segment_data.get_segment_num()
+        return 0
