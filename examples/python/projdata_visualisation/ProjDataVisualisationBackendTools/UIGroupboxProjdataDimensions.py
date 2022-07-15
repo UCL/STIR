@@ -36,7 +36,7 @@ class UIGroupboxProjdataDimensions:
             }
         }
 
-        self.UI_slider_spinboxes = self.construct_slider_spinboxes(slider_spinbox_configurations=default_UI_config_dict)
+        self.UI_slider_spinboxes = self.__construct_slider_spinboxes(slider_spinbox_configurations=default_UI_config_dict)
 
         ##### LAYOUT ####
         layout = QGridLayout()
@@ -64,37 +64,30 @@ class UIGroupboxProjdataDimensions:
         for method in self.__external_UI_methods_on_connect:
             method()
 
+    # ========================================
+    # Refresh methods on spinbox/slider change
+    # ========================================
     def segment_number_refresh(self):
-        """
-        This function is called when the user changes the segment number value.
-        Because of the way the STIR segment data is handled, the segment_data needs to change first.
-        """
+        """ This function is called when the user changes the segment number value.
+        Because of the way the STIR segment data is handled, the segment_data needs to change first."""
         new_segment_num = self.UI_slider_spinboxes[ProjdataDims.SEGMENT_NUM].value()
         self.stir_interface.refresh_segment_data(new_segment_num)
         self.UI_controller_UI_change_trigger()
 
     def axial_pos_refresh(self):
-        """
-        This function is called when the user changes the axial position value.
-        """
+        """This function is called when the user changes the axial position value."""
         self.UI_controller_UI_change_trigger()
 
     def view_num_refresh(self):
-        """
-        This function is called when the user changes the view number value.
-        """
+        """This function is called when the user changes the view number value."""
         self.UI_controller_UI_change_trigger()
 
     def tangential_pos_refresh(self):
-        """
-        This function is called when the user changes the tangential position value.
-        """
+        """This function is called when the user changes the tangential position value."""
         self.UI_controller_UI_change_trigger()
 
     def refresh_sliders_and_spinboxes_ranges(self) -> None:
-        """
-        Update the sliders and spinboxes ranges based upon the stir_interface projdata.
-        """
+        """Update the sliders and spinboxes ranges based upon the stir_interface projdata."""
         if self.stir_interface.proj_data_stream is None:
             return
         # Update all slider and spinbox ranges, should start with segment number
@@ -113,7 +106,7 @@ class UIGroupboxProjdataDimensions:
             else:
                 self.enable(ProjdataDims.SEGMENT_NUM)
 
-        # Check if sinogram or viewgram is selected and disable the appropriate sliders and spinboxs
+        # Check if sinogram or viewgram is selected and disable the appropriate sliders and spinboxes
         if sinogram_radio_button_state:
             # Disable the tangential position slider and spinbox
             self.disable(ProjdataDims.VIEW_NUMBER)
@@ -131,7 +124,7 @@ class UIGroupboxProjdataDimensions:
         if True:  # Until I work out what to do with tangential position
             self.disable(ProjdataDims.TANGENTIAL_POS)
 
-    def construct_slider_spinboxes(self, slider_spinbox_configurations: dict) -> dict:
+    def __construct_slider_spinboxes(self, slider_spinbox_configurations: dict) -> dict:
         """
         Constructs the UI for the slider and spinbox items based upon the configuration in my_dict.
         :param slider_spinbox_configurations: The configuration for the slider and spinbox items.
@@ -149,8 +142,8 @@ class UIGroupboxProjdataDimensions:
 
             UI_slider_spinboxes[item[0]] = UISliderSpinboxItem(groupbox=self.groupbox,
                                                                label=f"{item[1]['label']}:",
-                                                               min_range=min_range,
-                                                               max_range=max_range,
+                                                               lower_limit=min_range,
+                                                               upper_limit=max_range,
                                                                value=value,
                                                                connect_method=item[1]['connect_method']
                                                                )
@@ -169,7 +162,7 @@ class UIGroupboxProjdataDimensions:
         return self.UI_slider_spinboxes[dimension].get_limits()
 
     def value(self, dimension: ProjdataDims) -> int:
-        """"Returns the value of the slider and spinbox for the given dimension."""
+        """Returns the value of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].value()
 
 
@@ -177,19 +170,20 @@ class UISliderSpinboxItem:
     """
     Class for the UI of the ProjDataVisualisationBackend.
     """
-
     def __init__(self, groupbox: QGroupBox,
                  label: str,
-                 min_range: int,
-                 max_range: int,
+                 lower_limit: int,
+                 upper_limit: int,
                  value: int,
                  connect_method: callable) -> None:
         """
         Constructor for the UISliderSpinboxItem class.
+        Creates a slider and spinbox item, with a label, between limits.
+        The slider and spinbox are connected to the connect_method.
         :param groupbox: The groupbox to add the label, slider and spinbox to.
         :param label: The label for the item, generally a short string.
-        :param min_range: The minimum value for the spinbox/slider.
-        :param max_range: The maximum value for the spinbox/slider.
+        :param lower_limit: The minimum value for the spinbox/slider.
+        :param upper_limit: The maximum value for the spinbox/slider.
         :param value: The initial value for the spinbox/slider.
         :param connect_method: Called method when the spinbox or slider value is changed.
         """
@@ -198,20 +192,21 @@ class UISliderSpinboxItem:
         self._connect_method = connect_method
 
         # Label
-        self.label = QLabel(f"{label} {min_range, max_range}")
+        self.__label_str = label
+        self.__label = QLabel(f"{self.__label_str} {lower_limit, upper_limit}")
 
         # Spinbox
-        self.spinbox = QSpinBox(groupbox)
-        self.spinbox.setRange(min_range, max_range)
-        self.spinbox.setValue(value)
-        self.spinbox.valueChanged.connect(self.spinbox_connect)
+        self.__spinbox = QSpinBox(groupbox)
+        self.__spinbox.setRange(lower_limit, upper_limit)
+        self.__spinbox.setValue(value)
+        self.__spinbox.valueChanged.connect(self.__spinbox_connect)
 
         # Slider
-        self.slider = QSlider(Qt.Orientation.Horizontal, groupbox)
-        self.slider.setRange(min_range, max_range)
-        self.slider.setValue(self.spinbox.value())
-        self.slider.setTickPosition(QSlider.TicksBelow)
-        self.slider.valueChanged.connect(self.slider_connect)
+        self.__slider = QSlider(Qt.Orientation.Horizontal, groupbox)
+        self.__slider.setRange(lower_limit, upper_limit)
+        self.__slider.setValue(self.__spinbox.value())
+        self.__slider.setTickPosition(QSlider.TicksBelow)
+        self.__slider.valueChanged.connect(self.__slider_connect)
 
     # ----------- UI configuration methods -----------
     def add_item_to_layout(self, layout: QGridLayout, row: int) -> None:
@@ -219,17 +214,17 @@ class UISliderSpinboxItem:
         Adds the label, spinbox and slider to the give layout at row.
         Assumed that the layout is a QGridLayout.
         """
-        layout.addWidget(self.label, row, 0, 1, 1)
-        layout.addWidget(self.slider, row + 1, 0, 1, 1)
-        layout.addWidget(self.spinbox, row + 1, 1, 1, 1)
+        layout.addWidget(self.__label, row, 0, 1, 1)
+        layout.addWidget(self.__slider, row + 1, 0, 1, 1)
+        layout.addWidget(self.__spinbox, row + 1, 1, 1, 1)
 
     def enable(self, enable=True) -> None:
         """
         Enables or disables the spinbox and slider.
         """
-        self.label.setEnabled(enable)
-        self.spinbox.setEnabled(enable)
-        self.slider.setEnabled(enable)
+        self.__label.setEnabled(enable)
+        self.__spinbox.setEnabled(enable)
+        self.__slider.setEnabled(enable)
 
     def disable(self, disable=True) -> None:
         """
@@ -240,41 +235,39 @@ class UISliderSpinboxItem:
     def update_limits(self, limits: tuple, value=None) -> None:
         """
         Updates the range of the spinbox and slider and adjusts the value to be within range.
+        Also updates the label.
+        :param limits: The new range (lower, upper) for the spinbox and slider.
+        :param value: The new value for the spinbox. If None, the value is not changed unless out of limits.
         """
-        self.spinbox.setRange(limits[0], limits[1])
-        self.slider.setRange(limits[0], limits[1])
-        if value is None or value < limits[0] or value > limits[1]:
-            value = min(limits[1], max(self.slider.value(), limits[0]))
-        self.spinbox.setValue(value)
-        self.slider.setValue(value)
+        self.__spinbox.setRange(limits[0], limits[1])
+        self.__slider.setRange(limits[0], limits[1])
+        self.__label.setText(f"{self.__label_str} {limits}")
+        if value is None or not isinstance(value, int) or value < limits[0] or value > limits[1]:
+            value = min(limits[1], max(self.__slider.value(), limits[0]))
+        self.__spinbox.setValue(value)
+        self.__slider.setValue(value)
 
     def get_limits(self) -> (int, int):
         """
         Returns the range (min, max) of the spinbox and slider.
         """
-        return self.spinbox.minimum(), self.spinbox.maximum()
+        return self.__spinbox.minimum(), self.__spinbox.maximum()
 
     def value(self) -> int:
-        """
-        Returns the value of the item.
-        """
-        return self.spinbox.value()
+        """Returns the value of the spinbox. Expected to be equal to slider value."""
+        return self.__spinbox.value()
 
     # ----------- Connect methods -----------
-    def spinbox_connect(self) -> None:
-        """
-        On spinbox connect, update the slider value and call _connect_method.
-        """
-        if self.spinbox.value() != self.slider.value():  # Prevents duplicate connect calls
-            self.slider.setValue(self.spinbox.value())
+    def __spinbox_connect(self) -> None:
+        """On spinbox connect, update the slider value and call __connect()."""
+        if self.__spinbox.value() != self.__slider.value():  # Prevents duplicate connect calls
+            self.__slider.setValue(self.__spinbox.value())
             self.__connect()
 
-    def slider_connect(self) -> None:
-        """
-        On slider connect, update the spinbox value and call _connect_method.
-        """
-        if self.slider.value() != self.spinbox.value():  # Prevents duplicate connect calls
-            self.spinbox.setValue(self.slider.value())
+    def __slider_connect(self) -> None:
+        """On slider connect, update the spinbox value and call __connect()."""
+        if self.__slider.value() != self.__spinbox.value():  # Prevents duplicate connect calls
+            self.__spinbox.setValue(self.__slider.value())
             self.__connect()
 
     def __connect(self) -> None:
