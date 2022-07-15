@@ -64,9 +64,7 @@ class UIGroupboxProjdataDimensions:
         for method in self.__external_UI_methods_on_connect:
             method()
 
-    # ========================================
-    # Refresh methods on spinbox/slider change
-    # ========================================
+    # Refresh methods on spinbox/slider changes
     def segment_number_refresh(self):
         """ This function is called when the user changes the segment number value.
         Because of the way the STIR segment data is handled, the segment_data needs to change first."""
@@ -167,9 +165,7 @@ class UIGroupboxProjdataDimensions:
 
 
 class UISliderSpinboxItem:
-    """
-    Class for the UI of the ProjDataVisualisationBackend.
-    """
+    """Class for the UI of the ProjDataVisualisationBackend."""
     def __init__(self, groupbox: QGroupBox,
                  label: str,
                  lower_limit: int,
@@ -193,7 +189,7 @@ class UISliderSpinboxItem:
 
         # Label
         self.__label_str = label
-        self.__label = QLabel(f"{self.__label_str} {lower_limit, upper_limit}")
+        self.__label = QLabel(self.create_label_str((lower_limit, upper_limit)))
 
         # Spinbox
         self.__spinbox = QSpinBox(groupbox)
@@ -210,26 +206,19 @@ class UISliderSpinboxItem:
 
     # ----------- UI configuration methods -----------
     def add_item_to_layout(self, layout: QGridLayout, row: int) -> None:
-        """
-        Adds the label, spinbox and slider to the give layout at row.
-        Assumed that the layout is a QGridLayout.
-        """
+        """Adds the label, spinbox and slider to the give layout at row. Assumed that the layout is a QGridLayout."""
         layout.addWidget(self.__label, row, 0, 1, 1)
         layout.addWidget(self.__slider, row + 1, 0, 1, 1)
         layout.addWidget(self.__spinbox, row + 1, 1, 1, 1)
 
     def enable(self, enable=True) -> None:
-        """
-        Enables or disables the spinbox and slider.
-        """
+        """Enables or disables the spinbox and slider."""
         self.__label.setEnabled(enable)
         self.__spinbox.setEnabled(enable)
         self.__slider.setEnabled(enable)
 
     def disable(self, disable=True) -> None:
-        """
-        Disables or enables the spinbox and slider.
-        """
+        """Disables or enables the spinbox and slider."""
         self.enable(not disable)
 
     def update_limits(self, limits: tuple, value=None) -> None:
@@ -241,21 +230,23 @@ class UISliderSpinboxItem:
         """
         self.__spinbox.setRange(limits[0], limits[1])
         self.__slider.setRange(limits[0], limits[1])
-        self.__label.setText(f"{self.__label_str} {limits}")
+        self.__label.setText(self.create_label_str(limits))
         if value is None or not isinstance(value, int) or value < limits[0] or value > limits[1]:
             value = min(limits[1], max(self.__slider.value(), limits[0]))
         self.__spinbox.setValue(value)
         self.__slider.setValue(value)
 
     def get_limits(self) -> (int, int):
-        """
-        Returns the range (min, max) of the spinbox and slider.
-        """
+        """Returns the range (min, max) of the spinbox and slider."""
         return self.__spinbox.minimum(), self.__spinbox.maximum()
 
     def value(self) -> int:
         """Returns the value of the spinbox. Expected to be equal to slider value."""
         return self.__spinbox.value()
+
+    def create_label_str(self, limits: tuple[int, int]) -> str:
+        """Returns the label string."""
+        return f"{self.__label_str} {limits}"
 
     # ----------- Connect methods -----------
     def __spinbox_connect(self) -> None:
@@ -271,9 +262,6 @@ class UISliderSpinboxItem:
             self.__connect()
 
     def __connect(self) -> None:
-        """
-        Connects the spinbox and slider to the connect method.
-        Used as safety incase _connect_method is None.
-        """
+        """Connects the spinbox and slider to the connect method. Used as safety incase _connect_method is None."""
         if self._connect_method is not None:
             self._connect_method()
