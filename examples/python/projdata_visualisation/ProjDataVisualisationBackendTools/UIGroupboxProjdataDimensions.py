@@ -10,6 +10,7 @@ class UIGroupboxProjdataDimensions:
 
     def __init__(self, stir_interface: ProjDataVisualisationBackend) -> QGroupBox:
 
+        self.__external_UI_methods_on_connect = None
         self.stir_interface = stir_interface
 
         self.groupbox = QGroupBox("Projection Data Dimensions")
@@ -48,23 +49,25 @@ class UIGroupboxProjdataDimensions:
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
 
-    def set_UI_connect_methods(self, methods: (callable, list[callable])) -> None:
+    def set_UI_connect_methods(self, methods: list[callable]) -> None:
         """
-        This function is called when the user changes the tangential position value.
+        Sets the external connect methods for the UI.
+        Pass methods in a list of callable objects. These methods will be called when the UI is changed in order.
         """
         if not isinstance(methods, list):
             methods = [methods]
-        self.triggered_UI_changes = methods
+        self.__external_UI_methods_on_connect = methods
 
     def UI_controller_UI_change_trigger(self):
-        if len(self.triggered_UI_changes) == 0:
+        if len(self.__external_UI_methods_on_connect) == 0:
             print("triggered_UI_changes is empty")
-        for method in self.triggered_UI_changes:
+        for method in self.__external_UI_methods_on_connect:
             method()
 
     def segment_number_refresh(self):
         """
         This function is called when the user changes the segment number value.
+        Because of the way the STIR segment data is handled, the segment_data needs to change first.
         """
         new_segment_num = self.UI_slider_spinboxes[ProjdataDims.SEGMENT_NUM].value()
         self.stir_interface.refresh_segment_data(new_segment_num)
@@ -139,7 +142,7 @@ class UIGroupboxProjdataDimensions:
             if self.stir_interface.proj_data_stream is None:
                 max_range, min_range = 0, 0
             else:
-                max_range, min_range = \
+                min_range, max_range = \
                     self.stir_interface.get_limits(item[0], self.stir_interface.get_current_segment_num())
 
             value = 0 if 'value' not in item[1] else item[1]['value']
@@ -153,16 +156,20 @@ class UIGroupboxProjdataDimensions:
                                                                )
         return UI_slider_spinboxes
 
-    def enable(self, dimension: ProjdataDims):
+    def enable(self, dimension: ProjdataDims) -> None:
+        """Enables the slider and spinbox for the given dimension."""
         self.UI_slider_spinboxes[dimension].enable()
 
-    def disable(self, dimension: ProjdataDims):
+    def disable(self, dimension: ProjdataDims) -> None:
+        """Disables the slider and spinbox for the given dimension."""
         self.UI_slider_spinboxes[dimension].disable()
 
-    def get_limits(self, dimension: ProjdataDims):
+    def get_limits(self, dimension: ProjdataDims) -> tuple[int, int]:
+        """Returns the limits of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].get_limits()
 
-    def value(self, dimension: ProjdataDims):
+    def value(self, dimension: ProjdataDims) -> int:
+        """"Returns the value of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].value()
 
 

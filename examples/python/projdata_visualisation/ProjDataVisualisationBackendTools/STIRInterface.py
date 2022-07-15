@@ -103,12 +103,12 @@ class ProjDataVisualisationBackend:
         """
         return stirextra.to_numpy(data)
 
-    def get_limits(self, dimension: ProjdataDims, segment_number: int) -> tuple:
+    def get_limits(self, dimension: ProjdataDims, segment_number: int) -> tuple[int, int]:
         """
         Returns the limits of the projection data in the indicated dimension.
         :param dimension: The dimension to get the limits for, type SinogramDimensions.
         :param segment_number: The segment number to get the limits for. Only required for axial position.
-        :return: A tuple containing the minimum and maximum value of the dimension.
+        :return: A tuple containing the minimum and maximum value of the dimension (min, max).
         """
         if self.proj_data_stream is None:
             return (0, 0)
@@ -124,7 +124,7 @@ class ProjDataVisualisationBackend:
                    self.proj_data_stream.get_max_view_num()
         elif dimension == ProjdataDims.TANGENTIAL_POS:
             return self.proj_data_stream.get_min_tangential_pos_num(), \
-                   self.proj_data_stream.get_min_tangential_pos_num()
+                   self.proj_data_stream.get_max_tangential_pos_num()
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
 
