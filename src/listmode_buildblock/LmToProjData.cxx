@@ -758,8 +758,15 @@ process_data(shared_ptr<ProjData> proj_data_sptr)
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             bin.time_frame_num() = current_frame_num;
-                     get_bin_from_event(bin, record.event());
+         bin.time_frame_num() = current_frame_num;
+         try {
+           get_bin_from_event(bin, record.event());
+         }
+         catch (...) {
+           for (int seg=template_proj_data_info_ptr->get_min_segment_num(); seg<=template_proj_data_info_ptr->get_max_segment_num(); seg++)
+             delete segments[seg];
+           error("Something wrong with geometry.");
+         }
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
