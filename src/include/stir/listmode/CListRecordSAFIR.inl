@@ -93,6 +93,11 @@ CListEventSAFIR<Derived>::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) 
       // transform det_pos_pair into stir conventions
       det_pos_pair.pos1() = map_to_use().get_det_pos_for_index(det_pos_pair.pos1());
       det_pos_pair.pos2() = map_to_use().get_det_pos_for_index(det_pos_pair.pos2());
+      
+      if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord()) {
+        bin.set_bin_value(-1);
+        return;
+      }
 
       if (!detail::get_bin_for_det_pos_pair<ProjDataInfoGenericNoArcCorr>(bin, det_pos_pair, proj_data_info))
         {

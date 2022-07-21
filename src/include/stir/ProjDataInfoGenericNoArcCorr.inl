@@ -165,8 +165,6 @@ get_bin_for_det_pair(Bin& bin,
 		     const int det_num1, const int ring_num1,
 		     const int det_num2, const int ring_num2) const
 {
-  if (det_num1 == det_num2)  // this scenario is undefined: which view should we use here?
-    return Succeeded::no;
   if (get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
     return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
   else
