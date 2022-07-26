@@ -74,7 +74,7 @@ interpolate_axial_position(ProjData& proj_data_out,
           if (proj_data_in_info==proj_data_out_info)
               relative_pos=axial_pos;
           else
-              relative_pos=abs(round((m -m_offset_in)/ in_m_sampling));
+              relative_pos=abs(((m -m_offset_in)/ in_m_sampling));
           
            Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
            const auto sino_in=proj_data_in.get_sinogram(relative_pos,0);
