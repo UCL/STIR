@@ -49,13 +49,18 @@ class UIGroupboxProjdataDimensions:
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
 
-    def set_UI_connect_methods(self, methods: list[callable]) -> None:
+    def set_UI_connect_methods(self, methods: [list[callable], callable]) -> None:
         """
         Sets the external connect methods for the UI.
         Pass methods in a list of callable objects. These methods will be called when the UI is changed in order.
         """
         if not isinstance(methods, list):
             methods = [methods]
+
+        for m in methods:
+            if not callable(m):
+                raise TypeError(f"{m} is not callable.")
+
         self.__external_UI_methods_on_connect = methods
 
     def UI_controller_UI_change_trigger(self):
