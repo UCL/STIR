@@ -94,7 +94,6 @@ interpolate_axial_position(ProjData& proj_data_out,
 #endif
       for (int axial_pos=proj_data_out.get_min_axial_pos_num(segment); axial_pos<=proj_data_out.get_max_axial_pos_num(segment);axial_pos++)
       {
-          std::cout<<"size out"<<m_out.at(segment).get_length()<<"   "<<proj_data_out.get_max_axial_pos_num(segment)<<std::endl;
           Bin bin(segment,0,axial_pos,0);
           m_out.at(segment).at(axial_pos)=proj_data_out_info.get_m(bin);
       }
