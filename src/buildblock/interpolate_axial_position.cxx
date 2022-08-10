@@ -90,21 +90,21 @@ interpolate_axial_position(ProjData& proj_data_out,
       for (int axial_pos=proj_data_out.get_min_axial_pos_num(segment); axial_pos<=proj_data_out.get_max_axial_pos_num(segment);axial_pos++)
       {
           VectorWithOffset<float> diff(proj_data_in.get_min_axial_pos_num(0),proj_data_in.get_max_axial_pos_num(0));
-          int relative_pos=0;
+          int axial_pos_in=0;
 
           if (proj_data_in_info==proj_data_out_info)
-              relative_pos=axial_pos;
+              axial_pos_in=axial_pos;
           else{
               for (auto it=m_in.at(0).begin();it!=m_in.at(0).end();it++)
               {
                  diff.at(it-m_in.at(0).begin())=abs(m_out.at(segment).at(axial_pos) - *it);
               }
               auto result=std::min_element(diff.begin(),diff.end());
-              relative_pos=std::distance(diff.begin(), result);
+              axial_pos_in=std::distance(diff.begin(), result);
           }
           
            Sinogram<float> sino= proj_data_out.get_empty_sinogram(axial_pos,segment);
-           const auto sino_in=proj_data_in.get_sinogram(relative_pos,0);
+           const auto sino_in=proj_data_in.get_sinogram(axial_pos_in,0);
 #ifdef STIR_OPENMP
 #  if _OPENMP <201107
                       #pragma omp parallel for
