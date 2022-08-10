@@ -34,7 +34,7 @@ export LC_ALL
 
 # find location of scatter parameter files
 script_name=`type -p $0`
-scatter_pardir=`dirname $script_name`/../examples/samples/scatter_estimation_par_files
+scatter_pardir=`dirname $script_name`../examples/samples/scatter_estimation_par_files
 echo "Using scatter parameter files from $scatter_pardir"
 
 ./simulate_PET_data_for_tests.sh
