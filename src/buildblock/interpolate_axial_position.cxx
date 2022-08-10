@@ -78,13 +78,6 @@ interpolate_axial_position(ProjData& proj_data_out,
   {
       m_out.at(segment).resize(proj_data_out.get_min_axial_pos_num(segment),proj_data_out.get_max_axial_pos_num(segment));
 
-#ifdef STIR_OPENMP
-#  if _OPENMP <201107
-                      #pragma omp parallel for
-#  else
-                      #pragma omp parallel for schedule(dynamic)
-#  endif
-#endif
       for (int axial_pos=proj_data_out.get_min_axial_pos_num(segment); axial_pos<=proj_data_out.get_max_axial_pos_num(segment);axial_pos++)
       {
           Bin bin(segment,0,axial_pos,0);
