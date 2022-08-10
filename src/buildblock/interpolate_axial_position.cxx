@@ -95,13 +95,6 @@ interpolate_axial_position(ProjData& proj_data_out,
           if (proj_data_in_info==proj_data_out_info)
               relative_pos=axial_pos;
           else{
-#ifdef STIR_OPENMP
-#  if _OPENMP <201107
-                      #pragma omp parallel for
-#  else
-                      #pragma omp parallel for schedule(dynamic)
-#  endif
-#endif
               for (auto it=m_in.at(0).begin();it!=m_in.at(0).end();it++)
               {
                  diff.at(it-m_in.at(0).begin())=abs(m_out.at(segment).at(axial_pos) - *it);
