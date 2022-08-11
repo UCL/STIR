@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# (note: need bash for "type -p" below)
 # A script to check to see if scatter simulation and estimation give the expected result.
 #
 #  Copyright (C) 2011, Kris Thielemans
@@ -33,7 +32,7 @@ LC_ALL=C
 export LC_ALL
 
 # find location of scatter parameter files
-script_name=`type -p $0`
+script_name=`basename $0`
 scatter_pardir=`dirname $script_name`../examples/samples/scatter_estimation_par_files
 echo "Using scatter parameter files from $scatter_pardir"
 
