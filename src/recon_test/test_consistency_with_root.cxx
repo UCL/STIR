@@ -207,7 +207,7 @@ setup()
 
   // Failure conditioner and recording
   nonTOF_distance_threshold = 1.5 * norm(grid_spacing); // Using norm(grid_spacing) as a nonTOF_distance_threshold
-  TOF_distance_threshold = 2.5 * norm(grid_spacing); // Using norm(grid_spacing) as a tof_distance_threshold
+  TOF_distance_threshold = 3.3 * norm(grid_spacing); // Using norm(grid_spacing) as a tof_distance_threshold
 }
 
 void
