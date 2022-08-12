@@ -110,6 +110,67 @@ def PointCloud3D(DataHandler):
     ax.set_ylabel('y (mm)')
     ax.set_zlabel('z (mm)')
     ax.legend(['Origin and Tolerance', 'Mean coords and stddev ', 'Voxel Positions'])
+    
+    plt.show()
+
+def PointCloud3D_all(point_sources_data):
+    # import matplotlib.pyplot as plt
+    # import random
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(projection='3d')
+    
+    for key in point_sources_data.keys():
+        DataHandler = point_sources_data[key]
+
+        # Plot all the points (intensity increases for multiple points)
+        ax.scatter(DataHandler.voxel_coords[:, 0], DataHandler.voxel_coords[:, 1], DataHandler.voxel_coords[:, 2], label = 'Source'+str(key))
+
+        # Plot the original point and tolerance
+        ox = DataHandler.original_coord[0]
+        oy = DataHandler.original_coord[1]
+        oz = DataHandler.original_coord[2]
+        tol = DataHandler.tolerance
+        ax.plot(ox, oy, oz, c='r', marker='o')
+        #plot tolerence around original point
+        ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy+tol, oy-tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
+
+        #plot Mean position and standard deviation
+        fx = DataHandler.mean_coord[0]
+        fy = DataHandler.mean_coord[1]
+        fz = DataHandler.mean_coord[2]
+        xerror = np.std(DataHandler.voxel_coords[:, 0])
+        yerror = np.std(DataHandler.voxel_coords[:, 1])
+        zerror = np.std(DataHandler.voxel_coords[:, 2])
+        ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
+        ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy, fy], [fz+zerror, fz-zerror], marker="_", c='g', label='_nolegend_')
+
+        ax.set_xlabel('x (mm)')
+        ax.set_ylabel('y (mm)')
+        ax.set_zlabel('z (mm)')
+        # set the x-spine (see below for more info on `set_position`)
+        ax.spines['left'].set_position('zero')
+
+        # turn off the right spine/ticks
+        #ax.spines['right'].set_color('none')
+        #ax.yaxis.tick_left()
+
+        # set the y-spine
+        ax.spines['bottom'].set_position('zero')
+
+        # turn off the top spine/ticks
+        #ax.spines['top'].set_color('none')
+        #ax.xaxis.tick_bottom()
+
+        #ax.legend(['Origin and Tolerance', 'Mean coords and stddev ', 'Voxel Positions'])
+    
+
+
+    plt.legend()
     plt.show()
 
 class ROOTConsistencyDataHandler:
@@ -312,7 +373,7 @@ def TOF_evaluation(filename_prefix, file_extension=".txt"):
     # Loop over all files in the working directory and load the data into the point_sources_data dictionary
     point_sources_data = dict()
     for i in range(1, 9, 1):
-        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}", tolerance=2.5*4.447)
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}", tolerance=3.3*4.447)
 
     # Print the number of events, number of failed events and failure percentage for each point source
     print_pass_and_fail(point_sources_data)
@@ -320,6 +381,7 @@ def TOF_evaluation(filename_prefix, file_extension=".txt"):
     print_axis_biases(point_sources_data)
 
     PointCloud3D(point_sources_data[1])
+    PointCloud3D_all(point_sources_data)
 
 # =====================================================================================================
 # Main Script
