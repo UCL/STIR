@@ -73,21 +73,24 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
     axs.title.set_text(
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
 
-def PointCloud3D(DataHandler):
-    # import matplotlib.pyplot as plt
-    # import random
+def point_cloud_3D(data_handler):
+    """
+    Plot the pointcloud of generated LOR-positions, original source-position and tolerance-whiskers for each source in a seperate scatter plot.
+    Args:
+        data_handler (ROOTConsistencyDataHandler): Object containing all relevant data for the plot
+    """
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection='3d')
 
     # Plot all the points (intensity increases for multiple points)
-    ax.scatter(DataHandler.voxel_coords[:, 0], DataHandler.voxel_coords[:, 1], DataHandler.voxel_coords[:, 2])
+    ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2])
 
     # Plot the original point and tolerance
-    ox = DataHandler.original_coord[0]
-    oy = DataHandler.original_coord[1]
-    oz = DataHandler.original_coord[2]
-    tol = DataHandler.tolerance
+    ox = data_handler.original_coord[0]
+    oy = data_handler.original_coord[1]
+    oz = data_handler.original_coord[2]
+    tol = data_handler.tolerance
     ax.plot(ox, oy, oz, c='r', marker='o')
     #plot tolerence around original point
     ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
@@ -95,12 +98,12 @@ def PointCloud3D(DataHandler):
     ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
 
     #plot Mean position and standard deviation
-    fx = DataHandler.mean_coord[0]
-    fy = DataHandler.mean_coord[1]
-    fz = DataHandler.mean_coord[2]
-    xerror = np.std(DataHandler.voxel_coords[:, 0])
-    yerror = np.std(DataHandler.voxel_coords[:, 1])
-    zerror = np.std(DataHandler.voxel_coords[:, 2])
+    fx = data_handler.mean_coord[0]
+    fy = data_handler.mean_coord[1]
+    fz = data_handler.mean_coord[2]
+    xerror = np.std(data_handler.voxel_coords[:, 0])
+    yerror = np.std(data_handler.voxel_coords[:, 1])
+    zerror = np.std(data_handler.voxel_coords[:, 2])
     ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
     ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
     ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
@@ -109,28 +112,31 @@ def PointCloud3D(DataHandler):
     ax.set_xlabel('x (mm)')
     ax.set_ylabel('y (mm)')
     ax.set_zlabel('z (mm)')
-    ax.legend(['Origin and Tolerance', 'Mean coords and stddev ', 'Voxel Positions'])
+    ax.legend(['Voxel Positions', 'Origin and Tolerance','Mean coords and stddev'])
     
     plt.show()
 
-def PointCloud3D_all(point_sources_data):
-    # import matplotlib.pyplot as plt
-    # import random
+def point_cloud_3D_all(dict_of_data_handlers):
+    """
+    generates a single plot with pointclouds of generated LOR-positions, original source-positions and tolerance-whiskers for all sources
+    Args:
+        dict_of_data_handlers (dictionary containing objects of type ROOTConsistencyDataHandler): dictionary of objects containing all relevant data for the plot
+    """
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection='3d')
     
-    for key in point_sources_data.keys():
-        DataHandler = point_sources_data[key]
+    for key in dict_of_data_handlers.keys():
+        data_handler = dict_of_data_handlers[key]
 
         # Plot all the points (intensity increases for multiple points)
-        ax.scatter(DataHandler.voxel_coords[:, 0], DataHandler.voxel_coords[:, 1], DataHandler.voxel_coords[:, 2], label = 'Source'+str(key))
+        ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2], label = 'Source'+str(key))
 
         # Plot the original point and tolerance
-        ox = DataHandler.original_coord[0]
-        oy = DataHandler.original_coord[1]
-        oz = DataHandler.original_coord[2]
-        tol = DataHandler.tolerance
+        ox = data_handler.original_coord[0]
+        oy = data_handler.original_coord[1]
+        oz = data_handler.original_coord[2]
+        tol = data_handler.tolerance
         ax.plot(ox, oy, oz, c='r', marker='o')
         #plot tolerence around original point
         ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
@@ -138,12 +144,12 @@ def PointCloud3D_all(point_sources_data):
         ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
 
         #plot Mean position and standard deviation
-        fx = DataHandler.mean_coord[0]
-        fy = DataHandler.mean_coord[1]
-        fz = DataHandler.mean_coord[2]
-        xerror = np.std(DataHandler.voxel_coords[:, 0])
-        yerror = np.std(DataHandler.voxel_coords[:, 1])
-        zerror = np.std(DataHandler.voxel_coords[:, 2])
+        fx = data_handler.mean_coord[0]
+        fy = data_handler.mean_coord[1]
+        fz = data_handler.mean_coord[2]
+        xerror = np.std(data_handler.voxel_coords[:, 0])
+        yerror = np.std(data_handler.voxel_coords[:, 1])
+        zerror = np.std(data_handler.voxel_coords[:, 2])
         ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
         ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
         ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
@@ -152,21 +158,11 @@ def PointCloud3D_all(point_sources_data):
         ax.set_xlabel('x (mm)')
         ax.set_ylabel('y (mm)')
         ax.set_zlabel('z (mm)')
-        # set the x-spine (see below for more info on `set_position`)
+
+        # set the x-spine
         ax.spines['left'].set_position('zero')
-
-        # turn off the right spine/ticks
-        #ax.spines['right'].set_color('none')
-        #ax.yaxis.tick_left()
-
         # set the y-spine
         ax.spines['bottom'].set_position('zero')
-
-        # turn off the top spine/ticks
-        #ax.spines['top'].set_color('none')
-        #ax.xaxis.tick_bottom()
-
-        #ax.legend(['Origin and Tolerance', 'Mean coords and stddev ', 'Voxel Positions'])
     
 
 
@@ -380,8 +376,8 @@ def TOF_evaluation(filename_prefix, file_extension=".txt"):
     # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
     print_axis_biases(point_sources_data)
 
-    PointCloud3D(point_sources_data[1])
-    PointCloud3D_all(point_sources_data)
+    point_cloud_3D(point_sources_data[1])
+    point_cloud_3D_all(point_sources_data)
 
 # =====================================================================================================
 # Main Script
