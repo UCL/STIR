@@ -1,0 +1,65 @@
+OSMAPOSLParameters :=
+
+    objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+        input file := input.hs
+
+        projector pair type := Matrix
+            Projector Pair Using Matrix Parameters :=
+            Matrix type := Pinhole SPECT UB
+            Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+            
+                ; Minimum weight to take into account. Makes reference just to the geometric (PSF) part of the weight. 
+                ;  Weight could be lower after applying the attenuation factor (typically 0.005 - 0.02)
+                minimum weight := 0.0
+
+                ;Maximum number of sigmas to consider in PSF calculation (typically 1.5 - 2.5)
+                maximum number of sigmas := 2.0
+
+                ; Spatial high resolution in which to sample distributions (typically 0.001 - 0.0001)
+                spatial resolution PSF := 0.001
+
+                ; Subsampling factor to compute convolutions for mid resolution. This reduces temporally the PSF resolution to
+                ; perform more accurate calculus and then down sample the final PSF to the bin size (typically 1 - 8)
+                subsampling factor PSF := 1
+
+                ;  Detector and collimator parameter files
+                detector file := detector.txt
+                collimator file := collimator.txt
+
+                ;Correction for intrinsic PSF { Yes // No }
+                psf correction := no
+
+                ; Correction for depth of impact { Yes // No }
+                doi correction := no
+
+                ; Attenuation correction { Simple // Full // No }
+                attenuation type := Simple
+                ; Values in attenuation map in cm-1
+                attenuation map := attmap.hv
+
+                ; Voxels not belonging to the cylinder defined by this radius are masked by default.
+                object radius (cm) := 1.5
+                ; Mask properties { Attenuation Map // Explicit Mask // No }. Default mask - cylinder object radius.
+                mask type := Explicit mask
+                ; In case of explicit mask.
+                mask file := mask.hv
+
+                keep all views in cache := ${CACHEALLVIEWS3D}
+
+            End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+
+        End Projector Pair Using Matrix Parameters :=
+
+    end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+    initial estimate:= init.hv
+    output filename prefix := out/OSEM_psfno_doino_attsimple_maskexplicit
+
+    number of subsets:= 13
+    number of subiterations:= 4
+    Save estimates at subiteration intervals:= 4
+
+
+END :=

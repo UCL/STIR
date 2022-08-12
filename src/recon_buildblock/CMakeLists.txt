@@ -43,6 +43,9 @@ set(${dir_LIB_SOURCES}
 	ProjMatrixByBinSPECTUB.cxx
 	SPECTUB_Tools.cxx
 	SPECTUB_Weight3d.cxx
+	ProjMatrixByBinPinholeSPECTUB.cxx
+	PinholeSPECTUB_Tools.cxx
+	PinholeSPECTUB_Weight3d.cxx
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx
 	BackProjectorByBinUsingProjMatrixByBin.cxx
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx

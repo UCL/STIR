@@ -1,12 +1,17 @@
 /*
- * Copyright (c) 2014, 
- * Institute of Nuclear Medicine, University College of London Hospital, UCL, London, UK.
- * Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
- * This software is distributed WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- 
- \author Carles Falcon
- */
+    Copyright (C) 2022, Matthew Strugari
+    Copyright (C) 2014, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
+    Copyright (C) 2014, 2021, University College London
+    This file is part of STIR.
+
+    This software is distributed WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    See STIR/LICENSE.txt for details
+
+    \author Carles Falcon
+    \author Matthew Strugari
+*/
 
 //system libraries
 #include <stdio.h>
@@ -16,22 +21,45 @@
 #include <math.h>
 
 //user defined libraries
-
-#include "wmtools_SPECT_mph.h"
-#include "weight3d_SPECT_mph.h"
+#include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
+#include "stir/recon_buildblock/PinholeSPECTUB_Weight3d.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
+#include <boost/math/constants/constants.hpp>
+//#include "stir/spatial_transformation/InvertAxis.h"
 
 namespace SPECTUB_mph
 {
 
-using namespace std;
-
 #define in_limits( a ,l1 , l2 ) ( (a) < (l1) ? (l1) : ( (a) > (l2) ? (l2) : (a) ) )
+
+#define NUMARG 23
+
+#define EPSILON 1e-12
+#define EOS '\0'
+
+#define maxim(a,b) ((a)>=(b)?(a):(b))
+#define minim(a,b) ((a)<=(b)?(a):(b))
+#define abs(a) ((a)>=0?(a):(-a))
+#define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
+ 
+//#ifndef M_PI
+//#define M_PI 3.141592653589793
+//#endif
+
+//#define dg2rd 0.01745329251994
+
+#define DELIMITER1 '#' //delimiter character in input parameter text file
+#define DELIMITER2 '%' //delimiter character in input parameter text file
+
+using namespace std;
 
 //==========================================================================
 //=== wm_calculation =======================================================
 //==========================================================================
 
 void wm_calculation_mph ( bool do_calc,
+                          const int kOS,
                           psf2d_type *psf_bin,
                           psf2d_type *psf_subs,
                           psf2d_type *psf_aux,
@@ -49,33 +77,28 @@ void wm_calculation_mph ( bool do_calc,
 	float coeff_att = (float) 1.;
 	int   jp;
     float w_max= -1.;
-    int Dimxd2, Dimyd2;
+    int   Dimxd2, Dimyd2;
     
     //... collimator parameters ........................................
     
     mphcoll_type  * c  = & wmh.collim;
 
-    //... STIR origin offset ........................................
-    Dimxd2 = wmh.vol.Dimx / 2 ;
-    Dimyd2 = wmh.vol.Dimy / 2 ;
+    //... STIR origin offset .......................................
+    Dimxd2 = wmh.vol.Dimx / 2;
+    Dimyd2 = wmh.vol.Dimy / 2;
     
-    if ( !do_calc ){
+    if ( do_calc ){
         
         //... STIR indices .......................................................................
         
-        if ( wm.do_save_STIR ){
+        if ( wm.do_save_STIR ){ 
+          
+            jp = -1;    // projection index (row index of the weight matrix )
+            int j1;
             
-            wm.ns = new int [ wmh.prj.Nbt ];
-            wm.nb = new int [ wmh.prj.Nbt ];
-            wm.na = new int [ wmh.prj.Nbt ];
-            
-            wm.nx = new short int [ wmh.vol.Nvox ];
-            wm.ny = new short int [ wmh.vol.Nvox ];
-            wm.nz = new short int [ wmh.vol.Nvox ];
-            
-            jp = -1;											// projection index (row index of the weight matrix )
-            
-            for ( int j = 0 ; j < wmh.prj.Ndt ; j++ ){
+            for ( int j = 0 ; j < wmh.prj.NdOS ; j++ ){
+
+                j1 = kOS;
                 
                 for ( int k = 0 ; k < wmh.prj.Nsli ; k++ ){
 
@@ -84,7 +107,7 @@ void wm_calculation_mph ( bool do_calc,
                     for ( int i = 0 ; i < wmh.prj.Nbin ; i++){
                         
                         jp++;
-                        wm.na[ jp ] = j;
+                        wm.na[ jp ] = j1;
                         wm.nb[ jp ] = i - nbd2;
                         wm.ns[ jp ] = k;
                     }
@@ -92,14 +115,14 @@ void wm_calculation_mph ( bool do_calc,
             }
         }
     }
-	
+
     //=== LOOP1: IMAGE SLICES ================================================================
     
     for ( vox.iz = wmh.vol.first_sl ; vox.iz < wmh.vol.last_sl ; vox.iz++ ){
         
         vox.z  = wmh.vol.z0 + vox.iz * wmh.vol.thcm;
         
-        cout << "weights: " << 100.*(vox.iz+1)/wmh.vol.Dimz << "%" << endl;
+        //cout << "weights: " << 100.*(vox.iz+1)/wmh.vol.Dimz << "%" << endl;
         
         //=== LOOP2: IMAGE ROWS =======================================================================
         
@@ -119,9 +142,9 @@ void wm_calculation_mph ( bool do_calc,
                 
                 //=== LOOP4: DETELS: DETECTOR ELEMENTS ===========================================
                 
-                for( int k = 0 ; k < wmh.prj.Ndt ; k++ ){
+                for( int k = 0 ; k < wmh.prj.NdOS ; k++ ){
                     
-                    detel_type * d  = & wmh.detel[ k ];
+                    detel_type * d  = & wmh.detel[ kOS ];
                     
                     //... cordinates of the voxel in the rotated reference system. .................
                     
@@ -149,9 +172,9 @@ void wm_calculation_mph ( bool do_calc,
                         //... geometrical part of the PSF ....................................
                         
                         if ( wmh.do_subsamp ){
-                            
+
                             if ( wmh.do_depth ) fill_psf_depth ( psf_subs, &l, f, wmh.subsamp, do_calc );
-                            
+
                             else fill_psf_geo ( psf_subs, &l, f, wmh.subsamp, do_calc );
                             
                             if ( wmh.do_psfi ) psf_convol ( psf_subs, psf_aux, kern, do_calc );
@@ -189,7 +212,7 @@ void wm_calculation_mph ( bool do_calc,
                                 if ( ib < 0 ) continue;
                                 if ( ib >= wmh.prj.Nbin ) continue;
                                 
-                                jp = k * wmh.prj.Nbd + jb * wmh.prj.Nbin + ib ;
+                                jp = k * wmh.prj.NbOS + jb * wmh.prj.Nbin + ib ;
                                 
                                 if ( do_calc ) {
                                     
@@ -198,12 +221,11 @@ void wm_calculation_mph ( bool do_calc,
                                     if ( weight < wmh.mn_w ) continue ;
                                     
                                     //... to fill image STIR indices ...........................
-                                    
+
                                     if ( wm.do_save_STIR ){
-                       
                                         wm.nx[ vox.iv ] = (short int)( vox.ix - Dimxd2 ) ; // centered index for STIR format
                                         wm.ny[ vox.iv ] = (short int)( vox.iy - Dimyd2 ) ; // centered index for STIR format
-                                        wm.nz[ vox.iv ] = (short int)  vox.iz ;            // non-centered index for STIR format
+                                        wm.nz[ vox.iv ] = (short int)  vox.iz ;            // non-centered index for STIR format    
                                     }
                                     
                                     //... calculus of full attenuation ...............
@@ -240,7 +262,7 @@ void wm_calculation_mph ( bool do_calc,
 		}   //........................... end of LOOP2: image cols
 	}   //............................... end of LOOP1: image slices
     
-   if ( do_calc ) cout << "Maximum weight: " << w_max << endl;
+    // if ( do_calc ) cout << "Maximum weight: " << w_max << endl;
 }
 
 //==========================================================================
@@ -249,7 +271,8 @@ void wm_calculation_mph ( bool do_calc,
 
 void fill_psfi( psf2d_type * kern )
 {
-    float K0 = (float)0.39894228040143 / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
+    //float K0 = (float)0.39894228040143 / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
+    float K0 = (1.0f/boost::math::constants::root_two_pi<float>()) / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
     float f1 = - (float) 0.5 / ( wmh.prj.sgm_i * wmh.prj.sgm_i );
 	
     float * g1d;
@@ -422,8 +445,7 @@ void voxel_projection_mph ( lor_type * l, voxel_type * v, hole_type * h )
 //==========================================================================
 
 void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor, bool do_calc )
-{
-    
+{    
     psf->xc = l->x1d_l + wmh.prj.FOVxcmd2;   // x distance of center of PSF to the begin of the FOVcm
     psf->zc = l->z1d_l + wmh.prj.FOVzcmd2;   // z distance of center of PSF to the begin of the FOVcm
     
@@ -446,9 +468,14 @@ void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor,
     //... number of elements of the PSF ..............................................................
     
     psf->dimx = ( ib1 - psf->ib0 ) * factor ;
+
+    if ( psf->dimx > psf->max_dimx ) error_wmtools_SPECT_mph(78, psf->dimx , "geo_dimx");
+
     psf->dimz = ( jb1 - psf->jb0 ) * factor ;
+
+    if ( psf->dimz > psf->max_dimz ) error_wmtools_SPECT_mph(78, psf->dimz , "geo_dimz");
     
-    //... increment of incides in PSF space to cover a bin ...........................................
+    //... increment of indices in PSF space to cover a bin ...........................................
     
     if ( do_calc ){
         
@@ -902,7 +929,7 @@ float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax
 }
     
 //=============================================================================
-//=== cal_att_mph =============================================================
+//=== calc_att_mph =============================================================
 //=============================================================================
 
 float calc_att_mph( bin_type bin, voxel_type vox, float * attmap )
@@ -1055,20 +1082,32 @@ int comp_dist( float dx,
 
 void error_weight3d ( int nerr, string text )
 {
+#if 0
+    // error messages from original weight3d_SPECT_mph.cpp, some were copied by Carles from SPECTUB i.e. not used. 
 	switch(nerr){
 		case 13: printf( "\n\nError %d weight3d: wm.NbOS and/or wm.Nvox are negative", nerr ); break;
-		case 21: printf( "\n\nError %d weight3d: undefined collimator. Collimator %s not found\n", nerr ,text.c_str() ); break;
-		case 30: printf( "\n\nError %d weight3d: can not open \n%s for reading\n", nerr, text.c_str() ); break;
-		case 31: printf( "\n\nError %d weight3d: can not open \n%s for writing\n", nerr, text.c_str() ); break;
-		case 40: printf( "\n\nError %d weight3d: wrong codification in comp_dist function", nerr );break;
+		case 21: printf( "\n\nError %d weight3d: Undefined collimator. Collimator %s not found\n", nerr ,text.c_str() ); break;
+		case 30: printf( "\n\nError %d weight3d: Cannot open \n%s for reading\n", nerr, text.c_str() ); break;
+		case 31: printf( "\n\nError %d weight3d: Cannot open \n%s for writing\n", nerr, text.c_str() ); break;
+		case 40: printf( "\n\nError %d weight3d: Wrong codification in comp_dist function", nerr );break;
 		case 45: printf( "\n\nError %d weight3d: Realloc needed for WM\n", nerr ); break;
-		case 47: printf( "\n\nError %d weight3d: psf length greater than maxszb in calc_psf_bin\n", nerr ); break;
+		case 47: printf( "\n\nError %d weight3d: PSF length greater than maxszb in calc_psf_bin\n", nerr ); break;
 		case 49: printf( "\n\nError %d weight3d: attpth larger than allocated\n", nerr ); break;
 		case 50: printf( "\n\nError %d weight3d: No header stored in %s \n", nerr, text.c_str() ); break;
-        case 88: printf( "\n\nError %d weight3d: voxel located behin or within the hole.\nRevise volume settings or use cyl mask\n", nerr ); break;
+        case 88: printf( "\n\nError %d weight3d: voxel located behind or within the hole.\nRevise volume settings or use cyl mask\n", nerr ); break;
         default: printf( "\n\nError %d weight3d: %d unknown error number on error_weight3d()", nerr, nerr );
 	}
 	exit(0);
+#else
+    using stir::error;
+    switch(nerr){
+		case 40: error( "\n\nError weight3d: Wrong codification in comp_dist function." );break;
+		case 45: error( "\n\nError weight3d: Realloc needed for WM.\n" ); break;
+        case 88: error( "\n\nError weight3d: Voxel located behind or within the hole.\nRevise volume settings or use cyl mask.\n" ); break;
+        default: printf( "\n\nError %d weight3d: %d unknown error number on error_weight3d().", nerr, nerr );
+    }
+    exit(0);
+#endif
 }
 
 } // end of namespace

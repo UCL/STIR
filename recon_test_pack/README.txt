@@ -89,8 +89,15 @@ sh run_test_simulate_and_recon_with_motion.sh  [ --mpicmd cmd] [optional_install
 
 Testing SPECT reconstructions
 .............................
-cd SPECT
+For parallel hole and converging hole collimators:
+cd SPECT/SPECTUB
+
 sh run_SPECT_tests.sh  [ --mpicmd cmd] [--usecache] [optional_install_path]
+
+For pinhole collimators:
+cd SPECT/PinholeSPECTUB
+
+sh run_PinholeSPECT_tests.sh  [ --mpicmd cmd] [--usecache] [optional_install_path]
 
 The "--usecache" option will tell OSMAPOSL to keep the SPECT projection matrix in memory 
 which means that the reconstruction will be faster IF you have enough RAM memory in your system.

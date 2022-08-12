@@ -1,0 +1,28 @@
+!INTERFILE := 
+!imaging modality := CT
+!version of keys := STIR4.0
+
+!GENERAL DATA := 
+!name of data file := attmap.v
+
+!GENERAL IMAGE DATA := 
+!type of data := Tomographic
+imagedata byte order := LITTLEENDIAN
+
+!SPECT STUDY (general) := 
+!process status := reconstructed
+!number format := float
+!number of bytes per pixel := 4
+number of dimensions := 3
+matrix axis label [1] := x
+matrix axis label [2] := y
+matrix axis label [3] := z
+!matrix size [1] := 184
+!matrix size [2] := 184
+!matrix size [3] := 230
+scaling factor (mm/pixel) [1] := 0.25
+scaling factor (mm/pixel) [2] := 0.25
+scaling factor (mm/pixel) [3] := 0.25
+number of time frames := 1
+
+!END OF INTERFILE := 

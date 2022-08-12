@@ -1,20 +1,39 @@
 /*
- * Copyright (c) 2014, 
- * Institute of Nuclear Medicine, University College of London Hospital, UCL, London, UK.
- * Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
- * This software is distributed WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- 
- \author Carles Falcon
- Please, report bugs to cfalcon@ub.edu
- */
+    Copyright (C) 2022, Matthew Strugari
+    Copyright (C) 2014, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
+    Copyright (C) 2014, 2021, University College London
+    This file is part of STIR.
 
-//... system libraries ...............................................................
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-#include <stdio.h>
-#include <iostream>
+		http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+    \file
+    \ingroup projection
+
+    \brief Implementation of class stir::ProjMatrixByBinPinholeSPECTUB
+
+    \author Matthew Strugari
+    \author Carles Falcon
+    \author Kris Thielemans
+*/
+
+//system libraries
 #include <fstream>
 #include <algorithm>
+#include <stdio.h>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <stdlib.h>
@@ -22,18 +41,42 @@
 #include <ctype.h>
 #include <time.h>
 
+//user defined libraries
+//#include "stir/ProjDataInterfile.h"
+#include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
+#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+//#include "stir/KeyParser.h"
+#include "stir/IO/read_from_file.h"
+#include "stir/ProjDataInfo.h"
+//#include "stir/utilities.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
+#include "stir/Coordinate3D.h"
+#include "stir/info.h"
+#include "stir/CPUTimer.h"
+#ifdef STIR_OPENMP
+#include "stir/num_threads.h"
+#endif
+
+//#include "boost/cstdint.hpp"
+//#include "boost/scoped_ptr.hpp"
+#include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
+
 using namespace std;
 using std::string;
 
 //... user defined libraries .............................................................
 
-#include "wmtools_SPECT_mph.h"
-#include "weight3d_SPECT_mph.h"
-
+#include "stir/recon_buildblock/PinholeSPECTUB_Weight3d.h"
+#include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
 
 //... functions from wm_SPECT.2.0............................
 
-void error_wm_SPECT_mph( int nerr, string txt);      //list of error messages
+//void error_wm_SPECT_mph( int nerr, string txt);      //list of error messages
 void wm_inputs_mph( char ** argv, int argc );
 void read_inputs_mph( vector<string> param );
 
@@ -41,49 +84,431 @@ void read_inputs_mph( vector<string> param );
 
 namespace SPECTUB_mph
 {
-  wmh_mph_type wmh;       // weight matrix header. Global variable
-  wm_da_type wm;          // double array weight matrix structure. Global variable
-  pcf_type pcf;           // pre-calculated functions
+    wmh_mph_type wmh;       // weight matrix header. Global variable
+    wm_da_type wm;          // double array weight matrix structure. Global variable
+    pcf_type pcf;           // pre-calculated functions
 }
 
 using namespace SPECTUB_mph;
 
-//==========================================================================
-//=== main =================================================================
-//==========================================================================
+START_NAMESPACE_STIR
 
-int main( int argc, char **argv)
+
+const char * const 
+ProjMatrixByBinPinholeSPECTUB::registered_name =
+"Pinhole SPECT UB";
+
+ProjMatrixByBinPinholeSPECTUB::
+ProjMatrixByBinPinholeSPECTUB()
 {
-    bool  *msk_3d;        // voxels to be included in matrix (no weight calculated outside the mask)
-    float *attmap;        // attenuation map
-	
-    psf2d_type psf_bin;   // structure for total psf distribution in bins (dibimensional)
-    psf2d_type psf_subs;  // structure for total psf distribution: mid resolution (dibimensional)
-    psf2d_type psf_aux;   // structure for total psf distribution: mid resolution auxiliar for convolution (bimensional)
-    psf2d_type kern;      // structure for intrinsic psf distribution: mid resolution (dibimensional)
+    set_defaults();  
+}
+
+void 
+ProjMatrixByBinPinholeSPECTUB::
+initialise_keymap()
+{
+    parser.add_start_key("Projection Matrix By Bin Pinhole SPECT UB Parameters");
+    ProjMatrixByBin::initialise_keymap();
+
+    parser.add_key("minimum weight", &minimum_weight);
+    parser.add_key("maximum number of sigmas", &maximum_number_of_sigmas);
+    parser.add_key("spatial resolution PSF", &spatial_resolution_PSF);
+    parser.add_key("subsampling factor PSF", &subsampling_factor_PSF);
+    parser.add_key("detector file", &detector_file);
+    parser.add_key("collimator file", &collimator_file);
+    parser.add_key("psf correction", &psf_correction);
+    parser.add_key("doi correction", &doi_correction);
+    parser.add_key("attenuation type", &attenuation_type);
+    parser.add_key("attenuation map", &attenuation_map);
+    parser.add_key("object radius (cm)", &object_radius);
+    parser.add_key("mask type", &mask_type);
+    parser.add_key("mask file", &mask_file);
+    parser.add_key("keep all views in cache", &keep_all_views_in_cache);
+
+    parser.add_stop_key("End Projection Matrix By Bin Pinhole SPECT UB Parameters");
+}
+
+
+void
+ProjMatrixByBinPinholeSPECTUB::set_defaults()
+{
+    ProjMatrixByBin::set_defaults();
+
+    this->already_setup= false;
+
+    this->keep_all_views_in_cache=false;
+    minimum_weight= 0.0;
+    maximum_number_of_sigmas= 2.;
+    spatial_resolution_PSF= 0.001;
+    subsampling_factor_PSF= 1;
+    detector_file= "";
+    collimator_file= "";
+    psf_correction= "no";
+    doi_correction= "no";
+    attenuation_type= "no";
+    attenuation_map= "";
+    object_radius= 0.0;
+    mask_type= "no";
+    mask_file= "";
+}
+
+bool
+ProjMatrixByBinPinholeSPECTUB::post_processing()
+{
+    if (ProjMatrixByBin::post_processing() == true)
+        return true;
+
+    this->set_attenuation_type(this->attenuation_type);
+    if (!this->attenuation_map.empty())
+        this->set_attenuation_image_sptr(this->attenuation_map);
+    else
+        this->attenuation_image_sptr.reset();
+
+    this->already_setup= false;
+
+    return false;
+}
+
+//******************** get/set pairs *************
+
+bool
+ProjMatrixByBinPinholeSPECTUB::
+get_keep_all_views_in_cache() const
+{
+    return this->keep_all_views_in_cache;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_keep_all_views_in_cache(bool value)
+{
+    if (this->keep_all_views_in_cache != value)
+    {
+        this->keep_all_views_in_cache = value;
+        this->already_setup = false;
+    }
+}
+
+string
+ProjMatrixByBinPinholeSPECTUB::
+get_attenuation_type() const
+{
+    return this->attenuation_type;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_attenuation_type(const string& value)
+{
+    if (this->attenuation_type != boost::algorithm::to_lower_copy(value))
+    {
+        this->attenuation_type = boost::algorithm::to_lower_copy(value);
+        if ( this->attenuation_type != "simple" && this->attenuation_type != "full" && this->attenuation_type != "no" )
+            error("attenuation_type has to be Simple, Full, or No");
+        this->already_setup = false;
+    }
+}
+
+shared_ptr<const DiscretisedDensity<3,float> >
+ProjMatrixByBinPinholeSPECTUB::
+get_attenuation_image_sptr() const
+{
+    return this->attenuation_image_sptr;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
+{
+    this->attenuation_image_sptr = value;
+    if (this->attenuation_type == "no")
+    {
+        info("Setting attenuation type to 'simple'");
+        this->set_attenuation_type("simple");
+    }
+    this->already_setup = false;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_attenuation_image_sptr(const string& value)
+{
+    this->attenuation_map = value;
+    shared_ptr<DiscretisedDensity<3, float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+    set_attenuation_image_sptr(im_sptr);
+}
+
+//******************** actual implementation *************
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_up(		 
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    )
+{
+
+    ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+
+#ifdef STIR_OPENMP
+    if (!this->keep_all_views_in_cache)
+    {
+        warning("Pinhole SPECTUB matrix can currently only use single-threaded code unless all views are kept. Setting num_threads to 1.");
+        set_num_threads(1);
+    }
+#endif
+
+    using namespace SPECTUB_mph;
+
+    const VoxelsOnCartesianGrid<float> * image_info_ptr =
+        dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
+
+    if (image_info_ptr == NULL)
+        error("ProjMatrixByBinPinholeSPECTUB set-up with a wrong type of DiscretisedDensity\n");
+
+    if (this->already_setup) 
+    {
+	    if (this->densel_range == image_info_ptr->get_index_range() &&
+            this->voxel_size == image_info_ptr->get_voxel_size() &&
+            this->origin == image_info_ptr->get_origin() &&    
+            *proj_data_info_ptr_v == *this->proj_data_info_ptr)
+	    {
+		      // stored matrix should be compatible, so we can just reuse it
+            return;
+	    }
+	    else
+	    {
+            this->clear_cache();
+            this->delete_PinholeSPECTUB_arrays();
+	    }
+    }
+
+    this->proj_data_info_ptr=proj_data_info_ptr_v;
+    symmetries_sptr.reset(
+        new TrivialDataSymmetriesForBins(proj_data_info_ptr_v));
+
+    this->densel_range = image_info_ptr->get_index_range();
+    this->voxel_size = image_info_ptr->get_voxel_size();
+    this->origin = image_info_ptr->get_origin();
+
+	const ProjDataInfoCylindricalArcCorr * proj_Data_Info_Cylindrical =
+        dynamic_cast<const ProjDataInfoCylindricalArcCorr* > (this->proj_data_info_ptr.get());
+
+	CPUTimer timer; 
+	timer.start();
+
+    //... *** code below replaces wm_inputs_mph() and read_inputs_mph()
+
+    //.....image parameters......................
     
-    string header_suffix = ".wmhdr";  // suffix to add to matrix filename for weight matrix header filename
+    vol.Dimx = image_info_ptr->get_x_size();  // Image: number of columns
+    vol.Dimy = image_info_ptr->get_y_size();  // Image: number of rows
+    vol.Dimz = image_info_ptr->get_z_size();  // Image: and projections: number of slices
+    vol.szcm = image_info_ptr->get_voxel_size().x()/10.;  // Image: voxel size (cm)
+    vol.thcm = image_info_ptr->get_voxel_size().z()/10.;  // Image: slice thickness (cm)
     
-    double ini = clock();
-	
-	//... to read parameters and to calculate derivated variables ..........
-	
-	wm_inputs_mph( argv, argc );
+    vol.first_sl = 0;              // Image: first slice to take into account (no weight below)
+    vol.last_sl  = vol.Dimz;       // Image: last slice to take into account (no weights above)
+    
+    //if ( wmh.vol.first_sl < 0 || wmh.vol.first_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 107, param[ 7 ] );
+    //if ( wmh.vol.last_sl <= wmh.vol.first_sl || wmh.vol.last_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 108, param[ 8 ] );
+    
+    wmh.ro = object_radius;         // Image: object radius (cm)
+    
+    //..... geometrical and other derived parameters of the volume structure...............
+    
+    vol.Npix    = vol.Dimx * vol.Dimy;
+    vol.Nvox    = vol.Npix * vol.Dimz;
+    
+    vol.FOVxcmd2  = (float) vol.Dimx * vol.szcm / (float) 2.;   // half of the size of the image volume, dimension x (cm);
+    vol.FOVcmyd2  = (float) vol.Dimy * vol.szcm / (float) 2.;   // half of the size of the image volume, dimension y (cm);
+    vol.FOVzcmd2  = (float) vol.Dimz * vol.thcm / (float) 2.;   // Half of the size of the image volume, dimension z (cm);
+    
+    vol.x0      = - vol.FOVxcmd2 + (float)0.5 * vol.szcm ;  // x coordinate of first voxel
+    vol.y0      = - vol.FOVcmyd2 + (float)0.5 * vol.szcm ;  // y coordinate of first voxel
+    vol.z0      = - vol.FOVzcmd2 + (float)0.5 * vol.thcm ;  // z coordinate of first voxel
+
+    wmh.vol = vol;
+    
+    //...ring parameters ................................................
+    
+    wmh.detector_fn = detector_file;
+    
+    //....collimator parameters ........................................
+    
+    wmh.collim_fn   = collimator_file;
+    
+    //... resolution parameters ..............................................
+    
+    wmh.mn_w    = minimum_weight;
+    wmh.Nsigm   = maximum_number_of_sigmas;
+    wmh.highres = spatial_resolution_PSF;
+    wmh.subsamp = subsampling_factor_PSF;
+    
+    wmh.do_subsamp = false;
+    
+    //...correction for intrinsic PSF....................................
+    boost::algorithm::to_lower(psf_correction);
+    if ( psf_correction == "no" ) wmh.do_psfi = false;
+    else{
+        if ( psf_correction == "yes" ) wmh.do_psfi = true;
+        else error("psf_correction has to be Yes or No");   //error_wm_SPECT_mph( 116, psf_correction );
+        wmh.do_subsamp = true;
+    }
+    
+    //... impact depth .........................
+    boost::algorithm::to_lower(doi_correction);
+    if ( doi_correction == "no" ) {
+        wmh.do_depth = false;
+    }
+    else{
+        if ( doi_correction == "yes" ) wmh.do_depth = true;
+        else error("doi_correction has to be Yes or No");   //error_wm_SPECT_mph( 117, doi_correction );
+        wmh.do_subsamp = true;
+    }
+    
+    //... attenuation parameters .........................
+    boost::algorithm::to_lower(attenuation_type);
+    if ( attenuation_type == "no" ) {
+        wmh.do_att = wmh.do_full_att = false;
+    }
+    else{
+        wmh.do_att = true;
+        if ( attenuation_type == "simple" ) wmh.do_full_att = false;
+        else {
+            if ( attenuation_type == "full" ) wmh.do_full_att = true;
+            else error("attenuation_type has to be Simple, Full, or No");   //error_wm_SPECT_mph( 118, attenuation_type );
+        }
+        
+        wmh.att_fn = attenuation_map;
+    }
+    
+    //... masking parameters.............................
+    boost::algorithm::to_lower(mask_type);
+    if( mask_type == "no" ) wmh.do_msk_att = wmh.do_msk_file = false;
+    else {
+        if( mask_type == "attenuation map" ) wmh.do_msk_att = true;
+        else {
+            if( mask_type == "explicit mask" ){
+                wmh.do_msk_file = true;
+
+                wmh.msk_fn = mask_file;
+            }
+            else error("mask_type has to be Attenuation Map, Explicit Mask, or No");    //error_wm_SPECT_mph( 120, mask_type);
+        }
+    }
+
+    //... initialization of do_variables to false..............
+    
+    wmh.do_round_cumsum       = wmh.do_square_cumsum       = false ;
+
+    //... projection parameters ...................
+
+    wmh.prj.rad = proj_Data_Info_Cylindrical->get_ring_radius() / (float) 10.;  // ring radius (cm)
+    wmh.prj.Nbin = proj_Data_Info_Cylindrical->get_num_tangential_poss();       // number of bins per row
+    wmh.prj.Nsli = proj_Data_Info_Cylindrical->get_num_axial_poss(0);           // number of slices
+
+    wmh.prj.szcm = proj_Data_Info_Cylindrical->get_tangential_sampling() / (float) 10.;   // bin size (cm)
+    wmh.prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0) / (float) 10.;       // slice thickness (cm)
+
+    //... derived variables .......................
+
+    wmh.prj.FOVxcmd2 = (float) wmh.prj.Nbin * wmh.prj.szcm / (float) 2.;        // FOVcmx divided by 2
+    wmh.prj.FOVzcmd2 = (float) wmh.prj.Nsli * wmh.prj.thcm / (float) 2.;        // FOVcmz divided by 2
+
+    wmh.prj.Nbd    = wmh.prj.Nsli * wmh.prj.Nbin;
+
+    wmh.prj.szcmd2 = wmh.prj.szcm / (float) 2.;
+    wmh.prj.thcmd2 = wmh.prj.thcm / (float) 2. ;
+
+    //... files with complementary information .................
+    
+    read_prj_params_mph();
+    read_coll_params_mph();
+    
+    //... precalculated functions ................
+    
+    fill_pcf();
+    
+    //... other variables .........................
+
+    wm.Nbt     = wmh.prj.Nbt;                                                // number of rows of the weight matrix
+    wm.Nvox    = wmh.vol.Nvox;                                               // number of columns of the weight matrix
+    wmh.mndvh2 = ( wmh.collim.rad - wmh.ro ) * ( wmh.collim.rad - wmh.ro );  // reference distance ^2 for efficiency
+
+
+
+
+    // variables for wm calculations by view ("UB-subset")
+    wmh.prj.NOS = this->proj_data_info_ptr->get_num_views();
+    wmh.prj.NdOS = wmh.prj.Ndt/wmh.prj.NOS;
+    wmh.prj.NbOS = wmh.prj.Nbt/wmh.prj.NOS;
+
+	wm.do_save_STIR = true;
+
+    //... control of read parameters ..............
+
+	cout << "\nParameters of Pinhole SPECT UB matrix: (in cm)" << endl;
+    cout << "Image. Nrow: " << wmh.vol.Dimy << "\tNcol: " << wmh.vol.Dimx << "\tvoxel_size: " << wmh.vol.szcm<< endl;
+    cout << "Number of slices: " << wmh.vol.Dimz << "\tslice_thickness: " << wmh.vol.thcm << endl;
+    cout << "FOVxcmd2: " << wmh.vol.FOVxcmd2 << "\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\tradius object: " << wmh.ro <<endl;
+    cout << "Minimum weight: " << wmh.mn_w << endl;
+
+    //... up to here replaces wm_inputs_mph() and read_inputs_mph()
+
 	
 	//... to read attenuation map ..................................................
 	
 	if ( wmh.do_att ){
-		
+        if (is_null_ptr(attenuation_image_sptr))
+            error("Attenation image not set."); 
+
+		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
+			error("Currently the attenuation map and emission image must have the same dimension, orientation, and voxel size.");
+ 
         attmap = new float [ wmh.vol.Nvox ];
-		read_att_map_mph( attmap );
-	}
+	    bool exist_nan = false; 
+
+		std::copy(attenuation_image_sptr->begin_all(), attenuation_image_sptr->end_all(),attmap);        //read_att_map_mph( attmap );
+
+		for (int i = 0 ; i < wmh.vol.Nvox ; i++ ){
+			if ((boost::math::isnan)(attmap [ i ])){
+				attmap [ i ] = 0;
+                exist_nan = true;
+			}
+        if ( exist_nan ) cout << "WARNING: attmap contains NaN values. Converted to zero." << endl;
+	    }
+    }
 	else attmap = NULL;
-	
-	//... to generate mask..........................................................
+
+
+    //... to generate mask..........................................................
 
     msk_3d = new bool [ wmh.vol.Nvox ];
-    
-    generate_msk_mph( msk_3d, attmap );
+    //generate_msk_mph( msk_3d, attmap );
+
+    if (!wmh.do_msk_att && wmh.do_msk_file)
+    {
+        shared_ptr<DiscretisedDensity<3,float> > mask_sptr(read_from_file<DiscretisedDensity<3,float> >(wmh.msk_fn));
+
+        if ( !density_info_ptr->has_same_characteristics(*mask_sptr) )
+            error("Currently the mask image and emission image must have the same dimension, orientation, and voxel size.");
+
+        float * mask_from_file = new float [ wmh.vol.Nvox ];
+
+        std::copy( mask_sptr->begin_all(), mask_sptr->end_all(), mask_from_file );
+
+        // call UB generate_msk_mph pretending that this mask is an attenuation image
+        // we do this to avoid using its own read_msk_file_mph
+        wmh.do_msk_file = false;
+        wmh.do_msk_att = true;
+        generate_msk_mph( msk_3d, mask_from_file );
+
+        delete[] mask_from_file;
+    }
+    else generate_msk_mph( msk_3d, attmap );
+
     
     //... initialize psf2d in bins ..................................................
     
@@ -100,7 +525,6 @@ int main( int argc, char **argv)
         psf_subs.max_dimz = psf_bin.max_dimz * wmh.subsamp ;
         
         if ( wmh.do_depth ){
-            
             psf_subs.max_dimx += ( 1 + (int) ceilf( wmh.prj.crth *  wmh.tmax_aix / wmh.prj.szcm ) ) * wmh.subsamp ;
             psf_subs.max_dimz += ( 1 + (int) ceilf( wmh.prj.crth *  wmh.tmax_aiz / wmh.prj.thcm ) ) * wmh.subsamp ;
         }
@@ -147,53 +571,95 @@ int main( int argc, char **argv)
     for ( int i = 0 ; i < psf_bin.max_dimz ; i++ ) psf_bin.val[ i ] = new float [ psf_bin.max_dimx ];
     
     //... size estimation .........................................................
-    
-    int * Nitems;                                              // number of non-zero elements for each weight matrix row
-    Nitems  = new int [ wmh.prj.Nbt ];
-    
-    for ( int i = 0 ; i < wmh.prj.Nbt ; i++ ) Nitems[ i ] = 1;     // Nitems initializated to one
-    
-    wm_calculation_mph ( false , &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems );  // size esmitation
-    
-    int ne = 0;
-    
-    for ( int i = 0 ; i < wmh.prj.Nbt ; i++ ) ne += Nitems[ i ];
-    
-    cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock() - ini ) / CLOCKS_PER_SEC <<endl;
-    cout << "\ntotal number of non-zero weights: " << ne << endl;
-    if ( wm.do_save_STIR ) cout << "estimated matrix size: " << (ne + 10* wmh.prj.Nbt)/104857.6  << " Mb\n" << endl;
-    else cout << "estimated matrix size: " << ne/131072 << " Mb\n" << endl;
-    
-    //... wm_alloc ................................
-    
-    wm_alloc( Nitems );
-    
-    //... wm calculation ...........................
-    
-    wm_calculation_mph ( true, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems );
-    
-    cout << "\nwm_SPECT. Weight matrix calculation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
-    
-    //... to write the matrix into a file ..........................
-    
-    cout <<  "\nwriting weight matrix..." << endl;
-    
-    if ( wm.do_save_STIR ) write_wm_STIR_mph();
-    
-    else write_wm_FC_mph();
-    
-    //... to save matrix header .............................
+   
+    // number of non-zero elements for each weight matrix row
+    Nitems = new int * [ wmh.prj.NOS ];
+    for (int kOS = 0 ; kOS < wmh.prj.NOS ; kOS++) {
+        Nitems[kOS] = new int [ wmh.prj.NbOS ];
+        for ( int i = 0 ; i < wmh.prj.NbOS ; i++ ) Nitems[ kOS ][ i ] = 1; // Nitems initializated to one
+    }
 
-    wm.fn_hdr = wm.fn + header_suffix ;
+    //... double array wm.val and wm.col .....................................................
+	
+	if ( ( wm.val = new (nothrow) float * [ wmh.prj.NbOS ] ) == NULL )
+        error("Error allocating space to store values for SPECTUB matrix"); //error_wmtools_SPECT_mph( 200, wmh.prj.NbOS, "wm.val[]" );
+
+	if ( ( wm.col = new (nothrow) int   * [ wmh.prj.NbOS ] ) == NULL )
+        error("Error allocating space to store column indices for SPECTUB matrix"); //error_wmtools_SPECT_mph( 200, wmh.prj.NbOS, "wm.col[]" );
+	
+	//... array wm.ne .........................................................................
+	
+	if ( ( wm.ne = new (nothrow) int [ wmh.prj.NbOS + 1 ] ) == 0 )
+        error("Error allocating space to store number of elements for SPECTUB matrix"); //error_wmtools_SPECT_mph(200, wmh.prj.NbOS + 1, "wm.ne[]");
+
+    // allocate memory for weight matrix
+    if ( wm.do_save_STIR ){
+        wm.ns = new int [ wmh.prj.NbOS ];
+        wm.nb = new int [ wmh.prj.NbOS ];
+        wm.na = new int [ wmh.prj.NbOS ];
+        
+        wm.nx = new short int [ wmh.vol.Nvox ];
+        wm.ny = new short int [ wmh.vol.Nvox ];
+        wm.nz = new short int [ wmh.vol.Nvox ];
+    }
+
+    // size estimation
+    for (int kOS = 0 ; kOS < wmh.prj.NOS ; kOS++) {
+        wm_calculation_mph ( false , kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[ kOS ] );  
+    }
+    info(boost::format("Done estimating size of matrix. Execution time, CPU %1% s") % timer.value(), 2);
+
+    this->already_setup= true;
+}
+
+
+ProjMatrixByBinPinholeSPECTUB::
+~ProjMatrixByBinPinholeSPECTUB()
+{
+    delete_PinholeSPECTUB_arrays();
+}
+
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+delete_PinholeSPECTUB_arrays()
+{
+    if (!this->already_setup)
+        return;
+
+    using namespace SPECTUB_mph;
+
+    //... freeing matrix memory....................................
+
+    delete [] wm.val;
+    delete [] wm.col;
+    delete [] wm.ne;
+
+    if ( wm.do_save_STIR ){
+        delete [] wm.ns;
+        delete [] wm.nb;
+        delete [] wm.na;
+        delete [] wm.nx;
+        delete [] wm.ny;
+        delete [] wm.nz;
+    }
+
+    //... freeing pre-calculated functions ....................................
+
+    if ( wmh.do_round_cumsum ){
+        for ( int i = 0 ; i < pcf.round.dim ; i ++ ) delete [] pcf.round.val[ i ];
+        delete [] pcf.round.val;
+    }
     
-    write_wm_hdr_mph();
+    if ( wmh.do_square_cumsum ){
+        for ( int i = 0 ; i < pcf.square.dim ; i ++ ) delete [] pcf.square.val[ i ];
+        delete [] pcf.square.val;
+    }
     
-    //... freeing memory .............................................
-    
-    free_wm();
-    
-    free_pcf();
-    
+    if ( wmh.do_depth ) delete pcf.cr_att.val ;
+
+    //... freeing memory ....................................
+
     for ( int i = 0 ; i < psf_bin.max_dimz ; i++ ) delete [] psf_bin.val[ i ];
     delete [] psf_bin.val;
     
@@ -205,18 +671,103 @@ int main( int argc, char **argv)
     if ( wmh.do_psfi ){
         for ( int i = 0 ; i < kern.max_dimz ; i++ ) delete [] kern.val[ i ];
         delete [] kern.val;
+
+        // original code did not deallocate psf_aux.val, possible memory leak
+        for ( int i = 0 ; i < psf_aux.max_dimz ; i++ ) delete [] psf_aux.val[ i ];
+        delete [] psf_aux.val;
     }
     
+    for (int kOS = 0 ; kOS < wmh.prj.NOS ; kOS++)
+        delete [] Nitems[ kOS ];
     delete [] Nitems;
     
     if ( wmh.do_att ) delete [] attmap;
-    
+
     delete [] msk_3d;
-    
-    cout<<"\nwm_SPECT done. Execution time (s): " << double( clock()-ini )/CLOCKS_PER_SEC << endl;
-    
-    return( 0 );
 }
+
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+compute_one_subset(const int kOS) const
+{
+    using namespace SPECTUB_mph;
+
+    CPUTimer timer;
+    timer.start();
+
+    //... size information ..........................................................................
+
+    unsigned int ne = 0;
+
+    for ( int i = 0 ; i < wmh.prj.NbOS ; i++ ) ne += Nitems[kOS][ i ];
+
+    info(boost::format("Total number of non-zero weights in this view: %1%, estimated size: %2% MB") 
+        % ne
+        % ( wm.do_save_STIR ?  (ne + 10* wmh.prj.NbOS)/104857.6 : ne/131072),
+        2);
+
+    //... memory allocation for wm float arrays ....................................................
+
+    wm_alloc( Nitems[kOS] );
+
+    //... wm calculation ...............................................................................
+
+    wm_calculation_mph ( true, kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[kOS] );
+    info(boost::format("Weight matrix calculation done, CPU %1% s") % timer.value(),
+        2);
+
+    //... fill lor ..........................
+    for( int j = 0 ; j < wmh.prj.NbOS ; j++ ){
+        ProjMatrixElemsForOneBin lor;
+        Bin bin;
+        bin.segment_num()=0;
+        bin.view_num()=wm.na [ j ];	
+        bin.axial_pos_num()=wm.ns [ j ];	
+        bin.tangential_pos_num()=wm.nb [ j ];	
+        bin.set_bin_value(0);
+        lor.set_bin(bin);
+
+        lor.reserve(wm.ne[ j ]);
+        for ( int i = 0 ; i < wm.ne[ j ] ; i++ ){
+
+            const ProjMatrixElemsForOneBin::value_type 
+                elem(Coordinate3D<int>(wm.nz[ wm.col[ j ][ i ] ],wm.ny[ wm.col[ j ][ i ] ],wm.nx[ wm.col[ j ][ i ] ]), wm.val[ j ][ i ]);      
+            lor.push_back( elem);	
+        }
+
+        delete [] wm.val[ j ];
+        delete [] wm.col[ j ];
+
+        this->cache_proj_matrix_elems_for_one_bin(lor);
+    }
+
+    info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin, CPU %1% s") % timer.value(),
+        2);
+}
+
+
+void 
+ProjMatrixByBinPinholeSPECTUB::
+calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
+					) const
+{
+    const int view_num=lor.get_bin().view_num();
+
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINUBONEVIEW)
+#endif
+
+    if (!this->keep_all_views_in_cache) this->clear_cache();
+
+    info(boost::format("Computing matrix elements for view %1%") % view_num,
+        2);
+    compute_one_subset(view_num);
+    
+    lor.erase();
+}
+
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%% associated functions: reading, setting up variables and error messages %%%%%%
@@ -225,7 +776,9 @@ int main( int argc, char **argv)
 //==========================================================================
 //=== wm_inputs ============================================================
 //==========================================================================
-
+//*** inputs now read from STIR parameter file
+//==========================================================================
+#if 0
 void wm_inputs_mph( char **argv, int argc )
 {
     vector<string> param;
@@ -436,74 +989,6 @@ void read_inputs_mph(vector<string> param)
     
     cout << "\nMinimum weight: " << wmh.mn_w << endl;
 }
+#endif
 
-//==========================================================================
-//=== error_wm ====================================================
-//==========================================================================
-
-void error_wm_SPECT_mph( int nerr, string txt)
-{
-    string opcions[]={
-        "\nargv[1]  Matrix file: Weight matrix filename (without extension index)",
-        
-        "\nargv[2]  Image box: Number of columns (int)",
-        "\nargv[3]  Image box: Number of rows (int)",
-        "\nargv[4]  Image box: Number of slices (the same than projection slices) (int)",
-        "\nargv[5]  Image box: Voxel side length(cm). Only square voxels are considered (float cm)",
-        "\nargv[6]  Image box: Slice thickness (the same than projection slice thickness) (float cm)",
-        
-        "\nargv[7]  Image: First slice to reconstruct (1 to Nslices)",
-        "\nargv[8]  Image: Last slice to reconstruct (1 to Nslices)",
-        "\nargv[9]  Image: Object radius (cm)",
-        
-        "\nargv[10] Projection: file containig ring information",
-        "\nargv[11] Projections: File with the collimator parameters",
-        
-        "\nargv[12] Matrix: Minimum weight to take into account (over 1. Typically 0.01)",
-        "\nargv[13] Matrix: Maximum number of sigmas to consider in PSF calculation (float)",
-        
-        "\nargv[14] Matrix: Spatial high resolution in which to sample PSF distributions (typically 0.001)",
-        "\nargv[15] Matrix: Subsampling factor (usually 1-8)",
-        
-        "\nargv[16] Matrix: Correction for intrinsic PSF (no/yes)",
-        "\nargv[17] Matrix: Correction for impact depth (no/yes)",
-        "\nargv[18] Matrix: Correction for attenuation (no/simple/full)",
-        "\nargv[19] Matrix: attenuation map (filename/no) (in case of explicit mask)",
-        
-        "\nargv[20] Matrix: volume masking (att/file/no). Inscrit cylinder by default. att: mask with att=0",
-        "\nargv[21] Matrix: explicit mask (filename/no) (in case of explicit mask)",
-        
-        "\nargv[22]  Matrix file: Format. Options: STIR, FC (FruitCake)"
-    };
-    
-    switch(nerr){
-        case 100: cout << endl << "Missing variables" << endl;
-            for ( int i = 0 ; i < NUMARG-1 ; i++ ){
-                printf( "%s\n", opcions[ i ].c_str() );
-            }
-            break;
-            
-        //... error: value of argv[] ........................................
-            
-        case 101: printf("\n\nError %d wm_SPECT_mph: parametre file: %s not found\n", nerr, txt.c_str() );break;
-        case 102: printf("\n\nError %d wm_SPECT_mph: More parametres tan expected in file: %s\n", nerr, txt.c_str() );break;
-        case 103: printf("\n\nError %d wm_SPECT_mph: Less parametres tan expected in file: %s\n", nerr, txt.c_str() );break;
-        case 107: printf("\n\nError %d wm_SPECT_mph: first slice to reconstruct out of range (1->Nslic): %s \n", nerr, txt.c_str() );break;
-        case 108: printf("\n\nError %d wm_SPECT_mph: last slice to reconstruct out of range (first slice->Nslic): %s \n", nerr, txt.c_str() );break;
-        case 111: printf("\n\nError %d wm_SPECT_mph: number of subsets should be congruent with number of projection angles\n", nerr ); break;
-        case 116: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[16]. Options: no/yes. Read value: %s \n", nerr, txt.c_str() );break;
-        case 117: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[17]. Options: no/yes. Read value: %s \n", nerr, txt.c_str() );break;
-        case 118: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[18]. Options: no/simple/full. Read value: %s \n", nerr, txt.c_str() );break;
-        case 120: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[20]. Options: no/att/file. Read value: %s \n", nerr, txt.c_str() );break;
-        case 122: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[22]. Options: STIR/FC. Read value: %s \n", nerr, txt.c_str() );break;
-            
-        //... other errors...........................................................
-            
-        case 150: printf("\n\nError %d wm_SPECT: second delimiter missing in file of parameters. Param: %s", nerr, txt.c_str() ); break;
-        case 200: printf("\n\nError %d wm_SPECT: cannot allocate the variable: %s\n", nerr, txt.c_str() );break;
-            
-        default: printf("\n\nError %d wm_SPECT: unknown error number", nerr);
-    }
-    
-    exit(0);
-}
+END_NAMESPACE_STIR
