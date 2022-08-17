@@ -15,17 +15,31 @@
 */
 /*!
  *  \ingroup recon_test
- *  \brief Test class to check the consistency between ROOT listmode and STIR backprojection
+ *  \brief Test class to check the consistency between GATE and STIR
  *  \author Elise Emond
  *  \author Robert Twyman
  *
- * This test currently uses Root listmodes of single point sources.
+ * This test currently uses ROOT list mode data of single point sources to assess the consistency between GATE and STIR.
+ * Each test aims to verify that each list mode event back projection is reasonably close to the point source position used
+ * to generate the list mode data.
+ * Currently there are 8 point sources, one in each of 8 list mode files, tested.
+ *
+ * This test is designed to run from ${STIR_SOURCE_PATH}/examples/ROOT_files/ROOT_STIR_consistency
+ *
+ * Non-TOF tests
  * This test computes the distance between the original point source position and the closes voxel that the list mode
  * event passes through. Ideally each event would travel directly through the original point source position but
  * error may be present. Therefore we test that the majority of LORs travel close enough.
+ *
+ * TOF tests
+ * Follows approximately the same procedure as non-TOF tests but, instead of closest approach voxel along the LOR, the voxel
+ * with maximum value is tested. If that voxel exceeds the threshold distance, the test is considered a failer.
+ * Again, if the majority of LORs travel close enough, the test is considered a success.
+ *
+ * In both cases, the logs of voxel positions (origin and closest approach or maximum voxel intensity)
+ * are written to files for later analysis.
  */
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
@@ -33,14 +47,12 @@
 #include "stir/listmode/CListModeDataROOT.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/HighResWallClockTimer.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/RunTests.h"
 #include "stir/Shape/GenerateImage.h"
 #include "boost/lexical_cast.hpp"
-
 #include "stir/warning.h"
 
 using std::cerr;
@@ -74,108 +86,120 @@ public:
 
   /*!
    * \brief Run the tests with ROOT data
-
+   * Main method for running the tests.
+   * For each list mode file, setups up the original point source positions and runs the tests and post processes the results.
+   * Records the pass failure of each file and logs to console.
    * \returns 0 if all tests passed, 1 otherwise
    */
   void run_tests() override;
 
 private:
 
+  /*! Initialise the original point source position by generating image and finding the centre of gravity
+   * and sets TOF and non-TOF threshold distances and the number of events passed and failed counters
+   */
   void setup();
+
   /*! Reads listmode event by event, computes the ProjMatrixElemsForOneBin (probabilities
-   * along a bin LOR). This method should include all tests/ setup for additional test such that the list data is
-   * read only once.
-   *
-   * Passes ProjMatrixElemsForOneBin (LOR) to test_nonTOF_LOR_closest_approach() and if fails,
-   * add 1 to `failed_events` (LOR's closest voxel was not within nonTOF_distance_threshold).
-   * Check if the number of `failed_events` is greater than half the number of tested events to pass the test.
+   * along a bin LOR). This method should setup the proj_matrix_sptr.
+   * The list data is processes once and each proj_matrix_row is passes to relevant non-TOF and TOF test methods.
    */
   void process_list_data();
 
-  void loop_through_list_events(shared_ptr<CListModeData> lm_data_sptr, const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr,
-                                const CartesianCoordinate3D<float> original_coords);
-  /*! Given a ProjMatrixElemsForOneBin (probabilities), test if the closest voxel in the LOR to the original_coords
+  /*!
+   * Performs the analysis steps for each test after the list mode data has been processed.
+   */
+  void post_processing();
+
+  /*! Test if the closest voxel in the LOR (probabilities) to the original_coords
    * is within nonTOF_distance_threshold distance. If it is, pass with true, otherwise fales.
    * @param probabilities ProjMatrixElemsForOneBin object of a list mode event
    * @return True if test passes, false if failed.
    */
   bool test_nonTOF_LOR_closest_approach(const ProjMatrixElemsForOneBin& probabilities);
+
+  /*! If enough of the non-TOF LORs pass the closest approach test, pass the test, otherwise fail.
+   * Additionally, save the original and closest approach voxel positions to file.
+   */
   void post_processing_nonTOF();
 
 
-  //! Selects and stores the highest probability elements of ProjMatrixElemsForOneBin.
+  /*! Test if the voxel with the highest value in the LOR (probabilities) is within TOF_distance_threshold to the original_coords.
+   * If it is, pass with true, otherwise fales.
+   * @param probabilities ProjMatrixElemsForOneBin object of a list mode event
+   * @return True if within TOF_distance_threshold of original_coords, else false.
+   */
   bool test_TOF_max_lor_voxel(const ProjMatrixElemsForOneBin& probabilities);
 
-  //! Checks if original and calculated coordinates are close enough and saves data to file.
+  /*! If enough of the TOF LORs pass the max voxel test distance test, pass, otherwise fail.
+   * Additionally, save the original and max voxel positions of the LOR to file.
+   */
   void post_processing_TOF();
 
-  // Auxilary methods
+  //! Logs the results of each test to console
+  void log_results_to_console();
+
+  // Auxiliary methods
   std::string get_root_header_filename() { return "pretest_output/root_header_test" + std::to_string(test_index) + ".hroot"; }
   std::string get_generate_image_par_filename() { return "SourceFiles/generate_image" + std::to_string(test_index) + ".par"; }
 
 
   ///// Class VARIABLES /////
 
+private:
   // Data set variables
-  int test_index;
-  int num_tests;
+  int test_index = 0;
+  int num_tests = 8;
 
   // Test results storage. Records if each test failed or not. E.g.`test_index` result is stored in `test_results_nonTOF[test_index -1]`
   std::vector<bool> test_results_nonTOF;
   std::vector<bool> test_results_TOF;
 
+  // Original point source position variables
   shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr;
   CartesianCoordinate3D<float> original_coords; // Stored in class because of dynamic_cast
   CartesianCoordinate3D<float> grid_spacing;    // Stored in class because of dynamic_cast
 
+  //! The number of events/LORs have been tested
   int num_events_tested = 0;
 
   /// NON TOF VARIABLES
   //! A vector to store the coordinates of the closest approach voxels.
-  const float failure_tolerance_nonTOF = 0.05;
   std::vector<CartesianCoordinate3D<float>> nonTOF_closest_voxels_list;
+  //! Fraction of nonTOF LORs that can fail the closest approach test and data set still passes.
+  const float failure_tolerance_nonTOF = 0.05;
+  //! The number of nonTOF LORs that failed the closest approach test.
   int num_failed_nonTOF_lor_events = 0;
+  //! The threshold distance for the closest approach test.
   double nonTOF_distance_threshold;
 
   /// TOF VARIABLES
-  //! A copy of the scanner timing resolution in mm
-  const float failure_tolerance_TOF = 0.05;
+  //! A vector to store the coordinates of the maximum voxels for each LOR.
   std::vector<WeightedCoordinate> TOF_LOR_peak_value_coords;
-  double TOF_distance_threshold;
+  //! Fraction of TOF LORs that can fail the maximum LOR intensity test and data set still passes.
+  const float failure_tolerance_TOF = 0.05;
+  //! The number of TOF LORs that failed the maximum LOR voxel intensity test.
   int num_failed_TOF_lor_events = 0;
+  //! The threshold distance for the maximum LOR voxel intensity test.
+  double TOF_distance_threshold;
 };
 
 void
 GATEConsistencyTests::run_tests()
 {
-  // Loop over each of the ROOT files in the test_data directory
-  num_tests = 8;
   test_results_nonTOF = std::vector<bool> (num_tests, true);
   test_results_TOF = std::vector<bool> (num_tests, true);
 
-  cerr << "Testing the view offset consistency between GATE/ROOT and STIR. \n";
+  cerr << "Testing consistency between GATE/ROOT and STIR. \n";
   for (int i = 1; i <= num_tests; ++i)
   {
-    test_index = i;
+    test_index = i;  // set the class variable to keep track of which test is being run
     cerr << "\nTesting dataset " << std::to_string(test_index) << "...\n";
-
     setup();
     process_list_data();
-
-    cerr << "\nResults for dataset: " << std::to_string(test_index) << std::endl;
-    post_processing_nonTOF();
-    post_processing_TOF();
+    post_processing();
   }
-
-  // Print results for easy readability
-  cerr << "\nTest Results\n"
-          "------------------------------------------\n"
-          "\tTest Index\t|\tnonTOF\t|\tTOF\n"
-          "------------------------------------------\n";
-  for (int j = 0; j < num_tests; ++j)
-    cerr << "\t\t" << std::to_string(j + 1) << "\t\t|\t"
-         << ((test_results_nonTOF[j]) ? "Pass" : "Fail") << "\t|\t"
-         << ((test_results_TOF[j]) ? "Pass" : "Fail") << std::endl;
+  log_results_to_console();
 }
 
 void
@@ -211,7 +235,8 @@ setup()
 }
 
 void
-GATEConsistencyTests::process_list_data()
+GATEConsistencyTests::
+process_list_data()
 {
   // Configure the list mode reader
   shared_ptr<CListModeData> lm_data_sptr(read_from_file<CListModeData>(get_root_header_filename()));
@@ -314,6 +339,14 @@ post_processing_nonTOF()
   }
 }
 
+void
+GATEConsistencyTests::
+post_processing()
+{
+  cerr << "\nResults for dataset: " << std::to_string(this->test_index) << std::endl;
+  post_processing_nonTOF();
+  post_processing_TOF();
+};
 
 //// TOF TESTING METHODS ////
 bool
@@ -388,12 +421,27 @@ post_processing_TOF()
   }
 }
 
+void
+GATEConsistencyTests::
+log_results_to_console()
+{
+  // Print results for easy readability
+  cerr << "\nTest Results\n"
+          "------------------------------------------\n"
+          "\tTest Index\t|\tnonTOF\t|\tTOF\n"
+          "------------------------------------------\n";
+  for (int j = 0; j < num_tests; ++j)
+    cerr << "\t\t" << std::to_string(j + 1) << "\t\t|\t"
+         << ((test_results_nonTOF[j]) ? "Pass" : "Fail") << "\t|\t"
+         << ((test_results_TOF[j]) ? "Pass" : "Fail") << std::endl;
+}
+
 END_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
   USING_NAMESPACE_STIR
-  // Should be called from `STIR/examples/ROOT_files/ROOT_STIR_consistency`
+  // Should be called from `${STIR_SOURCE_PATH}/examples/ROOT_files/ROOT_STIR_consistency`
 
   // Tests in class GATEConsistencyTests
   GATEConsistencyTests test;
