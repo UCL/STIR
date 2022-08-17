@@ -67,10 +67,10 @@ public:
 };
 
 
-class ROOTConsistencyTests : public RunTests
+class GATEConsistencyTests : public RunTests
 {
 public:
-  ROOTConsistencyTests()= default;
+  GATEConsistencyTests()= default;
 
   /*!
    * \brief Run the tests with ROOT data
@@ -146,7 +146,7 @@ private:
 };
 
 void
-ROOTConsistencyTests::run_tests()
+GATEConsistencyTests::run_tests()
 {
   // Loop over each of the ROOT files in the test_data directory
   num_tests = 8;
@@ -179,7 +179,7 @@ ROOTConsistencyTests::run_tests()
 }
 
 void
-ROOTConsistencyTests::
+GATEConsistencyTests::
 setup()
 {
   // Create the point source (discretised_density_sptr) with GenerateImage from parameter file
@@ -211,7 +211,7 @@ setup()
 }
 
 void
-ROOTConsistencyTests::process_list_data()
+GATEConsistencyTests::process_list_data()
 {
   // Configure the list mode reader
   shared_ptr<CListModeData> lm_data_sptr(read_from_file<CListModeData>(get_root_header_filename()));
@@ -255,7 +255,7 @@ ROOTConsistencyTests::process_list_data()
 
 //// NON-TOF TESTING METHODS ////
 bool
-ROOTConsistencyTests::test_nonTOF_LOR_closest_approach(const ProjMatrixElemsForOneBin& probabilities)
+GATEConsistencyTests::test_nonTOF_LOR_closest_approach(const ProjMatrixElemsForOneBin& probabilities)
 {
   // Loop variables
   CartesianCoordinate3D<float> closest_LOR_voxel_to_origin;
@@ -289,7 +289,7 @@ ROOTConsistencyTests::test_nonTOF_LOR_closest_approach(const ProjMatrixElemsForO
 
 
 void
-ROOTConsistencyTests::
+GATEConsistencyTests::
 post_processing_nonTOF()
 {
   cerr << "\nNon-TOF number of failed events: " << num_failed_nonTOF_lor_events
@@ -317,7 +317,7 @@ post_processing_nonTOF()
 
 //// TOF TESTING METHODS ////
 bool
-ROOTConsistencyTests::
+GATEConsistencyTests::
 test_TOF_max_lor_voxel(const ProjMatrixElemsForOneBin& probabilities)
 {
   // Along a TOF LOR (probabilities), values assigned to voxels (or positions used here).
@@ -363,7 +363,7 @@ test_TOF_max_lor_voxel(const ProjMatrixElemsForOneBin& probabilities)
 
 
 void
-ROOTConsistencyTests::
+GATEConsistencyTests::
 post_processing_TOF()
 {
   cerr << "\nTOF number of failed events: " << num_failed_TOF_lor_events
@@ -395,8 +395,8 @@ int main(int argc, char **argv)
   USING_NAMESPACE_STIR
   // Should be called from `STIR/examples/ROOT_files/ROOT_STIR_consistency`
 
-  // Tests in class ROOTConsistencyTests
-  ROOTConsistencyTests test;
+  // Tests in class GATEConsistencyTests
+  GATEConsistencyTests test;
   test.run_tests();
   return test.main_return_value();
 }
