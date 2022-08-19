@@ -1,3 +1,5 @@
+import csv
+
 import matplotlib.pyplot as plt
 from os import chdir
 import sys
@@ -171,6 +173,38 @@ def point_cloud_3D_all(dict_of_data_handlers):
     plt.show()
 
 
+def __extract_data_from_csv_file(filename):
+    """
+    Loads data from a csv file and returns a numpy array containing the data.
+    Assumes first column is the row's key.
+    Each row is a separate entry in the array.
+    Generally, the first row is the tolerance and the second row is the original point.
+    Remainder of rows are the voxel positions of measured data.
+    :param filename: Name of the csv file to load the data from.
+    :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
+    """
+
+    # Read the file and extract the csv data
+    with open(filename, newline='') as csvfile:
+        data = list(csv.reader(csvfile))
+
+    # Setup the tolerance and arrays for the data
+    tolerance = None
+    original_coord = np.zeros(shape=3)
+    entry_coords = np.zeros(shape=(len(data) - 2, 3))  # -2 because first 2 lines are tolerance and original coord
+
+    line_index = 0
+    for entry in data:
+        if entry[0] == "tolerance":
+            tolerance = float(entry[1])
+        elif entry[0] == "original coordinates":
+            original_coord = np.array([float(entry[1]), float(entry[2]), float(entry[3])])
+        else:
+            entry_coords[line_index] = np.array([float(entry[1]), float(entry[2]), float(entry[3])])
+            line_index += 1
+    return original_coord, entry_coords, tolerance
+
+
 class ROOTConsistencyDataHandler:
     """
     Helper class.
@@ -187,11 +221,9 @@ class ROOTConsistencyDataHandler:
         """
         self.filename = filename
         print(f"Loading data: {self.filename}")
-        with open(filename) as f:
-            self.lines = f.readlines()
 
         # Extract the original coordinate and voxel coordinates as 2D numpy arrays
-        self.original_coord, self.voxel_coords, self.tolerance = self.__extract_data_from_lines(self.lines)
+        self.original_coord, self.voxel_coords, self.tolerance = __extract_data_from_csv_file(filename)
 
         if self.tolerance is None:
             raise Exception("No tolerance information found in file")
@@ -205,39 +237,6 @@ class ROOTConsistencyDataHandler:
         self.voxel_offset = self.voxel_coords - self.original_coord
         self.entrywise_l2_norm = np.linalg.norm(self.voxel_offset, axis=1)
         self.l2 = np.linalg.norm(self.voxel_offset)
-
-    def __process_line(self, line):
-        """
-        Given a line (e.g., '190.048 0 145.172\n'), strips the " " and "\n" and returns the coordinate as a numpy array
-        :param line: string input from a line in the file.
-        :return: numpy array of (x,y,z)
-        """
-        coord = line[:-2].split(",")[1:]
-        return np.array([float(coord[0]), float(coord[1]), float(coord[2])])
-
-    def __extract_data_from_lines(self, lines):
-        """
-        Assumes that lines comes in as a string with three numbers, each split by a space.
-        Iterates through each file to get coordinate data for each entry.
-        First line is original coordinate of the point source and
-        following lines are the closest voxel to the origin for each LOR in the root file.
-        :param lines: Input lines, loaded from the file
-        :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
-        """
-        tolerance = None
-        entry_coords = np.zeros(shape=(len(lines) - 1, 3))
-        original_coord = np.zeros(shape=3)
-        line_index = 0
-        for line in lines:
-            split_line = line.split(",")
-            if split_line[0] == "tolerance":
-                tolerance = float(split_line[1])
-            elif split_line[0] == "original coordinates":
-                original_coord = self.__process_line(line)
-            else:
-                entry_coords[line_index] = self.__process_line(line)
-                line_index += 1
-        return original_coord, entry_coords, tolerance
 
     def get_num_events(self):
         return len(self.voxel_coords)
