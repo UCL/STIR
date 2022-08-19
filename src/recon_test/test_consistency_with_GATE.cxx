@@ -325,16 +325,22 @@ post_processing_nonTOF()
                                                       std::to_string(100*failure_tolerance_nonTOF)+ "%)");
 
   { // Save the closest coordinate for each LOR to file.
-    std::string lor_pos_filename = "non_TOF_voxel_data_" + std::to_string(test_index) + ".txt";
-    cerr << "Saving debug information as: " << lor_pos_filename <<
-            "\nThe first entry is the original coordinate position." << std::endl;
+    std::string lor_pos_filename = "non_TOF_voxel_data_" + std::to_string(test_index) + ".csv";
+    cerr << "Saving debug information as: " << lor_pos_filename << "\n"
+         << "The first entry is the distance tolerance granted.\n"
+         << "The second entry is the original coordinate position.\n";
     std::ofstream myfile;
     myfile.open(lor_pos_filename.c_str());
-    // The first entry is the original coords
-    myfile << original_coords.x() << " " << original_coords.y() << " " << original_coords.z() << std::endl;
-    for (std::vector<CartesianCoordinate3D<float>>::iterator coord_entry = nonTOF_closest_voxels_list.begin();
-         coord_entry != nonTOF_closest_voxels_list.end(); ++coord_entry)
-      myfile << coord_entry->x() << " " << coord_entry->y() << " " << coord_entry->z() << std::endl;
+    // The first entry is the tolerance granted
+    myfile << "tolerance," << nonTOF_distance_threshold << "\n";
+    // The second entry is the original coords
+    myfile << "original coordinates," << original_coords.x() << "," << original_coords.y() << "," << original_coords.z() << "\n";
+    int i = 0;
+    for (auto & entry : nonTOF_closest_voxels_list)
+      {
+        myfile << i << "," << entry.x() << "," << entry.y() << "," << entry.z() << "\n";
+        i++;
+      }
     myfile.close();
   }
 }
@@ -407,16 +413,23 @@ post_processing_TOF()
                                                    std::to_string(100*failure_tolerance_nonTOF)+ "%)");
 
   { // Save the closest coordinate for each LOR to file.
-    std::string lor_pos_filename = "TOF_voxel_data_" + std::to_string(test_index) + ".txt";
-    cerr << "Saving debug information as: " << lor_pos_filename <<
-            "\nThe first entry is the original coordinate position." << std::endl;
+    std::string lor_pos_filename = "TOF_voxel_data_" + std::to_string(test_index) + ".csv";
+    cerr << "Saving debug information as: " << lor_pos_filename << "\n"
+         << "The first entry is the distance tolerance granted.\n"
+         << "The second entry is the original coordinate position.\n";
 
     std::ofstream myfile;
     myfile.open(lor_pos_filename.c_str());
-    myfile << original_coords.x() << " " << original_coords.y() << " " << original_coords.z() << std::endl;
-    for (std::vector<WeightedCoordinate>::iterator coord_entry = TOF_LOR_peak_value_coords.begin();
-         coord_entry != TOF_LOR_peak_value_coords.end(); ++coord_entry)
-      myfile << coord_entry->coord.x() << " " << coord_entry->coord.y() << " " << coord_entry->coord.z() << std::endl;
+    // The first entry is the tolerance granted
+    myfile << "tolerance," << TOF_distance_threshold << "\n";
+    // The second entry is the original coords
+    myfile << "original coordinates," << original_coords.x() << "," << original_coords.y() << "," << original_coords.z() << "\n";
+    int i = 0;
+    for (auto & entry : TOF_LOR_peak_value_coords)
+      {
+        myfile << i << "," << entry.coord.x() << "," << entry.coord.y() << "," << entry.coord.z() << "\n";
+        i++;
+      }
     myfile.close();
   }
 }

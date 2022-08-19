@@ -73,6 +73,7 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
     axs.title.set_text(
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
 
+
 def point_cloud_3D(data_handler):
     """
     Plot the pointcloud of generated LOR-positions, original source-position and tolerance-whiskers for each source in a seperate scatter plot.
@@ -92,12 +93,12 @@ def point_cloud_3D(data_handler):
     oz = data_handler.original_coord[2]
     tol = data_handler.tolerance
     ax.plot(ox, oy, oz, c='r', marker='o')
-    #plot tolerence around original point
-    ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
-    ax.plot([ox, ox], [oy+tol, oy-tol], [oz, oz], c='r', marker="_", label='_nolegend_')
-    ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
+    # plot tolerence around original point
+    ax.plot([ox + tol, ox - tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy + tol, oy - tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy, oy], [oz + tol, oz - tol], c='r', marker="_", label='_nolegend_')
 
-    #plot Mean position and standard deviation
+    # plot Mean position and standard deviation
     fx = data_handler.mean_coord[0]
     fy = data_handler.mean_coord[1]
     fz = data_handler.mean_coord[2]
@@ -105,16 +106,17 @@ def point_cloud_3D(data_handler):
     yerror = np.std(data_handler.voxel_coords[:, 1])
     zerror = np.std(data_handler.voxel_coords[:, 2])
     ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
-    ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
-    ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
-    ax.plot([fx, fx], [fy, fy], [fz+zerror, fz-zerror], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx + xerror, fx - xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy + yerror, fy - yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy, fy], [fz + zerror, fz - zerror], marker="_", c='g', label='_nolegend_')
 
     ax.set_xlabel('x (mm)')
     ax.set_ylabel('y (mm)')
     ax.set_zlabel('z (mm)')
-    ax.legend(['Voxel Positions', 'Origin and Tolerance','Mean coords and stddev'])
-    
+    ax.legend(['Voxel Positions', 'Origin and Tolerance', 'Mean coords and stddev'])
+
     plt.show()
+
 
 def point_cloud_3D_all(dict_of_data_handlers):
     """
@@ -125,12 +127,13 @@ def point_cloud_3D_all(dict_of_data_handlers):
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection='3d')
-    
+
     for key in dict_of_data_handlers.keys():
         data_handler = dict_of_data_handlers[key]
 
         # Plot all the points (intensity increases for multiple points)
-        ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2], label = 'Source'+str(key))
+        ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2],
+                   label='Source' + str(key))
 
         # Plot the original point and tolerance
         ox = data_handler.original_coord[0]
@@ -138,12 +141,12 @@ def point_cloud_3D_all(dict_of_data_handlers):
         oz = data_handler.original_coord[2]
         tol = data_handler.tolerance
         ax.plot(ox, oy, oz, c='r', marker='o')
-        #plot tolerence around original point
-        ax.plot([ox+tol, ox-tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
-        ax.plot([ox, ox], [oy+tol, oy-tol], [oz, oz], c='r', marker="_", label='_nolegend_')
-        ax.plot([ox, ox], [oy, oy], [oz+tol, oz-tol], c='r', marker="_", label='_nolegend_')
+        # plot tolerence around original point
+        ax.plot([ox + tol, ox - tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy + tol, oy - tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy, oy], [oz + tol, oz - tol], c='r', marker="_", label='_nolegend_')
 
-        #plot Mean position and standard deviation
+        # plot Mean position and standard deviation
         fx = data_handler.mean_coord[0]
         fy = data_handler.mean_coord[1]
         fz = data_handler.mean_coord[2]
@@ -151,9 +154,9 @@ def point_cloud_3D_all(dict_of_data_handlers):
         yerror = np.std(data_handler.voxel_coords[:, 1])
         zerror = np.std(data_handler.voxel_coords[:, 2])
         ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
-        ax.plot([fx+xerror, fx-xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
-        ax.plot([fx, fx], [fy+yerror, fy-yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
-        ax.plot([fx, fx], [fy, fy], [fz+zerror, fz-zerror], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx + xerror, fx - xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy + yerror, fy - yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy, fy], [fz + zerror, fz - zerror], marker="_", c='g', label='_nolegend_')
 
         ax.set_xlabel('x (mm)')
         ax.set_ylabel('y (mm)')
@@ -163,11 +166,10 @@ def point_cloud_3D_all(dict_of_data_handlers):
         ax.spines['left'].set_position('zero')
         # set the y-spine
         ax.spines['bottom'].set_position('zero')
-    
-
 
     plt.legend()
     plt.show()
+
 
 class ROOTConsistencyDataHandler:
     """
@@ -178,10 +180,9 @@ class ROOTConsistencyDataHandler:
     Each line is expected to be formatted as [ x y z ], e.g., '190.048 0 145.172\n'
     """
 
-    def __init__(self, filename, tolerance=1.5 * 4.447):
+    def __init__(self, filename):
         """
         :param filename: Filename of the file output by `test_view_offset_root` (.txt file)
-        :param tolerance: l2-norm tolerance that classified a "failed" event. Default = 6.66983 = 1.5 * 4.447mm,
         from previous studies.
         """
         self.filename = filename
@@ -190,7 +191,10 @@ class ROOTConsistencyDataHandler:
             self.lines = f.readlines()
 
         # Extract the original coordinate and voxel coordinates as 2D numpy arrays
-        self.original_coord, self.voxel_coords = self.__extract_coords_from_lines(self.lines)
+        self.original_coord, self.voxel_coords, self.tolerance = self.__extract_data_from_lines(self.lines)
+
+        if self.tolerance is None:
+            raise Exception("No tolerance information found in file")
 
         if self.voxel_coords.size == 0:
             raise Exception("No voxel coordinates found in file")
@@ -202,18 +206,16 @@ class ROOTConsistencyDataHandler:
         self.entrywise_l2_norm = np.linalg.norm(self.voxel_offset, axis=1)
         self.l2 = np.linalg.norm(self.voxel_offset)
 
-        self.tolerance = tolerance
-
     def __process_line(self, line):
         """
         Given a line (e.g., '190.048 0 145.172\n'), strips the " " and "\n" and returns the coordinate as a numpy array
         :param line: string input from a line in the file.
         :return: numpy array of (x,y,z)
         """
-        coord = line[:-2].split(" ")
+        coord = line[:-2].split(",")[1:]
         return np.array([float(coord[0]), float(coord[1]), float(coord[2])])
 
-    def __extract_coords_from_lines(self, lines):
+    def __extract_data_from_lines(self, lines):
         """
         Assumes that lines comes in as a string with three numbers, each split by a space.
         Iterates through each file to get coordinate data for each entry.
@@ -222,18 +224,20 @@ class ROOTConsistencyDataHandler:
         :param lines: Input lines, loaded from the file
         :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
         """
-        is_first = True
+        tolerance = None
         entry_coords = np.zeros(shape=(len(lines) - 1, 3))
         original_coord = np.zeros(shape=3)
         line_index = 0
         for line in lines:
-            if is_first:
+            split_line = line.split(",")
+            if split_line[0] == "tolerance":
+                tolerance = float(split_line[1])
+            elif split_line[0] == "original coordinates":
                 original_coord = self.__process_line(line)
-                is_first = False
-                continue
-            entry_coords[line_index] = self.__process_line(line)
-            line_index += 1
-        return original_coord, entry_coords
+            else:
+                entry_coords[line_index] = self.__process_line(line)
+                line_index += 1
+        return original_coord, entry_coords, tolerance
 
     def get_num_events(self):
         return len(self.voxel_coords)
@@ -354,7 +358,7 @@ def print_axis_biases(point_sources_data):
     print(f"{row_string}")
 
 
-def nonTOF_evaluation(filename_prefix, file_extension=".txt"):
+def nonTOF_evaluation(filename_prefix, file_extension=".csv"):
     # Loop over all files in the working directory and load the data into the point_sources_data dictionary
     point_sources_data = dict()
     for i in range(1, 9, 1):
@@ -365,11 +369,12 @@ def nonTOF_evaluation(filename_prefix, file_extension=".txt"):
     # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
     print_axis_biases(point_sources_data)
 
-def TOF_evaluation(filename_prefix, file_extension=".txt"):
+
+def TOF_evaluation(filename_prefix, file_extension=".csv"):
     # Loop over all files in the working directory and load the data into the point_sources_data dictionary
     point_sources_data = dict()
     for i in range(1, 9, 1):
-        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}", tolerance=3.3*4.447)
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}")
 
     # Print the number of events, number of failed events and failure percentage for each point source
     print_pass_and_fail(point_sources_data)
@@ -378,6 +383,7 @@ def TOF_evaluation(filename_prefix, file_extension=".txt"):
 
     point_cloud_3D(point_sources_data[1])
     point_cloud_3D_all(point_sources_data)
+
 
 # =====================================================================================================
 # Main Script
@@ -391,10 +397,9 @@ def main():
     if len(sys.argv) > 1:
         chdir(sys.argv[1])
 
-    nonTOF_evaluation("non_TOF_voxel_data_")
+    nonTOF_evaluation("non_TOF_voxel_data_", file_extension=".csv")
 
-    TOF_evaluation("TOF_voxel_data_")
-
+    TOF_evaluation("TOF_voxel_data_", file_extension=".csv")
 
     print("Done")
 
