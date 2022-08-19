@@ -155,6 +155,8 @@ private:
   std::vector<bool> test_results_nonTOF;
   std::vector<bool> test_results_TOF;
 
+  shared_ptr<CListModeData> lm_data_sptr;
+
   // Original point source position variables
   shared_ptr<DiscretisedDensity<3, float> > discretised_density_sptr;
   CartesianCoordinate3D<float> original_coords; // Stored in class because of dynamic_cast
@@ -206,6 +208,9 @@ void
 GATEConsistencyTests::
 setup()
 {
+  // Initialise the list mode data object
+  lm_data_sptr = read_from_file<CListModeData>(get_root_header_filename());
+
   // Create the point source (discretised_density_sptr) with GenerateImage from parameter file
   // GenerateImage requires `const char* const par_filename`.
   GenerateImage image_gen_application(get_generate_image_par_filename().c_str());
@@ -231,7 +236,17 @@ setup()
 
   // Failure conditioner and recording
   nonTOF_distance_threshold = 1.5 * norm(grid_spacing); // Using norm(grid_spacing) as a nonTOF_distance_threshold
-  TOF_distance_threshold = 3.3 * norm(grid_spacing); // With the value 3.3*norm(grid_spacing), test_root_consistency passes for all sources
+  {
+    // With the default files, we found that 3.3*norm(grid_spacing) is a reasonable limit.
+    // We try to generalise this to other data (although it will likely need further
+    // adjustment for cases with very different TOF resolution).
+    const float org_threshold = 3.3F / 75; // Through trial and error, this is about the minimum threshold
+
+    const auto& pdi = *lm_data_sptr->get_proj_data_info_sptr();
+    const float approx_tof_resolution = // 75 in initial configuration
+        pdi.get_scanner_ptr()->get_timing_resolution() * pdi.get_tof_mash_factor();
+    this->TOF_distance_threshold = approx_tof_resolution * org_threshold * norm(grid_spacing);
+  }
 }
 
 void
@@ -239,10 +254,9 @@ GATEConsistencyTests::
 process_list_data()
 {
   // Configure the list mode reader
-  shared_ptr<CListModeData> lm_data_sptr(read_from_file<CListModeData>(get_root_header_filename()));
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr(new ProjMatrixByBinUsingRayTracing());
-  proj_matrix_sptr.get()->set_up(lm_data_sptr->get_proj_data_info_sptr(),
-                                 discretised_density_sptr);
+  proj_matrix_sptr->set_up(lm_data_sptr->get_proj_data_info_sptr(),
+                           discretised_density_sptr);
 
   // loop over all events in the listmode file
   shared_ptr<CListRecord> record_sptr = lm_data_sptr->get_empty_record_sptr();
