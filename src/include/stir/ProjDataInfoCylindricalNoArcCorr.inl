@@ -183,27 +183,29 @@ get_det_pos_pair_for_bin(
              DetectionPositionPair<>& dp,
              const Bin& bin) const
 {
-  //lousy work around because types don't match TODO remove!
-#if 1
-  int t1=dp.pos1().tangential_coord(),
-    a1=dp.pos1().axial_coord(),
-    t2=dp.pos2().tangential_coord(),
-    a2=dp.pos2().axial_coord();
+  // This is a bit complicated as DetectionPositionPair<>::timing_pos() is an unsigned int,
+  // while Bin uses an int. So we need to swap detectors around.
+
+  //lousy work around because types don't match (short/int). TODO remove!
+  int t1, a1, t2, a2;
   get_det_pair_for_bin(t1, a1, t2, a2, bin);
-  dp.pos1().tangential_coord()=t1;
-  dp.pos1().axial_coord()=a1;
-  dp.pos2().tangential_coord()=t2;
-  dp.pos2().axial_coord()=a2;
+  if (bin.timing_pos_num()>=0)
+    {
+      dp.pos1().tangential_coord()=t1;
+      dp.pos1().axial_coord()=a1;
+      dp.pos2().tangential_coord()=t2;
+      dp.pos2().axial_coord()=a2;
+    }
+  else
+    {
+      dp.pos1().tangential_coord()=t2;
+      dp.pos1().axial_coord()=a2;
+      dp.pos2().tangential_coord()=t1;
+      dp.pos2().axial_coord()=a1;
+    }
+    
   dp.timing_pos() = std::abs(bin.timing_pos_num())*this->get_tof_mash_factor();
 
-#else
-
-  get_det_pair_for_bin(dp.pos1().tangential_coord(),
-                       dp.pos1().axial_coord(),
-               dp.pos2().tangential_coord(),
-                       dp.pos2().axial_coord(),
-                       bin);
-#endif
 }
 
 END_NAMESPACE_STIR
