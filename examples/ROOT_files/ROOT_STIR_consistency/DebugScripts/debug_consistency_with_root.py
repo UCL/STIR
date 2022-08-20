@@ -1,5 +1,7 @@
+import csv
+
 import matplotlib.pyplot as plt
-from os import getcwd
+from os import chdir
 import sys
 import numpy as np
 from math import log10, floor
@@ -74,27 +76,156 @@ def plot_1D_distance_histogram(distances, n_bins=100, logy=False, pretitle=""):
         f"{pretitle} l2-norm of distance to origin: Mean = {round_sig(mean)} and Median = {round_sig(median)}")
 
 
-class ViewOffsetConsistencyClosestLORInfo:
+def point_cloud_3D(data_handler):
+    """
+    Plot the pointcloud of generated LOR-positions, original source-position and tolerance-whiskers for each source in a seperate scatter plot.
+    Args:
+        data_handler (ROOTConsistencyDataHandler): Object containing all relevant data for the plot
+    """
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(projection='3d')
+
+    # Plot all the points (intensity increases for multiple points)
+    ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2])
+
+    # Plot the original point and tolerance
+    ox = data_handler.original_coord[0]
+    oy = data_handler.original_coord[1]
+    oz = data_handler.original_coord[2]
+    tol = data_handler.tolerance
+    ax.plot(ox, oy, oz, c='r', marker='o')
+    # plot tolerence around original point
+    ax.plot([ox + tol, ox - tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy + tol, oy - tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+    ax.plot([ox, ox], [oy, oy], [oz + tol, oz - tol], c='r', marker="_", label='_nolegend_')
+
+    # plot Mean position and standard deviation
+    fx = data_handler.mean_coord[0]
+    fy = data_handler.mean_coord[1]
+    fz = data_handler.mean_coord[2]
+    xerror = np.std(data_handler.voxel_coords[:, 0])
+    yerror = np.std(data_handler.voxel_coords[:, 1])
+    zerror = np.std(data_handler.voxel_coords[:, 2])
+    ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
+    ax.plot([fx + xerror, fx - xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy + yerror, fy - yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+    ax.plot([fx, fx], [fy, fy], [fz + zerror, fz - zerror], marker="_", c='g', label='_nolegend_')
+
+    ax.set_xlabel('x (mm)')
+    ax.set_ylabel('y (mm)')
+    ax.set_zlabel('z (mm)')
+    ax.legend(['Voxel Positions', 'Origin and Tolerance', 'Mean coords and stddev'])
+
+    plt.show()
+
+
+def point_cloud_3D_all(dict_of_data_handlers):
+    """
+    generates a single plot with pointclouds of generated LOR-positions, original source-positions and tolerance-whiskers for all sources
+    Args:
+        dict_of_data_handlers (dictionary containing objects of type ROOTConsistencyDataHandler): dictionary of objects containing all relevant data for the plot
+    """
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(projection='3d')
+
+    for key in dict_of_data_handlers.keys():
+        data_handler = dict_of_data_handlers[key]
+
+        # Plot all the points (intensity increases for multiple points)
+        ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2],
+                   label='Source' + str(key))
+
+        # Plot the original point and tolerance
+        ox = data_handler.original_coord[0]
+        oy = data_handler.original_coord[1]
+        oz = data_handler.original_coord[2]
+        tol = data_handler.tolerance
+        ax.plot(ox, oy, oz, c='r', marker='o')
+        # plot tolerence around original point
+        ax.plot([ox + tol, ox - tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy + tol, oy - tol], [oz, oz], c='r', marker="_", label='_nolegend_')
+        ax.plot([ox, ox], [oy, oy], [oz + tol, oz - tol], c='r', marker="_", label='_nolegend_')
+
+        # plot Mean position and standard deviation
+        fx = data_handler.mean_coord[0]
+        fy = data_handler.mean_coord[1]
+        fz = data_handler.mean_coord[2]
+        xerror = np.std(data_handler.voxel_coords[:, 0])
+        yerror = np.std(data_handler.voxel_coords[:, 1])
+        zerror = np.std(data_handler.voxel_coords[:, 2])
+        ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
+        ax.plot([fx + xerror, fx - xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy + yerror, fy - yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
+        ax.plot([fx, fx], [fy, fy], [fz + zerror, fz - zerror], marker="_", c='g', label='_nolegend_')
+
+        ax.set_xlabel('x (mm)')
+        ax.set_ylabel('y (mm)')
+        ax.set_zlabel('z (mm)')
+
+        # set the x-spine
+        ax.spines['left'].set_position('zero')
+        # set the y-spine
+        ax.spines['bottom'].set_position('zero')
+
+    plt.legend()
+    plt.show()
+
+
+def __extract_data_from_csv_file(filename):
+    """
+    Loads data from a csv file and returns a numpy array containing the data.
+    Assumes first column is the row's key.
+    Each row is a separate entry in the array.
+    Generally, the first row is the tolerance and the second row is the original point.
+    Remainder of rows are the voxel positions of measured data.
+    :param filename: Name of the csv file to load the data from.
+    :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
+    """
+
+    # Read the file and extract the csv data
+    with open(filename, newline='') as csvfile:
+        data = list(csv.reader(csvfile))
+
+    # Setup the tolerance and arrays for the data
+    tolerance = None
+    original_coord = np.zeros(shape=3)
+    entry_coords = np.zeros(shape=(len(data) - 2, 3))  # -2 because first 2 lines are tolerance and original coord
+
+    line_index = 0
+    for entry in data:
+        if entry[0] == "tolerance":
+            tolerance = float(entry[1])
+        elif entry[0] == "original coordinates":
+            original_coord = np.array([float(entry[1]), float(entry[2]), float(entry[3])])
+        else:
+            entry_coords[line_index] = np.array([float(entry[1]), float(entry[2]), float(entry[3])])
+            line_index += 1
+    return original_coord, entry_coords, tolerance
+
+
+class ROOTConsistencyDataHandler:
     """
     Helper class.
-    Loads and converts the data outputs by the `test_view_offset_root` test in STIR into coordinates.
+    Loads and converts the data output by the `test_consistency_with_GATE` test.
     The first line of the text file should be the original coordinate of the point source and
-    the rest the closest voxel along the LOR to the original.
+    the rest correspond to a selected voxel position along the LOR.
     Each line is expected to be formatted as [ x y z ], e.g., '190.048 0 145.172\n'
     """
 
-    def __init__(self, filename, tolerance=6.66983):
+    def __init__(self, filename):
         """
-        :param filename: Filename of the file output by `test_view_offset_root` (.txt file)
-        :param tolerance: l2-norm tolerance that classified a "failed" event. Default = 6.66983, from previous studies.
+        :param filename: Filename of the file output by `test_view_offset_GATE` (.csv file)
         """
         self.filename = filename
         print(f"Loading data: {self.filename}")
-        with open(filename) as f:
-            self.lines = f.readlines()
 
         # Extract the original coordinate and voxel coordinates as 2D numpy arrays
-        self.original_coord, self.voxel_coords = self.__extract_coords_from_lines(self.lines)
+        self.original_coord, self.voxel_coords, self.tolerance = __extract_data_from_csv_file(filename)
+
+        if self.tolerance is None:
+            raise Exception("No tolerance information found in file")
 
         if self.voxel_coords.size == 0:
             raise Exception("No voxel coordinates found in file")
@@ -106,46 +237,12 @@ class ViewOffsetConsistencyClosestLORInfo:
         self.entrywise_l2_norm = np.linalg.norm(self.voxel_offset, axis=1)
         self.l2 = np.linalg.norm(self.voxel_offset)
 
-        self.tolerance = tolerance
-
-    def __process_line(self, line):
-        """
-        Given a line (e.g., '190.048 0 145.172\n'), strips the " " and "\n" and returns the coordinate as a numpy array
-        :param line: string input from a line in the file.
-        :return: numpy array of (x,y,z)
-        """
-        coord = line[:-2].split(" ")
-        return np.array([float(coord[0]), float(coord[1]), float(coord[2])])
-
-    def __extract_coords_from_lines(self, lines):
-        """
-        Assumes that lines comes in as a string with three numbers, each split by a space.
-        Iterates through each file to get coordinate data for each entry.
-        First line is original coordinate of the point source and
-        following lines are the closest voxel to the origin for each LOR in the root file.
-        :param lines: Input lines, loaded from the file
-        :return: A tuple of the original coordinate numpy array and a list of coordinates of closes voxels in the LOR
-        """
-        is_first = True
-        entry_coords = np.zeros(shape=(len(lines) - 1, 3))
-        original_coord = np.zeros(shape=3)
-        line_index = 0
-        for line in lines:
-            if is_first:
-                original_coord = self.__process_line(line)
-                is_first = False
-                continue
-            entry_coords[line_index] = self.__process_line(line)
-            line_index += 1
-        return original_coord, entry_coords
-
     def get_num_events(self):
         return len(self.voxel_coords)
 
     def set_tolerance(self, tolerance):
-        if tolerance is not None:
-            print(f"Overwriting tolerance value as {tolerance}")
-            self.tolerance = tolerance
+        print(f"Overriding tolerance value as {tolerance}")
+        self.tolerance = tolerance
 
     def get_num_failed_events(self, tolerance=None):
         """
@@ -161,12 +258,10 @@ class ViewOffsetConsistencyClosestLORInfo:
         Returns the percentage of events that are outside the tolerance
         :param tolerance: l2-norm tolerance that classified a "failed" event.
         """
-        if tolerance is None:
-            tolerance = self.tolerance
         return self.get_num_failed_events(tolerance) / self.get_num_events()
 
 
-def print_pass_and_fail(allowed_fraction_of_failed_events=0.05):
+def print_pass_and_fail(point_sources_data, allowed_fraction_of_failed_events=0.05):
     """
     Prints the number of events, how many events failed and the percentage
     :param allowed_fraction_of_failed_events: Fraction of events that could "fail" before the test failed
@@ -197,7 +292,7 @@ def print_pass_and_fail(allowed_fraction_of_failed_events=0.05):
         print(f"{row_string} {warning_msg}")
 
 
-def print_axis_biases():
+def print_axis_biases(point_sources_data):
     """
     Prints the LOR COM and the axis bias for each point source and the overall bias in each axis.
     :return: None
@@ -261,29 +356,51 @@ def print_axis_biases():
     print(f"{row_string}")
 
 
+def nonTOF_evaluation(filename_prefix, file_extension=".csv"):
+    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
+    point_sources_data = dict()
+    for i in range(1, 9, 1):
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}")
+
+    # Print the number of events, number of failed events and failure percentage for each point source
+    print_pass_and_fail(point_sources_data)
+    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
+    print_axis_biases(point_sources_data)
+
+
+def TOF_evaluation(filename_prefix, file_extension=".csv"):
+    # Loop over all files in the working directory and load the data into the point_sources_data dictionary
+    point_sources_data = dict()
+    for i in range(1, 9, 1):
+        point_sources_data[i] = ROOTConsistencyDataHandler(f"{filename_prefix}{i}{file_extension}")
+
+    # Print the number of events, number of failed events and failure percentage for each point source
+    print_pass_and_fail(point_sources_data)
+    # Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
+    print_axis_biases(point_sources_data)
+
+    point_cloud_3D(point_sources_data[1])
+    point_cloud_3D_all(point_sources_data)
+
+
 # =====================================================================================================
 # Main Script
 # =====================================================================================================
-print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
-      "run `debug_view_offset_consistency` from `pretest_output` directory or input that directory as an argument.\n")
+def main():
+    print("\nUSAGE: After `make test` or `test_view_offset_GATE` has been run,\n"
+          "run `debug_view_offset_consistency` from `ROOT_STIR_consistency` directory or input that directory as an "
+          "argument.\n")
 
-# Optional argument to set the directory of the output of the view_offset_root test.
-working_directory = getcwd()
-if len(sys.argv) > 1:
-    working_directory = sys.argv[1]
+    # Optional argument to set the directory of the output of the test_consistency_with_root CTest.
+    if len(sys.argv) > 1:
+        chdir(sys.argv[1])
 
-point_sources_data = dict()
-# Assumeing the prefix's and suffix's of the file names
-filename_prefix = "root_header_test"
-filename_suffix = "_lor_pos.txt"
+    nonTOF_evaluation("non_TOF_voxel_data_", file_extension=".csv")
 
-# Loop over all files in the working directory and load the data into the point_sources_data dictionary
-for i in range(1, 9, 1):
-    point_sources_data[i] = ViewOffsetConsistencyClosestLORInfo(f"{filename_prefix}{i}{filename_suffix}")
+    TOF_evaluation("TOF_voxel_data_", file_extension=".csv")
 
-# Print the number of events, number of failed events and failure percentage for each point source
-print_pass_and_fail()
-# Print the mean offset in each axis (x,y,z) for each point source and the total bias in each axis
-print_axis_biases()
+    print("Done")
 
-print("Done")
+
+if __name__ == "__main__":
+    main()
