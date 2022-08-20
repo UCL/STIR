@@ -225,7 +225,7 @@ setup()
   num_failed_TOF_lor_events = 0;
   num_events_tested = 0;
 
-  // Failure conditioner and recording
+  // Find threshold for failure
   nonTOF_distance_threshold = 1.5 * norm(grid_spacing); // Using norm(grid_spacing) as a nonTOF_distance_threshold
   {
     // With the default files, we found that 3.3*norm(grid_spacing) is a reasonable limit.

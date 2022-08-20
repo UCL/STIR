@@ -208,7 +208,7 @@ def __extract_data_from_csv_file(filename):
 class ROOTConsistencyDataHandler:
     """
     Helper class.
-    Loads and converts the data output by the `test_consistency_with_root` test.
+    Loads and converts the data output by the `test_consistency_with_GATE` test.
     The first line of the text file should be the original coordinate of the point source and
     the rest correspond to a selected voxel position along the LOR.
     Each line is expected to be formatted as [ x y z ], e.g., '190.048 0 145.172\n'
