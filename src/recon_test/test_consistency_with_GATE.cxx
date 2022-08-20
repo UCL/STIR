@@ -2,15 +2,7 @@
     Copyright (C) 2017, 2022, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -33,7 +25,7 @@
  *
  * TOF tests
  * Follows approximately the same procedure as non-TOF tests but, instead of closest approach voxel along the LOR, the voxel
- * with maximum value is tested. If that voxel exceeds the threshold distance, the test is considered a failer.
+ * with maximum value is tested. If that voxel exceeds the threshold distance, the test is considered a failure.
  * Again, if the majority of LORs travel close enough, the test is considered a success.
  *
  * In both cases, the logs of voxel positions (origin and closest approach or maximum voxel intensity)
@@ -89,7 +81,6 @@ public:
    * Main method for running the tests.
    * For each list mode file, setups up the original point source positions and runs the tests and post processes the results.
    * Records the pass failure of each file and logs to console.
-   * \returns 0 if all tests passed, 1 otherwise
    */
   void run_tests() override;
 
@@ -127,7 +118,7 @@ private:
   /*! Test if the voxel with the highest value in the LOR (probabilities) is within TOF_distance_threshold to the original_coords.
    * If it is, pass with true, otherwise fales.
    * @param probabilities ProjMatrixElemsForOneBin object of a list mode event
-   * @return True if within TOF_distance_threshold of original_coords, else false.
+   * @return \c true if within TOF_distance_threshold of original_coords, else \c false.
    */
   bool test_TOF_max_lor_voxel(const ProjMatrixElemsForOneBin& probabilities);
 

@@ -216,8 +216,7 @@ class ROOTConsistencyDataHandler:
 
     def __init__(self, filename):
         """
-        :param filename: Filename of the file output by `test_view_offset_root` (.txt file)
-        from previous studies.
+        :param filename: Filename of the file output by `test_view_offset_GATE` (.csv file)
         """
         self.filename = filename
         print(f"Loading data: {self.filename}")
@@ -242,7 +241,7 @@ class ROOTConsistencyDataHandler:
         return len(self.voxel_coords)
 
     def set_tolerance(self, tolerance):
-        print(f"Overwriting tolerance value as {tolerance}")
+        print(f"Overriding tolerance value as {tolerance}")
         self.tolerance = tolerance
 
     def get_num_failed_events(self, tolerance=None):
@@ -388,7 +387,7 @@ def TOF_evaluation(filename_prefix, file_extension=".csv"):
 # Main Script
 # =====================================================================================================
 def main():
-    print("\nUSAGE: After `make test` or `test_view_offset_root` has been run,\n"
+    print("\nUSAGE: After `make test` or `test_view_offset_GATE` has been run,\n"
           "run `debug_view_offset_consistency` from `ROOT_STIR_consistency` directory or input that directory as an "
           "argument.\n")
 
