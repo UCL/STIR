@@ -22,14 +22,14 @@ START_NAMESPACE_STIR
 template <typename coordT>
 DetectionPositionPair<coordT>::
 DetectionPositionPair()
-  : _timing_pos(static_cast<coordT>(0))
+  : _timing_pos(0)
 {}
 
 template <typename coordT>
 DetectionPositionPair<coordT>::
 DetectionPositionPair(const DetectionPosition<coordT>& pos1,
                       const DetectionPosition<coordT>& pos2,
-					  const coordT timing_pos)
+                      const int timing_pos)
   : p1(pos1), p2(pos2), _timing_pos(timing_pos)
 {}
 
@@ -46,7 +46,7 @@ pos2() const
 { return p2; }
 
 template <typename coordT>
-const coordT
+int
 DetectionPositionPair<coordT>::
 timing_pos() const
 { return _timing_pos; }
@@ -76,12 +76,7 @@ DetectionPositionPair<coordT>::
 operator==(const DetectionPositionPair& p) const
 {
   // Slightly complicated as we need to be able to cope with reverse order of detectors. If so,
-  // the TOF bin should swap as well. However, currently, coordT is unsigned, so timing_pos is
-  // always positive so sign reversal can never occur. Below implementation is ok, but
-  // generates a compiler warning on many compilers for unsigned.
-  // For an unsigned type, we should check
-  //    timing_pos() == coordT(0) && p.timing_pos()  == coordT(0)
-  // TODO. differentiate between types
+  // the TOF bin should swap as well.
   return 
     (pos1() == p.pos1() && pos2() == p.pos2() && timing_pos() == p.timing_pos()) ||
     (pos1() == p.pos2() && pos2() == p.pos1() && timing_pos() == -p.timing_pos());

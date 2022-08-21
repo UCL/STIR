@@ -183,8 +183,8 @@ get_det_pos_pair_for_bin(
              DetectionPositionPair<>& dp,
              const Bin& bin) const
 {
-  // This is a bit complicated as DetectionPositionPair<>::timing_pos() is an unsigned int,
-  // while Bin uses an int. So we need to swap detectors around.
+  // This is a bit complicated as DetectionPositionPair<>::timing_pos() was an unsigned int at some point,
+  // while Bin uses an int. So swap detectors around.
 
   //lousy work around because types don't match (short/int). TODO remove!
   int t1, a1, t2, a2;

@@ -42,11 +42,11 @@ public:
   
   inline DetectionPositionPair(const DetectionPosition<coordT>&, 
                                const DetectionPosition<coordT>&,
-                               const coordT timing_pos = static_cast<coordT>(0));
+                               const int timing_pos = 0);
   
   inline const DetectionPosition<coordT>& pos1() const;   
   inline const DetectionPosition<coordT>& pos2() const;
-  inline const coordT timing_pos() const;
+  inline int timing_pos() const;
   inline DetectionPosition<coordT>& pos1();   
   inline DetectionPosition<coordT>& pos2();
   inline int& timing_pos();
