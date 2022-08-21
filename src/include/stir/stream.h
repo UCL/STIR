@@ -26,6 +26,7 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/Bin.h"
 #include <iostream>
 #include <vector>
 
@@ -80,6 +81,15 @@ template <typename elemT>
 inline 
 std::ostream& 
 operator<<(std::ostream& str, const std::vector<elemT>& v);
+
+inline std::ostream& operator<<(std::ostream& out, const Bin& bin)
+{
+  return out << "[segment_num=" << bin.segment_num() << ", axial_pos_num=" << bin.axial_pos_num()
+             << ", view_num=" << bin.view_num() << ", tangential_pos_num=" << bin.tangential_pos_num()
+             << ", timing_pos_num=" << bin.timing_pos_num()
+             << ", time_frame_num=" << bin.time_frame_num()
+             << ", value=" << bin.get_bin_value() << "]";
+}
 
 /*!
   \brief Inputs a vector from a stream.
