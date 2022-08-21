@@ -473,16 +473,18 @@ find_cartesian_coordinates_of_detection(
 					const Bin& bin) const
 {
  // find detectors
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-  get_det_pair_for_bin(det_num_a, ring_a,
-                       det_num_b, ring_b, bin);
+  DetectionPositionPair<> dpp;
+  get_det_pos_pair_for_bin(dpp, bin);
   
+  /* TODO
+   best to use Scanner::get_coordinate_for_det_pos().
+   Sadly, the latter is not yet implemented for Cylindrical scanners.
+  */
   // find corresponding cartesian coordinates
   find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
-    ring_a,ring_b,det_num_a,det_num_b);
+                                                       dpp.pos1().axial_coord(), dpp.pos2().axial_coord(),
+                                                       dpp.pos1().tangential_coord(), dpp.pos2().tangential_coord(),
+                                                       dpp.timing_pos());
 }
 
 
@@ -491,7 +493,7 @@ ProjDataInfoCylindricalNoArcCorr::
 find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
 				 CartesianCoordinate3D<float>& coord_2,
 				 const int Ring_A,const int Ring_B, 
-				 const int det1, const int det2) const
+                                 const int det1, const int det2, const int timing_pos_num) const
 {
   const int num_detectors_per_ring = 
     get_scanner_ptr()->get_num_detectors_per_ring();
@@ -543,6 +545,8 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2 = lor.p2();
   
 #endif
+  if (timing_pos_num < 0)
+    std::swap(coord_1, coord_2);
 }
 
 

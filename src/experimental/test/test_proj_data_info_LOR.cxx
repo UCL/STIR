@@ -161,7 +161,8 @@ main(int argc,char *argv[])
 
        proj_data_cyl_no_arc_ptr->find_cartesian_coordinates_given_scanner_coordinates (coord_1_90,coord_2_90,
 										       ring1_90,ring2_90, 
-										       det1_90, det2_90);
+										       det1_90, det2_90,
+                                                                                       0); // set timing_pos_num=0 as test-code is pre-TOF
 
 #if 0
        cout << coord_1_0<<endl;

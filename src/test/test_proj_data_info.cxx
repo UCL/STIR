@@ -1440,7 +1440,7 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                 CartesianCoordinate3D<float> coord_1;
                 CartesianCoordinate3D<float> coord_2;
 
-                proj_data_info.find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2, Ring_A, Ring_B, det1, det2);
+                proj_data_info.find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2, Ring_A, Ring_B, det1, det2, 1); // use timing_pos_num>=0 as pre-TOF test
 
                 const CartesianCoordinate3D<float> coord_1_new = coord_1 + (coord_2 - coord_1) * 5;
                 const CartesianCoordinate3D<float> coord_2_new = coord_1 + (coord_2 - coord_1) * 2;

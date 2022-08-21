@@ -36,7 +36,9 @@
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
 #include "boost/lexical_cast.hpp"
-
+#ifdef HAVE_CERN_ROOT
+#include "stir/listmode/CListRecordROOT.h"
+#endif
 #include "stir/info.h"
 #include "stir/warning.h"
 
@@ -113,7 +115,9 @@ private:
     void test_tof_proj_data_info_kernel();
     void test_tof_proj_data_info_det_pos();
     void test_tof_proj_data_info();
-
+#ifdef HAVE_CERN_ROOT
+  void test_CListEventROOT();
+#endif
     //! This checks peaks a specific bin, finds the LOR and applies all the
     //! kernels of all available timing positions. Then check if the sum
     //! of the TOF bins is equal to the non-TOF LOR.
@@ -173,6 +177,10 @@ TOF_Tests::run_tests()
 
     test_tof_proj_data_info();
     //    test_tof_geometry_1();
+
+#ifdef HAVE_CERN_ROOT
+    test_CListEventROOT();
+#endif
 
     // New Discretised Density
     test_discretised_density_sptr.reset( new VoxelsOnCartesianGrid<float> (*test_proj_data_info_sptr, 1.f,
@@ -260,6 +268,57 @@ TOF_Tests::test_tof_proj_data_info()
   test_tof_proj_data_info_kernel();
   test_tof_proj_data_info_det_pos();
 }
+
+#ifdef HAVE_CERN_ROOT
+void TOF_Tests::test_CListEventROOT()
+{
+  std::cerr << "CListEventROOT tests\n";
+  const auto old_tol = this->get_tolerance();
+  // set tolerance to ~1mm. It has to be surprisingly large at the moment. Problem in the LOR functions? (TODO)
+  this->set_tolerance(3.F);
+
+  test_proj_data_info_sptr->set_tof_mash_factor(1);
+
+  const int ring1 = 1, ring2 = 4, crystal1 = 0, crystal2 = 25;
+  const float delta_time = 800.F;
+
+  CListEventROOT event(test_proj_data_info_sptr);
+  event.init_from_data(ring1, ring2, crystal1, crystal2, delta_time);
+  Bin bin;
+  // this doesn't set time_frame, so force that to 1 for later comparisons
+  bin.time_frame_num() = 1;
+
+  event.get_bin(bin, *test_proj_data_info_sptr);
+  check(bin.timing_pos_num() != 0, "test CListEventROOT non-zero TOF bin");
+
+  LORAs2Points<float> lor_2pts(event.get_LOR());
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc;
+  test_proj_data_info_sptr->get_LOR(lor_sc, bin);
+  LORAs2Points<float> test_lor(lor_sc);
+  check_if_equal(lor_2pts.p1(), test_lor.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 1");
+  check_if_equal(lor_2pts.p2(), test_lor.p2(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 2");
+
+  event.init_from_data(ring2, ring1, crystal2, crystal1, -delta_time);
+  {
+    Bin bin_swapped;
+    bin_swapped.time_frame_num() = 1;
+    event.get_bin(bin_swapped, *test_proj_data_info_sptr);
+    LORAs2Points<float> lor_2pts_swapped(event.get_LOR());
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc_swapped;
+    test_proj_data_info_sptr->get_LOR(lor_sc_swapped, bin_swapped);
+    LORAs2Points<float> test_lor_swapped(lor_sc);
+    check_if_equal(lor_2pts_swapped.p1(), test_lor_swapped.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 3");
+    check_if_equal(lor_2pts_swapped.p2(), test_lor_swapped.p2(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 4");
+
+    // now check if equal
+    check_if_equal(bin, bin_swapped, "CListEventROOT:get_bin for reordered detectors");
+    check_if_equal(lor_2pts_swapped.p1(), lor_2pts.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 5");
+    check_if_equal(lor_2pts_swapped.p2(), lor_2pts.p2(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 6");
+  }
+  // repeat with swapped detectors
+  this->set_tolerance(old_tol);
+}
+#endif
 
 void
 TOF_Tests::test_tof_kernel_application(bool print_to_file)
