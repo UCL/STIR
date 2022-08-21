@@ -9,7 +9,12 @@ on:
     branches:
       - master
       - tof_sino_UCL
-
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
 jobs:
   build:
 
@@ -41,13 +46,15 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-          BUILD_TYPE: "Release"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
+
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
     - uses: actions/checkout@v2
@@ -180,6 +187,7 @@ jobs:
           echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
@@ -202,7 +210,7 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE="-E test_data_processor_projectors -E test_export_array -E test_ArcCorrection"
+              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection|test_blocks_on_cylindrical_projectors"
           fi
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
@@ -229,6 +237,20 @@ jobs:
             cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
             ./run_SPECT_tests.sh
           fi
+
+    - name: Upload log files for debugging
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        retention-days: 7
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - name: examples
       shell: bash
