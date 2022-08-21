@@ -267,11 +267,6 @@ public:
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
-
-  void find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface(CartesianCoordinate3D<float>& coord_1,
-                                                                                 CartesianCoordinate3D<float>& coord_2,
-                                                                                 const int Ring_A,const int Ring_B,
-                                                                                 const int det1, const int det2) const;
   
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
 					       CartesianCoordinate3D<float>& coord_2,

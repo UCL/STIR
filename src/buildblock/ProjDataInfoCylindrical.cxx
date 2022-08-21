@@ -580,6 +580,9 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
                  false);// needs to set "swapped" to false given above code 
 }  
 
+#if 0
+  // KT disabled these as untested (and unused)
+
 void
 ProjDataInfoCylindrical::
 get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1,
@@ -650,6 +653,7 @@ get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
 	if (timing_pos<0)
 		std::swap(coord_1, coord_2);
 }
+#endif
 
 string
 ProjDataInfoCylindrical::parameter_info()  const
