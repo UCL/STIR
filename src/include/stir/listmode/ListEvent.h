@@ -60,6 +60,9 @@ public:
       Coordinates are in mm and in the standard STIR coordinate system
       used by ProjDataInfo etc (i.e. origin is in the centre of the scanner).
 
+      Note that for PET data, this (should) return a "directed" LOR. e.g.
+      if the TOF bin changes sign, the coordinates will swap.
+
       \todo This function might need time info or so for rotating scanners.
   */
   virtual LORAs2Points<float>

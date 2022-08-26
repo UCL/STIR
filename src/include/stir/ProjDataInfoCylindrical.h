@@ -90,6 +90,8 @@ public:
   virtual void
     get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 	    const Bin& bin) const;
+#if 0
+  // KT disabled these as untested (and unused)
 
   //! This function returns the two points connecting the two detectors of the LOR.
   //!  \warning there is not a specific guarantee that these are going to be the two
@@ -109,7 +111,7 @@ public:
                             const int ring1,
                             const int ring2,
                             const int timing_pos) const;
- 
+#endif
   //! Set azimuthal angle offset (in radians)
   void set_azimuthal_angle_offset(const float angle);
   //! Set the azimuthal sampling (in radians)

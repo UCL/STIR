@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, 2020 University College London
+    Copyright (C) 2013, 2020, 2022 University College London
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
@@ -25,6 +25,7 @@
 #include "stir/BasicCoordinate.h"
 #include "stir/IndexRange.h"
 #include "stir/stream.h"
+#include "stir/Bin.h"
 #include <iostream>
 #include <typeinfo>
 #include <vector>
@@ -116,6 +117,9 @@ public:
   bool check_if_equal(const long long a, const long long b, const std::string& str = "");
   bool check_if_equal(const unsigned long long a, const unsigned long long b, const std::string& str = "");
 #endif
+  bool check_if_equal(const Bin& a, const Bin& b, const std::string& str = "")
+  {  return this->check_if_equal_generic(a,b,str);}
+
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by calling check_if_equal on real and imaginary parts
   template <class T>

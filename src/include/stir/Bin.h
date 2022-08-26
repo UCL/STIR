@@ -36,17 +36,14 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
- The timing position reflect the detection time difference between the two events.
- It is a multiple of the delta t of the least significant clock bit.
+ The timing position reflects the detection time difference between the two events for TOF.
+ It is an "index" into the projection data like the other values.
 
  The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
  handling list mode data.
 
  \warning N.E: Constructors with default values were removed. I faced many problems with ambguity. I had to make
  changes to all the framework, when one set a float value, it has to be as 'x.f'
-
- \warning Temporarily the timing_pos_num is not taken into account when comparing two bins,
-    Until were are actually able to cache LORs based on timing location this could be let off.
 */
 
 class Bin

@@ -88,7 +88,6 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
     ring1 = _ring1;
     ring2 = _ring2;
     delta_time = _delta_time;
-    swapped = false;
 }
 
 END_NAMESPACE_STIR

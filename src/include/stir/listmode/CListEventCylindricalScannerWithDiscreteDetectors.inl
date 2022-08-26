@@ -6,10 +6,13 @@
   \brief Implementations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
 
   \author Kris Thielemans
-
+  \author Nikos Efthimiou
+  \author Elise Emond
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2017, 2022, University College London
+    Copyright (C) 2017, University of Leeds
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -27,7 +30,7 @@ CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDat
     this->uncompressed_proj_data_info_sptr = std::dynamic_pointer_cast< const ProjDataInfoCylindricalNoArcCorr >(proj_data_info_sptr->create_shared_clone());
 
     if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
-        error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abord.");
+        error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abort.");
 }
 
 LORAs2Points<float>
@@ -35,9 +38,10 @@ CListEventCylindricalScannerWithDiscreteDetectors::
 get_LOR() const
 {
   LORAs2Points<float> lor;
-  // provide somewhat shorter names for the 2 coordinates
-  CartesianCoordinate3D<float>& coord_1 = lor.p1();
-  CartesianCoordinate3D<float>& coord_2 = lor.p2();
+  bool swap = this->get_delta_time() < 0.F;
+  // provide somewhat shorter names for the 2 coordinates, taking swap into account
+  CartesianCoordinate3D<float>& coord_1 = swap ? lor.p2() : lor.p1();
+  CartesianCoordinate3D<float>& coord_2 = swap ? lor.p1() : lor.p2();
 
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
@@ -50,7 +54,8 @@ get_LOR() const
                                                          det_pos.pos1().axial_coord(),
                                                          det_pos.pos2().axial_coord(),
                                                          det_pos.pos1().tangential_coord(),
-                                                         det_pos.pos2().tangential_coord());
+                                                         det_pos.pos2().tangential_coord(),
+                                                         det_pos.timing_pos());
   // find shift in z
   const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing()*
     (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1)/2.F;

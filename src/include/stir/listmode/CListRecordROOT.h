@@ -50,9 +50,6 @@ public:
     inline bool is_prompt() const
     { return true; }
 
-    bool inline is_swapped() const
-    { return swapped; }
-
 private:
     //! First ring, in order to detector tangestial index
     int ring1;
@@ -62,8 +59,6 @@ private:
     int det1;
     //! Second detector, in order to detector tangestial index
     int det2;
-    //! Indicates if swap segments
-    bool swapped;
 #ifdef STIR_ROOT_ROTATION_AS_V4
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.

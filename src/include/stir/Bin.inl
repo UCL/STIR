@@ -27,7 +27,7 @@
 START_NAMESPACE_STIR
 
 Bin::Bin():segment(0),view(0),
-    axial_pos(0),tangential_pos(0),timing_pos(0), bin_value(0.0f)
+    axial_pos(0),tangential_pos(0),timing_pos(0), bin_value(0.0f),time_frame(1)
 {}
 
 
@@ -48,7 +48,7 @@ Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num)
      :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(0.0f)
+      axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(0.0f), time_frame(1)
      {}
 
      
@@ -138,6 +138,7 @@ Bin::operator==(const Bin& bin2) const
     segment == bin2.segment && view == bin2.view && 
     axial_pos == bin2.axial_pos && tangential_pos == bin2.tangential_pos &&
     timing_pos == bin2.timing_pos &&
+    time_frame == bin2.time_frame &&
     bin_value == bin2.bin_value;
 }
 

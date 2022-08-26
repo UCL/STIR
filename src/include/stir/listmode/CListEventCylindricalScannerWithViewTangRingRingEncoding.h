@@ -85,8 +85,6 @@ public CListEventCylindricalScannerWithDiscreteDetectors
    */
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
 
-  inline void get_uncompressed_bin(Bin& bin) const;
-
 };
 
 END_NAMESPACE_STIR
