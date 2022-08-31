@@ -231,6 +231,7 @@ public:
     Array<4,float> array(IndexRange4D(p.get_num_tof_poss(), p.get_num_non_tof_sinograms(), p.get_num_views(), p.get_num_tangential_poss()));
     \endcode
 
+    \sa copy_to() (consistency between these 2 is guaranteed)
     \warning there is no range-check on \a array_iter
   */
   template < typename iterT>
@@ -243,26 +244,15 @@ public:
          k<=this->get_proj_data_info_sptr()->get_max_tof_pos_num();
          ++k)
       {
-        for (int s=0; s<= this->get_max_segment_num(); ++s)
+        for (int s : standard_segment_sequence(*this->get_proj_data_info_sptr()))
           {
-
-			  SegmentBySinogram<float> segment = this->get_empty_segment_by_sinogram(s, false, k);
-			  // cannot use std::copy sadly as needs end-iterator for range
-			  for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-				   seg_iter != segment.end_all();
-				   /*empty*/)
-				  *seg_iter++ = *array_iter++;
-			  this->set_segment(segment);
-
-			  if (s!=0)
-			  {
-				  segment = this->get_empty_segment_by_sinogram(-s,false,k);
-				  for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-					   seg_iter != segment.end_all();
-					   /*empty*/)
-					  *seg_iter++ = *array_iter++;
-				  this->set_segment(segment);
-			  }
+            auto segment = this->get_empty_segment_by_sinogram(s, false, k);
+            // cannot use std::copy sadly as needs end-iterator for range
+            for (auto seg_iter = segment.begin_all();
+                 seg_iter != segment.end_all();
+                 /*empty*/)
+              *seg_iter++ = *array_iter++;
+            this->set_segment(segment);
           }
       }
       return array_iter;
@@ -281,22 +271,14 @@ public:
   template < typename iterT>
   iterT copy_to(iterT array_iter) const
   {
-      iterT init_pos = array_iter;
       for (int k = this->get_proj_data_info_sptr()->get_min_tof_pos_num();
           k <= this->get_proj_data_info_sptr()->get_max_tof_pos_num();
-		  ++k)
+           ++k)
       {
-		  for (int s = 0; s <= this->get_max_segment_num(); ++s)
+        for (int s : standard_segment_sequence(*this->get_proj_data_info_sptr()))
           {
-			  SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s,k);
-			  std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-			  std::advance(array_iter, segment.size_all());
-			  if (s!=0)
-			  {
-				  segment=this->get_segment_by_sinogram(-s,k);
-				  std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-				  std::advance(array_iter, segment.size_all());
-			  }
+            const auto segment = this->get_segment_by_sinogram(s,k);
+            array_iter = std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
           }
       }
       return array_iter;
