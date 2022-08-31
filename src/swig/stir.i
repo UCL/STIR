@@ -1016,6 +1016,12 @@ T * operator-> () const;
 	ret(read_from_file<DiscretisedDensity<3,elemT> >(filename));
       return dynamic_cast<VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }
+
+    // add write_to_file method for VoxelsOnCartesianGrid, returns the saved filename
+    std::string write_to_file(const std::string& filename)
+    {
+      return write_to_file(filename, *$self);
+    }
  }
 
  //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
