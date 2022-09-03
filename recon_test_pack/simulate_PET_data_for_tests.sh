@@ -7,7 +7,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright (C) 2014,2020 University College London
+#  Copyright (C) 2014, 2020, 2022 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -17,7 +17,7 @@
 # Author Kris Thielemans
 # 
 
-echo This script should work with STIR version 5.x. If you have
+echo This script should work with STIR version 6.x. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -26,6 +26,7 @@ command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or
 echo "Using `command -v generate_image`"
 
 force_zero_view_offset=0
+TOF=0
 suffix=""
 #
 # Parse option arguments (--)
@@ -38,6 +39,9 @@ do
   if test "$1" = "--force_zero_view_offset"
   then
     force_zero_view_offset=1
+  elif test "$1" = "--TOF"
+  then
+    TOF=1
   elif test "$1" = "--suffix"
   then
     suffix="$2"
@@ -72,9 +76,10 @@ echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
 echo "===  make attenuation image"
 generate_image  generate_atten_cylinder.par
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
-cat > my_input.txt <<EOF
+if [ "$TOF" -eq 0 ]; then
+  echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
+  template_sino=my_DSTE_3D_rd2_template.hs
+  cat > my_input.txt <<EOF
 Discovery STE
 
 1
@@ -84,6 +89,21 @@ n
 0
 2
 EOF
+else
+  echo "===  create template sinogram (D690 in 3D with view-mash =2, TOF-mash=11, max ring diff 3 to save time)"
+  template_sino=my_D690_3D_rd2_template.hs
+  cat > my_input.txt <<EOF
+Discovery 690
+
+2
+11
+N
+
+2
+3
+EOF
+fi
+
 create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running create_projdata_template. Check my_create_${template_sino}.log"; exit 1; 
@@ -96,6 +116,10 @@ awk '/END OF INTERFILE/ { print "number of energy windows := 1\nenergy window lo
 mv tmp_header.hs ${template_sino}
 
 if [ $force_zero_view_offset -eq 1 ]; then
+  if [ "$TOF" -eq 1 ]; then
+      echo "$0 would need work to be used with both TOF and zero-offset. Exiting"
+      exit 1
+  fi
   new_template_sino=my_DSTE_3D_rd2_template$suffix.hs
   force_view_offset_to_zero.sh ${new_template_sino} ${template_sino}
   template_sino=${new_template_sino}
