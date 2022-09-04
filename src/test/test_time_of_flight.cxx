@@ -263,7 +263,7 @@ void
 TOF_Tests::test_tof_proj_data_info()
 {
   test_tof_proj_data_info_kernel();
-  // test_tof_proj_data_info_det_pos();
+  test_tof_proj_data_info_det_pos();
 }
 
 #ifdef HAVE_CERN_ROOT
