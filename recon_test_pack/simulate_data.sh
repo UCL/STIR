@@ -30,15 +30,15 @@ if [ $# -gt 4 ]; then
   suffix=$5
 fi
 echo "===  create ACFs"
-calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_acfs.log 2>&1
+calculate_attenuation_coefficients --ACF my_acfs$suffix.hs ${atten_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_acfs${suffix}.log 2>&1
 if [ $? -ne 0 ]; then 
-  echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1; 
+  echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs${suffix}.log"; exit 1;
 fi
 
 echo "===  create line integrals"
-forward_project my_line_integrals$suffix.hs  ${emission_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_line_integrals.log 2>&1
+forward_project my_line_integrals$suffix.hs  ${emission_image} ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_create_line_integrals${suffix}.log 2>&1
 if [ $? -ne 0 ]; then 
-  echo "ERROR running forward_project. Check my_create_line_integrals.log"; exit 1; 
+  echo "ERROR running forward_project. Check my_create_line_integrals${suffix}.log"; exit 1;
 fi
 
 
@@ -53,22 +53,27 @@ fi
 echo "===  create norm factors"
 # currently just 1 as not used in rest of script yet.
 stir_math -s --including-first \
-          --times-scalar 0 --add-scalar 1 my_norm$suffix.hs my_line_integrals$suffix.hs
+          --times-scalar 0 --add-scalar 1 my_norm$suffix.hs my_acfs$suffix.hs
 
 echo "===  create prompts"
-export suffix # used in the .par file to determine filenames
-correct_projdata uncorrect_projdata_simulation.par > my_create_prompts.log 2>&1
+INPUT=my_line_integrals${suffix}.hs OUTPUT=my_prompts${suffix}.hs \
+     MULT=my_acfs${suffix}.hs \
+     RANDOMS=my_randoms${suffix}.hs \
+     correct_projdata uncorrect_projdata.par > my_create_prompts${suffix}.log 2>&1
 if [ $? -ne 0 ]; then 
-  echo "ERROR running correct_projdata. Check my_create_prompts.log"; exit 1; 
+  echo "ERROR running correct_projdata. Check my_create_prompts${suffix}.log"; exit 1;
 fi
 
 # could call poisson_noise here
 
 echo "===  create additive sinogram for reconstruction"
-# need randoms (and scatter) multiplied by ACF and norm (but we don't have a norm here)
-stir_math -s --mult  my_additive_sinogram$suffix.hs my_randoms$suffix.hs my_acfs$suffix.hs
+# need randoms (and scatter) multiplied by ACF and norm (but we don't have a norm here yet)
+# need to use correct_projdata as in TOF, ACF/norm is non-TOF, so stir_math will fail
+INPUT=my_randoms${suffix}.hs OUTPUT=my_additive_sinogram${suffix}.hs \
+MULT=my_acfs${suffix}.hs \
+     correct_projdata correct_projdata_norm_only.par > my_create_additive_sino${suffix}.log 2>&1
 if [ $? -ne 0 ]; then 
-  echo "ERROR running stir_math"; exit 1; 
+  echo "ERROR running correct_projdata. Check my_create_additive_sino${suffix}.log"; exit 1;
 fi
 
 echo "Done creating simulated data"

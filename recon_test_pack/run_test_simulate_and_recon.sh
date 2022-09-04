@@ -104,11 +104,11 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
   echo "========== Testing `command -v ${recon}`"
   for parfile in ${recon}_test_sim*.par; do
     for dataSuffix in "" "$TOF_suffix"; do
-      echo "================== data suffix: \"$dataSuffix\""
+      echo "===== data suffix: \"$dataSuffix\""
       # test first if analytic reconstruction and if so, run pre-correction
       isFBP=0
       if expr "$recon" : FBP > /dev/null; then
-        if expr "$dataSuffix" : TOF > /dev/null; then
+        if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
           echo "Skipping TOF as not yet supported for FBP"
           break
         fi
