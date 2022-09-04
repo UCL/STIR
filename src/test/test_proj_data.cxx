@@ -148,9 +148,8 @@ run_tests_on_proj_data(ProjData& proj_data)
   }
   timer.stop(); std::cerr<< "-- CPU Time " << timer.value() << '\n';
 
-  std::cerr << "\ntest copy_to order (non-TOF)\n";
+  std::cerr << "\ntest copy_to order\n";
   timer.reset(); timer.start();
-  if (proj_data.get_num_tof_poss() == 1) // currently fails with TOF, so only run in non-TOF case
   {
     Array<4,float> test_array(IndexRange4D(proj_data.get_min_tof_pos_num(), proj_data.get_max_tof_pos_num(),
                                            0, proj_data.get_num_non_tof_sinograms()-1,
@@ -158,10 +157,9 @@ run_tests_on_proj_data(ProjData& proj_data)
                                            proj_data.get_min_tangential_pos_num(), proj_data.get_max_tangential_pos_num()));
     // copy to the array
     copy_to(proj_data, test_array.begin_all());
-    int total_ax_pos_num = 0;
     for (int k=proj_data.get_min_tof_pos_num(); k<=proj_data.get_max_tof_pos_num(); ++k)
       {
-
+        int total_ax_pos_num = 0;
         for (int segment_num : proj_data.standard_segment_sequence(*proj_data.get_proj_data_info_sptr()))
           {
             for (int ax_pos_num=proj_data.get_min_axial_pos_num(segment_num); ax_pos_num<=proj_data.get_max_axial_pos_num(segment_num); ++ax_pos_num, ++total_ax_pos_num)
