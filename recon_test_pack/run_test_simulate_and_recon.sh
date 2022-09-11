@@ -125,19 +125,29 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
       else
           suffix="$dataSuffix"
           export suffix
+          # we simulate 2 different scanners for non-TOF and TOF that sadly need different number of subsets
+          if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+              num_subsets=12
+          else
+              num_subsets=14
+          fi
+          export num_subsets
       fi
 
       # run actual reconstruction
       echo "Running ${recon} ${parfile}"
-      ${MPIRUN} ${recon} ${parfile} > my_${parfile}.log 2>&1
+      logfile="my_${parfile}${suffix}.log"
+      ${MPIRUN} ${recon} ${parfile} > "$logfile" 2>&1
       if [ $? -ne 0 ]; then
-          echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_${parfile}.log"
-          error_log_files="${error_log_files} my_${parfile}.log"
+          echo "Error running reconstruction. CHECK RECONSTRUCTION LOG \"$logfile\""
+          error_log_files="${error_log_files} "$logfile""
           break
       fi
 
       # find filename of (last) image from ${parfile}
-      output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
+      output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' "$parfile"`
+      # substitute env variables (e.g. to fill in suffix)
+      output_filename=`eval echo "${output_filename}"`
       if [ ${isFBP} -eq 0 ]; then
           # iterative algorithm, so we need to append the num_subiterations
           num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
@@ -160,8 +170,8 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
       echo "Output ROI mean: $output_ROI_mean"
       error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
       if [ ${error_bigger_than_1percent} -eq 1 ]; then
-          echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG my_${parfile}.log"
-          error_log_files="${error_log_files} my_${parfile}.log"
+          echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG "$logfile""
+          error_log_files="${error_log_files} ${logfile}"
       else
           echo "This seems fine."
       fi
