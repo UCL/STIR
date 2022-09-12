@@ -18,6 +18,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2020, 2022 University College London
 
     This file is part of STIR.
 
@@ -59,8 +60,9 @@ public:
 
   enum StorageOrder {
     Segment_AxialPos_View_TangPos,
-      Segment_View_AxialPos_TangPos,
-      Timing_Segment_View_AxialPos_TangPos,
+    Timing_Segment_AxialPos_View_TangPos,
+    Segment_View_AxialPos_TangPos,
+    Timing_Segment_View_AxialPos_TangPos,
     Unsupported };
 #if 0    
   static  ProjDataFromStream* ask_parameters(const bool on_disk = true);
@@ -158,8 +160,9 @@ protected:
   //! the stream with the data
   shared_ptr<std::iostream> sino_stream;
 
-  //! Calculate the offsets for specific bins.
-  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
+  //! Calculate the offset for a specific bin
+  /*! Throws if out-of-range or other error */
+  std::streamoff get_offset(const Bin&) const;
 
 private:
 
@@ -187,23 +190,6 @@ private:
   // memory as float, with the scale factor multiplied out
   float scale_factor;
 
-  //! Calculate the offset of the give timing position
-  //! \warning N.E: This function might be one the major components of STIR's speeds
-  std::streamoff get_offset_timing(const int timing_num) const;
-  
-  //! Calculate the offset for the given segmnet
-  //! \warning This function returns the offset of a segment *WITHING* a timing position
-  //! If you like to get the offset of a segment from different timing positions it has to
-  //! be combined with get_offset_timing().
-  std::streamoff get_offset_segment(const int segment_num) const;
-  
-  //! Calculate offsets for viewgram data  
-  std::vector<std::streamoff> get_offsets(const int view_num, const int segment_num,
-                                          const int timing_num = 0) const;
-  //! Calculate offsets for sinogram data
-  std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num,
-                                               const int timing_num = 0) const;
-    
 private:
 #if __cplusplus > 199711L
   ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;

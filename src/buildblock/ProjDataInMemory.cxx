@@ -167,8 +167,7 @@ float
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
   // first find offset in the stream
-  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
-  const std::streamoff total_offset = offsets[0];
+  const std::streamoff total_offset = get_offset(bin);
   // now convert to index in the buffer
   const int index = static_cast<int>(total_offset/sizeof(float));
   return buffer[index];
@@ -178,8 +177,7 @@ void
 ProjDataInMemory::set_bin_value(const Bin& bin)
 {
   // first find offset in the stream
-  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
-  const std::streamoff total_offset = offsets[0];
+  const std::streamoff total_offset = get_offset(bin);
   // now convert to index in the buffer
   const int index = static_cast<int>(total_offset/sizeof(float));
   
