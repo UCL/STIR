@@ -148,9 +148,6 @@ private:
     shared_ptr<DiscretisedDensity<3, float> > test_discretised_density_sptr;
     shared_ptr<ProjMatrixByBin> test_proj_matrix_sptr;
     shared_ptr<ProjMatrixByBin> test_nonTOF_proj_matrix_sptr;
-
-    shared_ptr<ProjectorByBinPair> projector_pair_sptr;
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used_sptr;
 };
 
 void

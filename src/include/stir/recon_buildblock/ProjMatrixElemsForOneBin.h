@@ -126,6 +126,8 @@ public:
 
   //! reset lor to 0 length
   void erase();
+  //! remove a single value_type
+  inline iterator erase(iterator it);
   //! add a new value_type object at the end
   /*! 
      \warning For future compatibility, it is required 
@@ -203,9 +205,6 @@ private:
   std::vector<value_type> elements;    
   Bin bin;
 
-
-  //! remove a single value_type
-  inline iterator erase(iterator it);
 };
 
 

@@ -8,12 +8,13 @@
   \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
+  \author Robert Twyman
   \author PARAPET project
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2013, 2015, 2022 University College London
     Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
@@ -133,6 +134,21 @@ set_up(
     const shared_ptr<const DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
     )
 {
+  if (is_cache_enabled())
+    {
+      const int max_abs_tangential_pos_num =
+        std::max(-proj_data_info_sptr->get_min_tangential_pos_num(), proj_data_info_sptr->get_max_tangential_pos_num());
+      // next isn't strictly speaking the max, as it could be larger for other segments, but that's pretty unlikely
+      const int max_abs_axial_pos_num =
+        std::max(-proj_data_info_sptr->get_min_axial_pos_num(0), proj_data_info_sptr->get_max_axial_pos_num(0));
+      const int max_abs_timing_pos_num = std::max(-proj_data_info_sptr->get_min_tof_pos_num(), proj_data_info_sptr->get_max_tof_pos_num());
+
+      if ((static_cast<CacheKey>(max_abs_axial_pos_num) >= (static_cast<CacheKey>(1) << axial_pos_bits)) ||
+          (static_cast<CacheKey>(max_abs_tangential_pos_num) >= (static_cast<CacheKey>(1) << tang_pos_bits)) ||
+          (static_cast<CacheKey>(max_abs_timing_pos_num) >= (static_cast<CacheKey>(1) << timing_pos_bits)))
+        error("ProjMatrixByBin: not enough bits reserved for this data in the caching mechanism. You will have to switch caching off. Sorry.");
+    }
+
   const int min_view_num = proj_data_info_sptr->get_min_view_num();
   const int max_view_num = proj_data_info_sptr->get_max_view_num();
   const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
@@ -171,19 +187,24 @@ set_up(
 
 /*!
     \warning Preconditions
-    <li>abs(axial_pos_num) fits in 17 bits</li>
-    <li>abs(tangential_pos_num) fits in 11 bits</li>   
+    <li>abs(axial_pos_num) fits in 13 (4095) bits
+    <li>abs(tangential_pos_num) fits in 10 (1024) bits
+    <li>abs(tof_pos_num) fits in 7 bits (127)
   */
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const
 {
-  assert(static_cast<boost::uint32_t>(abs(bin.axial_pos_num())) < (static_cast<boost::uint32_t>(1)<<18));
-  assert(abs(bin.tangential_pos_num()) < (1<<12));
-  return (CacheKey)( 
-                    (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
-                    | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<13) 
-                    | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
-                    |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
+  assert(static_cast<CacheKey>(abs(bin.axial_pos_num())) < (static_cast<CacheKey>(1) << axial_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.tangential_pos_num())) < (static_cast<CacheKey>(1) << tang_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.timing_pos_num())) < (static_cast<CacheKey>(1) << timing_pos_bits));
+
+  return static_cast<CacheKey>(
+                               (static_cast<CacheKey>(bin.axial_pos_num()>=0?0:1) << (timing_pos_bits + tang_pos_bits + axial_pos_bits + 2))
+                               | (static_cast<CacheKey>(abs(bin.axial_pos_num())) << (timing_pos_bits + tang_pos_bits + 2))
+                               | (static_cast<CacheKey>(bin.tangential_pos_num()>=0?0:1) << (timing_pos_bits + tang_pos_bits + 1))
+                               | (static_cast<CacheKey>(abs(bin.tangential_pos_num())) << (timing_pos_bits+1))
+                               | (static_cast<CacheKey>(bin.timing_pos_num()>=0?0:1) << timing_pos_bits)
+                               | (static_cast<CacheKey>(abs(bin.timing_pos_num()))));
 } 
 
 

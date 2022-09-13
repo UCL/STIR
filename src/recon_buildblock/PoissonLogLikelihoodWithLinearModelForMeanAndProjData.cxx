@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, 2019 University College London
+    Copyright (C) 2014, 2016-2022 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,6 +15,9 @@
 
   \author Kris Thielemans
   \author Matthew Jacobson
+  \author Nikos Efthimiou
+  \author Elise Emond
+  \author Robert Twyman
   \author Sanida Mustafovic
   \author PARAPET project
 */
@@ -42,9 +45,9 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #else
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
@@ -534,6 +537,14 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
   return true;
 }
 
+template<typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+sensitivity_uses_same_projector() const
+{
+  return !this->proj_data_sptr->get_proj_data_info_sptr()->is_tof_data() || this->use_tofsens;
+}
+
 /***************************************************************
   set_up()
 ***************************************************************/
@@ -570,15 +581,6 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
   if (is_null_ptr(this->projector_pair_ptr))
     { error("You need to specify a projector pair"); return Succeeded::no; }
 
-  // set projectors to be used for the calculations
-
-  setup_distributable_computation(this->projector_pair_ptr,
-                                  this->proj_data_sptr->get_exam_info_sptr(),
-                                  this->proj_data_sptr->get_proj_data_info_sptr(),
-                                  target_sptr,
-                                  zero_seg0_end_planes,
-                                  distributed_cache_enabled);
-        
 #ifdef STIR_MPI
   //set up distributed caching object
   if (distributed_cache_enabled) 
@@ -591,14 +593,8 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
   caching_info_ptr = NULL;
 #endif 
 
-  this->projector_pair_ptr->set_up(proj_data_info_sptr, 
-                                   target_sptr);
+  this->projector_pair_ptr->set_up(proj_data_info_sptr, target_sptr);
 
-  // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-  this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
-  if (!this->use_tofsens)
-	  this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
-                                   
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr.reset(
 			      this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
@@ -609,8 +605,36 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
     return Succeeded::no;
   }
 
-  if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), proj_data_info_sptr) == Succeeded::no)
-    return Succeeded::no;
+  // we postpone calling setup_distributable_computation until we know which projectors we will use
+  this->distributable_computation_already_setup = false;
+
+  if (this->get_recompute_sensitivity())
+    {
+      if (this->sensitivity_uses_same_projector())
+        {
+          this->sens_backprojector_sptr = projector_pair_ptr->get_back_projector_sptr();
+          this->sens_symmetries_sptr = this->symmetries_sptr;
+          if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), proj_data_info_sptr) == Succeeded::no)
+            return Succeeded::no;
+        }
+      else
+        {
+          // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
+          auto pdi_non_tof_sptr = proj_data_info_sptr->create_non_tof_clone();
+          this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
+          if (auto sens_bp_pm_sptr = std::dynamic_pointer_cast<BackProjectorByBinUsingProjMatrixByBin>(this->sens_backprojector_sptr))
+            {
+              // There is no point caching the projection matrix as we will use it only once
+              // Furthermore, disabling the cache will mean less memory used
+              // (and we don't have to release it)
+              sens_bp_pm_sptr->get_proj_matrix_sptr()->enable_cache(false);
+            }
+          this->sens_backprojector_sptr->set_up(pdi_non_tof_sptr, target_sptr);
+          this->sens_symmetries_sptr.reset(this->sens_backprojector_sptr->get_symmetries_used()->clone());
+          if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), pdi_non_tof_sptr) == Succeeded::no)
+            return Succeeded::no;
+        }
+    }
 
   if (frame_num<=0)
     {
@@ -642,6 +666,22 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
+
+  if (!this->distributable_computation_already_setup || !this->latest_setup_distributable_computation_was_with_orig_projectors)
+    {
+      // set TOF projectors to be used for the calculations
+      setup_distributable_computation(this->projector_pair_ptr,
+                                      this->proj_data_sptr->get_exam_info_sptr(),
+                                      this->proj_data_sptr->get_proj_data_info_sptr(),
+                                      std::shared_ptr<TargetT>(gradient.clone()),
+                                      zero_seg0_end_planes,
+                                      distributed_cache_enabled);
+      this->distributable_computation_already_setup = true;
+      this->latest_setup_distributable_computation_was_with_orig_projectors = true;
+    }
+  if (!this->distributable_computation_already_setup)
+    error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called (gradient calculation)");
+
   distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->projector_pair_ptr->get_back_projector_sptr(), 
                                  this->symmetries_sptr,
@@ -669,6 +709,20 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                   const int subset_num)
 {
+  if (this->distributable_computation_already_setup || !this->latest_setup_distributable_computation_was_with_orig_projectors)
+    {
+      // set TOF projectors to be used for the calculations
+      setup_distributable_computation(this->projector_pair_ptr,
+                                      this->proj_data_sptr->get_exam_info_sptr(),
+                                      this->proj_data_sptr->get_proj_data_info_sptr(),
+                                      std::shared_ptr<TargetT>(current_estimate.clone()),
+                                      zero_seg0_end_planes,
+                                      distributed_cache_enabled);
+      this->distributable_computation_already_setup = true;
+      this->latest_setup_distributable_computation_was_with_orig_projectors = true;
+    }
+  if (!this->distributable_computation_already_setup)
+    error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called (function calculation)");
   double accum=0.;  
   
   distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
@@ -748,15 +802,45 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
      shared_ptr<ProjData> sens_proj_data_sptr;
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
-     if (!this->use_tofsens)
+     if (!this->sensitivity_uses_same_projector())
          sens_proj_data_sptr.reset(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()->create_non_tof_clone()));
      else
         sens_proj_data_sptr.reset(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
      sens_proj_data_sptr->fill(1.0F);
 
+     if (this->sensitivity_uses_same_projector() && (!this->distributable_computation_already_setup || !this->latest_setup_distributable_computation_was_with_orig_projectors))
+       {
+         // set TOF projectors to be used for the calculations
+         setup_distributable_computation(this->projector_pair_ptr,
+                                         this->proj_data_sptr->get_exam_info_sptr(),
+                                         sens_proj_data_sptr->get_proj_data_info_sptr(),
+                                         std::shared_ptr<TargetT>(sensitivity.clone()),
+                                         zero_seg0_end_planes,
+                                         distributed_cache_enabled);
+         this->distributable_computation_already_setup = true;
+         this->latest_setup_distributable_computation_was_with_orig_projectors = true;
+       }
+     else if (!this->sensitivity_uses_same_projector() && (!this->distributable_computation_already_setup || this->latest_setup_distributable_computation_was_with_orig_projectors))
+       {
+         // set non-TOF projector to be used for the calculations
+         shared_ptr<ForwardProjectorByBin> dummy_sptr;
+         auto sens_projector_pair_sptr = std::make_shared<ProjectorByBinPairUsingSeparateProjectors>(dummy_sptr, this->sens_backprojector_sptr);
+         setup_distributable_computation(sens_projector_pair_sptr,
+                                         this->proj_data_sptr->get_exam_info_sptr(),
+                                         sens_proj_data_sptr->get_proj_data_info_sptr(),
+                                         std::shared_ptr<TargetT>(sensitivity.clone()),
+                                         zero_seg0_end_planes,
+                                         distributed_cache_enabled);
+         this->distributable_computation_already_setup = true;
+         this->latest_setup_distributable_computation_was_with_orig_projectors = false;
+       }
+
+     if (!this->distributable_computation_already_setup)
+       error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called (sensitivity calculation)");
+
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->sens_backprojector_sptr,
-                                 this->symmetries_sptr,
+                                 this->sens_symmetries_sptr,
                                  *sensitivity_this_subset_sptr, 
                                  sensitivity, 
                                  sens_proj_data_sptr, 

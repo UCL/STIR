@@ -351,6 +351,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
 {
   b.axial_pos_num() += axial_pos_shift;
   b.tangential_pos_num() *= -1;
+  b.timing_pos_num() *= -1;
 }
 
 void 
@@ -552,6 +553,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
   b.axial_pos_num() += axial_pos_shift;
   b.segment_num() *= -1;
   b.tangential_pos_num() *= -1;
+  b.timing_pos_num() *= -1;
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
