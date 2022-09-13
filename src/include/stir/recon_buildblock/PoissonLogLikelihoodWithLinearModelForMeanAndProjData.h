@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -321,9 +321,6 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
-  //! Backprojector used for sensitivity computation
-  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
-
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
 
@@ -373,6 +370,27 @@ protected:
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
+
+  /*! \name variables/methods for TOF sensitivity processing
+
+  TOF can use a non-TOF backprojector to compute the sensitivity. This is because the TOF kernel
+  sums to 1 when summing over all TOF bins. The non-TOF computation is obviously faster.
+  However, it does mean we need to keep track of a different back-projector etc, as well as
+  remembering which one was used in a previous distributable computation.
+  */
+  //!@{
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> sens_symmetries_sptr;
+  //! flag to check if we set-up distributable_computation with the original projectors or not
+  mutable bool latest_setup_distributable_computation_was_with_orig_projectors;
+  //! flag to check if setup_distributable_computation has been called already or not
+  mutable bool distributable_computation_already_setup;
+  //! return if we are using a different projector or not for the sensitivity calculation
+  /*! will always be \c true in the non-TOF case (or SPECT) */
+  bool sensitivity_uses_same_projector() const;
+  //!@}
 #if 0
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
