@@ -65,6 +65,8 @@ public:
   virtual ~TestProjDataInfoSubsets() {}
 
   void run_tests();
+  void run_tests(
+                 const std::shared_ptr<ProjData>& proj_data_sptr, const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr);
 
   void test_split(const ProjData& proj_data);
   // void test_split_and_combine(const ProjData &proj_data, int num_subsets=2);
@@ -85,10 +87,8 @@ public:
 
 protected:
   std::string _sinogram_filename;
-  shared_ptr<ProjData> _input_sino_sptr;
-  shared_ptr<VoxelsOnCartesianGrid<float>> _test_image_sptr;
   static shared_ptr<VoxelsOnCartesianGrid<float>> construct_test_image_data(const ProjData& template_projdata);
-  static shared_ptr<ProjData> construct_test_proj_data();
+  static shared_ptr<ProjData> construct_test_proj_data(bool TOF);
   static shared_ptr<ProjectorByBinPairUsingProjMatrixByBin>
   construct_projector_pair(const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
                            const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
@@ -116,16 +116,31 @@ protected:
 TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_filename) : _sinogram_filename(sinogram_filename) {}
 
 shared_ptr<ProjData>
-TestProjDataInfoSubsets::construct_test_proj_data()
+TestProjDataInfoSubsets::construct_test_proj_data(bool TOF)
 {
-  cerr << "\tGenerating default ProjData from E953" << endl;
-  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(
-      ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                             /*span*/ 5, scanner_ptr->get_num_rings() - 1,
-                                             /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
-                                             /*tang_pos*/ 64,
-                                             /*arc_corrected*/ false));
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  if (!TOF)
+    {
+      cerr << "\tGenerating default ProjData from E953" << endl;
+      shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+      proj_data_info_sptr =
+        ProjDataInfo::construct_proj_data_info(scanner_ptr,
+                                               /*span*/ 5, scanner_ptr->get_num_rings() - 1,
+                                               /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
+                                               /*tang_pos*/ 64,
+                                               /*arc_corrected*/ false);
+    }
+  else
+    {
+      cerr << "\tGenerating default ProjData from D690" << endl;
+      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
+      proj_data_info_sptr =
+        ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                               /*span*/ 2, 5,/*views*/ scanner_sptr->get_num_detectors_per_ring()/4,
+                                               /*tang_pos*/22, /*arc_corrected*/ false, /* Tof_mashing */ 11);
+
+    }
+
   auto exam_info_sptr = std::make_shared<ExamInfo>();
   exam_info_sptr->imaging_modality = ImagingModality::PT;
 
@@ -183,44 +198,31 @@ TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
 }
 
 void
-TestProjDataInfoSubsets::run_tests()
+TestProjDataInfoSubsets::run_tests(
+    const std::shared_ptr<ProjData>& input_sino_sptr, const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr)
 {
-  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
   try
     {
-      // Open sinogram
-      if (_sinogram_filename.empty())
-        {
-          _input_sino_sptr = construct_test_proj_data();
-          _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
-          fill_proj_data_with_forward_projection(_input_sino_sptr, _test_image_sptr);
-        }
-      else
-        {
-          _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
-          _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
-        }
+      test_split(*input_sino_sptr);
 
-      test_split(*_input_sino_sptr);
+      // test_split_and_combine(*input_sino_sptr);
 
-      // test_split_and_combine(*_input_sino_sptr);
-
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent(test_image_sptr, input_sino_sptr);
       cerr << "repeat with an 'unusual' number of subsets, 13" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/false,
+      test_forward_projection_is_consistent(test_image_sptr, input_sino_sptr, /*use_z_symmetries=*/false,
                                             /*use_z_symmetries=*/false, /*num_subsets=*/13);
       cerr << "repeat with z shift symmetries" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/true,
+      test_forward_projection_is_consistent(test_image_sptr, input_sino_sptr, /*use_z_symmetries=*/true,
                                             /*use_z_symmetries=*/false);
       cerr << "repeat with all symmetries" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/true,
+      test_forward_projection_is_consistent(test_image_sptr, input_sino_sptr, /*use_z_symmetries=*/true,
                                             /*use_z_symmetries=*/true);
 
-      test_forward_projection_is_consistent_with_unbalanced_subset(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent_with_unbalanced_subset(test_image_sptr, input_sino_sptr);
 
-      test_forward_projection_is_consistent_with_reduced_segment_range(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent_with_reduced_segment_range(test_image_sptr, input_sino_sptr);
 
-      test_back_projection_is_consistent(_input_sino_sptr, _test_image_sptr, /*num_subsets=*/10);
+      test_back_projection_is_consistent(input_sino_sptr, test_image_sptr, /*num_subsets=*/10);
     }
   catch (const std::exception& error)
     {
@@ -253,16 +255,17 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
           // the corresponding view in the original data is at subset_views[i]
 
           // loop over all segments to check viewgram for all segments
-          for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
-            {
-              if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num),
-                                  subset_proj_data.get_viewgram(i, segment_num), "Are viewgrams equal?"))
-                {
-                  cerr << "test_split failed: viewgrams weren't equal" << endl;
-                  break;
-                }
-              // TODO also compare viewgram metadata
-            }
+          for (int timing_pos_num = proj_data.get_min_tof_pos_num(); timing_pos_num <= proj_data.get_max_tof_pos_num(); ++timing_pos_num)
+            for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
+              {
+                if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num, false, timing_pos_num),
+                                    subset_proj_data.get_viewgram(i, segment_num, false, timing_pos_num), "Are viewgrams equal?"))
+                  {
+                    cerr << "test_split failed: viewgrams weren't equal" << endl;
+                    break;
+                  }
+                // TODO also compare viewgram metadata
+              }
         }
     }
 
@@ -494,17 +497,18 @@ TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
       // the corresponding view in the original data is at subset_views[i]
 
       // loop over all segments to check viewgram for all segments
-      for (int segment_num = full_forward_projection.get_min_segment_num();
-           segment_num < full_forward_projection.get_max_segment_num(); ++segment_num)
-        {
-          if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num),
-                              subset_forward_projection.get_viewgram(i, segment_num), "Are viewgrams equal?"))
-            {
-              cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
-              break;
-            }
-          // TODO also compare viewgram metadata
-        }
+      for (int timing_pos_num = full_forward_projection.get_min_tof_pos_num(); timing_pos_num <= full_forward_projection.get_max_tof_pos_num(); ++timing_pos_num)
+        for (int segment_num = full_forward_projection.get_min_segment_num();
+             segment_num < full_forward_projection.get_max_segment_num(); ++segment_num)
+          {
+            if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num, false, timing_pos_num),
+                                subset_forward_projection.get_viewgram(i, segment_num, false, timing_pos_num), "Are viewgrams equal?"))
+              {
+                cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
+                break;
+              }
+            // TODO also compare viewgram metadata
+          }
     }
 }
 
@@ -531,6 +535,38 @@ TestProjDataInfoSubsets::test_back_projection_is_consistent(
       (*back_projection_sum_sptr) += *subset_back_projection_sptr;
     }
   check_if_equal(*full_back_projection_sptr, *back_projection_sum_sptr, "Are backprojections equal?");
+}
+
+void
+TestProjDataInfoSubsets::run_tests()
+{
+
+  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
+  // Open sinogram
+  if (_sinogram_filename.empty())
+    {
+      std::cerr << "------------------ non-TOF\n";
+      {
+        auto input_sino_sptr = construct_test_proj_data(false);
+        auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+        fill_proj_data_with_forward_projection(input_sino_sptr, test_image_sptr);
+        run_tests(input_sino_sptr, test_image_sptr);
+      }
+      std::cerr << "------------------ TOF\n";
+      {
+        auto input_sino_sptr = construct_test_proj_data(true);
+        auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+        fill_proj_data_with_forward_projection(input_sino_sptr, test_image_sptr);
+        run_tests(input_sino_sptr, test_image_sptr);
+      }
+    }
+  else
+    {
+      auto input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
+      auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+      run_tests(input_sino_sptr, test_image_sptr);
+    }
+
 }
 
 END_NAMESPACE_STIR
