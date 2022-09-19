@@ -19,7 +19,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London
+    Copyright (C) 2014, 2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -36,9 +36,7 @@
 #include "boost/format.hpp"
 
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 
@@ -57,14 +55,21 @@ int main(int argc, char *argv[])
     const bool extract_by_view =
       ask_num("Extract as SegmentByView (0) or BySinogram (1)?", 0,1,0)==0;
 
+    const bool is_tof = s3d->get_min_tof_pos_num() != s3d->get_max_tof_pos_num();
+
     for (int segment_num = s3d->get_min_segment_num(); 
          segment_num <=  s3d->get_max_segment_num();
          ++segment_num)
-    {
+      for (int tof_pos_num = s3d->get_min_tof_pos_num(); 
+         tof_pos_num <=  s3d->get_max_tof_pos_num();
+         ++tof_pos_num)
+        {    
         std::string output_filename=filename;
         replace_extension(output_filename, "");
         output_filename+="seg";
 	output_filename+=boost::str(boost::format("%d") % segment_num);
+        if (is_tof)
+          output_filename += "_tof" + std::to_string(tof_pos_num);
 
 	Bin central_bin(segment_num,0,0,0);
 	const float m_spacing = s3d->get_proj_data_info_sptr()->get_sampling_in_m(central_bin);
@@ -74,14 +79,14 @@ int main(int argc, char *argv[])
 
         if (extract_by_view)
         {
-            SegmentByView <float> segment= s3d->get_segment_by_view(segment_num);
+          const auto segment= s3d->get_segment_by_view(segment_num, tof_pos_num);
             write_basic_interfile(output_filename + "_by_view.hv", 
 				  segment,
 				  CartesianCoordinate3D<float>(1.F, m_spacing, s_spacing),
 				  CartesianCoordinate3D<float>(0.F, m, s));
 	}
         else {
-            SegmentBySinogram<float> segment = s3d->get_segment_by_sinogram(segment_num);  
+          const auto segment = s3d->get_segment_by_sinogram(segment_num, tof_pos_num);
             write_basic_interfile(output_filename + "_by_sino.hv", 
 				  segment,
 				  CartesianCoordinate3D<float>(m_spacing, 1.F, s_spacing),
