@@ -5,8 +5,8 @@
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University of Leeds
-    Copyright (C) 2018, University College London
-    Copyright (C) 2016, University of Hull
+    Copyright (C) 2018, 2020-2022 University College London
+    Copyright (C) 2016-2019, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -187,10 +187,13 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 {
     if (scanner_ptr->is_tof_ready() && new_num > 0 )
     {
-        if(tof_mash_factor < 0 || tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
-            error("ProjDataInfo: TOF mashing factor must be positive and smaller or equal than"
-                  "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
+        if(tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
+            error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor ("
+                  + std::to_string(tof_mash_factor) +
+                  + ") must be smaller than or equal to the scanner's number of max timing bins ("
+                  + std::to_string(scanner_ptr->get_max_num_timing_poss())
+                  + ").");
 
         tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
         min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
