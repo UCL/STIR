@@ -138,6 +138,7 @@
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include "stir/multiply_crystal_factors.h"
+#include "stir/decay_correction_factor.h"
 #include "stir/ML_norm.h"
 #include "stir/spatial_transformation/InvertAxis.h"
 
@@ -1632,6 +1633,7 @@ namespace stir {
 
 
 void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
+double decay_correction_factor(const double isotope_halflife, const double start_time, const double end_time);
 
 %rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
 %shared_ptr(stir::LmToProjData);
