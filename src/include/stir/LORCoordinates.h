@@ -143,9 +143,8 @@ class LORCylindricalCoordinates_z_and_radius
     {
       check_state();
       assert(new_radius>0);
-      const auto mid_point = 0.5 * (_z1 + _z2);
-      _z1 = mid_point + (_z1 - mid_point) * new_radius / _radius;
-      _z2 = mid_point + (_z2 - mid_point) * new_radius / _radius;
+      _z1 *= new_radius/_radius;
+      _z2 *= new_radius/_radius;
       _radius = new_radius;
     }
   coordT _radius;
@@ -180,6 +179,10 @@ class LORInCylinderCoordinates : public LOR<coordT>
     }
   coordT radius() const { check_state(); return _radius; }
 
+  /*! \ingroup LOR
+    \brief Changes the radius of the LOR
+    \warning This does *not* preserve the LOR. Instead, it scales the LOR radially.
+  */
   inline 
     Succeeded
     set_radius(coordT new_radius)
@@ -193,9 +196,8 @@ class LORInCylinderCoordinates : public LOR<coordT>
       _radius*fabs(cos((_p1.psi()-_p2.psi())/2));
     if (new_radius >= min_radius)
       return Succeeded::no;
-    const auto mid_point = 0.5 * (_p1.z() + _p2.z());
-    _p1.z() = mid_point + (_p1.z() - mid_point) * new_radius / _radius;
-    _p2.z() = mid_point + (_p2.z() - mid_point) * new_radius / _radius;
+    _p1.z() *= new_radius/_radius;
+    _p2.z() *= new_radius/_radius;
     _radius = new_radius;
     return Succeeded::yes;
   }
