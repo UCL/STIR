@@ -179,6 +179,10 @@ class LORInCylinderCoordinates : public LOR<coordT>
     }
   coordT radius() const { check_state(); return _radius; }
 
+  /*! \ingroup LOR
+    \brief Changes the radius of the LOR
+    \warning This does *not* preserve the LOR. Instead, it scales the LOR radially.
+  */
   inline 
     Succeeded
     set_radius(coordT new_radius)

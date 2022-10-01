@@ -333,15 +333,18 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
      argument of sqrt simplifies to
      R^2*(d.x^2+d.y^2)-(d.x*c1.y-d.y*c1.x)^2
   */
-  const double dxy2 = (square(d.x())+square(d.y()));
-  const double argsqrt=
-    (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
-  if (argsqrt<=0)
+  const double a = square(d.x()) + square(d.y());
+  const double b = d.x() * c1.x() + d.y() * c1.y();
+  const double e = square(c1.x()) + square(c1.y()) - square(radius);
+  double argsqrt = square(b) - a * e;
+  if (argsqrt<=0) {
     return Succeeded::no; // LOR is outside detector radius
+  }
   const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
 
-  const coordT2 l1 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2);
-  const coordT2 l2 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2);
+  auto l1 = static_cast<coordT2>((-b + root) / a);
+  auto l2 = static_cast<coordT2>((-b - root) / a);
+  
   // TODO won't work when coordT1!=coordT2
   intersection_coords.p1() = d*l1 + c1;
   intersection_coords.p2() = d*l2 + c1;
@@ -518,10 +521,9 @@ TYPE<coordT>::								     \
 get_intersections_with_cylinder(LORAs2Points<coordT>& lor,              \
                                 const double radius) const		     \
 {									     \
-  self_type tmp = *this;							     \
-  if (tmp.set_radius(static_cast<coordT>(radius)) == Succeeded::no)			             \
+  LORAs2Points<coordT> actual_lor = *this;							     \
+  if (find_LOR_intersections_with_cylinder(lor, actual_lor, radius) == Succeeded::no)  \
     return Succeeded::no;						     \
-  lor = tmp;                                                                 \
   return Succeeded::yes;								     \
 }
 									    

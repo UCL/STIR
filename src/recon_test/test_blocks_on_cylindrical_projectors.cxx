@@ -57,6 +57,7 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 //#include "stir/Shape/Shape3D.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
 
@@ -75,6 +76,7 @@ private:
   void run_map_orientation_test();
   void run_axial_projection_test();
   void run_voxelOnCartesianGrid_with_negative_offset();
+  void run_intersection_with_cylinder_test();
   template <class TProjDataInfo>
   shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr);
 };
@@ -84,17 +86,15 @@ template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
 BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
 {
-  VectorWithOffset<int> num_axial_pos_per_segment(scanner_sptr->get_num_rings() * 2 - 1);
-  VectorWithOffset<int> min_ring_diff_v(scanner_sptr->get_num_rings() * 2 - 1);
-  VectorWithOffset<int> max_ring_diff_v(scanner_sptr->get_num_rings() * 2 - 1);
-  for (int i = 0; i < 2 * scanner_sptr->get_num_rings() - 1; i++)
+  auto segments = scanner_sptr->get_num_rings() - 1;
+  VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
+  VectorWithOffset<int> min_ring_diff_v(-segments, segments);
+  VectorWithOffset<int> max_ring_diff_v(-segments, segments);
+  for (int i = -segments; i <= segments; i++)
     {
-      min_ring_diff_v[i] = -scanner_sptr->get_num_rings() + 1 + i;
-      max_ring_diff_v[i] = -scanner_sptr->get_num_rings() + 1 + i;
-      if (i < scanner_sptr->get_num_rings())
-        num_axial_pos_per_segment[i] = i + 1;
-      else
-        num_axial_pos_per_segment[i] = 2 * scanner_sptr->get_num_rings() - i - 1;
+      min_ring_diff_v[i] = i;
+      max_ring_diff_v[i] = i;
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
     }
 
   auto proj_data_info_blocks_sptr
@@ -674,6 +674,84 @@ BlocksTests::run_map_orientation_test()
 }
 
 void
+BlocksTests::run_intersection_with_cylinder_test()
+{
+  //    create projadata info
+  auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  scannerBlocks_sptr->set_average_depth_of_interaction(5);
+  scannerBlocks_sptr->set_num_axial_crystals_per_block(1);
+  scannerBlocks_sptr->set_axial_block_spacing(scannerBlocks_sptr->get_axial_crystal_spacing()
+                                              * scannerBlocks_sptr->get_num_axial_crystals_per_block());
+  scannerBlocks_sptr->set_transaxial_block_spacing(scannerBlocks_sptr->get_transaxial_crystal_spacing()
+                                                   * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
+  scannerBlocks_sptr->set_num_axial_blocks_per_bucket(2);
+  scannerBlocks_sptr->set_num_rings(2);
+  scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
+  scannerBlocks_sptr->set_up();
+
+  auto proj_data_info = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
+  proj_data_info = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
+
+  // loop over all LORs in the projdata
+  Bin bin;
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  LORAs2Points<float> lor_points, lor_points_with_larger_radius;
+  const float radius = proj_data_info->get_scanner_sptr()->get_inner_ring_radius();
+
+  auto are_parallel = [](CartesianCoordinate3D<float> &line1, CartesianCoordinate3D<float> &line2) -> bool {
+    const auto dot_product = line1.x() * line2.x() + line1.y() * line2.y() + line1.z() * line2.z();
+    const auto length1 = sqrt(line1.x() * line1.x() + line1.y() * line1.y() + line1.z() * line1.z());
+    const auto length2 = sqrt(line2.x() * line2.x() + line2.y() * line2.y() + line2.z() * line2.z());
+    return abs(dot_product) / length1 / length2 > 0.99;
+  };
+
+  auto point_is_on_cylinder = [](const CartesianCoordinate3D<float> &point, float radius) -> bool {
+    return abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
+  };
+
+  const auto segment_sequence = ProjData::standard_segment_sequence(*proj_data_info);
+  std::size_t index(0);
+  for (int seg : segment_sequence)
+  {
+    bin.segment_num() = seg;
+    for (bin.axial_pos_num() = proj_data_info->get_min_axial_pos_num(bin.segment_num());
+          bin.axial_pos_num() <= proj_data_info->get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+    {
+      for (bin.view_num() = proj_data_info->get_min_view_num(); bin.view_num() <= proj_data_info->get_max_view_num();
+            ++bin.view_num())
+      {
+        for (bin.tangential_pos_num() = proj_data_info->get_min_tangential_pos_num();
+              bin.tangential_pos_num() <= proj_data_info->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+        {
+          proj_data_info->get_LOR(lor, bin);
+          if (lor.get_intersections_with_cylinder(lor_points, radius) == Succeeded::yes &&
+              lor.get_intersections_with_cylinder(lor_points_with_larger_radius, radius + 20) == Succeeded::yes)
+          {
+            const CartesianCoordinate3D<float> p1 = lor_points.p1();
+            const CartesianCoordinate3D<float> p2 = lor_points.p2();
+            const CartesianCoordinate3D<float> p1_large_r = lor_points_with_larger_radius.p1();
+            const CartesianCoordinate3D<float> p2_large_r = lor_points_with_larger_radius.p2();
+
+            // check if on same line
+            auto v1 = CartesianCoordinate3D<float>(p1 - p2);
+            auto v2 = CartesianCoordinate3D<float>(p1 - p1_large_r);
+            auto v3 = CartesianCoordinate3D<float>(p1 - p2_large_r);
+            check(are_parallel(v1, v2), "checking for collinearity");
+            check(are_parallel(v2, v3), "checking for collinearity");
+
+            // check if on cylinder
+            check(point_is_on_cylinder(p1, radius), "check if point is on cylinder");
+            check(point_is_on_cylinder(p2, radius), "check if point is on cylinder");
+            check(point_is_on_cylinder(p1_large_r, radius + 20), "check if point is on cylinder");
+            check(point_is_on_cylinder(p2_large_r, radius + 20), "check if point is on cylinder");
+          }
+        }
+      }
+    }
+  }
+}
+
+void
 BlocksTests::run_tests()
 {
 
@@ -683,6 +761,7 @@ BlocksTests::run_tests()
   run_map_orientation_test();
   run_symmetry_test();
   run_plane_symmetry_test();
+  run_intersection_with_cylinder_test();
 }
 END_NAMESPACE_STIR
 
