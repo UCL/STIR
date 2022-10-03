@@ -68,6 +68,12 @@ Scanner::get_inner_ring_radius() const
 }
 
 float
+Scanner::get_outer_FOV_radius() const
+{
+  return outer_FOV_radius;
+}
+
+float
 Scanner::get_average_depth_of_interaction() const
 {
   return average_depth_of_interaction;

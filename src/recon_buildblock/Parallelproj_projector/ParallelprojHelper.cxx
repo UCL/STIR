@@ -73,7 +73,7 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
   Bin bin;
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
   LORAs2Points<float> lor_points;
-  const float radius = p_info.get_scanner_sptr()->get_inner_ring_radius();
+  const float radius = p_info.get_scanner_sptr()->get_outer_FOV_radius() + p_info.get_scanner_sptr()->get_average_depth_of_interaction();
 
   // warning: next loop needs to be the same as how ProjDataInMemory stores its data. There is no guarantee that this will remain the case in the future.
   const auto segment_sequence = ProjData::standard_segment_sequence(p_info);

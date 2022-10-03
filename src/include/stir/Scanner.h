@@ -250,6 +250,8 @@ class Scanner
   inline int get_max_num_views() const;
   //! get inner ring radius
   inline float get_inner_ring_radius() const;
+  //! get outer field of view radius
+  inline float get_outer_FOV_radius() const;
   //! get effective ring radius
   inline float get_effective_ring_radius() const;
   //! get average depth of interaction
@@ -464,6 +466,7 @@ private:
 
   float inner_ring_radius;      /*! detector inner radius in mm*/
   float average_depth_of_interaction; /*! Average interaction depth in detector crystal */
+  float outer_FOV_radius;       /*! detector outer radius in mm - for cylindrical scanner identical to inner radius */
   float ring_spacing;   /*! ring separation in mm*/
   float bin_size;               /*! arc-corrected bin size in mm (spacing of transaxial elements) */
   float intrinsic_tilt;         /*! intrinsic tilt in radians*/
@@ -506,6 +509,7 @@ private:
   shared_ptr<DetectorCoordinateMap> detector_map_sptr;
 
   void set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map );
+  void set_outer_FOV_radius();
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );
