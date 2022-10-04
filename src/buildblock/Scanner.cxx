@@ -910,7 +910,7 @@ void Scanner::set_up()
             error("Scanner::scanner_geometry needs to be one of Cylindrical, BlocksOnCylindrical, Generic");
         }
     }
-  set_outer_FOV_radius();
+  set_max_FOV_radius();
   _already_setup = true;
 }
 
@@ -927,23 +927,23 @@ set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map 
 
 void
 Scanner::
-set_outer_FOV_radius() {
+set_max_FOV_radius() {
   if (!this->detector_map_sptr)
   {
     // for cylindrical scanners, all detectors have the same distance from the rotational axis
-    outer_FOV_radius = inner_ring_radius;
+    max_FOV_radius = inner_ring_radius;
   }
   else
   {
     // for other geometries, loop through all detectors and set the radius to the largest found distance
-    outer_FOV_radius = inner_ring_radius;
+    max_FOV_radius = inner_ring_radius;
     for (auto tangential_pos = 0; tangential_pos < detector_map_sptr->get_num_tangential_coords(); tangential_pos++)
       for (auto axial_pos = 0; axial_pos < detector_map_sptr->get_num_axial_coords(); axial_pos++)
         for (auto radial_pos = 0; radial_pos < detector_map_sptr->get_num_radial_coords(); radial_pos++)
     {
       auto coord = detector_map_sptr->get_coordinate_for_det_pos(stir::DetectionPosition<>(tangential_pos, axial_pos, radial_pos));
       const auto detector_radius = sqrt(coord.x() * coord.x() + coord.y() * coord.y()) - average_depth_of_interaction;
-      outer_FOV_radius = fmax(outer_FOV_radius, detector_radius);
+      max_FOV_radius = fmax(max_FOV_radius, detector_radius);
     }
   }
 }

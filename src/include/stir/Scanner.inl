@@ -68,9 +68,9 @@ Scanner::get_inner_ring_radius() const
 }
 
 float
-Scanner::get_outer_FOV_radius() const
+Scanner::get_max_FOV_radius() const
 {
-  return outer_FOV_radius;
+  return max_FOV_radius;
 }
 
 float
