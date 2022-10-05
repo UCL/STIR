@@ -86,7 +86,7 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                     parallel_bin.tangential_pos_num() = tangential_pos_num;
                     
                     std::vector<DetectionPositionPair<> > det_pos_pairs;
-                    proj_data_info_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+                    proj_data_info_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, parallel_bin);
                     float result = 0.F;
                     for (unsigned int i=0; i<det_pos_pairs.size(); ++i)
                       {
