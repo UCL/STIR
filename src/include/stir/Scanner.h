@@ -506,10 +506,10 @@ private:
   float transaxial_block_spacing;        /*! block pitch in transaxial direction in mm*/
   
   std::string crystal_map_file_name;
-  shared_ptr<DetectorCoordinateMap> detector_map_sptr;
+  shared_ptr<DetectorCoordinateMap> detector_map_sptr;  /*! effective detection positions including average DOI */
 
   void set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map );
-  void set_max_FOV_radius();
+  void initialise_max_FOV_radius();
 
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );

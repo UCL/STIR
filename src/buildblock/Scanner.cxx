@@ -910,7 +910,7 @@ void Scanner::set_up()
             error("Scanner::scanner_geometry needs to be one of Cylindrical, BlocksOnCylindrical, Generic");
         }
     }
-  set_max_FOV_radius();
+  initialise_max_FOV_radius();
   _already_setup = true;
 }
 
@@ -927,7 +927,7 @@ set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map 
 
 void
 Scanner::
-set_max_FOV_radius() {
+initialise_max_FOV_radius() {
   if (!this->detector_map_sptr)
   {
     // for cylindrical scanners, all detectors have the same distance from the rotational axis
