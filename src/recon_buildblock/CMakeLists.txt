@@ -57,6 +57,7 @@ set(${dir_LIB_SOURCES}
 	TrivialBinNormalisation.cxx
 	BinNormalisationFromAttenuationImage.cxx
 	BinNormalisationSPECT.cxx
+        BinNormalisationPETFromComponents.cxx
         ML_estimate_component_based_normalisation.cxx
 	GeneralisedPrior.cxx
 	ProjDataRebinning.cxx
