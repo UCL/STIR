@@ -156,9 +156,9 @@ public:
   
   virtual void check(const ExamInfo& exam_info) const;
   bool _already_set_up;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 private:
   shared_ptr<const ExamInfo> exam_info_sptr;
-  shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR
