@@ -11,8 +11,11 @@
   \file
   \ingroup utilities
 
-  \brief Apply normalisation factors to projection data
+  \brief Apply normalisation factors estimated using the ML code to projection data
 
+  This utility constructed a stir::BinNormalisationPETFromComponents from the text
+  files written by stir::ML_estimate_component_based_normalisation and uses it
+  on projection data.
   \author Kris Thielemans
   \author Tahereh Niknejad
 
@@ -34,32 +37,30 @@ main(int argc, char** argv)
   if (argc < 7 || argc > 13)
     {
       std::cerr << "Usage: " << argv[0]
-                << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num [do_eff [ do_geo [ "
-                   "do_block [do_display [do_symmetry_per_block ]]]]]\n"
-                << "apply_or_undo is 1 (multiply) or 0 (divide)\n"
+                << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num\\\n"
+                << "\t [do_eff [ do_geo [do_block [do_display [do_symmetry_per_block ]]]]]\n"
+                << "multiply_or_divide is 1 (multiply) or 0 (divide), with the latter being \"correction\"\n"
                 << "do_eff, do_geo, do_block are 1 or 0 and all default to 1\n"
-                << "do_display is 1 or 0 (defaults to 0)\n"
+                << "do_display is ignored\n"
                 << "do_symmetry_per_block is 1 or 0 (defaults to 0)\n";
       return EXIT_FAILURE;
     }
 
   bool do_symmetry_per_block = argc >= 12 ? atoi(argv[11]) != 0 : false;
-  const bool do_display = argc >= 11 ? atoi(argv[10]) != 0 : false;
+  // const bool do_display = argc >= 11 ? atoi(argv[10]) != 0 : false;
   bool do_block = argc >= 10 ? atoi(argv[9]) != 0 : true;
   bool do_geo = argc >= 9 ? atoi(argv[8]) != 0 : true;
   bool do_eff = argc >= 8 ? atoi(argv[7]) != 0 : true;
 
-  // if (do_geo)
-  // error("Cannot do geometric factors in 3D yet");
   const int eff_iter_num = atoi(argv[6]);
   const int iter_num = atoi(argv[5]);
-  const bool apply_or_undo = atoi(argv[4]) != 0;
+  const bool multiply_or_divide = atoi(argv[4]) != 0;
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[3]);
   const std::string in_filename_prefix = argv[2];
   const std::string output_file_name = argv[1];
-  const std::string program_name = argv[0];
-  shared_ptr<ProjData> out_proj_data_ptr(new ProjDataInterfile(
-      measured_data->get_exam_info_sptr(), measured_data->get_proj_data_info_sptr()->create_shared_clone(), output_file_name));
+  // const std::string program_name = argv[0];
+  ProjDataInterfile out_proj_data(measured_data->get_exam_info_sptr(), measured_data->get_proj_data_info_sptr(),
+                                  output_file_name);
 
   BinNormalisationPETFromComponents norm;
   norm.allocate(measured_data->get_proj_data_info_sptr(), do_eff, do_geo, do_block, do_symmetry_per_block);
@@ -117,11 +118,11 @@ main(int argc, char** argv)
 
   norm.set_up(measured_data->get_exam_info_sptr(), measured_data->get_proj_data_info_sptr());
   ProjDataInMemory proj_data(*measured_data);
-  if (apply_or_undo) // confusingly, terminology for "apply" is the exact opposed as for BinNormalisation...
+  if (multiply_or_divide)
     norm.undo(proj_data);
   else
     norm.apply(proj_data);
-  out_proj_data_ptr->fill(proj_data);
+  out_proj_data.fill(proj_data);
 
   return EXIT_SUCCESS;
 }
