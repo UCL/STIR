@@ -22,6 +22,11 @@
         stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableConvolutionImageFilter<elemT>)
 
+%shared_ptr(stir::RegisteredParsingObject<stir::TruncateToCylindricalFOVImageProcessor<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::TruncateToCylindricalFOVImageProcessor<elemT>)
+
 %shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
@@ -34,6 +39,7 @@
 %include "stir/SeparableCartesianMetzImageFilter.h"
 %include "stir/SeparableGaussianImageFilter.h"
 %include "stir/SeparableConvolutionImageFilter.h"
+%include "stir/TruncateToCylindricalFOVImageProcessor.h"
 %include "stir/HUToMuImageProcessor.h"
 
 #define elemT float
@@ -61,6 +67,12 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
         stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(SeparableConvolutionImageFilter3DFloat) stir::SeparableConvolutionImageFilter<elemT>;
+
+%template(RPTruncateToCylindricalFOVImageProcessor3DFloat) stir::RegisteredParsingObject<
+        stir::TruncateToCylindricalFOVImageProcessor<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+%template(TruncateToCylindricalFOVImageProcessor3DFloat) stir::TruncateToCylindricalFOVImageProcessor<elemT>;
 
 %template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
              stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,

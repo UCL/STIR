@@ -105,6 +105,7 @@
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/SeparableConvolutionImageFilter.h"
+#include "stir/TruncateToCylindricalFOVImageProcessor.h"
 
 #include "stir/HUToMuImageProcessor.h"
 
@@ -117,6 +118,7 @@
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
