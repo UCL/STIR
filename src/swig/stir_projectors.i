@@ -59,15 +59,15 @@
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
 %shared_ptr(stir::ProjectorByBinPairUsingProjMatrixByBin)
 
-%shared_ptr(RegisteredParsingObject<stir::ProjectorByBinPairUsingSeparateProjectors,
-    stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
-%shared_ptr(stir::ProjectorByBinPairUsingSeparateProjectors)
-
 %include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 %template(internalRPProjectorByBinPairUsingProjMatrixByBin) stir::RegisteredParsingObject<
     stir::ProjectorByBinPairUsingProjMatrixByBin, stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+
+%shared_ptr(stir::RegisteredParsingObject<stir::ProjectorByBinPairUsingSeparateProjectors,
+    stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
+%shared_ptr(stir::ProjectorByBinPairUsingSeparateProjectors)
 
 %template(internalRPProjectorByBinPairUsingSeparateProjectors) stir::RegisteredParsingObject<
     stir::ProjectorByBinPairUsingSeparateProjectors, stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
