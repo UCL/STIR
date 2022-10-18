@@ -536,7 +536,7 @@ set_up()
         }
 
         this->iterative_method = false;
-        tmp_analytic->set_disable_output(true);
+        tmp_analytic->set_disable_output(!this->run_debug_mode);
     }
     else if (!is_null_ptr(tmp_iterative))
     {
@@ -547,7 +547,7 @@ set_up()
         }
 
         this->iterative_method = true;
-        tmp_iterative->set_disable_output(true);
+        tmp_iterative->set_disable_output(!this->run_debug_mode);
     }
     else
     {

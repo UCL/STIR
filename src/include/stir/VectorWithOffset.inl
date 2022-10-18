@@ -177,11 +177,7 @@ typename VectorWithOffset<T>::iterator
 VectorWithOffset<T>::end() 
 {
   this->check_state();
-  // for empty vectors, the begin and end iterators need to point to the same place
-  if (length == 0)
-    return typename VectorWithOffset<T>::iterator(num+this->get_min_index());
-  else
-    return typename VectorWithOffset<T>::iterator(num+this->get_max_index()+1); 
+  return typename VectorWithOffset<T>::iterator(num + (this->get_max_index() + 1)); 
 }
 
 template <class T>
@@ -189,11 +185,7 @@ typename VectorWithOffset<T>::const_iterator
 VectorWithOffset<T>::end() const 
 { 
   this->check_state();
-  // for empty vectors, the begin and end iterators need to point to the same place
-  if (length == 0)
-    return typename VectorWithOffset<T>::const_iterator(num+this->get_min_index());
-  else
-    return typename VectorWithOffset<T>::const_iterator(num+this->get_max_index()+1);
+  return typename VectorWithOffset<T>::const_iterator(num + (this->get_max_index() + 1));
 }
 
 template <class T>

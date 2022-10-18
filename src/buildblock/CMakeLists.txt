@@ -66,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	SeparableCartesianMetzImageFilter.cxx
 	TruncateToCylindricalFOVImageProcessor.cxx
 	ThresholdMinToSmallPositiveValueDataProcessor.cxx
+	HUToMuImageProcessor.cxx
 	ChainedDataProcessor.cxx
 	ArrayFilter1DUsingConvolution.cxx
 	SeparableConvolutionImageFilter.cxx
@@ -107,10 +108,6 @@ if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
   list(APPEND ${dir_LIB_SOURCES} getopt.c)
 endif()
-
-#if (HAVE_JSON)
-  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor.cxx)
-#endif()
 
 include(stir_lib_target)
 

@@ -64,18 +64,22 @@ public:
   //! Default constructor
   TruncateToCylindricalFOVImageProcessor();
 
-  void set_truncate_rim(const int truncate_rim) {
+  void set_truncate_rim(const int truncate_rim)
+  {
     this->_truncate_rim = truncate_rim;
   }
 
-  int get_truncate_rim() {
+  int get_truncate_rim()
+  {
     return this->_truncate_rim;
   }
 
-  void set_strictly_less_than_radius(const bool arg) {
+  void set_strictly_less_than_radius(const bool arg)
+  {
 	  this->_strictly_less_than_radius = arg;
   }
-  bool get_strictly_less_than_radius() const {
+  bool get_strictly_less_than_radius() const
+  {
 	  return this->_strictly_less_than_radius;
   }
 

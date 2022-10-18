@@ -105,7 +105,6 @@ if(NOT DISABLE_ITK)
    find_package(ITK 4.9)
    if (ITK_FOUND)
       include(${ITK_USE_FILE})
-      set(HAVE_ITK ON)
    endif()
 endif()
 
