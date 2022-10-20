@@ -28,7 +28,6 @@
     stir::BackProjectorByBin>);
 %shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
 
-
 %shared_ptr(stir::ProjMatrixByBin);
 %shared_ptr(stir::RegisteredParsingObject<
 	      stir::ProjMatrixByBinUsingRayTracing,
@@ -36,6 +35,13 @@
               stir::ProjMatrixByBin
 	    >);
 %shared_ptr(stir::ProjMatrixByBinUsingRayTracing);
+
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinSPECTUB,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+	    >);
+%shared_ptr(stir::ProjMatrixByBinSPECTUB);
 
 %include "stir/recon_buildblock/ForwardProjectorByBin.h"
 %include "stir/recon_buildblock/BackProjectorByBin.h"
@@ -50,6 +56,14 @@
 
 %include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
+%template (internalRPProjMatrixByBinSPECTUB) stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinSPECTUB,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+  >;
+
+%include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+
 %template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
      stir::ForwardProjectorByBin>;
@@ -60,6 +74,8 @@
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+%include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 
 %shared_ptr(stir::ProjectorByBinPair);
 // explicitly ignore constructor, because SWIG tries to instantiate the abstract class otherwise
