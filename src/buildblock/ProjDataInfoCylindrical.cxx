@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
-    Copyright (C) 2013, 2018, 2021, University College London
+    Copyright (C) 2013, 2018, 2021, 2022 University College London
 
     This file is part of STIR.
 
@@ -303,10 +303,28 @@ initialise_ring_diff_arrays() const
     }
   }
 
-  if (sampling_corresponds_to_physical_rings)
-    allocate_segment_axial_pos_to_ring_pair();
-
   ring_diff_arrays_computed = true;
+
+  // now also initialise the segment_axial_pos_to_ring_pair table
+  // Note that in Debug mode, compute_segment_axial_pos_to_ring_pair calls
+  // get_segment_axial_pos_num_for_ring_pair.
+  // Hence we need to set ring_diff_arrays_computed to true above to avoid
+  // infinite recursion.
+  if (sampling_corresponds_to_physical_rings)
+    {
+      allocate_segment_axial_pos_to_ring_pair();
+
+      for (int s_num=get_min_segment_num(); s_num<=get_max_segment_num(); ++s_num)
+        {
+          const int min_ax_pos_num = get_min_axial_pos_num(s_num);
+          const int max_ax_pos_num = get_max_axial_pos_num(s_num);
+          for (int ax_pos_num=min_ax_pos_num; ax_pos_num<=max_ax_pos_num; ++ax_pos_num)
+            {
+              compute_segment_axial_pos_to_ring_pair(s_num, ax_pos_num);
+            }
+        }
+    }
+
 }
 
 /*! Default implementation checks common variables. Needs to be overloaded. 
@@ -477,6 +495,7 @@ compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_po
       assert((ring1_plus_ring2 - ring_diff)%2 == 0);
       table.push_back(pair<int,int>(ring1, ring2));
 #ifndef NDEBUG
+      // check inverse operation
       int check_segment_num = 0, check_axial_pos_num = 0;
       assert(get_segment_axial_pos_num_for_ring_pair(check_segment_num,
 						     check_axial_pos_num,
