@@ -700,6 +700,7 @@ std::istream& operator>>(std::istream& s, GeoData3D& geo_data)
 
 
 FanProjData::FanProjData()
+  : num_rings(0), num_detectors_per_ring(0), max_ring_diff(0), half_fan_size(0)
 {}
 
 FanProjData::~FanProjData()
