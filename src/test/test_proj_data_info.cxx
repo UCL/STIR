@@ -17,7 +17,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, 2021, University College London
+    Copyright (C) 2018, 2021, 2022, University College London
     Copyright (C) 2018, University of Leeds
     Copyright (C) 2021, National Physical Laboratory
     This file is part of STIR.
@@ -1296,19 +1296,29 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
     Bin bin;
     // set value for comparison later on
     bin.set_bin_value(0);
-    std::vector<DetectionPositionPair<>> det_pos_pairs;
-#  ifdef STIR_OPENMP
-    //#pragma omp parallel for schedule(dynamic)
-#  endif
-    for (bin.segment_num() = proj_data_info.get_min_segment_num(); bin.segment_num() <= proj_data_info.get_max_segment_num();
-         ++bin.segment_num())
-      for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
-           bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-        for (bin.view_num() = proj_data_info.get_min_view_num(); bin.view_num() <= proj_data_info.get_max_view_num();
-             ++bin.view_num())
-          for (bin.tangential_pos_num() = proj_data_info.get_min_tangential_pos_num();
-               bin.tangential_pos_num() <= proj_data_info.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+    // parallel loop for testing
+    // Note that the omp construct cannot handle bin.segment_num() etc as loop variable, making this ugly
+#   ifdef STIR_OPENMP
+#   if _OPENMP <201107
+#     pragma omp parallel for schedule(dynamic) firstprivate(bin)
+#   else
+#     pragma omp parallel for collapse(2) firstprivate(bin)
+#   endif
+#   endif
+    for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
+         ++segment_num)
+      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num();
+           ++view_num)
+        for (int axial_pos_num = proj_data_info.get_min_axial_pos_num(segment_num);
+             axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num); ++axial_pos_num)
+          for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num();
+               tangential_pos_num <= proj_data_info.get_max_tangential_pos_num(); ++tangential_pos_num)
             {
+              bin.segment_num() = segment_num;
+              bin.axial_pos_num() = axial_pos_num;
+              bin.view_num() = view_num;
+              bin.tangential_pos_num() = tangential_pos_num;
+              std::vector<DetectionPositionPair<>> det_pos_pairs;
               proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
               Bin new_bin;
               // set value for comparison with bin
@@ -1321,13 +1331,19 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                   if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
                       || !check(bin == new_bin, "checking if we round-trip to the same bin"))
                     {
-                      cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-                           << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-                      if (there_is_a_bin)
-                        cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
-                             << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
-                             << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                             << endl;
+#  ifdef STIR_OPENMP
+                      // add a pragma to avoid cerr output being jumbled up if there are any errors
+#                     pragma omp critical(TESTPROJDATAINFO)
+#  endif
+                      {
+                        cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
+                             << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+                        if (there_is_a_bin)
+                          cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
+                               << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
+                               << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+                               << endl;
+                      }
                     }
                 } // end of iteration of det_pos_pairs
             }     // end of loop over all bins

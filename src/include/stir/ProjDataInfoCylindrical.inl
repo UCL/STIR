@@ -266,9 +266,7 @@ get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
 					     const int axial_pos_num) const
 {
   this->initialise_ring_diff_arrays_if_not_done_yet();
-  if (is_null_ptr(segment_axial_pos_to_ring_pair[segment_num][axial_pos_num]))
-    compute_segment_axial_pos_to_ring_pair(segment_num, axial_pos_num);
-  return *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
+  return *this->segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
 }
 
 unsigned
