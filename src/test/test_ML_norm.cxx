@@ -8,10 +8,11 @@
   \brief Test program for ML_norm.h functionality
 
   \author Kris Thielemans
-
+  \author daniel deidda
 */
 /*
     Copyright (C) 2021, University College London
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -44,7 +45,8 @@ class ML_normTests: public RunTests
 public:
   void run_tests();
 protected:  
-  void test_proj_data_info(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr);
+  template <class TProjDataInfo>
+  void test_proj_data_info(shared_ptr<TProjDataInfo> proj_data_info_sptr);
 };
 
 void
@@ -72,11 +74,22 @@ ML_normTests::run_tests()
                                                                                         /*arc_corrected*/ false));
     test_proj_data_info(dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr));
   }
+  {
+    std::cerr << "\n-------- Testing Block Scanner SAFIR --------\n";
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::SAFIRDualRingPrototype));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(
+                                                 ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                                                        /*span*/1, scanner_sptr->get_num_rings()-1,
+                                                                                        /*views*/ scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                                        /*tang_pos*/64,
+                                                                                        /*arc_corrected*/ false));
+    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr>(proj_data_info_sptr));
+  }
 }
 
-void
-ML_normTests::
-test_proj_data_info(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr)
+template <class TProjDataInfo>
+void ML_normTests::
+test_proj_data_info(shared_ptr<TProjDataInfo> proj_data_info_sptr)
 {
   //const int num_detectors = proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
   auto exam_info_sptr = std::make_shared<ExamInfo>();
