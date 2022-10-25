@@ -95,7 +95,7 @@ class HUToMuImageProcessor :
     >
     base_type;
 public:
-  static constexpr const char * const registered_name = "HUToMu"; 
+  static const char * const registered_name;
   
   //! Default constructor
   HUToMuImageProcessor();

@@ -91,6 +91,10 @@ initialise_keymap()
 }
 
 template <typename TargetT>
+const char * const 
+HUToMuImageProcessor<TargetT>::registered_name = "HUToMu"; 
+
+template <typename TargetT>
 bool
 HUToMuImageProcessor<TargetT>::
 post_processing()
