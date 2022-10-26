@@ -22,13 +22,12 @@
 </ul>
 </p>
 
-
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Nikos Eftimiou (UPenn and MGH), with support by Kris Thielemans (UCL).
-  Additional changes to penalty functions were made by Robert Twyman (UCL). scatter estimation for BlocksOnCylindrical by Daniel Deidda (NPL) and Kris Thielemans (UCL).
+  Additional changes to penalty functions were made by Robert Twyman (UCL). Scatter estimation for BlocksOnCylindrical by Daniel Deidda (NPL) and Kris Thielemans (UCL). Various small changes to add functionality to Python interface by Markus Jehl (Positrigo).
 </p>
 
 <h2>Patch release info</h2>
@@ -40,17 +39,32 @@ improvements to the documentation.
 
 <h3>Bug fixes</h3>
 <ul>
-  <li>Fix of <code>find_LOR_intersections_with_cylinder</code> functions in the LOR hierarchy. This fixes the use of the <tt>parallelproj<tt> projector for non-cylindrical geometries. See <a href="https://github.com/UCL/STIR/pull/1072/">PR #1072</a>.</li>
+  <li>Fix of <code>find_LOR_intersections_with_cylinder</code> functions in the LOR hierarchy. This fixes the use of the <tt>parallelproj</tt> projector for non-cylindrical geometries. See <a href="https://github.com/UCL/STIR/pull/1072/">PR #1072</a>.
+  </li>
 </ul>
 
 <h3>New functionality</h3>
-<li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
+<ul>
+  <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li>    
   <li> Improvements to penalty functions including Hessian methods, see <a href="https://github.com/UCL/STIR/pull/901/">PR #901</a>.
   </li>
   <li>Added <code>write_to_file(fname)</code> method to python <code>VoxelsOnCartesianGrid</code> objects and updated <code>recon_demo.py</code> as a demonstration.
+  </li>
+  <li>Added a constructor to <code>CListModeDataSAFIR</code> to read data programmatically.
+  </li>
+  <li>Added the option to set output proj data on <code>LmToProjData</code> to read data programmatically.
+      This will fill the proj data object only with the listmode data in the last frame that is defined.
+  </li>
+  <li>Added the option to set the radius on <code>TruncateToCylindricalFOVImageProcessor</code>.
+  </li>
+  <li>Filtering out coincidences in the same detector number of different rings. These were previously
+      all added to the central bin of the first view, if not removed from the listmode file prior to reading.
+  </li>
+  <li>Added the option to set slope and intercepts on <code>HUToMuImageProcessor</code> programmatically,
+      to not have to rely on JSON.
   </li>
 </ul>
 

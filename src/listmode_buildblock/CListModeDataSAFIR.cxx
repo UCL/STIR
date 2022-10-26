@@ -65,7 +65,9 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
       if (lor_randomization_sigma != 0)
         error("SAFIR currently does not support LOR-randomisation unless a map is specified");
     }
-  this->exam_info_sptr.reset(new ExamInfo);
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
 
   // Here we are reading the scanner data from the template projdata
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
@@ -77,6 +79,21 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
     }
 }
 
+template <class CListRecordT>
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+    : listmode_filename(listmode_filename)
+{
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
+  this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: Could not open listmode file " + listmode_filename + "\n");
+    }
+}
 
 template <class CListRecordT>
 std::string

@@ -180,6 +180,11 @@ std::string LmToProjData::get_output_filename_prefix() const
   return output_filename_prefix;
 }
 
+void LmToProjData::set_output_projdata_sptr(shared_ptr<ProjData>& arg)
+{
+    this->output_proj_data_sptr = arg;
+}
+
 void LmToProjData::set_store_prompts(bool v)
 {
   this->store_prompts = v;
@@ -598,6 +603,8 @@ process_data()
   CPUTimer timer;
   timer.start();
 
+  bool writing_to_file = false;
+
   // propagate relevant metadata
   template_proj_data_info_ptr->set_bed_position_horizontal
     (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
@@ -664,14 +671,14 @@ process_data()
 
       // *********** open output file
       shared_ptr<iostream> output;
-      shared_ptr<ProjData> proj_data_sptr;
-
+      if (!output_proj_data_sptr)
       {
+        writing_to_file = true;
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
       
-        proj_data_sptr =
+        output_proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
       }
 
@@ -686,16 +693,16 @@ process_data()
 	 segments between start_segment_index and 
 	 start_segment_index+num_segments_in_memory.
        */
-       for (int start_segment_index = proj_data_sptr->get_min_segment_num();
-	    start_segment_index <= proj_data_sptr->get_max_segment_num();
+       for (int start_segment_index = output_proj_data_sptr->get_min_segment_num();
+	    start_segment_index <= output_proj_data_sptr->get_max_segment_num();
 	    start_segment_index += num_segments_in_memory) 
 	 {
 	 
 	   const int end_segment_index = 
-	     min( proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
+	     min( output_proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
     
 	   if (!interactive)
-	     allocate_segments(segments, start_segment_index, end_segment_index, proj_data_sptr->get_proj_data_info_sptr());
+	     allocate_segments(segments, start_segment_index, end_segment_index, output_proj_data_sptr->get_proj_data_info_sptr());
 
 	   // the next variable is used to see if there are more events to store for the current segments
 	   // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
@@ -705,7 +712,7 @@ process_data()
 	   long more_events = 
          do_time_frame? 1 : num_events_to_store;
 
-	   if (start_segment_index != proj_data_sptr->get_min_segment_num())
+	   if (start_segment_index != output_proj_data_sptr->get_min_segment_num())
 	     {
 	       // we're going once more through the data (for the next batch of segments)
 	       cerr << "\nProcessing next batch of segments\n";
@@ -758,19 +765,26 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             bin.time_frame_num() = current_frame_num;
-                     get_bin_from_event(bin, record.event());
+         bin.time_frame_num() = current_frame_num;
+         try {
+           get_bin_from_event(bin, record.event());
+         }
+         catch (...) {
+           for (int seg=template_proj_data_info_ptr->get_min_segment_num(); seg<=template_proj_data_info_ptr->get_max_segment_num(); seg++)
+             delete segments[seg];
+           error("Something wrong with geometry.");
+         }
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
-			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
-			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
-			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
-			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
+			 && bin.tangential_pos_num()>= output_proj_data_sptr->get_min_tangential_pos_num()
+			 && bin.tangential_pos_num()<= output_proj_data_sptr->get_max_tangential_pos_num()
+			 && bin.axial_pos_num()>=output_proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
+			 && bin.axial_pos_num()<=output_proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
-			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
-			 assert(bin.view_num()<=proj_data_sptr->get_max_view_num());
+			 assert(bin.view_num()>=output_proj_data_sptr->get_min_view_num());
+			 assert(bin.view_num()<=output_proj_data_sptr->get_max_view_num());
             
 			 // see if we increment or decrement the value in the sinogram
 			 const int event_increment =
@@ -823,11 +837,17 @@ process_data()
 	   if (!interactive)
 	   save_and_delete_segments(output, segments, 
 				    start_segment_index, end_segment_index, 
-				    *proj_data_sptr);
+				    *output_proj_data_sptr);
 	 } // end of for loop for segment range
        cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
 	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
 	    << '\n';
+
+    // if we used the member variable for writing to file, reset it to null again
+    if (writing_to_file)
+    {
+      output_proj_data_sptr.reset();
+    }
    } // end of loop over frames
 
  timer.stop();

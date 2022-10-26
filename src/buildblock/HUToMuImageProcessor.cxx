@@ -20,7 +20,9 @@
 #include "stir/HUToMuImageProcessor.h"
 #include "stir/info.h"
 #include "stir/round.h"
-#include <nlohmann/json.hpp>
+#ifdef HAVE_JSON
+  #include <nlohmann/json.hpp>
+#endif
 
 START_NAMESPACE_STIR
 
@@ -89,6 +91,10 @@ initialise_keymap()
 }
 
 template <typename TargetT>
+const char * const 
+HUToMuImageProcessor<TargetT>::registered_name = "HUToMu"; 
+
+template <typename TargetT>
 bool
 HUToMuImageProcessor<TargetT>::
 post_processing()
@@ -101,10 +107,13 @@ Succeeded
 HUToMuImageProcessor<TargetT>::
 virtual_set_up(const TargetT& image)
 {
+#ifdef HAVE_JSON
   this->get_record_from_json();
+#endif
   return Succeeded::yes;
 }
 
+#ifdef HAVE_JSON
 template <typename TargetT>
 void
 HUToMuImageProcessor<TargetT>::
@@ -136,7 +145,7 @@ get_record_from_json()
   //Get desired kVp as integer value
   const int kVp = stir::round(this->kilovoltage_peak);
   stir::info(boost::format("HUToMu: finding record with manufacturer: '%s', keV=%d, kVp=%d in file '%s'")
-             % manufacturer_upper_case % keV % kVp % this->filename, 2);
+            % manufacturer_upper_case % keV % kVp % this->filename, 2);
 
   //Extract appropriate chunk of JSON file for given manufacturer.
   nlohmann::json target = slope_json["scale"][manufacturer_upper_case]["transform"];
@@ -169,6 +178,19 @@ get_record_from_json()
   this->breakPoint = transform["break"];
 
   //std::cout << transform.dump(4);
+}
+#endif
+
+template <typename TargetT>
+void
+HUToMuImageProcessor<TargetT>::
+set_slope(float a1, float a2, float b1, float b2, float breakPoint)
+{
+  this->a1 = a1;
+  this->a2 = a2;
+  this->b1 = b1;
+  this->b2 = b2;
+  this->breakPoint = breakPoint;
 }
 
 template <typename TargetT>

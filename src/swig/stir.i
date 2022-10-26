@@ -88,6 +88,10 @@
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
 
+#ifdef HAVE_ITK
+#include "stir/IO/ITKOutputFileFormat.h"
+#endif
+
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
@@ -101,10 +105,9 @@
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/SeparableConvolutionImageFilter.h"
+#include "stir/TruncateToCylindricalFOVImageProcessor.h"
 
-#ifdef HAVE_JSON
 #include "stir/HUToMuImageProcessor.h"
-#endif
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -115,6 +118,7 @@
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -126,6 +130,7 @@
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
@@ -133,7 +138,9 @@
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include "stir/multiply_crystal_factors.h"
+#include "stir/decay_correction_factor.h"
 #include "stir/ML_norm.h"
+#include "stir/spatial_transformation/InvertAxis.h"
 
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/scatter/ScatterSimulation.h"
@@ -851,6 +858,7 @@ namespace std {
 //%shared_ptr(stir::Array<1,float>);
 %shared_ptr(stir::Array<2,float>);
 %shared_ptr(stir::Array<3,float>);
+%shared_ptr(stir::Array<4,float>);
 %shared_ptr(stir::DiscretisedDensity<3,float>);
 %shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
 %shared_ptr(stir::VoxelsOnCartesianGrid<float>);
@@ -1344,12 +1352,18 @@ namespace stir {
 %shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::RegisteredObject< stir::OutputFileFormat< stir::DiscretisedDensity< 3,float > > >);
 %shared_ptr(stir::RegisteredParsingObject< stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
-#undef DataT
 %shared_ptr(stir::InterfileOutputFileFormat);
 #ifdef HAVE_LLN_MATRIX
 %shared_ptr(stir::RegisteredParsingObject<stir::ecat::ecat7::ECAT7OutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
 %shared_ptr(stir::ecat::ecat7::ECAT7OutputFileFormat);
 #endif
+
+#ifdef HAVE_ITK
+%shared_ptr(stir::RegisteredParsingObject< stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
+%shared_ptr(stir::ITKOutputFileFormat);
+#endif
+
+#undef DataT
 #endif
 
 %include "stir/IO/OutputFileFormat.h"
@@ -1358,13 +1372,22 @@ namespace stir {
 %template(Float3DDiscretisedDensityOutputFileFormat) stir::OutputFileFormat<DataT >;
   //cannot do that as pure virtual functions
   //%template(ROOutputFileFormat3DFloat) RegisteredObject< OutputFileFormat< DiscretisedDensity< 3,float > > >;
-  %template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
-  #undef DataT
+%template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
+
+#ifdef HAVE_ITK
+%template(RPITKOutputFileFormat) stir::RegisteredParsingObject<stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
+#endif
 
 %include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 %include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
+
+#ifdef HAVE_ITK
+%include "stir/IO/ITKOutputFileFormat.h"
+#endif
+
+#undef DataT
 
  /* Now do ProjDataInfo, Sinogram et al
  */
@@ -1609,8 +1632,8 @@ namespace stir {
 %include "stir_objectivefunctions.i"
 %include "stir_reconstruction.i"
 
-
-void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,float>& efficiencies, const float global_factor);
+%include "stir/multiply_crystal_factors.h"
+%include "stir/decay_correction_factor.h"
 
 %rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
 %shared_ptr(stir::LmToProjData);
@@ -1649,3 +1672,6 @@ void multiply_crystal_factors(stir::ProjData& proj_data, const stir::Array<2,flo
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
 %include "stir/ML_norm.h"
+
+%shared_ptr(stir::InvertAxis);
+%include "stir/spatial_transformation/InvertAxis.h"

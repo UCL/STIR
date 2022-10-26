@@ -95,7 +95,7 @@ class HUToMuImageProcessor :
     >
     base_type;
 public:
-  static constexpr const char * const registered_name = "HUToMu"; 
+  static const char * const registered_name;
   
   //! Default constructor
   HUToMuImageProcessor();
@@ -112,6 +112,9 @@ public:
   //! same as apply
   void apply_scaling_to_HU(TargetT& output_image,
                            const TargetT& input_image) const;
+
+  //! set the slope without JSON file
+  void set_slope(float a1, float a2, float b1, float b2, float breakPoint);
   
 protected:
 
@@ -143,8 +146,10 @@ private:
   float a2;
   float b2;
   float breakPoint;
-
+  
+#ifdef HAVE_JSON
   void get_record_from_json();
+#endif
 };
 
 END_NAMESPACE_STIR
