@@ -303,13 +303,7 @@ initialise_ring_diff_arrays() const
     }
   }
 
-  ring_diff_arrays_computed = true;
-
   // now also initialise the segment_axial_pos_to_ring_pair table
-  // Note that in Debug mode, compute_segment_axial_pos_to_ring_pair calls
-  // get_segment_axial_pos_num_for_ring_pair.
-  // Hence we need to set ring_diff_arrays_computed to true above to avoid
-  // infinite recursion.
   if (sampling_corresponds_to_physical_rings)
     {
       allocate_segment_axial_pos_to_ring_pair();
@@ -324,6 +318,13 @@ initialise_ring_diff_arrays() const
             }
         }
     }
+
+  // Now make sure we never do this again...
+  // Note that this variable needs to be set at *the end* of this function to make
+  // everything thread-safe. Otherwise, with the double-locked loop paradigm that
+  // we use, another thread can check the value of the variable before this function
+  // is done.
+  ring_diff_arrays_computed = true;
 
 }
 
@@ -494,17 +495,6 @@ compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_po
       assert((ring1_plus_ring2 + ring_diff)%2 == 0);
       assert((ring1_plus_ring2 - ring_diff)%2 == 0);
       table.push_back(pair<int,int>(ring1, ring2));
-#ifndef NDEBUG
-      // check inverse operation
-      int check_segment_num = 0, check_axial_pos_num = 0;
-      assert(get_segment_axial_pos_num_for_ring_pair(check_segment_num,
-						     check_axial_pos_num,
-						     ring1,
-						     ring2) ==
-	     Succeeded::yes);
-      assert(check_segment_num == segment_num);
-      assert(check_axial_pos_num == axial_pos_num);
-#endif
     }
 }
 
