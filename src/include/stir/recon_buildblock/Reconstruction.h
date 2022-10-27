@@ -148,13 +148,6 @@ public:
   void set_disable_output(bool _val);
 
   //!
-  //! \brief set_enable_output
-  //! \param _val
-  //! \author Nikos Efthimiou
-  //! \details The counterpart of set_disable_output().
-  void set_enable_output(bool _val);
-
-  //!
   //! \brief get_reconstructed_image
   //! \author Nikos Efthimiou
   //! \return

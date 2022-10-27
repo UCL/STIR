@@ -22,12 +22,15 @@
         stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableConvolutionImageFilter<elemT>)
 
-#ifdef HAVE_JSON
+%shared_ptr(stir::RegisteredParsingObject<stir::TruncateToCylindricalFOVImageProcessor<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::TruncateToCylindricalFOVImageProcessor<elemT>)
+
 %shared_ptr(stir::RegisteredParsingObject<stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >)
-#endif
 #undef elemT
 #endif
 
@@ -36,9 +39,8 @@
 %include "stir/SeparableCartesianMetzImageFilter.h"
 %include "stir/SeparableGaussianImageFilter.h"
 %include "stir/SeparableConvolutionImageFilter.h"
-#ifdef HAVE_JSON
+%include "stir/TruncateToCylindricalFOVImageProcessor.h"
 %include "stir/HUToMuImageProcessor.h"
-#endif
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -66,12 +68,16 @@ stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(SeparableConvolutionImageFilter3DFloat) stir::SeparableConvolutionImageFilter<elemT>;
 
-#ifdef HAVE_JSON
+%template(RPTruncateToCylindricalFOVImageProcessor3DFloat) stir::RegisteredParsingObject<
+        stir::TruncateToCylindricalFOVImageProcessor<elemT>,
+        stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+%template(TruncateToCylindricalFOVImageProcessor3DFloat) stir::TruncateToCylindricalFOVImageProcessor<elemT>;
+
 %template(RPHUToMuImageProcessor3DFloat) stir::RegisteredParsingObject<
              stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 
 %template(HUToMuImageProcessor3DFloat) stir::HUToMuImageProcessor<DiscretisedDensity<3,elemT> >;
-#endif
 #undef elemT
