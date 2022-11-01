@@ -1,8 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QSlider
 
-from ProjDataVisualisationBackendTools.STIRInterface import ProjdataDims, \
-    ProjDataVisualisationBackend
+from BackendTools.STIRInterface import ProjdataDims, ProjDataVisualisationBackend
 
 
 class UIGroupboxProjdataDimensions:

@@ -19,7 +19,6 @@ class ProjDataVisualisationBackend:
     """Class used as STIR interface to the projection data for ProjDataVisualisation."""
     def __init__(self, *args, **kwargs) -> None:
         """Sets up the STIR interface for projection data."""
-        print("ProjDataVisualisationBackend.__init__")
 
         self.proj_data_filename = ""
         self.proj_data_stream = None
@@ -28,8 +27,6 @@ class ProjDataVisualisationBackend:
 
         if len(args[0]) > 1:
             self.proj_data_filename = args[0][1]
-
-        print("ProjDataVisualisationBackend.__init__: Done.")
 
     def load_projdata(self, filename=None) -> None:
         """Loads STIR projection data from a file."""
@@ -40,7 +37,7 @@ class ProjDataVisualisationBackend:
             print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.proj_data_filename)
             self.proj_data_stream = stir.ProjData_read_from_file(self.proj_data_filename)
             self.segment_data = self.refresh_segment_data()
-            time.sleep(0.01)  # Wait for the log to be written...
+            # time.sleep(0.01)  # Wait for the log to be written...
             print("ProjDataVisualisationBackend.load_data: Data loaded.")
             self.print_proj_data_configuration()
 

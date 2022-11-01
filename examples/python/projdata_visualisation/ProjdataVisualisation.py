@@ -13,10 +13,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend, \
-    ProjdataDims
-from ProjDataVisualisationBackendTools.UIGroupboxProjdataDimensions import \
-    UIGroupboxProjdataDimensions
+from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjdataDims
+from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjdataDimensions
 
 
 class ProjDataVisualisationWidgetGallery(QDialog):
@@ -102,6 +100,9 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         self.projDataVisualisationGroupBox.setLayout(layout)
 
 
+        # #############################
+        # ### Configure Main Layout ###
+        # #############################
         topLayout = QHBoxLayout()
         # topLayout.addStretch(1)
 
@@ -145,7 +146,6 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         It updates the UI to reflect the new projection data parameters.
         It calls the updateDisplayImage function to update the display image.
         """
-        self.stir_interface
         self.UI_groupbox_projdata_dimensions.refresh_sliders_and_spinboxes_ranges()
         self.UI_groupbox_projdata_dimensions.update_enable_disable(self.sinogram_radio_button.isChecked())
         self.update_display_image()
