@@ -19,7 +19,14 @@ The visualization window will be automatically updated. Additionally, the ProjDa
 - PyQT5
 
 ## Usage
+### Command Line Interface Usage:
+
 ```
-python $STIR/examples/python/projdata_visualisation/ProjDataVisualisation.py
+python ProjDataVisualisation.py <ProjData filename>
 ```
-where `` is an optional argument of the name of a STIR projection data file. This filename can be set in the GUI.
+where `<ProjData filename>` is an optional filename CLI argument. Alternatively, this filename can be set in the GUI.
+
+### Demonstration usage:
+
+For usage using an existing python session, i.e. with projection data already loaded, see the example `demo_ProjDataVisualisation.py`.
+

@@ -11,10 +11,10 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QSlider
 
-from BackendTools.STIRInterface import ProjdataDims, ProjDataVisualisationBackend
+from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBackend
 
 
-class UIGroupboxProjdataDimensions:
+class UIGroupboxProjDataDimensions:
     """Used to control the sinogram dimension slider, scroll box and values."""
 
     def __init__(self, stir_interface: ProjDataVisualisationBackend) -> QGroupBox:
@@ -25,21 +25,21 @@ class UIGroupboxProjdataDimensions:
         self.groupbox = QGroupBox("ProjData Dimensions")
 
         default_UI_config_dict = {
-            ProjdataDims.SEGMENT_NUM: {
+            ProjDataDims.SEGMENT_NUM: {
                 'label': 'Segment number',
                 'value': 0,
                 'connect_method': self.segment_number_refresh
             },
-            ProjdataDims.AXIAL_POS: {
+            ProjDataDims.AXIAL_POS: {
                 'label': 'Axial position',
                 'connect_method': self.axial_pos_refresh
             },
-            ProjdataDims.VIEW_NUMBER: {
+            ProjDataDims.VIEW_NUMBER: {
                 'label': 'View number',
                 'value': 0,
                 'connect_method': self.view_num_refresh
             },
-            ProjdataDims.TANGENTIAL_POS: {
+            ProjDataDims.TANGENTIAL_POS: {
                 'label': 'Tangential position',
                 'connect_method': self.tangential_pos_refresh
             }
@@ -50,10 +50,10 @@ class UIGroupboxProjdataDimensions:
         ##### LAYOUT ####
         layout = QGridLayout()
         # layout.addWidget(lineEdit, 0, 0, 1, 2)
-        self.UI_slider_spinboxes[ProjdataDims.SEGMENT_NUM].add_item_to_layout(layout, row=0)
-        self.UI_slider_spinboxes[ProjdataDims.AXIAL_POS].add_item_to_layout(layout, row=2)
-        self.UI_slider_spinboxes[ProjdataDims.VIEW_NUMBER].add_item_to_layout(layout, row=4)
-        self.UI_slider_spinboxes[ProjdataDims.TANGENTIAL_POS].add_item_to_layout(layout, row=6)
+        self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].add_item_to_layout(layout, row=0)
+        self.UI_slider_spinboxes[ProjDataDims.AXIAL_POS].add_item_to_layout(layout, row=2)
+        self.UI_slider_spinboxes[ProjDataDims.VIEW_NUMBER].add_item_to_layout(layout, row=4)
+        self.UI_slider_spinboxes[ProjDataDims.TANGENTIAL_POS].add_item_to_layout(layout, row=6)
 
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
@@ -82,7 +82,7 @@ class UIGroupboxProjdataDimensions:
     def segment_number_refresh(self):
         """ This function is called when the user changes the segment number value.
         Because of the way the STIR segment data is handled, the segment_data needs to change first."""
-        new_segment_num = self.UI_slider_spinboxes[ProjdataDims.SEGMENT_NUM].value()
+        new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
         self.stir_interface.refresh_segment_data(new_segment_num)
         self.UI_controller_UI_change_trigger()
 
@@ -100,41 +100,41 @@ class UIGroupboxProjdataDimensions:
 
     def refresh_sliders_and_spinboxes_ranges(self) -> None:
         """Update the sliders and spinboxes ranges based upon the stir_interface projdata."""
-        if self.stir_interface.proj_data_stream is None:
+        if self.stir_interface.projdata is None:
             return
         # Update all slider and spinbox ranges, should start with segment number
-        for dimension in ProjdataDims:
+        for dimension in ProjDataDims:
             current_segment_num = self.stir_interface.get_current_segment_num()
             limits = self.stir_interface.get_limits(dimension, current_segment_num)
             self.UI_slider_spinboxes[dimension].update_limits(limits=limits)
 
     def update_enable_disable(self, sinogram_radio_button_state: bool):
         # Segment slider and scroll box handling
-        segment_limits = self.stir_interface.get_limits(ProjdataDims.SEGMENT_NUM,
+        segment_limits = self.stir_interface.get_limits(ProjDataDims.SEGMENT_NUM,
                                                         self.stir_interface.get_current_segment_num())
-        if self.stir_interface.proj_data_stream is not None:
+        if self.stir_interface.projdata is not None:
             if segment_limits[0] == 0 and segment_limits[1] == 0:
-                self.disable(ProjdataDims.SEGMENT_NUM)
+                self.disable(ProjDataDims.SEGMENT_NUM)
             else:
-                self.enable(ProjdataDims.SEGMENT_NUM)
+                self.enable(ProjDataDims.SEGMENT_NUM)
 
         # Check if sinogram or viewgram is selected and disable the appropriate sliders and spinboxes
         if sinogram_radio_button_state:
             # Disable the tangential position slider and spinbox
-            self.disable(ProjdataDims.VIEW_NUMBER)
-            axial_pos_limits = self.stir_interface.get_limits(ProjdataDims.AXIAL_POS,
+            self.disable(ProjDataDims.VIEW_NUMBER)
+            axial_pos_limits = self.stir_interface.get_limits(ProjDataDims.AXIAL_POS,
                                                               self.stir_interface.get_current_segment_num())
             if (axial_pos_limits[0] - axial_pos_limits[1]) != 0:
-                self.enable(ProjdataDims.AXIAL_POS)
+                self.enable(ProjDataDims.AXIAL_POS)
             else:
-                self.disable(ProjdataDims.AXIAL_POS)
+                self.disable(ProjDataDims.AXIAL_POS)
 
         elif not sinogram_radio_button_state:
-            self.disable(ProjdataDims.AXIAL_POS)
-            self.enable(ProjdataDims.VIEW_NUMBER)
+            self.disable(ProjDataDims.AXIAL_POS)
+            self.enable(ProjDataDims.VIEW_NUMBER)
 
         if True:  # Until I work out what to do with tangential position
-            self.disable(ProjdataDims.TANGENTIAL_POS)
+            self.disable(ProjDataDims.TANGENTIAL_POS)
 
     def __construct_slider_spinboxes(self, slider_spinbox_configurations: dict) -> dict:
         """
@@ -144,7 +144,7 @@ class UIGroupboxProjdataDimensions:
         """
         UI_slider_spinboxes = {}
         for item in slider_spinbox_configurations.items():
-            if self.stir_interface.proj_data_stream is None:
+            if self.stir_interface.projdata is None:
                 max_range, min_range = 0, 0
             else:
                 min_range, max_range = \
@@ -161,19 +161,19 @@ class UIGroupboxProjdataDimensions:
                                                                )
         return UI_slider_spinboxes
 
-    def enable(self, dimension: ProjdataDims) -> None:
+    def enable(self, dimension: ProjDataDims) -> None:
         """Enables the slider and spinbox for the given dimension."""
         self.UI_slider_spinboxes[dimension].enable()
 
-    def disable(self, dimension: ProjdataDims) -> None:
+    def disable(self, dimension: ProjDataDims) -> None:
         """Disables the slider and spinbox for the given dimension."""
         self.UI_slider_spinboxes[dimension].disable()
 
-    def get_limits(self, dimension: ProjdataDims) -> tuple[int, int]:
+    def get_limits(self, dimension: ProjDataDims) -> tuple[int, int]:
         """Returns the limits of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].get_limits()
 
-    def value(self, dimension: ProjdataDims) -> int:
+    def value(self, dimension: ProjDataDims) -> int:
         """Returns the value of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].value()
 

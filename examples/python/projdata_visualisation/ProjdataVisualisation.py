@@ -12,7 +12,7 @@
 # See STIR/LICENSE.txt for details
 
 """
-ProjdataVisualisation.py
+Usage: python ProjDataVisualisation.py [filename]
 """
 import sys
 
@@ -23,8 +23,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjdataDims
-from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjdataDimensions
+from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
+from BackendTools.UIGroupboxProjDataDimensions import UIGroupboxProjDataDimensions
 
 
 class ProjDataVisualisationWidgetGallery(QDialog):
@@ -52,9 +52,9 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         # #########################
         # ### Filename GroupBox ###
         # #########################
-        self.filenameControlGroupBox = QGroupBox("ProjData File")
+        self.FilenameControlGroupBox = QGroupBox("ProjData File")
         # Creation group box entries
-        self.projdata_filename_box = QLineEdit(self.stir_interface.proj_data_filename)
+        self.projdata_filename_box = QLineEdit(self.stir_interface.projdata_filename)
         push_button_browse_projdata = QPushButton("Browse")
         push_button_browse_projdata.clicked.connect(self.browse_file_system_for_projdata)
         push_button_load_projdata = QPushButton("Load")
@@ -76,13 +76,13 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         layout.addWidget(gramTypeLabel, 2, 0, 1, 2)
         layout.addWidget(self.sinogram_radio_button, 3, 0, 1, 1)
         layout.addWidget(self.viewgram_radio_button, 3, 1, 1, 1)
-        self.filenameControlGroupBox.setLayout(layout)
+        self.FilenameControlGroupBox.setLayout(layout)
 
 
         # #############################################
         # ### ProjData Dimentional Control GroupBox ###
         # #############################################
-        self.UI_groupbox_projdata_dimensions = UIGroupboxProjdataDimensions(self.stir_interface)
+        self.UI_groupbox_projdata_dimensions = UIGroupboxProjDataDimensions(self.stir_interface)
         methods = [self.refresh_UI_configuration]
         self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=methods)
 
@@ -90,7 +90,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         # #####################################
         # ### Visualisation Window GroupBox ###
         # #####################################
-        self.projDataVisualisationGroupBox = QGroupBox("ProjData Visualisation")
+        self.ProjDataVisualisationGroupBox = QGroupBox("ProjData Visualisation")
         # a figure instance to plot on
         self.display_image_matplotlib_figure = plt.figure()
         # this is the Canvas Widget that
@@ -107,7 +107,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         # adding canvas to the layout
         layout.addWidget(self.display_image_matplotlib_canvas)
         layout.addStretch(1)  # todo: Remove this line?
-        self.projDataVisualisationGroupBox.setLayout(layout)
+        self.ProjDataVisualisationGroupBox.setLayout(layout)
 
 
         # #############################
@@ -118,8 +118,8 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(topLayout, 0, 0, 1, 5)
-        mainLayout.addWidget(self.filenameControlGroupBox, 2, 0)
-        mainLayout.addWidget(self.projDataVisualisationGroupBox, 1, 1)
+        mainLayout.addWidget(self.FilenameControlGroupBox, 2, 0)
+        mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 1)
         # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
         mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1)
         # mainLayout.setRowStretch(1, 1)
@@ -164,7 +164,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         """
         This method updates the displayed image based uon the current UI configuration parameters.
         """
-        if self.stir_interface.proj_data_stream is None:
+        if self.stir_interface.projdata is None:
             return None
 
         # reset the figure
@@ -175,15 +175,15 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if self.sinogram_radio_button.isChecked():
             image = self.get_sinogram_numpy_array()
             ax.title.set_text(
-                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.SEGMENT_NUM)}, "
-                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.AXIAL_POS)}")
+                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)}, "
+                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)}")
             ax.yaxis.set_label_text("Views/projection angle")
             ax.xaxis.set_label_text("Tangential positions")
         elif self.viewgram_radio_button.isChecked():
             image = self.get_viewgram_numpy_array()
             ax.title.set_text(
-                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.SEGMENT_NUM)},"
-                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjdataDims.VIEW_NUMBER)}")
+                f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)},"
+                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)}")
             ax.yaxis.set_label_text("Axial positions")
             ax.xaxis.set_label_text("Tangential positions")
         else:
@@ -201,18 +201,18 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         This function returns the sinogram numpy array based on the current UI configuration parameters for segment 
         number and axial position number. 
         """
-        if self.stir_interface.proj_data_stream is None:
+        if self.stir_interface.projdata is None:
             return None
 
-        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjdataDims.AXIAL_POS)
+        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)
         return self.stir_interface.as_numpy(
             self.stir_interface.segment_data.get_sinogram(axial_pos))
 
     def get_viewgram_numpy_array(self):
-        if self.stir_interface.proj_data_stream is None:
+        if self.stir_interface.projdata is None:
             return None
 
-        view_num = self.UI_groupbox_projdata_dimensions.value(ProjdataDims.VIEW_NUMBER)
+        view_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)
         return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(view_num))
 
     def browse_file_system_for_projdata(self):
@@ -224,20 +224,42 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         else:
             self.projdata_filename_box.setText(initial)
 
-    def load_projdata(self):
+    def load_projdata(self, filename=None):
         """
         This function loads the projdata file and updates the UI.
         """
+        if filename is not None and filename != "":
+            self.projdata_filename_box.setText(filename)
+
         self.stir_interface.load_projdata(self.projdata_filename_box.text())
         self.refresh_UI_configuration()
 
+    def set_projdata(self, projdata):
+        self.stir_interface.set_projdata(projdata)
+        self.refresh_UI_configuration()
+        self.projdata_filename_box.setText("ProjData set externally.")
+
+
+def OpenProjDataVisualisation(filename=None, projdata=None):
+    app = QApplication([])
+    gallery = ProjDataVisualisationWidgetGallery()
+    
+    if isinstance(filename, str):
+        gallery.load_projdata(filename)
+    elif projdata is not None:
+        gallery.set_projdata(projdata)
+
+    gallery.show()
+    app.exec_()
+    print("ProjDataVisualisationWidgetGallery closed!")
 
 def main():
-    app = QApplication(sys.argv)
+    app = QApplication([])
     gallery = ProjDataVisualisationWidgetGallery()
+    if len(sys.argv) > 1:
+        gallery.load_projdata(sys.argv[1])
     gallery.show()
     sys.exit(app.exec())
-
 
 if __name__ == '__main__':
     main()
