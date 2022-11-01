@@ -20,5 +20,5 @@ filename = "examples/recon_demo/smalllong.hs"
 proj_data = stir.ProjData_read_from_file(filename)
 
 # Now open the GUI and pass the proj_data object
-OpenProjDataVisualisation(None, proj_data)
+OpenProjDataVisualisation(proj_data)
 print("Test done.")

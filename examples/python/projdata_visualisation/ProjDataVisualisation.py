@@ -24,7 +24,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 
 from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
-from BackendTools.UIGroupboxProjDataDimensions import UIGroupboxProjDataDimensions
+from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjDataDimensions
 
 
 class ProjDataVisualisationWidgetGallery(QDialog):
@@ -240,14 +240,24 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         self.projdata_filename_box.setText("ProjData set externally.")
 
 
-def OpenProjDataVisualisation(filename=None, projdata=None):
+def OpenProjDataVisualisation(projdata=None):
+    """
+    Function to open the ProjDataVisualisation GUI window. Will not exit pyton on window close.
+    projdata: Proj data to be visualised. Can be either a stir.ProjData object, a file path (str) or None. If None, an empty GUI will be opened.
+    """
     app = QApplication([])
     gallery = ProjDataVisualisationWidgetGallery()
     
-    if isinstance(filename, str):
-        gallery.load_projdata(filename)
-    elif projdata is not None:
-        gallery.set_projdata(projdata)
+    if isinstance(projdata, str):
+        gallery.load_projdata(projdata)
+    elif projdata is None:
+        pass  # Do not set projdata in ProjDataVisualisationWidgetGallery
+    else:
+        import stir  # Nest if statement to avoid import if not needed
+        if isinstance(projdata, stir.ProjData):
+            gallery.set_projdata(projdata)
+        else:
+            raise TypeError("projdata must be stir.ProjData, None or str")
 
     gallery.show()
     app.exec_()
