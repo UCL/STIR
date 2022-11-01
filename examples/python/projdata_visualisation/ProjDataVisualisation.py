@@ -59,6 +59,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         push_button_browse_projdata.clicked.connect(self.browse_file_system_for_projdata)
         push_button_load_projdata = QPushButton("Load")
         push_button_load_projdata.clicked.connect(self.load_projdata)
+        self.load_projdata_status = QLabel(f"")
 
         # Sinogram and viewgram radio buttons
         gramTypeLabel = QLabel(f"Type of 2D data:")
@@ -73,9 +74,10 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         layout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
         layout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
         layout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
-        layout.addWidget(gramTypeLabel, 2, 0, 1, 2)
-        layout.addWidget(self.sinogram_radio_button, 3, 0, 1, 1)
-        layout.addWidget(self.viewgram_radio_button, 3, 1, 1, 1)
+        layout.addWidget(self.load_projdata_status, 2, 0, 1, 2)
+        layout.addWidget(gramTypeLabel, 3, 0, 1, 2)
+        layout.addWidget(self.sinogram_radio_button, 4, 0, 1, 1)
+        layout.addWidget(self.viewgram_radio_button, 4, 1, 1, 1)
         self.FilenameControlGroupBox.setLayout(layout)
 
 
@@ -220,7 +222,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         filename = QFileDialog.getOpenFileName(self, "Open ProjData File", "", "ProjData Files (*.hs)")
         if len(filename[0]) > 0:
             self.projdata_filename_box.setText(filename[0])
-            self.load_projdata()
+            self.load_projdata(filename[0])
         else:
             self.projdata_filename_box.setText(initial)
 
@@ -228,10 +230,19 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         """
         This function loads the projdata file and updates the UI.
         """
+        if not filename:
+            filename = self.projdata_filename_box.text()
+        
         if filename is not None and filename != "":
             self.projdata_filename_box.setText(filename)
 
-        self.stir_interface.load_projdata(self.projdata_filename_box.text())
+        data_load_successful = self.stir_interface.load_projdata(self.projdata_filename_box.text())
+
+        if data_load_successful:
+            self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
+        else:
+            self.load_projdata_status.setText("STATUS: Failed to load ProjData from file.")
+
         self.refresh_UI_configuration()
 
     def set_projdata(self, projdata):

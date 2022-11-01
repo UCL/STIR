@@ -35,18 +35,23 @@ class ProjDataVisualisationBackend:
 
         self.segment_data = None
 
-    def load_projdata(self, filename=None) -> None:
+    def load_projdata(self, filename=None) -> bool:
         """Loads STIR projection data from a file."""
-        if filename is not None:
+        if filename is not None and filename != "":
             self.projdata_filename = filename
 
         if self.projdata_filename != "":
             print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
-            self.projdata = stir.ProjData_read_from_file(self.projdata_filename)
-            self.segment_data = self.refresh_segment_data()
-            # time.sleep(0.01)  # Wait for the log to be written...
-            print("ProjDataVisualisationBackend.load_data: Data loaded.")
-            self.print_projdata_configuration()
+            try:
+                self.projdata = stir.ProjData_read_from_file(self.projdata_filename)
+                self.segment_data = self.refresh_segment_data()
+                print("ProjDataVisualisationBackend.load_data: Data loaded.")
+                self.print_projdata_configuration()
+            except RuntimeError:
+                print("ProjDataVisualisationBackend.load_data: Error loading data from file: " + self.projdata_filename)
+                return False
+            return True
+        return False
         
     def set_projdata(self, projdata: stir.ProjData) -> None:
         """Sets the projection data stream."""
