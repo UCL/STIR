@@ -13,7 +13,7 @@ class UIGroupboxProjdataDimensions:
         self.__external_UI_methods_on_connect = None
         self.stir_interface = stir_interface
 
-        self.groupbox = QGroupBox("Projection Data Dimensions")
+        self.groupbox = QGroupBox("ProjData Dimensions")
 
         default_UI_config_dict = {
             ProjdataDims.SEGMENT_NUM: {

@@ -27,37 +27,94 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
         self.configure_backend()
 
+
+        # #############
+        # ### STYLE ###
+        # #############
         styleComboBox = QComboBox()
         styleComboBox.addItems(QStyleFactory.keys())
-
         styleLabel = QLabel("&Style:")
         styleLabel.setBuddy(styleComboBox)
-
         self.useStylePaletteCheckBox = QCheckBox("&Use style's standard palette")
         self.useStylePaletteCheckBox.setChecked(True)
-
-        # disableWidgetsCheckBox = QCheckBox("&Disable widgets")
-
-        self.create_top_left_groupbox()
-        self.create_top_right_groupbox()
-        self.create_bottom_left_groupbox()
-
         styleComboBox.textActivated.connect(self.change_UI_style)
         self.useStylePaletteCheckBox.toggled.connect(self.change_UI_palette)
 
+
+        # #########################
+        # ### Filename GroupBox ###
+        # #########################
+        self.filenameControlGroupBox = QGroupBox("ProjData File")
+        # Creation group box entries
+        self.projdata_filename_box = QLineEdit(self.stir_interface.proj_data_filename)
+        push_button_browse_projdata = QPushButton("Browse")
+        push_button_browse_projdata.clicked.connect(self.browse_file_system_for_projdata)
+        push_button_load_projdata = QPushButton("Load")
+        push_button_load_projdata.clicked.connect(self.load_projdata)
+
+        # Sinogram and viewgram radio buttons
+        gramTypeLabel = QLabel(f"Type of 2D data:")
+        self.sinogram_radio_button = QRadioButton("Sinogram")
+        self.viewgram_radio_button = QRadioButton("Viewgram")
+        self.sinogram_radio_button.setChecked(True)  # Default to sinogram
+        self.sinogram_radio_button.toggled.connect(self.refresh_UI_configuration)
+        self.viewgram_radio_button.toggled.connect(self.refresh_UI_configuration)
+
+        # Configure Layout
+        layout = QGridLayout()
+        layout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
+        layout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
+        layout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
+        layout.addWidget(gramTypeLabel, 2, 0, 1, 2)
+        layout.addWidget(self.sinogram_radio_button, 3, 0, 1, 1)
+        layout.addWidget(self.viewgram_radio_button, 3, 1, 1, 1)
+        self.filenameControlGroupBox.setLayout(layout)
+
+
+        # #############################################
+        # ### ProjData Dimentional Control GroupBox ###
+        # #############################################
+        self.UI_groupbox_projdata_dimensions = UIGroupboxProjdataDimensions(self.stir_interface)
+        methods = [self.refresh_UI_configuration]
+        self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=methods)
+
+
+        # #####################################
+        # ### Visualisation Window GroupBox ###
+        # #####################################
+        self.projDataVisualisationGroupBox = QGroupBox("ProjData Visualisation")
+        # a figure instance to plot on
+        self.display_image_matplotlib_figure = plt.figure()
+        # this is the Canvas Widget that
+        # displays the 'figure'it takes the
+        # 'figure' instance as a parameter to __init__
+        self.display_image_matplotlib_canvas = FigureCanvas(self.display_image_matplotlib_figure)
+        # this is the Navigation widget
+        # it takes the Canvas widget and a parent
+        self.display_image_matplotlib_toolbar = NavigationToolbar(self.display_image_matplotlib_canvas, self)
+        # creating a Vertical Box layout
+        layout = QVBoxLayout()
+        # adding toolbar to the layout
+        layout.addWidget(self.display_image_matplotlib_toolbar)
+        # adding canvas to the layout
+        layout.addWidget(self.display_image_matplotlib_canvas)
+        layout.addStretch(1)  # todo: Remove this line?
+        self.projDataVisualisationGroupBox.setLayout(layout)
+
+
         topLayout = QHBoxLayout()
-        topLayout.addStretch(1)
+        # topLayout.addStretch(1)
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(topLayout, 0, 0, 1, 5)
-        mainLayout.addWidget(self.topLeftGroupBox, 1, 0)
-        mainLayout.addWidget(self.topRightGroupBox, 1, 1)
+        mainLayout.addWidget(self.filenameControlGroupBox, 2, 0)
+        mainLayout.addWidget(self.projDataVisualisationGroupBox, 1, 1)
         # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
-        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 0)
-        mainLayout.setRowStretch(1, 1)
-        mainLayout.setRowStretch(2, 1)
-        mainLayout.setColumnStretch(0, 1)
-        mainLayout.setColumnStretch(1, 1)
+        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1)
+        # mainLayout.setRowStretch(1, 1)
+        # mainLayout.setRowStretch(2, 1)
+        # mainLayout.setColumnStretch(0, 1)
+        # mainLayout.setColumnStretch(1, 1)
         self.setLayout(mainLayout)
 
         self.change_UI_style('Fusion')
@@ -79,73 +136,6 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         else:
             QApplication.setPalette(self.originalPalette)
 
-    ##### GROUPBOX CREATION #####
-
-    def create_top_left_groupbox(self):
-        self.topLeftGroupBox = QGroupBox("FileName")
-
-        # Creation group box entries
-        self.projdata_filename_box = QLineEdit(self.stir_interface.proj_data_filename)
-
-        push_button_browse_projdata = QPushButton("Browse")
-        push_button_browse_projdata.clicked.connect(self.browse_file_system_for_projdata)
-        push_button_load_projdata = QPushButton("Load")
-        push_button_load_projdata.clicked.connect(self.load_projdata)
-
-        gramTypeLabel = QLabel(f"Type of 2D data:")
-        self.sinogram_radio_button = QRadioButton("Sinogram")
-        self.viewgram_radio_button = QRadioButton("Viewgram")
-
-        self.sinogram_radio_button.setChecked(True)
-        self.sinogram_radio_button.toggled.connect(self.refresh_UI_configuration)
-        self.viewgram_radio_button.toggled.connect(self.refresh_UI_configuration)
-
-        # Configure Layout
-        layout = QGridLayout()
-        layout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
-
-        layout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
-        layout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
-
-        layout.addWidget(gramTypeLabel, 2, 0, 1, 2)
-        layout.addWidget(self.sinogram_radio_button, 3, 0, 1, 1)
-        layout.addWidget(self.viewgram_radio_button, 3, 1, 1, 1)
-        # layout.addWidget(radioButton3)
-
-        # layout.addStretch(1)
-        self.topLeftGroupBox.setLayout(layout)
-
-    def create_top_right_groupbox(self):
-        self.topRightGroupBox = QGroupBox("Group 2")
-
-        # a figure instance to plot on
-        self.display_image_matplotlib_figure = plt.figure()
-
-        # this is the Canvas Widget that
-        # displays the 'figure'it takes the
-        # 'figure' instance as a parameter to __init__
-        self.display_image_matplotlib_canvas = FigureCanvas(self.display_image_matplotlib_figure)
-
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
-        self.display_image_matplotlib_toolbar = NavigationToolbar(self.display_image_matplotlib_canvas, self)
-
-        # creating a Vertical Box layout
-        layout = QVBoxLayout()
-
-        # adding toolbar to the layout
-        layout.addWidget(self.display_image_matplotlib_toolbar)
-
-        # adding canvas to the layout
-        layout.addWidget(self.display_image_matplotlib_canvas)
-
-        layout.addStretch(1)  # todo: Remove this line?
-        self.topRightGroupBox.setLayout(layout)
-
-    def create_bottom_left_groupbox(self):
-        self.UI_groupbox_projdata_dimensions = UIGroupboxProjdataDimensions(self.stir_interface)
-        methods = [self.refresh_UI_configuration]
-        self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=methods)
 
     ######## UI CONFIGURATION CHANGES #########
 
