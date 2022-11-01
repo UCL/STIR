@@ -13,9 +13,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from projdata_visualisation.ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend, \
+from ProjDataVisualisationBackendTools.STIRInterface import ProjDataVisualisationBackend, \
     ProjdataDims
-from projdata_visualisation.ProjDataVisualisationBackendTools.UIGroupboxProjdataDimensions import \
+from ProjDataVisualisationBackendTools.UIGroupboxProjdataDimensions import \
     UIGroupboxProjdataDimensions
 
 
