@@ -16,19 +16,19 @@
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li> 
-  <li>Scatter simulation, estimation and down/up-sampling adapted for scanner with Block geometry by Daniel Deidda. 
-  </li>    
-
+  <li>Scatter simulation, estimation and down/up-sampling adapted for scanner with Block geometry by Daniel Deidda (NPL) and Kris Thielemans (UCL). 
+  </li>
+  <li>Various small changes to add functionality to Python interface, mainly by Markus Jehl (Positrigo).
+  </li>
+  <li>Python projection data visualiser (in <tt>examples/python</tt>) by Robert Twyman (UCL).
+  </li>
 </ul>
 </p>
 
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
-
-<p>This release contains mainly code written by Nikos Eftimiou (UPenn and MGH), with support by Kris Thielemans (UCL).
-  Additional changes to penalty functions were made by Robert Twyman (UCL). Scatter estimation for BlocksOnCylindrical by Daniel Deidda (NPL) and Kris Thielemans (UCL). Various small changes to add functionality to Python interface by Markus Jehl (Positrigo).
-</p>
+<p>Overall code management and assistance by Kris Thielemans (UCL and ASC).</p>
 
 <h2>Patch release info</h2>
 <ul>
@@ -39,7 +39,8 @@ improvements to the documentation.
 
 <h3>Bug fixes</h3>
 <ul>
-  <li>Fix of <code>find_LOR_intersections_with_cylinder</code> functions in the LOR hierarchy. This fixes the use of the <tt>parallelproj</tt> projector for non-cylindrical geometries. See <a href="https://github.com/UCL/STIR/pull/1072/">PR #1072</a>.
+  <li>Fix of <code>find_LOR_intersections_with_cylinder</code> functions in the LOR hierarchy. This fixes the use of the <tt>parallelproj</tt> projector for non-cylindrical geometries. See <a href="https://github.com/UCL/STIR/pull/1072/">PR #1072</a>
+    and <a href="https://github.com/UCL/STIR/pull/1074/">PR #1074</a>.
   </li>
 </ul>
 
@@ -60,14 +61,28 @@ improvements to the documentation.
   </li>
   <li>Added the option to set the radius on <code>TruncateToCylindricalFOVImageProcessor</code>.
   </li>
-  <li>Filtering out coincidences in the same detector number of different rings. These were previously
+  <li><code>LmToProjData</code> is now filtering out coincidences in the same detector number of different rings. These were previously
       all added to the central bin of the first view, if not removed from the listmode file prior to reading.
   </li>
   <li>Added the option to set slope and intercepts on <code>HUToMuImageProcessor</code> programmatically,
       to not have to rely on JSON.
   </li>
+  <li>Code refactoring for the Maximum Likelihood functions, including creation of a new (intermediate) class
+    <code>BinNormalisationPETFromComponents</code>, see <a href="https://github.com/UCL/STIR/pull/1079/">PR #1079</a>.
+  </li>
+  <li>Clean-up of <code>multiply_crystal_factors</code> to rely on existing functionality, therefore reducing code overlap
+    and increasing generalisibility, see <a href="https://github.com/UCL/STIR/pull/1075/">PR #1075</a>.
+  </li>
+    
 </ul>
 
+<h3>New examples</h3>
+<h4>Python</h4>
+<ul>
+  <li>PyQt5 projection data  visualisation  <a href="https://github.com/UCL/STIR/pull/1059/">(PR #1059)</a><br />
+    Currently added as a Python example. Includes a brief README on how to launch from command line and how to use from within Python
+  </li>
+</ul>
 
 <h3>Changed functionality</h3>
 
@@ -83,10 +98,10 @@ improvements to the documentation.
 <h3>Known problems</h3>
 See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
 
-<h3>Minor bug fixes</h3>
+<h3>Minor (?) bug fixes</h3>
 <ul>
   <li>made <code>ProjDataInfo*::get_all_det_pos_pairs_for_bin</code> thread-safe.
-   See <a href="https://github.com/UCL/STIR/pull/1084/">PR #1084</a>.</li></li>
+    See <a href="https://github.com/UCL/STIR/pull/1084/">PR #1084</a>.</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -94,12 +109,13 @@ See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
 <h3>recon_test_pack changes</h3>
 
 <h3>Other changes to tests</h3>
+<ul>
   <li> Significant changes made to <code>test_priors</code> that tests the Hessian's convexity, given
     <code>x(Hx) > 0</code>, and a perturbation response, using gradients, was added to determine the Hessian
     (for a single densel) is within tolerance.
     Tests the Quadratic, Relative Difference (in two configurations) and Log-Cosh Penalties (Robert Twyman, UCL).
   </li>
-
+</ul>
 </body>
 
 </html>
