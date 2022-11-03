@@ -49,7 +49,6 @@ class Succeeded;
 class DetectorCoordinateMap
 {
 	struct ihash
-	    : std::unary_function<stir::DetectionPosition<> , std::size_t>
 	{
 	    std::size_t operator()(stir::DetectionPosition<>  const& detpos) const
 	    {
