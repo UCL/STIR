@@ -44,7 +44,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::fstream;
-using std::unary_function;
 using std::transform;
 using std::max;
 using std::min;

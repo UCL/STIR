@@ -32,7 +32,6 @@ START_NAMESPACE_STIR
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename T>
 struct NormSquared<std::complex<T> >
-  :   public std::unary_function<const std::complex<T>&, double>
 {
   double operator()(const std::complex<T>& x) const
   { return square(x.real())+ square(x.imag()); }
@@ -44,7 +43,6 @@ struct NormSquared<std::complex<T> >
 #define INSTANTIATE_NormSquared(T)                              \
   template <>                                                    \
   struct NormSquared<std::complex<T> >                          \
-  :   public std::unary_function<const std::complex<T>&, double> \
 {                                                                \
   double operator()(const std::complex<T>& x) const              \
   { return square(x.real())+ square(x.imag()); }                 \

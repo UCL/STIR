@@ -31,7 +31,6 @@
 #include <functional>
 
 #ifndef STIR_NO_NAMESPACES
-using std::binary_function;
 using std::pair;
 using std::sort;
 using std::cerr;

@@ -36,7 +36,6 @@
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 
 #ifndef STIR_NO_NAMESPACES
-using std::binary_function;
 using std::pair;
 using std::sort;
 using std::cerr;
@@ -753,8 +752,7 @@ int InterfilePDFSHeader::find_storage_order()
 // This is a function object that allows comparing the first elements of 2 
 // pairs.
 template <class T1, class T2>
-class compare_first :
-public binary_function<T1, T1, bool> 
+class compare_first
 {
 public:
   bool operator()(const pair<T1, T2>& p1, const pair<T1, T2>& p2)  const
