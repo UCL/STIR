@@ -35,7 +35,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
