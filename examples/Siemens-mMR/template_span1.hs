@@ -2,7 +2,7 @@
 !imaging modality := PT
 name of data file := template_span1.s
 originating system := Siemens mMR
-!version of keys := STIR3.0
+!version of keys := STIR4.0
 !GENERAL DATA :=
 !GENERAL IMAGE DATA :=
 !type of data := PET
