@@ -51,7 +51,7 @@ START_NAMESPACE_STIR
   <i>Validation of 3D model-based maximum-likelihood estimation of normalisation factors for partial ring positron emission
   tomography</i>. 
   in 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector
-  Workshop (NSS/MIC/RTSD) 1–5 (2016). doi:10.1109/NSSMIC.2016.8069577.
+  Workshop (NSS/MIC/RTSD) 1-5 (2016). doi:10.1109/NSSMIC.2016.8069577.
   <br /> 
   Note however that this describes rotational/translational symmetry per block, while the default is now to use
   symmetries per bucket ( see the \c do_symmetry_per_block argument of allocate()).
