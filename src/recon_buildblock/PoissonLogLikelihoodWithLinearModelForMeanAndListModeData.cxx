@@ -151,6 +151,7 @@ set_skip_lm_input_file(const bool arg)
 
         std::cout << "PoissonLogLikelihoodWithLinearModelForMeanAndListModeData: Skipping input!" << std::endl;
         //!\todo in the future the following statements should be removed.
+        //KTTODO
         {
             this->set_recompute_sensitivity(!arg);
             this->set_use_subset_sensitivities(arg);

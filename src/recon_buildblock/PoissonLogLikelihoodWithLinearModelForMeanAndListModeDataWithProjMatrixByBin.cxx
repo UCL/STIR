@@ -165,6 +165,7 @@ set_max_ring_difference(const int arg)
     }
     else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
     {
+      // KTTODO this is only ring-diff for segment 1
         proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
                                                       max_ring_difference_num_to_process);
     }
@@ -362,6 +363,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
    }
    else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
    {
+     // KTTODO should call set_max_ring_difference instead? Also has mistake if span>1
        proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
                                                      max_ring_difference_num_to_process);
    }
@@ -597,6 +599,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         {
             info( boost::format("Storing Cached Events ... "));
 
+            // KTTODO doesn't use cache_path
             std::string curr_dir = FilePath::get_current_working_directory();
             std::string cache_filename = "my_CACHE00.bin";
             FilePath ocache(cache_filename, false);
@@ -607,6 +610,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   //          if (ocache.is_regular_file())
             {
                 info( boost::format("Storing Listmode cache from disk %1%") % ocache.get_as_string());
+                // KTTODO add error checking
                 std::ofstream fin(ocache.get_as_string(), std::ios::out | std::ios::binary);
 
                 //fout.write((char*)&student[0], student.size() * sizeof(Student));
@@ -670,6 +674,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
           if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
           //        this->add_view_seg_to_sensitivity(view_segment_num);
+          // KTTODO thread_num not used, so remove variable
 #ifdef STIR_OPENMP
           const int thread_num=omp_get_thread_num();
 #else
@@ -714,6 +719,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 {
+  // KTTODO all code was deleted here. Not sure why. This function should then raise an error?
 //    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
 //            (this->projector_pair_sptr->get_symmetries_used()->clone());
 
