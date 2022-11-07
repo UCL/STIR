@@ -160,7 +160,7 @@ set_max_ring_difference(const int arg)
     max_ring_difference_num_to_process = arg;
     if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
     {
-        error("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
+        error("The 'maximum ring difference' asked for is larger than the number of segments"
                 "in the listmode file. Abort.");
     }
     else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
@@ -355,18 +355,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
    proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
-   if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
-   {
-       warning("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
-               "in the listmode file. Abort.");
-       return true;
-   }
-   else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
-   {
-     // KTTODO should call set_max_ring_difference instead? Also has mistake if span>1
-       proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
-                                                     max_ring_difference_num_to_process);
-   }
+   this->set_max_ring_difference(this->max_ring_difference_num_to_process);
 
    // Daniel: abilitate do_time_frame if there is a fdef file
       if (this->frame_defs_filename.size()!=0)
@@ -539,11 +528,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
             const int num_segments_in_memory = 1;
 
-            // KTTODO I see no reason for this check. Code below should work with any ProjData. No? (or is it because get_segment_by_view might not be thread-safe?
-            ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
-            if (is_null_ptr(add))
-               error("Additive projection data is in unsupported file format for the caching. You need to create an Interfile copy. sorry.");
-
 #ifdef STIR_OPENMP
 #pragma omp parallel
             {
@@ -611,10 +595,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
                 for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
                 {
-                  // KTTODO no reason to use at(). A tiny bit faster to use operator[]
-                    Bin tmp = record_cache.at(ie).my_bin;
+                    Bin tmp = record_cache[ie].my_bin;
                     if(with_add)
-                      tmp.set_bin_value(record_cache.at(ie).my_corr);
+                      tmp.set_bin_value(record_cache[ie].my_corr);
                     fout.write((char*)&tmp, sizeof(Bin));
                 }
                 if (!fout)
@@ -806,10 +789,16 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
         double current_time = 0.;
 
+        // need get_bin_value(), so currently need to cast
         shared_ptr<ProjDataFromStream> add;
 
         if (!is_null_ptr(this->additive_proj_data_sptr))
+          {
             add = std::dynamic_pointer_cast<ProjDataFromStream>(additive_proj_data_sptr);
+            // TODO could create a ProjDataInMemory instead, but for now we give up.
+            if (is_null_ptr(add))
+              error("Additive projection data is in unsupported file format. You need to create an Interfile copy. sorry.");
+          }
 
         ProjMatrixElemsForOneBin proj_matrix_row;
         gradient.fill(0);
