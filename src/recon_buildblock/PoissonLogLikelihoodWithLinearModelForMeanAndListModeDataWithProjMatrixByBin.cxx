@@ -488,6 +488,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
         while (true)
         {
+            // KTTODO this should check time frames
             if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
             {
                 break;
@@ -536,17 +537,19 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
             const int num_segments_in_memory = 1;
 
+            // KTTODO I see no reason for this check. Code below should work with any ProjData. No? (or is it because get_segment_by_view might not be thread-safe?
             ProjDataFromStream* add = dynamic_cast<ProjDataFromStream*>(additive_proj_data_sptr.get());
             if (is_null_ptr(add))
                error("Additive projection data is in unsupported file format for the caching. You need to create an Interfile copy. sorry.");
 
+            // KTTODO unused variable
             int num_threads = 1;
 #ifdef STIR_OPENMP
 #pragma omp parallel
             {
 #pragma omp single
                 {
-
+                  // KTTODO unused variable
                     num_threads = omp_get_num_threads();
                     info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
                 }
@@ -616,6 +619,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 //fout.write((char*)&student[0], student.size() * sizeof(Student));
                 for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
                 {
+                  // KTTODO no reason to use at(). A tiny bit faster to use operator[]
                     Bin tmp = record_cache.at(ie).my_bin;
                     if(with_add)
                       tmp.set_bin_value(record_cache.at(ie).my_corr);
