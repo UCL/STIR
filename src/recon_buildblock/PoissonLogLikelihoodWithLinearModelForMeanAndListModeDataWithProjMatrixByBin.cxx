@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016, 2018, University College London
+    Copyright (C) 2014, 2016, 2018, 2022 University College London
     Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
 
@@ -445,6 +445,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
             unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
             record_cache.reserve(num_of_records);
+            if (!fin)
+              error("Error opening cache file \"" + icache.get_as_string() + "\" for reading.");
 
             fin.clear();
             fin.seekg(0);
@@ -610,29 +612,26 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
             bool with_add = !is_null_ptr(additive_proj_data_sptr);
 
-  //          if (ocache.is_regular_file())
             {
-                info( boost::format("Storing Listmode cache from disk %1%") % ocache.get_as_string());
-                // KTTODO add error checking
-                std::ofstream fin(ocache.get_as_string(), std::ios::out | std::ios::binary);
+                info("Storing Listmode cache to file \"" + ocache.get_as_string() + "\".");
+                // open the file, overwriting whatever was there before
+                std::ofstream fout(ocache.get_as_string(), std::ios::out | std::ios::binary | std::ios::trunc);
+                if (!fout)
+                  error("Error opening cache file \"" + ocache.get_as_string() + "\" for writing.");
 
-                //fout.write((char*)&student[0], student.size() * sizeof(Student));
                 for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
                 {
                   // KTTODO no reason to use at(). A tiny bit faster to use operator[]
                     Bin tmp = record_cache.at(ie).my_bin;
                     if(with_add)
                       tmp.set_bin_value(record_cache.at(ie).my_corr);
-                    fin.write((char*)&tmp, sizeof(Bin));
+                    fout.write((char*)&tmp, sizeof(Bin));
                 }
-                fin.close();
-            }
-  //          else
-  //          {
-  //              error("File Path for storing the cache is not writable! Abort.");
-  //              return true;
-  //          }
+                if (!fout)
+                  error("Error writing to cache file \"" + ocache.get_as_string() + "\".");
 
+                fout.close();
+            }
 
             return Succeeded::yes; // Stop here!!!
         }
