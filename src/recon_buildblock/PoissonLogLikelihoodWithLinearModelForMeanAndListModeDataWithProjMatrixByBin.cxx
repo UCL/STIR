@@ -544,15 +544,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             if (is_null_ptr(add))
                error("Additive projection data is in unsupported file format for the caching. You need to create an Interfile copy. sorry.");
 
-            // KTTODO unused variable
-            int num_threads = 1;
 #ifdef STIR_OPENMP
 #pragma omp parallel
             {
 #pragma omp single
                 {
-                  // KTTODO unused variable
-                    num_threads = omp_get_num_threads();
                     info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
                 }
             }
@@ -565,12 +561,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                   start_segment_index <= additive_proj_data_sptr->get_max_segment_num();
                   start_segment_index += num_segments_in_memory)
              {
-#ifdef STIR_OPENMP
-                 const int thread_num = omp_get_thread_num();
-#else
-                 const int thread_num = 0;
-#endif
-
                  const int end_segment_index =
                          std::min( additive_proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
 
@@ -677,12 +667,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
           if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
           //        this->add_view_seg_to_sensitivity(view_segment_num);
-          // KTTODO thread_num not used, so remove variable
-#ifdef STIR_OPENMP
-          const int thread_num=omp_get_thread_num();
-#else
-          const int thread_num = 0;
-#endif
           //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
           {
               shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
