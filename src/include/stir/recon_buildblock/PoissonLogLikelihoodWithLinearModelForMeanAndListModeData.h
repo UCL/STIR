@@ -76,7 +76,7 @@ public:
   //virtual TargetT * construct_target_ptr();  
  
   virtual Succeeded
-   set_up(shared_ptr <TargetT > const& target_sptr);
+   set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
  
   //! time frame definitions
   /*! \todo This is currently used to be able to compute the gradient for 
@@ -92,7 +92,17 @@ public:
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
-    virtual void set_cache_path(const std::string cache_path_v,
+    //! set maximum segment_number (from listmode data) to process
+    /*! minimum will be -max_segment_num_to_process
+
+      Use -1 to process all.
+     */
+    void set_max_segment_num_to_process(int);
+    //! get maximum segment_number (from listmode data) to process
+    /*! \see set_max_segment_num_to_process */
+    int get_max_segment_num_to_process(int) const;
+
+  virtual void set_cache_path(const std::string cache_path_v,
                                 const bool use_add);
 
     void set_skip_lm_input_file(const bool arg);
@@ -109,6 +119,10 @@ protected:
   std::string list_mode_filename;
 
   shared_ptr<ProjData> additive_proj_data_sptr;
+  //! filename for additive data (only used when parsing)
+  std::string additive_projection_data_filename;
+  //! If \c true, the additive sinogram will not be read in memory
+  bool reduce_memory_usage;
 
   shared_ptr<BinNormalisation> normalisation_sptr;
  
@@ -154,6 +168,13 @@ protected:
    std::string cache_path;
    //! The data set has additive corrections
    bool has_add;
+  //! ProjDataInfo
+  /*! normally a copy of the one from the listmode file, but could be reduced in size */
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+ private:
+  //! maximum segment_number (from listmode data) to process
+  /*! \see set_max_segment_num_to_process */
+  int max_segment_num_to_process;
 };
 
 END_NAMESPACE_STIR

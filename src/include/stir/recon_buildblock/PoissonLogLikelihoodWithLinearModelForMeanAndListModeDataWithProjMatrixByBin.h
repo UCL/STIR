@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2022 UCL
     SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
@@ -30,12 +30,14 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
+#include "stir/deprecated.h"
 #include "stir/recon_buildblock/distributable.h"
 START_NAMESPACE_STIR
 
 
 /*!
   \ingroup GeneralisedObjectiveFunction
+  \ingroup listmode
   \brief Class for PET list mode data from static images for a scanner with discrete detectors.
 
   If the scanner has discrete (and stationary) detectors, it can be modeled via  ProjMatrixByBin and BinNormalisation.
@@ -91,12 +93,12 @@ public:
 
   void set_proj_matrix(const shared_ptr<ProjMatrixByBin>&);
 
-  void set_proj_data_info(const ProjData& arg);
-
   void set_skip_balanced_subsets(const bool arg);
 
+#if STIR_VERSION < 060000
+  STIR_DEPRECATED
   void set_max_ring_difference(const int arg);
-
+#endif
 
 protected:
   virtual double
@@ -116,22 +118,17 @@ protected:
   //! This function caches the listmode file. It is run during post-processing.
   Succeeded cache_listmode_file();
 
+#if STIR_VERSION < 060000  
   //! Maximum ring difference to take into account
-  /*! \todo Might be removed */
+  /*! @deprecated */
   int  max_ring_difference_num_to_process;
+#endif
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_sptr;
-
-  //! points to the additive projection data
-  shared_ptr<ProjData> additive_proj_data_sptr;
-
-  std::string additive_projection_data_filename ;
-  //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
@@ -148,8 +145,6 @@ protected:
 
   //! Cache of the listmode file
   std::vector<BinAndCorr>  record_cache;
-  //! The additive sinogram will not be read in memory
-  bool reduce_memory_usage;
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;
