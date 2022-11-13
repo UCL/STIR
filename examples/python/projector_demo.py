@@ -23,7 +23,7 @@ projdata = stir.ProjData.read_from_file('smalllong.hs')
 #%% Create an empty image with suitable voxel sizes
 # use smaller voxels than the default
 zoom = 2.
-target = stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info(), zoom)
+target = stir.FloatVoxelsOnCartesianGrid(projdata.get_exam_info(), projdata.get_proj_data_info(), zoom)
 #%% initialise the projection matrix
 # Using ray-tracing here
 # Note that the default is to restrict the projection to a cylindrical FOV
