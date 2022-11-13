@@ -858,7 +858,6 @@ namespace std {
 
 %include "stir/num_threads.h"
 
-#if 1
 // #define used below to check what to do
 #define STIRSWIG_SHARED_PTR
 
@@ -889,11 +888,6 @@ namespace std {
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
 %shared_ptr(stir::ProjDataInMemory);
-// TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
-//%shared_ptr(stir::Array<1,float>);
-%shared_ptr(stir::Array<2,float>);
-%shared_ptr(stir::Array<3,float>);
-%shared_ptr(stir::Array<4,float>);
 %shared_ptr(stir::DiscretisedDensity<3,float>);
 %shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
 %shared_ptr(stir::VoxelsOnCartesianGrid<float>);
@@ -905,15 +899,6 @@ namespace std {
 %shared_ptr(stir::LORAs2Points<float>);
 %shared_ptr(stir::LOR<float>);
 %shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
-#else
-namespace boost {
-template<class T> class shared_ptr
-{
-public:
-T * operator-> () const;
-};
-}
-#endif
 
 //  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
@@ -957,90 +942,14 @@ T * operator-> () const;
  /* First do coordinates, indices, images.
     We first include them, and sort out template instantiation and indexing below.
  */
- //%include <boost/operators.hpp>
-
-%include "stir/BasicCoordinate.h"
-%include "stir/Coordinate3D.h"
+%include "stir_coordinates.i"
 %include "stir/LORCoordinates.h"
 
 %template(FloatLOR) stir::LOR<float>;
 %template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
-// ignore non-const versions
-%ignore  stir::CartesianCoordinate3D::z();
-%ignore  stir::CartesianCoordinate3D::y();
-%ignore  stir::CartesianCoordinate3D::x();
-%include "stir/CartesianCoordinate3D.h"
-%include "stir/Coordinate2D.h"
-// ignore const versions
-%ignore  stir::CartesianCoordinate2D::x() const;
-%ignore  stir::CartesianCoordinate2D::y() const;
-%include "stir/CartesianCoordinate2D.h"
 
- // we have to ignore the following because of a bug in SWIG 2.0.4, but we don't need it anyway
-%ignore *::IndexRange(const VectorWithOffset<IndexRange<num_dimensions-1> >& range);
-%include "stir/IndexRange.h"
-
-%ignore stir::VectorWithOffset::get_const_data_ptr() const;
-%ignore stir::VectorWithOffset::get_data_ptr();
-%ignore stir::VectorWithOffset::release_const_data_ptr() const;
-%ignore stir::VectorWithOffset::release_data_ptr();
-%include "stir/VectorWithOffset.h"
-
-#if defined(SWIGPYTHON)
- // TODO ideally would use %swig_container_methods but we don't have getslice yet
-#if defined(SWIGPYTHON_BUILTIN)
-  %feature("python:slot", "nb_nonzero", functype="inquiry") __nonzero__;
-  %feature("python:slot", "sq_length", functype="lenfunc") __len__;
-#endif // SWIGPYTHON_BUILTIN
-
-%extend stir::VectorWithOffset {
-    bool __nonzero__() const {
-      return !(self->empty());
-    }
-
-    /* Alias for Python 3 compatibility */
-    bool __bool__() const {
-      return !(self->empty());
-    }
-
-    size_type __len__() const {
-      return self->size();
-    }
-#if 0
-    // TODO this does not work yet
-    /*
-%define %emit_swig_traits(_Type...)
-%traits_swigtype(_Type);
-%fragment(SWIG_Traits_frag(_Type));
-%enddef
-
-%emit_swig_traits(MyPrice)
-    */
-    %swig_sequence_iterator(stir::VectorWithOffset<T>);
-#else
-    %newobject _iterator(PyObject **PYTHON_SELF);
-    swig::SwigPyIterator* _iterator(PyObject **PYTHON_SELF) {
-      return swig::make_output_iterator(self->begin(), self->begin(), self->end(), *PYTHON_SELF);
-    }
-#if defined(SWIGPYTHON_BUILTIN)
-    %feature("python:slot", "tp_iter", functype="getiterfunc") _iterator;
-#else
-    %pythoncode {def __iter__(self): return self._iterator()}
-#endif
-#endif
-  }
-#endif
-
-%ignore stir::NumericVectorWithOffset::xapyb;
-%ignore stir::NumericVectorWithOffset::axpby;
-%include "stir/NumericVectorWithOffset.h"
-
-#ifdef SWIGPYTHON
-// ignore as we will add a version that returns a tuple instead
-%ignore stir::Array::shape() const;
-#endif
-
-%include "stir/Array.h"
+%include "stir_array.i"
+%include "stir_exam.i"
 
 // ignore this one and add it later (see below)
 %ignore stir::DiscretisedDensity::read_from_file(const std::string& filename);
@@ -1067,263 +976,6 @@ T * operator-> () const;
     }
  }
 
- //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
-namespace stir { 
-#ifdef SWIGPYTHON
-  // add extra features to the coordinates to make them a bit more Python friendly
-  %extend BasicCoordinate {
-    //%feature("autodoc", "construct from tuple, e.g. (2,3,4) for a 3d coordinate")
-    BasicCoordinate(PyObject* args)
-    {
-      BasicCoordinate<num_dimensions,coordT> *c=new BasicCoordinate<num_dimensions,coordT>;
-      if (!swigstir::coord_from_tuple(*c, args))
-	{
-	  throw std::invalid_argument("Wrong type of argument to construct Coordinate used");
-	}
-      return c;
-    };
-
-    // print as (1,2,3) as opposed to non-informative default provided by SWIG
-    std::string __str__()
-    { 
-      std::ostringstream s;
-      s<<'(';
-      for (int d=1; d<=num_dimensions-1; ++d)
-	s << (*$self)[d] << ", ";
-      s << (*$self)[num_dimensions] << ')';
-      return s.str();
-    }
-
-    // print as classname((1,2,3)) as opposed to non-informative default provided by SWIG
-    std::string __repr__()
-    { 
-#if SWIG_VERSION < 0x020009
-      // don't know how to get the Python typename
-      std::string repr = "stir.Coordinate";
-#else
-      std::string repr = "$parentclasssymname";
-#endif
-      // TODO attempt to re-use __str__ above, but it doesn't compile, so we replicate the code
-      // repr += $self->__str__() + ')';
-      std::ostringstream s;
-      s<<"((";
-      for (int d=1; d<=num_dimensions-1; ++d)
-	s << (*$self)[d] << ", ";
-      s << (*$self)[num_dimensions] << ')';
-      repr += s.str() + ")";
-      return repr;
-    }
-
-    bool __nonzero__() const {
-      return true;
-    }
-
-    /* Alias for Python 3 compatibility */
-    bool __bool__() const {
-      return true;
-    }
-
-    size_type __len__() const {
-      return $self->size();
-    }
-#if defined(SWIGPYTHON_BUILTIN)
-    %feature("python:slot", "tp_str", functype="reprfunc") __str__; 
-    %feature("python:slot", "tp_repr", functype="reprfunc") __repr__; 
-    %feature("python:slot", "nb_nonzero", functype="inquiry") __nonzero__;
-    %feature("python:slot", "sq_length", functype="lenfunc") __len__;
-#endif // SWIGPYTHON_BUILTIN
-
-  }
-#elif defined(SWIGMATLAB)
-    %extend BasicCoordinate {
-    // print as [1;2;3] as opposed to non-informative default provided by SWIG
-    void disp()
-    { 
-      std::ostringstream s;
-      s<<'[';
-      for (int d=1; d<=num_dimensions-1; ++d)
-	s << (*$self)[d] << "; ";
-      s << (*$self)[num_dimensions] << "]\n";
-      mexPrintf(s.str().c_str());
-      
-    }
-    //%feature("autodoc", "construct from vector, e.g. [2;3;4] for a 3d coordinate")
-    BasicCoordinate(const mxArray *pm)
-    {
-      $parentclassname * array_ptr = new $parentclassname();
-      swigstir::fill_BasicCoordinate_from_matlab(*array_ptr, pm);
-      return array_ptr;
-    }
-
-    %newobject to_matlab;
-    mxArray * to_matlab()
-    { return swigstir::BasicCoordinate_to_matlab(*$self); }
-
-    void fill(const mxArray *pm)
-    { swigstir::fill_BasicCoordinate_from_matlab(*$self, pm); }
-  }
-  #endif // PYTHON, MATLAB extension of BasicCoordinate
-
-  %ADD_indexaccess(int, coordT, BasicCoordinate);
-  %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
-  %template(Size3BasicCoordinate) BasicCoordinate<3,std::size_t>;
-  %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
-  %template(Float3Coordinate) Coordinate3D< float >;
-  %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
-  %template(IntCartesianCoordinate3D) CartesianCoordinate3D<int>;
-  
-  %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
-  %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
-  %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
-  
-  %template(Int4BasicCoordinate) BasicCoordinate<4,int>;
-  %template(Size4BasicCoordinate) BasicCoordinate<4,std::size_t>;
-  %template(Float4BasicCoordinate) BasicCoordinate<4,float>;
-  // TODO not needed in python case?
-  %template(Float2Coordinate) Coordinate2D< float >;
-  %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
-
-  //#ifndef SWIGPYTHON
-  // not necessary for Python as we can use tuples there
-  %template(make_IntCoordinate) make_coordinate<int>;
-  %template(make_FloatCoordinate) make_coordinate<float>;
-  //#endif
-
-  %template(IndexRange1D) IndexRange<1>;
-  //    %template(IndexRange1DVectorWithOffset) VectorWithOffset<IndexRange<1> >;
-  %template(IndexRange2D) IndexRange<2>;
-  //%template(IndexRange2DVectorWithOffset) VectorWithOffset<IndexRange<2> >;
-  %template(IndexRange3D) IndexRange<3>;
-  %template(IndexRange4D) IndexRange<4>;
-
-  %ADD_indexaccess(int,T,VectorWithOffset);
-  %template(FloatVectorWithOffset) VectorWithOffset<float>;
-  %template(IntVectorWithOffset) VectorWithOffset<int>;
-
-  // TODO need to instantiate with name?
-  %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
-
-#ifdef SWIGPYTHON
-  // TODO this extends ND-Arrays, but apparently not 1D Arrays (because specialised template?)
-  %extend Array{
-    // add "flat" iterator, using begin_all()
-    %newobject flat(PyObject **PYTHON_SELF);
-    %feature("autodoc", "create a Python iterator over all elements, e.g. array.flat()") flat;
-    swig::SwigPyIterator* flat(PyObject **PYTHON_SELF) {
-      return swigstir::make_forward_iterator(self->begin_all(), self->begin_all(), self->end_all(), *PYTHON_SELF);
-    }
-    %feature("autodoc", "tuple indexing, e.g. array[(1,2,3)]") __getitem__;
-    elemT __getitem__(PyObject* const args)
-    {
-      stir::BasicCoordinate<num_dimensions, int> c;
-      if (!swigstir::coord_from_tuple(c, args))
-	{
-	  throw std::invalid_argument("Wrong type of indexing argument used");
-	}
-      return (*$self).at(c);
-    };
-    %feature("autodoc", "tuple indexing, e.g. array[(1,2,3)]=4") __setitem__;
-    void __setitem__(PyObject* const args, const elemT value)
-    {
-      stir::BasicCoordinate<num_dimensions, int> c;
-      if (!swigstir::coord_from_tuple(c, args))
-	{
-	  throw std::invalid_argument("Wrong type of indexing argument used");
-	}
-      (*$self).at(c) = value;
-    };
-
-    %feature("autodoc", "return number of elements per dimension as a tuple, (almost) compatible with numpy. Use as array.shape()") shape;
-    const PyObject* shape()
-    {
-      //const stir::BasicCoordinate<num_dimensions, std::size_t> c = (*$self).shape();
-      stir::BasicCoordinate<num_dimensions,int> minind,maxind;
-      if (!$self->get_regular_range(minind, maxind))
-	throw std::range_error("shape called on irregular array");
-      stir::BasicCoordinate<num_dimensions, int> sizes=maxind-minind+1;
-      return swigstir::tuple_from_coord(sizes);
-    }
-
-    %feature("autodoc", "fill from a Python iterator, e.g. array.fill(numpyarray.flat)") fill;
-    void fill(PyObject* const arg)
-    {
-      if (PyIter_Check(arg))
-      {
-	swigstir::fill_Array_from_Python_iterator($self, arg);
-      }
-      else
-      {
-	char str[1000];
-	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
-		arg->ob_type->tp_name);
-	throw std::invalid_argument(str);
-      } 
-    }
-  }
-#endif
-
-  %extend Array{
-    %feature("autodoc", "return number of dimensions in the array") get_num_dimensions;
-    int get_num_dimensions()
-    {
-      return num_dimensions;
-    }
-  }
-
-#ifdef SWIGMATLAB
-  %extend Array {
-     Array(const mxArray *pm)
-     {
-       $parentclassname * array_ptr = new $parentclassname();
-       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
-       return array_ptr;
-     }
-
-     %newobject to_matlab;
-     mxArray * to_matlab()
-     { return swigstir::Array_to_matlab(*$self); }
-
-     void fill(const mxArray *pm)
-     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
-   }
-  // repeat this for 1D due to template (partial) specialisation (TODO, get round that somehow)
-  %extend Array<1,float> {
-     Array<1,float>(const mxArray *pm)
-     {
-       $parentclassname * array_ptr = new $parentclassname();
-       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
-       return array_ptr;
-     }
-
-     %newobject to_matlab;
-     mxArray * to_matlab()
-     { return swigstir::Array_to_matlab(*$self); }
-
-     void fill(const mxArray *pm)
-     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
-   }
-#endif
-  // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
-  // the return value is an array. So, we get a wrapped object that we cannot handle
-  //%ADD_indexaccess(int,Array::value_type, Array);
-
-  %ADD_indexaccess(%arg(const BasicCoordinate<num_dimensions,int>&),elemT, Array);
-
-  %template(FloatArray1D) Array<1,float>;
-
-  // this doesn't work because of bug in swig (incorrectly parses num_dimensions)
-  //%ADD_indexaccess(int,%arg(Array<num_dimensions -1,elemT>), Array);
-  // In any case, even if the above is made to work (e.g. explicit override for every class as below)
-  //  then setitem still doesn't modify the object for more than 1 level
-#if 1
-  // note: next line has no memory allocation problems because all Array<1,...> objects
-  // are auto-converted to _ptrs.
-  // however, cannot use setitem to modify so ideally we would define getitem only (at least for python) (TODO)
-  // TODO DISABLE THIS
-  %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
-#endif
-
-} // namespace stir
 
 %include "stir/ZoomOptions.h"
 %include "stir/zoom.h"
@@ -1350,20 +1002,6 @@ namespace stir {
 %rename("rstrip:[_ptr]")
 %rename("rstrip:[_sptr]")
 */
-
-  // Todo need to instantiate with name?
-  // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
-%template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
-
-  %template(FloatArray2D) stir::Array<2,float>;
-  // TODO name
-  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
-  %template(FloatArray3D) stir::Array<3,float>;
-#if 0
-  %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
-#endif
-  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float>, float>;
-  %template(FloatArray4D) stir::Array<4,float>;
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
@@ -1416,7 +1054,6 @@ namespace stir {
 
 #undef DataT
 
-%include "stir_exam.i"
  /* Now do ProjDataInfo, Sinogram et al
  */
 %include "stir/Verbosity.h"
