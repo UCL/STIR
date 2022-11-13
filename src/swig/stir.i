@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018, 2019, 2020, 2021 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
     Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
@@ -817,6 +817,43 @@ namespace std {
 #endif
 %enddef
 
+ // Macros for adding __repr_()_ for Python and disp() for MATLAB
+
+ // example usage: ADD_REPR(stir::ImagingModality, %arg($self->get_name()));
+%define ADD_REPR(classname, defrepr)
+%extend classname
+{
+#if defined(SWIGPYTHON_BUILTIN)
+  %feature("python:slot", "tp_repr", functype="reprfunc") __repr__; 
+#endif
+
+#if defined(SWIGPYTHON)
+    std::string __repr__()
+    {
+      std::string repr = "<classname::";
+      repr += defrepr;
+      repr += ">";
+      return repr;
+    }
+#endif
+#if defined(SWIGMATLAB)
+    void disp()
+    {
+      std::string repr = "<" + "classname::";
+      repr += defrepr;
+      repr += ">";
+      mexPrintf(repr.c_str());
+    }
+#endif
+}
+%enddef
+
+ // use this one for classes that have parameter_info()
+ // example usage: ADD_REPR_PARAMETER_INFO(stir::Radionuclide);
+%define ADD_REPR_PARAMETER_INFO(classname)
+  ADD_REPR(classname, "use parameter_info() for details");
+%enddef
+
  // Finally, start with STIR specific definitions
 
 %include "stir/num_threads.h"
@@ -838,9 +875,6 @@ namespace std {
 %shared_ptr(stir::TimedObject);
 %shared_ptr(stir::ParsingObject);
 
-%shared_ptr(stir::TimeFrameDefinitions);
-%shared_ptr(stir::ExamInfo);
-%shared_ptr(stir::ExamData);
 %shared_ptr(stir::Verbosity);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -1302,19 +1336,11 @@ namespace stir {
 %rename (set_objective_function) *::set_objective_function_sptr;
 %ignore  *::get_objective_function_sptr; // we have it without _sptr in C++
 
-%rename (get_initial_data) *::get_initial_data_ptr;
-%rename (construct_target_image) *::construct_target_image_ptr;
-%rename (construct_target) *::construct_target_ptr;
-%ignore *::get_prior_sptr;
-%rename (get_prior) *::get_prior_ptr;
 %rename (get_proj_matrix) *::get_proj_matrix;
-%rename (get_projector_pair) *::get_projector_pair_sptr;
-%rename (get_normalisation) *::get_normalisation_sptr;
 %rename (get_symmetries) *::get_symmetries_ptr;
 %ignore *::get_symmetries_sptr;
 %rename (get_inter_iteration_filter) *::get_inter_iteration_filter_sptr;
 %rename (get_anatomical_prior) *::get_anatomical_prior_sptr;
-%rename (get_proj_data) *::get_proj_data_sptr;
 %rename (get_subset_sensitivity) *::get_subset_sensitivity_sptr;
 %rename (get_forward_projector) *::get_forward_projector_sptr;
 %rename (get_back_projector) *::get_back_projector_sptr;
@@ -1390,12 +1416,9 @@ namespace stir {
 
 #undef DataT
 
+%include "stir_exam.i"
  /* Now do ProjDataInfo, Sinogram et al
  */
-%include "stir/TimeFrameDefinitions.h"
-%include "stir/ExamInfo.h"
-
-%include "stir/ExamData.h"
 %include "stir/Verbosity.h"
 
 %attributeref(stir::Bin, int, segment_num);
