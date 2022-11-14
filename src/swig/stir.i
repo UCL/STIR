@@ -905,9 +905,6 @@ namespace std {
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
 %shared_ptr(stir::ProjDataInMemory);
-%shared_ptr(stir::DiscretisedDensity<3,float>);
-%shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
-%shared_ptr(stir::VoxelsOnCartesianGrid<float>);
 %shared_ptr(stir::SegmentBySinogram<float>);
 %shared_ptr(stir::SegmentByView<float>);
 %shared_ptr(stir::Segment<float>);
@@ -967,86 +964,11 @@ namespace std {
 
 %include "stir_array.i"
 %include "stir_exam.i"
-
-// ignore this one and add it later (see below)
-%ignore stir::DiscretisedDensity::read_from_file(const std::string& filename);
-%include "stir/DiscretisedDensity.h"
-%include "stir/DiscretisedDensityOnCartesianGrid.h"
-
-%include "stir/VoxelsOnCartesianGrid.h"
-
-%extend stir::VoxelsOnCartesianGrid {
-  // add read_from_file to this class, as currently there is no way
-  // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
-  static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
-    {
-      using namespace stir;
-      unique_ptr<DiscretisedDensity<3,elemT> > 
-	ret(read_from_file<DiscretisedDensity<3,elemT> >(filename));
-      return dynamic_cast<VoxelsOnCartesianGrid<elemT> *>(ret.release());
-    }
-
-    // add write_to_file method for VoxelsOnCartesianGrid, returns the saved filename
-    std::string write_to_file(const std::string& filename)
-    {
-      return write_to_file(filename, *$self);
-    }
- }
-
+%include "stir_voxels.i"
+%include "stir_voxels_IO.i"
 
 %include "stir/ZoomOptions.h"
 %include "stir/zoom.h"
-
-%template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
-%template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
-//%template() stir::DiscretisedDensity<3,float>;
-//%template() stir::DiscretisedDensityOnCartesianGrid<3,float>;
-%template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
-
-%include "stir/IO/write_to_file.h"
-%template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
-
-#ifdef STIRSWIG_SHARED_PTR
-#define DataT stir::DiscretisedDensity<3,float>
-%shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::RegisteredObject< stir::OutputFileFormat< stir::DiscretisedDensity< 3,float > > >);
-%shared_ptr(stir::RegisteredParsingObject< stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
-%shared_ptr(stir::InterfileOutputFileFormat);
-#ifdef HAVE_LLN_MATRIX
-%shared_ptr(stir::RegisteredParsingObject<stir::ecat::ecat7::ECAT7OutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
-%shared_ptr(stir::ecat::ecat7::ECAT7OutputFileFormat);
-#endif
-
-#ifdef HAVE_ITK
-%shared_ptr(stir::RegisteredParsingObject< stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
-%shared_ptr(stir::ITKOutputFileFormat);
-#endif
-
-#undef DataT
-#endif
-
-%include "stir/IO/OutputFileFormat.h"
-
-#define DataT stir::DiscretisedDensity<3,float>
-%template(Float3DDiscretisedDensityOutputFileFormat) stir::OutputFileFormat<DataT >;
-  //cannot do that as pure virtual functions
-  //%template(ROOutputFileFormat3DFloat) RegisteredObject< OutputFileFormat< DiscretisedDensity< 3,float > > >;
-%template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
-
-#ifdef HAVE_ITK
-%template(RPITKOutputFileFormat) stir::RegisteredParsingObject<stir::ITKOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
-#endif
-
-%include "stir/IO/InterfileOutputFileFormat.h"
-#ifdef HAVE_LLN_MATRIX
-%include "stir/IO/ECAT7OutputFileFormat.h"
-#endif
-
-#ifdef HAVE_ITK
-%include "stir/IO/ITKOutputFileFormat.h"
-#endif
-
-#undef DataT
 
  /* Now do ProjDataInfo, Sinogram et al
  */

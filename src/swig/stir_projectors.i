@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2014, 2022 University College London
     Copyright (C) 2022 Positrigo
     Copyright (C) 2022 Katholieke Universiteit London
