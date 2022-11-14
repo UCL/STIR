@@ -24,6 +24,8 @@
 %rename (construct_target) *::construct_target_ptr;
 %ignore *::get_prior_sptr;
 %rename (get_prior) *::get_prior_ptr;
+%rename (get_anatomical_prior) *::get_anatomical_prior_sptr;
+%rename (get_kappa) *::get_kappa_sptr;
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float

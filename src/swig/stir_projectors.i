@@ -17,6 +17,10 @@
   \author Georg Schramm
 */
 
+%rename (get_forward_projector) *::get_forward_projector_sptr;
+%rename (get_back_projector) *::get_back_projector_sptr;
+%rename (get_proj_matrix) *::get_proj_matrix;
+%rename (get_attenuation_image) *::get_attenuation_image_sptr;
 
 %shared_ptr(stir::ForwardProjectorByBin);
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,

@@ -856,6 +856,23 @@ namespace std {
 
  // Finally, start with STIR specific definitions
 
+ // General renaming of *sptr functions
+%ignore *::get_scanner_sptr;
+%rename (get_scanner) *::get_scanner_ptr;
+%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
+%rename (set_input_proj_data) *::set_input_projdata_sptr; // warning: extra _
+%rename (set_output_proj_data) *::set_output_projdata_sptr; // warning: extra _
+%rename (get_output_proj_data) *::get_output_projdata_sptr;
+%rename (get_output_proj_data) *::get_output_proj_data_sptr;
+
+%rename (get_symmetries) *::get_symmetries_ptr;
+%ignore *::get_symmetries_sptr;
+/* would be nice, but needs swig to be compiled with PCRE support 
+%rename("rstrip:[_ptr]")
+%rename("rstrip:[_sptr]")
+*/
+
 %include "stir/num_threads.h"
 
 // #define used below to check what to do
@@ -979,29 +996,6 @@ namespace std {
 
 %include "stir/ZoomOptions.h"
 %include "stir/zoom.h"
-
-%ignore *::get_scanner_sptr;
-%rename (get_scanner) *::get_scanner_ptr;
-%rename (get_proj_data_info) *::get_proj_data_info_sptr;
-%ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
-
-%rename (set_objective_function) *::set_objective_function_sptr;
-%ignore  *::get_objective_function_sptr; // we have it without _sptr in C++
-
-%rename (get_proj_matrix) *::get_proj_matrix;
-%rename (get_symmetries) *::get_symmetries_ptr;
-%ignore *::get_symmetries_sptr;
-%rename (get_inter_iteration_filter) *::get_inter_iteration_filter_sptr;
-%rename (get_anatomical_prior) *::get_anatomical_prior_sptr;
-%rename (get_subset_sensitivity) *::get_subset_sensitivity_sptr;
-%rename (get_forward_projector) *::get_forward_projector_sptr;
-%rename (get_back_projector) *::get_back_projector_sptr;
-%rename (get_kappa) *::get_kappa_sptr;
-%rename (get_attenuation_image) *::get_attenuation_image_sptr;
-/* would be nice, but needs swig to be compiled with PCRE support 
-%rename("rstrip:[_ptr]")
-%rename("rstrip:[_sptr]")
-*/
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
