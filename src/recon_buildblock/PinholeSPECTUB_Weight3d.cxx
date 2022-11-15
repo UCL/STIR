@@ -891,9 +891,9 @@ float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax
             i1 += di;
             ie = (int) floorf( inc_ie * (float)k );
             
-            if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
+            //if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
             
-            acum += f[ in_limits ( j1, 0, imax ) ][ in_limits ( i1, 0, jmax ) ] * pcf.cr_att.val[ ie ];
+            if ( ie <= pcf.cr_att.i_max ) acum += f[ in_limits ( j1, 0, imax ) ][ in_limits ( i1, 0, jmax ) ] * pcf.cr_att.val[ ie ];
         }
         if ( Di > 0 ) acum /= Di ;
     }
@@ -917,10 +917,10 @@ float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax
             
             ie = (int) floorf( inc_ie * (float)k );
             
-            if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
+            // if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
             //cout << pcf.cr_att.val[ ie ] << endl;
             
-            acum += f[ in_limits ( j1, 0, imax ) ][ in_limits ( i1, 0, jmax ) ] * pcf.cr_att.val[ ie ];
+            if ( ie <= pcf.cr_att.i_max ) acum += f[ in_limits ( j1, 0, imax ) ][ in_limits ( i1, 0, jmax ) ] * pcf.cr_att.val[ ie ];
             
         }
         if ( Dj > 0 ) acum /= Dj ;
