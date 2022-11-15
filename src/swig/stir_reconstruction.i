@@ -15,6 +15,10 @@
   \author Kris Thielemans
   \author Markus Jehl
 */
+%rename (get_inter_iteration_filter) *::get_inter_iteration_filter_sptr;
+%rename (get_subset_sensitivity) *::get_subset_sensitivity_sptr;
+%rename (set_objective_function) *::set_objective_function_sptr;
+%ignore  *::get_objective_function_sptr; // we have it without _sptr in C++
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float

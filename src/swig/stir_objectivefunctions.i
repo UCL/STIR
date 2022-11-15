@@ -16,6 +16,16 @@
 */
 
 %ignore *::get_exam_info_uptr_for_target;
+%ignore *::get_projector_pair_sptr;
+%ignore *::get_proj_data_sptr;
+%ignore *::get_normalisation_sptr;
+%rename (get_initial_data) *::get_initial_data_ptr;
+%rename (construct_target_image) *::construct_target_image_ptr;
+%rename (construct_target) *::construct_target_ptr;
+%ignore *::get_prior_sptr;
+%rename (get_prior) *::get_prior_ptr;
+%rename (get_anatomical_prior) *::get_anatomical_prior_sptr;
+%rename (get_kappa) *::get_kappa_sptr;
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
