@@ -73,7 +73,7 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
   Bin bin;
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
   LORAs2Points<float> lor_points;
-  const float radius = p_info.get_scanner_sptr()->get_inner_ring_radius();
+  const float radius = p_info.get_scanner_sptr()->get_max_FOV_radius();
 
   // warning: next loop needs to be the same as how ProjDataInMemory stores its data. There is no guarantee that this will remain the case in the future.
   const auto segment_sequence = ProjData::standard_segment_sequence(p_info);
@@ -88,21 +88,26 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
               for (bin.tangential_pos_num() = p_info.get_min_tangential_pos_num(); bin.tangential_pos_num() <= p_info.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
                 {
                   p_info.get_LOR(lor, bin);
-                  lor.get_intersections_with_cylinder(lor_points, radius);
-                  const CartesianCoordinate3D<float> p1 = lor_points.p1()*rescale;
-                  const CartesianCoordinate3D<float> p2 = lor_points.p2()*rescale;
-#if 0
-                  if (index+2 > xstart.size())
-                    error("That went wrong: index " + std::to_string(index) + ", xstart size " + std::to_string(xstart.size()));
-                  if (index+2 > xend.size())
-                    error("That went wrong: index " + std::to_string(index) + ", xend size " + std::to_string(xstart.size()));
-#endif
-                  xstart[index] = p1[1];
-                  xend[index++] = p2[1];
-                  xstart[index] = p1[2];
-                  xend[index++] = p2[2];
-                  xstart[index] = p1[3];
-                  xend[index++] = p2[3];
+                  if (lor.get_intersections_with_cylinder(lor_points, radius) == Succeeded::no)
+                  {  // memory is already allocated, so just passing in points that will produce nothing
+                    xstart[index] = 0;
+                    xend[index++] = 0;
+                    xstart[index] = 0;
+                    xend[index++] = 0;
+                    xstart[index] = 0;
+                    xend[index++] = 0;
+                  }
+                  else
+                  {
+                    const CartesianCoordinate3D<float> p1 = lor_points.p1()*rescale;
+                    const CartesianCoordinate3D<float> p2 = lor_points.p2()*rescale;
+                    xstart[index] = p1[1];
+                    xend[index++] = p2[1];
+                    xstart[index] = p1[2];
+                    xend[index++] = p2[2];
+                    xstart[index] = p1[3];
+                    xend[index++] = p2[3];
+                  }
                 }
             }
         }
