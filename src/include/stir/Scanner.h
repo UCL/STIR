@@ -148,6 +148,7 @@ class Scanner
   //! constructor -(list of names)
   /*! size info is in mm
       \param intrinsic_tilt_v value in radians, \see get_intrinsic_azimuthal_tilt()
+      \param scanner_geometry_v \see set_scanner_geometry()
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -173,6 +174,7 @@ class Scanner
   //! constructor ( a single name)
   /*! size info is in mm
       \param intrinsic_tilt value in radians, \see get_intrinsic_azimuthal_tilt()
+      \param scanner_geometry_v \see set_scanner_geometry()
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const std::string& name,
@@ -322,6 +324,7 @@ class Scanner
   //! \name functions to get block geometry info
   //@{
   //! get scanner geometry
+  /*! \see set_scanner_geometry */
   inline std::string get_scanner_geometry() const;
   //! get crystal spacing in axial direction
   inline float get_axial_crystal_spacing() const;
@@ -398,7 +401,14 @@ class Scanner
   //@{
   //! name functions to set block geometry info
   //! set scanner geometry
-  /*! Will also read the detector map from file if the geometry is \c Generic */
+  /*! 
+   \param new_scanner_geometry: "Cylindrical", "BlocksOnCylindrical" or "Generic"
+    
+    Will also read the detector map from file if the geometry is \c "Generic".
+    \warning you need to call set_up() after calling this function.
+
+   \see set_scanner_geometry
+  */
   void set_scanner_geometry(const std::string& new_scanner_geometry);
   //! set crystal spacing in axial direction
   inline void set_axial_crystal_spacing(const float & new_spacing);
