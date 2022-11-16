@@ -20,49 +20,34 @@
 #include "stir/multiply_crystal_factors.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
 
 START_NAMESPACE_STIR
 
 // declaration of local function that does the work
-static void multiply_crystal_factors_help(ProjData& proj_data,
-                                          const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr,
-                                          const Array<2,float>& efficiencies,
-                                          const float global_factor);
-
-void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficiencies, const float global_factor)
-{
-    const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr = 
-      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (proj_data.get_proj_data_info_sptr().get());
-    if (proj_data_info_ptr == 0)
-      {
-	error("Can only process not arc-corrected data\n");
-      }
-    multiply_crystal_factors_help(proj_data, proj_data_info_ptr, efficiencies, global_factor);
-}
-
+template <class TProjDataInfo>
 void multiply_crystal_factors_help(ProjData& proj_data,
-                                   const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr,
+                                   const TProjDataInfo& proj_data_info,
                                    const Array<2,float>& efficiencies, const float global_factor)
-{    
-  if (proj_data_info_ptr->get_num_tof_poss() != 1)
+{
+  if (proj_data_info.get_num_tof_poss() != 1)
     error("multiply_crystal_factors needs non-TOF input");
-  
+
     Bin bin;
 
-    for (bin.segment_num() = proj_data.get_min_segment_num(); 
-	 bin.segment_num() <= proj_data.get_max_segment_num();  
-	 ++ bin.segment_num())
-      {	
-    
-	for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-	     bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-	     ++bin.axial_pos_num())
-	  {
-	    Sinogram<float> sinogram =
-	      proj_data_info_ptr->get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
+    for (bin.segment_num() = proj_data.get_min_segment_num();
+     bin.segment_num() <= proj_data.get_max_segment_num();
+     ++ bin.segment_num())
+      {
+
+    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+         ++bin.axial_pos_num())
+      {
+        Sinogram<float> sinogram =
+          proj_data_info.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
 
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 200711
@@ -74,9 +59,9 @@ void multiply_crystal_factors_help(ProjData& proj_data,
             for (int view_num = proj_data.get_min_view_num();
                  view_num <= proj_data.get_max_view_num();
                  ++ view_num)
-              {                
-                for (int tangential_pos_num = proj_data_info_ptr->get_min_tangential_pos_num();
-                     tangential_pos_num <= proj_data_info_ptr->get_max_tangential_pos_num();
+              {
+                for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num();
+                     tangential_pos_num <= proj_data_info.get_max_tangential_pos_num();
                      ++tangential_pos_num)
                   {
                     // Construct bin with appropriate values
@@ -84,9 +69,9 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                     Bin parallel_bin(bin);
                     parallel_bin.view_num() = view_num;
                     parallel_bin.tangential_pos_num() = tangential_pos_num;
-                    
+
                     std::vector<DetectionPositionPair<> > det_pos_pairs;
-                    proj_data_info_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, parallel_bin);
+                    proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, parallel_bin);
                     float result = 0.F;
                     for (unsigned int i=0; i<det_pos_pairs.size(); ++i)
                       {
@@ -107,14 +92,47 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                       // Use += such that the "atomic update" pragma compiles (OpenMP 3.0).
                       // Presumably with OpenMP 3.1 we could use "atomic write"
                       sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()] += result * global_factor;
-#if defined(STIR_OPENMP) and _OPENMP < 201012
+#if defined(STIR_OPENMP) && _OPENMP < 201012
                     }
 #endif
                   }
               }
-	    proj_data.set_sinogram(sinogram);
-	  }
+        proj_data.set_sinogram(sinogram);
+      }
 
       }
 }
+
+void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficiencies, const float global_factor)
+{
+    if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+    {
+        auto proj_data_info_ptr =
+                dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
+                (proj_data.get_proj_data_info_sptr().get());
+
+        if (proj_data_info_ptr == 0)
+        {
+            error("Can only process not arc-corrected data\n");
+        }
+        multiply_crystal_factors_help(proj_data, *proj_data_info_ptr, efficiencies, global_factor);
+    }
+    else
+    {
+        auto proj_data_info_ptr =
+                dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr * const>
+                (proj_data.get_proj_data_info_sptr().get());
+
+        if (proj_data_info_ptr == 0)
+        {
+            error("Can only process not arc-corrected data\n");
+        }
+        multiply_crystal_factors_help(proj_data, *proj_data_info_ptr, efficiencies, global_factor);
+    }
+}
+
+template void multiply_crystal_factors_help
+(ProjData&, const ProjDataInfoCylindricalNoArcCorr&, const Array<2,float>&, const float );
+template void multiply_crystal_factors_help
+(ProjData&, const ProjDataInfoBlocksOnCylindricalNoArcCorr&, const Array<2,float>&, const float );
 END_NAMESPACE_STIR
