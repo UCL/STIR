@@ -16,7 +16,8 @@
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li> 
-  <li>Scatter simulation, estimation and down/up-sampling adapted for scanner with Block geometry by Daniel Deidda (NPL) and Kris Thielemans (UCL). 
+  <li>Scatter simulation, estimation and down/up-sampling, randoms handling and ML normalisation estimation
+    adapted for scanner with Block geometry by Daniel Deidda (NPL) and Kris Thielemans (UCL). 
   </li>
   <li>Various small changes to add functionality to Python interface, mainly by Markus Jehl (Positrigo).
   </li>
@@ -73,6 +74,9 @@ improvements to the documentation.
   <li>Clean-up of <code>multiply_crystal_factors</code> to rely on existing functionality, therefore reducing code overlap
     and increasing generalisibility, see <a href="https://github.com/UCL/STIR/pull/1075/">PR #1075</a>.
   </li>
+  <li>Adapting randoms handling and ML normalisation estimation via template to handle BlocksOnCylindrical
+    data as well, , see <a href="https://github.com/UCL/STIR/pull/1085/">PR #1085</a>.
+    </li>
     
 </ul>
 
