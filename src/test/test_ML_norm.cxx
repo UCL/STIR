@@ -77,6 +77,8 @@ ML_normTests::run_tests()
   {
     std::cerr << "\n-------- Testing Block Scanner SAFIR --------\n";
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::SAFIRDualRingPrototype));
+    scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
                                                  ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                                         /*span*/1, scanner_sptr->get_num_rings()-1,
@@ -91,6 +93,8 @@ template <class TProjDataInfo>
 void ML_normTests::
 test_proj_data_info(shared_ptr<TProjDataInfo> proj_data_info_sptr)
 {
+  if (!check(proj_data_info_sptr != nullptr, "check type of proj_data_info"))
+    return;
   //const int num_detectors = proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
   auto exam_info_sptr = std::make_shared<ExamInfo>();
   ProjDataInMemory proj_data(exam_info_sptr, proj_data_info_sptr);
