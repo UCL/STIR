@@ -19,11 +19,13 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 #include <math.h>
 #include <ctype.h>
 #include <algorithm>
 #include <vector>
 #include <time.h>
+#include "stir/info.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -64,9 +66,6 @@ float dg2rd = boost::math::constants::pi<float>() / (float)180. ;
 extern wmh_mph_type wmh;
 extern wm_da_type wm;
 extern pcf_type pcf;
-
-
-using namespace std;
 
 //=============================================================================
 //=== wm_alloc =============================================================
@@ -579,6 +578,7 @@ void read_prj_params_mph()
 {
 	string token;
     detel_type d;
+    std::stringstream info_stream;
     
     char DELIMITER = ':';
     
@@ -632,16 +632,17 @@ void read_prj_params_mph()
     
     //... print out values (to comment or remove)..............................
     
-    cout << "\n\tNumber of rings: " << Nring << endl;
-    cout << "\tRadius (cm): " << wmh.prj.rad << endl;
-    cout << "\tFOVcmx (cm): " << wmh.prj.FOVxcmd2*2. << endl;
-    cout << "\tFOVcmz (cm): " << wmh.prj.FOVzcmd2*2. << endl;
-    cout << "\tNumber of bins: " << wmh.prj.Nbin << endl;
-    cout << "\tNumber of slices: " << wmh.prj.Nsli << endl;
-    cout << "\tBin size (cm): " << wmh.prj.szcm << endl;
-    cout << "\tSlice thickness (cm): " << wmh.prj.thcm << endl;
-    cout << "\tIntrinsic PSF sigma (cm): " << wmh.prj.sgm_i << endl;
-    cout << "\tCrystal thickness (cm): " << wmh.prj.crth << endl;
+    info_stream << "Projection parameters" << endl;
+    info_stream << "Number of rings: " << Nring << endl;
+    info_stream << "Radius (cm): " << wmh.prj.rad << endl;
+    info_stream << "FOVcmx (cm): " << wmh.prj.FOVxcmd2*2. << endl;
+    info_stream << "FOVcmz (cm): " << wmh.prj.FOVzcmd2*2. << endl;
+    info_stream << "Number of bins: " << wmh.prj.Nbin << endl;
+    info_stream << "Number of slices: " << wmh.prj.Nsli << endl;
+    info_stream << "Bin size (cm): " << wmh.prj.szcm << endl;
+    info_stream << "Slice thickness (cm): " << wmh.prj.thcm << endl;
+    info_stream << "Intrinsic PSF sigma (cm): " << wmh.prj.sgm_i << endl;
+    info_stream << "Crystal thickness (cm): " << wmh.prj.crth << endl;
     
     //... for each ring ..............................
     
@@ -698,12 +699,12 @@ void read_prj_params_mph()
         
         //... print out values (to comment or remove)..............................
         
-        cout << "\n\tDetector ring: " << i << endl;
-        cout << "\tNumber of angles: " << Nang << endl;
-        cout << "\tang0: " << ang0 << endl;
-        cout << "\tincr: " << incr << endl;
-        cout << "\tz0: " << d.z0 << endl;
-        cout << "\tNumber of holes per detel: " << d.nh << endl;
+        info_stream << "\nDetector ring: " << i << endl;
+        info_stream << "Number of angles: " << Nang << endl;
+        info_stream << "ang0: " << ang0 << endl;
+        info_stream << "incr: " << incr << endl;
+        info_stream << "z0: " << d.z0 << endl;
+        info_stream << "Number of holes per detel: " << d.nh << endl;
     }
     
     //... fill detel .....................................................
@@ -712,8 +713,10 @@ void read_prj_params_mph()
     
     wmh.prj.Nbt  = wmh.prj.Nbd * wmh.prj.Ndt ;
     
-    cout << "\n\tTotal number of detels: " << wmh.prj.Ndt << endl;
-    cout << "\tTotal number of bins: " << wmh.prj.Nbt << endl;
+    info_stream << "\nTotal number of detels: " << wmh.prj.Ndt << endl;
+    info_stream << "Total number of bins: " << wmh.prj.Nbt << endl;
+    
+    stir::info(info_stream.str());
     
     return;
 }
@@ -728,6 +731,7 @@ void read_coll_params_mph( )
 {
 	string token;
     vector<string> param;
+    std::stringstream info_stream;
     
     char DELIMITER = ':';
 	
@@ -768,11 +772,15 @@ void read_coll_params_mph( )
     
     //... print out values (to comment or remove)..............................
     
-    cout << "\n\tCollimator model: " << wmh.collim.model << endl;
-	cout << "\tCollimator rad: " << wmh.collim.rad << endl;
-	cout << "\tNumber of holes: " << wmh.collim.Nht << endl;
-    
     stream1.close();
+    
+    info_stream << "Collimator parameters" << endl;
+    info_stream << "\nCollimator model: " << wmh.collim.model << endl;
+	info_stream << "Collimator rad: " << wmh.collim.rad << endl;
+	info_stream << "Number of holes: " << wmh.collim.Nht << endl;
+    
+    stir::info(info_stream.str());
+
     return;
 }
 

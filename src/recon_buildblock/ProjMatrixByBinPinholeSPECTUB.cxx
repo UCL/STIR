@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <stdlib.h>
@@ -66,8 +67,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
-using namespace std;
-using std::string;
+//using namespace std;
+//using std::string;
 
 //... user defined libraries .............................................................
 
@@ -89,7 +90,9 @@ namespace SPECTUB_mph
     pcf_type pcf;           // pre-calculated functions
 }
 
+using namespace std;
 using namespace SPECTUB_mph;
+using std::string;
 
 START_NAMESPACE_STIR
 
@@ -271,7 +274,7 @@ get_detector_file() const
 
 void  
 ProjMatrixByBinPinholeSPECTUB::
-set_detector_file( const std::string& value )
+set_detector_file( const string& value )
 {
     if (this->detector_file != boost::algorithm::to_lower_copy(value))
     {
@@ -292,7 +295,7 @@ get_collimator_file() const
 
 void  
 ProjMatrixByBinPinholeSPECTUB::
-set_collimator_file( const std::string& value )
+set_collimator_file( const string& value )
 {
     if (this->collimator_file != boost::algorithm::to_lower_copy(value))
     {
@@ -311,7 +314,7 @@ get_psf_correction() const
 
 void  
 ProjMatrixByBinPinholeSPECTUB::
-set_psf_correction( const std::string& value )
+set_psf_correction( const string& value )
 {
     if (this->psf_correction != boost::algorithm::to_lower_copy(value))
     {
@@ -331,7 +334,7 @@ get_doi_correction() const
 }
 void  
 ProjMatrixByBinPinholeSPECTUB::
-set_doi_correction( const std::string& value )
+set_doi_correction( const string& value )
 {
     if (this->doi_correction != boost::algorithm::to_lower_copy(value))
     {
@@ -499,6 +502,8 @@ set_up(
 #endif
 
     using namespace SPECTUB_mph;
+
+    std::stringstream info_stream;
 
     const VoxelsOnCartesianGrid<float> * image_info_ptr =
         dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
@@ -689,12 +694,13 @@ set_up(
 	wm.do_save_STIR = true;
 
     //... control of read parameters ..............
+	info_stream << "Parameters of Pinhole SPECT UB matrix: (in cm)" << endl;
+    info_stream << "Image. Nrow: " << wmh.vol.Dimy << "\tNcol: " << wmh.vol.Dimx << "\tvoxel_size: " << wmh.vol.szcm<< endl;
+    info_stream << "Number of slices: " << wmh.vol.Dimz << "\tslice_thickness: " << wmh.vol.thcm << endl;
+    info_stream << "FOVxcmd2: " << wmh.vol.FOVxcmd2 << "\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\tradius object: " << wmh.ro <<endl;
+    info_stream << "Minimum weight: " << wmh.mn_w << endl;
 
-	cout << "\nParameters of Pinhole SPECT UB matrix: (in cm)" << endl;
-    cout << "Image. Nrow: " << wmh.vol.Dimy << "\tNcol: " << wmh.vol.Dimx << "\tvoxel_size: " << wmh.vol.szcm<< endl;
-    cout << "Number of slices: " << wmh.vol.Dimz << "\tslice_thickness: " << wmh.vol.thcm << endl;
-    cout << "FOVxcmd2: " << wmh.vol.FOVxcmd2 << "\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\tradius object: " << wmh.ro <<endl;
-    cout << "Minimum weight: " << wmh.mn_w << endl;
+    info(info_stream.str());
 
     //... up to here replaces wm_inputs_mph() and read_inputs_mph()
 
@@ -720,11 +726,10 @@ set_up(
 				attmap [ i ] = 0;
                 exist_nan = true;
 			}
-        if ( exist_nan ) cout << "WARNING: attmap contains NaN values. Converted to zero." << endl;
+        if ( exist_nan ) warning("attmap contains NaN values. Converted to zero.");
 	    }
     }
 	else attmap = nullptr;
-
 
     //... to generate mask..........................................................
 
@@ -1077,8 +1082,8 @@ void wm_inputs_mph( char **argv, int argc )
     }
     
     else{
-        cout << "number of arg: " << argc << endl;
-        for ( int i = 0 ; i < argc ; i++ ) cout << i << ": " << argv[ i ] << endl;
+        cout << "number of arg: " << argc << std::endl;
+        for ( int i = 0 ; i < argc ; i++ ) cout << i << ": " << argv[ i ] << std::endl;
         
         if ( argc != NUMARG ) error_wm_SPECT_mph( 100, "" );
         for ( int i = 1 ; i < argc ; i++ ) param.push_back( argv[ i ] );
@@ -1180,7 +1185,7 @@ void read_inputs_mph(vector<string> param)
         
         wmh.att_fn = param[ 19 ];
         
-        cout << "Attenuation filename = " << wmh.att_fn << endl;
+        cout << "Attenuation filename = " << wmh.att_fn << std::endl;
     }
     
     //... masking parameters.............................
@@ -1197,7 +1202,7 @@ void read_inputs_mph(vector<string> param)
                 
                 wmh.msk_fn = param[ 21 ];
                 
-                cout << "MASK filename = " << wmh.msk_fn << endl;
+                cout << "MASK filename = " << wmh.msk_fn << std::endl;
             }
             else error_wm_SPECT_mph( 120, param[ 20 ]);
         }
@@ -1232,17 +1237,17 @@ void read_inputs_mph(vector<string> param)
     
     //... control of read parameters ..............
     
-    cout << "\n\nMatrix name:" << wm.fn << endl;
-    cout << "\nImage. Nrow: " << wmh.vol.Dimy << "\t\tNcol: " << wmh.vol.Dimx << "\t\tvoxel_size: " << wmh.vol.szcm<< endl;
-    cout << "\nNumber of slices: " << wmh.vol.Dimz << "\t\tslice_thickness: " << wmh.vol.thcm << endl;
-    cout << "\nFOVxcmd2: " << wmh.vol.FOVxcmd2 << "\t\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\t\tradius object: " << wmh.ro <<endl;
+    cout << "\n\nMatrix name:" << wm.fn << std::endl;
+    cout << "\nImage. Nrow: " << wmh.vol.Dimy << "\t\tNcol: " << wmh.vol.Dimx << "\t\tvoxel_size: " << wmh.vol.szcm<< std::endl;
+    cout << "\nNumber of slices: " << wmh.vol.Dimz << "\t\tslice_thickness: " << wmh.vol.thcm << std::endl;
+    cout << "\nFOVxcmd2: " << wmh.vol.FOVxcmd2 << "\t\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\t\tradius object: " << wmh.ro <<std::endl;
     
     if ( wmh.do_att ){
-        cout << "\nCorrection for atenuation: " << wmh.att_fn << "\t\tdo_mask: " << wmh.do_msk_att << endl;
-        cout << "\nAttenuation map: " << wmh.att_fn << endl;
+        cout << "\nCorrection for atenuation: " << wmh.att_fn << "\t\tdo_mask: " << wmh.do_msk_att << std::endl;
+        cout << "\nAttenuation map: " << wmh.att_fn << std::endl;
     }
     
-    cout << "\nMinimum weight: " << wmh.mn_w << endl;
+    cout << "\nMinimum weight: " << wmh.mn_w << std::endl;
 }
 #endif
 
