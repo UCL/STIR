@@ -2,7 +2,7 @@
 !imaging modality := nucmed
 originating system := Cubresa Spark
 !version of keys := STIR4.0
-name of data file := OSEM_psfno_doino_attsimple_maskexplicit_4.v
+name of data file := OSEM_psfno_doino_attsimple_maskfile_4.v
 !GENERAL DATA :=
 patient orientation := head_in
 patient rotation := prone

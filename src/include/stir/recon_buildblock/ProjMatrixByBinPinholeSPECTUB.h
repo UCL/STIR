@@ -53,55 +53,73 @@ class Bin;
 
   \warning this class currently only works with VoxelsOnCartesianGrid. 
 
-  \par Sample parameter file
+  \Sample parameter file
 
 \verbatim
-        projector pair type := Matrix
-            Projector Pair Using Matrix Parameters :=
-            Matrix type := Pinhole SPECT UB
-            Projection Matrix By Bin Pinhole SPECT UB Parameters:=
-            
-                ; Minimum weight to take into account. Makes reference just to the geometric (PSF) part of the weight. 
-                ;  Weight could be lower after applying the attenuation factor (typically 0.005 - 0.02)
-                minimum weight := 0.00001
+    Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 
-                ;Maximum number of sigmas to consider in PSF calculation (typically 1.5 - 2.5)
-                maximum number of sigmas := 2.0
+        maximum number of sigmas := 2.0
+        spatial resolution PSF := 0.001
+        subsampling factor PSF := 1
 
-                ; Spatial high resolution in which to sample distributions (typically 0.001 - 0.0001)
-                spatial resolution PSF := 0.001
+        detector file := detector.txt
+        collimator file := collimator.txt
 
-                ; Subsampling factor to compute convolutions for mid resolution. This reduces temporally the PSF resolution to
-                ; perform more accurate calculus and then down sample the final PSF to the bin size (typically 1 - 8)
-                subsampling factor PSF := 1
+        ; PSF and DOI correction { Yes // No }
+        psf correction := no
+        doi correction := no
 
-                ;  Detector and collimator parameter files
-                detector file := detector.txt
-                collimator file := collimator.txt
+        ; Attenuation correction { Simple // Full // No }
+        attenuation type := no
+        attenuation map :=
 
-                ;Correction for intrinsic PSF { Yes // No }
-                psf correction := no
+        object radius (cm) := 2.3
+        mask file := 
+        ; If no mask file is set, we can either compute it from attenuation map or object radius
+        mask from attenuation map := 0
 
-                ; Correction for depth of impact { Yes // No }
-                doi correction : no
+        keep all views in cache := 0
 
-                ; Attenuation correction { Simple // Full // No }
-                attenuation type := no  
-                ; Values in attenuation map in cm-1
-                attenuation map := 
+    End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+\endverbatim
 
-                ; Voxels not belonging to the cylinder defined by this radius are masked by default.
-                object radius (cm) := 1.5
-                ; Mask properties { Attenuation Map // Explicit Mask // No }. Default mask - cylinder object radius.
-                mask type := No 
-                ; In case of explicit mask.
-                mask file := 
+  \Sample detector file
+  
+\verbatim
+    Information of detector
+    Comments are allowed here or anywhere in lines not containing parameters.
+    Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+    # Sigma = FWHM/(2*sqrt(2*ln(2))) where FWHM = 0.85 mm
+    # CsI at 140.5 keV from NIST
+    Number of rings: 1
+    #intrinsic PSF#
+    Sigma (cm): 0.0361
+    Crystal thickness (cm): 0.3
+    Crystal attenuation coefficient (cm -1): 4.407   
+    \#……repeat for each ring …………\#
+    Nangles: 4
+    ang0 (deg): 180.
+    incr (deg): 90.0
+    z0 (cm): 0.
+    \#…………until here……………\#
+\endverbatim
 
-                keep all views in cache := 0
-
-            End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
-
-        End Projector Pair Using Matrix Parameters :=
+  \Sample collimator file
+\verbatim
+    Information of collimator
+    Comments are allowed here or anywhere in lines not containing parameters.
+    Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+    Model (cyl/pol): pol
+    Collimator radius (cm): 2.8
+    Wall thickness (cm): 1.
+    #holes#
+    Number of holes: 4
+    nh / ind / x(cm) / y(cm) / z(cm) / shape(rect-round) / sizex(cm) / sizez(cm)
+    / angx(deg) / angz(deg) / accx(deg) / accz(deg)
+    h1:	1	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+    h2:	2	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+    h3:	3	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+    h4:	4	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
 \endverbatim
 */
 
@@ -128,40 +146,79 @@ class ProjMatrixByBinPinholeSPECTUB :
         const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
         );
 
-    //! Enable keeping the matrix in memory
-    /*!
-        This speeds-up the calculations, but can use a lot of memory.
-    */
-    bool get_keep_all_views_in_cache() const;
-    void set_keep_all_views_in_cache(bool value = true);
+    //******************** get/set functions *************
+
+    //! Minimum weight
+    // no longer set minimum weight, always use 0.
+    // float get_minimum_weight() const;
+    // void set_minimum_weight( const float value );
+
+    //! Maximum number of sigmas
+    float get_maximum_number_of_sigmas() const;
+    void set_maximum_number_of_sigmas( const float value );
+        
+    //! Spatial resolution PSF
+    float get_spatial_resolution_PSF() const;
+    void set_spatial_resolution_PSF( const float value );
+
+    //! Subsampling factor PSF
+    int get_subsampling_factor_PSF() const;
+    void set_subsampling_factor_PSF( const int value );
+    
+    //! Detector file
+    //std::string get_detector_file() const;
+    void set_detector_file( const std::string& value );
+
+    //! Collimator file
+    //std::string get_collimator_file() const;
+    void set_collimator_file( const std::string& value );
+                
+    //! PSF correction
+    std::string get_psf_correction() const;
+    void set_psf_correction( const std::string& value );
+
+    //! Set DOI correction
+    std::string get_doi_correction() const;
+    void set_doi_correction( const std::string& value );
+
+    //! Object radius (cm)
+    float get_object_radius() const;
+    void set_object_radius( const float value );
+    
+    //! Type of attenuation modelling    
     std::string get_attenuation_type() const;
-
-
-    //! Set type of attenuation modelling
-    /*!
-        Has to be "no", "simple" or "full".
-    */
     void set_attenuation_type(const std::string& value);
     shared_ptr<const DiscretisedDensity<3,float> >
         get_attenuation_image_sptr() const;
   
+    //! Attenuation image
+    void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
+    void set_attenuation_image_sptr(const std::string& value);
 
-    //! Set attenuation image
-    /*!
-        The image has to have same characteristics as the emission image currently.
-        Will call set_attenuation_type() to set to "simple" if it was set to "no".
-    */
-    void
-        set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
-    void
-        set_attenuation_image_sptr(const std::string& value);
+    //! Type of masking
+    // no longer use mask type
+    //std::string get_mask_type() const;
+    //void set_mask_type(const std::string& value);
+        
+    //! Mask from mask file
+    shared_ptr<const DiscretisedDensity<3,float> >
+        get_mask_image_sptr() const;
+    void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
+    void set_mask_image_sptr(const std::string& value);
+    
+    //! Mask from attenuation map
+    bool get_mask_from_attenuation_map() const;
+    void set_mask_from_attenuation_map(bool value = false);
+  
+    //! Enable keeping the matrix in memory
+    bool get_keep_all_views_in_cache() const;
+    void set_keep_all_views_in_cache(bool value = false);
 
 
   private:
 
     // parameters that will be parsed
 
-    float object_radius;
     float minimum_weight;
     float maximum_number_of_sigmas;
     float spatial_resolution_PSF;
@@ -172,8 +229,10 @@ class ProjMatrixByBinPinholeSPECTUB :
     std::string doi_correction;
     std::string attenuation_type;
     std::string attenuation_map;
-    std::string mask_type;
+    //std::string mask_type;
+    float object_radius;
     std::string mask_file;
+    bool mask_from_attenuation_map;
     bool keep_all_views_in_cache; //!< if set to false, only a single view is kept in memory
 
     // explicitly list necessary members for image details (should use an Info object instead)
@@ -193,6 +252,7 @@ class ProjMatrixByBinPinholeSPECTUB :
     virtual bool post_processing();
 
     shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
+    shared_ptr<const DiscretisedDensity<3,float> > mask_image_sptr;
 
     // wm_SPECT starts here ---------------------------------------------------------------------------------------------
     bool  *msk_3d;        // voxels to be included in matrix (no weight calculated outside the mask)

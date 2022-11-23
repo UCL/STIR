@@ -1,5 +1,5 @@
 !INTERFILE  :=
-!name of data file := out/OSEM_psfno_doino_attsimple_maskexplicit_4.v
+!name of data file := out/OSEM_psfno_doino_attsimple_maskfile_4.v
 !total number of images := 230
 !data offset in bytes := 0
 !imagedata byte order := LITTLEENDIAN

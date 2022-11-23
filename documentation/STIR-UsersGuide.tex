@@ -5042,7 +5042,6 @@ This is a flexible implementation specific to pinhole-SPECT data acquired in cir
 \begin{verbatim}
 Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 
-   minimum weight := 0.0
    maximum number of sigmas := 2.0
    spatial resolution PSF := 0.001
    subsampling factor PSF := 1
@@ -5059,10 +5058,9 @@ Projection Matrix By Bin Pinhole SPECT UB Parameters:=
    attenuation map :=
    
    object radius (cm) := 2.3
-   
-   ; Additional mask properties { Attenuation Map // Explicit Mask // No }
-   mask type := no
    mask file := 
+   ; If no mask file is set, we can either compute it from attenuation map or object radius
+   mask from attenuation map := 0
    
    keep all views in cache := 0
 
@@ -5072,7 +5070,7 @@ End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 { \subsubsubsubsection{Parameters} }
 \begin{description}
 
-\item[minimum weight:] Minimum weight to take into account (float, typically 0.0-0.02, default 0.0). It makes reference just to the geometric (PSF) part of the weight. The weight could be lower than this value after applying the attenuation factor.
+%\item[minimum weight:] Minimum weight to take into account (float, typically 0.0-0.02, default 0.0). It makes reference just to the geometric (PSF) part of the weight. The weight could be lower than this value after applying the attenuation factor.
 
 \item[maximum number of sigmas:] Number of sigmas to consider when correcting for intrinsic PSF (float, typically 1.5–2.5, default 2.0). To increase unnecessarily the number of sigma would produce an increase of the weight matrix size that would not result in a better PSF correction. PSFs are modelled by Gaussian functions whose extension is infinite. It does not make sense to take into account very small contribution. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
 
@@ -5092,22 +5090,25 @@ End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 
 See [Fus14] for an evaluation and more explanation.
 
-\item[attenuation map:] A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+\item[attenuation map:] A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). If the attenuation map is provided but the attenuation type is set to ``No'', then simple attenuation will be applied automatically. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
 
-\item[object radius (cm):] The radius of the object in the xy plane of the image volume. All voxels belonging to this cylinder are weighted according to this radius whether or not a mask type is set. If no mask type is set, all voxels not belonging to this cylinder are masked by default. If a mask is specified, this radius should be no smaller than the object in the mask volume to avoid errors in the geometric or convolution calculation of the PSF.
+\item[object radius (cm):] The radius of the object in the xy plane of the image volume. All voxels belonging to this cylinder are weighted according to this radius whether or not a mask is used. If a mask is not used, all voxels outside of this cylinder are masked by default. If a mask is specified, this radius should be no smaller than the object in the mask volume to avoid errors in the geometric or convolution calculation of the PSF. See the following two parameters for more information.
 
-\item[mask type:] \{Attenuation Map, Explicit Mask, No (default)\} Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. The cylindrical mask is applied by default according to the object radius. This parameter applies additional masking. Possible values are:
 
-\begin{description}
+%\item[mask type:] \{Attenuation Map, Explicit Mask, No (default)\} Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. The cylindrical mask is applied by default according to the object radius. This parameter applies additional masking. Possible values are:
 
-\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero.
-\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
+%\begin{description}
 
-\item[No:] No additional masking.
+%\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero.
+%\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
 
-\end{description}
+%\item[No:] No additional masking.
 
-\item[mask file:] A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are (exactly) zero in the mask will be ignored. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+%\end{description}
+
+\item[mask file:] Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. If a mask file is provided, any voxels which are (exactly) zero in the mask will be ignored during reconstruction. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation correction is considered. If not, attenuation map should suffice. If no mask file is set, masking will be applied either either outside of the object radius, or with the attenuation map (see next parameter).  Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+
+\item[mask from attenuation map:]  [0,1,0{]} If this variable is set to 0 (default), then masking will be applied either outside of the object radius, or with the mask file if it is set (see previous parameter). If this variable is set to 1 and no mask file is provided, then the attenuation map will be used to mask the image volume. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero. \textbf{Note:} If this variable is set to 1 AND the mask file is specified, then this parameter will be automatically set to 0.
 
 \item[keep all views in cache:] [0,1,0{]} If this variable is set to 0 (default), only a single view is kept in memory. This avoids running out-of-memory but means that the matrix has to be recomputed at every iteration.
 

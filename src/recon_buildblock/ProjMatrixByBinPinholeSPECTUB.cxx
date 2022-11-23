@@ -77,8 +77,8 @@ using std::string;
 //... functions from wm_SPECT.2.0............................
 
 //void error_wm_SPECT_mph( int nerr, string txt);      //list of error messages
-void wm_inputs_mph( char ** argv, int argc );
-void read_inputs_mph( vector<string> param );
+//void wm_inputs_mph( char ** argv, int argc );
+//void read_inputs_mph( vector<string> param );
 
 //.. global variables ....................................................................
 
@@ -111,7 +111,8 @@ initialise_keymap()
     parser.add_start_key("Projection Matrix By Bin Pinhole SPECT UB Parameters");
     ProjMatrixByBin::initialise_keymap();
 
-    parser.add_key("minimum weight", &minimum_weight);
+    // no longer parse this
+    // parser.add_key("minimum weight", &minimum_weight);
     parser.add_key("maximum number of sigmas", &maximum_number_of_sigmas);
     parser.add_key("spatial resolution PSF", &spatial_resolution_PSF);
     parser.add_key("subsampling factor PSF", &subsampling_factor_PSF);
@@ -122,8 +123,10 @@ initialise_keymap()
     parser.add_key("attenuation type", &attenuation_type);
     parser.add_key("attenuation map", &attenuation_map);
     parser.add_key("object radius (cm)", &object_radius);
-    parser.add_key("mask type", &mask_type);
+    // no longer parse this
+    // parser.add_key("mask type", &mask_type);
     parser.add_key("mask file", &mask_file);
+    parser.add_key("mask from attenuation map", &mask_from_attenuation_map);
     parser.add_key("keep all views in cache", &keep_all_views_in_cache);
 
     parser.add_stop_key("End Projection Matrix By Bin Pinhole SPECT UB Parameters");
@@ -137,7 +140,7 @@ ProjMatrixByBinPinholeSPECTUB::set_defaults()
 
     this->already_setup= false;
 
-    this->keep_all_views_in_cache=false;
+    this->keep_all_views_in_cache= false;
     minimum_weight= 0.0;
     maximum_number_of_sigmas= 2.;
     spatial_resolution_PSF= 0.001;
@@ -149,8 +152,9 @@ ProjMatrixByBinPinholeSPECTUB::set_defaults()
     attenuation_type= "no";
     attenuation_map= "";
     object_radius= 0.0;
-    mask_type= "no";
+    // mask_type= "no";
     mask_file= "";
+    mask_from_attenuation_map= false;
 }
 
 bool
@@ -160,10 +164,16 @@ ProjMatrixByBinPinholeSPECTUB::post_processing()
         return true;
 
     this->set_attenuation_type(this->attenuation_type);
+    
     if (!this->attenuation_map.empty())
         this->set_attenuation_image_sptr(this->attenuation_map);
     else
         this->attenuation_image_sptr.reset();
+        
+    if (!this->mask_file.empty())
+        this->set_mask_image_sptr(this->mask_file);
+    else
+        this->mask_image_sptr.reset();
 
     this->already_setup= false;
 
@@ -171,25 +181,168 @@ ProjMatrixByBinPinholeSPECTUB::post_processing()
 }
 
 //******************** get/set pairs *************
-
-bool
+/*
+//! Minimum weight
+float
 ProjMatrixByBinPinholeSPECTUB::
-get_keep_all_views_in_cache() const
+get_minimum_weight() const
 {
-    return this->keep_all_views_in_cache;
+    return this->minimum_weight;
 }
 
-void
+void 
 ProjMatrixByBinPinholeSPECTUB::
-set_keep_all_views_in_cache(bool value)
+set_minimum_weight( const float value )
 {
-    if (this->keep_all_views_in_cache != value)
+    if (this->minimum_weight != value)
     {
-        this->keep_all_views_in_cache = value;
+        this->minimum_weight = value;
+        this->already_setup = false;
+    }
+}
+*/
+
+//! Maximum number of sigmas
+float
+ProjMatrixByBinPinholeSPECTUB::
+get_maximum_number_of_sigmas() const
+{
+    return this->maximum_number_of_sigmas;
+}
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_maximum_number_of_sigmas( const float value )
+{
+    if (this->maximum_number_of_sigmas != value)
+    {
+        this->maximum_number_of_sigmas = value;
+        this->already_setup = false;
+    }
+}
+    
+//! Spatial resolution PSF
+float
+ProjMatrixByBinPinholeSPECTUB::
+get_spatial_resolution_PSF() const
+{
+    return this->spatial_resolution_PSF;
+}
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_spatial_resolution_PSF( const float value )
+{
+    if (this->spatial_resolution_PSF != value)
+    {
+        this->spatial_resolution_PSF = value;
         this->already_setup = false;
     }
 }
 
+//! Subsampling factor PSF
+int
+ProjMatrixByBinPinholeSPECTUB::
+get_subsampling_factor_PSF() const
+{
+    return this->subsampling_factor_PSF;
+}
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_subsampling_factor_PSF( const int value )
+{
+    if (this->subsampling_factor_PSF != value)
+    {
+        this->subsampling_factor_PSF = value;
+        this->already_setup = false;
+    }
+}
+
+//! Detector file
+/*
+string
+ProjMatrixByBinPinholeSPECTUB::
+get_detector_file() const
+{
+    return this->detector_file;
+}
+*/
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_detector_file( const std::string& value )
+{
+    if (this->detector_file != boost::algorithm::to_lower_copy(value))
+    {
+        this->detector_file = boost::algorithm::to_lower_copy(value);
+        this->already_setup = false;
+    }
+}
+
+//! Collimator file
+/*
+string
+ProjMatrixByBinPinholeSPECTUB::
+get_collimator_file() const
+{
+    return this->collimator_file;
+}
+*/
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_collimator_file( const std::string& value )
+{
+    if (this->collimator_file != boost::algorithm::to_lower_copy(value))
+    {
+        this->collimator_file = boost::algorithm::to_lower_copy(value);
+        this->already_setup = false;
+    }
+}
+            
+//! PSF correction
+string
+ProjMatrixByBinPinholeSPECTUB::
+get_psf_correction() const
+{
+    return this->psf_correction;
+}
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_psf_correction( const std::string& value )
+{
+    if (this->psf_correction != boost::algorithm::to_lower_copy(value))
+    {
+        this->psf_correction = boost::algorithm::to_lower_copy(value);
+        if ( this->psf_correction != "yes" && this->psf_correction != "no" )
+            error("psf_correction has to be Yes or No");
+        this->already_setup = false;
+    }
+}
+
+//! Set DOI correction
+string
+ProjMatrixByBinPinholeSPECTUB::
+get_doi_correction() const
+{
+    return this->doi_correction;
+}
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_doi_correction( const std::string& value )
+{
+    if (this->doi_correction != boost::algorithm::to_lower_copy(value))
+    {
+        this->doi_correction = boost::algorithm::to_lower_copy(value);
+        if ( this->doi_correction != "yes" && this->doi_correction != "no" )
+            error("doi_correction has to be Yes or No");
+        this->already_setup = false;
+    }
+}
+
+//! Attenuation image
 string
 ProjMatrixByBinPinholeSPECTUB::
 get_attenuation_type() const
@@ -210,7 +363,7 @@ set_attenuation_type(const string& value)
     }
 }
 
-shared_ptr<const DiscretisedDensity<3,float> >
+shared_ptr< const DiscretisedDensity<3,float> >
 ProjMatrixByBinPinholeSPECTUB::
 get_attenuation_image_sptr() const
 {
@@ -219,12 +372,12 @@ get_attenuation_image_sptr() const
 
 void
 ProjMatrixByBinPinholeSPECTUB::
-set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
+set_attenuation_image_sptr(const shared_ptr< const DiscretisedDensity<3,float> > value)
 {
     this->attenuation_image_sptr = value;
     if (this->attenuation_type == "no")
     {
-        info("Setting attenuation type to 'simple'");
+        info("Setting attenuation type to 'simple'.");
         this->set_attenuation_type("simple");
     }
     this->already_setup = false;
@@ -235,8 +388,94 @@ ProjMatrixByBinPinholeSPECTUB::
 set_attenuation_image_sptr(const string& value)
 {
     this->attenuation_map = value;
-    shared_ptr<DiscretisedDensity<3, float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+    shared_ptr< const DiscretisedDensity<3,float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
     set_attenuation_image_sptr(im_sptr);
+}
+
+//! Object radius (cm)
+float
+ProjMatrixByBinPinholeSPECTUB::
+get_object_radius() const
+{
+    return this->object_radius;
+}
+
+void  
+ProjMatrixByBinPinholeSPECTUB::
+set_object_radius( const float value )
+{
+    if (this->object_radius != value)
+    {
+        this->object_radius = value;
+        this->already_setup = false;
+    }
+}
+
+//! Mask image
+bool
+ProjMatrixByBinPinholeSPECTUB::
+get_mask_from_attenuation_map() const
+{
+    return this->mask_from_attenuation_map;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_mask_from_attenuation_map(bool value)
+{
+    if (this->mask_from_attenuation_map != value)
+    {
+        this->mask_from_attenuation_map = value;
+        this->already_setup = false;
+    }
+}
+
+shared_ptr< const DiscretisedDensity<3,float> >
+ProjMatrixByBinPinholeSPECTUB::
+get_mask_image_sptr() const
+{
+    return this->mask_image_sptr;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_mask_image_sptr(const shared_ptr< const DiscretisedDensity<3,float> > value)
+{
+    this->mask_image_sptr = value;
+    if (this->mask_from_attenuation_map == true)
+    {
+        info("Setting mask from attenuation map to '0'");
+        this->set_mask_from_attenuation_map(false);
+    }
+    this->already_setup = false;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_mask_image_sptr(const string& value)
+{
+    this->mask_file = value;
+    shared_ptr< const DiscretisedDensity<3,float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->mask_file));
+    set_mask_image_sptr(im_sptr);
+}
+
+//! Keep all views in cache
+bool
+ProjMatrixByBinPinholeSPECTUB::
+get_keep_all_views_in_cache() const
+{
+    return this->keep_all_views_in_cache;
+}
+
+void
+ProjMatrixByBinPinholeSPECTUB::
+set_keep_all_views_in_cache(bool value)
+{
+    if (this->keep_all_views_in_cache != value)
+    {
+        this->keep_all_views_in_cache = value;
+        this->already_setup = false;
+    }
 }
 
 //******************** actual implementation *************
@@ -244,8 +483,8 @@ set_attenuation_image_sptr(const string& value)
 void
 ProjMatrixByBinPinholeSPECTUB::
 set_up(		 
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr< const ProjDataInfo >& proj_data_info_ptr_v,
+    const shared_ptr< const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
 
@@ -264,7 +503,7 @@ set_up(
     const VoxelsOnCartesianGrid<float> * image_info_ptr =
         dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-    if (image_info_ptr == NULL)
+    if (image_info_ptr == nullptr)
         error("ProjMatrixByBinPinholeSPECTUB set-up with a wrong type of DiscretisedDensity\n");
 
     if (this->already_setup) 
@@ -385,6 +624,10 @@ set_up(
     }
     
     //... masking parameters.............................
+    wmh.do_msk_att = mask_from_attenuation_map;
+    
+    // no longer use mask type
+    /*
     boost::algorithm::to_lower(mask_type);
     if( mask_type == "no" ) wmh.do_msk_att = wmh.do_msk_file = false;
     else {
@@ -398,6 +641,7 @@ set_up(
             else error("mask_type has to be Attenuation Map, Explicit Mask, or No");    //error_wm_SPECT_mph( 120, mask_type);
         }
     }
+    */
 
     //... initialization of do_variables to false..............
     
@@ -437,9 +681,6 @@ set_up(
     wm.Nvox    = wmh.vol.Nvox;                                               // number of columns of the weight matrix
     wmh.mndvh2 = ( wmh.collim.rad - wmh.ro ) * ( wmh.collim.rad - wmh.ro );  // reference distance ^2 for efficiency
 
-
-
-
     // variables for wm calculations by view ("UB-subset")
     wmh.prj.NOS = this->proj_data_info_ptr->get_num_views();
     wmh.prj.NdOS = wmh.prj.Ndt/wmh.prj.NOS;
@@ -462,13 +703,15 @@ set_up(
 	
 	if ( wmh.do_att ){
         if (is_null_ptr(attenuation_image_sptr))
-            error("Attenation image not set."); 
+            error("Attenuation image not set."); 
 
-		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
-			error("Currently the attenuation map and emission image must have the same dimension, orientation, and voxel size.");
- 
-        attmap = new float [ wmh.vol.Nvox ];
-	    bool exist_nan = false; 
+        if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
+            error("Currently the attenuation map and emission image must have the same dimension, orientation, and voxel size.");
+
+        if ( ( attmap = new (nothrow) float [ wmh.vol.Nvox ] ) == nullptr )
+            error("Error allocating space to store values for attenuation map.");
+            
+        bool exist_nan = false; 
 
 		std::copy(attenuation_image_sptr->begin_all(), attenuation_image_sptr->end_all(),attmap);        //read_att_map_mph( attmap );
 
@@ -480,7 +723,7 @@ set_up(
         if ( exist_nan ) cout << "WARNING: attmap contains NaN values. Converted to zero." << endl;
 	    }
     }
-	else attmap = NULL;
+	else attmap = nullptr;
 
 
     //... to generate mask..........................................................
@@ -488,16 +731,17 @@ set_up(
     msk_3d = new bool [ wmh.vol.Nvox ];
     //generate_msk_mph( msk_3d, attmap );
 
-    if (!wmh.do_msk_att && wmh.do_msk_file)
+    // generate mask from mask file
+    if (!is_null_ptr(mask_image_sptr))
     {
-        shared_ptr<DiscretisedDensity<3,float> > mask_sptr(read_from_file<DiscretisedDensity<3,float> >(wmh.msk_fn));
-
-        if ( !density_info_ptr->has_same_characteristics(*mask_sptr) )
+        if ( !density_info_ptr->has_same_characteristics(*mask_image_sptr) )
             error("Currently the mask image and emission image must have the same dimension, orientation, and voxel size.");
+            
+        float * mask_from_file; 
+        if ( ( mask_from_file = new (nothrow) float [ wmh.vol.Nvox ] ) == nullptr )
+            error("Error allocating space to store values for mask from file.");
 
-        float * mask_from_file = new float [ wmh.vol.Nvox ];
-
-        std::copy( mask_sptr->begin_all(), mask_sptr->end_all(), mask_from_file );
+        std::copy( mask_image_sptr->begin_all(), mask_image_sptr->end_all(), mask_from_file );
 
         // call UB generate_msk_mph pretending that this mask is an attenuation image
         // we do this to avoid using its own read_msk_file_mph
@@ -507,8 +751,19 @@ set_up(
 
         delete[] mask_from_file;
     }
-    else generate_msk_mph( msk_3d, attmap );
-
+    // generate mask from attenuation map
+    else if (wmh.do_msk_att)
+    {
+       if (is_null_ptr(attmap))
+           error("No attenuation image set, so cannot compute the mask image from it.");
+       generate_msk_mph( msk_3d, attmap );
+    }
+    // generate mask from object radius
+    else
+    {
+        wmh.do_msk_file = false;
+        generate_msk_mph( msk_3d, (float *)0 );
+    }
     
     //... initialize psf2d in bins ..................................................
     
@@ -581,10 +836,10 @@ set_up(
 
     //... double array wm.val and wm.col .....................................................
 	
-	if ( ( wm.val = new (nothrow) float * [ wmh.prj.NbOS ] ) == NULL )
+	if ( ( wm.val = new (nothrow) float * [ wmh.prj.NbOS ] ) == nullptr )
         error("Error allocating space to store values for SPECTUB matrix"); //error_wmtools_SPECT_mph( 200, wmh.prj.NbOS, "wm.val[]" );
 
-	if ( ( wm.col = new (nothrow) int   * [ wmh.prj.NbOS ] ) == NULL )
+	if ( ( wm.col = new (nothrow) int   * [ wmh.prj.NbOS ] ) == nullptr )
         error("Error allocating space to store column indices for SPECTUB matrix"); //error_wmtools_SPECT_mph( 200, wmh.prj.NbOS, "wm.col[]" );
 	
 	//... array wm.ne .........................................................................

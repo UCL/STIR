@@ -12,10 +12,6 @@ Back Projector type:= matrix
   Back Projector Using Matrix Parameters :=
     Matrix type := Pinhole SPECT UB
     Projection Matrix By Bin Pinhole SPECT UB Parameters:=
-    
-        ; Minimum weight to take into account. Makes reference just to the geometric (PSF) part of the weight. 
-        ;  Weight could be lower after applying the attenuation factor (typically 0.005 - 0.02)
-        minimum weight := 0.0
 
         ;Maximum number of sigmas to consider in PSF calculation (typically 1.5 - 2.5)
         maximum number of sigmas := 2.0
@@ -44,10 +40,10 @@ Back Projector type:= matrix
 
         ; Voxels not belonging to the cylinder defined by this radius are masked by default.
         object radius (cm) := 2.3
-        ; Mask properties { Attenuation Map // Explicit Mask // No }. Default mask - cylinder object radius.
-        mask type := no 
         ; In case of explicit mask.
         mask file := 
+        ; If no mask file is set, we can either compute it from the attenuation image or the object radius
+        mask from attenuation map := 0
 
         ; no point in keeping things in memory as FBP runs the projector only once
         keep all views in cache := ${CACHEALLVIEWS3D}
