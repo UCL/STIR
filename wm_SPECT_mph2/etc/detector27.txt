@@ -1,0 +1,26 @@
+Comment.
+
+number of rings: 1
+
+rad(cm): 20
+
+FOVh(cm): 5
+FOVv(cm): 5
+
+Nbins: 50
+Nslices: 50
+
+#intrinsic PSF#
+
+Sigma(cm): 0.06
+Crystal thickness (cm): 0.8 
+Crystal attenuation coefficient: 2.22
+
+#……repeat for each ring …………#
+
+Nangles: 27
+ang0(deg): 0.
+incr(deg): 13.333333333
+z0(cm): 0.
+
+#…………until here………………#

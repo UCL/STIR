@@ -1,0 +1,21 @@
+Projection of an object by the product with the system matrix. Use full paths and precede the parametres by two points
+
+
+Matrix header ( full path )
+
+argv[ 1 ]: /Users/cfalcon/Desktop/feina/ESTUDIS/proves_wm_SPECT/matrius/matriu_64x64_a3d.wmhdr
+
+
+Input file name ( full path )
+
+argv[ 2 ]: /Users/cfalcon/Desktop/feina/ESTUDIS/proves_wm_SPECT/models/full_cyl64x64.img
+
+
+Image precision. Possible values { c1 || i2 || i4 || f4 }
+
+argv[ 3 ] : f4
+
+
+Output file name ( full path )
+
+argv[ 4 ]: /Users/cfalcon/Desktop/feina/ESTUDIS/proves_wm_SPECT/prj/prj_full_cyl64x64.img
