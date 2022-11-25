@@ -230,7 +230,7 @@ namespace SPECTUB_mph
 
     typedef struct  
     {
-        int subsamp;    // bin subsampling factor for accurate PSF and convolution calculations (typically 2 to 5)
+        int subsamp;      // bin subsampling factor for accurate PSF and convolution calculations (typically 2 to 5)
         float mn_w;       // minimum weight to be taken into account
         float highres;    // high spatial resolution of continous distributions in PSF calculation
 
@@ -291,7 +291,7 @@ namespace SPECTUB_mph
 
     typedef struct   
     {
-        int Nbt;          // dimension 2 (rows) of the weight matrix (NbOS or Nbt)
+        int Nbt;           // dimension 2 (rows) of the weight matrix (NbOS or Nbt)
         int Nvox;          // dimension 1 (columns) of the weight matrix (Nvox)
         float **val;       // double array to store weights (index of the projection element, number of weight for that element)
         int **col;         // double array to store column indexs of the above element  (index of the projection element, number of weight for that element)

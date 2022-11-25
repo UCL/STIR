@@ -486,8 +486,8 @@ void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor,
         
         //... to fill psf ...........................
         
-        float x0 = (float)psf->ib0 * wmh.prj.szcm ;   // x distance from the fisrt bin in psf from the begin of the FOVcm
-        float z0 = (float)psf->jb0 * wmh.prj.thcm ;   // z distance from the fisrt bin in psf from the begin of the FOVcm
+        float x0 = (float)psf->ib0 * wmh.prj.szcm ;   // x distance from the first bin in psf from the begin of the FOVcm
+        float z0 = (float)psf->jb0 * wmh.prj.thcm ;   // z distance from the first bin in psf from the begin of the FOVcm
         
         int if0 = (int) roundf( ( x0 - xm ) / resx ); // index of limit of the first bin of psf, in f space. It should be negative
         int jf0 = (int) roundf( ( z0 - zm ) / resz ); // index of limit of the first bin of psf, in f space. It should be negative
