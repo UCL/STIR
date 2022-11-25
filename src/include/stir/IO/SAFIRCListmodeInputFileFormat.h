@@ -123,7 +123,7 @@ public:
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
-		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
 	}
 
 protected:

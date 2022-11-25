@@ -37,6 +37,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
+#include "stir/listmode/CListRecordSAFIR.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -108,7 +109,7 @@ shared_ptr <CListRecord>
 CListModeDataSAFIR<CListRecordT>::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
+  shared_ptr<CListRecordT> sptr(new CListRecordT);
   sptr->event_SAFIR().set_scanner_sptr(this->get_proj_data_info_sptr()->get_scanner_sptr());
   sptr->event_SAFIR().set_map_sptr(map);
   return static_pointer_cast<CListRecord>(sptr);
@@ -155,7 +156,8 @@ open_lm_file() const
 	return Succeeded::yes;
 }
 	
-template class CListModeDataSAFIR<CListRecordSAFIR>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataPositrigo>>;
 
 END_NAMESPACE_STIR
 
