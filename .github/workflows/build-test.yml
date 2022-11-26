@@ -88,7 +88,8 @@ jobs:
             (ubuntu*)
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
-                  sudo apt install $CC # package is called clang
+                  # package is called clang, need libomp-dev for OpenMP support
+                  sudo apt install $CC libomp-dev
               else
                   sudo apt install $CXX
               fi
