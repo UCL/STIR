@@ -1,6 +1,6 @@
 !INTERFILE := 
 !imaging modality := nucmed
-originating system := Cubresa Spark
+originating system := Cubresa SPARK
 !version of keys := STIR4.0
 
 !GENERAL DATA := 
@@ -14,17 +14,17 @@ imagedata byte order := LITTLEENDIAN
 
 !SPECT STUDY (general) := 
 !process status := Acquired
-!matrix size [1] := 208
-!matrix size [2] := 208
+!matrix size [1] := 104
+!matrix size [2] := 104
 !number format := float
 !number of bytes per pixel := 4
-scaling factor (mm/pixel) [1] := 0.5
-scaling factor (mm/pixel) [2] := 0.5
+scaling factor (mm/pixel) [1] := 1.0
+scaling factor (mm/pixel) [2] := 1.0
 !number of projections := 91
 !extent of rotation := 270
 ;time per projection (sec) := 60.0
 ;study duration (sec) := 5460.0
-!maximum pixel count := 129
+!maximum pixel count := 431
 patient rotation := prone
 patient orientation := head_in
 

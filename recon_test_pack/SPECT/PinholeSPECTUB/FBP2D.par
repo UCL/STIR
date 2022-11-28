@@ -1,12 +1,12 @@
 FBP2DParameters :=
 
 input file := input.hs
-output filename prefix := out/FBP2D_psfno_doino_attno_maskno
+output filename prefix := out/FBP
 
 ; output image parameters
 zoom := 2
-xy output image size (in pixels) := 184
-z output image size (in pixels) := 230
+xy output image size (in pixels) := 92
+z output image size (in pixels) := 120
 
 Back Projector type:= matrix
   Back Projector Using Matrix Parameters :=
@@ -41,12 +41,12 @@ Back Projector type:= matrix
         ; Voxels not belonging to the cylinder defined by this radius are masked by default.
         object radius (cm) := 2.3
         ; In case of explicit mask.
-        mask file := 
+        mask file := mask.hv
         ; If no mask file is set, we can either compute it from the attenuation image or the object radius
         mask from attenuation map := 0
 
         ; no point in keeping things in memory as FBP runs the projector only once
-        keep all views in cache := ${CACHEALLVIEWS3D}
+        keep all views in cache := ${CACHEALLVIEWS}
 
     End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
   End Back Projector Using Matrix Parameters :=

@@ -25,24 +25,24 @@ OSMAPOSLParameters :=
                 collimator file := collimator.txt
 
                 ;Correction for intrinsic PSF { Yes // No }
-                psf correction := no
+                psf correction := yes
 
                 ; Correction for depth of impact { Yes // No }
                 doi correction := no
 
                 ; Attenuation correction { Simple // Full // No }
-                attenuation type := no
+                attenuation type := Simple
                 ; Values in attenuation map in cm-1
-                attenuation map := 
+                attenuation map := attmap.hv
 
                 ; Voxels not belonging to the cylinder defined by this radius are masked by default.
                 object radius (cm) := 1.5
                 ; In case of explicit mask, the mask from attenuation map parameter will be ignored.
-                mask file := mask.hv
+                mask file :=
                 ; If no mask file is set, we can either compute it from the attenuation image or the object radius
                 mask from attenuation map := 0
                 
-                keep all views in cache := ${CACHEALLVIEWS3D}
+                keep all views in cache := ${CACHEALLVIEWS}
 
             End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 
@@ -51,11 +51,10 @@ OSMAPOSLParameters :=
     end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
     initial estimate:= init.hv
-    output filename prefix := out/OSEM_psfno_doino_attsimple_maskfile
-
-    number of subsets:= 13
-    number of subiterations:= 1
-    Save estimates at subiteration intervals:= 1
+    output filename prefix := out/OSEM
+    number of subsets:= 7
+    number of subiterations:= 7
+    Save estimates at subiteration intervals:= 7
 
 
 END :=
