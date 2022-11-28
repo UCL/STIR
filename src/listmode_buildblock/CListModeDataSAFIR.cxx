@@ -157,7 +157,7 @@ open_lm_file() const
 }
 	
 template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
-template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataPositrigo>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
 END_NAMESPACE_STIR
 

@@ -126,7 +126,7 @@ void CListEventDataSAFIR::get_detection_position_pair(DetectionPositionPair<>& d
 	det_pos_pair.pos2().tangential_coord() = detB;
 }
 
-void CListEventDataPositrigo::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
+void CListEventDataNeuroLF::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
 {
 	det_pos_pair.pos1().radial_coord() = layerA;
 	det_pos_pair.pos2().radial_coord() = layerB;

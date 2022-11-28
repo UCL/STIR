@@ -155,7 +155,7 @@ private:
 
 
 //! Class for record with coincidence data
-class CListEventDataPositrigo
+class CListEventDataNeuroLF
 {
 public:
 	//! Writes detection position pair to reference given as argument.
