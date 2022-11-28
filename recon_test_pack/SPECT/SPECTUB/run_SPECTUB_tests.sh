@@ -5,29 +5,14 @@
 #  Copyright (C) 2014, University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
 # 
 
-# Scripts should exit with error code when a test fails:
-
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
-    set -e
-fi
-
-echo This script should work with STIR version 5.0. If you have
+echo This script should work with STIR version 5.1. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -36,8 +21,11 @@ echo
 # Options
 #
 MPIRUN=""
-CACHEALLVIEWS=0
-export CACHEALLVIEWS
+CACHEALLVIEWS2D=0
+# always disable the cache for 3D PSF as we run less than 1 iteration
+CACHEALLVIEWS3D=0
+export CACHEALLVIEWS2D
+export CACHEALLVIEWS3D
 
 #
 # Parse option arguments (--)
@@ -70,12 +58,12 @@ do
 
 done 
 
-if [ $# = 1 ]; then
+if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
   PATH=$1:$PATH
 fi
 
-if [ ${CACHEALLVIEWS} -eq 1 ]; then
+if [ ${CACHEALLVIEWS2D} -eq 1 ]; then
    echo "Keeping all views in memory for the iterative reconstruction."
 else
    echo "Recomputing the matrix in every iteration for the iterative reconstruction."
@@ -97,7 +85,7 @@ mkdir out
 # loop over reconstruction algorithms
 error_log_files=""
 
-for reconpar in FBP2D OSEM; do
+for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
     # test first if analytic reconstruction and if so, run pre-correction
     isFBP=0
     if expr ${reconpar} : FBP > /dev/null; then
@@ -130,6 +118,7 @@ for reconpar in FBP2D OSEM; do
       output_filename=${output_filename}_${num_subiterations}
     fi
     output_image=${output_filename}.hv
+    invert_axis x ${output_image} ${output_image}
 
     # horrible way to replace "out" with "org" (as we don't want to rely on bash)
     org_output_image=org`echo ${output_image}|cut -c 4-`
@@ -152,5 +141,4 @@ else
  echo "There were errors. Check ${error_log_files}"
  exit 1
 fi
-
 
