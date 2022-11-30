@@ -12,6 +12,12 @@
 <h2>Overall summary</h2>
 <p>
 <ul>
+<li>This release includes the first open-source code available for reconstructing pinhole-SPECT datasets (see <a href="https://github.com/UCL/STIR/pull/1100/">PR #1100</a>). It contains code by Carl&eacute;s Falc&oacute;n (Neuroimaging Group, Barcelona&#946;eta Brain Research Center) to create the pinhole-SPECT system matrix. Integration into STIR was completed by Matthew Strugari (Dalhousie University) and Kris Thielemans (UCL). This work is reported in
+    <ul>
+    <li>Matthew Strugari, Carles Falcon, Kjell Erlandsson, Brian Hutton, G. Andrew Reid, Ian Pottie, Sultan Darvesh, Steven Beyea, Kimberly Brewer, Kris Thielemans, <br />
+    <i><cite>Integration of advanced 3D SPECT modelling for pinhole collimators into the open-source STIR framework</cite></i>, <br />
+    Proc. IEEE MIC 2022, Milan, Italy
+    </li></ul></li>
   <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
@@ -47,6 +53,9 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
+  <li>New projection matrix for pinhole-SPECT (called <code>PinholeSPECTUB</code>) supporting cylindrical or polygonal pinhole collimators with circular orbits.
+  Corrections include attenuation modelling, intrinsic PSF, and depth of interaction (DOI). DOI corrections currently have a bug. See <a href="https://github.com/UCL/STIR/pull/1100/">PR #1100</a>.
+  </li>
   <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
@@ -77,10 +86,12 @@ improvements to the documentation.
   <li>Adapting randoms handling and ML normalisation estimation via template to handle BlocksOnCylindrical
     data as well, , see <a href="https://github.com/UCL/STIR/pull/1085/">PR #1085</a>.
     </li>
-    
 </ul>
 
 <h3>New examples</h3>
+<ul>
+  <li>Added sample files for PinholeSPECTUB configurations.</li>
+</ul>
 <h4>Python</h4>
 <ul>
   <li>PyQt5 projection data  visualisation  <a href="https://github.com/UCL/STIR/pull/1059/">(PR #1059)</a><br />
@@ -92,25 +103,49 @@ improvements to the documentation.
 
 
 <h3>Build system</h3>
+<ul>
     <li>
       ROOT versions until v6.24 supported C++11, subsequent versions require at least C++14.
       If ROOT v6.24 or later is detected, STIR will now use a minimum of C++14,
       see <a href="https://github.com/UCL/STIR/pull/1068/">PR #1068</a>.
     </li>
+</ul>
 
 
 <h3>Known problems</h3>
-See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
+<ul>
+<li>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</li>
+<li>PinholeSPECT related
+<ul>
+  <li>There is currently a bug associated with the DOI correction at small angles from the pinhole axis.</li>
+  <li>The quantitative scale of reconstructed SPECT images is generally different than for PET reconstructions.
+    It behaves differently than the PET projectors when using different voxel sizes.</li>
+  <li><tt>list_projdata_info</tt> still reports SPECT data as if it's a PET scanner, but you can see
+    all necessary geometric info from it anyway.</li>
+  <li><tt>create_projdata_template</tt> only works for PET scanners. For SPECT, you could take the 
+   sample Interfile header, modify it to your needs (and create an empty file for the binary data pointed to
+   by the Interfile header).
+  </li>
+  </ul>
+</li>
+</ul>
+
 
 <h3>Minor (?) bug fixes</h3>
 <ul>
-  <li>made <code>ProjDataInfo*::get_all_det_pos_pairs_for_bin</code> thread-safe.
+  <li>Made <code>ProjDataInfo*::get_all_det_pos_pairs_for_bin</code> thread-safe.
     See <a href="https://github.com/UCL/STIR/pull/1084/">PR #1084</a>.</li>
 </ul>
 
 <h3>Documentation changes</h3>
+<ul>
+  <li>Added PinholeSPECTUB documentation to STIR-UsersGuide.</li>
+</ul>
 
 <h3>recon_test_pack changes</h3>
+<ul>
+  <li>Added PinholeSPECTUB tests to SPECT directory and updated <tt>run_SPECT_tests.sh</tt> script to call SPECTUB and PinholeSPECTUB tests from separate subdirectories.</li>
+</ul>
 
 <h3>Other changes to tests</h3>
 <ul>
