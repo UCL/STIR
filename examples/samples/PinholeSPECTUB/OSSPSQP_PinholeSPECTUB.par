@@ -25,8 +25,8 @@ OSSPSParameters :=
                 ;  Detector and collimator parameter files
                 detector file := detector27.txt
                 collimator file := collimator27_cyl.txt
-		        ; collimator file := collimator27_pol.txt
-		        ; collimator file := collimator27_pol_MPH.txt
+                ; collimator file := collimator27_pol.txt
+                ; collimator file := collimator27_pol_MPH.txt
 
                 ;Correction for intrinsic PSF { Yes // No }
                 psf correction := no

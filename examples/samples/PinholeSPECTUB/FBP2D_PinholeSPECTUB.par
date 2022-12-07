@@ -19,19 +19,19 @@ Back Projector type:= matrix
     Matrix type := Pinhole SPECT UB
     Projection Matrix By Bin Pinhole SPECT UB Parameters:=
     
-	    ; Maximum number of sigmas to consider in PSF calculation (typically 1.5 - 2.5)
-	    maximum number of sigmas := 2.0
+        ; Maximum number of sigmas to consider in PSF calculation (typically 1.5 - 2.5)
+        maximum number of sigmas := 2.0
 
-	    ; Spatial high resolution in which to sample distributions (typically 0.001 - 0.0001)
-	    spatial resolution PSF := 0.001
+        ; Spatial high resolution in which to sample distributions (typically 0.001 - 0.0001)
+        spatial resolution PSF := 0.001
 
-	    ; Subsampling factor to compute convolutions for mid resolution. This reduces temporally the PSF resolution to
-	    ; perform more accurate calculus and then down sample the final PSF to the bin size (typically 1 - 8)
-	    subsampling factor PSF := 1
+        ; Subsampling factor to compute convolutions for mid resolution. This reduces temporally the PSF resolution to
+        ; perform more accurate calculus and then down sample the final PSF to the bin size (typically 1 - 8)
+        subsampling factor PSF := 1
 
-	    ;  Detector and collimator parameter files
-	    detector file := detector27.txt
-	    collimator file := collimator27_cyl.txt
+        ;  Detector and collimator parameter files
+        detector file := detector27.txt
+        collimator file := collimator27_cyl.txt
         ; collimator file := collimator27_pol.txt
         ; collimator file := collimator27_pol_MPH.txt
 
