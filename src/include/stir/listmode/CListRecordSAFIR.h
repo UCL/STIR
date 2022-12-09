@@ -98,7 +98,6 @@ public:
 	inline void set_scanner_sptr( shared_ptr<const Scanner> new_scanner_sptr ) { scanner_sptr = new_scanner_sptr; }
 
 private:
-	friend class CListRecordSAFIR;
 	shared_ptr<const DetectorCoordinateMap> map_sptr;
 	shared_ptr<const Scanner> scanner_sptr;
 
@@ -119,6 +118,9 @@ public:
 	inline bool is_prompt()
 		const { return !isRandom; }
 
+	//! Returns 1 if if event is time and 0 if it is prompt
+	inline bool is_time() const { return type; }
+
 	//! Can be used to set "promptness" of event.
 	inline Succeeded set_prompt( const bool prompt = true ) { 
 		isRandom = !prompt;
@@ -127,7 +129,6 @@ public:
 
 
 private:
-	friend class CListRecordSAFIR;
 
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
@@ -147,6 +148,53 @@ private:
 	unsigned layerA : 4;
 	unsigned layerB : 4;
 	unsigned reserved : 6;
+	unsigned isRandom : 1;
+	unsigned type : 1;
+#endif
+};
+
+
+//! Class for record with coincidence data
+class CListEventDataNeuroLF
+{
+public:
+	//! Writes detection position pair to reference given as argument.
+	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
+
+	//! Returns 0 if event is prompt and 1 if random/delayed
+	inline bool is_prompt()
+		const { return !isRandom; }
+
+	//! Returns 1 if if event is time and 0 if it is prompt
+	inline bool is_time() const { return type; }
+
+	//! Can be used to set "promptness" of event.
+	inline Succeeded set_prompt( const bool prompt = true ) { 
+		isRandom = !prompt;
+		return Succeeded::yes; 
+	}
+
+
+private:
+
+#if STIRIsNativeByteOrderBigEndian
+	unsigned type : 1;
+	unsigned isRandom : 1;
+	unsigned reserved : 8;
+	unsigned layerB : 3;
+	unsigned layerA : 3;
+	unsigned detB : 16;
+	unsigned detA : 16;
+	unsigned ringB : 8;
+	unsigned ringA : 8;
+#else
+	unsigned ringA : 8;
+	unsigned ringB : 8;
+	unsigned detA : 16;
+	unsigned detB : 16;
+	unsigned layerA : 3;
+	unsigned layerB : 3;
+	unsigned reserved : 8;
 	unsigned isRandom : 1;
 	unsigned type : 1;
 #endif
@@ -164,8 +212,8 @@ public:
 		time = ((boost::uint64_t(1)<<49)-1) & static_cast<boost::uint64_t>(time_in_millisecs);
 		return Succeeded::yes;
 	}
+	inline bool is_time() const { return type; }
 private:
-	friend class CListRecordSAFIR;
 #if STIRIsNativeByteOrderBigEndian
 	boost::uint64_t type : 1;
 	boost::uint64_t reserved : 15;
@@ -178,24 +226,24 @@ private:
 };
 
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
-class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR>
+template <class DataType>
+class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR<DataType>>
 {
 public:
-	typedef CListEventDataSAFIR DataType;
-	
+
 	//! Returns event_data (without checking if the type is really event and not time).
 	DataType get_data() const
 	{ return this->event_data; }
 
-	CListRecordSAFIR() : CListEventSAFIR<CListRecordSAFIR>() {}
+	CListRecordSAFIR() : CListEventSAFIR<CListRecordSAFIR<DataType>>() {}
 
 	virtual ~CListRecordSAFIR() {}
 
 	virtual bool is_time() const
-	{ return time_data.type == 1; }
+	{ return time_data.is_time(); }
 
 	virtual bool is_event() const
-	{ return time_data.type == 0; }
+	{ return !time_data.is_time(); }
 
 	virtual CListEvent&  event()
 	{ return *this; }
@@ -203,10 +251,10 @@ public:
 	virtual const CListEvent&  event() const
 	{ return *this; }
 
-	virtual CListEventSAFIR<CListRecordSAFIR>&  event_SAFIR()
+	virtual CListEventSAFIR<CListRecordSAFIR<DataType>>&  event_SAFIR()
 	{ return *this; }
 
-	virtual const CListEventSAFIR<CListRecordSAFIR>&  event_SAFIR() const
+	virtual const CListEventSAFIR<CListRecordSAFIR<DataType>>&  event_SAFIR() const
 	{ return *this; }
 
     virtual ListTime&   time()
@@ -217,8 +265,8 @@ public:
 
 	virtual bool operator==(const CListRecord& e2) const
 	{
-		return dynamic_cast<CListRecordSAFIR const *>(&e2) != 0 &&
-				raw == static_cast<CListRecordSAFIR const &>(e2).raw;
+		return dynamic_cast<CListRecordSAFIR<DataType> const *>(&e2) != 0 &&
+				raw == static_cast<CListRecordSAFIR<DataType> const &>(e2).raw;
 	}
 
 	inline unsigned long get_time_in_millisecs() const
@@ -227,7 +275,7 @@ public:
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{ return time_data.set_time_in_millisecs(time_in_millisecs); }
 
-	inline bool is_prompt() const { return !(event_data.isRandom); }
+	inline bool is_prompt() const { return event_data.is_prompt(); }
 
 	Succeeded
 	init_from_data_ptr(const char * const data_ptr,
@@ -252,12 +300,12 @@ private:
 // Be careful not to read event data from time record and vice versa!!
 // However, this is used as a feature if comparing events over the 'raw' type.
 	union {
-		CListEventDataSAFIR event_data;
+		DataType event_data;
 		CListTimeDataSAFIR time_data;
 	    boost::int64_t raw;
 	};
 	BOOST_STATIC_ASSERT(sizeof(boost::uint64_t)==8);
-	BOOST_STATIC_ASSERT(sizeof(CListEventDataSAFIR)==8);
+	BOOST_STATIC_ASSERT(sizeof(DataType)==8);
 	BOOST_STATIC_ASSERT(sizeof(CListTimeDataSAFIR)==8);
 };
 

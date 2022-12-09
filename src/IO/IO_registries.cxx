@@ -90,8 +90,8 @@ static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiO
 static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
 
 //! Support for SAFIR listmode file format
-static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
-
+static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat<CListEventDataSAFIR>> LMdummySAFIR(4);
+static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat<CListEventDataNeuroLF>> LMdummySAFIR_NeuroLF(5);
 
 //!
 //! \brief LMdummyROOT
