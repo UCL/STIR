@@ -38,7 +38,6 @@
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
@@ -54,8 +53,10 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#ifdef STIR_WITH_Parallelproj_PROJECTOR
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
+#endif
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/VoxelsOnCartesianGrid.h"
