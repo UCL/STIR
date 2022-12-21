@@ -4,6 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
     Copyright (C) 2016, 2022 UCL
+    Copyright (C) 2021, University of Pennsylvania
     SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
@@ -101,6 +102,7 @@ public:
 #endif
 
 protected:
+  /*! \todo this function is not implemented yet and currently calls error() */
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                       const int subset_num)
@@ -115,9 +117,6 @@ protected:
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
-  //! This function caches the listmode file. It is run during post-processing.
-  Succeeded cache_listmode_file();
-
 #if STIR_VERSION < 060000  
   //! Maximum ring difference to take into account
   /*! @deprecated */
@@ -131,10 +130,8 @@ protected:
   shared_ptr<ProjectorByBinPair> projector_pair_sptr;
 
   //! sets any default values
-  /*! Has to be called by set_defaults in the leaf-class */
   virtual void set_defaults();
-  //! sets keys
-  /*! Has to be called by initialise_keymap in the leaf-class */
+  //! sets keys for parsing
   virtual void initialise_keymap();
   virtual bool post_processing();
 
@@ -143,11 +140,23 @@ protected:
   void
     add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
 
-  //! Cache of the listmode file
-  std::vector<BinAndCorr>  record_cache;
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;
+
+ private:
+
+  //! Cache of the listmode file
+  /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+   */
+  std::vector<BinAndCorr>  record_cache;
+
+    //! This function caches the listmode file, or reads it. It is run during set_up()
+  /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+   */
+  Succeeded cache_listmode_file();
+
+
 };
 
 END_NAMESPACE_STIR

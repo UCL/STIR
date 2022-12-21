@@ -22,6 +22,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 	End Bin Normalisation From ProjData:=
 
 	;num_events_to_use := 100
+        time frame definition filename := ${FRAMES}
 	recompute sensitivity :=1
 	use subset sensitivities:= 0
 	max cache size := ${cache} 

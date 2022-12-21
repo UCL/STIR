@@ -2,7 +2,8 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2022 University College London
+    Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -102,16 +103,46 @@ public:
     /*! \see set_max_segment_num_to_process */
     int get_max_segment_num_to_process(int) const;
 
-  virtual void set_cache_path(const std::string cache_path_v,
-                                const bool use_add);
+    /*! \name caching-related methods
+      These functions can be used to cache listmode events into memory, allowing
+      parallelised processing.
 
+      Currently a single cache file is used and loaded into memory.
+      \warning This code is experimental and likely to change in future versions.
+      \todo It should be possible to read only part of the
+      cache in memory.
+    */
+    //@{
+    //! Set the directory where data will be cached
+    /*!
+      \param cache_path directory-name (defaults to current directory). The directory has to exist.
+      \param use_add set if the cached file contains the "additive" term in the projection model
+    */
+    virtual void set_cache_path(const std::string cache_path,
+                                const bool use_add);
+    //! Get the directory where data will be cached
+    virtual std::string get_cache_path() const;
+
+    //! Skip reading of listmode file entirely, only read from cache
+    /*!
+      \warning This currently aborts, as functionality is broken. (We would need to be
+      able to read proj_data_info and exam_info).
+      \todo replace with reading from a custom-listmode file (although this
+      would have to support the additive term).
+    */
     void set_skip_lm_input_file(const bool arg);
 
+    //! Set maximum size (in bytes) of cache
+    /*! This is currently only used to preallocate a vector when writing the cache, but
+      it will grow to the required size anyway. When reading, the
+      the whole cache is read into memory. This is likely to change in the future.
+    */
     virtual void set_cache_max_size(const unsigned long int arg);
 
+    //! Get maximum size (in bytes) of cache
     virtual unsigned long int get_cache_max_size() const;
 
-    virtual std::string get_cache_path() const;
+    //@}
 protected:
   std::string frame_defs_filename;
 

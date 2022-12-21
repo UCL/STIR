@@ -27,6 +27,8 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/is_null_ptr.h"
+#include "stir/FilePath.h"
+
 using std::vector;
 using std::pair;
 
@@ -92,16 +94,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   if (base_type::post_processing() == true) 
   return true; 
 
-  if (this->list_mode_filename.length() == 0 && !cache_lm_file)
+  if (this->list_mode_filename.length() == 0 && !this->skip_lm_input_file)
   { warning("You need to specify an input file\n"); return true; }
-  else if (this->list_mode_filename.length() > 0 && !cache_lm_file)
+  if (!this->skip_lm_input_file)
   {
       this->list_mode_data_sptr=
           read_from_file<ListModeData>(this->list_mode_filename);
-  }
-  else if (this->list_mode_filename.length() == 0 && cache_lm_file)
-  {
-       skip_lm_input_file = true;
   }
 
   if (this->additive_projection_data_filename != "0")
@@ -121,6 +119,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
       // make a single frame starting from 0. End value will be ignored.
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
+      this->do_time_frame = false;
     } 
   target_parameter_parser.check_values();
 
@@ -182,7 +181,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_skip_lm_input_file(const bool arg)
 {
-    if(cache_path.length() > 0)
+    error("set_skip_lm_input_file is not yet supported.");
+    if(arg && (cache_path.length() > 0))
     {
         skip_lm_input_file = arg;
 
@@ -197,7 +197,7 @@ set_skip_lm_input_file(const bool arg)
         //    info(boost::format("Reading sensitivity from '%1%'") % this->get_subsensitivity_filenames());
     }
     else
-        warning("set_skip_lm_input_file(): First set the cache path!");
+        error("set_skip_lm_input_file(): First set the cache path!");
 }
 
 template <typename TargetT>
@@ -205,7 +205,10 @@ std::string
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 get_cache_path() const
 {
-    return cache_path;
+  if (this->cache_path.size() > 0)
+    return this->cache_path;
+  else
+    return FilePath::get_current_working_directory();
 }
 
 template <typename TargetT>
@@ -233,7 +236,7 @@ set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
     }
   if (!this->reduce_memory_usage
       && is_null_ptr(dynamic_cast<ProjDataInMemory const *>(this->additive_proj_data_sptr.get()))
-      && !this->skip_lm_input_file // KTTODO not sure about conditional here, just trying to avoid reading it if we don't use it
+      && !this->cache_lm_file
       )
     {
       this->additive_proj_data_sptr.reset(new ProjDataInMemory(*additive_proj_data_sptr));

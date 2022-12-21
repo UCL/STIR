@@ -338,14 +338,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
     if(!this->recompute_cache && this->cache_lm_file)
     {
         info("Reading cache from disk...");
-        std::string curr_dir;
-        if (this->cache_path.size() > 0)
-            curr_dir = this->cache_path;
-        else
-            curr_dir = FilePath::get_current_working_directory();
         std::string cache_filename = "my_CACHE00.bin";
         FilePath icache(cache_filename, false);
-        icache.prepend_directory_name(curr_dir);
+        icache.prepend_directory_name(this->get_cache_path());
 
         if (icache.is_regular_file())
         {
@@ -354,7 +349,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                               | std::ios::ate);
 
             unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
-            record_cache.reserve(num_of_records);
+            record_cache.reserve(num_of_records + 1); // add 1 to avoid reallocation when overruning (see below)
             if (!fin)
               error("Error opening cache file \"" + icache.get_as_string() + "\" for reading.");
 
@@ -378,7 +373,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         }
         else
         {
-            error("Cannot find Listmode cache on disk. Please recompute or comment out the  max cache size. Abort.");
+            error("Cannot find Listmode cache on disk. Please recompute it or do not set the  max cache size. Abort.");
             return Succeeded::no;
         }
 
@@ -387,25 +382,34 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
     }
 
     if(this->cache_lm_file)
-    {
+      {
         info( boost::format("Listmode reconstruction: Serializing inputs ..."));
         info( boost::format("Listmode reconstruction: Creating cache..."));
 
-        record_cache.reserve(this->cache_size);
+        record_cache.reserve(std::max(this->cache_size, static_cast<unsigned long>(this->num_events_to_use))); // currently we cache all or nothing
 
         this->list_mode_data_sptr->reset();
-        const shared_ptr<ListRecord> & record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+        const shared_ptr<ListRecord>  record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
         info(boost::format("Caching... "));
 
+        const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
+        const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
+        double current_time = 0.;
 
         while (true)
         {
-            // KTTODO this should check time frames
             if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
             {
                 break;
             }
-
+            if (record_sptr->is_time() && end_time > 0.01)
+              {
+                current_time = record_sptr->time().get_time_in_secs();
+                if (this->do_time_frame && current_time >= end_time)
+                  break; // get out of while loop
+                if (current_time < start_time)
+                  continue;
+              }
             if (record_sptr->is_event() && record_sptr->event().is_prompt())
             {
                 BinAndCorr tmp;
@@ -473,6 +477,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                  VectorWithOffset<SegmentByView<float> *>
                          segments (start_segment_index, end_segment_index);
 
+                 // KTTODO memory leak
                  for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
                  {
                      segments[seg] = new SegmentByView<float>(this->additive_proj_data_sptr->get_segment_by_view(seg));
@@ -499,11 +504,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         {
             info( boost::format("Storing Cached Events ... "));
 
-            // KTTODO doesn't use cache_path
-            std::string curr_dir = FilePath::get_current_working_directory();
             std::string cache_filename = "my_CACHE00.bin";
             FilePath ocache(cache_filename, false);
-            ocache.prepend_directory_name(curr_dir);
+            ocache.prepend_directory_name(this->get_cache_path());
 
             bool with_add = !is_null_ptr(this->additive_proj_data_sptr);
 
@@ -682,18 +685,14 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
               "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
     if (this->cache_lm_file)
-    {
-        if (record_cache.size() > 0)
-        {
-            LM_distributable_computation(this->PM_sptr,
-                                         this->proj_data_info_sptr,
-                                         &gradient, &current_estimate,
-                                         record_cache,
-                                         subset_num, this->num_subsets,
-                                         this->has_add);
-        }
-        // KTTODO else?
-    }
+      {
+        LM_distributable_computation(this->PM_sptr,
+                                     this->proj_data_info_sptr,
+                                     &gradient, &current_estimate,
+                                     record_cache,
+                                     subset_num, this->num_subsets,
+                                     this->has_add);
+      }
     else
     {
         //go to the beginning of this frame
