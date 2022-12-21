@@ -445,59 +445,49 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
 
         if(this->has_add)
-        {
-  #ifdef STIR_TOF
-         // TODO
-         error("listmode processing with caching is not yet supported for TOF");
-  #else
+          {
+#ifdef STIR_TOF
+            // TODO
+            error("listmode processing with caching is not yet supported for TOF");
+#else
             info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
-            const int num_segments_in_memory = 1;
 
 #ifdef STIR_OPENMP
 #pragma omp parallel
             {
 #pragma omp single
-                {
-                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
-                }
+              {
+                info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
+              }
             }
 #endif
 
 #ifdef STIR_OPENMP
 #pragma omp parallel for schedule(dynamic) //collapse(2)
 #endif
-             for (int start_segment_index = this->additive_proj_data_sptr->get_min_segment_num();
-                  start_segment_index <= this->additive_proj_data_sptr->get_max_segment_num();
-                  start_segment_index += num_segments_in_memory)
-             {
-                 const int end_segment_index =
-                         std::min( this->additive_proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
+            for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
+                 seg <= this->additive_proj_data_sptr->get_max_segment_num();
+                 ++seg)
+              {
+                const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg));
 
-                 info( boost::format("Current start / end segments: %1% / %2%") % start_segment_index % end_segment_index);
-                 VectorWithOffset<SegmentByView<float> *>
-                         segments (start_segment_index, end_segment_index);
-
-                 // KTTODO memory leak
-                 for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
-                 {
-                     segments[seg] = new SegmentByView<float>(this->additive_proj_data_sptr->get_segment_by_view(seg));
-                 }
-
-                 for (BinAndCorr &cur_bin : record_cache)
-                 {
-
-                     if (cur_bin.my_bin.segment_num() < start_segment_index
-                             ||  cur_bin.my_bin.segment_num()  > end_segment_index)
-                     {
-                         continue;
-                     }
-
-                     cur_bin.my_corr = (*segments[cur_bin.my_bin.segment_num()])
-                             [cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()][cur_bin.my_bin.tangential_pos_num()];
-                 }
-             }
-  #endif
-        }
+                for (BinAndCorr &cur_bin : record_cache)
+                  {
+                    if (cur_bin.my_bin.segment_num() == seg)
+                      {
+#ifdef STIR_OPENMP
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp critical(PLogLikListModePMBAddSinoCaching)
+# endif
+#endif
+                        cur_bin.my_corr = segment[cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()][cur_bin.my_bin.tangential_pos_num()];
+                      }
+                  }
+              }
+#endif
+      }
         info( boost::format("Cached Events: %1% ") % record_cache.size());
 
         if(this->recompute_cache)
