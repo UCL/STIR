@@ -137,9 +137,6 @@ protected:
 
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
-  void
-    add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
-
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;

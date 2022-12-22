@@ -563,7 +563,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
           if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
-          //        this->add_view_seg_to_sensitivity(view_segment_num);
           //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
           {
               shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
@@ -594,39 +593,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     }
     this->projector_pair_sptr->get_back_projector_sptr()->
       get_output(sensitivity);
-}
-
-template<typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
-{
-  // KTTODO all code was deleted here. Not sure why. This function should then raise an error?
-//    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-//            (this->projector_pair_sptr->get_symmetries_used()->clone());
-
-//  RelatedViewgrams<float> viewgrams =
-//    proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
-
-//  viewgrams.fill(1.F);
-//  // find efficiencies
-//  {
-//    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-//    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-//    this->normalisation_sptr->undo(viewgrams);
-//  }
-//  // backproject
-//  {
-//    const int min_ax_pos_num =
-//      viewgrams.get_min_axial_pos_num();
-//    const int max_ax_pos_num =
-//       viewgrams.get_max_axial_pos_num();
-
-//    this->projector_pair_sptr->get_back_projector_sptr()->
-//      back_project(viewgrams,
-//                   min_ax_pos_num, max_ax_pos_num);
-//  }
-
 }
 
 template<typename TargetT>
