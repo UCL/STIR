@@ -188,6 +188,7 @@ void LM_distributable_computation(
         const DiscretisedDensity<3,float>* input_image_ptr,
         const std::vector<BinAndCorr>& record_ptr,
         const int subset_num, const int num_subsets,
+        const int current_time_frame,
         const bool has_add);
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0
