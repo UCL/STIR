@@ -84,7 +84,6 @@ set_defaults()
 #endif
   this->PM_sptr.reset(new  ProjMatrixByBinUsingRayTracing());
 
-  this->do_time_frame = false;
   skip_balanced_subsets = false;
 } 
  
@@ -128,7 +127,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 set_proj_data_info(const ProjData& arg)
 {
-  // KTTODO this will be broken now. Why did we need this?
+  // this will be broken now. Why did we need this?
     this->proj_data_info_sptr = arg.get_proj_data_info_sptr()->create_shared_clone();
     if(this->skip_lm_input_file)
     {
@@ -383,14 +382,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
     if(this->cache_lm_file)
       {
-        info( boost::format("Listmode reconstruction: Serializing inputs ..."));
-        info( boost::format("Listmode reconstruction: Creating cache..."));
+        info("Listmode reconstruction: Creating cache...");
 
         record_cache.reserve(std::max(this->cache_size, static_cast<unsigned long>(this->num_events_to_use))); // currently we cache all or nothing
 
         this->list_mode_data_sptr->reset();
         const shared_ptr<ListRecord>  record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-        info(boost::format("Caching... "));
 
         const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
         const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
@@ -437,7 +434,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                     info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
 
                 if(this->num_events_to_use > 0)
-                    if (record_cache.size() >= this->num_events_to_use)
+                  if (record_cache.size() >= static_cast<std::size_t>(this->num_events_to_use))
                         break;
             }
 
@@ -448,7 +445,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           {
 #ifdef STIR_TOF
             // TODO
-            error("listmode processing with caching is not yet supported for TOF");
+            if (additive_proj_data_sptr->get_num_tof_poss() > 1)
+              error("listmode processing with caching is not yet supported for TOF");
 #else
             info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
 
@@ -531,6 +529,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
+  // TODO replace with call to distributable function
 
     const int min_segment_num = this->proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = this->proj_data_info_sptr->get_max_segment_num();
@@ -540,6 +539,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #ifdef STIR_TOF
     int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
+    if (min_timing_pos_num<0 || max_timing_pos_num>0)
+      error("TOF code for sensitivity needs work");
 #endif
 
     this->projector_pair_sptr->get_back_projector_sptr()->
@@ -547,8 +548,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
     // warning: has to be same as subset scheme used as in distributable_computation
 #ifdef STIR_OPENMP
-#ifdef _WIN32
-    #pragma omp parallel for
+#if _OPENMP <201107
+    #pragma omp parallel for schedule(dynamic)
 #else
     #pragma omp parallel for collapse(2) schedule(dynamic)
 #endif
@@ -683,11 +684,8 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
         VectorWithOffset<ListModeData::SavedPosition>
                 frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
-        long int more_events =
-                this->do_time_frame? 1 : this->num_events_to_use;
-
-        while (more_events)
-       {
+        while (true)
+          {
 
            if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
            {
@@ -695,7 +693,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                break; //get out of while loop
            }
 
-           if(record.is_time() && end_time > 0.01)
+           if(record.is_time())
            {
                current_time = record.time().get_time_in_secs();
                if (this->do_time_frame && current_time >= end_time)
@@ -722,48 +720,48 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                }
 
                measured_bin.set_bin_value(1.0f);
-               // If more than 1 subsets, check if the current bin belongs to
-               // the current.
+               // If more than 1 subsets, check if the current bin belongs to the current.
+               bool in_subset = true;
                if (this->num_subsets > 1)
                {
                    Bin basic_bin = measured_bin;
                    this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-                   if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
-                       continue;
+                   in_subset = (subset_num == static_cast<int>(basic_bin.view_num() % this->num_subsets));
                }
-               this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
-               //in_the_range++;
-               Bin fwd_bin;
-               fwd_bin.set_bin_value(0.0f);
-               proj_matrix_row.forward_project(fwd_bin,current_estimate);
-               // additive sinogram
-               if (!is_null_ptr(this->additive_proj_data_sptr))
-               {
-                   float add_value = add->get_bin_value(measured_bin);
-                   float value= fwd_bin.get_bin_value()+add_value;
-                   fwd_bin.set_bin_value(value);
-               }
-               float  measured_div_fwd = 0.0f;
+               if (in_subset)
+                 {
+                   this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+                   Bin fwd_bin;
+                   fwd_bin.set_bin_value(0.0f);
+                   proj_matrix_row.forward_project(fwd_bin,current_estimate);
+                   // additive sinogram
+                   if (!is_null_ptr(this->additive_proj_data_sptr))
+                     {
+                       float add_value = add->get_bin_value(measured_bin);
+                       float value= fwd_bin.get_bin_value()+add_value;
+                       fwd_bin.set_bin_value(value);
+                     }
 
-               if(!this->do_time_frame)
-                   more_events -=1 ;
+                   if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
+                     {
+                       const float measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+                       measured_bin.set_bin_value(measured_div_fwd);
+                       proj_matrix_row.back_project(gradient, measured_bin);
+                     }
+                 }
 
-               num_used_events += 1;
+               ++num_used_events;
 
                if (num_used_events%200000L==0)
-                   info( boost::format("Stored Events: %1% ") % num_used_events);
+                   info( boost::format("Used Events: %1% ") % num_used_events);
 
-               if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
-                   measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
-               else
-                   continue;
-
-               measured_bin.set_bin_value(measured_div_fwd);
-               proj_matrix_row.back_project(gradient, measured_bin);
-
+               // if we use event-count-based processing, see if we need to stop
+               if(this->num_events_to_use > 0)
+                 if (num_used_events >= this->num_events_to_use)
+                   break;
            }
        }
-       info(boost::format("Number of used events: %1%") % num_used_events);
+       info(boost::format("Number of used events (for all subsets): %1%") % num_used_events);
 
     }
     info(boost::format("Finished!"));

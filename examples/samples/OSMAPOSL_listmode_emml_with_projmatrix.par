@@ -1,0 +1,71 @@
+OSMAPOSLParameters :=
+; minimal .par file to illustrate running OSMAPOSL as EMML on listmode data
+; with projectors derived from a single projection matrix
+; see OSMAPOSL_osem_with_interfiltering.par etc for other parameters
+
+; here is where we say we'll use listmode data.
+; You can use this for OSSPS as well
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:=
+
+   list mode filename := input.hroot ; example using a ROOT file
+
+  ; parameters for saying which events will be stored
+
+    ; time frames (see TimeFrameDefinitions doc for format)
+    time frame definition filename :=
+    time frame number := 1
+    ; or a total number of events (if  larger than 0, frame definitions will be ignored)
+    ; note that this counts the total of prompts
+    num events to use := 0
+
+  ; acquisition modelling
+
+    ; example using attenuation only
+    bin normalisation type := From ProjData
+      bin normalisation from projdata :=
+       normalisation projdata filename := my_acfs.hs
+      end bin normalisation from projdata :=
+
+    additive sinogram := 0
+
+    ; projector (has to be in matrix form at the moment)
+    Matrix type := Ray Tracing
+    Ray tracing matrix parameters :=
+     ; use multiple (almost) parallel LORs for every bin in the sinogram
+     ; to avoid discretisation artefacts
+      number of rays in tangential direction to trace for each bin:= 5
+    End Ray tracing matrix parameters :=
+
+  ; speeding-up things (experimental. will likely change)
+  ; WARNING: when reding an existing cached file, time-frame info and num_events_to_use will be ignored
+    ; if set to 1, additive_sinogram will be completely stored in memory, as opposed to re-reading from disk (defaults to 0)
+    reduce memory usage := 0
+
+    ; cache listmode events in memory and on file
+    ; set this number > 0 to enable this feature
+    ; (despite the name of the variable, currently all of the events will be cached in one chunck o fmemory)
+    max cache size := 0
+
+    ; location of cache file (defaults to current working directory)
+    cache path := cache/
+
+    ; if set to 1, any existing cache file will be overwritten (defaults to 0)
+    recompute cache := 0
+
+    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test
+    skip checking balanced subsets := 0
+
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:=
+
+initial estimate:= some_image
+output filename prefix := output
+
+number of subsets:= 1
+number of subiterations:= 24
+Save estimates at subiteration intervals:= 3
+
+
+END :=
+

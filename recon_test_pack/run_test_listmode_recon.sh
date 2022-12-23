@@ -62,6 +62,8 @@ if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
   PATH=$1:$PATH
 fi
+echo "Using `command -v OSMAPOSL`"
+echo "Using `command -v lm_to_projdata`"
 
 ThereWereErrors=0
 ErrorLogs=""
@@ -158,7 +160,7 @@ for use_frame in true false; do
 
     # create sinograms
     echo "=== Unlist listmode data (for comparison)"
-    logfile=my_lm_to_projdata_${suffix}.log
+    logfile=lm_to_projdata_${suffix}.log
     if env INPUT=PET_ACQ_small.l.hdr.STIR TEMPLATE=Siemens_mMR_seg2.hs OUT_PROJDATA_FILE=my_sinogram lm_to_projdata  lm_to_projdata.par > "$logfile" 2>&1
     then
         echo "---- Executable ran ok"

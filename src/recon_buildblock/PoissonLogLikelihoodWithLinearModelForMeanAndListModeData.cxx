@@ -188,7 +188,6 @@ set_skip_lm_input_file(const bool arg)
 
         std::cout << "PoissonLogLikelihoodWithLinearModelForMeanAndListModeData: Skipping input!" << std::endl;
         //!\todo in the future the following statements should be removed.
-        //KTTODO
         {
             this->set_recompute_sensitivity(!arg);
             this->set_use_subset_sensitivities(arg);
@@ -284,10 +283,12 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
                                                       max_segment_num_to_process);
     }
 
-  // handle time frame definitions etc
-  // KTTODO should check frame_defs itself
-  if(this->num_events_to_use==0 && this->frame_defs_filename.size() == 0)
-    do_time_frame = true;
+  // check if we need to handle time frame definitions
+  this->do_time_frame =
+    (this->num_events_to_use == 0) &&
+    (this->frame_defs.get_num_frames() > 0) &&
+    (this->frame_defs.get_start_time(this->current_frame_num) <
+     this->frame_defs.get_end_time(this->current_frame_num));
  
   if(!is_null_ptr(this->additive_proj_data_sptr))
     {
