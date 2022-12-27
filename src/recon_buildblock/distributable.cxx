@@ -583,8 +583,8 @@ void LM_distributable_computation(
         const DiscretisedDensity<3,float>* input_image_ptr,
         const std::vector<BinAndCorr>& record_ptr,
         const int subset_num, const int num_subsets,
-        const int current_frame_num,
-        const bool has_add)
+        const bool has_add,
+        const bool accumulate)
 {
 
     CPUTimer CPU_timer;
@@ -596,7 +596,7 @@ void LM_distributable_computation(
 
     const float max_quotient = 10000.F;
 
-    if (output_image_ptr != NULL)
+    if (output_image_ptr != NULL && !accumulate)
       output_image_ptr->fill(0.F);
 
 std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
@@ -652,10 +652,6 @@ std::vector<float>measured_div_fwd;
             local_measured_bin[thread_num] = record_ptr.at(ievent).my_bin;
 
             if (local_measured_bin[thread_num].get_bin_value() == 0.0f)
-                continue;
-
-            if (current_frame_num > -1 &&
-                local_measured_bin[thread_num].time_frame_num() != current_frame_num)
                 continue;
 
             if (num_subsets > 1)

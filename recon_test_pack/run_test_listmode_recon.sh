@@ -80,8 +80,10 @@ echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log
 fi
 
 echo "=== Creating my_test_lm_frame.fdef (time frame definitions)"
-# test data contains only 612 ms of data
-echo "1 0.5" > my_test_lm_frame.fdef
+# Note: test data contains only 612 ms of data, so use a very short frame of 0.5s
+rm my_test_lm_frame.fdef
+echo "0 0.1" > my_test_lm_frame.fdef # skip the first .1s, to test if this feature works
+echo "1 0.5" >> my_test_lm_frame.fdef
 export FRAMES
 
 for use_frame in true false; do
@@ -109,8 +111,10 @@ for use_frame in true false; do
     fi
 
     echo "=== Reconstruct listmode data with cache and store it on disk"
+    # first remove all cached files
+    rm -f my_CACHE*bin
     export filename=my_output_t_lm_pr_seg2_${suffix}_with_new_cache
-    export cache=400
+    export cache=5000
     export recompute_cache=1
     logfile=OSMAPOSL_test_lm_${suffix}_2.log
     if ${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > "$logfile" 2>&1

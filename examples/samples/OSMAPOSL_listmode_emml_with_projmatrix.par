@@ -38,22 +38,21 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
     End Ray tracing matrix parameters :=
 
   ; speeding-up things (experimental. will likely change)
-  ; WARNING: when reding an existing cached file, time-frame info and num_events_to_use will be ignored
     ; if set to 1, additive_sinogram will be completely stored in memory, as opposed to re-reading from disk (defaults to 0)
     reduce memory usage := 0
 
     ; cache listmode events in memory and on file
-    ; set this number > 0 to enable this feature
-    ; (despite the name of the variable, currently all of the events will be cached in one chunck o fmemory)
-    max cache size := 0
+      ; set this number > 0 to enable this feature
+      ; depending on the this max size, one or more files will be created in cache_path (see below)
+      max cache size := 0
 
-    ; location of cache file (defaults to current working directory)
-    cache path := cache/
+      ; location of cache file (defaults to current working directory)
+      cache path := cache/
 
-    ; if set to 1, any existing cache file will be overwritten (defaults to 0)
-    recompute cache := 0
+      ; if set to 1, any existing cache file will be overwritten (defaults to 1)
+      recompute cache := 0
 
-    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test
+    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test (defaults to 0)
     skip checking balanced subsets := 0
 
 

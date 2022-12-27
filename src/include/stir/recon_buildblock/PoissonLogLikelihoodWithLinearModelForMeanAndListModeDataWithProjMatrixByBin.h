@@ -144,7 +144,7 @@ protected:
  private:
 
   //! Cache of the listmode file
-  /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+  /*! \todo Move this higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   std::vector<BinAndCorr>  record_cache;
 
@@ -154,7 +154,7 @@ protected:
   Succeeded cache_listmode_file();
 
   Succeeded load_listmode_cache_file(unsigned int file_id);
-  Succeeded write_listmode_cache_file(unsigned int file_id);
+  Succeeded write_listmode_cache_file(unsigned int file_id) const;
 
   unsigned int num_cache_files;
 

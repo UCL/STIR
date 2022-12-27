@@ -50,6 +50,7 @@ set_defaults()
   base_type::set_defaults(); 
   this->list_mode_filename =""; 
   this->frame_defs_filename ="";
+  this->frame_defs = TimeFrameDefinitions();
   this->list_mode_data_sptr.reset(); 
   this->additive_projection_data_filename ="0"; 
   this->additive_proj_data_sptr.reset();
@@ -62,7 +63,7 @@ set_defaults()
 
   this->target_parameter_parser.set_defaults();
   cache_lm_file = false;
-  recompute_cache = false;
+  recompute_cache = true;
   skip_lm_input_file = false;
   cache_path = "";
   cache_size = 0;
@@ -116,10 +117,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
     }
   else
     {
-      // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
-      this->frame_defs = TimeFrameDefinitions(frame_times);
-      this->do_time_frame = false;
+      this->frame_defs = TimeFrameDefinitions();
     } 
   target_parameter_parser.check_values();
 
@@ -131,7 +129,14 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->list_mode_data_sptr = dynamic_pointer_cast<ListModeData>(arg);
+  try
+    {
+      this->list_mode_data_sptr = dynamic_pointer_cast<ListModeData>(arg);
+    }
+  catch (...)
+    {
+      error("input data doesn't seem to be listmode");
+    }
 }
 
 template<typename TargetT>
@@ -148,6 +153,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 get_max_segment_num_to_process(const int arg) const
 {
   return this->max_segment_num_to_process;
+}
+
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_recompute_cache(bool v)
+{
+  this->recompute_cache = v;
+}
+
+template <typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_recompute_cache() const
+{
+  return this->recompute_cache;
 }
 
 template <typename TargetT>
@@ -170,10 +191,9 @@ get_cache_max_size() const
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_cache_path(const std::string cache_path_v, const bool use_add)
+set_cache_path(const std::string& cache_path_v)
 {
     cache_path = cache_path_v;
-    has_add = use_add;
 }
 
 template <typename TargetT>
@@ -208,6 +228,17 @@ get_cache_path() const
     return this->cache_path;
   else
     return FilePath::get_current_working_directory();
+}
+
+template <typename TargetT>
+std::string
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_cache_filename(unsigned int file_id) const
+{
+  std::string cache_filename = "my_CACHE" + std::to_string(file_id) + ".bin";
+  FilePath icache(cache_filename, false);
+  icache.prepend_directory_name(this->get_cache_path());
+  return icache.get_as_string();
 }
 
 template <typename TargetT>
@@ -283,13 +314,22 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
                                                       max_segment_num_to_process);
     }
 
-  // check if we need to handle time frame definitions
-  this->do_time_frame =
-    (this->num_events_to_use == 0) &&
-    (this->frame_defs.get_num_frames() > 0) &&
-    (this->frame_defs.get_start_time(this->current_frame_num) <
-     this->frame_defs.get_end_time(this->current_frame_num));
- 
+  if (this->frame_defs.get_num_frames())
+    {
+      // check if we need to handle time frame definitions
+      this->do_time_frame =
+        (this->num_events_to_use == 0) &&
+        (this->frame_defs.get_start_time(this->current_frame_num) <
+         this->frame_defs.get_end_time(this->current_frame_num));
+    }
+  else
+    {
+      // make a single frame starting from 0. End value will be ignored.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
+      this->frame_defs = TimeFrameDefinitions(frame_times);
+      this->do_time_frame = false;
+    }
+
   if(!is_null_ptr(this->additive_proj_data_sptr))
     {
       if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_sptr)

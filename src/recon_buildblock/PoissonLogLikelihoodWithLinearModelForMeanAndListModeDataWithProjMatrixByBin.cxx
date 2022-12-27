@@ -334,13 +334,9 @@ template<typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_cache_file(unsigned int file_id)
 {
-    info("Reading cache from disk...");
-    std::string cache_filename = "my_CACHE" + std::to_string(file_id) + ".bin";
-    FilePath icache(cache_filename, false);
-    icache.prepend_directory_name(this->get_cache_path());
+    FilePath icache(this->get_cache_filename(file_id), false);
 
     record_cache.clear();
-    record_cache.reserve(this->cache_size);
 
     if (icache.is_regular_file())
     {
@@ -348,8 +344,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
                           | std::ios::ate);
 
-        unsigned long int num_of_records = fin.tellg()/sizeof (Bin);
-        record_cache.reserve(num_of_records + 1); // add 1 to avoid reallocation when overruning (see below)
+        const std::size_t num_records = fin.tellg()/sizeof (Bin);
+        try
+          {
+            record_cache.reserve(num_records + 1); // add 1 to avoid reallocation when overruning (see below)
+          }
+        catch (...)
+          {
+            error("Listmode: cannot allocate cache for " + std::to_string(num_records + 1) + " records");
+          }
         if (!fin)
           error("Error opening cache file \"" + icache.get_as_string() + "\" for reading.");
 
@@ -378,27 +381,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
     }
 
     info( boost::format("Cached Events: %1% ") % record_cache.size());
-    return Succeeded::yes; // Stop here!!!
+    return Succeeded::yes;
 }
 
 template<typename TargetT>
 Succeeded
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::write_listmode_cache_file(unsigned int file_id)
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::write_listmode_cache_file(unsigned int file_id) const
 {
-    info( boost::format("Storing Cached Events ... "));
-
-    std::string cache_filename = "my_CACHE" + std::to_string(file_id) +".bin";
-    FilePath ocache(cache_filename, false);
-    ocache.prepend_directory_name(this->get_cache_path());
-
-    bool with_add = !is_null_ptr(this->additive_proj_data_sptr);
+    const auto cache_filename = this->get_cache_filename(file_id);
+    const bool with_add = !is_null_ptr(this->additive_proj_data_sptr);
 
     {
-        info("Storing Listmode cache to file \"" + ocache.get_as_string() + "\".");
+        info("Storing Listmode cache to file \"" + cache_filename + "\".");
         // open the file, overwriting whatever was there before
-        std::ofstream fout(ocache.get_as_string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        std::ofstream fout(cache_filename, std::ios::out | std::ios::binary | std::ios::trunc);
         if (!fout)
-          error("Error opening cache file \"" + ocache.get_as_string() + "\" for writing.");
+          error("Error opening cache file \"" + cache_filename + "\" for writing.");
 
         for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
         {
@@ -408,18 +406,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             fout.write((char*)&tmp, sizeof(Bin));
         }
         if (!fout)
-          error("Error writing to cache file \"" + ocache.get_as_string() + "\".");
+          error("Error writing to cache file \"" + cache_filename + "\".");
 
         fout.close();
     }
 
-    num_cache_files += 1;
-    std::cout << "Caches: " << num_cache_files << std::endl;
-    // clear
-    record_cache.clear();
-    record_cache.reserve(this->cache_size);
-
-    return Succeeded::yes; // Stop here!!!
+    return Succeeded::yes;
 }
 
 template<typename TargetT>
@@ -427,8 +419,17 @@ Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
 {
     if(!this->recompute_cache && this->cache_lm_file)
-    {
-        info( boost::format("Events will be loaded later from the cache files."));
+      {
+        // find how many cache files there are
+        this->num_cache_files = 0;
+        while (true)
+          {
+            if (!FilePath::exists(this->get_cache_filename(this->num_cache_files)))
+                break;
+            ++this->num_cache_files;
+          }
+        if (!this->num_cache_files)
+          error("No cache files found.");
         return Succeeded::yes; // Stop here!!!
     }
 
@@ -436,9 +437,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       {
         info("Listmode reconstruction: Creating cache...");
 
-        //record_cache.reserve(std::max(this->cache_size, static_cast<unsigned long>(this->num_events_to_use))); // currently we cache all or nothing
-
-        record_cache.reserve(this->cache_size); // Do not go over the cache size but create multiple cache files.
+        record_cache.clear();
+        try
+          {
+            record_cache.reserve(this->cache_size);
+          }
+        catch (...)
+          {
+            error("Listmode: cannot allocate cache for " + std::to_string(this->cache_size) + " records. Reduce cache size.");
+          }
 
         this->list_mode_data_sptr->reset();
         const shared_ptr<ListRecord>  record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
@@ -446,43 +453,33 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
         const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
         double current_time = 0.;
-        unsigned int cached_events = 0;
+        unsigned long int cached_events = 0;
 
         bool stop_caching = false;
+        record_cache.reserve(this->cache_size);
 
         while(true) //keep caching across multiple files.
         {
-            if(stop_caching)
-                break;
+            record_cache.clear();
 
-//            if (cached_events >= this->cache_size && cached_events != 0) // Open a new cache unless this is the first run
-//            {
-//                write_listmode_cache_file(num_cache_files);
-//                num_cache_files += 1;
-//                // clear
-//                record_cache.clear();
-//                record_cache.reserve(this->cache_size);
-//            }
-
-            while (true) // Start
+            while (true) // Start for the current cache
             {
-
                 if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
                 {
                     stop_caching = true;
                     break;
                 }
-                // Cache the complete LM file -- Apply Time frames later
-//                if (record_sptr->is_time() && end_time > 0.01)
-//                {
-//                    current_time = record_sptr->time().get_time_in_secs();
-//                    if (this->do_time_frame && current_time >= end_time)
-//                    {
-//                        break; // get out of while loop
-//                    }
-//                    if (current_time < start_time)
-//                        continue;
-//                }
+                if (record_sptr->is_time())
+                  {
+                    current_time = record_sptr->time().get_time_in_secs();
+                    if (this->do_time_frame && current_time >= end_time)
+                      {
+                        stop_caching = true;
+                        break; // get out of while loop
+                      }
+                }
+                if (current_time < start_time)
+                  continue;
                 if (record_sptr->is_event() && record_sptr->event().is_prompt())
                 {
                     BinAndCorr tmp;
@@ -504,26 +501,36 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                     {
                         continue;
                     }
-                    record_cache.push_back(tmp);
-                    cached_events += 1;
+                    try
+                      {
+                        record_cache.push_back(tmp);
+                        ++cached_events;
+                      }
+                    catch (...)
+                      {
+                        // should never get here due to `reserve` statement above, but best to check...
+                        error("Listmode: running out of memory for cache. Current size: " + std::to_string(this->record_cache.size()) + " records");
+                      }
 
 
                     if (record_cache.size() > 1 && record_cache.size()%500000L==0)
-                        info( boost::format("Cached Prompt Events: %1% ") % record_cache.size());
+                      info( boost::format("Cached Prompt Events (this cache): %1% ") % record_cache.size());
 
                     if(this->num_events_to_use > 0)
-                        if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
+                      if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
                         {
                             stop_caching = true;
                             break;
                         }
-                }
 
+                    if (record_cache.size() == this->cache_size)
+                      break; // cache is full. go to next cache.
+                }
             }
 
-
+            // add additive term to current cache
             if(this->has_add)
-            {
+              {
 #ifdef STIR_TOF
                 // TODO
                 if (additive_proj_data_sptr->get_num_tof_poss() > 1)
@@ -535,9 +542,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #pragma omp parallel
                 {
 #pragma omp single
-                    {
-                        info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
-                    }
+                  {
+                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
+                  }
                 }
 #endif
 
@@ -545,15 +552,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #pragma omp parallel for schedule(dynamic) //collapse(2)
 #endif
                 for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
-                     seg <= this->additive_proj_data_sptr->get_max_segment_num();
-                     ++seg)
-                {
+                seg <= this->additive_proj_data_sptr->get_max_segment_num();
+                ++seg)
+                  {
                     const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg));
 
                     for (BinAndCorr &cur_bin : record_cache)
-                    {
+                      {
                         if (cur_bin.my_bin.segment_num() == seg)
-                        {
+                          {
 #ifdef STIR_OPENMP
 # if _OPENMP >=201012
 #  pragma omp atomic write
@@ -562,25 +569,25 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 # endif
 #endif
                             cur_bin.my_corr = segment[cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()][cur_bin.my_bin.tangential_pos_num()];
-                        }
-                    }
-                }
-#endif
-            }
-            info( boost::format("Cached Events: %1% ") % record_cache.size());
+                          }
+                      }
+                  }
+#endif // STIR_TOF
+              } // end additive correction
 
-            if(this->recompute_cache)
-            {
-                if( write_listmode_cache_file(num_cache_files) == Succeeded::no)
-                {
-                    error("Error in writing cache file!");
-                }
-            }
+            if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
+              {
+                error("Error writing cache file!");
+              }
+            ++this->num_cache_files;
 
-        }
-        return Succeeded::yes;
+            if(stop_caching)
+              break;
+      }
+      info( boost::format("Cached Events: %1% ") % cached_events);
+      return Succeeded::yes;
     }
-    return Succeeded::no;
+  return Succeeded::no;
 }
 
 template<typename TargetT>
@@ -702,28 +709,24 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
     if (this->cache_lm_file)
       {
-        // Get number of cache files in path
-
-        int curr_frame = this->do_time_frame ? this->current_frame_num : -1;
-
-        for (uint icache = 0; icache < num_cache_files; ++icache)
-        {
+        for (unsigned int icache = 0; icache < this->num_cache_files; ++icache)
+          {
             load_listmode_cache_file(icache);
             LM_distributable_computation(this->PM_sptr,
                                          this->proj_data_info_sptr,
                                          &gradient, &current_estimate,
                                          record_cache,
                                          subset_num, this->num_subsets,
-                                         curr_frame,
-                                         this->has_add);
-        }
+                                         this->has_add,
+                                         /* accumulate = */ icache != 0);
+          }
       }
     else
     {
-        //go to the beginning of this frame
         //  list_mode_data_sptr->set_get_position(start_time);
         // TODO implement function that will do this for a random time
-        this->list_mode_data_sptr->reset();
+
+      this->list_mode_data_sptr->reset();
 
         const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
         const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
@@ -763,15 +766,15 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
            if(record.is_time())
            {
-               //NE: multiplication with 0.001 should not be nessesary.
-               current_time = record.time().get_time_in_secs()*0.001;
+               current_time = record.time().get_time_in_secs();
                if (this->do_time_frame && current_time >= end_time)
                {
                    break; // get out of while loop
                }
-               if (current_time < start_time)
-                   continue;
            }
+
+           if (current_time < start_time)
+             continue;
 
            if (record.is_event() && record.event().is_prompt())
            {
@@ -837,7 +840,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
     }
     info(boost::format("Finished!"));
 
-  if (!add_sensitivity)
+    if (!add_sensitivity)
     {
       // subtract the subset sensitivity
       // compute gradient -= sub_sensitivity
