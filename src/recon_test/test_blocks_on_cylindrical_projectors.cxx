@@ -47,6 +47,7 @@
 #include "stir/copy_fill.h"
 #include "stir/IndexRange3D.h"
 #include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/Shape/Shape3DWithOrientation.h"
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/Shape/Box3D.h"
@@ -77,17 +78,20 @@ public:
 private:
   template <class TProjDataInfo>
   shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr);
+  template <class TProjDataInfo>
+  shared_ptr<TProjDataInfo> set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction = 4,
+                                                     int bin_fraction = 4);
 
   void run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
-  void run_plane_symmetry_test(ForwardProjectorByBin&forw_projector1, ForwardProjectorByBin& forw_projector2);
+  void run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_voxelOnCartesianGrid_with_negative_offset();
   void run_axial_projection_test(ForwardProjectorByBin& forw_projector, BackProjectorByBin& back_projector);
   void run_map_orientation_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_projection_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_intersection_with_cylinder_test();
 };
-/*! The following is a function to allow a projdata_info blocksONCylindrical to be created from the scanner.
- */
+
+/*! The following is a function to allow a projdata_info BlocksOnCylindrical to be created from the scanner. */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
 BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
@@ -106,6 +110,34 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
   auto proj_data_info_blocks_sptr
       = std::make_shared<TProjDataInfo>(scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
                                         scanner_sptr->get_max_num_views(), scanner_sptr->get_max_num_non_arccorrected_bins());
+
+  return proj_data_info_blocks_sptr;
+}
+
+/*! Function to generate projection data containing only segment 0. Also allows reducing no. of views and tangential bins. */
+template <class TProjDataInfo>
+shared_ptr<TProjDataInfo>
+BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction, int bin_fraction)
+{
+  // VectorWithOffset<int> num_axial_pos_per_segment(0, 0);
+  // VectorWithOffset<int> min_ring_diff_v(0, 0);
+  // VectorWithOffset<int> max_ring_diff_v(0, 0);
+  // num_axial_pos_per_segment[0] = scanner_sptr->get_num_rings();
+
+  auto segments = 1;
+  VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
+  VectorWithOffset<int> min_ring_diff_v(-segments, segments);
+  VectorWithOffset<int> max_ring_diff_v(-segments, segments);
+  for (int i = -segments; i <= segments; i++)
+    {
+      min_ring_diff_v[i] = i;
+      max_ring_diff_v[i] = i;
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
+    }
+
+  auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(
+      scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
+      scanner_sptr->get_max_num_views() / view_fraction, scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
 
   return proj_data_info_blocks_sptr;
 }
@@ -185,19 +217,17 @@ BlocksTests::run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardPr
                                               * scannerBlocks_sptr->get_num_axial_crystals_per_block());
   scannerBlocks_sptr->set_transaxial_block_spacing(scannerBlocks_sptr->get_transaxial_crystal_spacing()
                                                    * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
-  //    scannerBlocks_sptr->set_num_transaxial_crystals_per_block(1);
   scannerBlocks_sptr->set_num_axial_blocks_per_bucket(2);
-  //    scannerBlocks_sptr->set_num_transaxial_blocks_per_bucket(1);
   scannerBlocks_sptr->set_num_rings(2);
   scannerBlocks_sptr->set_intrinsic_azimuthal_tilt(-30);
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
   //    now forward-project images
 
-  info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
 
@@ -287,7 +317,6 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
                    CartesianCoordinate3D<float>((image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z(),
                                                 0 * grid_spacing.y(), 0),
                    direction2);
-  //    plane.set_direction_vectors(direction2);
 
   plane2.construct_volume(image2, make_coordinate(3, 3, 3));
 
@@ -299,16 +328,14 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
                                               * scannerBlocks_sptr->get_num_axial_crystals_per_block());
   scannerBlocks_sptr->set_transaxial_block_spacing(scannerBlocks_sptr->get_transaxial_crystal_spacing()
                                                    * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
-  //    scannerBlocks_sptr->set_num_transaxial_crystals_per_block(1);
   scannerBlocks_sptr->set_num_axial_blocks_per_bucket(2);
-  //    scannerBlocks_sptr->set_num_transaxial_blocks_per_bucket(1);
   scannerBlocks_sptr->set_num_rings(2);
 
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 1);
 
   //    now forward-project image
 
@@ -318,7 +345,7 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
   shared_ptr<DiscretisedDensity<3, float>> image2_sptr(image2.clone());
   write_to_file("plane30", *image2_sptr);
 
-  info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image_sptr);
 
@@ -472,7 +499,7 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
   shared_ptr<DiscretisedDensity<3, float>> bck_proj_image_sptr(image.clone());
   write_to_file("axial_test", *image_sptr);
 
-  info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector.parameter_info());
+  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector.parameter_info());
 
   forw_projector.set_up(proj_data_info_blocks_sptr, image_sptr);
   back_projector.set_up(proj_data_info_blocks_sptr, bck_proj_image_sptr);
@@ -513,7 +540,6 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
 void
 BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2)
 {
-  CPUTimer timer;
   //-- ExamInfo
   auto exam_info_sptr = std::make_shared<ExamInfo>();
   exam_info_sptr->imaging_modality = ImagingModality::PT;
@@ -539,7 +565,6 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   ellipsoid.construct_volume(image, make_coordinate(3, 3, 3));
 
   VoxelsOnCartesianGrid<float> image1 = image;
-  VoxelsOnCartesianGrid<float> image22 = image;
   //    rotate by 30 degrees
   for (int i = 30; i < 90; i += 30)
     {
@@ -563,11 +588,8 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   scannerBlocks_sptr->set_num_transaxial_blocks_per_bucket(1);
   scannerBlocks_sptr->set_up();
 
-  VectorWithOffset<int> num_axial_pos_per_segment(scannerBlocks_sptr->get_num_rings() * 2 - 1);
-  VectorWithOffset<int> min_ring_diff_v(scannerBlocks_sptr->get_num_rings() * 2 - 1);
-  VectorWithOffset<int> max_ring_diff_v(scannerBlocks_sptr->get_num_rings() * 2 - 1);
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 1, 4);
   Bin bin, bin1, bin2, binR1;
   CartesianCoordinate3D<float> b1, b2, rb1, rb2;
   DetectionPosition<> det_pos, det_pos_ord;
@@ -603,12 +625,10 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   scannerBlocks_reord_sptr->set_up();
 
   auto proj_data_info_blocks_reord_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
-  proj_data_info_blocks_reord_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerBlocks_reord_sptr);
-  timer.reset();
-  timer.start();
+  proj_data_info_blocks_reord_sptr = set_direct_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerBlocks_reord_sptr, 1, 4);
 
   //    now forward-project images
-  info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
   auto projdata1 = std::make_shared<ProjDataInMemory>(exam_info_sptr, proj_data_info_blocks_sptr);
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
   forw_projector1.forward_project(*projdata1, *image1_sptr);
@@ -645,8 +665,6 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
       check(dp1.pos1().tangential_coord() != dpR1.pos1().tangential_coord(),
             " checking det_pos.tangential is different if we use a reordered map");
     }
-  timer.stop();
-  std::cerr << "-- CPU Time " << timer.value() << '\n';
 }
 
 void
@@ -693,7 +711,7 @@ BlocksTests::run_projection_test(ForwardProjectorByBin& forw_projector1, Forward
   proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
 
   //    now forward-project images
-  info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
   auto projdata1 = std::make_shared<ProjDataInterfile>(exam_info_sptr, proj_data_info_blocks_sptr, "sino_with_phantom_at_30_0.hs",
@@ -704,57 +722,64 @@ BlocksTests::run_projection_test(ForwardProjectorByBin& forw_projector1, Forward
   forw_projector1.forward_project(*projdata2, *image2_sptr);
 
   forw_projector2.set_up(proj_data_info_blocks_sptr, image1_sptr);
-  auto projdata1_parallelproj = std::make_shared<ProjDataInterfile>(exam_info_sptr, proj_data_info_blocks_sptr, "sino_with_phantom_at_30_0_parallelproj.hs",
-                                                 std::ios::out | std::ios::trunc | std::ios::in);
+  auto projdata1_parallelproj = std::make_shared<ProjDataInterfile>(exam_info_sptr, proj_data_info_blocks_sptr,
+                                                                    "sino_with_phantom_at_30_0_parallelproj.hs",
+                                                                    std::ios::out | std::ios::trunc | std::ios::in);
   forw_projector2.forward_project(*projdata1_parallelproj, *image1_sptr);
-  auto projdata2_parallelproj = std::make_shared<ProjDataInterfile>(exam_info_sptr, proj_data_info_blocks_sptr, "sino_with_phantom_at_25_0_parallelproj.hs",
-                                            std::ios::out | std::ios::trunc | std::ios::in);
+  auto projdata2_parallelproj = std::make_shared<ProjDataInterfile>(exam_info_sptr, proj_data_info_blocks_sptr,
+                                                                    "sino_with_phantom_at_25_0_parallelproj.hs",
+                                                                    std::ios::out | std::ios::trunc | std::ios::in);
   forw_projector2.forward_project(*projdata2_parallelproj, *image2_sptr);
 
-  //    compare the images: erode all non-zero voxels in ray tracing projections by 1, then sum all voxels in parallelproj projections where the mask is 0
+  //    compare the images: erode all non-zero voxels in ray tracing projections by 1, then sum all voxels in parallelproj
+  //    projections where the mask is 0
   auto have_same_shape = [](shared_ptr<ProjDataInterfile> projdata, shared_ptr<ProjDataInterfile> projdata_parallel) -> int {
     int sum_of_nonzero_voxels = 0;
-    const int buffer = 10;  // in the extremes the differences in projectors can be slightly larger
+    const int buffer = 10; // in the extremes the differences in projectors can be slightly larger
     Bin bin;
     bin.segment_num() = 1;
     bin.axial_pos_num() = 0;
     Bin bin_parallel = bin;
     auto sinogram = projdata->get_segment_by_sinogram(0).get_sinogram(1);
     for (auto view = sinogram.get_min_view_num() + buffer; view <= sinogram.get_max_view_num() - buffer; view++)
-    {
-      for (auto pos = sinogram.get_min_tangential_pos_num(); pos <= sinogram.get_max_tangential_pos_num(); pos++)
       {
-        bin_parallel.view_num() = view;
-        bin_parallel.tangential_pos_num() = pos;
-        if (projdata_parallel->get_bin_value(bin_parallel) > 0.0)
-        {
-          // confirm that we are within one voxel of a nonzero entry in the ray tracing projdata
-          auto all_fine = false;
-          for (auto view_offset = -1; view_offset <= 1; view_offset++)
+        for (auto pos = sinogram.get_min_tangential_pos_num(); pos <= sinogram.get_max_tangential_pos_num(); pos++)
           {
-            for (auto pos_offset = -1; pos_offset <= 1; pos_offset++)
-            {
-              bin.view_num() = view + view_offset;
-              bin.tangential_pos_num() = pos + pos_offset;
-              try
+            bin_parallel.view_num() = view;
+            bin_parallel.tangential_pos_num() = pos;
+            if (projdata_parallel->get_bin_value(bin_parallel) > 0.0)
               {
-                auto value = projdata->get_bin_value(bin);
-                if (value > 0.0)
-                  all_fine = true;
+                // confirm that we are within one voxel of a nonzero entry in the ray tracing projdata
+                auto all_fine = false;
+                for (auto view_offset = -1; view_offset <= 1; view_offset++)
+                  {
+                    for (auto pos_offset = -1; pos_offset <= 1; pos_offset++)
+                      {
+                        bin.view_num() = view + view_offset;
+                        bin.tangential_pos_num() = pos + pos_offset;
+                        try
+                          {
+                            auto value = projdata->get_bin_value(bin);
+                            if (value > 0.0)
+                              all_fine = true;
+                          }
+                        catch (...)
+                          { /* here we are just out of bounds of the projdata, nothing to worry about */
+                          }
+                      }
+                  }
+                if (!all_fine)
+                  sum_of_nonzero_voxels++;
               }
-              catch (...) { /* here we are just out of bounds of the projdata, nothing to worry about */ }
-            }
           }
-          if (!all_fine)
-            sum_of_nonzero_voxels++;
-        }
       }
-    }
     return sum_of_nonzero_voxels;
   };
 
-  check(have_same_shape(projdata1, projdata1_parallelproj) == 0, "check that projection of voxel (0, -30) has same shape for ray tracing and parallelproj");
-  check(have_same_shape(projdata2, projdata2_parallelproj) == 0, "check that projection of voxel (0, -25) has same shape for ray tracing and parallelproj");
+  check(have_same_shape(projdata1, projdata1_parallelproj) == 0,
+        "check that projection of voxel (0, -30) has same shape for ray tracing and parallelproj");
+  check(have_same_shape(projdata2, projdata2_parallelproj) == 0,
+        "check that projection of voxel (0, -25) has same shape for ray tracing and parallelproj");
 }
 
 void
@@ -782,64 +807,73 @@ BlocksTests::run_intersection_with_cylinder_test()
   LORAs2Points<float> lor_points, lor_points_with_larger_radius;
   const float radius = proj_data_info->get_scanner_sptr()->get_inner_ring_radius();
 
-  auto are_parallel = [](CartesianCoordinate3D<float> &line1, CartesianCoordinate3D<float> &line2) -> bool {
+  auto are_parallel = [](CartesianCoordinate3D<float>& line1, CartesianCoordinate3D<float>& line2) -> bool {
     const auto dot_product = line1.x() * line2.x() + line1.y() * line2.y() + line1.z() * line2.z();
     const auto length1 = sqrt(line1.x() * line1.x() + line1.y() * line1.y() + line1.z() * line1.z());
     const auto length2 = sqrt(line2.x() * line2.x() + line2.y() * line2.y() + line2.z() * line2.z());
     return abs(dot_product) / length1 / length2 > 0.99;
   };
 
-  auto point_is_on_cylinder = [](const CartesianCoordinate3D<float> &point, float radius) -> bool {
+  auto point_is_on_cylinder = [](const CartesianCoordinate3D<float>& point, float radius) -> bool {
     return abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
   };
 
   const auto segment_sequence = ProjData::standard_segment_sequence(*proj_data_info);
   std::size_t index(0);
   for (int seg : segment_sequence)
-  {
-    bin.segment_num() = seg;
-    for (bin.axial_pos_num() = proj_data_info->get_min_axial_pos_num(bin.segment_num());
-          bin.axial_pos_num() <= proj_data_info->get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
     {
-      for (bin.view_num() = proj_data_info->get_min_view_num(); bin.view_num() <= proj_data_info->get_max_view_num();
-            ++bin.view_num())
-      {
-        for (bin.tangential_pos_num() = proj_data_info->get_min_tangential_pos_num();
-              bin.tangential_pos_num() <= proj_data_info->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+      bin.segment_num() = seg;
+      for (bin.axial_pos_num() = proj_data_info->get_min_axial_pos_num(bin.segment_num());
+           bin.axial_pos_num() <= proj_data_info->get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
         {
-          proj_data_info->get_LOR(lor, bin);
-          if (lor.get_intersections_with_cylinder(lor_points, radius) == Succeeded::yes &&
-              lor.get_intersections_with_cylinder(lor_points_with_larger_radius, radius + 20) == Succeeded::yes)
-          {
-            const CartesianCoordinate3D<float> p1 = lor_points.p1();
-            const CartesianCoordinate3D<float> p2 = lor_points.p2();
-            const CartesianCoordinate3D<float> p1_large_r = lor_points_with_larger_radius.p1();
-            const CartesianCoordinate3D<float> p2_large_r = lor_points_with_larger_radius.p2();
+          for (bin.view_num() = proj_data_info->get_min_view_num(); bin.view_num() <= proj_data_info->get_max_view_num();
+               ++bin.view_num())
+            {
+              for (bin.tangential_pos_num() = proj_data_info->get_min_tangential_pos_num();
+                   bin.tangential_pos_num() <= proj_data_info->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+                {
+                  proj_data_info->get_LOR(lor, bin);
+                  if (lor.get_intersections_with_cylinder(lor_points, radius) == Succeeded::yes
+                      && lor.get_intersections_with_cylinder(lor_points_with_larger_radius, radius + 20) == Succeeded::yes)
+                    {
+                      const CartesianCoordinate3D<float> p1 = lor_points.p1();
+                      const CartesianCoordinate3D<float> p2 = lor_points.p2();
+                      const CartesianCoordinate3D<float> p1_large_r = lor_points_with_larger_radius.p1();
+                      const CartesianCoordinate3D<float> p2_large_r = lor_points_with_larger_radius.p2();
 
-            // check if on same line
-            auto v1 = CartesianCoordinate3D<float>(p1 - p2);
-            auto v2 = CartesianCoordinate3D<float>(p1 - p1_large_r);
-            auto v3 = CartesianCoordinate3D<float>(p1 - p2_large_r);
-            check(are_parallel(v1, v2), "checking for collinearity");
-            check(are_parallel(v2, v3), "checking for collinearity");
+                      // check if on same line
+                      auto v1 = CartesianCoordinate3D<float>(p1 - p2);
+                      auto v2 = CartesianCoordinate3D<float>(p1 - p1_large_r);
+                      auto v3 = CartesianCoordinate3D<float>(p1 - p2_large_r);
+                      check(are_parallel(v1, v2), "checking for collinearity");
+                      check(are_parallel(v2, v3), "checking for collinearity");
 
-            // check if on cylinder
-            check(point_is_on_cylinder(p1, radius), "check if point is on cylinder");
-            check(point_is_on_cylinder(p2, radius), "check if point is on cylinder");
-            check(point_is_on_cylinder(p1_large_r, radius + 20), "check if point is on cylinder");
-            check(point_is_on_cylinder(p2_large_r, radius + 20), "check if point is on cylinder");
-          }
+                      // check if on cylinder
+                      check(point_is_on_cylinder(p1, radius), "check if point is on cylinder");
+                      check(point_is_on_cylinder(p2, radius), "check if point is on cylinder");
+                      check(point_is_on_cylinder(p1_large_r, radius + 20), "check if point is on cylinder");
+                      check(point_is_on_cylinder(p2_large_r, radius + 20), "check if point is on cylinder");
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 void
 BlocksTests::run_tests()
 {
+  HighResWallClockTimer timer;
+  timer.start();
 
-  std::cerr << "-------- Testing Blocks Geometry --------\n";
+  auto print_time = [&timer](const std::string& description) {
+    timer.stop();
+    std::cout << description << timer.value() << " seconds" << std::endl;
+    timer.reset();
+    timer.start();
+  };
+
+  std::cout << "-------- Testing Blocks Geometry --------" << std::endl;
   auto PM = std::make_shared<ProjMatrixByBinUsingRayTracing>();
   PM->enable_cache(false);
   PM->set_use_actual_detector_boundaries(true);
@@ -849,25 +883,36 @@ BlocksTests::run_tests()
   auto back_projector = BackProjectorByBinUsingProjMatrixByBin(PM);
 
   run_symmetry_test(forw_projector1, forw_projector2);
+  print_time("symmetry test took: ");
   run_plane_symmetry_test(forw_projector1, forw_projector2);
+  print_time("plane symmetry test took: ");
   run_voxelOnCartesianGrid_with_negative_offset();
-  run_map_orientation_test(forw_projector1, forw_projector2);
+  print_time("voxelOnCartesianGrid test took: ");
   run_axial_projection_test(forw_projector1, back_projector);
+  print_time("axial projection test took: ");
+  run_map_orientation_test(forw_projector1, forw_projector2);
+  print_time("map orientation test took: ");
   run_intersection_with_cylinder_test();
+  print_time("intersection with cylinder test took: ");
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   // run the same tests with parallelproj, if available
+  std::cout << "-------- Testing Parallelproj --------" << std::endl;
   auto forw_projector1_parallelproj = ForwardProjectorByBinParallelproj();
   auto forw_projector2_parallelproj = ForwardProjectorByBinParallelproj();
   auto back_projector_parallelproj = BackProjectorByBinParallelproj();
 
   run_symmetry_test(forw_projector1_parallelproj, forw_projector2_parallelproj);
+  print_time("symmetry test took: ");
   run_plane_symmetry_test(forw_projector1_parallelproj, forw_projector2_parallelproj);
+  print_time("plane symmetry test took: ");
   run_map_orientation_test(forw_projector1_parallelproj, forw_projector2_parallelproj);
+  print_time("map orientation test took: ");
   run_axial_projection_test(forw_projector1_parallelproj, back_projector_parallelproj);
+  print_time("axial projection test took: ");
   run_projection_test(forw_projector1, forw_projector1_parallelproj);
+  print_time("projection cpu vs. gpu comparison test took: ");
 #endif
-
 }
 END_NAMESPACE_STIR
 
