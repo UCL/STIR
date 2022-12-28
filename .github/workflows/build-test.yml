@@ -43,8 +43,8 @@ jobs:
           compiler: gcc
           compiler_version: 11
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-          BUILD_TYPE: "Debug"
           parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
           ROOT: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
@@ -72,7 +72,11 @@ jobs:
             CC=${CC}-${{ matrix.compiler_version }}
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
-
+          if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
+            # need to force XCode version for the moment due to a linker bug
+            # see https://github.com/UCL/STIR/issues/1103
+            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
+          fi
           export CC CXX
           # make available to jobs below
           echo CC="$CC" >> $GITHUB_ENV
@@ -88,7 +92,8 @@ jobs:
             (ubuntu*)
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
-                  sudo apt install $CC # package is called clang
+                  # package is called clang, need libomp-dev for OpenMP support
+                  sudo apt install $CC libomp-dev
               else
                   sudo apt install $CXX
               fi

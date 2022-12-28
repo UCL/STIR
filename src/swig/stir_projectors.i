@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2014, 2022 University College London
     Copyright (C) 2022 Positrigo
     Copyright (C) 2022 Katholieke Universiteit London
@@ -17,6 +18,10 @@
   \author Georg Schramm
 */
 
+%rename (get_forward_projector) *::get_forward_projector_sptr;
+%rename (get_back_projector) *::get_back_projector_sptr;
+%rename (get_proj_matrix) *::get_proj_matrix;
+%rename (get_attenuation_image) *::get_attenuation_image_sptr;
 
 %shared_ptr(stir::ForwardProjectorByBin);
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
@@ -90,7 +95,7 @@
     stir::ProjectorByBinPairUsingSeparateProjectors, stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
-#ifdef STIR_WITH_Parallelproj_PROJECTOR
+#ifdef HAVE_parallelproj
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
     stir::ForwardProjectorByBin>);
 %shared_ptr(stir::ForwardProjectorByBinParallelproj);
@@ -112,7 +117,7 @@
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
 %shared_ptr(stir::ProjectorByBinPairUsingParallelproj);
 %template(internalRPProjectorByBinPairUsingParallelproj)
-  stir::RegisteredParsingObject<stir::ProjectorByBinPairUsingeParallelproj,
+  stir::RegisteredParsingObject<stir::ProjectorByBinPairUsingParallelproj,
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif

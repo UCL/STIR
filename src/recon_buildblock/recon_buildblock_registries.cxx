@@ -37,6 +37,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+#include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -108,6 +109,7 @@ static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
 static ProjMatrixByBinUsingInterpolation::RegisterIt dummy12;
 static ProjMatrixByBinFromFile::RegisterIt dumy13;
 static ProjMatrixByBinSPECTUB::RegisterIt dumy14;
+static ProjMatrixByBinPinholeSPECTUB::RegisterIt dummy15;
 
 static ForwardProjectorByBinUsingProjMatrixByBin::RegisterIt dummy31;
 static ForwardProjectorByBinUsingRayTracing::RegisterIt dummy32;

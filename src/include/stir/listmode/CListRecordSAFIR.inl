@@ -126,4 +126,16 @@ void CListEventDataSAFIR::get_detection_position_pair(DetectionPositionPair<>& d
 	det_pos_pair.pos2().tangential_coord() = detB;
 }
 
+void CListEventDataNeuroLF::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
+{
+	det_pos_pair.pos1().radial_coord() = layerA;
+	det_pos_pair.pos2().radial_coord() = layerB;
+
+	det_pos_pair.pos1().axial_coord() = ringA;
+	det_pos_pair.pos2().axial_coord() = ringB;
+
+	det_pos_pair.pos1().tangential_coord() = detA;
+	det_pos_pair.pos2().tangential_coord() = detB;
+}
+
 END_NAMESPACE_STIR
