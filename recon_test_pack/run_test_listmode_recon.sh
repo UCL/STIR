@@ -81,7 +81,7 @@ fi
 
 echo "=== Creating my_test_lm_frame.fdef (time frame definitions)"
 # Note: test data contains only 612 ms of data, so use a very short frame of 0.5s
-rm my_test_lm_frame.fdef
+rm -f my_test_lm_frame.fdef
 echo "0 0.1" > my_test_lm_frame.fdef # skip the first .1s, to test if this feature works
 echo "1 0.5" >> my_test_lm_frame.fdef
 export FRAMES
