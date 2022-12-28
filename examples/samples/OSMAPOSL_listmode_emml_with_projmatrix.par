@@ -43,10 +43,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 
     ; cache listmode events in memory and on file
       ; set this number > 0 to enable this feature
-      ; depending on the this max size, one or more files will be created in cache_path (see below)
+      ; depending on this max size, one or more files will be created in cache_path (see below)
       max cache size := 0
 
-      ; location of cache file (defaults to current working directory)
+      ; location of cache files (defaults to current working directory, needs to exist)
       cache path := cache/
 
       ; if set to 1, any existing cache file will be overwritten (defaults to 1)

@@ -12,7 +12,8 @@
 <h2>Overall summary</h2>
 <p>
 <ul>
-  <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
+  <li>Improvements to listmode reconstruction to enable cahcing and multi-threading by Nikos Efthimiou and Kris Thielemans, see
+    <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a> and <a href="https://github.com/UCL/STIR/pull/1094/">PR #1094</a>.
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li> 
@@ -42,11 +43,19 @@ improvements to the documentation.
   <li>Fix of <code>find_LOR_intersections_with_cylinder</code> functions in the LOR hierarchy. This fixes the use of the <tt>parallelproj</tt> projector for non-cylindrical geometries. See <a href="https://github.com/UCL/STIR/pull/1072/">PR #1072</a>
     and <a href="https://github.com/UCL/STIR/pull/1074/">PR #1074</a>.
   </li>
+  <li>Listmode reconstruction was using all events stored before the start-time of the desired time-frame.
 </ul>
 
 <h3>New functionality</h3>
 <ul>
-  <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
+  <li>Improvements to listmode reconstruction to enable cahcing and multi-threading by Nikos Efthimiou and Kris Thielemans, see
+    <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a> and <a href="https://github.com/UCL/STIR/pull/1094/">PR #1094</a>.
+    When enabling caching of listmode events, one or more files will be written on disk in a binary format, and re-used. This can result in speed-up for some listmode file formats. In addition,
+    multi-threading will then be enabled, which can result in large speed-ups.
+    See the new example file <tt>examples/samples/OSMAPOSL_listmode_emml_with_projmatrix.par</tt>
+    and the class doxygen documentation for
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndListModeData</code> and
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin</code>.
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li>    
@@ -114,6 +123,8 @@ See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
     <code>x(Hx) > 0</code>, and a perturbation response, using gradients, was added to determine the Hessian
     (for a single densel) is within tolerance.
     Tests the Quadratic, Relative Difference (in two configurations) and Log-Cosh Penalties (Robert Twyman, UCL).
+  </li>
+  <li> <tt>recon_test_pack/run_test_listmode_recon.sh</tt> now also tests with a time frame.
   </li>
 </ul>
 </body>

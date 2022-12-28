@@ -2,7 +2,7 @@ OSMAPOSLParameters :=
 objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
 	list mode filename := PET_ACQ_small.l.hdr.STIR
-	max ring difference num to process :=  1
+	maximum absolute segment number to process :=  1
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
    ; use multiple (almost) parallel LORs for every bin in the sinogram 
