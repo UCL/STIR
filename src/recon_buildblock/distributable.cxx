@@ -613,7 +613,7 @@ std::vector<float>measured_div_fwd;
 #ifdef STIR_OPENMP
 #pragma omp single
         {
-            std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n";
+          info("Listmode gradient calculation: starting loop with " + std::to_string(omp_get_num_threads()) + " threads", 2);
             local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
             //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
             local_counts.resize(omp_get_max_threads(), 0);
@@ -628,7 +628,7 @@ std::vector<float>measured_div_fwd;
 #pragma omp for schedule(dynamic)
 #else
         {
-           info("Starting loop with 1 thread", 2);
+           info("Listmode gradient calculation: starting loop with 1 thread", 2);
             local_output_image_sptrs.resize(1, shared_ptr<DiscretisedDensity<3,float> >());
             //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
             local_counts.resize(1, 0);

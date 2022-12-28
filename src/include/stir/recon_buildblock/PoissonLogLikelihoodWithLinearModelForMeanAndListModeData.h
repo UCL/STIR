@@ -133,8 +133,8 @@ public:
     /*! defaults to \c true */
     void set_recompute_cache(bool);
     bool get_recompute_cache() const;
-  
-    //! Skip reading of listmode file entirely, only read from cache
+
+    //! Skip reading of listmode file entirely, only read from cache (broken!)
     /*!
       \warning This currently aborts, as functionality is broken. (We would need to be
       able to read proj_data_info and exam_info).

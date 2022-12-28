@@ -435,7 +435,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
     if(this->cache_lm_file)
       {
-        info("Listmode reconstruction: Creating cache...");
+        info("Listmode reconstruction: Creating cache...", 2);
 
         record_cache.clear();
         try
@@ -543,7 +543,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 {
 #pragma omp single
                   {
-                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads");
+                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads", 2);
                   }
                 }
 #endif
@@ -760,7 +760,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
            if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
            {
-               info("End of file!");
+             info("End of listmode file!", 2);
                break; //get out of while loop
            }
 
@@ -838,7 +838,6 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
        info(boost::format("Number of used events (for all subsets): %1%") % num_used_events);
 
     }
-    info(boost::format("Finished!"));
 
     if (!add_sensitivity)
     {
