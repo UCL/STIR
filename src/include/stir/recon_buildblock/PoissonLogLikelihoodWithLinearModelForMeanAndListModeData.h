@@ -93,7 +93,7 @@ public:
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
     virtual const ListModeData& get_input_data() const;
-    //! set maximum segment_number (from listmode data) to process
+    //! set maximum segment_number (in listmode data) to process
     /*! minimum will be -max_segment_num_to_process
 
       Use -1 to process all.
@@ -101,7 +101,7 @@ public:
     void set_max_segment_num_to_process(int);
     //! get maximum segment_number (from listmode data) to process
     /*! \see set_max_segment_num_to_process */
-    int get_max_segment_num_to_process(int) const;
+    int get_max_segment_num_to_process() const;
 
     /*! \name caching-related methods
       These functions can be used to cache listmode events into memory, allowing

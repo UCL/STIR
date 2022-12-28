@@ -323,7 +323,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #if STIR_VERSION < 060000
    this->proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
-   this->set_max_ring_difference(this->max_ring_difference_num_to_process);
+   if (this->get_max_segment_num_to_process() < 0)
+     this->set_max_ring_difference(this->max_ring_difference_num_to_process);
+   else
+     {
+       if (this->max_ring_difference_num_to_process >= 0)
+         warning("You've set \"max_ring_difference_num_to_process\", which is obsolete.\n"
+                 "Replace by \"maximum segment number to process\" for future compatibility and to avoid this warning");
+     }
 #endif
 
    return false;

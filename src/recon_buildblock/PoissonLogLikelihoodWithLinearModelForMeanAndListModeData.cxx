@@ -150,7 +150,7 @@ set_max_segment_num_to_process(const int arg)
 template<typename TargetT>
 int
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-get_max_segment_num_to_process(const int arg) const
+get_max_segment_num_to_process() const
 {
   return this->max_segment_num_to_process;
 }
