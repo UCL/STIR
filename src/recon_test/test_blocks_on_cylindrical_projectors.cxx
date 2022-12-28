@@ -77,7 +77,8 @@ public:
 
 private:
   template <class TProjDataInfo>
-  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr);
+  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction = 1,
+                                                     int bin_fraction = 1);
   template <class TProjDataInfo>
   shared_ptr<TProjDataInfo> set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction = 4,
                                                      int bin_fraction = 4);
@@ -94,7 +95,7 @@ private:
 /*! The following is a function to allow a projdata_info BlocksOnCylindrical to be created from the scanner. */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
-BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
+BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction, int bin_fraction)
 {
   auto segments = scanner_sptr->get_num_rings() - 1;
   VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
@@ -107,9 +108,9 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
       num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
     }
 
-  auto proj_data_info_blocks_sptr
-      = std::make_shared<TProjDataInfo>(scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
-                                        scanner_sptr->get_max_num_views(), scanner_sptr->get_max_num_non_arccorrected_bins());
+  auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(
+      scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
+      scanner_sptr->get_max_num_views() / view_fraction, scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
 
   return proj_data_info_blocks_sptr;
 }
@@ -493,7 +494,7 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
   proj_data_info_blocks_sptr
-      = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr); //    now forward-project image
+      = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 4); //    now forward-project image
 
   shared_ptr<DiscretisedDensity<3, float>> image_sptr(image.clone());
   shared_ptr<DiscretisedDensity<3, float>> bck_proj_image_sptr(image.clone());
