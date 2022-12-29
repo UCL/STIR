@@ -97,9 +97,10 @@ for use_frame in true false; do
     echo "=============== Using ${suffix} definition ============="
 
     echo "=== Reconstruct listmode data without cache"
-    export filename=my_output_t_lm_pr_seg2_${suffix}
+    export filename=my_output_t_lm_pr_seg1_${suffix}
     export cache=0
     export recompute_cache=0
+    export recompute_sensitivity=1
     logfile=OSMAPOSL_test_lm_${suffix}_1.log
     if ${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > "$logfile" 2>&1
     then
@@ -113,9 +114,10 @@ for use_frame in true false; do
     echo "=== Reconstruct listmode data with cache and store it on disk"
     # first remove all cached files
     rm -f my_CACHE*bin
-    export filename=my_output_t_lm_pr_seg2_${suffix}_with_new_cache
+    export filename=my_output_t_lm_pr_seg1_${suffix}_with_new_cache
     export cache=5000
     export recompute_cache=1
+    export recompute_sensitivity=0
     logfile=OSMAPOSL_test_lm_${suffix}_2.log
     if ${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > "$logfile" 2>&1
     then
@@ -128,7 +130,7 @@ for use_frame in true false; do
 
     echo "=== Compare reconstructed images with and without caching LM file"
     logfile=my_output_comparison_nocache_vs_new_cache_${suffix}.log
-    if compare_image my_output_t_lm_pr_seg2_${suffix}_1.hv my_output_t_lm_pr_seg2_${suffix}_with_new_cache_1.hv > "$logfile" 2>&1
+    if compare_image my_output_t_lm_pr_seg1_${suffix}_1.hv my_output_t_lm_pr_seg1_${suffix}_with_new_cache_1.hv > "$logfile" 2>&1
     then
         echo "---- This test seems to be ok !"
     else
@@ -138,9 +140,10 @@ for use_frame in true false; do
     fi
 
     echo "=== Reconstruct listmode data with cache loaded from the disk"
-    export filename=my_output_t_lm_pr_seg2_${suffix}_with_old_cache
+    export filename=my_output_t_lm_pr_seg1_${suffix}_with_old_cache
     export cache=40000
     export recompute_cache=0
+    export recompute_sensitivity=0
     logfile=OSMAPOSL_test_lm_${suffix}_3.log
     if ${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > "$logfile" 2>&1
     then
@@ -153,7 +156,7 @@ for use_frame in true false; do
 
     echo "=== Compare reconstructed images without caching LM file and with loading cache from disk"
     logfile=my_output_comparison_nocache_vs_existing_cache_${suffix}.log
-    if compare_image my_output_t_lm_pr_seg2_${suffix}_1.hv my_output_t_lm_pr_seg2_${suffix}_with_old_cache_1.hv > "$logfile" 2>&1
+    if compare_image my_output_t_lm_pr_seg1_${suffix}_1.hv my_output_t_lm_pr_seg1_${suffix}_with_old_cache_1.hv > "$logfile" 2>&1
     then
         echo "---- This test seems to be ok !"
     else
@@ -175,7 +178,8 @@ for use_frame in true false; do
     fi
 
     echo "=== Reconstruct projection data for comparison"
-    export filename=my_output_t_proj_seg2_${suffix}
+    export filename=my_output_t_proj_seg1_${suffix}
+    export recompute_sensitivity=1
     logfile=OSMAPOSL_test_proj_${suffix}.log
     if ${MPIRUN} OSMAPOSL OSMAPOSL_test_proj.par > "$logfile" 2>&1
     then
@@ -188,7 +192,7 @@ for use_frame in true false; do
 
     echo "=== Compare sensitivity images"
     logfile=my_sens_comparison_${suffix}.log
-    if compare_image my_sens_t_proj_seg2.hv my_sens_t_lm_pr_seg2.hv > "$logfile" 2>&1
+    if compare_image my_sens_t_proj_seg1.hv my_sens_t_lm_pr_seg1.hv > "$logfile" 2>&1
     then
         echo "---- This test seems to be ok !"
     else
@@ -199,7 +203,7 @@ for use_frame in true false; do
 
     echo "=== Compare reconstructed images"
     logfile=my_output_comparison_proj_vs_lm_${suffix}.log
-    if compare_image my_output_t_proj_seg2_${suffix}_1.hv my_output_t_lm_pr_seg2_${suffix}_1.hv > "$logfile" 2>&1
+    if compare_image my_output_t_proj_seg1_${suffix}_1.hv my_output_t_lm_pr_seg1_${suffix}_1.hv > "$logfile" 2>&1
     then
         echo "---- This test seems to be ok !"
     else

@@ -24,7 +24,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 	use subset sensitivities:= 0
 	max cache size := ${cache} 
 	recompute cache := ${recompute_cache}
-	sensitivity filename:=  my_sens_t_lm_pr_seg2.hv
+        recompute sensitivity := ${recompute_sensitivity}
+	sensitivity filename:=  my_sens_t_lm_pr_seg1.hv
 	zoom :=  1
   xy output image size (in pixels) := 100
 
