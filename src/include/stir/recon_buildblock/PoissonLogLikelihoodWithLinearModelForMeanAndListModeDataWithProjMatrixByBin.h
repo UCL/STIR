@@ -35,7 +35,6 @@
 #include "stir/recon_buildblock/distributable.h"
 START_NAMESPACE_STIR
 
-
 /*!
   \ingroup GeneralisedObjectiveFunction
   \ingroup listmode
@@ -48,6 +47,11 @@ START_NAMESPACE_STIR
   If the list mode data is binned (with LmToProjData) without merging
   any bins, then the log likelihood computed from list mode data and
   projection data will be identical.
+
+  Currently, the subset scheme is the same for the projection data and listmode data, i.e.
+  based on views. This is suboptimal for listmode data.
+
+  \todo implement a subset scheme based on events
 */
 
 template <typename TargetT>

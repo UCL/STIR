@@ -427,6 +427,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 {
     if(!this->recompute_cache && this->cache_lm_file)
       {
+        warning("Looking for existing cache files such as \""
+                + this->get_cache_filename(0) + "\".\n"
+                + "We will be ignoring any time frame definitions as well as num_events_to_use!");
         // find how many cache files there are
         this->num_cache_files = 0;
         while (true)
@@ -709,7 +712,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 {
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
-    if (!add_sensitivity && !this->get_use_subset_sensitivities())
+    if (!add_sensitivity && !this->get_use_subset_sensitivities() && this->num_subsets>1)
         error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
               "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
               "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
