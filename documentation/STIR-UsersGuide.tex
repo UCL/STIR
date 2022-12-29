@@ -44,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 5.0}}
+ Version 5.1}}
 \end{center}
 
 \end{spacing}
@@ -1825,10 +1825,8 @@ Since \textit{STIR} 2.0, you can specify an objective function that takes list m
 and uses a projection matrix. This can be used to do a static image reconstruction
 without any resolution loss etc. 
 
-\textbf{WARNING: The current implementation has not been thoroughly tested.} Please use
-the mailing lists for questions and results.
+The following gives the main parameters to use for the objective function (illustrated with OSMAPOSL).
 
-The following gives the main parameters to use for OSMAPOSL.
 { \small
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1839,13 +1837,40 @@ OSMAPOSLParameters :=
     time frame definition filename:= timeframes.fdef
     ; time frame to use data for the reconstruction
     time frame number:=1
-    ; maximum ring difference (defaults to all ring differences)
-    ;max ring difference num to process:=
+    ; or use a total number of events (if  larger than 0, frame definitions will be ignored)
+    ; note that this counts the total of prompts
+    num events to use := 0
+    ; maximum segment number to process (defaults to all segments)
+    ;maximum absolute segment number to process:=
+
+    ;; acquisition modelling
+
     ; matrix to use for forward and back projection (defaults to ray tracing)
     ;Matrix type:= using ray tracing
+    ;bin normalisation type := None ; see elsewhere for allowed values
+
     ; background term
     additive sinogram:=
-    sensitivity filename:=filename
+
+    ; sensitivity keywords (see the corresponding objective function for projection data)
+
+    ;; speeding-up things (experimental. will likely change)
+
+    ; if set to 1, additive_sinogram will be completely stored in memory, as opposed to re-reading from disk
+    reduce memory usage := 0
+    ; cache listmode events in memory and on file
+      ; set this number > 0 to enable this feature
+      ; depending on this max size, one or more files will be created in cache_path (see below)
+      max cache size := 0
+
+      ; location of cache files (defaults to current working directory, needs to exist)
+      cache path :=
+
+      ; if set to 1, any existing cache file will be overwritten (defaults to 1)
+      recompute cache := 1
+
+    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test
+    skip checking balanced subsets := 0
 
     ; other usual objective function parameters 
 
@@ -1857,15 +1882,28 @@ End:=
 \end{verbatim}
 }
 
-Currently, the sensitivity filename needs to be specified as the code to compute it using
-a bin normalisation type has not yet been copied to the 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
-class. You could run OSMAPOSL first with projection data without axial compression (and view
-``mashing'') to create the sensitivity filename. Similarly, if you want to use OSSPS,
-you will need to run the projection data version first to get the ``precomputed denominator''.
+Some parameters are the same as for the projection data case, see \ref{sec:PoissonProjectionDataObjectiveFunction}.
 
-The additive sinogram is as discussed in \ref{sec:PoissonProjectionDataObjectiveFunction}, 
-but needs to be without axial compression (and view ``mashing'').
+Note that for some scanners, listmode data are stored using axial compression or view mashing
+(see the STIR glossary). Therefore, a listmode file has ``intrinsic'' projection data
+info associated to it.
+You can see what this is using
+\cmdline{list\_lm\_info --geom <filename>}
+You need to provide the additive sinogram (and noormalisation when using \texttt{From ProjData}, see \ref{sec:binnormalisationFromProjData}) with the same dimensions.
+
+{ \subsubsubsubsection{Use of caching (experimental feature)}
+}\\
+Since STIR 5.1, it is possible to use cache listmode events in memory (and on disk). This is enabled by setting
+\texttt{max cache size} to a non-zero (and preferably large) number. This will result in faster reading, but also
+enables multi-threaded calculation if OpenMP is used.
+
+It is also possible to re-use existing cached files, currently called \texttt{<cache path>/my\_CACHE\%d.bin}.
+This could be handy to distribute files to someone that doesn't have a particular listmode reader (e.g.
+the UPenn format depends on files that we cannot distribute with STIR). However, the cache files are simple
+binary files and could be compiler dependent. Moreover, when re-using existing cache files, there is \textbf{no}
+check on time frames or number of events, which might lead to surprising (i.e. wrong!) results. Therefore,
+\texttt{recompute\_cache} defaults to 1 (i.e. ignore existing cache files).
+
 
 { \subsubsubsection{Parametric image estimation algorithms}
 }
@@ -1875,7 +1913,7 @@ dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respectively.
 Their parameters are identical to the static versions of the algorithms, except that
 they need a different type of objective function. Currently, the only defined version is
 where the input is dynamic projection data and the Patlak linear model is used to go from
-dynamic images to parametric images. See section {sec:KineticModels} for more information.
+dynamic images to parametric images. See section \ref{sec:KineticModels} for more information.
 
 Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
 can be found in \texttt{STIR/examples/samples/}. The only change is the fact that dynamic data
@@ -5312,7 +5350,7 @@ In addition to the types listed below, you can also enter 'None',
 which means that the data won't be normalised at all.
 
 { \subsubsubsection{From Projdata}
-}
+}\label{sec:binnormalisationFromProjData}
 This can be used when the normalisation factors are stored simply 
 as projection data. Currently, these data have to have exactly 
 the same characteristics (size etc.) as the projection data which 

@@ -24,7 +24,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
 	recompute sensitivity := 1
 	use subset sensitivities:= 0
-	sensitivity filename:=  my_sens_t_proj_seg2.hv
+	sensitivity filename:=  my_sens_t_proj_seg1.hv
 	zoom :=  1
   xy output image size (in pixels) := 100
 
@@ -33,5 +33,5 @@ enforce initial positivity condition:=  1
 number of subsets:= 1
 number of subiterations:= 1
 save estimates at subiteration intervals:= 1
-output filename prefix := my_output_t_proj_seg2
+output filename prefix := ${filename}
 END := 
