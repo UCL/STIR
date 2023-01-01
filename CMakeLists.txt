@@ -60,21 +60,23 @@ set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 ####### Installation directories
+# Note: using absolute paths for those variables that are used in STIRConfig.h.in
+
 # Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
 # However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 else() #if(CYGWIN)
-  set(STIR_DOC_DIR "share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 #else()
 #  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
 # TODO append version numbers
-set(STIR_DATA_DIR "share/stir") 
+set(STIR_DATA_DIR "share/stir")
 set(ConfigPackageLocation lib/cmake/)
 set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/stir/config" CACHE PATH "") 
-message("${STIR_CONFIG_DIR} defined")
+
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
@@ -283,6 +285,7 @@ install(
 )
 
 # install examples
+# note that location needs to be consistent with get_STIR_examples_dir()
 install(
   DIRECTORY
     examples
