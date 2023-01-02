@@ -18,8 +18,7 @@
     <i><cite>Integration of advanced 3D SPECT modelling for pinhole collimators into the open-source STIR framework</cite></i>, <br />
     Proc. IEEE MIC 2022, Milan, Italy
     </li></ul></li>
-  <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>. 
->>>>>>> origin/master
+  <li>Improvements to listmode reconstruction by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1030/">PR #1030</a>.
   </li>    
   <li>Support for PENNPET Explorer listmode data (if proprietary libraries are found) by Nikos Efthimiou, see <a href="https://github.com/UCL/STIR/pull/1028/">PR #1028</a>. 
   </li> 
@@ -34,13 +33,14 @@
 </p>
 
 <p>Of course, there is also the usual code-cleanup and 
-improvements to the documentation.
+  improvements to the documentation. See also <a href="https://github.com/UCL/STIR/milestone/9">the
+    5.1 milestone on GitHub</a>.
 </p>
 <p>Overall code management and assistance by Kris Thielemans (UCL and ASC).</p>
 
 <h2>Patch release info</h2>
 <ul>
-  <li> 5.1.0 released ??/05/2022</li>    
+  <li> 5.1.0 released ??/01/2023</li>
 </ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -85,17 +85,8 @@ improvements to the documentation.
     utility to have corresponding options and only output the requested information (easier for parsing),
     see <a href="https://github.com/UCL/STIR/pull/1118/">PR #1118</a>.
   </li>
-  <li><code>LmToProjData</code> is now filtering out coincidences in the same detector number of different rings. These were previously
-      all added to the central bin of the first view, if not removed from the listmode file prior to reading.
-  </li>
   <li>Added the option to set slope and intercepts on <code>HUToMuImageProcessor</code> programmatically,
       to not have to rely on JSON.
-  </li>
-  <li>Code refactoring for the Maximum Likelihood functions, including creation of a new (intermediate) class
-    <code>BinNormalisationPETFromComponents</code>, see <a href="https://github.com/UCL/STIR/pull/1079/">PR #1079</a>.
-  </li>
-  <li>Clean-up of <code>multiply_crystal_factors</code> to rely on existing functionality, therefore reducing code overlap
-    and increasing generalisibility, see <a href="https://github.com/UCL/STIR/pull/1075/">PR #1075</a>.
   </li>
   <li>Adapting randoms handling and ML normalisation estimation via template to handle BlocksOnCylindrical
     data as well, see <a href="https://github.com/UCL/STIR/pull/1085/">PR #1085</a>.
@@ -118,6 +109,16 @@ improvements to the documentation.
 
 <h3>Changed functionality</h3>
 <ul>
+  <li><code>LmToProjData</code> is now filtering out coincidences in the same detector number of different rings. These were previously
+      all added to the central bin of the first view, if not removed from the listmode file prior to reading.
+  </li>
+  <li>Code refactoring for the Maximum Likelihood functions, including creation of a new (intermediate) class
+    <code>BinNormalisationPETFromComponents</code>, see <a href="https://github.com/UCL/STIR/pull/1079/">PR #1079</a>.
+  </li>
+  <li>Clean-up of <code>multiply_crystal_factors</code> to rely on existing functionality, therefore reducing code overlap
+    and increasing generalisibility, see <a href="https://github.com/UCL/STIR/pull/1075/">PR #1075</a>.
+  </li>
+  <li>Install scripts in <tt>examples</tt> with correct permissions.</li>
   <li>(private) bitfields <code>random</code> or <code>isRandom</code> have been renamed to <code>delayed</code>
     to avoid confusion. Affected listmode file formats are SAFIR, ECAT962 and ECAT966.
   </li>
@@ -162,6 +163,7 @@ improvements to the documentation.
 <h3>Documentation changes</h3>
 <ul>
   <li>Added PinholeSPECTUB documentation to STIR-UsersGuide.</li>
+  <li>Added <code>stir_config</code> to the STIR-UsersGuide.</li>
 </ul>
 
 <h3>recon_test_pack changes</h3>
