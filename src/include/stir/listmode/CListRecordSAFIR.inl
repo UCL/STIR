@@ -4,8 +4,8 @@
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-	Copyright 2020 Positrigo AG, Zurich
-    Copyright 2021 University College London
+	Copyright 2020, 2022 Positrigo AG, Zurich
+        Copyright 2021 University College London
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 
   \author Jannis Fischer
   \author Parisa Khateri
+  \author Markus Jehl
   \author Kris Thielemans
 */
 

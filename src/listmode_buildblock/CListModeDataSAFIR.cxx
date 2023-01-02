@@ -26,6 +26,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 
   \author Jannis Fischer
   \author Kris Thielemans
+  \author Markus Jehl
 */
 #include <iostream>
 #include <fstream>
@@ -33,6 +34,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
 
 //#include "boost/static_assert.hpp"
 
@@ -40,8 +42,6 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/listmode/CListRecordSAFIR.h"
 
 #ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
@@ -92,7 +92,7 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
 
   if (open_lm_file() == Succeeded::no)
     {
-      error("CListModeDataSAFIR: Could not open listmode file " + listmode_filename + "\n");
+      error("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"");
     }
 }
 
@@ -140,13 +140,12 @@ Succeeded
 CListModeDataSAFIR<CListRecordT>::
 open_lm_file() const
 {
-	cerr << "CListModeDataSAFIR: opening file " << listmode_filename << endl;
 	shared_ptr<istream> stream_ptr(new fstream(listmode_filename.c_str(), ios::in | ios::binary ));
 	if(!(*stream_ptr))
 	{
-		warning("CListModeDataSAFIR: cannot open file " + listmode_filename + "\n");
 		return Succeeded::no;
 	}
+        info("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"", 2);
 	stream_ptr->seekg((std::streamoff)32);
 	current_lm_data_ptr.reset(
 			new InputStreamWithRecords<CListRecordT, bool>

@@ -4,7 +4,7 @@
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-	Copyright 2020 Positrigo AG, Zurich
+	Copyright 2020, 2022 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@
   \brief Declaration of class stir::CListEventSAFIR and stir::CListRecordSAFIR with supporting classes
 
   \author Jannis Fischer
-	\author Parisa Khateri
+  \author Parisa Khateri
+  \author Markus Jehl
 */
 
 #ifndef __stir_listmode_CListRecordSAFIR_H__
@@ -64,6 +65,7 @@ The record has the following format (for little-endian byte order)
 	unsigned isRandom : 1;
 	unsigned type : 1;
 \endcode
+  \ingroup listmode
 */
 template <class Derived>
 class CListEventSAFIR : public CListEvent
@@ -107,7 +109,8 @@ private:
 
 
 
-//! Class for record with coincidence data
+//! Class for record with coincidence data using SAFIR bitfield definition
+/*! \ingroup listmode */
 class CListEventDataSAFIR
 {
 public:
@@ -154,7 +157,8 @@ private:
 };
 
 
-//! Class for record with coincidence data
+//! Class for record with coincidence data using NeuroLF bitfield definition
+/*! \ingroup listmode */
 class CListEventDataNeuroLF
 {
 public:
@@ -201,7 +205,8 @@ private:
 };
 
 
-//! Class for record with time data
+//! Class for record with time data using SAFIR bitfield definition
+/*! \ingroup listmode */
 class CListTimeDataSAFIR
 {
 public:
@@ -225,7 +230,8 @@ private:
 #endif
 };
 
-//! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
+//! Class for general SAFIR record, containing a union of data, time and raw record and providing access to certain elements.
+/*! \ingroup listmode */
 template <class DataType>
 class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR<DataType>>
 {
