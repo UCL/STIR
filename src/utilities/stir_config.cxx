@@ -1,7 +1,7 @@
 /*!
   
   Copyright (C) 2021, National Physical Laboratory
-  Copyright (C) 2022, University College London
+  Copyright (C) 2022, 2023 University College London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -16,8 +16,8 @@
   */
 
 #include "stir/find_STIR_config.h" 
-#include "stir/error.h"
-
+#include <iostream>
+#include <cstdlib>
 
 USING_NAMESPACE_STIR
 
@@ -34,25 +34,26 @@ main(int argc, char *argv[])
                << "--doc-dir:      directory with installed STIR documentation.\n"
                << "--examples-dir: directory with installed STIR examples.\n"
                << "--version: version of STIR you are using.\n"<<std::endl;
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
-  char const * const option=argv[1];
-  std::string option_str(option);
     
   while (argc>1)
     {
       if(strcmp(argv[1],"--config-dir")==0)
-        std::cout<<get_STIR_config_dir()<<std::endl;
+        std::cout << get_STIR_config_dir() << std::endl;
       else if(strcmp(argv[1],"--doc-dir")==0)
-        std::cout<<get_STIR_doc_dir()<<std::endl;
+        std::cout << get_STIR_doc_dir() << std::endl;
       else if(strcmp(argv[1],"--examples-dir")==0)
-        std::cout<<get_STIR_examples_dir()<<std::endl;
+        std::cout << get_STIR_examples_dir() << std::endl;
       else if(strcmp(argv[1],"--version")==0)
-        std::cout<<STIR_VERSION_STRING<<std::endl;
+        std::cout << STIR_VERSION_STRING << std::endl;
       else
-        error("Unknown option " + option_str);
+        {
+          std::cerr << "Unknown option " << argv[1] << std::endl;
+          return EXIT_FAILURE;
+        }
       --argc;
       ++argv;
     }
-    
+  return EXIT_SUCCESS;
 }
