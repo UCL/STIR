@@ -496,20 +496,26 @@ to the standard (as used by DICOM).
 \end{itemize}
 You might need to edit these files to add information for your scanner.
 
-See section \ref{sec:RunningWithOPENMP} for information on OpenMP an dmult-threading (if enabled when building \textit{STIR}).
+See section \ref{sec:stirconfig} for a utility to display the directory where the configuration files are found.
+
+See section \ref{sec:RunningWithOPENMP} for information on OpenMP and mult-threading (if enabled when building \textit{STIR}).
 
 \section{
 Running \textit{STIR} programs}
 
 Here we describe:
 \begin{itemize}
-\item documentation and program conventions
-\item supported file formats 
-\item rebinning algorithms
-\item reconstruction programs
-\item utility programs
-\item user-selectable components
-\item display properties
+\item documentation and program conventions (section \ref{sec:conventions})
+\item supported file formats (section \ref{sec:fileformats})
+\item list mode processing (section \ref{sec:listmodeprocessing})
+\item rebinning algorithms (section \ref{sec:Rebinning})
+\item reconstruction programs (section \ref{sec:imagereconstructionprograms})
+\item scatter estimation and simulation (section \ref{sec:scatterestimation})
+\item parametric image construction using kinetic modelling (section \ref{sec:KineticModels})
+\item motion correction (section \ref{sec:motioncorrection})
+\item utility programs (section \ref{sec:Utilities})
+\item user-selectable components such as projectors, filters etc (section \ref{sec:user-selectablecomponents})
+\item display properties (section \ref{sec:display})
 \end{itemize}
 
 \textit{STIR} is highly configurable and modular. It is therefore difficult to give a complete (and readable)
@@ -638,7 +644,7 @@ processor.
 
 \subsection{
 File formats}
-
+\label{sec:fileformats}
 The STIR utility and reconstruction programs frequently need 
 to read and write files of image and projection data. Files formats 
 are encountered in which data and header information are maintained 
@@ -957,6 +963,7 @@ from the others.
 We currently support this format for dynamic images and projection data.
 \subsection{
 List mode processing}
+\label{sec:listmodeprocessing}
 
 Some scanners produce list mode data, which is essentially a 
 list of events. \textit{STIR} provides utilities to use
@@ -1047,7 +1054,7 @@ Run without arguments to see a usage message.
 
 \subsection{
 Rebinning algorithms}
-
+\label{sec:Rebinning}
 In 3D PET, the name \textit{rebinning} is used for the 
 process of manipulating the 3D projection data set to the equivalent 
 of 2D projection data. This reduces the number of segments (see 
@@ -1150,7 +1157,7 @@ For the meaning of these parameters, check the documentation for the
 
 \subsection{
 Image reconstruction programs}
-
+\label{sec:imagereconstructionprograms}
 
 
 
@@ -2150,6 +2157,7 @@ on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
 Scatter Estimation and simulation}
+\label{sec:scatterestimation}
 Coincidence events where one or more of the photons are scattered form a major contribution to the data
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
@@ -2565,6 +2573,7 @@ The parameter files include the information of the kinetic model as described fo
 
 \subsection{
 Motion Correction}
+\label{sec:motioncorrection}
 Motion correction has become an important task in PET imaging. Amongst several approaches to
 motion-correct PET data, two are the most common: reconstruct-transform-average (RTA) [Kle96] and
 motion-compensated image reconstruction (MCIR) [Li06]. In RTA, separate images are reconstructed for each
@@ -2833,14 +2842,21 @@ to the orientation the original files have been stored in gipl format.
 
 
 \subsection{
-Utilities}
+Utilities} \label{sec:Utilities}
 
 Programs are given in the \textbf{STIR/utilities} directory, that 
 allow the user to display, manipulate and convert \textbf{interfile} 
 data, either image or projection data.
-
 Utilities specific to files in ECAT 6 or 7 format or in the \textbf{ecat}
 sub-directory.
+
+\subsubsection{Displaying STIR configuration and version information}
+\label{sec:stirconfig}
+\textbf{stir\_config} allows displaying the directory where the configuration files
+are found (see section \ref{sec:configuration}), where the documentation and examples are installed
+and the STIR version. Run without arguments to get usage information.
+(Equivalent functions in C++/Python are \texttt{get\_STIR\_config\_dir},
+\texttt{get\_STIR\_doc\_dir} and \texttt{get\_STIR\_examples\_dir}).
 
 \subsubsection{
 Displaying and performing operations on data}
@@ -5567,8 +5583,7 @@ where \texttt{filename} needs to specify a volume that can be read by STIR.
 
 
 \subsection{
-Display}
-
+Display}\label{sec:display}
 Some of the programs (e.g. in utilities/, recon\_tests/) use 
 the display routines. Which version is actually used depends 
 on the compilation settings (in particular the \textit{GRAPHICS} cmake 
@@ -5577,7 +5592,7 @@ variable), see section \ref{sec:UsingCMake}.
 
 \subsubsection{
 X Windows display}
-\label{sec:display}
+\label{sec:displayX}
 \textbf{Warning} This functionality is deprecated and will be removed in a next version.
 
 This provides a (very basic) way of displaying bitmaps when using 

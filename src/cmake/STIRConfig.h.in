@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016-2017, University College London
+    Copyright (C) 2016-2017, 2022 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -37,6 +37,12 @@ namespace stir {
   //@}
 }
 
+// preprocessor symbols with location of installed files
+// do NOT use directly, but use functions in find_STIR_config.h instead
+#cmakedefine STIR_CONFIG_DIR "@STIR_CONFIG_DIR@"
+
+#cmakedefine STIR_DOC_DIR "@STIR_DOC_DIR@"
+
 #if defined(_MSC_VER)
 #include "stir/config/visualc.h"
 #endif
@@ -73,8 +79,6 @@ namespace stir {
 #cmakedefine STIR_OPENMP
 
 #cmakedefine STIR_MPI
-
-#cmakedefine STIR_CONFIG_DIR "@STIR_CONFIG_DIR@"
 
 #cmakedefine nlohmann_json_FOUND "@nlohmann_json_FOUND@"
 
