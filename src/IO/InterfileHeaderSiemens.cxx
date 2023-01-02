@@ -205,7 +205,6 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("%compressor version");
   ignore_key("%study date (yyyy");
   ignore_key("%study time (hh");
-  ignore_key("isotope name");
   ignore_key("isotope gamma halflife (sec)");
   ignore_key("isotope branching factor");
   ignore_key("radiopharmaceutical");
@@ -495,7 +494,6 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   ignore_key("%singles scale factor");
   ignore_key("%total number of singles blocks");
   ignore_key("%time sync");
-  ignore_key("%comment");
   }
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
