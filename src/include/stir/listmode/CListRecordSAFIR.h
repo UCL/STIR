@@ -62,7 +62,7 @@ The record has the following format (for little-endian byte order)
 	unsigned layerA : 4;
 	unsigned layerB : 4;
 	unsigned reserved : 6;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 \endcode
   \ingroup listmode
@@ -89,7 +89,7 @@ public:
    */
 	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
@@ -117,16 +117,16 @@ public:
 	//! Writes detection position pair to reference given as argument.
 	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
-		const { return !isRandom; }
+		const { return !isDelayed; }
 
 	//! Returns 1 if if event is time and 0 if it is prompt
 	inline bool is_time() const { return type; }
 
 	//! Can be used to set "promptness" of event.
 	inline Succeeded set_prompt( const bool prompt = true ) { 
-		isRandom = !prompt;
+		isDelayed = !prompt;
 		return Succeeded::yes; 
 	}
 
@@ -135,7 +135,7 @@ private:
 
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned reserved : 6;
 	unsigned layerB : 4;
 	unsigned layerA : 4;
@@ -151,7 +151,7 @@ private:
 	unsigned layerA : 4;
 	unsigned layerB : 4;
 	unsigned reserved : 6;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 #endif
 };
@@ -165,16 +165,16 @@ public:
 	//! Writes detection position pair to reference given as argument.
 	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
-		const { return !isRandom; }
+		const { return !isDelayed; }
 
 	//! Returns 1 if if event is time and 0 if it is prompt
 	inline bool is_time() const { return type; }
 
 	//! Can be used to set "promptness" of event.
 	inline Succeeded set_prompt( const bool prompt = true ) { 
-		isRandom = !prompt;
+		isDelayed = !prompt;
 		return Succeeded::yes; 
 	}
 
@@ -183,7 +183,7 @@ private:
 
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned reserved : 8;
 	unsigned layerB : 3;
 	unsigned layerA : 3;
@@ -199,7 +199,7 @@ private:
 	unsigned layerA : 3;
 	unsigned layerB : 3;
 	unsigned reserved : 8;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 #endif
 };
