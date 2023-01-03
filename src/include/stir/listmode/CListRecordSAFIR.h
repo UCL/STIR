@@ -4,7 +4,7 @@
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-	Copyright 2020 Positrigo AG, Zurich
+	Copyright 2020, 2022 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@
   \brief Declaration of class stir::CListEventSAFIR and stir::CListRecordSAFIR with supporting classes
 
   \author Jannis Fischer
-	\author Parisa Khateri
+  \author Parisa Khateri
+  \author Markus Jehl
 */
 
 #ifndef __stir_listmode_CListRecordSAFIR_H__
@@ -61,9 +62,10 @@ The record has the following format (for little-endian byte order)
 	unsigned layerA : 4;
 	unsigned layerB : 4;
 	unsigned reserved : 6;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 \endcode
+  \ingroup listmode
 */
 template <class Derived>
 class CListEventSAFIR : public CListEvent
@@ -87,7 +89,7 @@ public:
    */
 	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
@@ -107,23 +109,24 @@ private:
 
 
 
-//! Class for record with coincidence data
+//! Class for record with coincidence data using SAFIR bitfield definition
+/*! \ingroup listmode */
 class CListEventDataSAFIR
 {
 public:
 	//! Writes detection position pair to reference given as argument.
 	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
-		const { return !isRandom; }
+		const { return !isDelayed; }
 
 	//! Returns 1 if if event is time and 0 if it is prompt
 	inline bool is_time() const { return type; }
 
 	//! Can be used to set "promptness" of event.
 	inline Succeeded set_prompt( const bool prompt = true ) { 
-		isRandom = !prompt;
+		isDelayed = !prompt;
 		return Succeeded::yes; 
 	}
 
@@ -132,7 +135,7 @@ private:
 
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned reserved : 6;
 	unsigned layerB : 4;
 	unsigned layerA : 4;
@@ -148,29 +151,30 @@ private:
 	unsigned layerA : 4;
 	unsigned layerB : 4;
 	unsigned reserved : 6;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 #endif
 };
 
 
-//! Class for record with coincidence data
+//! Class for record with coincidence data using NeuroLF bitfield definition
+/*! \ingroup listmode */
 class CListEventDataNeuroLF
 {
 public:
 	//! Writes detection position pair to reference given as argument.
 	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
 
-	//! Returns 0 if event is prompt and 1 if random/delayed
+	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
-		const { return !isRandom; }
+		const { return !isDelayed; }
 
 	//! Returns 1 if if event is time and 0 if it is prompt
 	inline bool is_time() const { return type; }
 
 	//! Can be used to set "promptness" of event.
 	inline Succeeded set_prompt( const bool prompt = true ) { 
-		isRandom = !prompt;
+		isDelayed = !prompt;
 		return Succeeded::yes; 
 	}
 
@@ -179,7 +183,7 @@ private:
 
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned reserved : 8;
 	unsigned layerB : 3;
 	unsigned layerA : 3;
@@ -195,13 +199,14 @@ private:
 	unsigned layerA : 3;
 	unsigned layerB : 3;
 	unsigned reserved : 8;
-	unsigned isRandom : 1;
+	unsigned isDelayed : 1;
 	unsigned type : 1;
 #endif
 };
 
 
-//! Class for record with time data
+//! Class for record with time data using SAFIR bitfield definition
+/*! \ingroup listmode */
 class CListTimeDataSAFIR
 {
 public:
@@ -225,7 +230,8 @@ private:
 #endif
 };
 
-//! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
+//! Class for general SAFIR record, containing a union of data, time and raw record and providing access to certain elements.
+/*! \ingroup listmode */
 template <class DataType>
 class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR<DataType>>
 {
