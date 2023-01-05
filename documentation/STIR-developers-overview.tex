@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 5.0}}
+\textbf{\textit{version 5.1}}
 
 \end{center}
 
@@ -1295,8 +1295,8 @@ set(dir my_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-   my_source1
-   my_source2
+   my_source1.cxx
+   my_source2.cxx
 )
 
 # declare dependencies on other STIR libraries, for instance
@@ -1327,7 +1327,7 @@ content like this
 #include "myOutputFileFormat.h"
 static myOutputFileFormat::RegisterIt dummy1;
 \end{verbatim}
-If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeListst.txt}
+If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeLists.txt}
 as above, everything should work as expected.
 
 \section{Contributing to STIR}

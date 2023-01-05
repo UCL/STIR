@@ -302,7 +302,10 @@ Scanner::Scanner(Type scanner_type)
            24, 329, 293, 2 * 280,
                886.2F/2.F, 8.4F, 6.54F, 2.397F,
 	       static_cast<float>(-4.5490*_PI/180),//sign?
-           4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
+               4, 2, 6, 8, 1, 1, 1, // TODO not sure about sign of view_offset
+               0.22F, // energy resolution
+               511.F);
+
     break;
 
  case DiscoveryRX: 
