@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2020 University College London
+    Copyright (C) 2020-2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,7 +12,7 @@
   \file
   \ingroup recon_test
   
-  \brief Test program for stir::QuadraticPrior, RelativeDifferencePrior, and LogcoshPrior
+  \brief Test program for stir::QuadraticPrior, stir::RelativeDifferencePrior, and stir::LogcoshPrior
 
   \par Usage
 
@@ -284,15 +284,17 @@ test_Hessian_convexity_configuration(const std::string& test_name,
     }
   }
 
+  
   /// Compute H x
   objective_function.accumulate_Hessian_times_input(*output, *current_image, *input);
 
   /// Compute x \cdot (H x)
-  float my_sum = 0.0;
-  my_sum = std::inner_product(input->begin_all(), input->end_all(), output->begin_all(), my_sum);
+  const double my_sum = std::inner_product(input->begin_all(), input->end_all(), output->begin_all(), double(0));
+  /// Compute x \cdot x
+  const double my_norm2 = std::inner_product(input->begin_all(), input->end_all(), input->begin_all(), double(0));
 
-  // test for a CONVEX function
-  if (this->check_if_less(0, my_sum)) {
+  // test for a CONVEX function: 0 < my_sum, but we allow for some numerical error
+  if (this->check_if_less(-my_norm2*10E-5, my_sum)) {
 //    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore convex");
     return true;
   } else {
@@ -306,6 +308,7 @@ test_Hessian_convexity_configuration(const std::string& test_name,
          "\ncurrent_image_addition=" + std::to_string(current_image_addition) +
          "\n >input image max=" + std::to_string(input->find_max()) +
          "\n >input image min=" + std::to_string(input->find_min()) +
+         "\n >input image norm^2=" + std::to_string(my_norm2) +
          "\n >target image max=" + std::to_string(target.find_max()) +
          "\n >target image min=" + std::to_string(target.find_min()));
     return false;
