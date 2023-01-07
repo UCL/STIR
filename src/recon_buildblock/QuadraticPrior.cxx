@@ -736,7 +736,7 @@ accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
                         elemT current = weights[dz][dy][dx];
-                        if (dz == dy == dz == 0) {
+                        if (dz == 0 && dy == 0 && dx == 0) {
                           // The j == k case
                           current *= derivative_20(current_estimate[z][y][x],
                                                    current_estimate[z + dz][y + dy][x + dx]) * input[z][y][x];
