@@ -86,6 +86,7 @@ jobs:
           CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
           case ${{matrix.os}} in
             (ubuntu*)
+              sudo apt update
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
                   sudo apt install $CC # package is called clang
