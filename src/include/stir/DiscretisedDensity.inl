@@ -81,8 +81,16 @@ actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&
     }
 
   if (norm(other.get_origin() - this->get_origin()) > 1.E-2)
-    { 
-      explanation = "Not the same origin.";
+    {
+      char tmp[2000];
+      snprintf(tmp, 2000, "Not the same origin: (%g,%g,%g) and (%g,%g,%g)",
+	      other.get_origin()[1],
+	      other.get_origin()[2],
+	      other.get_origin()[3],
+	      this->get_origin()[1],
+	      this->get_origin()[2],
+	      this->get_origin()[3]);
+      explanation = tmp;
       return false;
     }
   if (other.get_index_range() != this->get_index_range())
