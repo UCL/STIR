@@ -90,6 +90,7 @@ jobs:
           CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
           case ${{matrix.os}} in
             (ubuntu*)
+              sudo apt update
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
                   # package is called clang, need libomp-dev for OpenMP support
@@ -168,6 +169,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1
       with:
         key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
 
     - name: configure
       shell: bash
