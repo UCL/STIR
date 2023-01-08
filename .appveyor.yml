@@ -11,11 +11,10 @@ version: '{build}'
 
 os:
   - Visual Studio 2015
-  - Visual Studio 2013
+  #- Visual Studio 2013
 
 platform:
   - x64
-  - x86
 
 configuration:
   - Release
@@ -26,14 +25,33 @@ build:
 environment:
   BOOST_ROOT: C:\Libraries\boost_1_63_0
   CMAKE_INSTALL_PREFIX: C:\projects\stir\install\
+  DEPS: C:\projects\deps
+  sccache_VER: 0.3.3
+
+install:
+  - IF NOT EXIST %DEPS% mkdir %DEPS%
+  - cd %DEPS%
+  - set sccache_FULLNAME="sccache-v%sccache_VER%-x86_64-pc-windows-msvc"
+  - set sccache_URL="https://github.com/mozilla/sccache/releases/download/v%sccache_VER%/%sccache_FULLNAME%.zip"
+  - IF NOT EXIST %DEPS%\sccache-%sccache_VER%.zip appveyor DownloadFile %sccache_URL% -FileName sccache-%sccache_VER%.zip
+  - IF NOT EXIST %DEPS%\sccache.exe 7z x sccache-%sccache_VER%.zip -o%DEPS%\
+  - IF NOT EXIST %DEPS%\sccache.exe move %sccache_FULLNAME%\*.* .
 
 build_script:
+  - cd C:\projects\STIR
+  - path=%path%;%DEPS%
+  - sccache --show-stats
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON
+  - cmake.exe .. -G Ninja -DCMAKE_INSTALL_PREFIX=%CMAKE_INSTALL_PREFIX% -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
+  - sccache --show-stats
+
+cache:
+  - c:\projects\deps\sccache-%sccache_VER%.zip
+  - C:\Users\appveyor\AppData\Local\Mozilla\sccache\cache
 
 test_script:
   - cd C:\projects\stir\build
