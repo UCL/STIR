@@ -3,6 +3,12 @@ name: Build and ctest and recon_test_pack CI
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.tex'
+
   pull_request:
     branches: [ master ]
   workflow_dispatch:
