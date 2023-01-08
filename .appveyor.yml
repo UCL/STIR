@@ -39,19 +39,20 @@ install:
 
 build_script:
   - cd C:\projects\STIR
-  - path=%path%;%DEPS%
-  - sccache --show-stats
+  - REM path=%path%;%DEPS%
+  - REM sccache --show-stats
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -G Ninja -DCMAKE_INSTALL_PREFIX=%CMAKE_INSTALL_PREFIX% -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+  - cmake.exe .. -G Ninja -DCMAKE_INSTALL_PREFIX=%CMAKE_INSTALL_PREFIX% -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON
+  - REM DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
-  - sccache --show-stats
+  - REM sccache --show-stats
 
 cache:
   - c:\projects\deps\sccache-%sccache_VER%.zip
-  - C:\Users\appveyor\AppData\Local\Mozilla\sccache\cache
+  # - C:\Users\appveyor\AppData\Local\Mozilla\sccache\cache
 
 test_script:
   - cd C:\projects\stir\build
