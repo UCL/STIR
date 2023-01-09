@@ -44,10 +44,11 @@ build_script:
   - mkdir build
   - mkdir install
   - cd build
+  - cmake --version
   - cmake.exe .. -G Ninja -DCMAKE_INSTALL_PREFIX=%CMAKE_INSTALL_PREFIX% -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP=ON
   - REM DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
   - cmake.exe --build . --config %CONFIGURATION%
-  - cmake.exe --build . --target install --config %CONFIGURATION%
+  - REM cmake.exe --build . --target install --config %CONFIGURATION%
   - REM sccache --show-stats
 
 cache:
