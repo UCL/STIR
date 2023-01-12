@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2023, University College London
     Copyright (C) 2018, CSIRO
     This file is part of STIR.
 
@@ -28,6 +28,7 @@
 #include "stir/round.h"
 #include <string>
 #include <typeinfo>
+#include <stdio.h> // for snprintf
 
 START_NAMESPACE_STIR
 
