@@ -79,6 +79,7 @@ main(int argc, char** argv)
             do_eff = false;
           }
         delete[] in_filename;
+//        std::cout<<norm.crystal_efficiencies();
       }
 
     // geo norm
