@@ -378,13 +378,13 @@ void iterate_efficiencies(Array<1,float>& efficiencies,
   for (int a = 0; a < num_detectors; ++a)
     {
       if (data_fan_sums[a] == 0)
-    efficiencies[a] = 0;
+          efficiencies[a] = 0;
       else
 	{
           //const float denominator = inner_product(efficiencies,model[a]);
 	  float denominator = 0;
-           for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)
-  	    denominator += efficiencies[b%num_detectors]*model(a,b);
+       for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)
+           denominator += efficiencies[b%num_detectors]*model(a,b);
       efficiencies[a] = data_fan_sums[a] / denominator;
 	}
     }

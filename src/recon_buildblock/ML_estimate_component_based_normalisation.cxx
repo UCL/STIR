@@ -153,27 +153,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             efficiencies.fill(sqrt(data_fan_sums.sum() / model_fan_data.sum()));
             norm_geo_data.fill(1);
             norm_block_data.fill(1);
-          }              {
-            char* out_filename = new char[out_filename_prefix.size() + 30];
-            sprintf(out_filename, "initEff.out");
-            std::ofstream out(out_filename);
-            out << efficiencies;
-            delete[] out_filename;
           }
         // efficiencies
         {
-//            std::cerr << "Before0 model*norm min " << model_fan_data.find_min() << " ,max " << model_fan_data.find_max() << std::endl;
-//            std::cerr << "Geo model*norm min " << norm_geo_data.find_min() << " ,max " << norm_geo_data.find_max() << std::endl;
-//            std::cerr << "Block model*norm min " << norm_block_data.find_min() << " ,max " << norm_block_data.find_max() << std::endl;
-
           fan_data = model_fan_data;
-//          std::cerr << "Before1 model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl;
           apply_geo_norm(fan_data, norm_geo_data);
-//          std::cerr << "Before2 model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl;
           apply_block_norm(fan_data, norm_block_data);
           if (do_display)
             display(fan_data, "model*geo*block");
-//          std::cerr << "Before3 model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl;
           for (int eff_iter_num = 1; eff_iter_num <= num_eff_iterations; ++eff_iter_num)
             {
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
