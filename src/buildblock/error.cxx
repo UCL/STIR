@@ -25,6 +25,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
+
 
 #include "stir/TextWriter.h"
 
