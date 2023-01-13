@@ -378,13 +378,13 @@ void iterate_efficiencies(Array<1,float>& efficiencies,
   for (int a = 0; a < num_detectors; ++a)
     {
       if (data_fan_sums[a] == 0)
-          efficiencies[a] = 0;
+    efficiencies[a] = 0;
       else
 	{
           //const float denominator = inner_product(efficiencies,model[a]);
 	  float denominator = 0;
-       for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)
-           denominator += efficiencies[b%num_detectors]*model(a,b);
+           for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)
+        denominator += efficiencies[b%num_detectors]*model(a,b);
       efficiencies[a] = data_fan_sums[a] / denominator;
 	}
     }
@@ -1643,7 +1643,6 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
   assert(model.get_max_ra() == data_fan_sums.get_max_index());
   assert(model.get_min_a() == data_fan_sums[data_fan_sums.get_min_index()].get_min_index());
   assert(model.get_max_a() == data_fan_sums[data_fan_sums.get_min_index()].get_max_index());
-
   for (int ra = model.get_min_ra(); ra <= model.get_max_ra(); ++ra)
     for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
     {
@@ -1655,8 +1654,6 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
            for (int rb = model.get_min_rb(ra); rb <= model.get_max_rb(ra); ++rb)
              for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
            denominator += efficiencies[rb][b%num_detectors_per_ring]*model(ra,a,rb,b);
-
-
 	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
 	}
     }
