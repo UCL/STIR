@@ -239,7 +239,7 @@ public:
     at(const BasicCoordinate<num_dimensions,int> &c) const;
   //@}
 
-  //! \deprecated a*x+b*y (\see xapyb)
+  //! \deprecated a*x+b*y (use xapyb)
   template <typename elemT2>
     STIR_DEPRECATED inline void axpby(const elemT2 a, const Array& x,
                       const elemT2 b, const Array& y);

@@ -15,7 +15,7 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-  message(STATUS "ccache found, so we will use this.")
+  message(STATUS "ccache found, so we will use it.")
 endif()
 
 
@@ -26,7 +26,11 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # Compiler Id for Apple Clang is AppleClang, see STIR issue #531
 endif()
-  
+
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
+endif()
+
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
@@ -104,7 +108,7 @@ option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK 4.9)
+   find_package(ITK 4.9 CONFIG)
    if (ITK_FOUND)
       include(${ITK_USE_FILE})
    endif()
@@ -138,12 +142,12 @@ if(NOT DISABLE_HDF5)
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0)# QUIET)
+    find_package(nlohmann_json 3.2.0 CONFIG)# QUIET)
     if (nlohmann_json_FOUND)
-      message(STATUS "nlohmann JSON library found.")
+      message(STATUS "nlohmann JSON library ${nlohmann_json_VERSION} found.")
       set(HAVE_JSON ON)
     else()
-      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
+      message(STATUS "nlohmann JSON library not found. Radionuclide support will be minimal.")
     endif()
 endif()
 
@@ -193,13 +197,16 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj 1.0)
+    find_package(parallelproj 1.0 CONFIG)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
       if (parallelproj_built_with_CUDA)
         message(STATUS "Found parallelproj ${parallelproj_VERSION} (will use its CUDA support)")
       else()
         message(STATUS "Found parallelproj ${parallelproj_VERSION} (but using its OpenMP version as it wasn't built with CUDA)")
+      endif()
+      if (parallelproj_VERSION VERSION_LESS 1.2.13)
+        message(STATUS "If the above parallelproj info looks incorrect, upgrade it to at least 1.2.13")
       endif()
     endif()
 endif()

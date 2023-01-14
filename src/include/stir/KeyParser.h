@@ -311,9 +311,7 @@ public:
   //! Returns a string with keywords and their values
   /*! Keywords are listed in the order they are inserted in the keymap 
       (except for start and stop keys which are listed first and last).
-
-      \bug breaks with 'vectorised' keys.
-      */
+  */
   virtual std::string parameter_info() const;
 
   // KT 07/02/2001 new 
