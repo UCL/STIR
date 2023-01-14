@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017, 2018 University College London
+# Copyright 2013, 2014, 2016-2023 University College London
 
 # This file is part of STIR.
 #
@@ -278,7 +278,7 @@ endforeach(STIR_DIR)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/config/ DESTINATION ${STIR_CONFIG_DIR}
                 FILES_MATCHING PATTERN "*.json")
-            message("installing JSON file from " ${CMAKE_SOURCE_DIR}/src/config/" to " ${CMAKE_INSTALL_PREFIX}/share/stir/config)
+message(STATUS "Installing JSON files from ${CMAKE_SOURCE_DIR}/src/config/ to  ${STIR_CONFIG_DIR}")
             
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled
