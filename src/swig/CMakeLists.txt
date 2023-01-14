@@ -114,7 +114,7 @@ if(BUILD_SWIG_PYTHON)
       set (Python_EXECUTABLE ${PYTHON_EXECUTABLE})
     endif()
     find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
-    message(STATUS "We will use Python::Module Python::NumPy targets, but this is what CMake found:\n"
+    message(STATUS "We will use Python::Module Python::NumPy targets. FYI, this is (roughly) what it corresponds to:\n"
       ".... Python_LIBRARIES: ${Python_LIBRARIES}\n"
       ".... Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}\n"
       ".... Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
