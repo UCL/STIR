@@ -306,7 +306,7 @@ public:
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
-  //! \deprecated a*x+b*y (\see xapyb)
+  //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
                                      const float b, const ProjData& y);
 
