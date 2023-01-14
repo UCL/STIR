@@ -11,6 +11,12 @@ on:
 
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.tex'
+
   workflow_dispatch:
     inputs:
       debug_enabled:
