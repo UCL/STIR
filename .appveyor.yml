@@ -5,6 +5,7 @@ skip_commits:
     - .github/**/*
     - '**/*.md'
     - '**/*.html'
+    - '**/*.htm'
     - '**/*.tex'
 
 version: '{build}'

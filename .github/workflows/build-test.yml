@@ -7,6 +7,7 @@ on:
       - '.appveyor.yml'
       - '**/*.md'
       - '**/*.html'
+      - '**/*.htm'
       - '**/*.tex'
 
   pull_request:
@@ -15,6 +16,7 @@ on:
       - '.appveyor.yml'
       - '**/*.md'
       - '**/*.html'
+      - '**/*.htm'
       - '**/*.tex'
 
   workflow_dispatch:
