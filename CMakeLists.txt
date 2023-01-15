@@ -245,41 +245,39 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 set (STIR_INCLUDE_DIRS "include")
 
 
+# Older CMake cannot import or export object libraries. So we have to export
+# the sources and tell the user to explicitly use STIR_REGISTRIES.
+# This will be set to either a list of source files, or a list of object files.
+# See STIRConfig.cmake.in on how we cope with this
 if (CMAKE_VERSION VERSION_LESS 3.12)
-  # Older CMake cannot export object libraries. So we have to export
-  # the sources and tell the user to explicitly use STIR_REGISTRIES.
-
-  # install the registry sources
-  install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
-  # set STIR_REGISTRIES to this location before export
-  # first create a new variable.
-  set(INSTALLED_STIR_REGISTRIES)
-  foreach(r  ${STIR_REGISTRIES})
-    # get filename without directory
-    get_filename_component(r_filename ${r} NAME)
-    # append this with installed location
-    # (note: have to use CMAKE_INSTALL_PREFIX for CONFIGURE_PACKAGE_CONFIG_FILE to
-    # make the variable relocatable)
-    list(APPEND INSTALLED_STIR_REGISTRIES "${CMAKE_INSTALL_PREFIX}/${STIR_DATA_DIR}/src/${r_filename}")
-  endforeach()
-  set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
-  CONFIGURE_PACKAGE_CONFIG_FILE(
-    src/cmake/STIRConfig.cmake.in
-    "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
-    INSTALL_DESTINATION "${ConfigPackageLocation}"
-    PATH_VARS STIR_INCLUDE_DIRS STIR_REGISTRIES # relocatable variables
-  )
+  message(WARNING "Your CMake version is older than 3.12. The STIR_REGISTRIES
+    will be exported as source files only. Please upgrade CMake!")
 else()
   install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
-  # Note: STIRConfig.cmake.in uses PACKAGE_STIR_REGISTRIES (because of the PATH_VARS above)
-  set(PACKAGE_STIR_REGISTRIES $<TARGET_OBJECTS:stir_registries>)
-  CONFIGURE_PACKAGE_CONFIG_FILE(
-    src/cmake/STIRConfig.cmake.in
-    "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
-    INSTALL_DESTINATION "${ConfigPackageLocation}"
-    PATH_VARS STIR_INCLUDE_DIRS # relocatable variables
-  )
 endif()
+
+# install the registry sources for older CMake versions
+install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
+# set STIR_REGISTRIES to this location before export
+# first create a new variable.
+set(INSTALLED_STIR_REGISTRIES)
+foreach(r  ${STIR_REGISTRIES})
+  # get filename without directory
+  get_filename_component(r_filename ${r} NAME)
+  # append this with installed location
+  # (note: have to use CMAKE_INSTALL_PREFIX for CONFIGURE_PACKAGE_CONFIG_FILE to
+  # make the variable relocatable)
+  list(APPEND INSTALLED_STIR_REGISTRIES "${CMAKE_INSTALL_PREFIX}/${STIR_DATA_DIR}/src/${r_filename}")
+endforeach()
+set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
+
+# New create STIRConfig.cmake
+CONFIGURE_PACKAGE_CONFIG_FILE(
+  src/cmake/STIRConfig.cmake.in
+  "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
+  INSTALL_DESTINATION "${ConfigPackageLocation}"
+  PATH_VARS STIR_INCLUDE_DIRS STIR_REGISTRIES # relocatable variables
+)
 
 # create and install STIRTargets*.cmake for the installation-tree
 # Note: we cannot have "NAMESPACE stir::" as we would have 

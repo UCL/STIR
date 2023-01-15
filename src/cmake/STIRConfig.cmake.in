@@ -25,18 +25,20 @@
 #
 # Usage is like this
 #
+#  find_package(STIR 5.1 CONFIG)
 #  add_executable(my_exe ${STIR_REGISTRIES})
 #  target_link_libraries(my_exe ${STIR_LIBRARIES})
 #
-# In addition, if your CMake is older than 3.12, ${STIR_REGISTRIES} is a list of source files.
-# You need to add
+# In addition, if your CMake (or the version used to compile STIR) is older than 3.12,
+# you need to add
 #
 #  include_directories("${STIR_INCLUDE_DIRS}")
 #
-# to your CMake file to get the STIR_REGISTRIES to compile.
-# For more recent CMake, this should not be necessary (STIR_REGISTRIES is set to compiled files for the registries).
+# to your CMake file to get the source files listed in STIR_REGISTRIES to compile.
+# For more recent CMake, this should not be necessary (as STIR_REGISTRIES is then set to
+# a list of compiled files).
 
-# The file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
+# This file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
 # in case you need to how it was built.
 @PACKAGE_INIT@ 
 
@@ -50,7 +52,15 @@ set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
 # https://gitlab.kitware.com/cmake/cmake/issues/16219
 #set(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
 set(STIR_LIBRARIES @STIR_LIBRARIES@)
-set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
+
+# Set STIR_REGISTRIES to either a list of source or object files,
+# depending on the CMake version with which STIR was compiled as well as
+# the CMake version that is used to import STIR.
+if (@CMAKE_VERSION@ VERSION_LESS 3.12 OR CMAKE_VERSION VERSION_LESS 3.12)
+   set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
+else()
+  set(STIR_REGISTRIES $<TARGET_OBJECTS:stir_registries>)
+endif()
 
 ## find external packages
 # we use a trick by Matt McCormick (kitware)
