@@ -23,10 +23,19 @@
 # libraries. Therefore, if you make a target that depends on ${STIR_LIBRARIES},
 # its include_directories and linkage should automagically be ok.
 #
-# At this point in time, you do need to add
-#  include_directories("${STIR_INCLUDE_DIRS}")
-# to your CMake file to get the STIR_REGISTRIES to compile.
+# Usage is like this
 #
+#  add_executable(my_exe ${STIR_REGISTRIES})
+#  target_link_libraries(my_exe ${STIR_LIBRARIES})
+#
+# In addition, if your CMake is older than 3.12, ${STIR_REGISTRIES} is a list of source files.
+# You need to add
+#
+#  include_directories("${STIR_INCLUDE_DIRS}")
+#
+# to your CMake file to get the STIR_REGISTRIES to compile.
+# For more recent CMake, this should not be necessary (and STIR_REGISTRIES is empty).
+
 # The file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
 # in case you need to how it was built.
 @PACKAGE_INIT@ 
