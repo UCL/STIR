@@ -271,6 +271,9 @@ endif()
 
 # create an object library with all the "registries"
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
+# TODO, really should use stir_libs.cmake
+target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
+target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
 
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
