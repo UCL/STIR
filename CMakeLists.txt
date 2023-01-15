@@ -271,12 +271,8 @@ if (CMAKE_VERSION VERSION_LESS 3.12)
   )
 else()
   install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
-  if (CMAKE_VERSION VERSION_LESS 3.12)
-    set(STIR_LIBRARIES stir_registries ${STIR_LIBRARIES})
-  else()
-    list(PREPEND STIR_LIBRARIES stir_registries)
-  endif()
-  # Note: STIRConfig.cmake.in uses PACKAGE_STIR_REGISTRIES, which will be empty as desired
+  # Note: STIRConfig.cmake.in uses PACKAGE_STIR_REGISTRIES (because of the PATH_VARS above)
+  set(PACKAGE_STIR_REGISTRIES $<TARGET_OBJECTS:stir_registries>)
   CONFIGURE_PACKAGE_CONFIG_FILE(
     src/cmake/STIRConfig.cmake.in
     "${CMAKE_BINARY_DIR}/STIRConfig.cmake"

@@ -34,7 +34,7 @@
 #  include_directories("${STIR_INCLUDE_DIRS}")
 #
 # to your CMake file to get the STIR_REGISTRIES to compile.
-# For more recent CMake, this should not be necessary (and STIR_REGISTRIES is empty).
+# For more recent CMake, this should not be necessary (STIR_REGISTRIES is set to compiled files for the registries).
 
 # The file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
 # in case you need to how it was built.
