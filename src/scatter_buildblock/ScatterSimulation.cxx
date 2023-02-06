@@ -919,7 +919,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
                                                                                     1, delta_ring,
                                                                                     new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                                    new_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                                    this->proj_data_info_sptr->get_num_tangential_poss(),
                                                                                     false));
 
     info(boost::format("ScatterSimulation: down-sampled scanner info:\n%1%")
