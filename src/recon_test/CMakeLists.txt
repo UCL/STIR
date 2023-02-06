@@ -125,7 +125,7 @@ endif()
 include(stir_test_exe_targets)
 
 # a test that uses MPI
-create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)

@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017, 2018 University College London
+# Copyright 2013, 2014, 2016-2023 University College London
 
 # This file is part of STIR.
 #
@@ -269,6 +269,13 @@ if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
+# create an object library with all the "registries"
+# Warning: dependencies for object libraries are not transitive!
+add_library(stir_registries OBJECT ${STIR_REGISTRIES})
+# TODO, really should use stir_libs.cmake
+target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
+target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 	ADD_SUBDIRECTORY(${STIR_DIR})
@@ -278,7 +285,7 @@ endforeach(STIR_DIR)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/config/ DESTINATION ${STIR_CONFIG_DIR}
                 FILES_MATCHING PATTERN "*.json")
-            message("installing JSON file from " ${CMAKE_SOURCE_DIR}/src/config/" to " ${CMAKE_INSTALL_PREFIX}/share/stir/config)
+message(STATUS "Installing JSON files from ${CMAKE_SOURCE_DIR}/src/config/ to  ${STIR_CONFIG_DIR}")
             
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled

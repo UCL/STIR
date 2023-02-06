@@ -4,7 +4,7 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C) 2013-2016,2019-2021 University College London
+    Copyright (C) 2013-2016,2019-2021, 2923 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
@@ -1197,6 +1197,14 @@ check_consistency() const
   
   }
 
+  if (this->energy_resolution > 20.F)
+    {
+      warning("Scanner: energy resolution is a ratio (FWHM/reference_energy) and expected to be less than 1 "
+              "(although we allow up to 20 to denote no energy information), but it is set to " +
+              std::to_string(this->energy_resolution));
+      return Succeeded::no;
+    }
+
   return Succeeded::yes;
 }
 
@@ -1381,11 +1389,10 @@ Scanner* Scanner::ask_parameters()
   // old scanners. This should stay here as a transitional step.
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
-      info("more options are available for the scanner: \n(a) Energy Resolution :=\n(b) Reference energy (in keV)\t:="
-        "\n(c) Scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) \n(d) Scanner orientation (X or Y)\t:="
-        "\n\n(a) and (b) are used in Scatter Simulation. \n (c) is used to choose more precise models of the scanner. "
-        "\n(d) is used in BlocksOnCylindrical Geometry to build the proper crystal map."
-        "\nIn case, you need them, set them manually in your interfile header before 'end scanner parameters:='.");
+      if (!scanner_ptr->has_energy_information())
+          warning("Energy information not set, which is needed in scatter simulation. If you need it, set"
+               "\n Energy Resolution :=\n Reference energy (in keV)\t:="
+               "\nmanually in your interfile header before 'end scanner parameters:='.");
       
       //This is needed for finding effective central bin size, because it is different for different geometries.
       const string ScannerGeometry =
@@ -1445,7 +1452,7 @@ Scanner* Scanner::ask_parameters()
         ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
         
      float EnergyResolution =
-          ask_num("Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
+          ask_num("Enter the energy resolution (as FWHM/reference_energy) of the scanner (expected to be less than 1): ", 0.0f, 20.0f, -1.0f);
 
       float ReferenceEnergy =
           ask_num("Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, -1.0f);

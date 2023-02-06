@@ -7,10 +7,18 @@ on:
       - '.appveyor.yml'
       - '**/*.md'
       - '**/*.html'
+      - '**/*.htm'
       - '**/*.tex'
 
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
   workflow_dispatch:
     inputs:
       debug_enabled:

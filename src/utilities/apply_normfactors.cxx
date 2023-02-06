@@ -40,8 +40,8 @@ int main(int argc, char **argv)
   if (argc<7 || argc>10)
     {
       std::cerr << "Usage: " << argv[0] 
-	   << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num [do_eff [ do_geo [ do_block]]]\n"
-	   << "apply_or_undo is 1 (multiply) or 0 (divide)\n"
+	   << " out_filename in_norm_filename_prefix measured_data multiply_or_divide iter_num eff_iter_num [do_eff [ do_geo [ do_block]]]\n"
+	   << "multiply_or_divide is 1 (multiply) or 0 (divide)\n"
 	   << "do_eff, do_geo, do_block are 1 or 0 and all default to 1\n";
       return EXIT_FAILURE;
     }
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   const bool do_eff   = argc>=8?atoi(argv[7])!=0: true;
   const int eff_iter_num = atoi(argv[6]);
   const int iter_num = atoi(argv[5]);
-  const bool apply_or_undo = atoi(argv[4])!=0;
+  const bool multiply_or_divide = atoi(argv[4])!=0;
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[3]);
   const std::string in_filename_prefix = argv[2];
   const std::string output_file_name = argv[1];
@@ -139,11 +139,11 @@ int main(int argc, char **argv)
       {
 	make_det_pair_data(det_pair_data, *measured_data, segment_num, ax_pos_num);
 	if (do_eff)
-	  apply_efficiencies(det_pair_data, efficiencies, apply_or_undo);
+	  apply_efficiencies(det_pair_data, efficiencies, multiply_or_divide);
 	if (do_geo)
-	  apply_geo_norm(det_pair_data, norm_geo_data, apply_or_undo);
+	  apply_geo_norm(det_pair_data, norm_geo_data, multiply_or_divide);
 	if (do_block)
-	  apply_block_norm(det_pair_data, norm_block_data, apply_or_undo);
+	  apply_block_norm(det_pair_data, norm_block_data, multiply_or_divide);
 	set_det_pair_data(*out_proj_data_ptr,
 			  det_pair_data,
 			  segment_num,
