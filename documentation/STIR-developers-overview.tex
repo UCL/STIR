@@ -1245,36 +1245,22 @@ constructor will never be called.}. This is currently done by adding the file to
 
 \section{
 Extending STIR with your own files \label{sect:extendingSTIR}}
+(See the section on using STIR in an external project in the User's Guide if you just want to
+use STIR functionality in your own work.)
 
-If you want to add your own files to the libraries, or have your 
-own main programs, you can of course set-up your own directory 
-and
-\begin{itemize}
-\item 
-make sure that your compiler finds the STIR include files in \textbf{STIR/include}
-\item 
-make sure that you link with all the necessary libraries
-\item 
-make sure that you link with the *\_registries object files
-\end{itemize}
-
-All of this is made easier if you  \textit{installed}
-STIR after you built it (\textit{i.e.} used \texttt{make install} or built the \texttt{INSTALL}
-target in your IDE).
-
-Nevertheless, wipping up your own \textbf{CMakeLists.txt} is slightly painful, and when using the
-above mechanism, it is impossible for STIR to call your own routines, \textit{e.g.} if you
-added your own filter or prior and want to use that during reconstruction.
-For a true integration with  STIR, we provide the following alternative.
+If you want to let STIR use your own
+extra classes, \textit{e.g.} if you
+added your own filter or prior and want to use that during reconstruction,
+you can do this while keeping your own work independent of the STIR sources.
 
 \begin{itemize}
-\item Put all your files in a separate subdirectory or in \textbf{STIR/local} (the distribution 
+\item Put all your files in a separate folder (which can be outside the STIR tree) or in \textbf{STIR/src/local} (the distribution 
 will never contain any files in that directory). Let us call your directory 
 \textbf{mySTIRext} as an example.
 \item Create a file \textbf{mySTIRext/extra\_stir\_dirs.cmake} with CMake statements,
 in particular a list of your subdirectories. For instance,
 \begin{verbatim}
-# add include directory to compiler switches
+# add my include directory to compiler switches (or better: use target_include_directories)
 include_directories(include)
 
 # check CMakeLists in next directories
