@@ -276,9 +276,9 @@ void
 ProjMatrixByBinPinholeSPECTUB::
 set_detector_file( const string& value )
 {
-    if (this->detector_file != boost::algorithm::to_lower_copy(value))
+    if (this->detector_file != value)
     {
-        this->detector_file = boost::algorithm::to_lower_copy(value);
+        this->detector_file = value;
         this->already_setup = false;
     }
 }
@@ -297,9 +297,9 @@ void
 ProjMatrixByBinPinholeSPECTUB::
 set_collimator_file( const string& value )
 {
-    if (this->collimator_file != boost::algorithm::to_lower_copy(value))
+    if (this->collimator_file != value)
     {
-        this->collimator_file = boost::algorithm::to_lower_copy(value);
+        this->collimator_file = value;
         this->already_setup = false;
     }
 }
