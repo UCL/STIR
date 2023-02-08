@@ -212,7 +212,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
     }
 
   // multiplicative correction
-  if (!is_null_ptr(normalisation_sptr) && !normalisation_sptr->is_trivial())
+  if (!is_null_ptr(normalisation_sptr))
     {
       mult_viewgrams_sptr.reset(
 				new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
