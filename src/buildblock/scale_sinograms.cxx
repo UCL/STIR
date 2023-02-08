@@ -97,7 +97,7 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
               {
                 warning("Problem at segment %d, axial pos %d in finding sinogram scaling factor.\n"
                         "Weighted data in denominator %g is very small compared to total in sinogram %g.\n"
-                        "Adjust weights?.\n"
+                        "Adjust weights?. This could be an axial gap.\n"
                         "I will use scale factor %g",
                         bin.segment_num(),
                         bin.axial_pos_num(),
