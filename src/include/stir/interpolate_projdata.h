@@ -61,6 +61,11 @@ Succeeded interpolate_projdata(ProjData& proj_data_out,
                                const bool remove_interleaving);
 Succeeded
 interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, bool remove_interleaving);
+Succeeded
+interpolate_projdata_3d(shared_ptr<ProjData> projdata_out,
+                     const shared_ptr<ProjData> projdata_in_sptr,
+                     const BSpline::BSplineType & spline_type,
+                     const bool use_view_offset = false);
 //@}
 
 END_NAMESPACE_STIR
