@@ -281,6 +281,18 @@ protected:
      * @{
      */
 
+    //! gamma-energy-part of the detection efficiency
+    /*! 
+      Formula used is based on a Gaussian pdf for the efficiency, with
+      \f[ FWHM_E = \alpha  \sqrt(E) \f]
+      where the proportionality constant \f$\alpha\f$ is determined by the
+      energy FWHM of the Scanner at the reference energy.
+
+      This pdf is then integrated from the lower to the upper energy window limits.
+
+      \sa Scanner::get_energy_resolution
+      \sa Scanner::get_reference_energy
+    */
     float detection_efficiency(const float energy) const;
 
 

@@ -330,7 +330,7 @@ set_up()
         error("ScatterSimulation: scanner energy resolution information not set. Aborting.");
 
     if (is_null_ptr(template_exam_info_sptr))
-        error("ScatterSimulation: projection data info not set. Aborting.");
+        error("ScatterSimulation: template exam info not set. Aborting.");
 
     if(!template_exam_info_sptr->has_energy_information())
         error("ScatterSimulation: template energy window information not set. Aborting.");

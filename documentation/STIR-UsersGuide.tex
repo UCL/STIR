@@ -5679,6 +5679,31 @@ in terms of classes that actually end up in the library.}
 
 See the doxygen documentation for an overview of the directory tree with brief descriptions.
 
+\section{Using STIR in an external C++ project
+\label{sec:ExternalProjectC++}}
+STIR exports its CMake settings. Therefore, an external project can do
+\begin{verbatim}
+find_package(STIR 5.1 CONFIG)
+add_library(my_lib file1.cxx file2.cxx)
+# my_lib uses STIR functionality
+target_link_libraries(my_lib ${STIR_LIBRARIES})
+add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
+target_link_libraries(my_exe my_lib)
+\end{verbatim}
+In addition, if your CMake is older than 3.12, you need to add
+\begin{verbatim}
+include_directories("${STIR_INCLUDE_DIRS}")
+\end{verbatim}
+to your CMake file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+a list of compiled files).
+
+Note that if CMake did not find the STIR files, you can point it to where they are installed.
+For example, if you installed STIR with
+\texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
+\texttt{STIR\_DIR=\$HOME/install/lib/cmake}.
+\footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
+
 \section{
 Future developments and Support}
 
