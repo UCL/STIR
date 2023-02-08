@@ -18,6 +18,8 @@
 
 */
 
+#include "stir/Array.h"
+#include "stir/common.h"
 START_NAMESPACE_STIR
 
 /*!
@@ -48,6 +50,13 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
                                      FunctionType func,
                                      const BasicCoordinate<3, positionT>&  offset,  
                                      const BasicCoordinate<3, positionT>& step);
+
+template <class FunctionType, class elemT, class positionT>
+inline
+void sample_function_on_regular_grid(Array<2,elemT>& out,
+                                     FunctionType func,
+                                     const BasicCoordinate<2, positionT>&  offset,
+                                     const BasicCoordinate<2, positionT>& step);
 
 END_NAMESPACE_STIR
 

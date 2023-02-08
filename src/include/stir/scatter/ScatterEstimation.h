@@ -97,14 +97,15 @@ public:
     static void
     upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                       const  ProjData& emission_proj_data,
-                                      const ProjData& scatter_proj_data,
+                                      shared_ptr<ProjData> scatter_proj_data,
                                       BinNormalisation& scatter_normalisation,
                                       const ProjData& weights_proj_data,
                                       const float min_scale_factor,
                                       const float max_scale_factor,
                                       const unsigned half_filter_width,
                                       BSpline::BSplineType spline_type = BSpline::BSplineType::linear,
-                                      const bool remove_interleaving = true);
+                                      const bool remove_interleaving = true,
+                                      const bool do_3D = false);
 
 
     //! Default constructor (calls set_defaults())
