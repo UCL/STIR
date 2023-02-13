@@ -61,6 +61,9 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
+  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
+    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
+
   assert(!is_null_ptr(scanner_ptr));
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;

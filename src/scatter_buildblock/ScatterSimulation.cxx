@@ -903,7 +903,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     }
     
     const float approx_num_non_arccorrected_bins =
-      old_scanner_ptr->get_max_num_non_arccorrected_bins() * 
+      this->proj_data_info_sptr->get_num_tangential_poss() * 
       (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring())
       + 5; // add 5 to avoid strange edge-effects, certainly with B-splines
     new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins+.5F));
