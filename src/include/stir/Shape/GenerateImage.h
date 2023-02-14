@@ -19,6 +19,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Robert Twyman
+  \author Nikos Efthimiou
 
   \par Example .par file
   \code
@@ -55,6 +56,9 @@
     scale_to_write_data:= 1
   End Interfile Output File Format Parameters:=
 
+  ; Used with simulation of dynamic images
+  ; time frame definition filename :=  frames.fdef
+
   X output image size (in pixels):= 13
   Y output image size (in pixels):= 13
   Z output image size (in pixels):= 15
@@ -78,6 +82,7 @@
      radius-y (in mm):= 2
      length-z (in mm):= 3
      origin (in mm):= {z,y,x}
+     ; frames := {1, 2 , 7}
      END:=
   value := 10
 

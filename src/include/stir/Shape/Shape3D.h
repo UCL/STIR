@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2023, Athinoula A. Martinos Center for Biomedical Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -16,6 +17,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nikos Efthimiou
 */
 
 #ifndef __stir_Shape_Shape3D_h__
@@ -42,6 +44,9 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   However, this then needs some special treatment for some member 
   functions, and you have to be somewhat careful with that class.
 
+  When dynamic images are generated the frames parameter can be used to
+  tell in which time frames this shape will be drawn.
+
   \todo This could/should be generalised to allow general fuzzy shapes.
   Probably the only thing to change is to let is_inside_shape() return
   a float (between 0 and 1). This would solve some issues with 
@@ -60,6 +65,7 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   \verbatim
   ; specify origin as {z,y,x}
   origin (in mm):= <float> ;defaults to {0,0,0}
+  frames := {0,0,}
   \endverbatim
 */
 class Shape3D :
@@ -117,7 +123,8 @@ public:
     \todo replace by floating point return value?
   */
   virtual bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const = 0;
-  
+
+  //! Draw if in the correct time dynamic time frame
   bool is_in_frame(const unsigned int this_frame) const;
   //! translate the whole shape by shifting its origin 
   /*! Uses set_origin().
@@ -202,7 +209,7 @@ protected:
 private:
   //! origin of the shape
   CartesianCoordinate3D<float> origin;
-
+  //! time frames that we will add this shape
   std::vector<int> frames;
 };
 

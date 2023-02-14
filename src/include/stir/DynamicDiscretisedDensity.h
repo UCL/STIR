@@ -7,12 +7,14 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
   \author Richard Brown
-  
+  \author Nikos Efthimiou
+
 */
 /*
     Copyright (C) 2005 - 2011-01-12, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018-2020 University College London
+    Copyright (C) 2023, Athinoula A. Martinos Center for Biomedical Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

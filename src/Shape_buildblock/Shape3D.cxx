@@ -16,6 +16,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nikos Efthimiou
 */
 #include "stir/Shape/Shape3D.h"
 #include "stir/Shape/DiscretisedShape3D.h"
