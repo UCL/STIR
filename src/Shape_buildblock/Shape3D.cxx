@@ -236,6 +236,8 @@ initialise_keymap()
 bool
 Shape3D::is_in_frame(const unsigned int this_frame) const
 {
+  if(frames.size() == 0)
+    return true;
   return std::find(frames.begin(), frames.end(), this_frame)!=frames.end() ? true : false;
 }
 

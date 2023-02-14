@@ -163,6 +163,10 @@ post_processing()
     else
       {
         warning("image duration not set, so time frame definitions will not be initialised");
+        std::vector<double> start_times(1, 0);
+        std::vector<double> durations(1, 1);
+        TimeFrameDefinitions frame_defs(start_times, durations);
+        exam_info_sptr->set_time_frame_definitions(frame_defs);
       }
     //    std::vector<std::pair<double, double> > frame_times(1, std::pair<double, double>(0, 1));
     //    frame_defs = TimeFrameDefinitions(frame_times);
