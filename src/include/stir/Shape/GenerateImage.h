@@ -141,7 +141,7 @@ public:
     Succeeded save_image();
 
     //! Returns the discretised density with computed shapes.
-    shared_ptr<DiscretisedDensity<3, float>> get_output_sptr(unsigned int frame = 0);
+    shared_ptr<DiscretisedDensity<3, float>> get_output_sptr(unsigned int frame = 1);
 
     shared_ptr<DynamicDiscretisedDensity> get_all_outputs_sptr();
 
