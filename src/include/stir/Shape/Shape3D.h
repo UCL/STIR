@@ -118,6 +118,7 @@ public:
   */
   virtual bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const = 0;
   
+  bool is_in_frame(const unsigned int this_frame) const;
   //! translate the whole shape by shifting its origin 
   /*! Uses set_origin().
 
@@ -202,6 +203,7 @@ private:
   //! origin of the shape
   CartesianCoordinate3D<float> origin;
 
+  std::vector<int> frames;
 };
 
 END_NAMESPACE_STIR

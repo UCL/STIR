@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2003-2011, Hammersmith Imanet Ltd
     Copyright (C) 2018-2022, University College London
+    Copyright (C) 2023, Athinoula A. Martinos Center for Biomedical Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -111,6 +112,7 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include <iostream>
 
 
@@ -134,7 +136,9 @@ public:
     Succeeded save_image();
 
     //! Returns the discretised density with computed shapes.
-    shared_ptr<DiscretisedDensity<3, float>> get_output_sptr();
+    shared_ptr<DiscretisedDensity<3, float>> get_output_sptr(unsigned int frame = 0);
+
+    shared_ptr<DynamicDiscretisedDensity> get_all_outputs_sptr();
 
 private:
 
@@ -149,14 +153,16 @@ private:
     int patient_orientation_index;
     int patient_rotation_index;
 
-    shared_ptr<DiscretisedDensity<3, float> > out_density_ptr;
+    shared_ptr<DynamicDiscretisedDensity> out_density_ptr;
+    shared_ptr<VoxelsOnCartesianGrid<float> >
+        tmpl_image;
 
     std::vector<shared_ptr<Shape3D> > shape_ptrs;
     shared_ptr<Shape3D> current_shape_ptr;
     std::vector<float> values;
     float current_value;
     std::string output_filename;
-    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
+    shared_ptr<OutputFileFormat<DynamicDiscretisedDensity> >output_file_format_sptr;
 
     void increment_current_shape_num();
 
@@ -171,6 +177,8 @@ private:
 
     double image_duration;
     double rel_start_time;
+    std::string frame_definition_filename;
+
 };
 
 END_NAMESPACE_STIR

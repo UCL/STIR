@@ -103,6 +103,12 @@ DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num)
 {  return *this->_densities.at(frame_num-1) ; }
 
+shared_ptr<DiscretisedDensity<3, float> >
+    DynamicDiscretisedDensity::get_density_sptr(const unsigned int frame_num) const
+{
+    return this->_densities[frame_num];
+}
+
 const float 
 DynamicDiscretisedDensity::
 get_isotope_halflife() const

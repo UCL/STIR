@@ -229,6 +229,13 @@ Shape3D::
 initialise_keymap()
 {
   this->parser.add_key("origin (in mm)", &origin);
+  this->parser.add_key("frames", &frames);
+}
+
+bool
+Shape3D::is_in_frame(const unsigned int this_frame) const
+{
+  return std::find(frames.begin(), frames.end(), this_frame)!=frames.end() ? true : false;
 }
 
 std::string 

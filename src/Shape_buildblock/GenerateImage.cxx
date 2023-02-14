@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2003-2011, Hammersmith Imanet Ltd
     Copyright (C) 2018-2022, University College London
+    Copyright (C) 2023, Athinoula A. Martinos Center for Biomedical Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -70,7 +71,7 @@ set_defaults()
   rel_start_time = 0;
   output_filename.resize(0);
   output_file_format_sptr =
-          OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+          OutputFileFormat<DynamicDiscretisedDensity>::default_sptr();
 }
 
 void GenerateImage::set_imaging_modality()
@@ -122,6 +123,7 @@ initialise_keymap()
 
   add_key("image duration (sec)", &image_duration);
   add_key("image relative start time (sec)", &rel_start_time);
+  add_key("time frame definition filename", &frame_definition_filename);
 
   add_parsing_key("shape type", &current_shape_ptr);
   add_key("value", &current_value);
@@ -143,6 +145,28 @@ post_processing()
   // warning: relies on index taking same values as enums in PatientPosition
   exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
   exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
+
+  if (frame_definition_filename.size()!=0)
+    {
+    TimeFrameDefinitions frame_defs(frame_definition_filename);
+    exam_info_sptr->set_time_frame_definitions(frame_defs);
+    }
+  else
+    {
+    if (image_duration>0.0)
+      {
+        std::vector<double> start_times(1, rel_start_time);
+        std::vector<double> durations(1, image_duration);
+        TimeFrameDefinitions frame_defs(start_times, durations);
+        exam_info_sptr->set_time_frame_definitions(frame_defs);
+      }
+    else
+      {
+        warning("image duration not set, so time frame definitions will not be initialised");
+      }
+    //    std::vector<std::pair<double, double> > frame_times(1, std::pair<double, double>(0, 1));
+    //    frame_defs = TimeFrameDefinitions(frame_times);
+    }
 
   if (!is_null_ptr( current_shape_ptr))
   {
@@ -204,6 +228,29 @@ post_processing()
     warning("number of samples to take in x-direction should be strictly positive\n");
     return true;
   }
+
+  tmpl_image.reset( new VoxelsOnCartesianGrid<float>(exam_info_sptr,
+                                                    IndexRange3D(0,output_image_size_z-1,
+                                                                 -(output_image_size_y/2),
+                                                                 -(output_image_size_y/2)+output_image_size_y-1,
+                                                                 -(output_image_size_x/2),
+                                                                 -(output_image_size_x/2)+output_image_size_x-1),
+                                                    CartesianCoordinate3D<float>(0,0,0),
+                                                    CartesianCoordinate3D<float>(output_voxel_size_z,
+                                                                                 output_voxel_size_y,
+                                                                                 output_voxel_size_x)));
+
+  shared_ptr<Scanner> scn(Scanner::get_scanner_from_name((exam_info_sptr->originating_system)));
+  out_density_ptr.reset(new DynamicDiscretisedDensity(exam_info_sptr->get_time_frame_definitions(),
+                                                      rel_start_time,
+                                                      scn,
+                                                      tmpl_image) );
+
+  for (unsigned int frame_num=1; frame_num < exam_info_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+  {
+    out_density_ptr->get_density_sptr(frame_num)->fill(0.f);
+  }
+
   return false;
 }
 
@@ -252,42 +299,33 @@ compute()
 
 #else
 
-  if (image_duration>0.0)
-  {
-    std::vector<double> start_times(1, rel_start_time);
-    std::vector<double> durations(1, image_duration);
-    TimeFrameDefinitions frame_defs(start_times, durations);
-    exam_info_sptr->set_time_frame_definitions(frame_defs);
-  }
-  else
-  {
-    warning("image duration not set, so time frame definitions will not be initialised");
-  }
-  VoxelsOnCartesianGrid<float>
-          current_image(exam_info_sptr,
-                        IndexRange3D(0,output_image_size_z-1,
-                                     -(output_image_size_y/2),
-                                     -(output_image_size_y/2)+output_image_size_y-1,
-                                     -(output_image_size_x/2),
-                                     -(output_image_size_x/2)+output_image_size_x-1),
-                        CartesianCoordinate3D<float>(0,0,0),
-                        CartesianCoordinate3D<float>(output_voxel_size_z,
-                                                     output_voxel_size_y,
-                                                     output_voxel_size_x));
-  this->out_density_ptr.reset(current_image.clone());
+  for(int iframe = 1; iframe < exam_info_sptr->get_time_frame_definitions().get_num_time_frames(); ++iframe)
+    {
+    VoxelsOnCartesianGrid<float> current_image = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(out_density_ptr->get_density(iframe));
+//  this->out_density_ptr.reset(current_image.clone());
+    info(boost::format("Processing time frame %d ...")%iframe, 2);
 #endif
   std::vector<float >::const_iterator value_iter = values.begin();
   for (std::vector<shared_ptr<Shape3D> >::const_iterator iter = shape_ptrs.begin();
-          iter != shape_ptrs.end();
-  ++iter, ++value_iter)
-  {
+       iter != shape_ptrs.end();
+       ++iter, ++value_iter)
+    {
+
     info("Processing next shape...", 2);
-    current_image.fill(0);
-    (**iter).construct_volume(current_image, num_samples);
-    current_image *= *value_iter;
-    *out_density_ptr += current_image;
-  }
-  return Succeeded::yes;
+//        current_image.fill(0);
+    if( (**iter).is_in_frame(iframe))
+      {
+        VoxelsOnCartesianGrid<float> tmp_image = *tmpl_image->clone();
+        tmp_image.fill(10.f);
+
+        (**iter).construct_volume(tmp_image, num_samples);
+        tmp_image *= *value_iter;
+        current_image += tmp_image;
+      }
+    out_density_ptr->set_density(current_image, iframe);
+    }
+}
+return Succeeded::yes;
 }
 
 Succeeded
@@ -300,9 +338,15 @@ save_image()
 
 shared_ptr<DiscretisedDensity<3, float>>
 GenerateImage::
-get_output_sptr()
+get_output_sptr(unsigned int frame)
+{
+  return out_density_ptr->get_density_sptr(frame);
+}
+
+shared_ptr<DynamicDiscretisedDensity>
+    GenerateImage::
+    get_all_outputs_sptr()
 {
   return out_density_ptr;
 }
-
 END_NAMESPACE_STIR

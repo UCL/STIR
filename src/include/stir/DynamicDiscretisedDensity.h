@@ -143,6 +143,9 @@ class DynamicDiscretisedDensity: public ExamData
   const singleDiscDensT & 
     get_density(const unsigned int frame_num) const ;
 
+  shared_ptr<DiscretisedDensity<3, float> >
+      get_density_sptr(const unsigned int frame_num) const;
+
   const singleDiscDensT & 
     operator[](const unsigned int frame_num) const 
     { return this->get_density(frame_num); }
