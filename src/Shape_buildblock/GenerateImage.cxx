@@ -163,7 +163,7 @@ post_processing()
     else
       {
         warning("image duration not set, so time frame definitions will not be initialised");
-        std::vector<double> start_times(1, 0);
+        std::vector<double> start_times(1, rel_start_time);
         std::vector<double> durations(1, 1);
         TimeFrameDefinitions frame_defs(start_times, durations);
         exam_info_sptr->set_time_frame_definitions(frame_defs);
@@ -250,7 +250,7 @@ post_processing()
                                                       scn,
                                                       tmpl_image) );
 
-  for (unsigned int frame_num=1; frame_num < exam_info_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+  for (unsigned int frame_num=1; frame_num <= exam_info_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
   {
     out_density_ptr->get_density_sptr(frame_num)->fill(0.f);
   }
@@ -303,9 +303,9 @@ compute()
 
 #else
 
-  for(int iframe = 1; iframe < exam_info_sptr->get_time_frame_definitions().get_num_time_frames(); ++iframe)
+  for(int iframe = 1; iframe <= exam_info_sptr->get_time_frame_definitions().get_num_time_frames(); ++iframe)
     {
-    VoxelsOnCartesianGrid<float> current_image = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(out_density_ptr->get_density(iframe));
+    shared_ptr<VoxelsOnCartesianGrid<float> > current_image = std::dynamic_pointer_cast<VoxelsOnCartesianGrid<float> >(out_density_ptr->get_density_sptr(iframe));
 //  this->out_density_ptr.reset(current_image.clone());
     info(boost::format("Processing time frame %d ...")%iframe, 2);
 #endif
@@ -316,17 +316,15 @@ compute()
     {
 
     info("Processing next shape...", 2);
-//        current_image.fill(0);
     if( (**iter).is_in_frame(iframe))
       {
         VoxelsOnCartesianGrid<float> tmp_image = *tmpl_image->clone();
-        tmp_image.fill(10.f);
 
         (**iter).construct_volume(tmp_image, num_samples);
         tmp_image *= *value_iter;
-        current_image += tmp_image;
+        *current_image += tmp_image;
       }
-    out_density_ptr->set_density(current_image, iframe);
+//    out_density_ptr->set_density(current_image, iframe+1);
     }
 }
 return Succeeded::yes;
