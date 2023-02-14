@@ -314,10 +314,9 @@ compute()
        iter != shape_ptrs.end();
        ++iter, ++value_iter)
     {
-
-    info("Processing next shape...", 2);
     if( (**iter).is_in_frame(iframe))
       {
+        info("Processing next shape...", 2);
         VoxelsOnCartesianGrid<float> tmp_image = *tmpl_image->clone();
 
         (**iter).construct_volume(tmp_image, num_samples);
