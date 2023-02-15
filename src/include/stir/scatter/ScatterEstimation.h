@@ -317,11 +317,11 @@ private:
 
     //! reconstruct image with current scatter estimate (iteratively)
     /*! \a scat_iter is used for determining the filename for saving */
-    void reconstruct_iterative(int scat_iter, shared_ptr<DiscretisedDensity<3, float> >& output_sptr);
+    void reconstruct_iterative(int scat_iter);
 
     //! reconstruct image with current scatter estimate (analytic reconstruction)
     /*! \a scat_iter is used for determining the filename for saving */
-    void reconstruct_analytic(int scat_iter, shared_ptr<DiscretisedDensity<3, float> > & output_sptr);
+    void reconstruct_analytic(int scat_iter);
 
     //! \details Find a mask by thresholding etc
     static void apply_mask_in_place(DiscretisedDensity<3, float> &,
