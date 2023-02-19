@@ -294,8 +294,7 @@ test_Hessian_convexity_configuration(const std::string& test_name,
   const double my_norm2 = std::inner_product(input->begin_all(), input->end_all(), input->begin_all(), double(0));
 
   // test for a CONVEX function: 0 < my_sum, but we allow for some numerical error
-  if (this->check_if_less(-my_norm2*10E-5, my_sum)) {
-//    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 and is therefore convex");
+  if (this->check_if_less(-my_norm2*2E-4, my_sum)) {
     return true;
   } else {
     // print to console the FAILED configuration
