@@ -27,7 +27,8 @@
 <h3>Bug fixes</h3>
 <ul>
   <li>Scatter estimation was setting initial activity image to 1 at set_up and during each iteration. This led to cases where the scatter estimation would not converge.
-    <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>.
+    <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>. Now, this is disabled by default, but can be re-enabled by setting <code>restart_reconstruction_every_scatter_iteration</code>
+    to true either via a parameter file or via the <code>set_restart_reconstruction_every_scatter_iteration()</code> function.
   </li>
 </ul>
 

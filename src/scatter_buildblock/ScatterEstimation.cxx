@@ -71,6 +71,7 @@ set_defaults()
     this->run_in_2d_projdata = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
+    this->restart_reconstruction_every_scatter_iteration = false;
     this->run_debug_mode = false;
     this->override_scanner_template = true;
     this->override_density_image = true;
@@ -159,6 +160,8 @@ initialise_keymap()
                          &this->output_additive_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
+    this->parser.add_key("restart reconstruction every scatter iteration",
+                         &this->restart_reconstruction_every_scatter_iteration);
     this->parser.add_key("maximum scatter scaling factor",
                          &this->max_scale_value);
     this->parser.add_key("minimum scatter scaling factor",
@@ -425,6 +428,11 @@ void ScatterEstimation::set_output_additive_estimate_prefix(std::string name)
 void ScatterEstimation::set_run_debug_mode(bool debug)
 { this->run_debug_mode = debug; }
 
+void ScatterEstimation::set_restart_reconstruction_every_scatter_iteration(bool setting)
+{ this->restart_reconstruction_every_scatter_iteration = setting; }
+
+bool ScatterEstimation::get_restart_reconstruction_every_scatter_iteration()
+{ return this->restart_reconstruction_every_scatter_iteration; }
 
 void
 ScatterEstimation::
@@ -1085,6 +1093,9 @@ process_data()
 	    // TODO restructure code to move additive_projdata code from above
             error("ScatterEstimation: You should not be here. This is not 2D.");
         }
+
+        if (this->restart_reconstruction_every_scatter_iteration)
+        { this->current_activity_image_sptr->fill(1.f); }
 
         iterative_method ? reconstruct_iterative(i_scat_iter):
                            reconstruct_analytic(i_scat_iter);
