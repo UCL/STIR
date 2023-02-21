@@ -6,6 +6,7 @@
     Copyright (C) 2001- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2020, University College London
     Copyright (C) 2016-2017, PETsys Electronics
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,19 +23,20 @@
 
  1. Darren Hogg, Kris Thielemans, Terence J. Spinks, and Nicolas Spyrou. 2001.
  <cite>Maximum-Likelihood Estimation of Normalisation Factors for PET</cite>
- In 2001 IEEE Nuclear Science Symposium Conference Record, 4:2065–2069. San Diego, CA, USA: IEEE. https://doi.org/10.1109/nssmic.2001.1009231.
+ In 2001 IEEE Nuclear Science Symposium Conference Record, 4:2065-2069. San Diego, CA, USA: IEEE. https://doi.org/10.1109/nssmic.2001.1009231.
 
  2. Jacobson, Matthew W., and Kris Thielemans. 2008. 
  <cite>Optimizability of Loglikelihoods for the Estimation of Detector Efficiencies and Singles Rates in PET</cite>
- In 2008 IEEE Nuclear Science Symposium and Medical Imaging Conference (2008 NSS/MIC), 4580–4586. IEEE. https://doi.org/10.1109/nssmic.2008.4774352.
+ In 2008 IEEE Nuclear Science Symposium and Medical Imaging Conference (2008 NSS/MIC), 4580-4586. IEEE. https://doi.org/10.1109/nssmic.2008.4774352.
 
  3.  Tahereh Niknejad, Stefaan Tavernier, Joao Varela, and Kris Thielemans,
     <cite>Validation of 3D Model-Based Maximum-Likelihood Estimation of Normalisation Factors for Partial Ring Positron Emission Tomography</cite>
-    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1–5.
+    In 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector Workshop (NSS/MIC/RTSD), 1-5.
     <a href="https://doi.org/10.1109/NSSMIC.2016.8069577">DOI: 10.1109/NSSMIC.2016.8069577</a>.
  
  \author Kris Thielemans
  \author Tahereh Niknejad
+ \author Daniel Deidda
  
  */
 #ifndef __stir_ML_norm_H__
@@ -44,6 +46,7 @@
 #include "stir/ProjData.h"
 #include "stir/Array.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/IndexRange2D.h"
 #include "stir/Sinogram.h"
 #include <iostream>
@@ -84,15 +87,21 @@ private:
     int num_detectors;
 };
 
+void get_fan_info(int& num_rings, int& num_detectors_per_ring,
+         int& max_ring_diff, int& fan_size,
+         const ProjDataInfo& proj_data_info);
+
 //! Makes a DetPairData of appropriate dimensions and fills it with 0
 void make_det_pair_data(DetPairData& det_pair_data,
                         const ProjDataInfo& proj_data_info,
                         const int segment_num,
                         const int ax_pos_num);
+
 void make_det_pair_data(DetPairData& det_pair_data,
                         const ProjData& proj_data,
                         const int segment_num,
                         const int ax_pos_num);
+
 void set_det_pair_data(ProjData& proj_data,
                        const DetPairData& det_pair_data,
                        const int segment_num,
@@ -199,6 +208,7 @@ public:
     float sum(const int ra, const int a) const;
     float find_max() const;
     float find_min() const;
+    int get_max_delta() const;
     int get_num_detectors_per_ring() const;
     int get_num_rings() const;
     
@@ -217,22 +227,12 @@ private:
 
 typedef FanProjData BlockData3D;
 
-shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-get_fan_info(int& num_rings, int& num_detectors_per_ring, 
-	     int& max_ring_diff, int& fan_size, 
-	     const ProjDataInfo& proj_data_info);
-
-void make_fan_data(FanProjData& fan_data,
-                   const ProjData& proj_data);
-
 void make_fan_data_remove_gaps(FanProjData& fan_data,
-                   const ProjData& proj_data);
-
-void set_fan_data(ProjData& proj_data,
-                  const FanProjData& fan_data);
+                               const ProjData& proj_data);
 
 void set_fan_data_add_gaps(ProjData& proj_data,
-                  const FanProjData& fan_data);
+                  const FanProjData& fan_data,
+                  const float gap_value=0.F);
 
 void apply_block_norm(FanProjData& fan_data,
                       const BlockData3D& block_data,

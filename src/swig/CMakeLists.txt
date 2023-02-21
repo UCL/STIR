@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014, 2018, 2020 University College London
+# Copyright 2014, 2018, 2020, 2022 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -32,6 +32,12 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   endif()
   if (HAVE_JSON)
     SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_JSON)
+  endif()
+  if (HAVE_ITK)
+    SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_ITK)
+  endif()
+  if (parallelproj_FOUND)
+   SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_parallelproj)
   endif()
 
   SET_SOURCE_FILES_PROPERTIES(stir.i PROPERTIES CPLUSPLUS ON)
@@ -90,26 +96,42 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 endif()
 
 if(BUILD_SWIG_PYTHON)
+  if (${CMAKE_VERSION} VERSION_LESS "3.14") # from 3.14 findPython has Numpy support
+      if (Python_EXECUTABLE)
+        set (PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+      endif()
+      # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
+      find_package(PythonInterp QUIET)
+      find_package(PythonLibs REQUIRED)
+      find_package(Numpy REQUIRED)
+      # TODO would be better to use target_include_directories
+      INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+      INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
+      set(STIR_Python_dependency ${PYTHON_LIBRARIES})
+  else()
+    if (PYTHON_EXECUTABLE)
+      message(WARNING "Usage of PYTHON_EXECUTABLE is deprecated. Use Python_EXECUTABLE instead.")
+      set (Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+    endif()
+    find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+    message(STATUS "We will use Python::Module Python::NumPy targets. FYI, this is (roughly) what it corresponds to:\n"
+      ".... Python_LIBRARIES: ${Python_LIBRARIES}\n"
+      ".... Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}\n"
+      ".... Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+    set(STIR_Python_dependency Python::Module Python::NumPy)
+  endif()
 
-  # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
-  find_package(PythonInterp)
-  # find libraries and include files
-  # TODO would be better to use target_include_directories
-  FIND_PACKAGE(PythonLibs REQUIRED)
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  FIND_PACKAGE(Numpy REQUIRED)
-  INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
   SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
-    SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_MODULE(stir python stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
-    SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
   endif()
   SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
-  SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
+  SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${STIR_Python_dependency})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} ${OpenMP_EXE_LINKER_FLAGS})
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
 
@@ -150,9 +172,9 @@ if (BUILD_SWIG_OCTAVE)
 
   SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
-    SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_MODULE(stiroct octave stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
-    SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
   SWIG_WORKAROUND(${SWIG_MODULE_stiroct_REAL_NAME})
@@ -175,9 +197,9 @@ if (BUILD_SWIG_MATLAB)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} ${SWIG_DOXY_OPTIONS})
   # TODO depending on SWIG version add "-mexname stirMATLAB_wrap" above
   if (CMAKE_VERSION VERSION_LESS "3.8")
-    SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_MODULE(stirMATLAB matlab stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
-    SWIG_ADD_LIBRARY(stirMATLAB LANGUAGE matlab TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+    SWIG_ADD_LIBRARY(stirMATLAB LANGUAGE matlab TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
   endif()
   if (WIN32)
      set (Matlab_CXXLINKER_FLAGS "/EXPORT:mexFunction")

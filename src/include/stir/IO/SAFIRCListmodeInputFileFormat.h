@@ -25,6 +25,7 @@
   \brief Declaration of class stir::SAFIRCListmodeInputFileFormat
 
   \author Jannis Fischer
+  \author Markus Jehl, Positrigo
 */
 
 #ifndef __stir_IO_SAFIRCListmodeInputFileFormat_H__
@@ -48,29 +49,35 @@
 
 START_NAMESPACE_STIR
 
-/*! Class for reading SAFIR coincidence listmode data.
+/*! \brief Class for reading SAFIR coincidence listmode data.
 
 It reads a parameter file, which refers to 
-  - crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see DetectorCoordinateMapFromFile)
+  - optional crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see DetectorCoordinateMap)
   - the binary data file with the coincidence listmode data in SAFIR format (see CListModeDataSAFIR)
-  - a template projection data file, which is used to generate the virtual cylindrical scanner
+  - a template projection data file, which defines the scanner
+
+  If the map is not defined, the scanner detectors will be used. Otherwise, the nearest LOR of the scanner will be selected for each event.
 
   An example of such a parameter file would be
   \code
 	CListModeDataSAFIR Parameters:=
 		listmode data filename:= listmode_input.clm.safir
-		; the following two examples are also default to the key parser
-		crystal map filename:= crystal_map_front.txt 
-		template projection data filename:= safir_20.hs
+		template projection data filename:= <projdata-filename>
+        ; optional map specifying the actual location of the crystals
+		crystal map filename:= crystal_map.txt 
+		; optional random displacement of the LOR end-points in mm (only used of a map is present)
+        LOR randomization (Gaussian) sigma:=0
 	END CListModeDataSAFIR Parameters:=
   \endcode
 
-  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0" and "SAFIR CListModeData\0". If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
+  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0", "SAFIR CListModeData\0" and "NeuroLF CListModeData\0".
+  If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
 */
+template<class EventDataType>
 class SAFIRCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
-	SAFIRCListmodeInputFileFormat() : did_parsing(false) {}
+	SAFIRCListmodeInputFileFormat() {}
 	virtual const std::string get_name() const
 	{
 		return "SAFIR Coincidence Listmode File Format";
@@ -82,7 +89,7 @@ public:
 		return false; // cannot read from istream
 	}
 
-	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData" or "MUPET CListModeData").
+	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData", "NeuroLF CListModeData" or "MUPET CListModeData").
 	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
 	{
 		// Looking for the right key in the parameter file
@@ -97,7 +104,18 @@ public:
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
 		char* buffer = new char[32];
 		data_file.read(buffer, 32);
-		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20));
+		bool cr = false;
+		// depending on used template, check header of listmode file for correct format
+		if (std::is_same<EventDataType, CListEventDataSAFIR>::value) {
+			cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) || !strncmp(buffer, "SAFIR CListModeData\0", 20));
+		}
+		else if (std::is_same<EventDataType, CListEventDataNeuroLF>::value) {
+			cr = !strncmp(buffer, "NeuroLF CListModeData\0", 20);
+		}
+		else{
+			warning("SAFIRCListModeInputFileFormat was initialised with an unexpected template.");
+		}
+
 		if( !cr ) {
 			warning("SAFIRCListModeInputFileFormat tried to read file " + listmode_filename + " but it seems to have the wrong signature.");
 		}
@@ -118,7 +136,7 @@ public:
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
-		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR<EventDataType>>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
 	}
 
 protected:
@@ -144,16 +162,15 @@ protected:
 
 	void set_defaults() {
 		base_type::set_defaults();
-		crystal_map_filename = "crystal_map_front.txt";
-		template_proj_data_filename = "safir_20.hs";
+		crystal_map_filename = "";
+		template_proj_data_filename = "";
 		lor_randomization_sigma = 0.0;
 	}
 
 	bool actual_do_parsing( const std::string& filename) const {
-		if( did_parsing) return true;
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
-		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str()) ) {
-			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+		if( const_cast<SAFIRCListmodeInputFileFormat<EventDataType>*>(this)->parse(filename.c_str()) ) {
+			info(const_cast<SAFIRCListmodeInputFileFormat<EventDataType>*>(this)->parameter_info());
 			return true;
 		}
 		else return false;
@@ -161,10 +178,8 @@ protected:
 
 	bool post_processing() {
 		if( !file_exists(listmode_filename) ) return true;
-		else if( !file_exists(crystal_map_filename) ) return true; 
 		else if( !file_exists(template_proj_data_filename) ) return true;
 		else {
-			did_parsing = true;
 			return false;
 		}
 		return true;
@@ -173,7 +188,6 @@ protected:
 
 
 private:
-	mutable bool did_parsing;
 	bool file_exists( const std::string& filename) {
 		std::ifstream infile(filename.c_str());
 		return infile.good();

@@ -38,6 +38,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
+#include "stir/info.h"
 #include "stir/display.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>
@@ -64,12 +65,13 @@ BinNormalisationSPECT::registered_name = "SPECT";
 void 
 BinNormalisationSPECT::set_defaults()
 {
+  base_type::set_defaults();
   this->uniformity_filename = "";
   this->_use_detector_efficiencies = false;
   this->_use_dead_time = false;
   this->_use_uniformity_factors = false;
   this->num_detector_heads = 3;
-  this->half_life = 6*60*60; //seconds
+  this->half_life = -1; //seconds
   this->resampled=0;
   this->measured_calibration_factor=-1.F;
 
@@ -79,6 +81,7 @@ void
 BinNormalisationSPECT::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation SPECT");
   this->parser.add_key("uniformity filename", &this->uniformity_filename);
   this->parser.add_key("use detector efficiencies", &this->_use_detector_efficiencies);
@@ -97,6 +100,9 @@ bool
 BinNormalisationSPECT::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
+
     if(use_uniformity_factors()){
         uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
     read_uniformity_table(uniformity);}
@@ -111,13 +117,16 @@ post_processing()
     if (this->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames()==0)
         error("BinNormalisationSPECT: At least one time frame should be defined");
     
-    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
-    
 //  allow to set your own calibration factor
   if(measured_calibration_factor>0) 
       set_calibration_factor(measured_calibration_factor);
   else 
       set_calibration_factor(get_exam_info_sptr()->get_calibration_factor());
+  
+  if (use_decay_correction_factors() && get_exam_info_sptr()->get_radionuclide().get_half_life()>0){
+      half_life=get_exam_info_sptr()->get_radionuclide().get_half_life();
+      info("BinNormalisationSPECT: half life = "+ std::to_string(half_life));
+  }
   
   return false;
 }
@@ -135,7 +144,10 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const 
 {
     
     set_num_views(norm_proj_data_info_ptr->get_num_views());
-  return BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
+    
+    this->view_time_interval=get_exam_info_sptr()->get_time_frame_definitions().get_duration(1)/num_views*num_detector_heads;
+    
+  return base_type::set_up(exam_info_sptr, proj_data_info_ptr_v);
 }
 
 BinNormalisationSPECT::
@@ -298,6 +310,9 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
  *####################################     decay factors     #########################################*/
 
             if (use_decay_correction_factors()){
+                if(half_life<0)
+                    error("BinNormalisationSPECT: decay correction cannot be applied as halflife was not set,"
+                          " or radionuclide is missing from radionuclideDB.json.");
                 normalisation=
                 normalisation/decay_correction_factor(half_life, rel_time);
             }

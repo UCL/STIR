@@ -14,83 +14,82 @@
 #%% Initial imports
 import stir
 import stirextra
-import pylab
-import numpy
+import matplotlib.pyplot as pylab
 import os
 #%% go to directory with input files
 os.chdir('../recon_demo')
 #%% Read it some projection data
-projdata=stir.ProjData.read_from_file('smalllong.hs');
+projdata = stir.ProjData.read_from_file('smalllong.hs')
 #%% Create an empty image with suitable voxel sizes
 # use smaller voxels than the default
-zoom=2.;
-target=stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info(), zoom);
-#%% initialise the projection matrix 
+zoom = 2.
+target = stir.FloatVoxelsOnCartesianGrid(projdata.get_exam_info(), projdata.get_proj_data_info(), zoom)
+#%% initialise the projection matrix
 # Using ray-tracing here
 # Note that the default is to restrict the projection to a cylindrical FOV
-projmatrix=stir.ProjMatrixByBinUsingRayTracing();
-projmatrix.set_up(projdata.get_proj_data_info(), target);
+projmatrix = stir.ProjMatrixByBinUsingRayTracing()
+projmatrix.set_up(projdata.get_proj_data_info(), target)
 #%% construct projectors
-forwardprojector=stir.ForwardProjectorByBinUsingProjMatrixByBin(projmatrix);
-backprojector=stir.BackProjectorByBinUsingProjMatrixByBin(projmatrix);
+forwardprojector = stir.ForwardProjectorByBinUsingProjMatrixByBin(projmatrix)
+backprojector = stir.BackProjectorByBinUsingProjMatrixByBin(projmatrix)
 
 #%% create projection data for output of forward projection
 # We'll just create the data in memory here
-projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_data_info());
+projdataout = stir.ProjDataInMemory(projdata.get_exam_info(),
+                                    projdata.get_proj_data_info())
 # Note: we could write to file, but it is right now a bit complicated to open a
 # file for read/write:
 #  inout=stir.ios.trunc|stir.ios.ios_base_in|stir.ios.out;
 #  projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'my_test_python_projection.hs',inout);
 #%% forward project an image. Here just some uniform data
-target.fill(2);
-forwardprojector.set_up(projdataout.get_proj_data_info(), target);
-forwardprojector.forward_project(projdataout, target);
+target.fill(2)
+forwardprojector.set_up(projdataout.get_proj_data_info(), target)
+forwardprojector.forward_project(projdataout, target)
 #%% display
-seg=projdataout.get_segment_by_sinogram(0);
-seg_array=stirextra.to_numpy(seg);
-pylab.figure();
-pylab.subplot(1,2,1)
-pylab.imshow(seg_array[10,:,:]);
+seg = projdataout.get_segment_by_sinogram(0)
+seg_array = stirextra.to_numpy(seg)
+pylab.figure()
+pylab.subplot(1, 2, 1)
+pylab.imshow(seg_array[10, :, :])
 pylab.title('Forward projection')
-pylab.subplot(1,2,2)
-pylab.plot(seg_array[10,0,:])
-pylab.show()
+pylab.subplot(1, 2, 2)
+pylab.plot(seg_array[10, 0, :])
+pylab.show(block=False)
 #%% backproject this projection data
 # we need to set the target to zero first, otherwise it will add to existing numbers.
 target.fill(0)
-backprojector.set_up(projdataout.get_proj_data_info(), target);
-backprojector.back_project(target, projdataout);
+backprojector.set_up(projdataout.get_proj_data_info(), target)
+backprojector.back_project(target, projdataout)
 #%% display
 # This shows a beautiful pattern, a well-known feature of a ray-tracing matrix
-target_array=stirextra.to_numpy(target);
-pylab.figure();
-pylab.subplot(1,2,1)
-pylab.imshow(target_array[10,:,:]);
+target_array = stirextra.to_numpy(target)
+pylab.figure()
+pylab.subplot(1, 2, 1)
+pylab.imshow(target_array[10, :, :])
 pylab.title('Back-projection')
-pylab.subplot(1,2,2)
-pylab.plot(target_array[10,80,:])
-pylab.show()
+pylab.subplot(1, 2, 2)
+pylab.plot(target_array[10, 80, :])
+pylab.show(block=False)
 #%% Let's use more LORs per sinogram bin (which will be a bit slower of course)
-projmatrix.set_num_tangential_LORs(10);
+projmatrix.set_num_tangential_LORs(10)
 # Need to call set_up again
-projmatrix.set_up(projdata.get_proj_data_info(), target);
+projmatrix.set_up(projdata.get_proj_data_info(), target)
 #%% You could re-run the forward projection, but we'll skip that for now
 # forwardprojector.forward_project(projdataout, target);
 #%% Run another backprojection and display
 target.fill(0)
-backprojector.back_project(target, projdataout);
-new_target_array=stirextra.to_numpy(target);
-pylab.figure();
-pylab.subplot(1,2,1)
-pylab.imshow(new_target_array[10,:,:]);
+backprojector.back_project(target, projdataout)
+new_target_array = stirextra.to_numpy(target)
+pylab.figure()
+pylab.subplot(1, 2, 1)
+pylab.imshow(new_target_array[10, :, :])
 pylab.title('Back-projection with 10 LORs per bin')
-pylab.subplot(1,2,2)
-pylab.plot(new_target_array[10,80,:])
-pylab.show()
+pylab.subplot(1, 2, 2)
+pylab.plot(new_target_array[10, 80, :])
+pylab.show(block=False)
 #%% compare profiles to check if overall features are fine
 pylab.figure()
-pylab.plot(target_array[10,80,:])
-pylab.hold('on')
-pylab.plot(new_target_array[10,80,:])
+pylab.plot(target_array[10, 80, :])
+pylab.plot(new_target_array[10, 80, :])
 pylab.title('comparing both profiles')
-pylab.show()
+pylab.show(block=True)

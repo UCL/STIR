@@ -113,11 +113,16 @@ projection data,...
 \defgroup Coordinate Items relating to coordinates
 \ingroup buildblock
 */
+
 /*!
 \defgroup geometry Items related to simple geometric calculations
 \ingroup buildblock
 Functions to compute distances between lines etc.
 */
+/*!
+\defgroup ancillary Items related to ancillary information such as radionuclide, patient info etc
+\ingroup buildblock
+ */
 /*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock
@@ -291,9 +296,10 @@ estimation. Currently only available for the mMR scanner, and requires CUDA.
 */
 /*!
 \defgroup Parallelproj Wrapped Parallelproj functionality in STIR
-\ingroup projectors
-Classes and functions that are used to provide an interface to Parallelproj
-functionality. This includes a forward and back projector, and requires CUDA.
+\ingroup recon_buildblock
+Classes and functions that are used to provide an interface to parallelproj
+(https://github.com/gschramm/parallelproj)
+functionality. This includes a forward and back projector, and uses either OpenMP or CUDA.
 */
 
 /*!

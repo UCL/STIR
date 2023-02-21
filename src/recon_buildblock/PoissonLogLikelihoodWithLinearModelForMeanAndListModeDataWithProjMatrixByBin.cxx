@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016, 2018, University College London
+    Copyright (C) 2014, 2016, 2018, 2022 University College London
+    Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -21,23 +22,26 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h" 
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjData.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include "stir/HighResWallClockTimer.h"
-#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/recon_array_functions.h"
-
+#include "stir/FilePath.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include "stir/stream.h"
+#include "stir/listmode/ListModeData_dummy.h"
+
+#include <fstream>
+#include <string>
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -49,6 +53,9 @@
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
 
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
 
 #include <vector>
 START_NAMESPACE_STIR
@@ -72,13 +79,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 set_defaults() 
 { 
   base_type::set_defaults();
-  this->additive_proj_data_sptr.reset();
-  this->additive_projection_data_filename ="0"; 
+#if STIR_VERSION < 060000
   this->max_ring_difference_num_to_process =-1;
+#endif
   this->PM_sptr.reset(new  ProjMatrixByBinUsingRayTracing());
 
-  this->normalisation_sptr.reset(new TrivialBinNormalisation);
-  this->do_time_frame = false;
+  skip_balanced_subsets = false;
 } 
  
 template <typename TargetT> 
@@ -88,14 +94,16 @@ initialise_keymap()
 { 
   base_type::initialise_keymap(); 
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
-  this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
-  this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
+  this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters");
+#if STIR_VERSION < 060000
+this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
+#endif
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
-  this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
- 
-  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
 
+  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
+  this->parser.add_key("skip checking balanced subsets", &skip_balanced_subsets);
 } 
+
 template <typename TargetT> 
 int 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
@@ -105,11 +113,73 @@ set_num_subsets(const int new_num_subsets)
   return this->num_subsets;
 }
 
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_proj_matrix(const shared_ptr<ProjMatrixByBin>& arg)
+{
+    this->PM_sptr = arg;
+}
+
+#if 0
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_proj_data_info(const ProjData& arg)
+{
+  // this will be broken now. Why did we need this?
+    this->proj_data_info_sptr = arg.get_proj_data_info_sptr()->create_shared_clone();
+    if(this->skip_lm_input_file)
+    {
+        std::cout << "Dummy LM file" << std::endl;
+        this->list_mode_data_sptr.reset(new ListModeData_dummy(
+                                            arg.get_exam_info_sptr(),
+                                            proj_data_info_sptr));
+        this->frame_defs = arg.get_exam_info_sptr()->get_time_frame_definitions();
+    }
+}
+#endif
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_skip_balanced_subsets(const bool arg)
+{
+  skip_balanced_subsets = arg;
+}
+
+#if STIR_VERSION < 060000
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_max_ring_difference(const int arg)
+{
+  if (is_null_ptr(this->proj_data_info_sptr))
+    error("set_max_ring_difference can only be called after setting the listmode"
+          " (but is obsolete anyway. Use set_max_segment_num_to_process() instead).");
+  auto pdi_cyl_ptr = dynamic_cast<ProjDataInfoCylindrical const *>(this->proj_data_info_sptr.get());
+  if (is_null_ptr(pdi_cyl_ptr))
+    error("set_max_ring_difference can only be called for listmode data with cylindrical proj_data_info"
+          " (but is obsolete anyway. Use set_max_segment_num_to_process() instead).");
+  if (pdi_cyl_ptr->get_max_ring_difference(0) != 0 ||
+      pdi_cyl_ptr->get_min_ring_difference(0) != 0)
+    error("set_max_ring_difference can only be called for listmode data with span=1"
+          " (but is obsolete anyway. Use set_max_segment_num_to_process() instead).");
+  this->set_max_segment_num_to_process(arg);
+}
+#endif
+
 template<typename TargetT>
 bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
+    if (skip_balanced_subsets)
+    {
+        warning("We skip the check on balanced subsets and presume they are balanced!");
+        return true;
+    }
+
     assert(this->num_subsets>0);
         const DataSymmetriesForBins& symmetries =
                 *this->PM_sptr->get_symmetries_ptr();
@@ -117,25 +187,24 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         Array<1,int> num_bins_in_subset(this->num_subsets);
         num_bins_in_subset.fill(0);
 
-
         for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
         {
-            for (int segment_num = -this->max_ring_difference_num_to_process;
-                 segment_num <= this->max_ring_difference_num_to_process; ++segment_num)
+          for (int segment_num = this->proj_data_info_sptr->get_min_segment_num();
+                 segment_num <= this->proj_data_info_sptr->get_max_segment_num(); ++segment_num)
             {
-                for (int axial_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
-                     axial_num < proj_data_info_sptr->get_max_axial_pos_num(segment_num);
+                for (int axial_num = this->proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+                     axial_num < this->proj_data_info_sptr->get_max_axial_pos_num(segment_num);
                      axial_num ++)
                 {
                     // For debugging.
                     //                std::cout <<segment_num << " "<<  axial_num  << std::endl;
 
-                    for (int tang_num= proj_data_info_sptr->get_min_tangential_pos_num();
-                         tang_num < proj_data_info_sptr->get_max_tangential_pos_num();
+                    for (int tang_num= this->proj_data_info_sptr->get_min_tangential_pos_num();
+                         tang_num < this->proj_data_info_sptr->get_max_tangential_pos_num();
                          tang_num ++ )
                     {
-                        for(int view_num = proj_data_info_sptr->get_min_view_num() + subset_num;
-                            view_num <= proj_data_info_sptr->get_max_view_num();
+                        for(int view_num = this->proj_data_info_sptr->get_min_view_num() + subset_num;
+                            view_num <= this->proj_data_info_sptr->get_max_view_num();
                             view_num += this->num_subsets)
                         {
                             const Bin tmp_bin(segment_num,
@@ -165,11 +234,11 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
                    << num_bins_in_subset
                    << "\nEither reduce the number of symmetries used by the projector, or\n"
                       "change the number of subsets. It usually should be a divisor of\n"
-                   << proj_data_info_sptr->get_num_views()
+                   << this->proj_data_info_sptr->get_num_views()
                    << "/4 (or if that's not an integer, a divisor of "
-                   << proj_data_info_sptr->get_num_views()
+                   << this->proj_data_info_sptr->get_num_views()
                    << "/2 or "
-                   << proj_data_info_sptr->get_num_views()
+                   << this->proj_data_info_sptr->get_num_views()
                    << ").\n";
                 warning_message = str.str();
                 return false;
@@ -183,27 +252,36 @@ Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) 
 { 
+  if ( base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)
+    return Succeeded::no;
 #ifdef STIR_MPI
     //broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
     distributed::send_int_value(100, -1);
 #endif
+    
+#if 1
+  if (is_null_ptr(this->PM_sptr)) 
+
+    { error("You need to specify a projection matrix"); } 
+
+#else
+  if(is_null_ptr(this->projector_pair_sptr->get_forward_projector_sptr()))
+    {
+      error("No valid forward projector is defined");
+    }
+
+  if(is_null_ptr(this->projector_pair_sptr->get_back_projector_sptr()))
+    {
+      error("No valid back projector is defined");
+    }
+#endif
 
     // set projector to be used for the calculations
-    this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
+    this->PM_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     this->projector_pair_sptr.reset(
                 new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
-    this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
-
-    if (is_null_ptr(this->normalisation_sptr))
-    {
-        warning("Invalid normalisation object");
-        return Succeeded::no;
-    }
-
-    if (this->normalisation_sptr->set_up(
-                this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
-        return Succeeded::no;
+    this->projector_pair_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     if (this->current_frame_num<=0)
     {
@@ -218,6 +296,18 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
             return Succeeded::no;
         }
 
+    if(this->cache_size > 0 || this->skip_lm_input_file)
+    {
+        this->cache_lm_file = true;
+        return cache_listmode_file();
+    }
+    else if (this->cache_size == 0 && this->skip_lm_input_file)
+    {
+        warning("Please set the max cache size for the listmode file");
+        this->cache_lm_file = true;
+        return cache_listmode_file();
+    }
+
     return Succeeded::yes;
 } 
  
@@ -230,165 +320,356 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   if (base_type::post_processing() == true) 
     return true; 
  
-#if 1
-  if (is_null_ptr(this->PM_sptr)) 
+#if STIR_VERSION < 060000
+   this->proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
-    { warning("You need to specify a projection matrix"); return true; } 
-
-#else
-  if(is_null_ptr(this->projector_pair_sptr->get_forward_projector_sptr()))
-    {
-      warning("No valid forward projector is defined"); return true;
-    }
-
-  if(is_null_ptr(this->projector_pair_sptr->get_back_projector_sptr()))
-    {
-      warning("No valid back projector is defined"); return true;
-    }
+   if (this->get_max_segment_num_to_process() < 0)
+     this->set_max_ring_difference(this->max_ring_difference_num_to_process);
+   else
+     {
+       if (this->max_ring_difference_num_to_process >= 0)
+         warning("You've set \"max_ring_difference_num_to_process\", which is obsolete.\n"
+                 "Replace by \"maximum segment number to process\" for future compatibility and to avoid this warning");
+     }
 #endif
-  shared_ptr<Scanner> scanner_sptr(new Scanner(*this->list_mode_data_sptr->get_scanner_ptr()));
 
-  if (this->max_ring_difference_num_to_process == -1)
-    {
-      this->max_ring_difference_num_to_process = 
-        scanner_sptr->get_num_rings()-1;
-    }
+   return false;
 
-  if (this->additive_projection_data_filename != "0")
-    {
-      info(boost::format("Reading additive projdata data '%1%'")
-           % additive_projection_data_filename  );
-      shared_ptr <ProjData> temp_additive_proj_data_sptr =
-        ProjData::read_from_file(this->additive_projection_data_filename);
-      this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
-    }
+}
 
-   proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
-
-   if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
-   {
-       warning("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
-               "in the listmode file. Abort.");
-       return true;
-   }
-   else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
-   {
-       proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
-                                                     max_ring_difference_num_to_process);
-   }
-
-   // Daniel: abilitate do_time_frame if there is a fdef file
-      if (this->frame_defs_filename.size()!=0)
-          {
-            this->frame_defs = TimeFrameDefinitions(this->frame_defs_filename);
-            this->do_time_frame = true;
-   }
-
-  if(!is_null_ptr(this->additive_proj_data_sptr))
-      if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_sptr)
-      {
-          const ProjDataInfo& add_proj = *(this->additive_proj_data_sptr->get_proj_data_info_sptr());
-          const ProjDataInfo& proj = *this->proj_data_info_sptr;
-          bool ok =
-                  typeid(add_proj) == typeid(proj) &&
-                  *add_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
-                  (add_proj.get_min_view_num()==proj.get_min_view_num()) &&
-                  (add_proj.get_max_view_num()==proj.get_max_view_num()) &&
-                  (add_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
-                  (add_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
-                  add_proj.get_min_segment_num() <= proj.get_min_segment_num()  &&
-                  add_proj.get_max_segment_num() >= proj.get_max_segment_num();
-
-          for (int segment_num=proj.get_min_segment_num();
-               ok && segment_num<=proj.get_max_segment_num();
-               ++segment_num)
-          {
-              ok =
-                      add_proj.get_min_axial_pos_num(segment_num) <= proj.get_min_axial_pos_num(segment_num) &&
-                      add_proj.get_max_axial_pos_num(segment_num) >= proj.get_max_axial_pos_num(segment_num);
-          }
-          if (!ok)
-          {
-              warning(boost::format("Incompatible additive projection data:\nAdditive projdata info:\n%s\nEmission projdata info:\n%s\n"
-                                    "--- (end of incompatible projection data info)---\n")
-                      % add_proj.parameter_info()
-                      % proj.parameter_info());
-              return true;
-          }
-      }
-
-  if( this->normalisation_sptr->set_up(this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr)
-   == Succeeded::no)
-  {
-warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
-      "set-up of normalisation failed.");
-return true;
-    }
-
-   return false; 
-
-} 
- 
 template<typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_cache_file(unsigned int file_id)
 {
+    FilePath icache(this->get_cache_filename(file_id), false);
 
-    const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
-    const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
+    record_cache.clear();
 
-    this->projector_pair_sptr->get_back_projector_sptr()->
-      start_accumulating_in_new_target();
-
-    // warning: has to be same as subset scheme used as in distributable_computation
-    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+    if (icache.is_regular_file())
     {
-      for (int view = proj_data_info_sptr->get_min_view_num() + subset_num;
-          view <= proj_data_info_sptr->get_max_view_num();
-          view += this->num_subsets)
-      {
-        const ViewSegmentNumbers view_segment_num(view, segment_num);
+        info( boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
+        std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary
+                          | std::ios::ate);
 
-        if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
-          continue;
-        this->add_view_seg_to_sensitivity(view_segment_num);
-      }
+        const std::size_t num_records = fin.tellg()/sizeof (Bin);
+        try
+          {
+            record_cache.reserve(num_records + 1); // add 1 to avoid reallocation when overruning (see below)
+          }
+        catch (...)
+          {
+            error("Listmode: cannot allocate cache for " + std::to_string(num_records + 1) + " records");
+          }
+        if (!fin)
+          error("Error opening cache file \"" + icache.get_as_string() + "\" for reading.");
+
+        fin.clear();
+        fin.seekg(0);
+
+        while(!fin.eof())
+        {
+            BinAndCorr tmp;
+            fin.read((char*)&tmp, sizeof(Bin));
+            if (this->has_add)
+            {
+                tmp.my_corr = tmp.my_bin.get_bin_value();
+                tmp.my_bin.set_bin_value(1);
+            }
+            record_cache.push_back(tmp);
+        }
+        //The while will push one junk record
+        record_cache.pop_back();
+        fin.close();
     }
-    this->projector_pair_sptr->get_back_projector_sptr()->
-      get_output(sensitivity);
+    else
+    {
+        error("Cannot find Listmode cache on disk. Please recompute it or do not set the  max cache size. Abort.");
+        return Succeeded::no;
+    }
+
+    info( boost::format("Cached Events: %1% ") % record_cache.size());
+    return Succeeded::yes;
+}
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::write_listmode_cache_file(unsigned int file_id) const
+{
+    const auto cache_filename = this->get_cache_filename(file_id);
+    const bool with_add = !is_null_ptr(this->additive_proj_data_sptr);
+
+    {
+        info("Storing Listmode cache to file \"" + cache_filename + "\".");
+        // open the file, overwriting whatever was there before
+        std::ofstream fout(cache_filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        if (!fout)
+          error("Error opening cache file \"" + cache_filename + "\" for writing.");
+
+        for(unsigned long int ie = 0; ie < record_cache.size(); ++ie)
+        {
+            Bin tmp = record_cache[ie].my_bin;
+            if(with_add)
+              tmp.set_bin_value(record_cache[ie].my_corr);
+            fout.write((char*)&tmp, sizeof(Bin));
+        }
+        if (!fout)
+          error("Error writing to cache file \"" + cache_filename + "\".");
+
+        fout.close();
+    }
+
+    return Succeeded::yes;
+}
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
+{
+    if(!this->recompute_cache && this->cache_lm_file)
+      {
+        warning("Looking for existing cache files such as \""
+                + this->get_cache_filename(0) + "\".\n"
+                + "We will be ignoring any time frame definitions as well as num_events_to_use!");
+        // find how many cache files there are
+        this->num_cache_files = 0;
+        while (true)
+          {
+            if (!FilePath::exists(this->get_cache_filename(this->num_cache_files)))
+                break;
+            ++this->num_cache_files;
+          }
+        if (!this->num_cache_files)
+          error("No cache files found.");
+        return Succeeded::yes; // Stop here!!!
+    }
+
+    if(this->cache_lm_file)
+      {
+        info("Listmode reconstruction: Creating cache...", 2);
+
+        record_cache.clear();
+        try
+          {
+            record_cache.reserve(this->cache_size);
+          }
+        catch (...)
+          {
+            error("Listmode: cannot allocate cache for " + std::to_string(this->cache_size) + " records. Reduce cache size.");
+          }
+
+        this->list_mode_data_sptr->reset();
+        const shared_ptr<ListRecord>  record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+
+        const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
+        const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
+        double current_time = 0.;
+        unsigned long int cached_events = 0;
+
+        bool stop_caching = false;
+        record_cache.reserve(this->cache_size);
+
+        while(true) //keep caching across multiple files.
+        {
+            record_cache.clear();
+
+            while (true) // Start for the current cache
+            {
+                if(this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+                {
+                    stop_caching = true;
+                    break;
+                }
+                if (record_sptr->is_time())
+                  {
+                    current_time = record_sptr->time().get_time_in_secs();
+                    if (this->do_time_frame && current_time >= end_time)
+                      {
+                        stop_caching = true;
+                        break; // get out of while loop
+                      }
+                }
+                if (current_time < start_time)
+                  continue;
+                if (record_sptr->is_event() && record_sptr->event().is_prompt())
+                {
+                    BinAndCorr tmp;
+                    tmp.my_bin.set_bin_value(1.0);
+                    record_sptr->event().get_bin(tmp.my_bin, *this->proj_data_info_sptr);
+
+                    if (tmp.my_bin.get_bin_value() != 1.0f
+                            ||  tmp.my_bin.segment_num() < this->proj_data_info_sptr->get_min_segment_num()
+                            ||  tmp.my_bin.segment_num()  > this->proj_data_info_sptr->get_max_segment_num()
+                            ||  tmp.my_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
+                            ||  tmp.my_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
+                            ||  tmp.my_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(tmp.my_bin.segment_num())
+                            ||  tmp.my_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(tmp.my_bin.segment_num())
+        #ifdef STIR_TOF
+                            ||  tmp.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
+                            ||  tmp.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num()
+        #endif
+                            )
+                    {
+                        continue;
+                    }
+                    try
+                      {
+                        record_cache.push_back(tmp);
+                        ++cached_events;
+                      }
+                    catch (...)
+                      {
+                        // should never get here due to `reserve` statement above, but best to check...
+                        error("Listmode: running out of memory for cache. Current size: " + std::to_string(this->record_cache.size()) + " records");
+                      }
+
+
+                    if (record_cache.size() > 1 && record_cache.size()%500000L==0)
+                      info( boost::format("Cached Prompt Events (this cache): %1% ") % record_cache.size());
+
+                    if(this->num_events_to_use > 0)
+                      if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
+                        {
+                            stop_caching = true;
+                            break;
+                        }
+
+                    if (record_cache.size() == this->cache_size)
+                      break; // cache is full. go to next cache.
+                }
+            }
+
+            // add additive term to current cache
+            if(this->has_add)
+              {
+#ifdef STIR_TOF
+                // TODO
+                if (additive_proj_data_sptr->get_num_tof_poss() > 1)
+                    error("listmode processing with caching is not yet supported for TOF");
+#else
+                info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
+
+#ifdef STIR_OPENMP
+#pragma omp parallel
+                {
+#pragma omp single
+                  {
+                    info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads", 2);
+                  }
+                }
+#endif
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) //collapse(2)
+#endif
+                for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
+                seg <= this->additive_proj_data_sptr->get_max_segment_num();
+                ++seg)
+                  {
+                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg));
+
+                    for (BinAndCorr &cur_bin : record_cache)
+                      {
+                        if (cur_bin.my_bin.segment_num() == seg)
+                          {
+#ifdef STIR_OPENMP
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp critical(PLogLikListModePMBAddSinoCaching)
+# endif
+#endif
+                            cur_bin.my_corr = segment[cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()][cur_bin.my_bin.tangential_pos_num()];
+                          }
+                      }
+                  }
+#endif // STIR_TOF
+              } // end additive correction
+
+            if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
+              {
+                error("Error writing cache file!");
+              }
+            ++this->num_cache_files;
+
+            if(stop_caching)
+              break;
+      }
+      info( boost::format("Cached Events: %1% ") % cached_events);
+      return Succeeded::yes;
+    }
+  return Succeeded::no;
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
+add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-            (this->projector_pair_sptr->get_symmetries_used()->clone());
+  // TODO replace with call to distributable function
 
-  RelatedViewgrams<float> viewgrams =
-    proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
+    const int min_segment_num = this->proj_data_info_sptr->get_min_segment_num();
+    const int max_segment_num = this->proj_data_info_sptr->get_max_segment_num();
 
-  viewgrams.fill(1.F);
-  // find efficiencies
-  {
-    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-    this->normalisation_sptr->undo(viewgrams);
-  }
-  // backproject
-  {
-    const int min_ax_pos_num =
-      viewgrams.get_min_axial_pos_num();
-    const int max_ax_pos_num =
-       viewgrams.get_max_axial_pos_num();
+    info(boost::format("Calculating sensitivity for subset %1%") %subset_num);
+
+#ifdef STIR_TOF
+    int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
+    int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
+    if (min_timing_pos_num<0 || max_timing_pos_num>0)
+      error("TOF code for sensitivity needs work");
+#endif
 
     this->projector_pair_sptr->get_back_projector_sptr()->
-      back_project(viewgrams,
-                   min_ax_pos_num, max_ax_pos_num);
-  }
+      start_accumulating_in_new_target();
 
+    // warning: has to be same as subset scheme used as in distributable_computation
+#ifdef STIR_OPENMP
+#if _OPENMP <201107
+    #pragma omp parallel for schedule(dynamic)
+#else
+    #pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
+#endif
+    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+    {
+      for (int view = this->proj_data_info_sptr->get_min_view_num() + subset_num;
+          view <= this->proj_data_info_sptr->get_max_view_num();
+          view += this->num_subsets)
+      {
+          const ViewSegmentNumbers view_segment_num(view, segment_num);
+
+          if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
+            continue;
+          //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
+          {
+              shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
+              (this->projector_pair_sptr->get_symmetries_used()->clone());
+
+              RelatedViewgrams<float> viewgrams =
+                  this->proj_data_info_sptr->get_empty_related_viewgrams(
+                      view_segment_num, symmetries_used, false);//, timing_pos_num);
+
+              viewgrams.fill(1.F);
+              // find efficiencies
+              {
+                  this->normalisation_sptr->undo(viewgrams);
+              }
+              // backproject
+              {
+                  const int min_ax_pos_num =
+                      viewgrams.get_min_axial_pos_num();
+                  const int max_ax_pos_num =
+                      viewgrams.get_max_axial_pos_num();
+
+                  this->projector_pair_sptr->get_back_projector_sptr()->
+                    back_project(viewgrams,
+                                 min_ax_pos_num, max_ax_pos_num);
+              }
+          }
+      }
+    }
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      get_output(sensitivity);
 }
 
 template<typename TargetT>
@@ -431,113 +712,144 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 {
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
-    if (!add_sensitivity && !this->get_use_subset_sensitivities())
+    if (!add_sensitivity && !this->get_use_subset_sensitivities() && this->num_subsets>1)
         error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
               "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
               "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
-    const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
-    const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
-
-    long num_used_events = 0;
-    const float max_quotient = 10000.F;
-
-    //go to the beginning of this frame
-    //  list_mode_data_sptr->set_get_position(start_time);
-    // TODO implement function that will do this for a random time
-    this->list_mode_data_sptr->reset();
-    double current_time = 0.;
-    ProjMatrixElemsForOneBin proj_matrix_row;
-    gradient.fill(0);
-    shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-    ListRecord& record = *record_sptr;
-
-    VectorWithOffset<ListModeData::SavedPosition>
-            frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
-
-    long int more_events =
-            this->do_time_frame? 1 : this->num_events_to_use;
-
-    while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
+    if (this->cache_lm_file)
+      {
+        for (unsigned int icache = 0; icache < this->num_cache_files; ++icache)
+          {
+            load_listmode_cache_file(icache);
+            LM_distributable_computation(this->PM_sptr,
+                                         this->proj_data_info_sptr,
+                                         &gradient, &current_estimate,
+                                         record_cache,
+                                         subset_num, this->num_subsets,
+                                         this->has_add,
+                                         /* accumulate = */ icache != 0);
+          }
+      }
+    else
     {
+        //  list_mode_data_sptr->set_get_position(start_time);
+        // TODO implement function that will do this for a random time
 
-        if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
-        {
-            info("End of file!");
-            break; //get out of while loop
-        }
+      this->list_mode_data_sptr->reset();
 
-        if(record.is_time() && end_time > 0.01)
-        {
-            current_time = record.time().get_time_in_secs();
-            if (this->do_time_frame && current_time >= end_time)
-                break; // get out of while loop
-            if (current_time < start_time)
-                continue;
-        }
+        const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
+        const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
 
-        if (record.is_event() && record.event().is_prompt())
-        {
-            Bin measured_bin;
-            measured_bin.set_bin_value(1.0f);
-            record.event().get_bin(measured_bin, *proj_data_info_sptr);
+        long num_used_events = 0;
+        const float max_quotient = 10000.F;
 
-            if (measured_bin.get_bin_value() != 1.0f
-                    || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
-                    || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
-                    || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
-                    || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
-                    || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                    || measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
-            {
-                continue;
-            }
+        double current_time = 0.;
 
-            measured_bin.set_bin_value(1.0f);
-            // If more than 1 subsets, check if the current bin belongs to
-            // the current.
-            if (this->num_subsets > 1)
-            {
-                Bin basic_bin = measured_bin;
-                this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-                if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
-                    continue;
-            }
-            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
-            //in_the_range++;
-            Bin fwd_bin;
-            fwd_bin.set_bin_value(0.0f);
-            proj_matrix_row.forward_project(fwd_bin,current_estimate);
-            // additive sinogram
-            if (!is_null_ptr(this->additive_proj_data_sptr))
-            {
-                float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
-                float value= fwd_bin.get_bin_value()+add_value;
-                fwd_bin.set_bin_value(value);
-            }
-            float  measured_div_fwd = 0.0f;
+        // need get_bin_value(), so currently need to cast
+        shared_ptr<ProjDataFromStream> add;
 
-            if(!this->do_time_frame)
-                more_events -=1 ;
+        if (!is_null_ptr(this->additive_proj_data_sptr))
+          {
+            add = std::dynamic_pointer_cast<ProjDataFromStream>(this->additive_proj_data_sptr);
+            // TODO could create a ProjDataInMemory instead, but for now we give up.
+            if (is_null_ptr(add))
+              error("Additive projection data is in unsupported file format. You need to create an Interfile copy. sorry.");
+          }
 
-            num_used_events += 1;
+        ProjMatrixElemsForOneBin proj_matrix_row;
+        gradient.fill(0);
+        shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+        ListRecord& record = *record_sptr;
 
-            if (num_used_events%200000L==0)
-                info( boost::format("Stored Events: %1% ") % num_used_events);
+        VectorWithOffset<ListModeData::SavedPosition>
+                frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
-            if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
-                measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
-            else
-                continue;
+        while (true)
+          {
 
-            measured_bin.set_bin_value(measured_div_fwd);
-            proj_matrix_row.back_project(gradient, measured_bin);
+           if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
+           {
+             info("End of listmode file!", 2);
+               break; //get out of while loop
+           }
 
-        }
+           if(record.is_time())
+           {
+               current_time = record.time().get_time_in_secs();
+               if (this->do_time_frame && current_time >= end_time)
+               {
+                   break; // get out of while loop
+               }
+           }
+
+           if (current_time < start_time)
+             continue;
+
+           if (record.is_event() && record.event().is_prompt())
+           {
+               Bin measured_bin;
+               measured_bin.set_bin_value(1.0f);
+               record.event().get_bin(measured_bin, *this->proj_data_info_sptr);
+
+               if (measured_bin.get_bin_value() != 1.0f
+                       || measured_bin.segment_num() < this->proj_data_info_sptr->get_min_segment_num()
+                       || measured_bin.segment_num()  > this->proj_data_info_sptr->get_max_segment_num()
+                       || measured_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
+                       || measured_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
+                       || measured_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
+                       || measured_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
+               {
+                   continue;
+               }
+
+               measured_bin.set_bin_value(1.0f);
+               // If more than 1 subsets, check if the current bin belongs to the current.
+               bool in_subset = true;
+               if (this->num_subsets > 1)
+               {
+                   Bin basic_bin = measured_bin;
+                   this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+                   in_subset = (subset_num == static_cast<int>(basic_bin.view_num() % this->num_subsets));
+               }
+               if (in_subset)
+                 {
+                   this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+                   Bin fwd_bin;
+                   fwd_bin.set_bin_value(0.0f);
+                   proj_matrix_row.forward_project(fwd_bin,current_estimate);
+                   // additive sinogram
+                   if (!is_null_ptr(this->additive_proj_data_sptr))
+                     {
+                       float add_value = add->get_bin_value(measured_bin);
+                       float value= fwd_bin.get_bin_value()+add_value;
+                       fwd_bin.set_bin_value(value);
+                     }
+
+                   if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
+                     {
+                       const float measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+                       measured_bin.set_bin_value(measured_div_fwd);
+                       proj_matrix_row.back_project(gradient, measured_bin);
+                     }
+                 }
+
+               ++num_used_events;
+
+               if (num_used_events%200000L==0)
+                   info( boost::format("Used Events: %1% ") % num_used_events);
+
+               // if we use event-count-based processing, see if we need to stop
+               if(this->num_events_to_use > 0)
+                 if (num_used_events >= this->num_events_to_use)
+                   break;
+           }
+       }
+       info(boost::format("Number of used events (for all subsets): %1%") % num_used_events);
+
     }
-    info(boost::format("Number of used events: %1%") % num_used_events);
 
-  if (!add_sensitivity)
+    if (!add_sensitivity)
     {
       // subtract the subset sensitivity
       // compute gradient -= sub_sensitivity
@@ -565,3 +877,4 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Dis
 
 
 END_NAMESPACE_STIR
+

@@ -38,6 +38,11 @@ BinNormalisation()
 {
 }
 
+void BinNormalisation::set_defaults()
+{
+  this->_already_set_up = false;
+}
+
 BinNormalisation::
 ~BinNormalisation()
 {}
@@ -59,8 +64,8 @@ BinNormalisation::
 set_up(const shared_ptr<const ExamInfo>& exam_info_sptr_v, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v )
 {
   _already_set_up = true;
-  _proj_data_info_sptr = proj_data_info_sptr_v;
-  this->exam_info_sptr=exam_info_sptr_v;
+  this->proj_data_info_sptr = proj_data_info_sptr_v;
+  this->exam_info_sptr = exam_info_sptr_v;
   return Succeeded::yes;  
 }
 
@@ -70,9 +75,9 @@ check(const ProjDataInfo& proj_data_info) const
 {
   if (!this->_already_set_up)
     error("BinNormalisation method called without calling set_up first.");
-  if (!(*this->_proj_data_info_sptr >= proj_data_info))
+  if (!(*this->proj_data_info_sptr >= proj_data_info))
     error(boost::format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
-          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+          % this->proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
 }
 
 void
@@ -140,7 +145,7 @@ apply(ProjData& proj_data,
                                          0, 1/*subset_num, num_subsets*/);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)  
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -187,7 +192,7 @@ undo(ProjData& proj_data,
                                          0, 1/*subset_num, num_subsets*/);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)  
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)

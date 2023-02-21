@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2022 University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     This file is part of STIR.
 
@@ -122,7 +122,11 @@ public:
    (i.e. no axial compression), while it is half the 
    ring spacing for spanned data.
   */
-  inline float get_axial_sampling(int segment_num) const;
+  virtual inline float get_axial_sampling(int segment_num) const;
+  //! Return if axial sampling makes sense
+  /*! could be \c false for block/generic cases */
+  virtual inline bool axial_sampling_is_uniform() const
+  { return true; }
   
   //! Get average ring difference for the given segment
   inline float get_average_ring_difference(int segment_num) const;
@@ -301,8 +305,6 @@ private:
 
   inline int get_num_axial_poss_per_ring_inc(const int segment_num) const;
 
-  //! This member will signal if the array below contain sensible info or not
-  mutable bool segment_axial_pos_to_ring_pair_allocated;
   //! This member stores a table used by get_all_ring_pairs_for_segment_axial_pos_num()
   mutable VectorWithOffset< VectorWithOffset < shared_ptr<RingNumPairs> > > 
     segment_axial_pos_to_ring_pair;
@@ -311,6 +313,7 @@ private:
   void allocate_segment_axial_pos_to_ring_pair() const;
 
   //! initialise one element of the above table
+  /*! Not thread-safe! Use  initialise_ring_diff_arrays_if_not_done_yet() instead. */
   void compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_pos_num) const;
 
 };

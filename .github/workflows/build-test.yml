@@ -1,0 +1,297 @@
+name: Build and ctest and recon_test_pack CI
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 9
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "ON"
+        - os: ubuntu-latest
+          compiler: clang
+          #compiler_version:
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 10
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
+          BUILD_TYPE: "Debug"
+          parallelproj: "OFF"
+          ROOT: "OFF"
+        - os: macOS-latest
+          compiler: gcc
+          compiler_version: 11
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
+          ROOT: "OFF"
+
+      # let's run all of them, as opposed to aborting when one fails
+      fail-fast: false
+
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: set_compiler_variables
+      shell: bash
+      run: |
+          set -ex
+          if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+            CC="clang"
+            CXX="clang++"
+          elif test 'XX${{ matrix.compiler }}' = 'XXgcc'; then
+            CC="gcc"
+            CXX="g++"
+          fi
+          if test 'XX${{ matrix.compiler_version }}' != 'XX'; then
+            CC=${CC}-${{ matrix.compiler_version }}
+            CXX=${CXX}-${{ matrix.compiler_version }}            
+          fi
+          if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
+            # need to force XCode version for the moment due to a linker bug
+            # see https://github.com/UCL/STIR/issues/1103
+            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
+          fi
+          export CC CXX
+          # make available to jobs below
+          echo CC="$CC" >> $GITHUB_ENV
+          echo CXX="$CXX" >> $GITHUB_ENV
+
+    - name: install_dependencies
+      shell: bash
+      run: |
+          set -ex
+          # We will install some external dependencies here
+          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+          case ${{matrix.os}} in
+            (ubuntu*)
+              sudo apt update
+              # install compiler
+              if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+                  # package is called clang, need libomp-dev for OpenMP support
+                  sudo apt install $CC libomp-dev
+              else
+                  sudo apt install $CXX
+              fi
+              # other dependencies
+              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (macOS*)
+              brew install boost swig python nlohmann-json
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (windows*)
+              # this compiles the whole thing so takes ages
+              vcpkg install boost-core hdf5 nlohmann-json
+              # swig is preinstalled and is currently not in vcpcg
+              vcpkg list
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+          esac
+          echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> $GITHUB_ENV
+          ${PYTHON_EXECUTABLE} -m venv ${GITHUB_WORKSPACE}/my-env
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          #python -m pip install -U pip
+          case ${{matrix.os}} in
+            (macOS*)
+              # attempt to get round buggy Accelerate builds, see https://github.com/numpy/numpy/issues/15947
+              # but it didn't work, so commented out
+              # brew install openblas
+              # export OPENBLAS=$(brew --prefix openblas)
+              #python -m pip install --no-cache-dir --no-binary  numpy numpy # avoid the cached .whl!
+              python -m pip install numpy
+              ;;
+            (*)
+              python -m pip install numpy
+              ;;
+          esac
+          python -m pip install pytest
+
+          if test "${{matrix.parallelproj}}XX" == "ONXX"; then
+             git clone --depth 1 --branch v1.2.10 https://github.com/gschramm/parallelproj
+             mkdir parallelproj/build
+             cd parallelproj/build
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
+             cmake --build . --target install --config Release
+             cd ../..
+          fi
+
+          # Install ROOT (warning: currently only valid on Ubuntu)
+          if test "${{matrix.ROOT}}XX" == "ONXX"; then
+             wget https://root.cern/download/root_v6.24.02.Linux-ubuntu20-x86_64-gcc9.3.tar.gz
+             tar -xzvf root_v6.24.02.Linux-ubuntu20-x86_64-gcc9.3.tar.gz
+             source root/bin/thisroot.sh
+          fi
+
+          # we'll install some dependencies with shared libraries, so need to let the OS know
+          # thisroot.sh also modified the path, so save that for the recon_test_pack
+          case ${{matrix.os}} in
+            (ubuntu*)
+              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo PATH="$PATH" >> $GITHUB_ENV
+              ;;
+            (macOS*)
+              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
+              echo PATH="$PATH" >> $GITHUB_ENV
+              ;;
+            (windows*)
+              echo PATH="${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/bin:$PATH" >> $GITHUB_ENV
+              ;;
+          esac
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
+
+    - name: configure
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+      run: |
+          set -ex
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          #export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          cmake --version
+          if test "XX$CC" != "XX"; then
+              $CC --version
+              $CXX --version
+          fi
+          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+          # make available to jobs below
+          echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
+          EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
+          echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
+          mkdir build
+          cd build
+          cmake -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
+
+    - name: build
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          cd ${GITHUB_WORKSPACE}/build;
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+
+    - name: ctest
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          cd ${GITHUB_WORKSPACE}/build
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} = Debug; then
+              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection|test_blocks_on_cylindrical_projectors"
+          fi
+          ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: recon_test_pack
+      shell: bash
+      env:
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/recon_test_pack
+          ./run_tests.sh --nointbp
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} != Debug; then
+            ./run_test_simulate_and_recon.sh
+            ./run_test_listmode_recon.sh
+            ./run_test_simulate_and_recon_with_motion.sh
+            ./run_scatter_tests.sh
+            ./run_test_zoom_image.sh
+            ./run_ML_norm_tests.sh
+            if [[ $BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+            ./run_tests_modelling.sh
+            cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
+            ./run_SPECT_tests.sh
+          fi
+
+    - name: Upload log files for debugging
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        retention-days: 7
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: examples
+      shell: bash
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          # Run examples to see if they work
+          cd ${GITHUB_WORKSPACE}/examples/PET_simulation
+          ./run_simulation.sh 1> /dev/null
+
+    - name: Python
+      shell: bash
+      run: |
+          set -ex
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          # Run Python tests, making sure we're using the correct Python interpreter
+          which python
+          export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/python
+          cd ${GITHUB_WORKSPACE}/src
+          case ${{matrix.os}} in
+            (macOS*)
+              echo skipping pytest due to numpy problem for now.
+              ;;
+            (*)
+              python -m pytest .
+              ;;
+          esac

@@ -47,6 +47,7 @@ set_defaults()
 {
   base_type::set_defaults();
   this->_strictly_less_than_radius = true;
+  this->_truncate_rim = 0;
 }
 
 
@@ -71,7 +72,7 @@ TruncateToCylindricalFOVImageProcessor<elemT>::
 virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {     
-  truncate_rim(density, 0, this->_strictly_less_than_radius);  
+  truncate_rim(density, this->_truncate_rim, this->_strictly_less_than_radius);  
 }
 
 

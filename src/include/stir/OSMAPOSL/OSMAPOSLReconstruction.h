@@ -135,6 +135,8 @@ public:
 
   //! restrict updates (smaller relative updates will be thresholded)
   void set_minimum_relative_change(const double);
+
+  void set_enforce_initial_positivity(const bool);
   
   //! boolean value to determine if the update images have to be written to disk
   void set_write_update_image(const int);

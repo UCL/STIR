@@ -56,6 +56,8 @@ START_NAMESPACE_STIR
 class BinNormalisationFromAttenuationImage :
    public RegisteredParsingObject<BinNormalisationFromAttenuationImage, BinNormalisation>
 {
+private:
+  using base_type = BinNormalisation;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -85,6 +87,7 @@ public:
   */
   virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
+  using base_type::apply;
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 

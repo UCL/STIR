@@ -13,8 +13,8 @@
 # 
 
 # Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
     set -e
 fi
 
@@ -147,6 +147,7 @@ echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save tim
 template_sino=my_DSTE_3D_rd2_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
+
 1
 n
 
@@ -167,7 +168,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '{ print $2}'`
+org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 ./simulate_data.sh my_zoom_test4.hv my_atten_image.hv ${template_sino} 0
 if [ $? -ne 0 ]; then
@@ -175,7 +176,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '{ print $2}'`
+new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then

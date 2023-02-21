@@ -10,6 +10,7 @@
 */
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -46,6 +47,8 @@ START_NAMESPACE_STIR
 class BinNormalisationFromProjData :
    public RegisteredParsingObject<BinNormalisationFromProjData, BinNormalisation>
 {
+private:
+  using base_type = BinNormalisation;
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
@@ -65,9 +68,11 @@ public:
   /*! The projdata object pointed to will \c not be modified. */
   BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr);
 
-  //! check if we would be multiplying with 1 (i.e. do nothing)
-  /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it uses ProjData::get_viewgram()
-      and loops over all viewgrams.
+  //! check if we could be multiplying with 1 (i.e. do nothing)
+  /*! 
+    always return \c false, as the case where the whole ProjData is set to 1
+    will never occur in "real life", so we save ourselves some time/complications
+    by returning \c false
   */
   virtual bool is_trivial() const override;
 

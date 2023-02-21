@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 4.1}}
+\textbf{\textit{version 5.1}}
 
 \end{center}
 
@@ -59,6 +59,15 @@ This can produce an HTML version but also various other output
 formats (you can get e.g. RTF or LaTeX output by simply running 
 doxygen on the source files that come in the STIR distribution). 
 
+\subsection{Language support}
+STIR is written in C++ and currently requires C++-11, but it should be compatible with nNewer versions of the C++ standard.
+
+Python and MATLAB support is provided via \R2Lurl{http://www.swig.org/}{SWIG}. This means that Python/MATLAB interfaces follow
+the C++ classes closely, although some differences are required as these languages do not support templates for instance.
+Naming currently therefore often includes the type, e.g.~\texttt{FloatVoxelsOnCartesianGrid} corresponds to
+C++ \texttt{stir::VoxelsOnCartesianGrid<float>}. Python/MATLAB documentation is auto-generated from the C++
+documentation. This is not entirely satisfactory, but the best we can do at present.
+The SWIG interface files are located in \texttt{STIR/src/SWIG/*.i}.
 
 \section{
 General conventions}
@@ -205,9 +214,10 @@ In any case, currently STIR always assumes for each segment that
 the middle of the scanner corresponds to the middle of the set 
 of sinograms (taking into account the ring difference). 
 
-View 0 currently corresponds to a vertical projection (for some 
-scanners, this is not true. STIR currently ignores this, so will 
-reconstruct a rotated image). Finally, in STIR code, the first 
+Without view offset, view 0 currently corresponds to a vertical projection.
+It also assumes that the first detector is at $x=0$, $y=-R$ (i.e.
+on the top of the scanner).
+Finally, in STIR code, the first 
 ring of the scanner is the ring furthest from the bed. This corresponds 
 to how the data are stored in ECAT6,7 and Interfile files.
 
@@ -1235,36 +1245,22 @@ constructor will never be called.}. This is currently done by adding the file to
 
 \section{
 Extending STIR with your own files \label{sect:extendingSTIR}}
+(See the section on using STIR in an external project in the User's Guide if you just want to
+use STIR functionality in your own work.)
 
-If you want to add your own files to the libraries, or have your 
-own main programs, you can of course set-up your own directory 
-and
-\begin{itemize}
-\item 
-make sure that your compiler finds the STIR include files in \textbf{STIR/include}
-\item 
-make sure that you link with all the necessary libraries
-\item 
-make sure that you link with the *\_registries object files
-\end{itemize}
-
-All of this is made easier if you  \textit{installed}
-STIR after you built it (\textit{i.e.} used \texttt{make install} or built the \texttt{INSTALL}
-target in your IDE).
-
-Nevertheless, wipping up your own \textbf{CMakeLists.txt} is slightly painful, and when using the
-above mechanism, it is impossible for STIR to call your own routines, \textit{e.g.} if you
-added your own filter or prior and want to use that during reconstruction.
-For a true integration with  STIR, we provide the following alternative.
+If you want to let STIR use your own
+extra classes, \textit{e.g.} if you
+added your own filter or prior and want to use that during reconstruction,
+you can do this while keeping your own work independent of the STIR sources.
 
 \begin{itemize}
-\item Put all your files in a separate subdirectory or in \textbf{STIR/local} (the distribution 
+\item Put all your files in a separate folder (which can be outside the STIR tree) or in \textbf{STIR/src/local} (the distribution 
 will never contain any files in that directory). Let us call your directory 
 \textbf{mySTIRext} as an example.
 \item Create a file \textbf{mySTIRext/extra\_stir\_dirs.cmake} with CMake statements,
 in particular a list of your subdirectories. For instance,
 \begin{verbatim}
-# add include directory to compiler switches
+# add my include directory to compiler switches (or better: use target_include_directories)
 include_directories(include)
 
 # check CMakeLists in next directories
@@ -1285,8 +1281,8 @@ set(dir my_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-   my_source1
-   my_source2
+   my_source1.cxx
+   my_source2.cxx
 )
 
 # declare dependencies on other STIR libraries, for instance
@@ -1317,9 +1313,18 @@ content like this
 #include "myOutputFileFormat.h"
 static myOutputFileFormat::RegisterIt dummy1;
 \end{verbatim}
-If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeListst.txt}
+If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeLists.txt}
 as above, everything should work as expected.
 
+\section{Contributing to STIR}
+See
+\R2Lurl{https://github.com/UCL/STIR/blob/master/CONTRIBUTING.md}{STIR/CONTRIBUTING.md}.
+
+\subsection{Continuous integration testing}
+We use GitHub Actions and Appveyor for testing of every pull-request that was submitted on GitHub. PRs
+need to pass all checks before they will be accepted of course.
+To help debugging, we upload \texttt{recon\_test\_pack} log files as artefacts on
+GitHub if a job fails. You can see these in the Summary of every job that was triggered.
 
 \section{
 Conclusion}

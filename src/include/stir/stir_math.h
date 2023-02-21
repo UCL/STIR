@@ -15,7 +15,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::fstream;
-using std::unary_function;
 using std::transform;
 using std::max;
 using std::min;
@@ -29,7 +28,7 @@ USING_NAMESPACE_STIR
 // places in the code.
 
 // a function object that takes a power of a float, and then multiplies with a float, and finally adds a float
-class pow_times_add: public unary_function<float,float>
+class pow_times_add
 {
 public:
   pow_times_add(const float add_scalar, const float mult_scalar, const float power,

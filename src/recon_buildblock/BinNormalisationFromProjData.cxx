@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -36,6 +37,7 @@ BinNormalisationFromProjData::registered_name = "From ProjData";
 void 
 BinNormalisationFromProjData::set_defaults()
 {
+  base_type::set_defaults();
   normalisation_projdata_filename = "";
 }
 
@@ -43,6 +45,7 @@ void
 BinNormalisationFromProjData::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From ProjData");
   parser.add_key("normalisation_projdata_filename", &normalisation_projdata_filename);
   parser.add_stop_key("End Bin Normalisation From ProjData");
@@ -52,6 +55,8 @@ bool
 BinNormalisationFromProjData::
 post_processing()
 {
+  if (base_type::post_processing())
+    return true;
   norm_proj_data_ptr = ProjData::read_from_file(normalisation_projdata_filename);
   return false;
 }
@@ -76,7 +81,7 @@ Succeeded
 BinNormalisationFromProjData::
 set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr);
+  base_type::set_up(exam_info_sptr, proj_data_info_ptr);
 
   if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
@@ -113,23 +118,7 @@ bool
 BinNormalisationFromProjData::
 is_trivial() const
 {
-  // check if all data is 1 (up to a tolerance of 1e-4)
-  for (int segment_num = this->norm_proj_data_ptr->get_min_segment_num(); 
-       segment_num <= this->norm_proj_data_ptr->get_max_segment_num(); 
-       ++segment_num)
-    {
-      for (int view_num = this->norm_proj_data_ptr->get_min_view_num(); 
-           view_num <= this->norm_proj_data_ptr->get_max_view_num(); 
-           ++view_num)
-        {
-          const Viewgram<float> viewgram =
-            this->norm_proj_data_ptr->get_viewgram(view_num, segment_num);
-          if (fabs(viewgram.find_min()-1)>.0001 || fabs(viewgram.find_max()-1)>.0001)
-            return false; // return from function as we know not all data is 1
-        }
-    }
-  // if we get here. they were all 1
-  return true;
+  return false;
 }
 
 void 

@@ -231,6 +231,14 @@ set_minimum_relative_change(const double arg)
 {
   this->minimum_relative_change  = arg;
 }
+
+template <typename TargetT> 
+void 
+OSMAPOSLReconstruction<TargetT>::
+set_enforce_initial_positivity(const bool arg)
+{
+  this->enforce_initial_positivity = arg;
+}
   
 template <typename TargetT>
 void
@@ -462,7 +470,7 @@ update_estimate(TargetT &current_image_estimate)
       divide(multiplicative_update_image_ptr->begin_all(),
              multiplicative_update_image_ptr->end_all(), 
              sensitivity.begin_all(),
-             small_num);
+             0.F); // no need to find a threshold for division by sensitivity
     }
     else
     {
@@ -514,7 +522,12 @@ update_estimate(TargetT &current_image_estimate)
             ++sensitivity_iter;
           }
         }
-      }         
+      }
+
+      // do the division
+      // TODO: The thresholding implied in "divide" potentially fails with parametric images
+      // as the different parametric images can have very different scales.
+      // See https://github.com/UCL/STIR/issues/906
       divide(multiplicative_update_image_ptr->begin_all(),
              multiplicative_update_image_ptr->end_all(), 
              denominator_ptr->begin_all(),

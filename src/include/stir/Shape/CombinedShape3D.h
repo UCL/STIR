@@ -23,13 +23,12 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Shape/Shape3D.h"
 #include "stir/shared_ptr.h"
-#include <functional>
 
 START_NAMESPACE_STIR
 
 
 template<class T>
-struct logical_and_not : public std::binary_function<T, T, bool>
+struct logical_and_not
 	{
      inline bool operator()(const T& x, const T& y) const
 	 { return x && !y; }
@@ -37,7 +36,7 @@ struct logical_and_not : public std::binary_function<T, T, bool>
 
 
 template<class T>
-struct logical_and : public std::binary_function<T, T, bool>
+struct logical_and
 	{
      inline bool operator()(const T& x, const T& y) const
 	 { return x || y; }

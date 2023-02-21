@@ -135,11 +135,13 @@ InputStreamFromROOTFile::set_exclude_random_events(bool val)
     exclude_randoms = val;
 }
 
+#ifdef STIR_ROOT_ROTATION_AS_V4
 void
 InputStreamFromROOTFile::set_detectors_offset(int val)
 {
     offset_dets = val;
 }
+#endif
 
 void
 InputStreamFromROOTFile::set_low_energy_window(float val)

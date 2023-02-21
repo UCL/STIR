@@ -15,7 +15,6 @@ set(${dir_LIB_SOURCES}
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
 	CListModeDataSAFIR.cxx
-	DetectorCoordinateMapFromFile.cxx
 )
 
 if (HAVE_HDF5)
@@ -31,6 +30,12 @@ if (HAVE_ECAT)
 	CListRecordECAT962.cxx
 	CListRecordECAT966.cxx
   )
+endif()
+
+if (HAVE_UPENN)
+	list(APPEND ${dir_LIB_SOURCES}
+	CListModeDataPENN.cxx
+	CListRecordPENN.cxx)
 endif()
 
 if (HAVE_CERN_ROOT)

@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2012, Kris Thielemans
-# Copyright (C) 2013, University College London
+# Copyright (C) 2013-2022 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -14,53 +14,59 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_ROIs
-        test_warp_image
-	test_DynamicDiscretisedDensity
-	test_ScatterSimulation
+	test_ROIs.cxx
+        test_warp_image.cxx
+	test_DynamicDiscretisedDensity.cxx
+	test_ScatterSimulation.cxx
+        test_ML_norm.cxx
+	test_proj_data_info_subsets.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
-        test_DateTime
+        test_DateTime.cxx
+        test_radionuclide.cxx
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_OutputFileFormat
-	IO/test_IO_DiscretisedDensity
-	IO/test_IO_DynamicDiscretisedDensity
-	IO/test_IO_ParametricDiscretisedDensity
-	IO/test_IO_ITKMulticomponent
-	test_linear_regression
-	test_stir_math
+	test_OutputFileFormat.cxx
+	IO/test_IO_DiscretisedDensity.cxx
+	IO/test_IO_DynamicDiscretisedDensity.cxx
+	IO/test_IO_ParametricDiscretisedDensity.cxx
+	IO/test_IO_ITKMulticomponent.cxx
+	test_linear_regression.cxx
+	test_stir_math.cxx
         # the next 2 are interactive, so we don't add a test for it, but only compile them
-	test_display
-	test_interpolate
+	test_display.cxx
+	test_interpolate.cxx
 )
 
 set(buildblock_simple_tests
-        test_Array
-        test_ArrayFilter
-        test_SeparableMetzArrayFilter
-        test_SeparableGaussianArrayFilter
-        test_NestedIterator
-        test_VectorWithOffset
-        test_convert_array
-	test_IndexRange
-	test_coordinates
-	test_filename_functions
-        test_KeyParser
-	test_VoxelsOnCartesianGrid
-	test_zoom_image
-	test_ByteOrder
-	test_Scanner
-	test_ArcCorrection
-	test_find_fwhm_in_image
-	test_proj_data_info
-	test_proj_data
-	test_proj_data_maths
-	test_export_array
-        test_GeneralisedPoissonNoiseGenerator
-	test_multiple_proj_data
+        test_Array.cxx
+        test_ArrayFilter.cxx
+        test_SeparableMetzArrayFilter.cxx
+        test_SeparableGaussianArrayFilter.cxx
+        test_NestedIterator.cxx
+        test_VectorWithOffset.cxx
+        test_convert_array.cxx
+	test_IndexRange.cxx
+	test_coordinates.cxx
+	test_filename_functions.cxx
+        test_KeyParser.cxx
+	test_VoxelsOnCartesianGrid.cxx
+	test_zoom_image.cxx
+	test_ByteOrder.cxx
+        test_ImagingModality.cxx
+	test_Scanner.cxx
+	test_ArcCorrection.cxx
+	test_find_fwhm_in_image.cxx
+        test_DetectionPosition.cxx
+	test_proj_data_info.cxx
+	test_DetectorCoordinateMap.cxx
+	test_proj_data.cxx
+	test_proj_data_maths.cxx
+	test_export_array.cxx
+        test_GeneralisedPoissonNoiseGenerator.cxx
+	test_multiple_proj_data.cxx
 )
 
 include(stir_test_exe_targets)

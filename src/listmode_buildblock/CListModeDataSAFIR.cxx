@@ -4,6 +4,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 	Copyright 2020 Positrigo AG, Zurich
+    Copyright 2021 University College London
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -17,21 +18,30 @@ Coincidence LM Data Class for SAFIR: Implementation
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
+/*!
 
+  \file
+  \ingroup listmode
+  \brief implementation of class stir::CListModeDataSAFIR
+
+  \author Jannis Fischer
+  \author Kris Thielemans
+  \author Markus Jehl
+*/
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
 
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
+#include "stir/listmode/CListRecordSAFIR.h"
 
 #ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
@@ -40,25 +50,51 @@ using std::istream;
 
 START_NAMESPACE_STIR;
 
-
 template <class CListRecordT>
-CListModeDataSAFIR<CListRecordT>::
-CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename, const double lor_randomization_sigma)
-  : listmode_filename(listmode_filename), map(MAKE_SHARED<DetectorCoordinateMapFromFile>(crystal_map_filename, lor_randomization_sigma))
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const std::string& crystal_map_filename,
+                                                     const std::string& template_proj_data_filename,
+                                                     const double lor_randomization_sigma)
+    : listmode_filename(listmode_filename)
 {
-	this->exam_info_sptr.reset(new ExamInfo);
+  if (!crystal_map_filename.empty())
+    {
+      map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
+    }
+  else
+    {
+      if (lor_randomization_sigma != 0)
+        error("SAFIR currently does not support LOR-randomisation unless a map is specified");
+    }
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
 
-	// Here we are reading the scanner data from the template projdata
-    shared_ptr<ProjData> template_proj_data_sptr =
-            ProjData::read_from_file(template_proj_data_filename);
-    this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
+  // Here we are reading the scanner data from the template projdata
+  shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
+  this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
-	if( open_lm_file() == Succeeded::no )
-	{
-		error("CListModeDataSAFIR: Could not open listmode file " +listmode_filename + "\n");
-	}
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: Could not open listmode file " + listmode_filename + "\n");
+    }
 }
 
+template <class CListRecordT>
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+    : listmode_filename(listmode_filename)
+{
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
+  this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"");
+    }
+}
 
 template <class CListRecordT>
 std::string
@@ -73,9 +109,10 @@ shared_ptr <CListRecord>
 CListModeDataSAFIR<CListRecordT>::
 get_empty_record_sptr() const
 {
-	shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
-	sptr->event_SAFIR().set_map(map);
-	return static_pointer_cast<CListRecord>(sptr);
+  shared_ptr<CListRecordT> sptr(new CListRecordT);
+  sptr->event_SAFIR().set_scanner_sptr(this->get_proj_data_info_sptr()->get_scanner_sptr());
+  sptr->event_SAFIR().set_map_sptr(map);
+  return static_pointer_cast<CListRecord>(sptr);
 }
 
 template <class CListRecordT>
@@ -85,8 +122,8 @@ get_next_record(CListRecord& record_of_general_type) const
 {
 	CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
 	Succeeded status = current_lm_data_ptr->get_next_record(record);
-	if( status == Succeeded::yes ) record.event_SAFIR().set_map(map);
-	return status;
+        // if( status == Succeeded::yes ) record.event_SAFIR().set_map_sptr(map);
+        return status;
 	
 }
 
@@ -103,13 +140,12 @@ Succeeded
 CListModeDataSAFIR<CListRecordT>::
 open_lm_file() const
 {
-	cerr << "CListModeDataSAFIR: opening file " << listmode_filename << endl;
 	shared_ptr<istream> stream_ptr(new fstream(listmode_filename.c_str(), ios::in | ios::binary ));
 	if(!(*stream_ptr))
 	{
-		warning("CListModeDataSAFIR: cannot open file " + listmode_filename + "\n");
 		return Succeeded::no;
 	}
+        info("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"", 2);
 	stream_ptr->seekg((std::streamoff)32);
 	current_lm_data_ptr.reset(
 			new InputStreamWithRecords<CListRecordT, bool>
@@ -119,7 +155,8 @@ open_lm_file() const
 	return Succeeded::yes;
 }
 	
-template class CListModeDataSAFIR<CListRecordSAFIR>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
 END_NAMESPACE_STIR
 

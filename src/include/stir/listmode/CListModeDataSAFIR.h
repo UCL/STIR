@@ -45,7 +45,7 @@
 #include "stir/shared_ptr.h"
 
 #include "stir/listmode/CListRecordSAFIR.h"
-#include "stir/listmode/DetectorCoordinateMapFromFile.h"
+#include "stir/DetectorCoordinateMap.h"
 
 START_NAMESPACE_STIR
 
@@ -63,6 +63,7 @@ public:
 	Takes as arguments the filenames of the coicidence listmode file, the crystal map (text) file, and the template projection data file
 	*/
 	CListModeDataSAFIR( const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename, const double lor_randomization_sigma = 0.0);
+	CListModeDataSAFIR(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 	
 	virtual std::string get_name() const;
 	virtual shared_ptr <CListRecord> get_empty_record_sptr() const;
@@ -90,7 +91,7 @@ private:
 	mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
 	mutable std::vector< unsigned int> saved_get_positions;
 	Succeeded open_lm_file() const;
-	shared_ptr<DetectorCoordinateMapFromFile> map;
+	shared_ptr<DetectorCoordinateMap> map;
 };
 	
 END_NAMESPACE_STIR

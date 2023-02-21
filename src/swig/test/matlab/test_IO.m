@@ -39,12 +39,12 @@ import stir.*
 %    tmpdir.chdir()
     fprintf('Creating files in %s\n', pwd())
     s=Scanner.get_scanner_from_name('ECAT 962');
-    %ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    %construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     %		  const int span, const int max_delta,
     %             const int num_views, const int num_tangential_poss, 
     %
     examinfo=ExamInfo();
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6);
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,6,8,6);
     assert (projdatainfo.get_scanner().get_num_rings()==32)
     projdata=ProjDataInterfile(examinfo, projdatainfo, 'stir_matlab_test.hs');
     assert (projdata.get_min_segment_num()==-1)

@@ -43,6 +43,7 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
 class Succeeded;
+class ProjDataInMemory;
 //class ExamInfo;
 
 /*!
@@ -126,6 +127,10 @@ public:
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
+
+  //! construct projection data that stores a subset of the views
+  unique_ptr<ProjDataInMemory>
+    get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
@@ -295,10 +300,13 @@ public:
   inline int get_num_non_tof_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
+  //! forward ProjDataInfo::get_original_view_nums()
+  inline std::vector<int> get_original_view_nums() const;
+
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
-  //! \deprecated a*x+b*y (\see xapyb)
+  //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
                                      const float b, const ProjData& y);
 

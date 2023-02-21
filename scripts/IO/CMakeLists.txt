@@ -7,7 +7,6 @@
 #
 # See STIR/LICENSE.txt for details
 
-# cmake file declaring all tests in this subdirectory
 
 set(dir scripts_IO)
 
@@ -20,7 +19,5 @@ set(${dir_scripts}
 
 #include(stir_test_exe_targets)
 
-# only install if executables are installed as well, as the scripts need them
-if (BUILD_EXECUTABLES)
-  install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
-endif()
+# These don't need STIR executables, so always install
+install(PROGRAMS ${${dir_scripts}} DESTINATION bin)

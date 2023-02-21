@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
-    Copyright (C) 2013, 2018, 2021, University College London
+    Copyright (C) 2013, 2018, 2021, 2022 University College London
 
     This file is part of STIR.
 
@@ -202,16 +202,19 @@ initialise_ring_diff_arrays() const
     {
       ax_pos_num_offset[segment_num] =
         round((num_rings-1) - 2*m_offset[segment_num]/ring_spacing);
-      // check that it was integer
-      if (fabs(ax_pos_num_offset[segment_num] -
-	       ((num_rings-1) - 2*m_offset[segment_num]/ring_spacing)) > 1E-4)
-       {
-	 error("ProjDataInfoCylindrical: in segment %d, the axial positions\n"
-	       "do not correspond to the usual locations between physical rings.\n"
-	       "This is suspicious and can make things go wrong in STIR, so I abort.\n"
-	       "Check the number of axial positions in this segment.",
-	       segment_num);
-       }
+      if (get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+      {
+          // check that it was integer
+          if (fabs(ax_pos_num_offset[segment_num] -
+                   ((num_rings-1) - 2*m_offset[segment_num]/ring_spacing)) > 1E-4)
+          {
+              error("ProjDataInfoCylindrical: in segment %d, the axial positions\n"
+                    "do not correspond to the usual locations between physical rings.\n"
+                    "This is suspicious and can make things go wrong in STIR, so I abort.\n"
+                    "Check the number of axial positions in this segment.",
+                    segment_num);
+          }
+      }
 
       if (get_num_axial_poss_per_ring_inc(segment_num)==1)
 	{
@@ -291,16 +294,38 @@ initialise_ring_diff_arrays() const
         const int ring1_plus_ring2 =
           round(ring1_plus_ring2_float);
         // check that it was integer
+        if (get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+        {
         assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4) ;
+        }
         segment_axial_pos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
       }
     }
   }
 
+  // now also initialise the segment_axial_pos_to_ring_pair table
   if (sampling_corresponds_to_physical_rings)
-    allocate_segment_axial_pos_to_ring_pair();
+    {
+      allocate_segment_axial_pos_to_ring_pair();
 
+      for (int s_num=get_min_segment_num(); s_num<=get_max_segment_num(); ++s_num)
+        {
+          const int min_ax_pos_num = get_min_axial_pos_num(s_num);
+          const int max_ax_pos_num = get_max_axial_pos_num(s_num);
+          for (int ax_pos_num=min_ax_pos_num; ax_pos_num<=max_ax_pos_num; ++ax_pos_num)
+            {
+              compute_segment_axial_pos_to_ring_pair(s_num, ax_pos_num);
+            }
+        }
+    }
+
+  // Now make sure we never do this again...
+  // Note that this variable needs to be set at *the end* of this function to make
+  // everything thread-safe. Otherwise, with the double-locked loop paradigm that
+  // we use, another thread can check the value of the variable before this function
+  // is done.
   ring_diff_arrays_computed = true;
+
 }
 
 /*! Default implementation checks common variables. Needs to be overloaded. 
@@ -470,16 +495,6 @@ compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_po
       assert((ring1_plus_ring2 + ring_diff)%2 == 0);
       assert((ring1_plus_ring2 - ring_diff)%2 == 0);
       table.push_back(pair<int,int>(ring1, ring2));
-#ifndef NDEBUG
-      int check_segment_num = 0, check_axial_pos_num = 0;
-      assert(get_segment_axial_pos_num_for_ring_pair(check_segment_num,
-						     check_axial_pos_num,
-						     ring1,
-						     ring2) ==
-	     Succeeded::yes);
-      assert(check_segment_num == segment_num);
-      assert(check_axial_pos_num == axial_pos_num);
-#endif
     }
 }
 

@@ -25,7 +25,6 @@ Scanner parameters:=
 Scanner type := unknown
 Energy resolution := 0.145
 Reference energy (in keV) := 511
-
 Number of rings                          := 8
 Number of detectors per ring             := 64
 Inner ring diameter (cm)                 := 65.6
@@ -33,4 +32,7 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 3.25
 View offset (degrees)                    := 0
 end scanner parameters:=
+number of energy windows:=1
+energy window lower level[1] := 430
+energy window upper level[1] := 610
 !END OF INTERFILE :=

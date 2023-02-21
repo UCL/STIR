@@ -7,11 +7,12 @@
   \brief Implementations for LORCoordinates.h
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
-
+  \author Parisa Khateri
 
 */
 /*
     Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C) 2018, University College London
     This file is part of STIR.
 
@@ -332,15 +333,18 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
      argument of sqrt simplifies to
      R^2*(d.x^2+d.y^2)-(d.x*c1.y-d.y*c1.x)^2
   */
-  const double dxy2 = (square(d.x())+square(d.y()));
-  const double argsqrt=
-    (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
-  if (argsqrt<=0)
+  const double a = square(d.x()) + square(d.y());
+  const double b = d.x() * c1.x() + d.y() * c1.y();
+  const double e = square(c1.x()) + square(c1.y()) - square(radius);
+  double argsqrt = square(b) - a * e;
+  if (argsqrt<=0) {
     return Succeeded::no; // LOR is outside detector radius
+  }
   const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
 
-  const coordT2 l1 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2);
-  const coordT2 l2 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2);
+  auto l1 = static_cast<coordT2>((-b + root) / a);
+  auto l2 = static_cast<coordT2>((-b - root) / a);
+  
   // TODO won't work when coordT1!=coordT2
   intersection_coords.p1() = d*l1 + c1;
   intersection_coords.p2() = d*l2 + c1;
@@ -446,6 +450,40 @@ get_intersections_with_cylinder(LORAs2Points<coordT>& lor,
   return find_LOR_intersections_with_cylinder(lor, *this, radius);
 }
 
+template <class coordT>
+Succeeded
+LORAs2Points<coordT>::
+change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& lor,
+                              const double radius) const
+{
+  const CartesianCoordinate3D<coordT>& c1 = this->p1();
+  const CartesianCoordinate3D<coordT>& c2 = this->p2();
+
+  //To check if LOR is inside the detector
+  const CartesianCoordinate3D<coordT> d = c2 - c1;
+  const double dxy2 = (square(d.x())+square(d.y()));
+  const double argsqrt=
+      (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
+
+  LORInCylinderCoordinates<coordT> cyl_coords;
+  cyl_coords.reset(static_cast<float>(radius));
+
+  cyl_coords.p1().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c1.x(),-c1.y())));
+  cyl_coords.p2().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c2.x(),-c2.y())));
+  cyl_coords.p1().z() =
+    static_cast<coordT>(c1.z());
+  cyl_coords.p2().z() =
+    static_cast<coordT>(c2.z());
+  lor = cyl_coords;
+
+  if (argsqrt<=0)
+    return Succeeded::no; // LOR is outside detector radius
+  else
+    return Succeeded::yes;
+}
+
 #define DEFINE_LOR_GET_FUNCTIONS(TYPE)                                       \
 template <class coordT>							     \
 Succeeded					     \
@@ -483,10 +521,9 @@ TYPE<coordT>::								     \
 get_intersections_with_cylinder(LORAs2Points<coordT>& lor,              \
                                 const double radius) const		     \
 {									     \
-  self_type tmp = *this;							     \
-  if (tmp.set_radius(static_cast<coordT>(radius)) == Succeeded::no)			             \
+  LORAs2Points<coordT> actual_lor = *this;							     \
+  if (find_LOR_intersections_with_cylinder(lor, actual_lor, radius) == Succeeded::no)  \
     return Succeeded::no;						     \
-  lor = tmp;                                                                 \
   return Succeeded::yes;								     \
 }
 									    

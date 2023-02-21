@@ -1,4 +1,4 @@
-Licensing information for STIR 4.1.0
+Licensing information for STIR 5.1.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -67,11 +67,13 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/PixelsOnCartesianGrid.h
 ./src/include/stir/IO/stir_ecat6.h
 ./src/include/stir/IO/interfile.h
+./src/include/stir/IO/InputStreamWithRecordsFromUPENNbin.h
 ./src/include/stir/IO/InterfileHeader.h
 ./src/include/stir/IO/InterfileHeaderSiemens.h
 ./src/include/stir/IO/ecat6_utils.h
 ./src/include/stir/IO/stir_ecat_common.h
 ./src/include/stir/IO/stir_ecat7.h
+./src/include/stir/IO/InputStreamWithRecordsFromUPENNtxt.h
 ./src/include/stir/IO/ecat6_types.h
 ./src/include/stir/ProjDataInfo.inl
 ./src/include/stir/SegmentBySinogram.inl
@@ -98,6 +100,7 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/ProjDataInfo.h
 ./src/include/stir/Sinogram.h
 ./src/include/stir/ProjDataFromStream.h
+./src/include/stir/ProjDataInfoGeneric.inl
 ./src/include/stir/Segment.h
 ./src/include/stir/Scanner.h
 ./src/include/stir/IndexRange3D.inl
@@ -230,6 +233,7 @@ Explicit list of files that carry the PARAPET license
 ./src/test/test_display.cxx
 ./src/test/test_interpolate.cxx
 ./src/test/test_Array.cxx
+./src/test/test_DetectorCoordinateMap.cxx
 ./src/test/test_proj_data_info.cxx
 ./src/buildblock/Viewgram.cxx
 ./src/buildblock/utilities.cxx
@@ -241,6 +245,7 @@ Explicit list of files that carry the PARAPET license
 ./src/buildblock/ProjDataGEAdvance.cxx
 ./src/buildblock/ProjDataInfo.cxx
 ./src/buildblock/linear_regression.cxx
+./src/buildblock/ProjDataInfoGeneric.cxx
 ./src/buildblock/Array.cxx
 ./src/buildblock/ProjData.cxx
 ./src/buildblock/ProjDataInfoCylindricalArcCorr.cxx

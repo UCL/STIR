@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016, 2019, 2020 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020, 2022 University College London
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -26,7 +27,9 @@
 #include "stir/RegisteredObject.h"
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -96,7 +99,7 @@ public:
     //! \name check functions
     //@{
     inline bool has_template_proj_data_info() const
-    { return !stir::is_null_ptr(proj_data_info_cyl_noarc_cor_sptr); }
+    { return !stir::is_null_ptr(proj_data_info_sptr); }
     //! Returns true if template_exam_info_sptr has been set.
     inline bool has_exam_info() const
     { return !stir::is_null_ptr(template_exam_info_sptr);}
@@ -110,7 +113,7 @@ public:
     inline int get_num_scatter_points() const
     { return static_cast<int>(this->scatt_points_vector.size());}
     //! Get the template ProjDataInfo
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
+    shared_ptr<const ProjDataInfo> get_template_proj_data_info_sptr() const;
     //! Get the ExamInfo
     shared_ptr<const ExamInfo> get_exam_info_sptr() const;
 
@@ -219,7 +222,11 @@ public:
 
     //! Output the log of the process.
     virtual void write_log(const double simulation_time, const float total_scatter);
-    
+
+    //! Enable/disable caching of line integrals
+    void set_use_cache(const bool);
+    //! Return if line integrals are cached or not
+    bool get_use_cache() const;
 
 protected:
 
@@ -274,6 +281,18 @@ protected:
      * @{
      */
 
+    //! gamma-energy-part of the detection efficiency
+    /*! 
+      Formula used is based on a Gaussian pdf for the efficiency, with
+      \f[ FWHM_E = \alpha  \sqrt(E) \f]
+      where the proportionality constant \f$\alpha\f$ is determined by the
+      energy FWHM of the Scanner at the reference energy.
+
+      This pdf is then integrated from the lower to the upper energy window limits.
+
+      \sa Scanner::get_energy_resolution
+      \sa Scanner::get_reference_energy
+    */
     float detection_efficiency(const float energy) const;
 
 
@@ -341,8 +360,7 @@ protected:
 
     std::string template_proj_data_filename;
 
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_noarc_cor_sptr;
-
+    shared_ptr<ProjDataInfo> proj_data_info_sptr;
     //! \details Exam info extracted from the scanner template
     shared_ptr<ExamInfo> template_exam_info_sptr;
 

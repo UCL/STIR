@@ -6,7 +6,7 @@
 # Use with care!
 #
 # You would use this in bash for instance like
-# VERSION=3.1 make_distribution.sh
+# VERSION=5.1.0 make_distribution.sh
 # Check list of variables below for configuration options
 
 # This file is part of STIR.
@@ -17,7 +17,7 @@
 #
 # Copyright 2004-2011, Hammersmith Imanet Ltd
 # Copyright 2011-2013, Kris Thielemans
-# Copyright 2014-2015,2019,2020 University College London
+# Copyright 2014-2015,2019-2023, University College London
 
 
 # set default for variables.
@@ -177,10 +177,10 @@ if [ $do_git_commit = 1 ]; then
     if git rev-parse "$TAG" >/dev/null 2>&1; then
         echo "git tag $TAG exists!. Removing"
         git tag -d $TAG
-        git tag -d stir_$TAG
+        # git tag -d stir_$TAG
     fi
     git tag -a $TAG -m "version $VERSION";
-    git tag -a stir_$TAG -m "version $VERSION";
+    # git tag -a stir_$TAG -m "version $VERSION";
 else
     echo "no git commit/tagging"
 fi
@@ -247,8 +247,14 @@ fi
 
 if [ $do_website_sync = 1 ]; then
     cd $destination
-    ./sync-to-sf.sh --del
+    ./sync-to-sf.sh
+    echo "You could also do"
+    echo "  ./sync-to-sf.sh --exclude wiki --exclude cleanmediawiki.sh.zip --del"
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "if not beta, did you run with 'do_website_final_version=1'?"
+if [ $do_website_final_version = 0 ]; then
+  echo "if not beta, did you run with 'do_website_final_version=1'?"
+fi
+echo "create a GitHub release. To get release notes, use"
+echo " pandoc -t markdown_github -o release_${VERSION%%.?}.md  release_${VERSION%%.?}.htm"

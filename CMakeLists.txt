@@ -15,8 +15,9 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-  message(STATUS "ccache found, so we will use this.")
+  message(STATUS "ccache found, so we will use it.")
 endif()
+
 
 PROJECT(STIR)
 
@@ -25,7 +26,11 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # Compiler Id for Apple Clang is AppleClang, see STIR issue #531
 endif()
-  
+
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
+endif()
+
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
@@ -51,32 +56,35 @@ endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   5)
-set(VERSION_MINOR   0)
-set(VERSION_PATCH   0-prealpha)
-set(VERSION   050000) # only used in STIRConfig.h.in
+set(VERSION_MINOR   1)
+set(VERSION_PATCH   0)
+set(VERSION   050100) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 ####### Installation directories
+# Note: using absolute paths for those variables that are used in STIRConfig.h.in
+
 # Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
 # However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 else() #if(CYGWIN)
-  set(STIR_DOC_DIR "share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 #else()
 #  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif()
 # TODO append version numbers
 set(STIR_DATA_DIR "share/stir")
 set(ConfigPackageLocation lib/cmake/)
+set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/stir/config" CACHE PATH "") 
 
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
-
+ 
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
@@ -94,10 +102,13 @@ option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
+OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
+option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
+
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK 4.9 QUIET)
+   find_package(ITK 4.9 CONFIG)
    if (ITK_FOUND)
       include(${ITK_USE_FILE})
    endif()
@@ -111,6 +122,10 @@ if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT)
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
+    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.23.99)
+        message(STATUS "ROOT Version is >= 6.24. Setting the minimum CXX version to 14.")
+        UseCXX(14)
+    endif()
   endif()
 endif()
 
@@ -124,25 +139,42 @@ endif()
 
 if(NOT DISABLE_HDF5)
   find_package(HDF5 COMPONENTS CXX)
-  if (HDF5_FOUND)
-    message(WARNING "STIR HDF5 code needs C++-11, so we will enable this.")
-    UseCXX(11)
-  endif()
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0)# QUIET)
+    find_package(nlohmann_json 3.2.0 CONFIG)# QUIET)
     if (nlohmann_json_FOUND)
-      message(STATUS "nlohmann JSON library found.")
+      message(STATUS "nlohmann JSON library ${nlohmann_json_VERSION} found.")
       set(HAVE_JSON ON)
     else()
-      message(STATUS "nlohmann JSON library not found. Try and set nlohmann_json_DIR if you have it.")
+      message(STATUS "nlohmann JSON library not found. Radionuclide support will be minimal.")
     endif()
+endif()
+
+if(NOT DISABLE_UPENN)
+	find_package(JANSSON)
+		if(JANSSON_FOUND)
+			find_package(ZLIB)
+			if(ZLIB_FOUND)
+				find_package(UPENN) 
+				if (UPENN_FOUND)
+					message(STATUS "UPENN libary found.")
+					#set(HAVE_UPENN ON)
+				else()
+					message(STATUS "UPENN library not found. Try and set the DIR manually.")
+				endif()
+			else()
+				message(STATUS "UPENN library needs Zlib")
+			endif()
+		else()
+			message(STATUS "UPENN library needs Jansson")
+		endif()
 endif()
 
 # Legacy options
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
 option(STIR_LEGACY_IGNORE_VIEW_OFFSET "Ignore using scanner view-offset (or intrinsic azimuthal tilt), as in STIR 4 or earlier" OFF)
+option(STIR_ROOT_ROTATION_AS_V4 "Ignore the changes to the ROOT rotation introduced in STIR version 5" OFF)
 
 # NiftyPET projector
 if(NOT DISABLE_NiftyPET_PROJECTOR OR NOT DISABLE_Parallelproj_PROJECTOR)
@@ -165,13 +197,16 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj)
+    find_package(parallelproj 1.0.1 CONFIG)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
       if (parallelproj_built_with_CUDA)
-        message(STATUS "Found parallelproj (will use its CUDA support)")
+        message(STATUS "Found parallelproj ${parallelproj_VERSION} (will use its CUDA support)")
       else()
-        message(STATUS "Found parallelproj (but using its OpenMP version as it wasn't built with CUDA)")
+        message(STATUS "Found parallelproj ${parallelproj_VERSION} (but using its OpenMP version as it wasn't built with CUDA)")
+      endif()
+      if (parallelproj_VERSION VERSION_LESS 1.0.1)
+        message(STATUS "If the above parallelproj info looks incorrect, upgrade it to at least 1.0.1 (but 1.2.13 or later is recommended)")
       endif()
     endif()
 endif()
@@ -209,9 +244,20 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 # the installed files, not the source.
 set (STIR_INCLUDE_DIRS "include")
 
-# install the registry sources
-install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
 
+# Older CMake cannot import or export object libraries. So we have to export
+# the sources and tell the user to explicitly use STIR_REGISTRIES.
+# This will be set to either a list of source files, or a list of object files.
+# See STIRConfig.cmake.in on how we cope with this
+if (CMAKE_VERSION VERSION_LESS 3.12)
+  message(WARNING "Your CMake version is older than 3.12. The STIR_REGISTRIES
+    will be exported as source files only. Please upgrade CMake!")
+else()
+  install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
+endif()
+
+# install the registry sources for older CMake versions
+install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
 # set STIR_REGISTRIES to this location before export
 # first create a new variable.
 set(INSTALLED_STIR_REGISTRIES)
@@ -225,11 +271,12 @@ foreach(r  ${STIR_REGISTRIES})
 endforeach()
 set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
 
+# New create STIRConfig.cmake
 CONFIGURE_PACKAGE_CONFIG_FILE(
   src/cmake/STIRConfig.cmake.in
   "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
-   INSTALL_DESTINATION "${ConfigPackageLocation}"
-   PATH_VARS STIR_INCLUDE_DIRS STIR_REGISTRIES # relocatable variables
+  INSTALL_DESTINATION "${ConfigPackageLocation}"
+  PATH_VARS STIR_INCLUDE_DIRS STIR_REGISTRIES # relocatable variables
 )
 
 # create and install STIRTargets*.cmake for the installation-tree
@@ -257,9 +304,11 @@ install(
 )
 
 # install examples
+# note that location needs to be consistent with get_STIR_examples_dir()
 install(
   DIRECTORY
     examples
+  USE_SOURCE_PERMISSIONS
   COMPONENT DOC
   DESTINATION "${STIR_DOC_DIR}"
    FILES_MATCHING

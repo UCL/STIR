@@ -32,6 +32,8 @@ START_NAMESPACE_STIR
 class BinNormalisationSPECT :
   public RegisteredParsingObject<BinNormalisationSPECT,  BinNormalisation, BinNormalisationWithCalibration>
 {
+private:
+  using base_type = BinNormalisationWithCalibration;
 public:
 
 

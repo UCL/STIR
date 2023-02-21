@@ -93,18 +93,21 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
      Sadly, this is only supported from OpenMP 3.1, so we need to add some extra checks.
   */
   float value;
+  if (this->use_cache)
+    {
 #if defined(STIR_OPENMP)
 # if _OPENMP >=201012
 #  pragma omp atomic read
 # else
 #  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
-  {
+      {
 # endif
 #endif
-  value = *location_in_cache;
+	value = *location_in_cache;
 #if defined(STIR_OPENMP) && (_OPENMP <201012)
-  }
+      }
 #endif
+    }
 
   if (this->use_cache && value!=cache_init_value)
     {
@@ -145,18 +148,21 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
     : 0;
 
   float value;
+  if (this->use_cache)
+    {
 #if defined(STIR_OPENMP)
 # if _OPENMP >=201012
 #  pragma omp atomic read
 # else
 #  pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
-  {
+      {
 # endif
 #endif
-  value = *location_in_cache;
+	value = *location_in_cache;
 #if defined(STIR_OPENMP) && (_OPENMP <201012)
-  }
+      }
 #endif
+    }
 
   if (this->use_cache && value!=cache_init_value)
     {

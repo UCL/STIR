@@ -23,6 +23,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/Radionuclide.h"
 #include "stir/shared_ptr.h"
 
 #include "stir/shared_ptr.h"
@@ -50,9 +51,9 @@ public :
      indicate that it is not initialised.
   */
 
-  ExamInfo()
-    : start_time_in_secs_since_1970(0.),
-
+  explicit ExamInfo(const ImagingModality modality = ImagingModality::Unknown)
+      : imaging_modality(modality),
+      start_time_in_secs_since_1970(0.),
     calibration_factor(-1.F),
     low_energy_thres(-1.F),
     up_energy_thres(-1.F)
@@ -67,6 +68,8 @@ public :
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+  Radionuclide radionuclide;
   
 //  double branching_ratio;
 
@@ -86,7 +89,7 @@ public :
   //! Get the calibration factor
   inline  float get_calibration_factor() const;
   //! Get the radionuclide name
-  inline std::string get_radionuclide() const;
+  inline Radionuclide get_radionuclide() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings
@@ -99,7 +102,7 @@ public :
   //! Set the Calibration factor
   inline void set_calibration_factor(const float cal_val);
   //! Set the radionuclide
-  inline void set_radionuclide(const std::string& name);
+  inline void set_radionuclide(const Radionuclide& arg);
   //! Copy energy information from another ExamInfo
   inline void set_energy_information_from(const ExamInfo&);
   //@}
@@ -145,8 +148,6 @@ protected:
   //! If scatter simulation is not needed, can default to -1
   float low_energy_thres;
   
-  std::string radionuclide;
-
   //!
   //! \brief up_energy_thres
   //! \author Nikos Efthimiou

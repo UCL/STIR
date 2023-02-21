@@ -30,8 +30,11 @@
 START_NAMESPACE_STIR
 
 void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
-                          const float coincidence_time_window)
+                          const float coincidence_time_window, float isotope_halflife)
 {
+  if (isotope_halflife == -1.F)
+    isotope_halflife = proj_data.get_exam_info().get_radionuclide().get_half_life();
+
   const int num_rings =
     proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring =
@@ -63,8 +66,9 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
 
        randoms-counts[i,j] = int_t1^t2 randoms-rate[t,i,j]
                  = coinc_window * singles-rate[0,i] * singles-rate[0,j] * int_t1^t2 exp (-2lambda t)
-                   coinc_window * singles-counts[i] * singles-counts[j] *
+                 = coinc_window * singles-counts[i] * singles-counts[j] *
                    int_t1^t2 exp (-2lambda t) / (int_t1^t2 exp (-lambda t))^2
+       where int indicates an integral.
 
        Now we can use that decay_correction_factor(lambda,t1,t2) computes
           duration/(int_t1^t2 exp (-lambda t))
@@ -72,13 +76,15 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
        That leads to the formula below (as it turns out that the above ratio only depends t2-t1)
     */
     const double duration = frame_defs.get_duration(1);
-    warning("Assuming F-18 tracer!!!");
-    const double isotope_halflife = 6586.2;
     const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
-    const double double_decay_corr_factor = decay_correction_factor(2*isotope_halflife, 0., duration);
+    const double double_decay_corr_factor = decay_correction_factor(0.5*isotope_halflife, 0., duration);
     const double corr_factor = square(decay_corr_factor) / double_decay_corr_factor / duration;
-    info(boost::format("RFS: decay correction factor: %1%, time frame duration: %2%. total correction factor from (singles_totals)^2 to randoms_totals: %3%")
-         % decay_corr_factor % duration % (1/corr_factor),
+
+    info(boost::format("Isotope half-life: %1%\n"
+                       "RFS: decay correction factor: %2%,\n"
+                       "time frame duration: %3%.\n"
+                       "total correction factor from (singles_totals)^2 to randoms_totals: %4%.\n")
+         % isotope_halflife % decay_corr_factor % duration % (1/corr_factor),
          2);
 
     multiply_crystal_factors(proj_data, total_singles,

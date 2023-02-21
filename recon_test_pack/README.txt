@@ -89,8 +89,11 @@ sh run_test_simulate_and_recon_with_motion.sh  [ --mpicmd cmd] [optional_install
 
 Testing SPECT reconstructions
 .............................
+For SPECTUB and PinholeSPECTUB implementations, the following script will 
+pass the parameters along when calling the scripts in the subdirectories:
 cd SPECT
-sh run_SPECT_tests.sh  [ --mpicmd cmd] [--usecache] [optional_install_path]
+
+sh run_SPECT_tests.sh [ --mpicmd cmd] [--usecache] [optional_install_path]
 
 The "--usecache" option will tell OSMAPOSL to keep the SPECT projection matrix in memory 
 which means that the reconstruction will be faster IF you have enough RAM memory in your system.

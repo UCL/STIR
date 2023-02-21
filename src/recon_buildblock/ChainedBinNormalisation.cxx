@@ -30,6 +30,7 @@ ChainedBinNormalisation::registered_name = "Chained";
 void 
 ChainedBinNormalisation::set_defaults()
 {
+  base_type::set_defaults();
   apply_first.reset();
   apply_second.reset();
 }
@@ -38,6 +39,7 @@ void
 ChainedBinNormalisation::
 initialise_keymap()
 {
+  base_type::initialise_keymap();
   parser.add_start_key("Chained Bin Normalisation Parameters");
   parser.add_parsing_key("Bin Normalisation to apply first", &apply_first);
   parser.add_parsing_key("Bin Normalisation to apply second", &apply_second);
@@ -49,7 +51,7 @@ post_processing()
 {
     if ((apply_first->get_calibration_factor()>0.F) && (apply_second->get_calibration_factor()>0.F))
     error("ChainedBinNormalisation: both first and second have a calibration factor. The factor would be applied twice");
-  return false;
+  return base_type::post_processing();
 }
 
 
@@ -72,7 +74,7 @@ Succeeded
 ChainedBinNormalisation::
 set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
-  BinNormalisation::set_up( exam_info_sptr,proj_data_info_ptr);
+  base_type::set_up( exam_info_sptr,proj_data_info_ptr);
   if (!is_null_ptr(apply_first))
     if (apply_first->set_up(exam_info_sptr,proj_data_info_ptr  ) == Succeeded::no)
       return  Succeeded::no;

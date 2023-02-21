@@ -858,7 +858,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 
   info("Forward projecting input image.", 2);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -985,7 +985,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   // Forward project input image
   info("Forward projecting input image.",2);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
   {  // Loop over eah of the viewgrams in input_viewgrams_vec, forward projecting input into them
@@ -1007,7 +1007,7 @@ actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
   info("Forward projecting current image estimate and back projecting to output.", 2);
   this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(dynamic)
 #endif
   for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
   {

@@ -5,6 +5,8 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2016,2020 University College London
+    Copyright (C) 2022 National Physical Laboratory
+    
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -18,6 +20,8 @@
   
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Daniel Deidda
+  \author Markus Jehl
 */
 
 #include "stir/DiscretisedDensity.h"
@@ -99,7 +103,7 @@ public:
                                       const float min_scale_factor,
                                       const float max_scale_factor,
                                       const unsigned half_filter_width,
-                                      BSpline::BSplineType spline_type,
+                                      BSpline::BSplineType spline_type = BSpline::BSplineType::linear,
                                       const bool remove_interleaving = true);
 
 
@@ -113,6 +117,10 @@ public:
 
     //! Get current scatter estimate
     shared_ptr<ProjData> get_output() const;
+    
+    //!make projdata 2D shared pointer
+    shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr);
+    shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
 
     //!
     //! \brief set_up
@@ -167,10 +175,17 @@ public:
     void set_output_scatter_estimate_prefix(const std::string&);
     void set_export_scatter_estimates_of_each_iteration(bool);
 
+    void set_max_scale_value(float value);
+    void set_min_scale_value(float value);
+    void set_mask_projdata_filename(std::string name);
+    void set_mask_image_filename(std::string name);
+    void set_output_additive_estimate_prefix(std::string name);
+    void set_run_debug_mode(bool debug);
+
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
-    inline void set_zoom_xy(float);
+    //inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
-    inline void set_zoom_z(float);
+    //inline void set_zoom_z(float);
 
 
     // Get functions

@@ -51,7 +51,7 @@ class Succeeded;
 
   For more details, see: Tsai, Y.-J., Schramm, G., Ahn, S., Bousse, A., Arridge, S., Nuyts, J., Hutton, B. F.,
   Stearns, C. W., &  Thielemans, K. (2020). <i>Benefits of Using a Spatially-Variant Penalty Strength With Anatomical
-  Priors in PET Reconstruction</i>. IEEE Transactions on Medical Imaging, 39(1), 11–22.
+  Priors in PET Reconstruction</i>. IEEE Transactions on Medical Imaging, 39(1), 11-22.
   https://doi.org/10.1109/TMI.2019.2913889
 */
 template <typename TargetT>
@@ -143,6 +143,9 @@ private:
 
     //! File-format to save images
     shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
+
+    /// Verbosity level
+    int _verbosity;
 
     //! used to check acceptable parameter ranges, etc...
     bool post_processing();

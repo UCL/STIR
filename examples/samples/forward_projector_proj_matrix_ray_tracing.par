@@ -11,6 +11,10 @@ type:=Matrix
    ; you could disable some symmetries if you have enough memory
    ; this would for instance allow you to increase the number of subsets
    ; do_symmetry_90degrees_min_phi:=0
+   ; reduce verbosity (less output if all goes well)
+   verbosity := 0
+   ; if we're using this only once, we can just as well disable caching and save some memory
+   disable caching:=1
   End Ray tracing matrix parameters :=
   End Forward Projector Using Matrix Parameters :=
 end:=

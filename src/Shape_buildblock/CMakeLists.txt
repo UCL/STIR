@@ -11,6 +11,7 @@ set(${dir_LIB_SOURCES}
   Ellipsoid.cxx
   EllipsoidalCylinder.cxx
   Box3D.cxx
+  GenerateImage.cxx
 )
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries

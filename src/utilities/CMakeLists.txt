@@ -15,6 +15,7 @@ set(dir utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
+
   manip_image.cxx
   stir_write_pgm.cxx
 	manip_projdata.cxx
@@ -56,6 +57,7 @@ set(${dir_EXE_SOURCES}
         conv_gipl_to_interfile.cxx
         conv_interfile_to_gipl.cxx
         shift_image.cxx
+        stir_config.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx
@@ -66,6 +68,11 @@ set(${dir_EXE_SOURCES}
 	find_ML_normfactors3D.cxx
 	find_ML_normfactors.cxx
 	find_ML_singles_from_delayed.cxx
+        find_normfactors_from_cylinder_data.cxx
+        find_recovery_coefficients_in_image_quality_phantom_nema_nu4.cxx
+        write_sinogram_to_txt.cxx
+        find_sum_projection_of_viewgram_and_sinogram.cxx
+        separate_true_from_random_scatter_for_necr.cxx
 )
 
 if (AVW_FOUND)
@@ -81,9 +88,6 @@ endif()
 
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
-
-  install(DIRECTORY share/ DESTINATION ${STIR_DATA_DIR}
-		  FILES_MATCHING PATTERN "*.json")
 endif()
 
 include(stir_exe_targets)

@@ -18,13 +18,27 @@
   \par Usage
   \verbatim
      calculate_attenuation_coefficients
-             [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>
+             [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]
   \endverbatim
   <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
   the attenuation factor (i.e. the inverse of the ACFs).
 
   The option <tt>--PMRT</tt> forces forward projection using the Probability Matrix Using Ray Tracing 
   (stir::ProjMatrixByBinUsingRayTracing).
+
+  The option <tt>--NOPMRT</tt> forces forward projection using the (old) Ray Tracing
+
+  \par Optionally include a parameter file for specifying the forward projector (overrules --PMRT and --NOPMRT options)
+  \verbatim
+  Forward Projector parameters:=
+    type := Matrix
+      Forward projector Using Matrix Parameters :=
+        Matrix type := Ray Tracing
+         Ray tracing matrix parameters :=
+         End Ray tracing matrix parameters :=
+        End Forward Projector Using Matrix Parameters :=
+  End:=
+  \endverbatim
 
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
@@ -64,12 +78,22 @@ START_NAMESPACE_STIR
 
 static void print_usage_and_exit()
 {
-    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>\n"
+    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]\n"
 	     <<"\t--ACF  calculates the attenuation correction factors\n"
 	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
-             <<"\t--PMRT uses the Ray Tracing Projection Matrix (default)\n"
-             <<"\t--NOPMRT uses the (old) Ray Tracing forward projector\n"
-             <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
+       <<"\t--PMRT uses the Ray Tracing Projection Matrix (default) (ignored if parfile provided)\n"
+       <<"\t--NOPMRT uses the (old) Ray Tracing forward projector (ignored if parfile provided)\n"
+       <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n\n"
+       <<"Example forward projector parameter file:\n\n"
+       <<"Forward Projector parameters:=\n"
+       <<"   type := Matrix\n"
+       <<"   Forward projector Using Matrix Parameters :=\n"
+       <<"      Matrix type := Ray Tracing\n"
+       <<"         Ray tracing matrix parameters :=\n"
+       <<"         End Ray tracing matrix parameters :=\n"
+       <<"      End Forward Projector Using Matrix Parameters :=\n"
+       <<"End:=\n";
+
     exit(EXIT_FAILURE);
 }
 
@@ -89,7 +113,7 @@ main (int argc, char * argv[])
       use_PMRT=true; 
       --argc; ++argv;
     }
-  if (argc!=5 )
+  if (!(argc==5 || argc==6))
     print_usage_and_exit();
 
   bool doACF=true;// initialise to avoid compiler warning
@@ -110,18 +134,26 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
 
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
-  if (use_PMRT)
-    {
+  shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
+  if (argc>=5)
+  {
+      KeyParser parser;
+      parser.add_start_key("Forward Projector parameters");
+      parser.add_parsing_key("type", &forw_projector_sptr);
+      parser.add_stop_key("END");
+      parser.parse(argv[4]);
+  }
+  else if (use_PMRT)
+  {
       shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-      forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
-    }
+      forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+  }
   else
   {
-    forw_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
+    forw_projector_sptr.reset(new ForwardProjectorByBinUsingRayTracing());
   }
 
-  cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
+  cerr << "\n\nForward projector used:\n" << forw_projector_sptr->parameter_info();
 
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
@@ -137,7 +169,7 @@ main (int argc, char * argv[])
   // construct a normalisation object that does all the work for us.
   shared_ptr<BinNormalisation> normalisation_ptr
 	(new BinNormalisationFromAttenuationImage(atten_image_filename,
-						  forw_projector_ptr));
+						  forw_projector_sptr));
   
   if (
       normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
@@ -150,7 +182,7 @@ main (int argc, char * argv[])
   // dummy values currently necessary for BinNormalisation, but they will be ignored
   const double start_frame = 0;
   const double end_frame = 0;
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_sptr->get_symmetries_used()->clone());
   if (doACF)
     {
       normalisation_ptr->apply(*out_proj_data_ptr, symmetries_sptr);

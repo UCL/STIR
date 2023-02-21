@@ -14,8 +14,8 @@
 # 
 
 # Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
     set -e
 fi
 
@@ -70,6 +70,7 @@ LC_ALL=C
 export LC_ALL
 
 ./simulate_PET_data_for_tests.sh
+
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1

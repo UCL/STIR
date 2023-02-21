@@ -8,11 +8,15 @@ set(${dir_LIB_SOURCES}
   PatientPosition.cxx
   ExamInfo.cxx
   ExamData.cxx
+  RadionuclideDB.cxx
+  Radionuclide.cxx
+  find_STIR_config.cxx
   ProjData.cxx
   ProjDataInfo.cxx
   ProjDataInfoCylindrical.cxx
   ProjDataInfoCylindricalArcCorr.cxx
   ProjDataInfoCylindricalNoArcCorr.cxx
+  ProjDataInfoSubsetByView.cxx
   ArcCorrection.cxx
   ProjDataFromStream.cxx
   ProjDataGEAdvance.cxx
@@ -27,6 +31,7 @@ set(${dir_LIB_SOURCES}
   Sinogram.cxx
   RelatedViewgrams.cxx
   scale_sinograms.cxx
+  interpolate_axial_position.cxx
   interpolate_projdata.cxx
   extend_projdata.cxx
   multiply_crystal_factors.cxx
@@ -36,11 +41,14 @@ set(${dir_LIB_SOURCES}
   utilities.cxx
   interfile_keyword_functions.cxx
   zoom.cxx
-  NumericType ByteOrder.cxx
+  NumericType.cxx
+  ByteOrder.cxx
   KeyParser.cxx
   recon_array_functions.cxx
-  linear_regression overlap_interpolate.cxx
-  error warning.cxx
+  linear_regression.cxx
+  overlap_interpolate.cxx
+  error.cxx
+  warning.cxx
   TextWriter.cxx
   DataSymmetriesForViewSegmentNumbers.cxx
   TimeFrameDefinitions.cxx
@@ -58,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	SeparableCartesianMetzImageFilter.cxx
 	TruncateToCylindricalFOVImageProcessor.cxx
 	ThresholdMinToSmallPositiveValueDataProcessor.cxx
+	HUToMuImageProcessor.cxx
 	ChainedDataProcessor.cxx
 	ArrayFilter1DUsingConvolution.cxx
 	SeparableConvolutionImageFilter.cxx
@@ -82,6 +91,12 @@ set(${dir_LIB_SOURCES}
         GeneralisedPoissonNoiseGenerator.cxx
         FilePath.cxx
         date_time_functions.cxx
+        DetectorCoordinateMap.cxx
+       GeometryBlocksOnCylindrical.cxx
+        ProjDataInfoBlocksOnCylindricalNoArcCorr.cxx
+        ProjDataInfoGeneric.cxx
+        ProjDataInfoGenericNoArcCorr.cxx
+        date_time_functions.cxx
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
@@ -92,10 +107,6 @@ endif()
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
   list(APPEND ${dir_LIB_SOURCES} getopt.c)
-endif()
-
-if (HAVE_JSON)
-  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor)
 endif()
 
 include(stir_lib_target)
@@ -114,7 +125,7 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(buildblock PRIVATE "${TMP}")
+  target_include_directories(buildblock PUBLIC "${TMP}")
 endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
