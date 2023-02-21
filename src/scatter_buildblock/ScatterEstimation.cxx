@@ -431,7 +431,7 @@ void ScatterEstimation::set_run_debug_mode(bool debug)
 void ScatterEstimation::set_restart_reconstruction_every_scatter_iteration(bool setting)
 { this->restart_reconstruction_every_scatter_iteration = setting; }
 
-bool ScatterEstimation::get_restart_reconstruction_every_scatter_iteration()
+bool ScatterEstimation::get_restart_reconstruction_every_scatter_iteration() const
 { return this->restart_reconstruction_every_scatter_iteration; }
 
 void

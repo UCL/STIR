@@ -182,7 +182,7 @@ public:
     void set_output_additive_estimate_prefix(std::string name);
     void set_run_debug_mode(bool debug);
     void set_restart_reconstruction_every_scatter_iteration(bool setting);
-    bool get_restart_reconstruction_every_scatter_iteration();
+    bool get_restart_reconstruction_every_scatter_iteration() const;
 
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     //inline void set_zoom_xy(float);
