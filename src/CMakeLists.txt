@@ -66,7 +66,7 @@ else()
   message(STATUS "RDF support disabled.")
 endif()
 
-if (HDF5_FOUND)
+if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
   include_directories(${HDF5_INCLUDE_DIRS})
@@ -75,7 +75,7 @@ else()
 endif()
 
 
-if (ITK_FOUND) 
+if ((NOT DISABLE_ITK) AND ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)
   include(${ITK_USE_FILE})
