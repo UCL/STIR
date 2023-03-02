@@ -33,6 +33,11 @@
 <ul>
   <li>Parallelised function <code>set_fan_data_add_gaps_help</code> across segments to reduce computation time.
   <br /><a href="https://github.com/UCL/STIR/pull/1168/">PR #1168</a>.
+  <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>InverseSSRB</code> now works for BlocksOnCylindrical after a rewrite.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
 </ul>
 
@@ -59,6 +64,9 @@
   <li>Errors now throw <code>std::runtime_error</code> instead of <code>std::string</code>.
   <br /><a href="https://github.com/UCL/STIR/pull/1131/">PR #1131</a>.
   </li>
+  <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions.
+  <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
 </ul>
 
 <h3>Build system and dependencies</h3>
@@ -79,6 +87,12 @@
 <ul>
   <li>Small change in scatter simulation to how non-arccorrected bins are computed. Added a check in the construction of non-arccorrected projdata that the number of tangential bins is not larger than the maximum non-arccorrected bins.
     <br /><a href="https://github.com/UCL/STIR/pull/1152/">PR #1152</a>.
+  </li>
+  <li><code>extend_segment_in_views</code> does not handle view offsets correctly and does not work for BlocksOnCylindrical scanners <br /><a href="https://github.com/UCL/STIR/issues/1177/">issue #1177</a>. A new function <code>extend_segment</code> was added that works for Cylindrical and BlocksOnCylindrical and allows extension in tangential and axial direction as well.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>sample_function_on_regular_grid</code> did not handle offset correctly in all places <br /><a href="https://github.com/UCL/STIR/issues/1178/">issue #1178</a>.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
 </ul>
 
