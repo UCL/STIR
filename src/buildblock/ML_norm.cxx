@@ -1360,7 +1360,11 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool
     work.fill(0);
     
 #ifdef STIR_OPENMP
-  #pragma omp parallel for schedule(dynamic)
+#  if _OPENMP >= 200711
+#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
+#  else
+#     pragma omp parallel for schedule(dynamic) // older versions
+#  endif
 #endif
     for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
         for (int a = 0; a < num_transaxial_crystals_per_block /2; ++a)
@@ -1414,7 +1418,11 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool
                 }
 
 #ifdef STIR_OPENMP
-  #pragma omp parallel for schedule(dynamic)
+#  if _OPENMP >= 200711
+#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
+#  else
+#     pragma omp parallel for schedule(dynamic) // older versions
+#  endif
 #endif
     for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
         for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
@@ -1438,7 +1446,11 @@ void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& effic
 {
   const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
 #ifdef STIR_OPENMP
-  #pragma omp parallel for schedule(dynamic)
+#  if _OPENMP >= 200711
+#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
+#  else
+#     pragma omp parallel for schedule(dynamic) // older versions
+#  endif
 #endif
   for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
