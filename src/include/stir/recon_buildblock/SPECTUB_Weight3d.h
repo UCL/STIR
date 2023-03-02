@@ -51,20 +51,25 @@ void wm_calculation( const int kOS,
 					const bool *msk_2d,
 					const int maxszb,
 					const discrf_type *const gaussdens,
-					const int *const  NITEMS
+                    const int *const  NITEMS,
+                    wm_da_type& wm,
+                    wmh_type& wmh,
+                    float * Rrad
 					);
 
 void wm_size_estimation (int kOS,
-						 const angle_type * const ang, 
-						 voxel_type vox, 
-						 bin_type bin, 
-						 const volume_type& vol, 
-						 const proj_type& prj, 
-						 const bool * const msk_3d,
-						 const bool *const msk_2d,
-						 const int maxszb,
-						 const discrf_type * const gaussdens,
-						 int *NITEMS);
+                         const angle_type * const ang,
+                         voxel_type vox,
+                         bin_type bin,
+                         const volume_type& vol,
+                         const proj_type& prj,
+                         const bool * const msk_3d,
+                         const bool *const msk_2d,
+                         const int maxszb,
+                         const discrf_type * const gaussdens,
+                         int *NITEMS,
+                         wmh_type &wmh,
+                         float *Rrad);
 
 
 //... geometric component ............................................
@@ -96,7 +101,7 @@ void calc_psf_bin ( float center_psf, float binszcm, discrf_type const * const v
 
 void calc_att_path ( const bin_type& bin, const voxel_type& vox, const volume_type& vol, attpth_type *attpth );
 
-float calc_att ( const attpth_type *const attpth, const float *const attmap, int islc );
+float calc_att (const attpth_type *const attpth, const float *const attmap, int islc , wmh_type &wmh);
 
 int comp_dist ( float dx, float dy, float dz, float dlast );
 

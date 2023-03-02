@@ -2,6 +2,7 @@
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
     Copyright (C) 2013-2014, 2019, 2020 University College London
+    Copyright (C) 2023 National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -17,6 +18,7 @@
   \author Berta Marti Fuster
   \author Carles Falcon
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 
 //#include "stir/ProjDataInterfile.h"
@@ -60,14 +62,14 @@
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 
 /* UB-SPECT global variables */
-namespace SPECTUB {
-  wm_da_type wm;
-  wmh_type wmh; 
-  float * Rrad;
-}
+//namespace SPECTUB {
+//  wm_da_type wm;
+//  wmh_type wmh;
+//  float * Rrad;
+//}
 
 START_NAMESPACE_STIR
-
+using namespace SPECTUB;
 
 const char * const 
 ProjMatrixByBinSPECTUB::registered_name =
@@ -658,7 +660,8 @@ set_up(
 
 		//... size estimations ........................................................
 
-		wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
+        wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS],
+                             wmh,Rrad );
 
 		//cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<std::endl;
 
@@ -734,7 +737,10 @@ delete_UB_SPECT_arrays()
 }
 void
 ProjMatrixByBinSPECTUB::
-compute_one_subset(const int kOS) const
+compute_one_subset(const int kOS,
+                   wm_da_type& wm,
+                   wmh_type& wmh,
+                   float * Rrad) const
 {
   using namespace SPECTUB;
 
@@ -807,7 +813,8 @@ compute_one_subset(const int kOS) const
 
   //... wm calculation for this subset ...........................
 
-  wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
+  wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS],
+                   wm, wmh, Rrad );
   info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value(),
        2);
 
@@ -868,8 +875,8 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
 	  subset_already_processed.assign(prj.NOS,false);
 	}
       info(boost::format("Computing matrix elements for view %1%") % view_num,
-        2);
-      compute_one_subset(kOS);
+        2);// potentially pass a wm, wmh[threadh] not sure if works then in setup we need an array of wmh
+      compute_one_subset(kOS,wm,wmh,Rrad);
       subset_already_processed[kOS]=true;
     }
   lor.erase();

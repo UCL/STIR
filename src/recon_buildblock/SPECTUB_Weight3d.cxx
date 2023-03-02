@@ -45,18 +45,18 @@ using namespace std;
 //=== wm_calculation =======================================================
 //==========================================================================
 
-void wm_calculation( const int kOS,
-					const angle_type *const ang, 
-					voxel_type vox, 
-				        bin_type bin, 
-					const volume_type& vol, 
-					const proj_type& prj, 
-					const float *attmap,
-					const bool *msk_3d,
-					const bool *msk_2d,
-					const int maxszb,
-					const discrf_type *const gaussdens,
-		     const int *const  NITEMS)
+void wm_calculation(const int kOS,
+                    const angle_type *const ang,
+                    voxel_type vox,
+                        bin_type bin,
+                    const volume_type& vol,
+                    const proj_type& prj,
+                    const float *attmap,
+                    const bool *msk_3d,
+                    const bool *msk_2d,
+                    const int maxszb,
+                    const discrf_type *const gaussdens,
+             const int *const  NITEMS, wm_da_type &wm, wmh_type &wmh, float *Rrad)
 {
 	
 	float weight;
@@ -232,7 +232,7 @@ void wm_calculation( const int kOS,
 						if ( !msk_3d[ vox.iv ] ) continue;
 					}
 					
-					if ( wmh.do_att && !wmh.do_full_att ) coeff_att = calc_att( &attpth[ 0 ], attmap , vox.islc );
+                    if ( wmh.do_att && !wmh.do_full_att ) coeff_att = calc_att( &attpth[ 0 ], attmap , vox.islc, wmh);
 					
 					//... weight matrix values calculation .......................................
 					
@@ -248,7 +248,7 @@ void wm_calculation( const int kOS,
 
 						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
 						
-						if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ ie ], attmap, vox.islc );
+                        if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ ie ], attmap, vox.islc, wmh );
 						
 						weight = psf.val[ ie ] * eff * coeff_att ;
                         
@@ -312,7 +312,9 @@ void wm_size_estimation (int kOS,
 						 const bool *const msk_2d,
 						 const int maxszb,
 						 const discrf_type * const gaussdens,
-						 int *NITEMS)
+                         int *NITEMS,
+                         wmh_type& wmh,
+                         float * Rrad)
 {
 	int   jp;
 	float eff;
@@ -926,7 +928,8 @@ int comp_dist( float dx,
 //=== cal_att =================================================================
 //=============================================================================
 
-float calc_att( const attpth_type *const attpth, const float *const attmap , int nsli ){
+float calc_att( const attpth_type *const attpth, const float *const attmap , int nsli,
+                wmh_type& wmh){
 	
 	float att_coef = (float)0.;
 	int iv;
