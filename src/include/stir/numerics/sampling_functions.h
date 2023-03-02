@@ -49,6 +49,10 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
                                      const BasicCoordinate<3, positionT>&  offset,  
                                      const BasicCoordinate<3, positionT>& step);
 
+template <typename elemT, typename FunctionType, typename Lambda>
+inline
+void sample_function_using_index_converter(Array<3,elemT>& out, FunctionType func, Lambda&& index_converter);
+
 END_NAMESPACE_STIR
 
 #include "stir/numerics/sampling_functions.inl"

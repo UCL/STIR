@@ -61,6 +61,12 @@ interpolate_projdata(ProjData& proj_data_out,
 		     const BasicCoordinate<3, BSpline::BSplineType> & spline_type,
 		     const bool remove_interleaving = false,
 		     const bool use_view_offset = false);
+Succeeded 
+interpolate_projdata_MJ(ProjData& proj_data_out,
+         const ProjData& proj_data_in,
+         const BasicCoordinate<3, BSpline::BSplineType> & these_types,
+         const bool remove_interleaving,
+         const bool use_view_offset);
 //@}
 
 END_NAMESPACE_STIR
