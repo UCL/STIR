@@ -212,7 +212,10 @@ class UISliderSpinboxItem:
         self.__spinbox.valueChanged.connect(self.__spinbox_connect)
 
         # Slider
-        self.__slider = QSlider(Qt.Orientation.Horizontal, groupbox)
+        try: # Qt.Orientation.Horizontal required more recent versions of PyQt
+            self.__slider = QSlider(Qt.Orientation.Horizontal, groupbox)
+        except AttributeError: # Qt.Horizontal required for PyQt version <= v5.10.1
+            self.__slider = QSlider(Qt.Horizontal, groupbox)
         self.__slider.setRange(lower_limit, upper_limit)
         self.__slider.setValue(self.__spinbox.value())
         self.__slider.setTickPosition(QSlider.TicksBelow)
