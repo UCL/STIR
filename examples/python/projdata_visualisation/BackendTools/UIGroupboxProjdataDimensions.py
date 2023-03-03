@@ -58,7 +58,7 @@ class UIGroupboxProjDataDimensions:
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
 
-    def set_UI_connect_methods(self, methods: [list[callable], callable]) -> None:
+    def set_UI_connect_methods(self, methods: list or callable) -> None:
         """
         Sets the external connect methods for the UI.
         Pass methods in a list of callable objects. These methods will be called when the UI is changed in order.
@@ -169,7 +169,7 @@ class UIGroupboxProjDataDimensions:
         """Disables the slider and spinbox for the given dimension."""
         self.UI_slider_spinboxes[dimension].disable()
 
-    def get_limits(self, dimension: ProjDataDims) -> tuple[int, int]:
+    def get_limits(self, dimension: ProjDataDims) -> tuple:
         """Returns the limits of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].get_limits()
 
@@ -250,7 +250,7 @@ class UISliderSpinboxItem:
         self.__spinbox.setValue(value)
         self.__slider.setValue(value)
 
-    def get_limits(self) -> (int, int):
+    def get_limits(self) -> tuple:
         """Returns the range (min, max) of the spinbox and slider."""
         return self.__spinbox.minimum(), self.__spinbox.maximum()
 
@@ -258,7 +258,7 @@ class UISliderSpinboxItem:
         """Returns the value of the spinbox. Expected to be equal to slider value."""
         return self.__spinbox.value()
 
-    def create_label_str(self, limits: tuple[int, int]) -> str:
+    def create_label_str(self, limits: tuple) -> str:
         """Returns the label string."""
         return f"{self.__label_str} {limits}"
 
