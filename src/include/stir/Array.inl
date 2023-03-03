@@ -403,8 +403,6 @@ void Array<num_dimensions, elemT>::
  inlines for Array<1, elemT>
  **********************************************/
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
 template <class elemT>
 void
 Array<1, elemT>::resize(const int min_index, const int max_index) 
@@ -751,12 +749,5 @@ elemT& Array<1,elemT>::at (const BasicCoordinate<1,int>& c)
 {
   return (*this).at(c[1]);
 };   
-               
-
-#else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
-// inline definitions are in Array1d.h
-
-#endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 END_NAMESPACE_STIR

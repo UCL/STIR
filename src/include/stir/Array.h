@@ -265,8 +265,6 @@ inline void sapyb(const T &a,
  (partial) specialisation for 1 dimensional arrays
  **************************************************/
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
 //! The 1-dimensional (partial) specialisation of Array. 
 template <class elemT>
 class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
@@ -445,36 +443,6 @@ public:
   //@}
 };
 
-
-#else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
-/* 
-  If the compiler does not support partial template specialisation, 
-  we resort to multiple definitions of the class, for specific
-  types of elemT.
-  This of course means that if you want to use Array<n,elemT> for 'elemT'
-  anything else then the types used defined here, you'll have to add 
-  similar repetitions yourself...
-  Currently supported for signed char, float, int, short, unsigned short
-  */
-#define elemT signed char
-#include "stir/Array1d.h"
-#define elemT short
-#include "stir/Array1d.h"
-#define elemT unsigned short
-#include "stir/Array1d.h"
-#define elemT int
-#include "stir/Array1d.h"
-#define elemT float
-#include "stir/Array1d.h"
-END_NAMESPACE_STIR
-#include <complex>
-START_NAMESPACE_STIR
-#define __stir_Array1d_no_comparisons__
-#define elemT std::complex<float>
-#include "stir/Array1d.h"
-#undef elemT
-#endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 END_NAMESPACE_STIR
 
