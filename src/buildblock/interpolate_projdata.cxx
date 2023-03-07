@@ -192,9 +192,8 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
 
   // initialise interpolator
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
-  shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr = make_non_interleaved_proj_data_info(proj_data_in_info);
   Array<3, float> extended = remove_interleaving ? 
-    make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr, proj_data_in.get_segment_by_sinogram(0)) :
+    make_non_interleaved_segment(*(make_non_interleaved_proj_data_info(proj_data_in_info)), proj_data_in.get_segment_by_sinogram(0)) :
     proj_data_in.get_segment_by_sinogram(0);
 
   // extending the projection data by 2 was found to reduce interpolation artefacts by a factor of 1000
