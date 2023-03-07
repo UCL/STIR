@@ -161,7 +161,7 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, cons
   BasicCoordinate<3, BSpline::BSplineType> these_types_3;
   these_types_3[1] = these_types_3[2] = these_types_3[3] = these_types;
 
-  interpolate_projdata_MJ(proj_data_out, proj_data_in, these_types_3, remove_interleaving, use_view_offset);
+  interpolate_projdata(proj_data_out, proj_data_in, these_types_3, remove_interleaving, use_view_offset);
   return Succeeded::yes;
 }
 
@@ -169,115 +169,6 @@ Succeeded
 interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
                      const BasicCoordinate<3, BSpline::BSplineType>& these_types, const bool remove_interleaving,
                      const bool use_view_offset)
-{
-
-  if (use_view_offset)
-    warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
-
-  const ProjDataInfo& proj_data_in_info = *proj_data_in.get_proj_data_info_sptr();
-  const ProjDataInfo& proj_data_out_info = *proj_data_out.get_proj_data_info_sptr();
-
-  if (typeid(proj_data_in_info) != typeid(proj_data_out_info))
-    {
-      error("interpolate_projdata needs both projection data  to be of the same type\n"
-            "(e.g. both arc-corrected or both not arc-corrected)");
-    }
-
-  if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry() == "BlocksOnCylindrical")
-    {
-      interpolate_axial_position(proj_data_out, proj_data_in);
-      return Succeeded::yes;
-    }
-  // check for the same ring radius
-  // This is strictly speaking only necessary for non-arccorrected data, but
-  // we leave it in for all cases.
-  if (fabs(proj_data_in_info.get_scanner_ptr()->get_inner_ring_radius()
-           - proj_data_out_info.get_scanner_ptr()->get_inner_ring_radius())
-      > 1)
-    {
-      error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
-    }
-
-  BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
-  BasicCoordinate<3, double> offset, step;
-
-  // find relation between out_index and in_index such that they correspond to the same physical position
-  // out_index * m_zoom + m_offset = in_index
-  const float in_sampling_m = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
-  const float out_sampling_m = proj_data_out_info.get_sampling_in_m(Bin(0, 0, 0, 0));
-  // offset in 'in' index units
-  offset[1] = (proj_data_in_info.get_m(Bin(0, 0, 0, 0)) - proj_data_out_info.get_m(Bin(0, 0, 0, 0))) / in_sampling_m;
-  step[1] = out_sampling_m / in_sampling_m;
-
-  const float in_sampling_phi
-      = (proj_data_in_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_in_info.get_phi(Bin(0, 0, 0, 0))) / (remove_interleaving ? 2 : 1);
-
-  const float out_sampling_phi = proj_data_out_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_out_info.get_phi(Bin(0, 0, 0, 0));
-
-  const float out_view_offset = use_view_offset ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
-  const float in_view_offset = use_view_offset ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
-  offset[2] = (proj_data_in_info.get_phi(Bin(0, 0, 0, 0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0, 0, 0, 0))
-               - out_view_offset)
-              / in_sampling_phi;
-  step[2] = out_sampling_phi / in_sampling_phi;
-
-  const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(0, 0, 0, 0));
-  const float out_sampling_s = proj_data_out_info.get_sampling_in_s(Bin(0, 0, 0, 0));
-  offset[3] = (proj_data_out_info.get_s(Bin(0, 0, 0, 0)) - proj_data_in_info.get_s(Bin(0, 0, 0, 0))) / in_sampling_s;
-  step[3] = out_sampling_s / in_sampling_s;
-
-  // initialise interpolator
-  if (remove_interleaving)
-    {
-      shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr = make_non_interleaved_proj_data_info(proj_data_in_info);
-
-      const SegmentBySinogram<float> non_interleaved_segment
-          = make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr, proj_data_in.get_segment_by_sinogram(0));
-      //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
-      Array<3, float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2);
-      for (int z = extended.get_min_index(); z <= extended.get_max_index(); ++z)
-        {
-          for (int y = extended[z].get_min_index(); y <= extended[z].get_max_index(); ++y)
-            {
-              const int old_min = extended[z][y].get_min_index();
-              const int old_max = extended[z][y].get_max_index();
-              extended[z][y].grow(old_min - 1, old_max + 1);
-              extended[z][y][old_min - 1] = extended[z][y][old_min];
-              extended[z][y][old_max + 1] = extended[z][y][old_max];
-            }
-        }
-      proj_data_interpolator.set_coef(extended);
-    }
-  else
-    {
-      Array<3, float> extended = extend_segment_in_views(proj_data_in.get_segment_by_sinogram(0), 2, 2);
-      for (int z = extended.get_min_index(); z <= extended.get_max_index(); ++z)
-        {
-          for (int y = extended[z].get_min_index(); y <= extended[z].get_max_index(); ++y)
-            {
-              const int old_min = extended[z][y].get_min_index();
-              const int old_max = extended[z][y].get_max_index();
-              extended[z][y].grow(old_min - 1, old_max + 1);
-              extended[z][y][old_min - 1] = extended[z][y][old_min];
-              extended[z][y][old_max + 1] = extended[z][y][old_max];
-            }
-        }
-      proj_data_interpolator.set_coef(extended);
-    }
-
-  // now do interpolation
-  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0);
-  sample_function_on_regular_grid(sino_3D_out, proj_data_interpolator, offset, step);
-
-  if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
-    return Succeeded::no;
-  return Succeeded::yes;
-}
-
-Succeeded
-interpolate_projdata_MJ(ProjData& proj_data_out, const ProjData& proj_data_in,
-                        const BasicCoordinate<3, BSpline::BSplineType>& these_types, const bool remove_interleaving,
-                        const bool use_view_offset)
 {
 
   if (use_view_offset)
@@ -301,9 +192,13 @@ interpolate_projdata_MJ(ProjData& proj_data_out, const ProjData& proj_data_in,
 
   // initialise interpolator
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
-  Array<3, float> extended = proj_data_in.get_segment_by_sinogram(0);
+  shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr = make_non_interleaved_proj_data_info(proj_data_in_info);
+  Array<3, float> extended = remove_interleaving ? 
+    make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr, proj_data_in.get_segment_by_sinogram(0)) :
+    proj_data_in.get_segment_by_sinogram(0);
 
-  int extension = 3;
+  // extending the projection data by 2 was found to reduce interpolation artefacts by a factor of 1000
+  const int extension = 2;
   BasicCoordinate<3,int> min_dim, max_dim;
   min_dim[1] = extended.get_min_index() - extension; // axial bins
   min_dim[2] = extended[0].get_min_index() - extension; // view bins
@@ -323,8 +218,8 @@ interpolate_projdata_MJ(ProjData& proj_data_out, const ProjData& proj_data_in,
   { // for the views, we fill by wrapping around
     for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
     {
-      extended[axial_pos][min_dim[2] + view_edge] = extended[axial_pos][max_dim[2] - view_edge];
-      extended[axial_pos][max_dim[2] - view_edge] = extended[axial_pos][min_dim[2] + view_edge];
+      extended[axial_pos][min_dim[2] + view_edge] = extended[axial_pos][max_dim[2] - extension - view_edge];
+      extended[axial_pos][max_dim[2] - view_edge] = extended[axial_pos][min_dim[2] + extension + view_edge];
     }
   }
   for (int tang_edge = 0; tang_edge < extension; tang_edge++)
@@ -366,13 +261,13 @@ interpolate_projdata_MJ(ProjData& proj_data_out, const ProjData& proj_data_in,
     step[3] = out_sampling_s / in_sampling_s;
 
     // define a function to translate indices in the output proj data to indices in input proj data
-    index_converter = [&proj_data_out_info, offset, step, remove_interleaving](const BasicCoordinate<3, int>& index_out) 
+    index_converter = [&proj_data_out_info, offset, step](const BasicCoordinate<3, int>& index_out) 
         -> BasicCoordinate<3, double>
     {
       // translate to indices in input proj data
       BasicCoordinate<3, double> index_in;
       for (auto dim = 1; dim <= 3; dim++)
-        index_in[dim] = (index_out[dim] - offset[dim]) / step[dim];
+        index_in[dim] = index_out[dim] * step[dim] + offset[dim];
 
       return index_in;
     };
@@ -383,7 +278,7 @@ interpolate_projdata_MJ(ProjData& proj_data_out, const ProjData& proj_data_in,
     auto m_sampling = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
 
     // define a function to translate indices in the output proj data to indices in input proj data
-    index_converter = [&proj_data_out_info, m_offset, m_sampling, remove_interleaving](const BasicCoordinate<3, int>& index_out) 
+    index_converter = [&proj_data_out_info, m_offset, m_sampling](const BasicCoordinate<3, int>& index_out) 
         -> BasicCoordinate<3, double>
     {
       // translate index on output to coordinate
