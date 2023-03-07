@@ -242,7 +242,7 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
     const float in_sampling_m = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
     const float out_sampling_m = proj_data_out_info.get_sampling_in_m(Bin(0, 0, 0, 0));
     // offset in 'in' index units
-    offset[1] = (proj_data_in_info.get_m(Bin(0, 0, 0, 0)) - proj_data_out_info.get_m(Bin(0, 0, 0, 0))) / in_sampling_m;
+    offset[1] = (proj_data_out_info.get_m(Bin(0, 0, 0, 0)) - proj_data_in_info.get_m(Bin(0, 0, 0, 0))) / in_sampling_m;
     step[1] = out_sampling_m / in_sampling_m;
 
     const float in_sampling_phi
@@ -250,8 +250,8 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
     const float out_sampling_phi = proj_data_out_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_out_info.get_phi(Bin(0, 0, 0, 0));
     const float out_view_offset = use_view_offset ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
     const float in_view_offset = use_view_offset ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
-    offset[2] = (proj_data_in_info.get_phi(Bin(0, 0, 0, 0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0, 0, 0, 0))
-                  - out_view_offset) / in_sampling_phi;
+    offset[2] = (proj_data_out_info.get_phi(Bin(0, 0, 0, 0)) + out_view_offset - proj_data_in_info.get_phi(Bin(0, 0, 0, 0))
+                  - in_view_offset) / in_sampling_phi;
     step[2] = out_sampling_phi / in_sampling_phi;
 
     const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(0, 0, 0, 0));
