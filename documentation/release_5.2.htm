@@ -7,7 +7,7 @@
   <body>
     <h1>Summary of changes in STIR release 5.2</h1>
 
-<p>This version is 100% backwards compatible with STIR 5.0.
+<p>This version is 100% backwards compatible with STIR 5.0. However, there is a <b> change in the output of scatter estimation<b>, see below for more information.
 </p>
 <h2>Overall summary</h2>
 
@@ -26,10 +26,7 @@
 
 <h3>Bug fixes</h3>
 <ul>
-  <li>Scatter estimation was setting initial activity image to 1 at set_up and during each iteration. This led to cases where the scatter estimation would not converge.
-    <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>. Now, this is disabled by default, but can be re-enabled by setting <code>restart_reconstruction_every_scatter_iteration</code>
-    to true either via a parameter file or via the <code>set_restart_reconstruction_every_scatter_iteration()</code> function.
-  </li>
+<li>Scatter estimation was setting initial activity image to 1 at set-up, effectively ignoring the initial image, aside from geometric info.</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -46,6 +43,13 @@
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>Scatter estimation was resetting the  activity image to 1 before each iteration. This led to cases where the reconstructed image (and therefore the scatter estimation)
+  did not converge, especially when using a small number of sub-iterations.
+   Now, the reconstructed image is continuouslu updated between scatter iterations by default. This should also allow users to use less sub-iterations, therefore saving some time for the scatter estimation.
+   The old behaviour can be re-enabled by setting <code>restart_reconstruction_every_scatter_iteration</code>
+   to true either via a parameter file or via the <code>set_restart_reconstruction_every_scatter_iteration()</code> function.
+   <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>. 
+  </li>
   <li>energy resolution functions and keywords have now more documentation. <code>Scanner::check_consistency</code> also checks if the energy resolution is less than 20 (as it is FWHM/reference_energy).
   <br /><a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.
   </li>
