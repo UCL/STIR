@@ -68,8 +68,8 @@
 //  float * Rrad;
 //}
 
-START_NAMESPACE_STIR
 using namespace SPECTUB;
+START_NAMESPACE_STIR
 
 const char * const 
 ProjMatrixByBinSPECTUB::registered_name =
@@ -249,8 +249,6 @@ set_up(
       set_num_threads(1);
     }
 #endif
-
-  using namespace SPECTUB;
 
    const VoxelsOnCartesianGrid<float> * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
@@ -689,7 +687,6 @@ delete_UB_SPECT_arrays()
   if (!this->already_setup)
     return;
   //... freeing matrix memory....................................
-  using namespace SPECTUB;
   delete [] Rrad;
 
   if ( !wmh.do_psf ){
@@ -738,11 +735,8 @@ delete_UB_SPECT_arrays()
 void
 ProjMatrixByBinSPECTUB::
 compute_one_subset(const int kOS,
-                   wm_da_type& wm,
-                   wmh_type& wmh,
                    float * Rrad) const
 {
-  using namespace SPECTUB;
 
   CPUTimer timer;
   timer.start();
@@ -750,12 +744,12 @@ compute_one_subset(const int kOS,
 
   //... to fill wmh fields related to the subset ..................................
 
-  wmh.subset_ind = kOS;
+  this->wmh.subset_ind = kOS;
 
   for ( int i = 0 ; i < prj.NangOS ; i ++ ){
 
-    wmh.index[ i ] = prj.order[ i + kOS * prj.NangOS ];
-    wmh.Rrad [ i ] = Rrad[ wmh.index[ i ] ];
+    this->wmh.index[ i ] = prj.order[ i + kOS * prj.NangOS ];
+    this->wmh.Rrad [ i ] = Rrad[ this->wmh.index[ i ] ];
   }
 
   //... NITEMS initialization  ......................
@@ -771,26 +765,26 @@ compute_one_subset(const int kOS,
 
   int ne = 0;
 
-  for ( int i = 0 ; i < wmh.prj.NbOS ; i++ ) ne += NITEMS[kOS][ i ];
+  for ( int i = 0 ; i < this->wmh.prj.NbOS ; i++ ) ne += NITEMS[kOS][ i ];
 
   //... size information ....................................................................
 
   info(boost::format("total number of non-zero weights in this view: %1%, estimated size: %2% MB") 
        % ne
-       % ( wm.do_save_STIR ?  (ne + 10* prj.NbOS)/104857.6 : ne/131072),
+       % ( this->wm.do_save_STIR ?  (ne + 10* prj.NbOS)/104857.6 : ne/131072),
        2);
 
   //... memory allocation for wm float arrays ...................................
 
-  for( int i = 0 ; i < wmh.prj.NbOS ; i++ ){
+  for( int i = 0 ; i < this->wmh.prj.NbOS ; i++ ){
 
-    if ( ( wm.val[ i ] = new (std::nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( this->wm.val[ i ] = new (std::nothrow) float [ NITEMS[kOS][ i ] ]) == NULL)
       {
         //error_wm_SPECT( 200, "wm.val[][]" );
         error("Error allocating space to store values for SPECTUB matrix");
       }
 
-    if ( ( wm.col[ i ] = new (std::nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) 
+    if ( ( this->wm.col[ i ] = new (std::nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL)
       {
         //error_wm_SPECT( 200, "wm.col[]" );
         error("Error allocating space to store column indices for SPECTUB matrix");
@@ -799,47 +793,47 @@ compute_one_subset(const int kOS,
 
   //... to initialize wm to zero ......................
 
-  for ( int i = 0 ; i < wm.NbOS ; i++ ){
+  for ( int i = 0 ; i < this->wm.NbOS ; i++ ){
 
-    wm.ne[ i ] = 0;
+    this->wm.ne[ i ] = 0;
 
     for( int j = 0 ; j < NITEMS[kOS][ i ] ; j++ ){
 
-      wm.val[ i ][ j ] = (float)0.;
-      wm.col[ i ][ j ] = 0;
+      this->wm.val[ i ][ j ] = (float)0.;
+      this->wm.col[ i ][ j ] = 0;
     }
   }
-  wm.ne[ wm.NbOS ] = 0;
+  this->wm.ne[ this->wm.NbOS ] = 0;
 
   //... wm calculation for this subset ...........................
 
   wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS],
-                   wm, wmh, Rrad );
+                   this->wm, this->wmh, Rrad );
   info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value(),
        2);
 
   //... fill lor .........................
 
-  for( int j = 0 ; j < wm.NbOS ; j++ ){
+  for( int j = 0 ; j < this->wm.NbOS ; j++ ){
     ProjMatrixElemsForOneBin lor;
     Bin bin;
     bin.segment_num()=0;	
-    bin.view_num()=wm.na [ j ];	
-    bin.axial_pos_num()=wm.ns [ j ];	
-    bin.tangential_pos_num()=wm.nb [ j ];	
+    bin.view_num()=this->wm.na [ j ];
+    bin.axial_pos_num()=this->wm.ns [ j ];
+    bin.tangential_pos_num()=this->wm.nb [ j ];
     bin.set_bin_value(0);
     lor.set_bin(bin);
 
-    lor.reserve(wm.ne[ j ]);
-    for ( int i = 0 ; i < wm.ne[ j ] ; i++ ){
+    lor.reserve(this->wm.ne[ j ]);
+    for ( int i = 0 ; i < this->wm.ne[ j ] ; i++ ){
 
       const ProjMatrixElemsForOneBin::value_type 
-        elem(Coordinate3D<int>(wm.nz[ wm.col[ j ][ i ] ],wm.ny[ wm.col[ j ][ i ] ],wm.nx[ wm.col[ j ][ i ] ]), wm.val[ j ][ i ]);      
+        elem(Coordinate3D<int>(this->wm.nz[ this->wm.col[ j ][ i ] ],this->wm.ny[ this->wm.col[ j ][ i ] ],this->wm.nx[ this->wm.col[ j ][ i ] ]), this->wm.val[ j ][ i ]);
       lor.push_back( elem);	
     }
 
-    delete [] wm.val[ j ];
-    delete [] wm.col[ j ];
+    delete [] this->wm.val[ j ];
+    delete [] this->wm.col[ j ];
 
     this->cache_proj_matrix_elems_for_one_bin(lor);
   }
@@ -876,7 +870,7 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
 	}
       info(boost::format("Computing matrix elements for view %1%") % view_num,
         2);// potentially pass a wm, wmh[threadh] not sure if works then in setup we need an array of wmh
-      compute_one_subset(kOS,wm,wmh,Rrad);
+      compute_one_subset(kOS,Rrad);
       subset_already_processed[kOS]=true;
     }
   lor.erase();

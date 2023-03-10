@@ -46,16 +46,16 @@ using namespace std;
 //==========================================================================
 
 void wm_calculation(const int kOS,
-                    const angle_type *const ang,
+                    const angle_type * const ang,
                     voxel_type vox,
                         bin_type bin,
-                    const volume_type& vol,
+                    const volume_type &vol,
                     const proj_type& prj,
                     const float *attmap,
                     const bool *msk_3d,
                     const bool *msk_2d,
                     const int maxszb,
-                    const discrf_type *const gaussdens,
+                    const discrf_type * const gaussdens,
              const int *const  NITEMS, wm_da_type &wm, wmh_type &wmh, float *Rrad)
 {
 	
@@ -174,7 +174,7 @@ void wm_calculation(const int kOS,
 				
 				//... to project voxels onto the detection plane and to calculate other distances .....
 				
-                voxel_projection( &vox , &eff , prj.lngcmd2 );
+                voxel_projection( &vox , &eff , prj.lngcmd2, wmh );
 				
 				//... setting PSF to zero	.........................................	
 				
@@ -186,13 +186,13 @@ void wm_calculation(const int kOS,
 				
 				//... correction for PSF ..............................
 				
-				if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx );
+                if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx, wmh);
 				
 				else{
 					
-					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
+                    if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2, wmh );
 					
-					else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx );
+                    else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx, wmh);
 				}
 				
 				//... correction for attenuation .................................................
@@ -382,7 +382,7 @@ void wm_size_estimation (int kOS,
 				
 				//... to project voxels onto the detection plane and to calculate other distances .....
 				
-                voxel_projection( &vox , &eff , prj.lngcmd2 );
+                voxel_projection( &vox , &eff , prj.lngcmd2, wmh);
 				
 				//... setting PSF to zero	.........................................	
 				
@@ -393,13 +393,13 @@ void wm_size_estimation (int kOS,
 				
 				//... correction for PSF ..............................	
 				
-				if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx );
+                if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx, wmh);
 				
 				else{
 					
-					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
+                    if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2, wmh );
 					
-					else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx );
+                    else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx, wmh);
 				}
 
 				
@@ -528,7 +528,7 @@ void calc_vxprj( angle_type *ang )
 //=== voxel_projection =====================================================
 //==========================================================================
 
-void voxel_projection ( voxel_type *vox, float * eff, float lngcmd2)
+void voxel_projection ( voxel_type *vox, float * eff, float lngcmd2, wmh_type &wmh)
 {
 	
 	if ( wmh.COL.do_fb ){				// fan_beam
@@ -559,7 +559,12 @@ void voxel_projection ( voxel_type *vox, float * eff, float lngcmd2)
 //=== fill_psf_no ==========================================================
 //==========================================================================
 
-void fill_psf_no( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox, angle_type const *const ang , float szdx )
+void fill_psf_no( psf2da_type *psf,
+                  psf1d_type * psf1d_h,
+                  const voxel_type& vox,
+                  angle_type const *const ang ,
+                  float szdx,
+                  wmh_type &wmh)
 {
 	psf1d_h->sgmcm   = vox.szcm;
 
@@ -573,7 +578,7 @@ void fill_psf_no( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox,
 	psf1d_h->lngcmd2 = psf1d_h->lngcm / (float)2.;
 	psf1d_h->efres   = ang->vxprj.res * psf1d_h->sgmcm;  // to resize discretization resolution once applied sgmcm
 	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, &ang->vxprj, psf1d_h );
+    calc_psf_bin( vox.xd0, wmh.prj.szcm, &ang->vxprj, psf1d_h, wmh);
     
     for ( int ie = 0 ; ie < psf1d_h->Nib ; ie++ ){
         
@@ -588,7 +593,7 @@ void fill_psf_no( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox,
 //=== fill_psf_2d ==========================================================
 //==========================================================================
 
-void fill_psf_2d( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox, discrf_type const* const gaussdens, float szdx )
+void fill_psf_2d( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox, discrf_type const* const gaussdens, float szdx,wmh_type &wmh )
 {
  
     psf1d_h->sgmcm   = calc_sigma_h( vox, wmh.COL );
@@ -599,7 +604,7 @@ void fill_psf_2d( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox,
 	
 	psf1d_h->efres   = gaussdens->res * psf1d_h->sgmcm ;
 	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h );
+    calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h, wmh);
     
     for ( int ie = 0 ; ie < psf1d_h->Nib ; ie++ ){
         
@@ -618,7 +623,10 @@ void fill_psf_2d( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox,
 void fill_psf_3d (psf2da_type *psf,
                   psf1d_type *psf1d_h,
                   psf1d_type *psf1d_v,
-                  const voxel_type& vox, discrf_type const * const gaussdens, float szdx, float thdx, float thcmd2 )
+                  const voxel_type& vox,
+                  discrf_type const * const gaussdens,
+                  float szdx, float thdx, float thcmd2,
+                  SPECTUB::wmh_type &wmh)
 {
 	
 	//... horizontal component ...........................
@@ -638,7 +646,7 @@ void fill_psf_3d (psf2da_type *psf,
 	
 	//... calculation of the horizontal component of psf ...................
 	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h );
+    calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h, wmh);
 
 	//... vertical component ..............................
 	
@@ -657,7 +665,7 @@ void fill_psf_3d (psf2da_type *psf,
 	
 	//... calculation of the vertical component of psf ....................
 	
-	calc_psf_bin( thcmd2, wmh.prj.thcm, gaussdens, psf1d_v );
+    calc_psf_bin( thcmd2, wmh.prj.thcm, gaussdens, psf1d_v, wmh);
 	
     //... mixing and setting PSF area to 1 (to correct for tail truncation of Gaussian function) .....
 	
@@ -701,7 +709,8 @@ void fill_psf_3d (psf2da_type *psf,
 void calc_psf_bin (float center_psf,
 				   float binszcm,
 				   discrf_type const * const vxprj,
-				   psf1d_type *psf)
+                   psf1d_type *psf,
+                   SPECTUB::wmh_type &wmh)
 {
 	float weight, preval;
 
