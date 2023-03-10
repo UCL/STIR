@@ -197,7 +197,7 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
     proj_data_in.get_segment_by_sinogram(0);
 
   // extending the projection data by 2 was found to reduce interpolation artefacts by a factor of 1000
-  const int extension = 2;
+  const int extension = 5;
   BasicCoordinate<3,int> min_dim, max_dim;
   min_dim[1] = extended.get_min_index() - extension; // axial bins
   min_dim[2] = extended[0].get_min_index() - extension; // view bins
@@ -217,8 +217,33 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
   { // for the views, we fill by wrapping around
     for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
     {
-      extended[axial_pos][min_dim[2] + view_edge] = extended[axial_pos][max_dim[2] - extension - view_edge];
-      extended[axial_pos][max_dim[2] - view_edge] = extended[axial_pos][min_dim[2] + extension + view_edge];
+      // if views cover 360°, we can simply wrap around
+      // TODO: does this check work in the presence of a view offset?
+      if (abs(proj_data_in_info.get_phi(Bin(0, proj_data_in_info.get_max_view_num(), 0, 0)) - 
+              proj_data_in_info.get_phi(Bin(0, proj_data_in_info.get_min_view_num(), 0, 0))) > M_PI)
+      {
+        extended[axial_pos][min_dim[2] + view_edge] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1];
+        extended[axial_pos][max_dim[2] - extension + 1 + view_edge] = extended[axial_pos][min_dim[2] + extension + view_edge];
+      }
+      else
+      { // if views cover 180°, the tangential positions need to be flipped
+        const int sym_dim = std::min(abs(min_dim[3]), max_dim[3]);
+        for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
+        {
+          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][-tang_pos];
+          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][-tang_pos];
+        }
+        for (int tang_pos = min_dim[3]; tang_pos < -sym_dim; tang_pos++)
+        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
+          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][sym_dim];
+          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][sym_dim];
+        }
+        for (int tang_pos = max_dim[3]; tang_pos > sym_dim; tang_pos--)
+        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
+          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][-sym_dim];
+          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][-sym_dim];
+        }
+      }
     }
   }
   for (int tang_edge = 0; tang_edge < extension; tang_edge++)

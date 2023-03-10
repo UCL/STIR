@@ -75,12 +75,6 @@ inverse_SSRB(ProjData& proj_data_4D,
 	     out_segment_num <= proj_data_4D.get_max_segment_num();
 	     ++out_segment_num)
   {
-    if (out_segment_num == 0) // the direct segment can simply be copied across
-    {
-      proj_data_4D.set_segment(proj_data_3D.get_segment_by_sinogram(0));
-      continue;
-    }
-
     for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num); 
         out_ax_pos_num <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
         ++out_ax_pos_num )
@@ -90,16 +84,18 @@ inverse_SSRB(ProjData& proj_data_4D,
                             get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
               
       // Go through all direct sinograms to check which pair are closest.
-      // We can skip the last slices because axial slices in oblique segments
-      // are always inside the boundaries of the direct segment.
       bool sinogram_set = false;
-      for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0) + 1; 
-           in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0) - 1;
+      for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); 
+           in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
            ++in_ax_pos_num)
       {
-        const auto distance_to_previous = abs(out_m - in_m.at(in_ax_pos_num - 1));
+        // for the very first slice there is no previous
+        const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0) ? 
+                                          std::numeric_limits<float>::max() : abs(out_m - in_m.at(in_ax_pos_num - 1));
         const auto distance_to_current = abs(out_m - in_m.at(in_ax_pos_num));
-        const auto distance_to_next = abs(out_m - in_m.at(in_ax_pos_num + 1));
+        // for the very last slice there is no next
+        const auto distance_to_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ? 
+                                      std::numeric_limits<float>::max() : abs(out_m - in_m.at(in_ax_pos_num + 1));
         if (distance_to_current <= distance_to_previous && 
             distance_to_current <= distance_to_next)
         {
