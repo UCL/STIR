@@ -192,76 +192,16 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
 
   // initialise interpolator
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
-  Array<3, float> extended = remove_interleaving ? 
+  SegmentBySinogram<float> segment = remove_interleaving ? 
     make_non_interleaved_segment(*(make_non_interleaved_proj_data_info(proj_data_in_info)), proj_data_in.get_segment_by_sinogram(0)) :
     proj_data_in.get_segment_by_sinogram(0);
-
-  // extending the projection data by 2 was found to reduce interpolation artefacts by a factor of 1000
-  const int extension = 5;
-  BasicCoordinate<3,int> min_dim, max_dim;
-  min_dim[1] = extended.get_min_index() - extension; // axial bins
-  min_dim[2] = extended[0].get_min_index() - extension; // view bins
-  min_dim[3] = extended[0][0].get_min_index() - extension; // transaxial bins
-  max_dim[1] = extended.get_max_index() + extension;
-  max_dim[2] = extended[0].get_max_index() + extension;
-  max_dim[3] = extended[0][0].get_max_index() + extension;
-  extended.grow(IndexRange<3>(min_dim, max_dim));
-
-  // now that the input proj data have been extended, fill the new entries
-  for (int axial_edge = 0; axial_edge < extension; axial_edge++)
-  { // axially, we fill with the same entries from the border
-    extended[min_dim[1] + axial_edge] = extended[min_dim[1] + extension];
-    extended[max_dim[1] - axial_edge] = extended[max_dim[1] - extension];
-  }
-  for (int view_edge = 0; view_edge < extension; view_edge++)
-  { // for the views, we fill by wrapping around
-    for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
-    {
-      // if views cover 360°, we can simply wrap around
-      // TODO: does this check work in the presence of a view offset?
-      if (abs(proj_data_in_info.get_phi(Bin(0, proj_data_in_info.get_max_view_num(), 0, 0)) - 
-              proj_data_in_info.get_phi(Bin(0, proj_data_in_info.get_min_view_num(), 0, 0))) > M_PI)
-      {
-        extended[axial_pos][min_dim[2] + view_edge] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1];
-        extended[axial_pos][max_dim[2] - extension + 1 + view_edge] = extended[axial_pos][min_dim[2] + extension + view_edge];
-      }
-      else
-      { // if views cover 180°, the tangential positions need to be flipped
-        const int sym_dim = std::min(abs(min_dim[3]), max_dim[3]);
-        for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
-        {
-          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][-tang_pos];
-          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][-tang_pos];
-        }
-        for (int tang_pos = min_dim[3]; tang_pos < -sym_dim; tang_pos++)
-        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
-          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][sym_dim];
-          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][sym_dim];
-        }
-        for (int tang_pos = max_dim[3]; tang_pos > sym_dim; tang_pos--)
-        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
-          extended[axial_pos][min_dim[2] + view_edge][tang_pos] = extended[axial_pos][max_dim[2] - 2 * extension + view_edge + 1][-sym_dim];
-          extended[axial_pos][max_dim[2] - extension + 1 + view_edge][tang_pos] = extended[axial_pos][min_dim[2] + extension + view_edge][-sym_dim];
-        }
-      }
-    }
-  }
-  for (int tang_edge = 0; tang_edge < extension; tang_edge++)
-  { // tangentially, we fill with the same entries from the border
-    for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
-    {
-      for (int view = min_dim[2]; view <= max_dim[2]; view++)
-      {
-        extended[axial_pos][view][min_dim[3] + tang_edge] = extended[axial_pos][view][min_dim[3] + extension];
-        extended[axial_pos][view][max_dim[3] - tang_edge] = extended[axial_pos][view][max_dim[3] - extension];
-      }
-    }
-  }
-  proj_data_interpolator.set_coef(extended);
 
   std::function<BasicCoordinate<3, double> (const BasicCoordinate<3, int>&)> index_converter;
   if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
   { // for Cylindrical, spacing is regular in all directions, which makes mapping trivial
+    // especially in view direction, extending by 5 leads to much smaller artifacts
+    proj_data_interpolator.set_coef(extend_segment(segment, 5, 5, 5));
+
     BasicCoordinate<3, double> offset, step;
     // out_index * step + offset = in_index
     const float in_sampling_m = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
@@ -298,6 +238,9 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
   }
   else
   { // for BlocksOnCylindrical, views and tangential positions are not subsampled and can be mapped 1:1
+    // only extending in axial direction - an extension of 2 was found to be sufficient
+    proj_data_interpolator.set_coef(extend_segment(segment, 0, 2, 0));
+
     auto m_offset = proj_data_in_info.get_m(Bin(0, 0, 0, 0));
     auto m_sampling = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
 

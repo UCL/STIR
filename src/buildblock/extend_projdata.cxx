@@ -145,6 +145,77 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
   return out;
 }
 
+Array<3,float>
+extend_segment(const SegmentBySinogram<float>& segment, const int view_extension,
+               const int axial_extension, const int tangential_extension)
+{
+  Array<3,float> out(segment);
+  BasicCoordinate<3,int> min_dim, max_dim;
+  min_dim[1] = segment.get_min_index() - axial_extension;
+  min_dim[2] = segment[0].get_min_index() - view_extension;
+  min_dim[3] = segment[0][0].get_min_index() - tangential_extension;
+  max_dim[1] = segment.get_max_index() + axial_extension;
+  max_dim[2] = segment[0].get_max_index() + view_extension;
+  max_dim[3] = segment[0][0].get_max_index() + tangential_extension;
+  out.grow(IndexRange<3>(min_dim, max_dim));
+
+  // fill the axial extensions with the same entries from the border
+  for (int axial_edge = 0; axial_edge < axial_extension; axial_edge++)
+  {
+    out[min_dim[1] + axial_edge] = out[min_dim[1] + axial_extension];
+    out[max_dim[1] - axial_edge] = out[max_dim[1] - axial_extension];
+  }
+
+  // fill the view extensions by wrapping around
+  for (int view_edge = 0; view_edge < view_extension; view_edge++)
+  {
+    for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
+    {
+      // if views cover 360°, we can simply wrap around
+      if (abs(segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_max_view_num(), 0, 0)) - 
+              segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_min_view_num(), 0, 0))) > M_PI)
+      {
+        out[axial_pos][min_dim[2] + view_edge] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1];
+        out[axial_pos][max_dim[2] - view_extension + 1 + view_edge] = out[axial_pos][min_dim[2] + view_extension + view_edge];
+      }
+      else
+      { // if views cover 180°, the tangential positions need to be flipped
+        const int sym_dim = std::min(abs(min_dim[3]), max_dim[3]);
+        for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
+        {
+          out[axial_pos][min_dim[2] + view_edge][tang_pos] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-tang_pos];
+          out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos] = out[axial_pos][min_dim[2] + view_extension + view_edge][-tang_pos];
+        }
+        for (int tang_pos = min_dim[3]; tang_pos < -sym_dim; tang_pos++)
+        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
+          out[axial_pos][min_dim[2] + view_edge][tang_pos] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][sym_dim];
+          out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos] = out[axial_pos][min_dim[2] + view_extension + view_edge][sym_dim];
+        }
+        for (int tang_pos = max_dim[3]; tang_pos > sym_dim; tang_pos--)
+        { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
+          out[axial_pos][min_dim[2] + view_edge][tang_pos] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-sym_dim];
+          out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos] = out[axial_pos][min_dim[2] + view_extension + view_edge][-sym_dim];
+        }
+      }
+    }
+  }
+
+  // fill tangential extension with same entries than boundary
+  for (int tang_edge = 0; tang_edge < tangential_extension; tang_edge++)
+  {
+    for (int axial_pos = min_dim[1]; axial_pos <= max_dim[1]; axial_pos++)
+    {
+      for (int view = min_dim[2]; view <= max_dim[2]; view++)
+      {
+        out[axial_pos][view][min_dim[3] + tang_edge] = out[axial_pos][view][min_dim[3] + tangential_extension];
+        out[axial_pos][view][max_dim[3] - tang_edge] = out[axial_pos][view][max_dim[3] - tangential_extension];
+      }
+    }
+  }
+
+  return out;
+}
+
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
                          const int min_view_extension, const int max_view_extension)

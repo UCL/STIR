@@ -35,6 +35,9 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
 			 const int min_view_extension, const int max_view_extension);
+Array<3,float>
+extend_segment(const SegmentBySinogram<float>& segment, const int view_extension = 5,
+               const int axial_extension = 5, const int tangential_extension = 5);
 //@}
 
 END_NAMESPACE_STIR

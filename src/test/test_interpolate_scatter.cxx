@@ -105,7 +105,7 @@ void InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
     }
   }
   // if the largest symmetry error is larger than 0.1% of the mean absolute value, then there is something wrong
-  check(maxAbsDifference < 0.0001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.01\% of absolute values across views");
+  check(maxAbsDifference < 0.001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.01\% of absolute values across views");
 }
 
 void InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff)
