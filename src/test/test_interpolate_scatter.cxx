@@ -105,7 +105,8 @@ void InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
     }
   }
   // if the largest symmetry error is larger than 0.1% of the mean absolute value, then there is something wrong
-  check(maxAbsDifference < 0.001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.01\% of absolute values across views");
+  // TODO: this tolerance can be tightened to 0.01% if https://github.com/UCL/STIR/issues/1176 is resolved
+  check(maxAbsDifference < 0.001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.1\% of absolute values across views");
 }
 
 void InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff)
@@ -167,7 +168,7 @@ void InterpolationTests::scatter_interpolation_test_blocks()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::quadratic, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -219,7 +220,7 @@ void InterpolationTests::scatter_interpolation_test_cyl()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::quadratic, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -243,10 +244,6 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
   exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
-  // auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 192, 30, 150, 150, 127, 4.3, 4.0, 2.0, -0.38956 /* 0.0 */,
-  //                        5, 4, 6, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 4.0, 4.0, 24.0, 24.0);
-  // auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 192, 12, 150, 150, 127, 4.3, 10.0, 2.0, -0.38956 /* 0.0 */,
-  //                                    1, 4, 12, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 10.0, 4.0, 60.0, 24.0);
   auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 96, 30, 150, 150, 127, 4.3, 4.0, 8.0, -0.38956 /* 0.0 */,
                          5, 1, 6, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 4.0, 16.0, 24.0, 96.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 96, 12, 150, 150, 127, 4.3, 10.0, 8.0, -0.38956 /* 0.0 */,
@@ -290,7 +287,7 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::quadratic, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -299,7 +296,7 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
   full_size_model_sino.write_to_file("full_size_sino_asym.hs");
   interpolated_proj_data.write_to_file("interpolated_sino_asym.hs");
 
-  // TODO: compare to ground truth
+  // compare to ground truth
   compare_segment(interpolated_proj_data.get_segment_by_sinogram(0), full_size_model_sino.get_segment_by_sinogram(0), 4697);
 }
 
@@ -358,7 +355,7 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::quadratic, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -367,8 +364,8 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   full_size_model_sino.write_to_file("full_size_sino_cyl_asym.hs");
   interpolated_proj_data.write_to_file("interpolated_sino_cyl_asym.hs");
 
-  // TODO: compare to ground truth
-  compare_segment(interpolated_proj_data.get_segment_by_sinogram(0), full_size_model_sino.get_segment_by_sinogram(0), 20000);
+  // compare to ground truth
+  compare_segment(interpolated_proj_data.get_segment_by_sinogram(0), full_size_model_sino.get_segment_by_sinogram(0), 17500);
 }
 
 void

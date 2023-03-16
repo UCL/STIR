@@ -30,6 +30,12 @@
 
 <h3>New functionality</h3>
 <ul>
+  <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>InverseSSRB</code> now works for BlocksOnCylindrical after a rewrite.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
 </ul>
 
 <h3>New examples</h3>
@@ -65,6 +71,9 @@
 <ul>
   <li>Small change in scatter simulation to how non-arccorrected bins are computed. Added a check in the construction of non-arccorrected projdata that the number of tangential bins is not larger than the maximum non-arccorrected bins.
     <br /><a href="https://github.com/UCL/STIR/pull/1152/">PR #1152</a>.
+  </li>
+  <li><code>extend_segment_in_views</code> does not handle view offsets correctly and does not work for BlocksOnCylindrical scanners. A new function <code>extend_segment</code> was added that works for Cylindrical and BlocksOnCylindrical and allows extension in tangential and axial direction as well.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
 </ul>
 

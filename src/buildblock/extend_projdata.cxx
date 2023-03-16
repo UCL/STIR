@@ -173,7 +173,7 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
     {
       // if views cover 360°, we can simply wrap around
       if (abs(segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_max_view_num(), 0, 0)) - 
-              segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_min_view_num(), 0, 0))) > M_PI)
+              segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_min_view_num(), 0, 0))) > _PI)
       {
         out[axial_pos][min_dim[2] + view_edge] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1];
         out[axial_pos][max_dim[2] - view_extension + 1 + view_edge] = out[axial_pos][min_dim[2] + view_extension + view_edge];
