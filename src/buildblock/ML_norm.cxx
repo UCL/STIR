@@ -1091,15 +1091,11 @@ static void make_fan_data_remove_gaps_help(FanProjData& fan_data,
     const int num_physical_rings = num_rings - (num_axial_blocks-1)*num_virtual_axial_crystals_per_block;
     fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2*new_half_fan_size+1);
 
-#ifdef STIR_OPENMP
-  #pragma omp parallel for schedule(dynamic)
-#endif
-    for (int segment = proj_data.get_min_segment_num(); segment <= proj_data.get_max_segment_num(); ++segment)
+    shared_ptr<SegmentBySinogram<float> > segment_ptr;
+    Bin bin;
+    
+    for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num(); ++bin.segment_num())
     {
-        shared_ptr<SegmentBySinogram<float> > segment_ptr;
-        Bin bin;
-        bin.segment_num() = segment;
-
         segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
 
         for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
@@ -1359,13 +1355,6 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool
     FanProjData work = fan_data;
     work.fill(0);
     
-#ifdef STIR_OPENMP
-#  if _OPENMP >= 200711
-#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
-#  else
-#     pragma omp parallel for schedule(dynamic) // older versions
-#  endif
-#endif
     for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
         for (int a = 0; a < num_transaxial_crystals_per_block /2; ++a)
             // loop rb from ra to avoid double counting
@@ -1417,13 +1406,6 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool
                     }
                 }
 
-#ifdef STIR_OPENMP
-#  if _OPENMP >= 200711
-#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
-#  else
-#     pragma omp parallel for schedule(dynamic) // older versions
-#  endif
-#endif
     for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
         for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
         //    for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
@@ -1445,13 +1427,6 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool
 void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
   const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
-#ifdef STIR_OPENMP
-#  if _OPENMP >= 200711
-#     pragma omp parallel for schedule(dynamic) collapse(2) // OpenMP 3.1
-#  else
-#     pragma omp parallel for schedule(dynamic) // older versions
-#  endif
-#endif
   for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
       // loop rb from ra to avoid double counting
