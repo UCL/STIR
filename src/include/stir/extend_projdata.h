@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+    Copyright 2023, Positrigo AG, Zurich
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -10,18 +11,18 @@
 */
 /*
   \ingroup projdata
-  \file  Functions that extend a direct sinogram or segment in the view direction
+  \file  Functions that extend a direct sinogram or segment.
   
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
+  \author Markus Jehl
 */
 START_NAMESPACE_STIR
 
 //@{
 /*!						  
 \ingroup projdata
-\brief Extension of direct projection data in view direction.
+\brief Extension of direct projection data.
 
 Functions that extend the given sinogram or segment in the view direction taking 
 periodicity into account, if exists. If the sinogram is not symmetric in
@@ -41,5 +42,3 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
 //@}
 
 END_NAMESPACE_STIR
-
-

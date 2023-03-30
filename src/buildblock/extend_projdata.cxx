@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
+  Copyright 2023, Positrigo AG, Zurich
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -15,7 +16,7 @@
 
 \author Kris Thielemans
 \author Charalampos Tsoumpas
-  
+\author Markus Jehl
 */
 #include "stir/Array.h"
 #include "stir/SegmentBySinogram.h"
@@ -145,6 +146,9 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
   return out;
 }
 
+/* This function takes symmetries into account to extend segments in any direction.
+   However, it needs testing if it would work for non-direct sinograms.
+*/
 Array<3,float>
 extend_segment(const SegmentBySinogram<float>& segment, const int view_extension,
                const int axial_extension, const int tangential_extension)

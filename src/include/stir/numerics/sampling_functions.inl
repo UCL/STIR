@@ -2,6 +2,7 @@
 //
 /*
 Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+Copyright 2023, Positrigo AG, Zurich
 This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -11,8 +12,10 @@ This file is part of STIR.
 /*!
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Markus Jehl
   \ingroup numerics
-  \brief implementation of stir::sample_function_on_regular_grid
+  \brief implementation of stir::sample_function_on_regular_grid and
+         stir::sample_function_using_index_converter
 */
 
 START_NAMESPACE_STIR
@@ -54,6 +57,10 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
     }                             
 }
 
+/* This function samples a function (usually an interpolator) at the locations specified in
+   the 3D array to be filled. It uses the index_converter function to translate indices between
+   the input and output array (see buildblock/interpolate_projdata.cxx for an example how it is called).
+*/
 template <typename elemT, typename FunctionType, typename Lambda>
 void sample_function_using_index_converter(Array<3,elemT>& out, FunctionType func, Lambda&& index_converter)
 {

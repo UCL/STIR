@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2005- 2007, Hammersmith Imanet Ltd
+  Copyright 2023, Positrigo AG, Zurich
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -15,7 +16,7 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
+  \author Markus Jehl
 */
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
@@ -89,11 +90,11 @@ inverse_SSRB(ProjData& proj_data_4D,
            in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
            ++in_ax_pos_num)
       {
-        // for the very first slice there is no previous
+        // for the first slice there is no previous
         const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0) ? 
                                           std::numeric_limits<float>::max() : abs(out_m - in_m.at(in_ax_pos_num - 1));
         const auto distance_to_current = abs(out_m - in_m.at(in_ax_pos_num));
-        // for the very last slice there is no next
+        // for the last slice there is no next
         const auto distance_to_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ? 
                                       std::numeric_limits<float>::max() : abs(out_m - in_m.at(in_ax_pos_num + 1));
         if (distance_to_current <= distance_to_previous && 
@@ -126,8 +127,7 @@ inverse_SSRB(ProjData& proj_data_4D,
       }
       if (!sinogram_set)
       { // it is logically not possible to get here
-        error("no matching sinogram found for segment %d and axial pos %d",
-              out_segment_num, out_ax_pos_num);
+        error("no matching sinogram found for segment %d and axial pos %d", out_segment_num, out_ax_pos_num);
       }
 		}
 	}

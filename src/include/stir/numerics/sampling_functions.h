@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+    Copyright 2023, Positrigo AG, Zurich
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -15,7 +16,7 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
+  \author Markus Jehl
 */
 
 START_NAMESPACE_STIR

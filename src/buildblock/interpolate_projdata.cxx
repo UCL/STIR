@@ -3,6 +3,7 @@
 /*
   Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
   Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+  Copyright 2023, Positrigo AG, Zurich
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -16,7 +17,7 @@
 
  \author Charalampos Tsoumpas
  \author Kris Thielemans
-
+ \author Markus Jehl
 */
 #include "stir/ProjData.h"
 //#include "stir/display.h"
@@ -165,6 +166,8 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, cons
   return Succeeded::yes;
 }
 
+/* This function interpolates proj_data_in to the size of proj_data_out using the specified interpolation type.
+*/
 Succeeded
 interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
                      const BasicCoordinate<3, BSpline::BSplineType>& these_types, const bool remove_interleaving,
@@ -238,6 +241,17 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
   }
   else
   { // for BlocksOnCylindrical, views and tangential positions are not subsampled and can be mapped 1:1
+    if (proj_data_in_info.get_num_tangential_poss() != proj_data_out_info.get_num_tangential_poss())
+    {
+      error("Interpolation of BlocksOnCylindrical scanners assumes that number of tangential positions"
+            "is the same in the downsampled scanner.");
+    }
+    if (proj_data_in_info.get_num_views() != proj_data_out_info.get_num_views())
+    {
+      error("Interpolation of BlocksOnCylindrical scanners assumes that number of views"
+            "is the same in the downsampled scanner.");
+    }
+
     // only extending in axial direction - an extension of 2 was found to be sufficient
     proj_data_interpolator.set_coef(extend_segment(segment, 0, 2, 0));
 
