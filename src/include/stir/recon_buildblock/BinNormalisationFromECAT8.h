@@ -13,7 +13,6 @@
   \ingroup recon_buildblock
 
   \brief Declaration of class stir::ecat::BinNormalisationFromECAT8.
-         Largely a copy of the ECAT7 version. 
 
   \author Kris Thielemans
 */
