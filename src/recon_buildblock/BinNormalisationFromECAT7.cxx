@@ -5,6 +5,11 @@
     Copyright CTI
     This file is part of STIR.
 
+    Some parts of this file originate in CTI code, distributed as
+    part of the matrix library from Louvain-la-Neuve, and hence carries
+    its restrictive license. Affected parts are the dead-time correction
+    in get_dead_time_efficiency and geo_Z_corr related code.
+
     SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details

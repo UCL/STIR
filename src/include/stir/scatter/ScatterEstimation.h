@@ -181,6 +181,8 @@ public:
     void set_mask_image_filename(std::string name);
     void set_output_additive_estimate_prefix(std::string name);
     void set_run_debug_mode(bool debug);
+    void set_restart_reconstruction_every_scatter_iteration(bool setting);
+    bool get_restart_reconstruction_every_scatter_iteration() const;
 
     //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     //inline void set_zoom_xy(float);
@@ -215,6 +217,10 @@ public:
     //! If set to 1 the attenuation coefficients are going to
     //! be recalculated.
     bool recompute_atten_projdata;
+    //! If set to true, the activity image will be reset to 1 in
+    //! each iteration of the scatter estimation. Therefore, more
+    //! reconstruction subiterations will be required for convergence.
+    bool restart_reconstruction_every_scatter_iteration;
 
     //! This is the reconstruction object which is going to be used for the scatter estimation
     //! and the calculation of the initial activity image (if recompute set). It can be defined in the same
@@ -317,11 +323,11 @@ private:
 
     //! reconstruct image with current scatter estimate (iteratively)
     /*! \a scat_iter is used for determining the filename for saving */
-    void reconstruct_iterative(int scat_iter, shared_ptr<DiscretisedDensity<3, float> >& output_sptr);
+    void reconstruct_iterative(int scat_iter);
 
     //! reconstruct image with current scatter estimate (analytic reconstruction)
     /*! \a scat_iter is used for determining the filename for saving */
-    void reconstruct_analytic(int scat_iter, shared_ptr<DiscretisedDensity<3, float> > & output_sptr);
+    void reconstruct_analytic(int scat_iter);
 
     //! \details Find a mask by thresholding etc
     static void apply_mask_in_place(DiscretisedDensity<3, float> &,

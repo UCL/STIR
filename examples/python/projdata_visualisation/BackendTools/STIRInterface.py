@@ -102,7 +102,7 @@ class ProjDataVisualisationBackend:
         """Converts a STIR data object to a numpy array."""
         return stirextra.to_numpy(data)
 
-    def get_limits(self, dimension: ProjDataDims, segment_number: int) -> tuple[int, int]:
+    def get_limits(self, dimension: ProjDataDims, segment_number: int) -> tuple:
         """
         Returns the limits of the projection data in the indicated dimension.
         :param dimension: The dimension to get the limits for, type SinogramDimensions.

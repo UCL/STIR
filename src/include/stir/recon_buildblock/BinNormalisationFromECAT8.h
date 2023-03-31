@@ -2,6 +2,8 @@
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
   Copyright (C) 2013-2014 University College London
 
+  Largely a copy of the ECAT7 version. 
+
   SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details

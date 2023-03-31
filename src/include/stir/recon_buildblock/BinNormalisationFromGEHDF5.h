@@ -3,6 +3,8 @@
   Copyright (C) 2013-2014, 2020 University College London
   Copyright (C) 2017-2019 University of Leeds
 
+  Largely a copy of the ECAT7 version. 
+
   SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details

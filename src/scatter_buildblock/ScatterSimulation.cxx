@@ -828,6 +828,61 @@ set_exam_info_sptr(const shared_ptr<const ExamInfo> arg)
     this->template_exam_info_sptr = arg->create_shared_clone();
 }
 
+
+bool 
+ScatterSimulation::
+get_downsample_scanner_bool() const
+{
+    return this->downsample_scanner_bool;
+}
+
+void 
+ScatterSimulation::
+set_downsample_scanner_bool(const bool arg)
+{
+    if (arg != this->get_downsample_scanner_bool())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_bool = arg;
+    }
+}
+
+int 
+ScatterSimulation::
+get_num_downsample_scanner_rings() const
+{
+    return this->downsample_scanner_rings;
+}
+
+void 
+ScatterSimulation::
+set_num_downsample_scanner_rings(const int arg)
+{
+    if (arg != this->get_num_downsample_scanner_rings())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_rings = arg;
+    }
+}
+
+int 
+ScatterSimulation::
+get_num_downsample_scanner_dets() const
+{
+    return this->downsample_scanner_dets;
+}
+
+void 
+ScatterSimulation::
+set_num_downsample_scanner_dets(const int arg)
+{
+    if (arg != this->get_num_downsample_scanner_dets())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_dets = arg;
+    }
+}
+
 Succeeded
 ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
