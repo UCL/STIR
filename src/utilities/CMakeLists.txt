@@ -73,8 +73,11 @@ set(${dir_EXE_SOURCES}
         write_sinogram_to_txt.cxx
         find_sum_projection_of_viewgram_and_sinogram.cxx
         separate_true_from_random_scatter_for_necr.cxx
-        SPECT_dicom_to_interfile.cxx
 )
+
+if (ITK_FOUND)
+  list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
+endif()
 
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
