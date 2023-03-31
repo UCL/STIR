@@ -30,6 +30,7 @@ START_NAMESPACE_STIR
 
 namespace detail 
 {
+#if STIR_VERSION < 060000
   /* This function takes symmetries in the sinogram space into account
      to find data in the negative segment if necessary.
      However, it needs testing if it would work for non-direct sinograms.
@@ -145,6 +146,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
     }
   return out;
 }
+#endif
 
 /* This function takes symmetries into account to extend segments in any direction.
    However, it needs testing if it would work for non-direct sinograms.
