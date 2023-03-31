@@ -9,28 +9,29 @@
 
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 #include "stir/Succeeded.h"
 
 enum class EnergyWindowInfo { LowerThreshold, UpperThreshold, WindowName };
 enum class RadionuclideInfo { CodeValue, CodingSchemDesignator, CodeMeaning };
 enum class CalibrationInfo {};
-stir::Succeeded GetDICOMTagInfo(const gdcm::File &file, const gdcm::Tag tag, std::string &dst);
-stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowInfo request,  std::string &dst);
-stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideInfo request,  std::string &dst);
+stir::Succeeded GetDICOMTagInfo(const gdcm::File &file, const gdcm::Tag tag, std::string &dst, const int sequence_idx = 1);
+stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowInfo request,  std::string &dst, const int sequence_idx);
+stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideInfo request,  std::string &dst, const int sequence_idx = 1);
 
 class SPECTDICOMData
 {
 public:
   SPECTDICOMData(const std::string& DICOM_filename){ dicom_filename = DICOM_filename; };
-  stir::Succeeded get_interfile_header(std::string &output_header) const;
+  stir::Succeeded get_interfile_header(std::string &output_header, const std::string& data_filename, const int dataset_num) const;
   stir::Succeeded get_proj_data(const std::string &output_file) const;
   stir::Succeeded open_dicom_file(bool is_planar);
-  void set_data_filename(const std::string &data_file){ data_filename = data_file; };
   bool is_planar;
+  int num_energy_windows = 1;
+  std::vector<std::string> energy_window_name;
 private:
   //shared_ptr<stir::ProjDataInfo> proj_data_info_sptr;
   std::string dicom_filename;
-  std::string data_filename;
 
   float start_angle = 0.0f;
   int num_of_projections = 0;
@@ -42,9 +43,8 @@ private:
   float calibration_factor;
   std::string rotation_radius ;
 
-  float lower_en_window_thres = 0.0f;
-  float upper_en_window_thres = 0.0f;
-  std::string energy_window_name;
+  std::vector<float> lower_en_window_thres;
+  std::vector<float> upper_en_window_thres;
 
   int num_dimensions;
   std::vector<std::string> matrix_labels;
@@ -52,7 +52,7 @@ private:
   std::vector<double> pixel_sizes;
 };
 
-stir::Succeeded GetDICOMTagInfo(const gdcm::File &file, const gdcm::Tag tag, std::string &dst){
+stir::Succeeded GetDICOMTagInfo(const gdcm::File &file, const gdcm::Tag tag, std::string &dst, const int sequence_idx){
 
   //Extracts information for a given DICOM tag from a gdcm dataset.
   //Tag contents are returned as a string in dst variable.
@@ -83,30 +83,37 @@ stir::Succeeded GetDICOMTagInfo(const gdcm::File &file, const gdcm::Tag tag, std
     std::vector<gdcm::Tag> seqs = { gdcm::Tag(0x0054,0x0052), gdcm::Tag(0x0054,0x0022), gdcm::Tag(0x0054,0x0012)};
 
     for (const auto& t : seqs) {
-      const gdcm::DataElement &de = file.GetDataSet().GetDataElement(t);
-      const gdcm::SequenceOfItems *sqi = de.GetValueAsSQ();
-      const gdcm::Item &item = sqi->GetItem(1);
+      try
+        {
+          const gdcm::DataElement &de = file.GetDataSet().GetDataElement(t);
+          const gdcm::SequenceOfItems *sqi = de.GetValueAsSQ();
+          const gdcm::Item &item = sqi->GetItem(sequence_idx);
 
-      element = item.GetDataElement(tag);
+          element = item.GetDataElement(tag);
 
-      if (element.GetByteValue() != NULL) {
-        dst = sf.ToString(element);
-        return stir::Succeeded::yes;
-      }
+          if (element.GetByteValue() != NULL) {
+            dst = sf.ToString(element);
+            return stir::Succeeded::yes;
+          }
+        }
+      catch (...)
+        {
+          // ignore error and try next sequence
+        }
     }
 
-  } catch (std::bad_alloc){
-    stir::error(boost::format("GetDICOMTagInfo: cannot read tag %1%") % tag);
+  } catch (...){
+    stir::error(boost::format("GetDICOMTagInfo: cannot read tag %1% sequence index %2%") % tag % sequence_idx);
     return stir::Succeeded::no;
   }
 
   return stir::Succeeded::no;
 }
 
-stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowInfo request,  std::string &dst){
+stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowInfo request,  std::string &dst, const int sequence_idx){
 
   if (request == EnergyWindowInfo::WindowName){
-    return GetDICOMTagInfo(file, gdcm::Tag(0x0054,0x0018), dst);
+    return GetDICOMTagInfo(file, gdcm::Tag(0x0054,0x0018), dst, sequence_idx);
   }
 
   try {
@@ -119,11 +126,13 @@ stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowIn
     //Get Energy Window Info Sequence
     const gdcm::DataElement &de = file.GetDataSet().GetDataElement(energy_window_info_seq);
     const gdcm::SequenceOfItems *sqi = de.GetValueAsSQ();
-    const gdcm::Item &item = sqi->GetItem(1);
+    const gdcm::Item &item = sqi->GetItem(sequence_idx);
 
     //Get Energy Window Range Sequence
     const gdcm::DataElement &element = item.GetDataElement(energy_window_range_seq);
     const gdcm::SequenceOfItems *sqi2 = element.GetValueAsSQ();
+    if (sqi2->GetNumberOfItems() > 1)
+      stir::warning("Energy window sequence contains more than 1 window. Ignoring all later ones");
     const gdcm::Item &item2 = sqi2->GetItem(1);
 
     //std::cout << item2 << std::endl;
@@ -150,7 +159,7 @@ stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowIn
   return stir::Succeeded::no;
 }
 
-stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideInfo request,  std::string &dst){
+stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideInfo request,  std::string &dst, const int sequence_idx){
 
 //  if (request == RadionuclideInfo::CodeMeaning){
 //    return GetDICOMTagInfo(file, gdcm::Tag(0x0008,0x0018), dst);
@@ -166,7 +175,7 @@ stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideIn
     //Get Radiopharmaceutical Info Sequence
     const gdcm::DataElement &de = file.GetDataSet().GetDataElement(radiopharm_info_seq_tag);
     const gdcm::SequenceOfItems *sqi = de.GetValueAsSQ();
-    const gdcm::Item &item = sqi->GetItem(1);
+    const gdcm::Item &item = sqi->GetItem(sequence_idx);
 
 
     //Get Radiopnuclide Code Sequence
@@ -174,7 +183,7 @@ stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideIn
     const gdcm::DataElement &element = item.GetDataElement(radionuclide_code_seq_tag);
     if(element.GetVL()>0){
     const gdcm::SequenceOfItems *sqi2 = element.GetValueAsSQ();
-    const gdcm::Item &item2 = sqi2->GetItem(1);
+    const gdcm::Item &item2 = sqi2->GetItem(sequence_idx);
     //std::cout<< "num items"<< sqi2->GetNumberOfItems();
     //std::cout << item2 << std::endl;
 
@@ -288,20 +297,30 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
       actual_frame_duration = std::stoi(actual_frame_duration_as_string);
       }
 
-      if (GetEnergyWindowInfo(file, EnergyWindowInfo::WindowName , energy_window_name) == stir::Succeeded::yes){
-    //  actual_frame_duration = std::stoi(matrix_size_as_string);
-      std::cout << "Energy window: " << energy_window_name << std::endl;
+      {
+        std::string str;
+        if (GetDICOMTagInfo(file, gdcm::Tag(0x0054,0x0011), str) == stir::Succeeded::yes)
+          num_energy_windows =  std::stoi(str);
       }
+      energy_window_name.resize(num_energy_windows);
+      lower_en_window_thres.resize(num_energy_windows);
+      upper_en_window_thres.resize(num_energy_windows);
+      for (int w=1; w<= num_energy_windows; ++w)
+        {
+          if (GetEnergyWindowInfo(file, EnergyWindowInfo::WindowName , energy_window_name[w-1], w) == stir::Succeeded::yes){
+            std::cout << "Energy window: " << energy_window_name[w-1] << std::endl;
+          }
 
-      if (GetEnergyWindowInfo(file, EnergyWindowInfo::LowerThreshold , lower_window_as_string) == stir::Succeeded::yes){
-      lower_en_window_thres = std::stof(lower_window_as_string);
-      std::cout << "Lower energy window limit: " << std::fixed << std::setprecision(6) << lower_en_window_thres << std::endl;
-      }
+          if (GetEnergyWindowInfo(file, EnergyWindowInfo::LowerThreshold , lower_window_as_string, w) == stir::Succeeded::yes){
+            lower_en_window_thres[w-1] = std::stof(lower_window_as_string);
+            std::cout << "Lower energy window limit: " << std::fixed << std::setprecision(6) << lower_en_window_thres[w-1] << std::endl;
+          }
 
-      if (GetEnergyWindowInfo(file, EnergyWindowInfo::UpperThreshold , upper_window_as_string) == stir::Succeeded::yes){
-      upper_en_window_thres = std::stof(upper_window_as_string);
-      std::cout << "Upper energy window limit: " << std::fixed << std::setprecision(6) << upper_en_window_thres << std::endl;
-      }
+          if (GetEnergyWindowInfo(file, EnergyWindowInfo::UpperThreshold , upper_window_as_string, w) == stir::Succeeded::yes){
+            upper_en_window_thres[w-1] = std::stof(upper_window_as_string);
+            std::cout << "Upper energy window limit: " << std::fixed << std::setprecision(6) << upper_en_window_thres[w-1] << std::endl;
+          }
+        }
   }
 
   num_dimensions = 2;
@@ -338,7 +357,7 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
 }
 
 
-stir::Succeeded SPECTDICOMData::get_interfile_header(std::string &output_header) const{
+stir::Succeeded SPECTDICOMData::get_interfile_header(std::string &output_header, const std::string& data_filename, const int dataset_num) const{
 
   std::string data_filename_only = data_filename;
 
@@ -354,7 +373,9 @@ stir::Succeeded SPECTDICOMData::get_interfile_header(std::string &output_header)
   ss << "!imaging modality := nucmed" << std::endl;
   ss << "!version of keys := 3.3" << std::endl;
   ss << "name of data file := " << data_filename_only << std::endl;
-  ss << "data offset in bytes := 0" << std::endl;
+  ss << "data offset in bytes := "
+    << this->matrix_size.at(0) * this->matrix_size.at(1) * this->num_of_projections * dataset_num * 4 // float hard-wired
+    << std::endl;
   ss << std::endl;
 
   ss << "!GENERAL IMAGE DATA :=" << std::endl;
@@ -366,6 +387,10 @@ stir::Succeeded SPECTDICOMData::get_interfile_header(std::string &output_header)
   ss << "isotope name:= " << this->isotope_name<< std::endl;
   ss << std::endl;
 
+  // one energy window per header
+  ss << "number of energy windows :=1\n";
+  ss <<"energy window lower level[1] := " << this->lower_en_window_thres[dataset_num] << "\n";
+  ss <<"energy window upper level[1] := " << this->upper_en_window_thres[dataset_num] << "\n";
   ss << "!SPECT STUDY (General) :=" << std::endl;
   ss << "number of dimensions := 2" << std::endl;
   ss << "matrix axis label [2] := axial coordinate" << std::endl;
@@ -465,41 +490,45 @@ stir::Succeeded SPECTDICOMData::get_proj_data(const std::string &output_file) co
 int main(int argc, char * argv[])
 {
 
-    if ( argc!=5) {
-      std::cerr << "Usage: " << argv[0] << " <sinogram(dcm)>"<< " <output interfile prefix>"<<"<output sinogram prefix>"<<"is_planar?\n";
+    if ( argc!=4) {
+      std::cerr << "Usage: " << argv[0] << " <output_interfile_prefix> sinogram(dcm)> is_planar?\n";
       exit(EXIT_FAILURE);
     }
 
   std::unique_ptr<SPECTDICOMData>
-      spect(new SPECTDICOMData(argv[1]));
+      spect(new SPECTDICOMData(argv[2]));
+  const std::string output_prefix(argv[1]);
 
-  spect->is_planar=atoi(argv[4]);
+  spect->is_planar=atoi(argv[3]);
 
   try{
     if (spect->open_dicom_file(spect->is_planar) == stir::Succeeded::no){
       std::cerr << "Failed to read!" << std::endl;
       return EXIT_FAILURE;
     }
-  } catch(const std::string& e){
-    std::cerr << e << std::endl;
+  } catch(const std::exception& e){
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 
   std::cout << "Read successfully!" << std::endl;
 
-  spect->set_data_filename(argv[3]);
-  stir::Succeeded s = spect->get_proj_data(argv[3]);
+  const std::string data_filename(output_prefix + ".s");
+  stir::Succeeded s = spect->get_proj_data(data_filename);
 
-  std::string header;
-  s = spect->get_interfile_header(header);
+  for (int w=0; w<spect->num_energy_windows; ++w)
+    {
+      std::string header;
+      s = spect->get_interfile_header(header, data_filename, w);
 
-  std::cout << header << std::endl;
-
-  std::filebuf fb;
-  fb.open (argv[2],std::ios::out);
-  std::ostream os(&fb);
-  os << header;
-  fb.close();
+      std::cout << header << std::endl;
+      const std::string header_filename = output_prefix + spect->energy_window_name[w] + ".hdr";
+      std::filebuf fb;
+      fb.open (header_filename,std::ios::out);
+      std::ostream os(&fb);
+      os << header;
+      fb.close();
+    }
 
   return EXIT_SUCCESS;
 }
