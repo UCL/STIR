@@ -260,12 +260,12 @@ interpolate_projdata(ProjData& proj_data_out,
   { // for BlocksOnCylindrical, views and tangential positions are not subsampled and can be mapped 1:1
     if (proj_data_in_info.get_num_tangential_poss() != proj_data_out_info.get_num_tangential_poss())
     {
-      error("Interpolation of BlocksOnCylindrical scanners assumes that number of tangential positions"
+      error("Interpolation of BlocksOnCylindrical scanners assumes that number of tangential positions "
             "is the same in the downsampled scanner.");
     }
     if (proj_data_in_info.get_num_views() != proj_data_out_info.get_num_views())
     {
-      error("Interpolation of BlocksOnCylindrical scanners assumes that number of views"
+      error("Interpolation of BlocksOnCylindrical scanners assumes that number of views "
             "is the same in the downsampled scanner.");
     }
 

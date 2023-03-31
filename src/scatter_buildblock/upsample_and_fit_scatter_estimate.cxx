@@ -79,12 +79,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
 					    emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
-      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
-      {
-          interpolated_scatter.fill_from(interpolated_direct_scatter.begin());
-      }
-      else
-          inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
+      inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
       scatter_normalisation.set_up(emission_proj_data.get_exam_info_sptr(), emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
       scatter_normalisation.undo(interpolated_scatter);
@@ -152,10 +147,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     }
   else // min/max_scale_factor equal to 1 and no norm
     {
-      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
-          scaled_scatter_proj_data.fill_from(interpolated_direct_scatter.begin());
-      else
-          inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+      inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
     }
 }
 

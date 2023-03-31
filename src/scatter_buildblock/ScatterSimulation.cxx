@@ -960,7 +960,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     const float approx_num_non_arccorrected_bins =
       this->proj_data_info_sptr->get_num_tangential_poss() * 
       (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring());
-    new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins+.5F));
+    new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins));
     new_scanner_sptr->set_default_bin_size(new_scanner_sptr->get_effective_ring_radius() * _PI / new_num_dets); // approx new detector size
     // Find how much is the delta ring
     // If the previous projdatainfo had max segment == 1 then should be from SSRB
