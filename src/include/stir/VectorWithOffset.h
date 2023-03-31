@@ -4,10 +4,10 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
-    Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_VectorWithOffset_H__
@@ -138,17 +138,23 @@ public:
   //! Construct a VectorWithOffset with offset \c min_index (initialised with \c  T())
   inline VectorWithOffset(const int min_index, const int max_index);
 
-  //! Construct a VectorWithOffset of given length using existing data (no initialisation)
-  inline explicit VectorWithOffset(const int hsz, T* const data_ptr, T* const end_of_data_ptr);
-
-  //! Construct a VectorWithOffset with offset \c min_index using existing data (no initialisation)
-  inline VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr);
+  //! Construct a VectorWithOffset of given length pointing to existing data
+  inline explicit VectorWithOffset(const int hsz, T * const data_ptr);
+  
+  //! Construct a VectorWithOffset with offset \c min_index point to existing data
+  inline VectorWithOffset(const int min_index, const int max_index, T * const data_ptr);
 
   //! copy constructor
   inline VectorWithOffset(const VectorWithOffset& il);
 
   //! Destructor
   inline virtual ~VectorWithOffset();
+
+  //! change vector with new index range and point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init(const int min_index, const int max_index, T * const data_ptr, bool copy_data);
 
   //! Free all memory and make object as if default-constructed
   /*! This is not the same as resize(0), as the latter does not

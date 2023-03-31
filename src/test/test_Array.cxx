@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2013, 2020 University College London
+    Copyright (C) 2013, 2020, 2023 University College London
 
     This file is part of STIR.
 
@@ -344,6 +344,56 @@ ArrayTests::run_tests()
         Array<1, float> test3 = test2 + test;
         check_if_zero(test3[-2], "test growing during operator+");
       }
+
+      // using preallocated memory
+      {
+        std::vector<float> mem(test.get_index_range().size_all());
+        std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
+        Array<1,float> preallocated;
+        preallocated.init(test.get_index_range(), &mem[0], false);
+        check_if_equal(test, preallocated, "test preallocated: equality");
+        std::copy(test.begin_all_const(), test.end_all_const(), preallocated.begin_all());
+        check_if_equal(test, preallocated, "test preallocated: copy with full_iterator");
+        check(test.is_contiguous(), "test Array1D is contiguous");
+        check(preallocated.is_contiguous(), "test Array1D is contiguous (preallocated)");
+        check(preallocated.get_full_data_ptr() == &mem[0], "test Array1D preallocated pointer access");
+        preallocated.release_full_data_ptr();
+        check(preallocated.get_const_full_data_ptr() == &mem[0], "test Array1D preallocated const pointer access");
+        preallocated.release_const_full_data_ptr();
+        // test memory is shared between the Array and mem
+        mem[0]=*test.begin() + 345;
+        check_if_equal(*preallocated.begin(), mem[0], "test preallocated: direct buffer mod");
+        *(preallocated.begin()+1) += 4;
+        check_if_equal(*(preallocated.begin()+1), mem[1], "test preallocated: indirect buffer mod");
+        // test resize
+        {
+          const auto min = preallocated.get_min_index();
+          const auto max = preallocated.get_max_index();
+          // resizing to smaller range will keep pointing to the same memory
+          preallocated.resize(min+1, max-1);
+          std::fill(mem.begin(), mem.end(), 12345.F);
+          check_if_equal(preallocated[min+1], 12345.F, "test preallocated: resize smaller uses same memory");
+          // resizing to non-overlapping range will reallocate
+          preallocated.resize(min-1, max-1);
+          std::fill(mem.begin(), mem.end(), 123456.F);
+          check_if_equal(preallocated[min+1], 12345.F, "test preallocated: grow uses different memory");
+        }
+      }
+      // copying from existing memory
+      {
+        std::vector<float> mem(test.get_index_range().size_all());
+        std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
+        Array<1,float> test_from_mem;
+        test_from_mem.init(test.get_index_range(), &mem[0], true);
+        check_if_equal(test, test_from_mem, "test construct from mem: equality");
+        std::copy(test.begin_all_const(), test.end_all_const(), test_from_mem.begin_all());
+        check_if_equal(test, test_from_mem, "test construct from mem: copy with full_iterator");
+        // test memory is not shared between the Array and mem
+        mem[0]=*test.begin() + 345;
+        check_if_equal(*test_from_mem.begin(), *test.begin(), "test construct from mem: direct buffer mod");
+        *(test_from_mem.begin()+1) += 4;
+        check_if_equal(*(test_from_mem.begin()+1), mem[1]+4, "test construct from mem: indirect buffer mod");
+      }
     }
 #if 1
     {
@@ -455,6 +505,49 @@ ArrayTests::run_tests()
         // 'assignment constructor' (this simply calls copy constructor)
         Array<2, float> t22 = t2;
         check_if_equal(t22, t2, "test Array2D copy constructor");
+      }
+
+      // using preallocated memory
+      {
+        std::vector<float> mem(t2.get_index_range().size_all());
+        std::copy(t2.begin_all_const(), t2.end_all_const(), mem.begin());
+        {
+          // test iterator access is row-major
+          auto first_min_idx = t2.get_min_index();
+          check_if_equal(t2[3][2],
+                         mem[(3 - first_min_idx) * t2[first_min_idx].size_all() +
+                             2 - t2[first_min_idx].get_min_index()],
+                         "check row-major order in 2D");
+        }
+        Array<2,float> preallocated;
+        preallocated.init(t2.get_index_range(), &mem[0], false);
+        check_if_equal(t2, preallocated, "test preallocated: equality");
+        std::copy(t2.begin_all_const(), t2.end_all_const(), preallocated.begin_all());
+        check_if_equal(t2, preallocated, "test preallocated: copy with full_iterator");
+
+        check(preallocated.is_contiguous(), "test Array2D is contiguous (preallocated)");
+        check(preallocated.get_full_data_ptr() == &mem[0], "test Array2D preallocated pointer access");
+        preallocated.release_full_data_ptr();
+        check(preallocated.get_const_full_data_ptr() == &mem[0], "test Array2D preallocated const pointer access");
+        preallocated.release_const_full_data_ptr();
+        // test memory is shared between the Array and mem
+        mem[0]=*t2.begin_all() + 345;
+        check_if_equal(*preallocated.begin_all(), mem[0], "test preallocated: direct buffer mod");
+        *(preallocated.begin_all()) += 4;
+        check_if_equal(*(preallocated.begin_all()), mem[0], "test preallocated: indirect buffer mod");
+        // test resize
+        {
+          BasicCoordinate<2,int> min, max;
+          preallocated.get_regular_range(min, max);
+          // resizing to smaller range will keep pointing to the same memory
+          preallocated.resize(IndexRange<2>(min+1, max-1));
+          std::fill(mem.begin(), mem.end(), 12345.F);
+          check_if_equal(preallocated[min+1], 12345.F, "test preallocated: resize smaller uses same memory");
+          check(!preallocated.is_contiguous(), "test preallocated: no longer contiguous after resize");
+          preallocated.resize(IndexRange<2>(min-1, max-1));
+          std::fill(mem.begin(), mem.end(), 123456.F);
+          check_if_equal(preallocated[min+1], 12345.F, "test preallocated: grow uses different memory");
+        }
       }
     }
     // size_all with irregular range

@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -30,6 +31,21 @@ START_NAMESPACE_STIR
 /**********************************************
  inlines for Array<num_dimensions, elemT>
  **********************************************/
+template <int num_dimensions, typename elemT>
+bool
+Array<num_dimensions, elemT>::is_contiguous() const
+{
+  auto mem = &(*this->begin_all());
+  for (auto i=this->get_min_index(); i<this->get_max_index(); ++i)
+    {
+      if (!(*this)[i].is_contiguous())
+        return false;
+      mem += (*this)[i].size_all();
+      if (mem != &(*(*this)[i+1].begin_all()))
+        return false;
+    }
+  return true;
+}
 
 template <int num_dimensions, typename elemT>
 void
@@ -44,6 +60,23 @@ Array<num_dimensions, elemT>::resize(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 void
+Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data)
+{
+  base_type::resize(range.get_min_index(), range.get_max_index());
+  auto iter = this->begin();
+  auto range_iter = range.begin();
+  auto ptr = data_ptr;
+  for (;
+       iter != this->end();
+       ++iter, ++range_iter)
+    {
+      (*iter).init(*range_iter, ptr, copy_data);
+      ptr += range_iter->size_all();
+    }
+}
+
+template <int num_dimensions, typename elemT>
+void 
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   resize(range);
@@ -151,6 +184,7 @@ Array<num_dimensions, elemT>::get_index_range() const
     }
   return IndexRange<num_dimensions>(range);
 }
+
 template <int num_dimensions, typename elemT>
 size_t
 Array<num_dimensions, elemT>::size_all() const
@@ -160,6 +194,81 @@ Array<num_dimensions, elemT>::size_all() const
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].size_all();
   return acc;
+}
+
+/*!
+  If is_contiguous() is \c false, calls error(). Otherwise, return a
+  \c elemT* to the first element of the array.
+
+  Use only in emergency cases...
+
+  To prevent invalidating the safety checks (and making
+  reimplementation more difficult), NO manipulation with
+  the array is allowed between the pairs
+      get_full_data_ptr() and release_full_data_ptr()
+  and
+      get_const_full_data_ptr() and release_const_full_data_ptr().
+  (This is checked with assert() in DEBUG mode.)
+*/
+template <int num_dimensions, typename elemT>
+elemT*
+Array<num_dimensions, elemT>::get_full_data_ptr()
+{
+  this->_full_pointer_access = true;
+  if (!this->is_contiguous())
+    error("Array::get_full_data_ptr() called for non-contiguous array.");
+  return &(*this->begin_all());
+};
+
+/*!
+  If is_contiguous() is \c false, calls error(). Otherwise, return a
+  \c const \c elemT* to the first element of the array.
+
+  Use get_const_full_data_ptr() when you are not going to modify
+  the data.
+
+  \see get_full_data_ptr()
+*/
+template <int num_dimensions, typename elemT>
+const elemT *
+Array<num_dimensions, elemT>::get_const_full_data_ptr() const
+{
+  this->_full_pointer_access = true;
+  if (!this->is_contiguous())
+    error("Array::get_const_full_data_ptr() called for non-contiguous array.");
+  return &(*this->begin_all_const());
+};
+
+/*!
+  This has to be used when access to the elemT* returned by get_full_data_ptr() is
+  finished. It updates
+  the Array with any changes you made, and allows access to
+  the other member functions again.
+
+  \see get_full_data_ptr()
+*/
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::release_full_data_ptr()
+{
+  assert(this->_full_pointer_access);
+
+  this->_full_pointer_access = false;
+}
+
+/*!
+  This has to be used when access to the const elemT* returned by get_const_full_data_ptr() is
+  finished. It allows access to the other member functions again.
+
+  \see get_const_full_data_ptr()
+*/
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::release_const_full_data_ptr() const
+{
+  assert(this->_full_pointer_access);
+  this->_full_pointer_access = false;
 }
 
 template <int num_dimensions, typename elemT>
@@ -384,6 +493,13 @@ Array<num_dimensions, elemT>::sapyb(const T& a, const Array& y, const T& b)
 /**********************************************
  inlines for Array<1, elemT>
  **********************************************/
+template <class elemT>
+void
+Array<1, elemT>::init(const IndexRange<1>& range,  elemT * const data_ptr, bool copy_data)
+{
+  base_type::
+    init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
+}
 
 template <class elemT>
 void
