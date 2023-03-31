@@ -1,8 +1,26 @@
+/*
+  Copyright (C) 2018, 2023, University College London
+  Copyright (C) 2019-2023, National Physical Laboratory
+  This file is part of STIR.
+
+  SPDX-License-Identifier: Apache-2.0
+
+  See STIR/LICENSE.txt for details
+*/
+
+/*!
+  \file
+  \ingroup utilities
+  \brief Convert SPECT DICOM projection data to Interfile
+
+  \author Benjamin Thomas
+  \author Daniel Deidda
+  \author Kris Thielemans
+*/
 #include <iostream>
 #include <fstream>
 
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <gdcmReader.h>
 #include <gdcmStringFilter.h>
@@ -28,13 +46,14 @@ public:
   stir::Succeeded open_dicom_file(bool is_planar);
   bool is_planar;
   int num_energy_windows = 1;
+  int num_frames = 0;
+  int num_of_projections = 0;
   std::vector<std::string> energy_window_name;
 private:
   //shared_ptr<stir::ProjDataInfo> proj_data_info_sptr;
   std::string dicom_filename;
 
   float start_angle = 0.0f;
-  int num_of_projections = 0;
   float angular_step = 0.0f;
   int actual_frame_duration = 0; //frame duration in msec
   int num_of_rotations = 0;
@@ -243,6 +262,15 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
   std::string pixel_size_as_string;
   std::string lower_window_as_string;
   std::string upper_window_as_string;
+
+  
+  {
+    std::string str;
+    if (GetDICOMTagInfo(file, gdcm::Tag(0x0028,0x0008), str) == stir::Succeeded::yes){
+      num_frames = std::stoi(str);
+      std::cout << "Number of frames: " << num_frames << std::endl;
+    }
+  }
 
   this->num_of_projections=1;
   if(!is_planar){
@@ -464,7 +492,7 @@ stir::Succeeded SPECTDICOMData::get_proj_data(const std::string &output_file) co
   outfile.close();*/
 
   uint64_t len0 = (uint64_t)bv->GetLength()/2;
-  std::cout << "Length = " << len0 << std::endl;
+  std::cout << "Number of data points = " << len0 << std::endl;
 
   std::vector<float> pixel_data_as_float;
 
@@ -477,8 +505,6 @@ stir::Succeeded SPECTDICOMData::get_proj_data(const std::string &output_file) co
     ptr++;
     ct++;
   }
-
-  std::cout << "pixel_data_as_float length = " << pixel_data_as_float.size() << std::endl;
 
   std::ofstream final_out(output_file.c_str(), std::ios::out | std::ofstream::binary);
   final_out.write(reinterpret_cast<char*>(&pixel_data_as_float[0]), pixel_data_as_float.size() * sizeof(float));
@@ -495,14 +521,13 @@ int main(int argc, char * argv[])
       exit(EXIT_FAILURE);
     }
 
-  std::unique_ptr<SPECTDICOMData>
-      spect(new SPECTDICOMData(argv[2]));
+  SPECTDICOMData spect(argv[2]);
   const std::string output_prefix(argv[1]);
 
-  spect->is_planar=atoi(argv[3]);
+  spect.is_planar=atoi(argv[3]);
 
   try{
-    if (spect->open_dicom_file(spect->is_planar) == stir::Succeeded::no){
+    if (spect.open_dicom_file(spect.is_planar) == stir::Succeeded::no){
       std::cerr << "Failed to read!" << std::endl;
       return EXIT_FAILURE;
     }
@@ -513,16 +538,19 @@ int main(int argc, char * argv[])
 
   std::cout << "Read successfully!" << std::endl;
 
+  if (spect.num_of_projections * spect.num_energy_windows != spect.num_frames)
+    stir::warning(boost::format("num_projections (%1%) * num_energy_windows (%2%) != num_frames (%3%)\n"
+                                "This could be gated or dynamic data. The interfile header(s) will be incorrect!")
+                  % spect.num_of_projections % spect.num_energy_windows % spect.num_frames);
   const std::string data_filename(output_prefix + ".s");
-  stir::Succeeded s = spect->get_proj_data(data_filename);
+  stir::Succeeded s = spect.get_proj_data(data_filename);
 
-  for (int w=0; w<spect->num_energy_windows; ++w)
+  for (int w=0; w<spect.num_energy_windows; ++w)
     {
       std::string header;
-      s = spect->get_interfile_header(header, data_filename, w);
+      s = spect.get_interfile_header(header, data_filename, w);
 
-      std::cout << header << std::endl;
-      const std::string header_filename = output_prefix + spect->energy_window_name[w] + ".hdr";
+      const std::string header_filename = output_prefix + spect.energy_window_name[w] + ".hdr";
       std::filebuf fb;
       fb.open (header_filename,std::ios::out);
       std::ostream os(&fb);
