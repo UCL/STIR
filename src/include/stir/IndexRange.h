@@ -90,6 +90,9 @@ public:
   //! Construct a regular range given by sizes (minimum indices will be 0)
   inline IndexRange(const BasicCoordinate<num_dimensions, int>& sizes);
 
+  //! return the total number of elements in this range
+  inline size_t size_all() const;
+
   // these are derived from VectorWithOffset
   //  TODO these should be overloaded, to set regular_range as well.
   /*
@@ -139,6 +142,8 @@ public:
   inline int get_min_index() const;
   inline int get_max_index() const;
   inline int get_length() const;
+  //! return the total number of elements in this range
+  inline size_t size_all() const;
 
   inline bool operator==(const IndexRange<1>& range2) const;
 
