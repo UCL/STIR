@@ -40,76 +40,83 @@ START_NAMESPACE_STIR
 
 namespace detail_interpolate_projdata
 {
-/* Collection of functions to remove interleaving in non-arccorrected data.
+  /* Collection of functions to remove interleaving in non-arccorrected data.
+  It does this by doubling the number of views, and filling in the new
+  tangential positions by averaging the 4 neighbouring bins.
+  WARNING: most of STIR will get confused by the resulting sinograms,
+  so only use them here for the interpolate_projdata implementation.
+  */
+     
+  static shared_ptr<ProjDataInfo>
+  make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info)
+  {
 
-It does this by doubling the number of views, and filling in the new
-tangential positions by averaging the 4 neighbouring bins.
+    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == NULL)
+      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
-WARNING: most of STIR will get confused by the resulting sinograms,
-so only use them here for the interpolate_projdata implementation.
-*/
+    shared_ptr<ProjDataInfo> new_proj_data_info_sptr(
+						     proj_data_info.clone());
+    new_proj_data_info_sptr->
+      set_num_views(proj_data_info.get_num_views()*2);
+    return new_proj_data_info_sptr;
+  }
 
-static shared_ptr<ProjDataInfo>
-make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info)
-{
+  // access Sinogram element with wrap-around and boundary conditions
+  static float sino_element(const Sinogram<float>& sinogram, const int view_num, const int tangential_pos_num)
+  {
+    assert(sinogram.get_min_view_num() == 0);
+    const int num_views = sinogram.get_num_views();
+    const int tang_pos_num = (view_num>=num_views? -1: 1)*tangential_pos_num;
+    if (tang_pos_num < sinogram.get_min_tangential_pos_num() ||
+	tang_pos_num > sinogram.get_max_tangential_pos_num())
+      return 0.F;
+    else
+      return sinogram[view_num%num_views][tang_pos_num];
+  }
 
-  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) == NULL)
-    error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+  static void
+  make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
+                                const Sinogram<float>& in_sinogram)
+  {
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr())))
+      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
-  shared_ptr<ProjDataInfo> new_proj_data_info_sptr(proj_data_info.clone());
-  new_proj_data_info_sptr->set_num_views(proj_data_info.get_num_views() * 2);
-  return new_proj_data_info_sptr;
-}
+    assert(out_sinogram.get_min_view_num() == 0);
+    assert(in_sinogram.get_min_view_num() == 0);
+    assert(out_sinogram.get_num_views() == in_sinogram.get_num_views()*2);
+    assert(in_sinogram.get_segment_num() == 0);
+    assert(out_sinogram.get_segment_num() == 0);
 
-// access Sinogram element with wrap-around and boundary conditions
-static float
-sino_element(const Sinogram<float>& sinogram, const int view_num, const int tangential_pos_num)
-{
-  assert(sinogram.get_min_view_num() == 0);
-  const int num_views = sinogram.get_num_views();
-  const int tang_pos_num = (view_num >= num_views ? -1 : 1) * tangential_pos_num;
-  if (tang_pos_num < sinogram.get_min_tangential_pos_num() || tang_pos_num > sinogram.get_max_tangential_pos_num())
-    return 0.F;
-  else
-    return sinogram[view_num % num_views][tang_pos_num];
-}
+    for (int view_num = out_sinogram.get_min_view_num();
+         view_num <= out_sinogram.get_max_view_num();
+         ++view_num)
+      {
+        for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1;
+             tangential_pos_num <= out_sinogram.get_max_tangential_pos_num()-1;
+             ++tangential_pos_num)
+          {
+            if ((view_num+tangential_pos_num)%2 == 0)
+              {
+                const int in_view_num =
+                  view_num%2==0 ? view_num/2 : (view_num+1)/2;
+                out_sinogram[view_num][tangential_pos_num] =
+                  sino_element(in_sinogram, in_view_num, tangential_pos_num);
+              }
+            else
+              {
+                const int next_in_view = view_num/2+1;
+                const int other_in_view = (view_num+1)/2;
 
-static void
-make_non_interleaved_sinogram(Sinogram<float>& out_sinogram, const Sinogram<float>& in_sinogram)
-{
-  if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr())))
-    error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
-
-  assert(out_sinogram.get_min_view_num() == 0);
-  assert(in_sinogram.get_min_view_num() == 0);
-  assert(out_sinogram.get_num_views() == in_sinogram.get_num_views() * 2);
-  assert(in_sinogram.get_segment_num() == 0);
-  assert(out_sinogram.get_segment_num() == 0);
-
-  for (int view_num = out_sinogram.get_min_view_num(); view_num <= out_sinogram.get_max_view_num(); ++view_num)
-    {
-      for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num() + 1;
-           tangential_pos_num <= out_sinogram.get_max_tangential_pos_num() - 1; ++tangential_pos_num)
-        {
-          if ((view_num + tangential_pos_num) % 2 == 0)
-            {
-              const int in_view_num = view_num % 2 == 0 ? view_num / 2 : (view_num + 1) / 2;
-              out_sinogram[view_num][tangential_pos_num] = sino_element(in_sinogram, in_view_num, tangential_pos_num);
-            }
-          else
-            {
-              const int next_in_view = view_num / 2 + 1;
-              const int other_in_view = (view_num + 1) / 2;
-
-              out_sinogram[view_num][tangential_pos_num] = (sino_element(in_sinogram, view_num / 2, tangential_pos_num)
-                                                            + sino_element(in_sinogram, next_in_view, tangential_pos_num)
-                                                            + sino_element(in_sinogram, other_in_view, tangential_pos_num - 1)
-                                                            + sino_element(in_sinogram, other_in_view, tangential_pos_num + 1))
-                                                           / 4;
-            }
-        }
-    }
-}
+                out_sinogram[view_num][tangential_pos_num] =
+                  (sino_element(in_sinogram, view_num/2, tangential_pos_num) +
+                   sino_element(in_sinogram, next_in_view, tangential_pos_num) +
+                   sino_element(in_sinogram, other_in_view, tangential_pos_num-1) +
+                   sino_element(in_sinogram, other_in_view, tangential_pos_num+1)
+                   )/4;
+              }
+          }
+      }
+  }
 
 #if 0
   // not needed for now
@@ -123,75 +130,90 @@ make_non_interleaved_sinogram(Sinogram<float>& out_sinogram, const Sinogram<floa
 
     make_non_interleaved_sinogram(out_sinogram, in_sinogram);
     return out_sinogram;
-  }
+  }                                                   
 #endif
 
-static void
-make_non_interleaved_segment(SegmentBySinogram<float>& out_segment, const SegmentBySinogram<float>& in_segment)
-{
-  if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr())))
-    error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+  static void
+  make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
+                               const SegmentBySinogram<float>& in_segment)
+  {
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr())))
+      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
-  for (int axial_pos_num = out_segment.get_min_axial_pos_num(); axial_pos_num <= out_segment.get_max_axial_pos_num();
-       ++axial_pos_num)
-    {
-      Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
-      make_non_interleaved_sinogram(out_sinogram, in_segment.get_sinogram(axial_pos_num));
-      out_segment.set_sinogram(out_sinogram);
-    }
-}
+    for (int axial_pos_num = out_segment.get_min_axial_pos_num();
+         axial_pos_num <= out_segment.get_max_axial_pos_num();
+         ++axial_pos_num)
+      {
+        Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
+        make_non_interleaved_sinogram(out_sinogram, 
+                                      in_segment.get_sinogram(axial_pos_num));
+        out_segment.set_sinogram(out_sinogram);
+      }
+  }
 
-static SegmentBySinogram<float>
-make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info, const SegmentBySinogram<float>& in_segment)
-{
-  SegmentBySinogram<float> out_segment
-      = non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
+  static SegmentBySinogram<float>
+  make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
+                               const SegmentBySinogram<float>& in_segment)
+  {
+    SegmentBySinogram<float> out_segment =
+      non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
 
-  make_non_interleaved_segment(out_segment, in_segment);
-  return out_segment;
-}
+    make_non_interleaved_segment(out_segment, in_segment);
+    return out_segment;
+  }     
 
 } // end namespace detail_interpolate_projdata
+                                              
 
 using namespace detail_interpolate_projdata;
 
-Succeeded
-interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, const BSpline::BSplineType these_types,
-                     const bool remove_interleaving, const bool use_view_offset)
+Succeeded 
+interpolate_projdata(ProjData& proj_data_out,
+                     const ProjData& proj_data_in, const BSpline::BSplineType these_types,
+                     const bool remove_interleaving,
+                     const bool use_view_offset)
 {
-  BasicCoordinate<3, BSpline::BSplineType> these_types_3;
-  these_types_3[1] = these_types_3[2] = these_types_3[3] = these_types;
-
-  interpolate_projdata(proj_data_out, proj_data_in, these_types_3, remove_interleaving, use_view_offset);
+  BasicCoordinate<3, BSpline::BSplineType> these_types_3; 
+  these_types_3[1]=these_types_3[2]=these_types_3[3]=these_types;
+  interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving, use_view_offset);
   return Succeeded::yes;
 }
 
-/* This function interpolates proj_data_in to the size of proj_data_out using the specified interpolation type.
-*/
-Succeeded
-interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
-                     const BasicCoordinate<3, BSpline::BSplineType>& these_types, const bool remove_interleaving,
+Succeeded 
+interpolate_projdata(ProjData& proj_data_out,
+                     const ProjData& proj_data_in,
+                     const BasicCoordinate<3, BSpline::BSplineType> & these_types,
+                     const bool remove_interleaving,
                      const bool use_view_offset)
 {
 
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
-  const ProjDataInfo& proj_data_in_info = *proj_data_in.get_proj_data_info_sptr();
-  const ProjDataInfo& proj_data_out_info = *proj_data_out.get_proj_data_info_sptr();
+  const ProjDataInfo & proj_data_in_info =
+    *proj_data_in.get_proj_data_info_sptr();
+  const ProjDataInfo & proj_data_out_info =
+    *proj_data_out.get_proj_data_info_sptr();
 
   if (typeid(proj_data_in_info) != typeid(proj_data_out_info))
+    {
+      error("interpolate_projdata needs both projection data  to be of the same type\n"
+            "(e.g. both arc-corrected or both not arc-corrected)");
+    }
+  
+  if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
   {
-    error("interpolate_projdata needs both projection data  to be of the same type\n"
-          "(e.g. both arc-corrected or both not arc-corrected)");
+      interpolate_axial_position(proj_data_out,proj_data_in);
+      return Succeeded::yes;
   }
-
   // check for the same ring radius
   // This is strictly speaking only necessary for non-arccorrected data, but
   // we leave it in for all cases.
-  if (fabs(proj_data_in_info.get_scanner_ptr()->get_inner_ring_radius()
-           - proj_data_out_info.get_scanner_ptr()->get_inner_ring_radius()) > 1)
-    error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
+  if (fabs(proj_data_in_info.get_scanner_ptr()->get_inner_ring_radius() -
+           proj_data_out_info.get_scanner_ptr()->get_inner_ring_radius()) > 1)
+    {
+      error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
+    }
 
   // initialise interpolator
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
@@ -257,6 +279,13 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
 
     auto m_offset = proj_data_in_info.get_m(Bin(0, 0, 0, 0));
     auto m_sampling = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
+
+    // confirm that proj_data_in has equidistant sampling in m
+    for (auto axial_pos = proj_data_in_info.get_min_axial_pos_num(0); axial_pos <= proj_data_in_info.get_max_axial_pos_num(0); axial_pos++)
+    {
+      if (abs(m_sampling - proj_data_in_info.get_sampling_in_m(Bin(0, 0, axial_pos, 0))) > 1E-4)
+        error("input projdata to interpolate_projdata are not equidistantly sampled in m.");
+    }
 
     // define a function to translate indices in the output proj data to indices in input proj data
     index_converter = [&proj_data_out_info, m_offset, m_sampling](const BasicCoordinate<3, int>& index_out) 

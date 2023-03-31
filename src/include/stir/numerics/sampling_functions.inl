@@ -57,10 +57,6 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
     }                             
 }
 
-/* This function samples a function (usually an interpolator) at the locations specified in
-   the 3D array to be filled. It uses the index_converter function to translate indices between
-   the input and output array (see buildblock/interpolate_projdata.cxx for an example how it is called).
-*/
 template <typename elemT, typename FunctionType, typename Lambda>
 void sample_function_using_index_converter(Array<3,elemT>& out, FunctionType func, Lambda&& index_converter)
 {

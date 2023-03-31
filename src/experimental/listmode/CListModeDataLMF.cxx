@@ -14,8 +14,8 @@
     Copyright (C) 2003 IPHE/UNIL, CH-1015 Lausanne
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
-    This software is distributed under the terms 
-    of the GNU Lesser General  Public Licence (LGPL)
+    SPDX-License-Identifier: Apache-2.0
+    
     See STIR/LICENSE.txt for details
 */
 

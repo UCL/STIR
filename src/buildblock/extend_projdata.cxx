@@ -178,11 +178,11 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
       // if views cover 360°, we can simply wrap around
       if (abs(segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_max_view_num(), 0, 0)) - 
               segment.get_proj_data_info_sptr()->get_phi(Bin(0, segment.get_proj_data_info_sptr()->get_min_view_num(), 0, 0))) > _PI)
-      {
+      { // TODO: improve check for 360°
         out[axial_pos][min_dim[2] + view_edge] = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1];
         out[axial_pos][max_dim[2] - view_extension + 1 + view_edge] = out[axial_pos][min_dim[2] + view_extension + view_edge];
       }
-      else
+      else // TODO: check that it really covers 180°
       { // if views cover 180°, the tangential positions need to be flipped
         const int sym_dim = std::min(abs(min_dim[3]), max_dim[3]);
         for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
@@ -201,6 +201,10 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
           out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos] = out[axial_pos][min_dim[2] + view_extension + view_edge][-sym_dim];
         }
       }
+      // else
+      // {
+      //   error("Extending ProjData is currently not supported for views covering anything other than 180° or 360°.");
+      // }
     }
   }
 
