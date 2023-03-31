@@ -201,11 +201,6 @@ interpolate_projdata(ProjData& proj_data_out,
             "(e.g. both arc-corrected or both not arc-corrected)");
     }
   
-  if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry()=="BlocksOnCylindrical")
-  {
-      interpolate_axial_position(proj_data_out,proj_data_in);
-      return Succeeded::yes;
-  }
   // check for the same ring radius
   // This is strictly speaking only necessary for non-arccorrected data, but
   // we leave it in for all cases.
