@@ -3,6 +3,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -34,6 +35,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"
 #include "stir/deprecated.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 class NumericType;
@@ -148,6 +150,16 @@ public:
   //! virtual destructor, frees up any allocated memory
   inline ~Array() override;
 
+  //! change the array to a new range of indices, pointing to \c data_ptr
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size
+
+    The C-array \data_ptr will be accessed with the last dimension running fastest
+    ("row-major" order).
+  */
+  inline virtual void
+    init(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data);
+
   /*! @name functions returning full_iterators*/
   //@{
   //! start value for iterating through all elements in the array, see full_iterator
@@ -169,14 +181,18 @@ public:
   //! return the total number of elements in this array
   inline size_t size_all() const;
 
-  /* Implementation note: grow() and resize() are inline such that they are
-     defined for any type you happen to use for elemT. Otherwise, we would
-     need instantiation in Array.cxx.
-  */
   //! change the array to a new range of indices, new elements are set to 0
+  /*! Current behaviour is that when resizing to a smaller array, the same memory
+    will be used. However, when growing any of the dimensions, a new Array
+    will be allocated and the data copied.
+
+    If the array points to an existing block of data, resizing is therefore problematic.
+    When growing the array, the resized array will no longer point to the original block
+    of data.
+  */
   inline virtual void resize(const IndexRange<num_dimensions>& range);
 
-  //! grow the array to a new range of indices, new elements are set to 0
+  //! alias for resize()
   virtual inline void grow(const IndexRange<num_dimensions>& range);
 
   //! return sum of all elements
@@ -250,6 +266,29 @@ public:
   //! set values of the array to self*a+y*b where a and b are scalar or arrays
   template <class T>
   inline void sapyb(const T& a, const Array& y, const T& b);
+
+  //! \name access to the data via a pointer
+  //@{
+  //! return if the array is contiguous in memory
+  bool is_contiguous() const;
+
+  //! member function for access to the data via a elemT*
+  inline elemT* get_full_data_ptr();
+
+  //! member function for access to the data via a const elemT*
+  inline const elemT* get_const_full_data_ptr() const;
+
+  //! signal end of access to elemT*
+  inline void release_full_data_ptr();
+
+  //! signal end of access to const elemT*
+  inline void release_const_full_data_ptr() const;
+  //@}
+
+ private:
+  //! boolean to test if get_full_data_ptr is called
+  // This variable is declared mutable such that get_const_full_data_ptr() can change it.
+  mutable bool _full_pointer_access;
 };
 
 /**************************************************
@@ -307,11 +346,26 @@ public:
   //! constructor given first and last indices, initialising elements to 0
   inline Array(const int min_index, const int max_index);
 
+  //! constructor given an IndexRange<1>, pointing to \c data_ptr
+  inline Array(const IndexRange<1>& range, elemT * const data_ptr );
+
+  //! constructor given first and last indices, pointing to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline Array(const int min_index, const int max_index, elemT * const data_ptr);
+
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);
 
   //! virtual destructor
   inline ~Array() override;
+
+  //! change vector with new index range and point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init(const IndexRange<1>& range, elemT * const data_ptr, bool copy_data);
 
   /*! @name functions returning full_iterators*/
   //@{
@@ -346,6 +400,23 @@ public:
 
   // Array::resize initialises new elements to 0
   inline void resize(const int min_index, const int max_index) override;
+
+  //! \name access to the data via a pointer
+  //@{
+  //! return if the array is contiguous in memory (always \c true)
+  bool is_contiguous() const { return true; }
+  //! member function for access to the data via a elemT*
+  inline elemT* get_full_data_ptr() { return this->get_data_ptr(); }
+
+  //! member function for access to the data via a const elemT*
+  inline const elemT* get_const_full_data_ptr() const  { return this->get_const_data_ptr(); }
+
+  //! signal end of access to elemT*
+  inline void release_full_data_ptr() { this->release_data_ptr(); }
+
+  //! signal end of access to const elemT*
+  inline void release_const_full_data_ptr() const { this->release_const_data_ptr(); }
+  //@}
 
   //! return sum of all elements
   inline elemT sum() const;

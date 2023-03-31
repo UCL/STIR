@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-07-01, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -21,6 +22,7 @@
 
 */
 
+#include "stir/IndexRange.h"
 #include <algorithm>
 #include <stdexcept>
 #include "thresholding.h"
@@ -37,6 +39,28 @@ VectorWithOffset<T>::init()
   num = 0;    // and no data.
   begin_allocated_memory = 0;
   end_allocated_memory = 0;
+}
+
+template <class T>
+void
+VectorWithOffset<T>::init(const int min_index, const int max_index, T * const data_ptr, bool copy_data)
+{
+  this->pointer_access = false;
+  this->_owns_memory_for_data = copy_data;
+  if (copy_data)
+    {
+      this->resize(min_index, max_index);
+      std::copy(data_ptr, data_ptr + this->length, this->begin());
+    }
+  else
+    {
+      this->length = static_cast<unsigned>(max_index - min_index) + 1;
+      this->start = min_index;
+      this->begin_allocated_memory = data_ptr;
+      this->end_allocated_memory = data_ptr + this->length;
+      this->num = this->begin_allocated_memory - this->start;
+      this->check_state();
+    }
 }
 
 template <class T>
@@ -266,27 +290,27 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
 }
 
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int sz, T* const data_ptr, T* const end_of_data_ptr)
+VectorWithOffset<T>::VectorWithOffset(const int sz, T * const data_ptr)
     : length(static_cast<unsigned>(sz)),
       start(0),
       pointer_access(false),
       _owns_memory_for_data(false)
 {
   this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = end_of_data_ptr;
+  this->end_allocated_memory = data_ptr + sz;
   this->num = this->begin_allocated_memory - this->start;
   this->check_state();
 }
 
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr)
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T * const data_ptr)
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
       pointer_access(false),
       _owns_memory_for_data(false)
 {
   this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = end_of_data_ptr;
+  this->end_allocated_memory = data_ptr + (max_index - min_index + 1);
   this->num = this->begin_allocated_memory - this->start;
   this->check_state();
 }

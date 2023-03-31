@@ -59,6 +59,9 @@ public:
   //! Construct a NumericVectorWithOffset of elements with offset \c min_index
   inline NumericVectorWithOffset(const int min_index, const int max_index);
 
+  //! Construct a NumericVectorWithOffset of elements with offset \c min_index pointing to \c data_ptr
+  inline NumericVectorWithOffset(const int min_index, const int max_index, elemT * const data_ptr);
+
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
 
