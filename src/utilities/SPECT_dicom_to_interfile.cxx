@@ -142,7 +142,7 @@ stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowIn
       return stir::Succeeded::yes;
     }
 
-  } catch (std::bad_alloc){
+  } catch (...){
     stir::error(boost::format("GetEnergyWindowInfo: cannot read energy info"));
     return stir::Succeeded::no;
   }
@@ -188,7 +188,7 @@ stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideIn
       dst = sf.ToString(nuclide_element);
       return stir::Succeeded::yes;
     }
-  } catch (std::bad_alloc){
+  } catch (...){
     stir::error(boost::format("GetRadionuclideInfo: cannot read radiopharaceutical info"));
     return stir::Succeeded::no;
   }
@@ -279,7 +279,7 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
       if (GetDICOMTagInfo(file, gdcm::Tag(0x0018,0x1142), radius_as_string) == stir::Succeeded::yes){
             rotation_radius =(radius_as_string);
       char slash='\\';
-      char comma='\,';
+      char comma=',';
       std::cout << "Radius: " << radius_as_string <<" " <<slash<< std::endl;
       std::replace(rotation_radius.begin(), rotation_radius.end(),slash,comma);
       }
@@ -321,7 +321,7 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
 
   if (GetDICOMTagInfo(file, gdcm::Tag(0x0028,0x0030), pixel_size_as_string) == stir::Succeeded::yes){
   std::cout << "Pixel size: " << pixel_size_as_string << std::endl;
-  size_t  curr, prev = 0;
+  size_t  curr = 0, prev = 0;
 
   while (curr != std::string::npos){
       curr = pixel_size_as_string.find('\\',prev);
