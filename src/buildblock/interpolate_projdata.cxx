@@ -186,10 +186,6 @@ interpolate_projdata(ProjData& proj_data_out,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
-
-  if (use_view_offset)
-    warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
-
   const ProjDataInfo & proj_data_in_info =
     *proj_data_in.get_proj_data_info_sptr();
   const ProjDataInfo & proj_data_out_info =
