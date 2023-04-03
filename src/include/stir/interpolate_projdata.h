@@ -22,6 +22,7 @@
 START_NAMESPACE_STIR
 
 class ProjData;
+class ProjDataInfo;
 template <int num_dimensions, class T> class BasicCoordinate;
 template <class elemT> class Sinogram;
 template <class elemT> class SegmentBySinogram;
@@ -51,16 +52,22 @@ template <class elemT> class SegmentBySinogram;
 //@{
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-		     const ProjData& proj_data_in, 
-		     const BSpline::BSplineType spline_type,
+             const shared_ptr<ProjData> proj_data_in,
+             const BSpline::BSplineType& spline_type,
 		     const bool remove_interleaving = false,
 		     const bool use_view_offset = false);
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-		     const ProjData& proj_data_in,
+             const shared_ptr<ProjData> proj_data_in,
 		     const BasicCoordinate<3, BSpline::BSplineType> & spline_type,
 		     const bool remove_interleaving = false,
-		     const bool use_view_offset = false);
+             const bool use_view_offset = false);
+
+Succeeded
+interpolate_projdata_3d(shared_ptr<ProjData> projdata_out,
+                     const shared_ptr<ProjData> projdata_in_sptr,
+                     const BSpline::BSplineType & spline_type,
+                     const bool use_view_offset = false);
 //@}
 
 END_NAMESPACE_STIR

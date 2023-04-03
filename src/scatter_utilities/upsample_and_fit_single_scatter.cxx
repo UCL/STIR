@@ -192,7 +192,7 @@ int main(int argc, const char *argv[])
   stir::ScatterEstimation::
     upsample_and_fit_scatter_estimate(output_proj_data,
                                       *data_to_fit_proj_data_sptr,
-                                      *data_to_scale_proj_data_sptr,
+                                      data_to_scale_proj_data_sptr,
                                       *normalisation_sptr,
                                       *weights_proj_data_sptr,
                                       min_scale_factor,

@@ -119,10 +119,11 @@ namespace detail
 
 Array<3,float>
 extend_segment_in_views(const SegmentBySinogram<float>& sino, 
-                        const int min_view_extension, const int max_view_extension)
+                        const int min_view_extension, const int max_view_extension,
+                        const SegmentBySinogram<float>& inv_sino)
 {
-  if (sino.get_segment_num()!=0)
-    error("extend_segment with single segment works only for segment 0");
+//  if (sino.get_segment_num()!=0)
+//    error("extend_segment with single segment works only for segment 0");
 
   BasicCoordinate<3,int> min, max;
                 
@@ -138,7 +139,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
     {
       out[ax_pos_num] =
         detail::
-        extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num], 
+        extend_sinogram_in_views(sino[ax_pos_num],inv_sino[ax_pos_num],
                                  *(sino.get_proj_data_info_sptr()),
                                  min_view_extension, max_view_extension);
     }
@@ -147,14 +148,15 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
 
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
-                         const int min_view_extension, const int max_view_extension)
+                         const int min_view_extension, const int max_view_extension,
+                         const Sinogram<float>& inv_sino)
 {
-  if (sino.get_segment_num()!=0)
-    error("extend_segment with single segment works only for segment 0");
+//  if (sino.get_segment_num()!=0)
+//    error("extend_segment with single segment works only for segment 0");
 
   return 
     detail::
-    extend_sinogram_in_views(sino, sino,
+    extend_sinogram_in_views(sino, inv_sino,
                              *(sino.get_proj_data_info_sptr()),
                              min_view_extension, max_view_extension);
 }

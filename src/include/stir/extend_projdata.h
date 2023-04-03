@@ -31,10 +31,12 @@ This is probably only useful before calling interpolation routines, or for FORE.
 */
 Array<3,float>
 extend_segment_in_views(const SegmentBySinogram<float>& sino, 
-			const int min_view_extension, const int max_view_extension);
+            const int min_view_extension, const int max_view_extension,
+                        const SegmentBySinogram<float>& inv_sino);
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
-			 const int min_view_extension, const int max_view_extension);
+             const int min_view_extension, const int max_view_extension,
+                         const Sinogram<float>& inv_sino);
 //@}
 
 END_NAMESPACE_STIR
