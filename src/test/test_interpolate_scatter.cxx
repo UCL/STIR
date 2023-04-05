@@ -187,7 +187,7 @@ void InterpolationTests::scatter_interpolation_test_blocks()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -239,7 +239,7 @@ void InterpolationTests::scatter_interpolation_test_cyl()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -306,7 +306,7 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
@@ -374,7 +374,7 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false, false);
+  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
   auto interpolated_proj_data = ProjDataInMemory(proj_data);
   inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
 
