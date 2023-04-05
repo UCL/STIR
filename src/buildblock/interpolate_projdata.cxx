@@ -170,12 +170,11 @@ using namespace detail_interpolate_projdata;
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
                      const ProjData& proj_data_in, const BSpline::BSplineType these_types,
-                     const bool remove_interleaving,
-                     const bool use_view_offset)
+                     const bool remove_interleaving)
 {
   BasicCoordinate<3, BSpline::BSplineType> these_types_3; 
   these_types_3[1]=these_types_3[2]=these_types_3[3]=these_types;
-  interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving, use_view_offset);
+  interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving);
   return Succeeded::yes;
 }
 
@@ -183,8 +182,7 @@ Succeeded
 interpolate_projdata(ProjData& proj_data_out,
                      const ProjData& proj_data_in,
                      const BasicCoordinate<3, BSpline::BSplineType> & these_types,
-                     const bool remove_interleaving,
-                     const bool use_view_offset)
+                     const bool remove_interleaving)
 {
   const ProjDataInfo & proj_data_in_info =
     *proj_data_in.get_proj_data_info_sptr();
@@ -229,10 +227,7 @@ interpolate_projdata(ProjData& proj_data_out,
     const float in_sampling_phi
         = (proj_data_in_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_in_info.get_phi(Bin(0, 0, 0, 0))) / (remove_interleaving ? 2 : 1);
     const float out_sampling_phi = proj_data_out_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_out_info.get_phi(Bin(0, 0, 0, 0));
-    const float out_view_offset = use_view_offset ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
-    const float in_view_offset = use_view_offset ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
-    offset[2] = (proj_data_out_info.get_phi(Bin(0, 0, 0, 0)) + out_view_offset - proj_data_in_info.get_phi(Bin(0, 0, 0, 0))
-                  - in_view_offset) / in_sampling_phi;
+    offset[2] = (proj_data_out_info.get_phi(Bin(0, 0, 0, 0)) - proj_data_in_info.get_phi(Bin(0, 0, 0, 0))) / in_sampling_phi;
     step[2] = out_sampling_phi / in_sampling_phi;
 
     const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(0, 0, 0, 0));
