@@ -67,7 +67,7 @@ set(buildblock_simple_tests
 	test_export_array.cxx
         test_GeneralisedPoissonNoiseGenerator.cxx
 	test_multiple_proj_data.cxx
-  test_interpolate_scatter.cxx
+        test_interpolate_projdata.cxx
 )
 
 include(stir_test_exe_targets)
