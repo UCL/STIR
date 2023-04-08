@@ -13,6 +13,9 @@
   \ingroup utilities
   \brief Convert SPECT DICOM projection data to Interfile
 
+  Read files based on https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.4.html,
+  https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.4.8.html etc
+
   \author Benjamin Thomas
   \author Daniel Deidda
   \author Kris Thielemans
