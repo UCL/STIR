@@ -31,13 +31,14 @@
 
 <h3>New functionality</h3>
 <ul>
-  <li>Parallelised function <code>set_fan_data_add_gaps_help</code> across segments to reduce computation time.
-  <br /><a href="https://github.com/UCL/STIR/pull/1168/">PR #1168</a>.
   <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
     <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
   <li><code>InverseSSRB</code> now works for BlocksOnCylindrical after a rewrite.
     <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+/  </li>
+  <li>Parallelised function <code>set_fan_data_add_gaps_help</code> across segments to reduce computation time.
+    <br /><a href="https://github.com/UCL/STIR/pull/1168/">PR #1168</a>.
   </li>
 </ul>
 
@@ -64,8 +65,15 @@
   <li>Errors now throw <code>std::runtime_error</code> instead of <code>std::string</code>.
   <br /><a href="https://github.com/UCL/STIR/pull/1131/">PR #1131</a>.
   </li>
-  <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions.
+  <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions. View-offset is now always taken into account.
   <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+</ul>
+
+<h3>Deprecated functionality</h3>
+<ul>
+  <li>The following functions (previously used for upsampling the scatter estimate) have been
+    made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
   </li>
 </ul>
 
@@ -106,7 +114,10 @@
 
 <h3>Other changes to tests</h3>
 <ul>
-  <li><tt>test_Scanner.cxx</tt> tests for energy resolution. <a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.</li>
+  <li><tt>test_Scanner.cxx</tt> tests for energy resolution, <a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.</li>
+  <li>
+    New file <tt>test_interpolate_scatter</tt>, <a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
+  </li>
 </ul>
 </body>
 
