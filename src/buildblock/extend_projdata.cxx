@@ -149,7 +149,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
 #endif
 
 /* This function takes symmetries into account to extend segments in any direction.
-   However, it needs testing if it would work for non-direct sinograms.
+   However, it needs testing if it works for non-direct sinograms.
 */
 Array<3,float>
 extend_segment(const SegmentBySinogram<float>& segment, const int view_extension,
@@ -186,9 +186,11 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
   }
   const auto phi_range = max_phi - min_phi;
   const auto average_phi_sampling = phi_range / (segment.get_proj_data_info_sptr()->get_num_views() - 1);
+  // check if 360 or 180 degrees
+  // use a rather large tolerance to cope with non-uniform sampling in BlocksOnCylindrical
   if (abs(phi_range - 2 * _PI) < 5 * average_phi_sampling)
     flip_views = false; // if views cover 360°, we can simply wrap around
-  else if (abs(phi_range - _PI) < 5 * average_phi_sampling)
+  else if ((abs(phi_range - _PI) < 5 * average_phi_sampling) && (segment.get_segment_num() == 0))
     flip_views = true;  // if views cover 180°, the tangential positions need to be flipped
   else
   {
