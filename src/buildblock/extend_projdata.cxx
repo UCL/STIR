@@ -251,6 +251,7 @@ extend_segment(const SegmentBySinogram<float>& segment, const int view_extension
   return out;
 }
 
+#if STIR_VERSION < 060000
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
                          const int min_view_extension, const int max_view_extension)
@@ -264,5 +265,6 @@ extend_sinogram_in_views(const Sinogram<float>& sino,
                              *(sino.get_proj_data_info_sptr()),
                              min_view_extension, max_view_extension);
 }
+#endif
 
 END_NAMESPACE_STIR
