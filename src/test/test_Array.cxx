@@ -48,6 +48,8 @@
 // for open_read/write_binary
 #include "stir/utilities.h"
 
+#include "stir/HighResWallClockTimer.h"
+
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
@@ -981,6 +983,42 @@ ArrayTests::run_tests()
     check_if_equal(arr1, arr2, "make_array inline assignment vs constructor");
     check_if_equal(arr1, arr3, "make_array inline vs function with assignment");
     check_if_equal(arr1, arr4, "make_array inline constructor from function");
+  }
+  std::cerr << "timings\n";
+  {
+    HighResWallClockTimer t;
+    IndexRange<4> range(Coordinate4D<int>(20,100,400,600));
+    t.start();
+    double create_duration;
+    {
+      Array<4,int> a1(range);
+      t.stop();
+      std::cerr << "creation of non-contiguous 4D Array " << t.value()*1000 << "ms\n";
+      create_duration = t.value();
+      t.start();
+    }
+    t.stop();
+    std::cerr << "deletion " << (t.value() - create_duration)*1000 << " ms\n";
+    t.reset();
+    t.start();
+    {
+      const auto s = range.size_all();
+      t.stop();
+      std::cerr << "range size_all " << t.value()*1000 << "ms\n";
+      t.start();
+      std::vector<int> v(s, 0);
+      t.stop();
+      std::cerr << "vector creation " << t.value()*1000 << "ms\n";
+      t.start();
+      Array<4,int> a1;
+      a1.init(range, v.data(), false);
+      t.stop();
+      create_duration = t.value();
+      std::cerr << "contiguous array creation (total) " << t.value()*1000 << "ms\n";
+      t.start();
+    }
+    t.stop();
+    std::cerr << "deletion " << (t.value() - create_duration)*1000 << " ms\n";
   }
 }
 
