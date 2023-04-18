@@ -75,6 +75,10 @@ set(${dir_EXE_SOURCES}
         separate_true_from_random_scatter_for_necr.cxx
 )
 
+if (ITK_FOUND)
+  list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
+endif()
+
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
 endif()

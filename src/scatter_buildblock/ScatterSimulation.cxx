@@ -330,7 +330,7 @@ set_up()
         error("ScatterSimulation: scanner energy resolution information not set. Aborting.");
 
     if (is_null_ptr(template_exam_info_sptr))
-        error("ScatterSimulation: projection data info not set. Aborting.");
+        error("ScatterSimulation: template exam info not set. Aborting.");
 
     if(!template_exam_info_sptr->has_energy_information())
         error("ScatterSimulation: template energy window information not set. Aborting.");
@@ -828,6 +828,61 @@ set_exam_info_sptr(const shared_ptr<const ExamInfo> arg)
     this->template_exam_info_sptr = arg->create_shared_clone();
 }
 
+
+bool 
+ScatterSimulation::
+get_downsample_scanner_bool() const
+{
+    return this->downsample_scanner_bool;
+}
+
+void 
+ScatterSimulation::
+set_downsample_scanner_bool(const bool arg)
+{
+    if (arg != this->get_downsample_scanner_bool())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_bool = arg;
+    }
+}
+
+int 
+ScatterSimulation::
+get_num_downsample_scanner_rings() const
+{
+    return this->downsample_scanner_rings;
+}
+
+void 
+ScatterSimulation::
+set_num_downsample_scanner_rings(const int arg)
+{
+    if (arg != this->get_num_downsample_scanner_rings())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_rings = arg;
+    }
+}
+
+int 
+ScatterSimulation::
+get_num_downsample_scanner_dets() const
+{
+    return this->downsample_scanner_dets;
+}
+
+void 
+ScatterSimulation::
+set_num_downsample_scanner_dets(const int arg)
+{
+    if (arg != this->get_num_downsample_scanner_dets())
+    {
+        this->_already_set_up = false;
+        this->downsample_scanner_dets = arg;
+    }
+}
+
 Succeeded
 ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
@@ -850,9 +905,11 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
 
     //make a downsampled scanner with no gaps for blocksOnCylindrical
+    float approx_num_non_arccorrected_bins;
     if (new_scanner_sptr->get_scanner_geometry()!="Cylindrical")
     {
-        new_num_dets=proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
+        new_num_dets = this->proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
+        approx_num_non_arccorrected_bins = this->proj_data_info_sptr->get_num_tangential_poss();
         // preserve the length of the scanner the following includes gaps
         float scanner_length_block = new_scanner_sptr->get_num_axial_buckets()*
                 new_scanner_sptr->get_num_axial_blocks_per_bucket()*
@@ -893,20 +950,19 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
             else
                 new_num_dets=64;
         }
+        // extend the bins by a small amount to avoid edge-effects, at the expense of longer computation time
+        approx_num_non_arccorrected_bins = ceil(this->proj_data_info_sptr->get_num_tangential_poss() * float(new_num_dets) / 
+                                                old_scanner_ptr->get_num_detectors_per_ring()) + 1;
+
         // preserve the length of the scanner the following includes no gaps
         float scanner_length_cyl = new_scanner_sptr->get_num_rings()*
                 new_scanner_sptr->get_ring_spacing();
         new_scanner_sptr->set_num_rings(new_num_rings);
         new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
         new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl/new_scanner_sptr->get_num_rings()));
-        
     }
-    
-    const float approx_num_non_arccorrected_bins =
-      old_scanner_ptr->get_max_num_non_arccorrected_bins() * 
-      (float(new_num_dets) / old_scanner_ptr->get_num_detectors_per_ring())
-      + 5; // add 5 to avoid strange edge-effects, certainly with B-splines
-    new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins+.5F));
+
+    new_scanner_sptr->set_max_num_non_arccorrected_bins(approx_num_non_arccorrected_bins);
     new_scanner_sptr->set_default_bin_size(new_scanner_sptr->get_effective_ring_radius() * _PI / new_num_dets); // approx new detector size
     // Find how much is the delta ring
     // If the previous projdatainfo had max segment == 1 then should be from SSRB

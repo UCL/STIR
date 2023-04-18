@@ -946,7 +946,7 @@ The exclusions of an event type is false by default.
 \end{table}
 
 
-\subsection{Multi header format}
+\subsubsection{Multi header format}
 \label{multi-file-format}
 It is often useful to be able to constract a single dataset from multiply components (e.g. images
 or projection data). We have a (STIR-specific) header format for this which is very simple, for example
@@ -961,6 +961,11 @@ Each ``component'' will be read independently, so could in principle be in a dif
 from the others.
 
 We currently support this format for dynamic images and projection data.
+
+\subsubsection{SPECT DICOM projection data}
+SPECT raw projection data in DICOM format is currently only supported by running the  \texttt{SPECT\_dicom\_to\_interfile} utility,
+see \ref{utility:SPECT_dicom_to_interfile}.
+
 \subsection{
 List mode processing}
 \label{sec:listmodeprocessing}
@@ -3400,6 +3405,17 @@ has not been used recently however, so beware.
 These programs convert from/to GIPL format. The latter program has a somewhat wrong name.
 It will actually read an image in any format supported by STIR.
 
+{ \subsubsubsection{SPECT\_dicom\_to\_interfile}\label{utility:SPECT_dicom_to_interfile}}
+This (still somewhat preliminary) utility reads a DICOM file with SPECT projection data and extracts the data and writes one or more Interfile 3.3
+headers. You will need to pass a filename-prefix. The utility will output several files:
+\begin{itemize}
+\item \texttt{<prefix>.s} the raw data
+\item \texttt{<prefix><string>.hdr} multiple headers, one per energy window grouping, where the \texttt{<string>} is given by the grouping name, read from (0054,0018).
+\end{itemize}
+Note that we currently do not read the Energy Window Vector (0054,0010), which could mean that the output data is incorrect.
+Also, dynamic and gated studies are not supported. You will have to edit the headers yourself.
+
+See also \url{https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.4.8.html}{Section C.8.4.8 of the DICOM standard}.
 
 \subsubsection{
 Filtering image data}
@@ -5678,6 +5694,31 @@ Directories in the STIR tree}
 in terms of classes that actually end up in the library.}
 
 See the doxygen documentation for an overview of the directory tree with brief descriptions.
+
+\section{Using STIR in an external C++ project
+\label{sec:ExternalProjectC++}}
+STIR exports its CMake settings. Therefore, an external project can do
+\begin{verbatim}
+find_package(STIR 5.1 CONFIG)
+add_library(my_lib file1.cxx file2.cxx)
+# my_lib uses STIR functionality
+target_link_libraries(my_lib ${STIR_LIBRARIES})
+add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
+target_link_libraries(my_exe my_lib)
+\end{verbatim}
+In addition, if your CMake is older than 3.12, you need to add
+\begin{verbatim}
+include_directories("${STIR_INCLUDE_DIRS}")
+\end{verbatim}
+to your CMake file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+a list of compiled files).
+
+Note that if CMake did not find the STIR files, you can point it to where they are installed.
+For example, if you installed STIR with
+\texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
+\texttt{STIR\_DIR=\$HOME/install/lib/cmake}.
+\footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
 
 \section{
 Future developments and Support}

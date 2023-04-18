@@ -71,6 +71,7 @@ set_defaults()
     this->run_in_2d_projdata = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
+    this->restart_reconstruction_every_scatter_iteration = false;
     this->run_debug_mode = false;
     this->override_scanner_template = true;
     this->override_density_image = true;
@@ -159,6 +160,8 @@ initialise_keymap()
                          &this->output_additive_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
+    this->parser.add_key("restart reconstruction every scatter iteration",
+                         &this->restart_reconstruction_every_scatter_iteration);
     this->parser.add_key("maximum scatter scaling factor",
                          &this->max_scale_value);
     this->parser.add_key("minimum scatter scaling factor",
@@ -425,6 +428,11 @@ void ScatterEstimation::set_output_additive_estimate_prefix(std::string name)
 void ScatterEstimation::set_run_debug_mode(bool debug)
 { this->run_debug_mode = debug; }
 
+void ScatterEstimation::set_restart_reconstruction_every_scatter_iteration(bool setting)
+{ this->restart_reconstruction_every_scatter_iteration = setting; }
+
+bool ScatterEstimation::get_restart_reconstruction_every_scatter_iteration() const
+{ return this->restart_reconstruction_every_scatter_iteration; }
 
 void
 ScatterEstimation::
@@ -557,8 +565,6 @@ set_up()
 
     if(iterative_method)
         this->current_activity_image_sptr.reset(tmp_iterative->get_initial_data_ptr());
-
-    this->current_activity_image_sptr->fill(1.0);
 
     //
     // ScatterSimulation
@@ -778,10 +784,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         convert << output_additive_estimate_prefix << "_0_2d.hs";
 
         std::string out_filename = convert.str(); //extras_path.get_path() +"/"+ output_background_estimate_prefix + "";
-        add_projdata_2d_sptr = create_new_proj_data(out_filename,
+        this->add_projdata_2d_sptr = create_new_proj_data(out_filename,
                                                     this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                     this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-        add_projdata_2d_sptr->fill(*back_projdata_2d_sptr);
+        this->add_projdata_2d_sptr->fill(*this->back_projdata_2d_sptr);
         this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr);
 
         iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->add_projdata_2d_sptr);
@@ -791,7 +797,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                          this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
-        data_to_fit_projdata_sptr->fill(*input_projdata_2d_sptr);
+        data_to_fit_projdata_sptr->fill(*this->input_projdata_2d_sptr);
         subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_2d_sptr);
     }
     else
@@ -877,9 +883,9 @@ process_data()
              "reconstruction ...");
 
         if (iterative_method)
-            reconstruct_iterative(0, this->current_activity_image_sptr);
+            reconstruct_iterative(0);
         else
-            reconstruct_analytic(0, this->current_activity_image_sptr);
+            reconstruct_analytic(0);
 
         if ( run_debug_mode )
         {
@@ -920,11 +926,6 @@ process_data()
                 *this->current_activity_image_sptr += *act_image_for_averaging;
                 *this->current_activity_image_sptr /= 2.f;
             }
-        }
-
-        if (!iterative_method)
-        {
-            // Threshold
         }
 
         info("ScatterEstimation: Scatter simulation in progress...");
@@ -1083,22 +1084,23 @@ process_data()
 
             if (!is_null_ptr(this->back_projdata_2d_sptr))
             {
-                add_proj_data(*add_projdata_2d_sptr, *this->back_projdata_2d_sptr);
+                add_proj_data(*this->add_projdata_2d_sptr, *this->back_projdata_2d_sptr);
             }
-            this->multiplicative_binnorm_2d_sptr->apply(*add_projdata_2d_sptr);
+            this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr);
         }
         else
         {
 	    // TODO restructure code to move additive_projdata code from above
             error("ScatterEstimation: You should not be here. This is not 2D.");
         }
-        current_activity_image_sptr->fill(1.f);
 
-        iterative_method ? reconstruct_iterative(i_scat_iter,
-                                                 this->current_activity_image_sptr):
-                           reconstruct_analytic(i_scat_iter, this->current_activity_image_sptr);
+        if (this->restart_reconstruction_every_scatter_iteration)
+        { this->current_activity_image_sptr->fill(1.f); }
 
-        scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
+        iterative_method ? reconstruct_iterative(i_scat_iter):
+                           reconstruct_analytic(i_scat_iter);
+
+        scatter_simulation_sptr->set_activity_image_sptr(this->current_activity_image_sptr);
 
     }
 
@@ -1109,21 +1111,18 @@ process_data()
 
 void
 ScatterEstimation::
-reconstruct_iterative(int _current_iter_num,
-                      shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
+reconstruct_iterative(int _current_iter_num)
 {
 
     shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > tmp_iterative =
             dynamic_pointer_cast<IterativeReconstruction<DiscretisedDensity<3, float> > >(reconstruction_template_sptr);
 
-    //
     // Now, we can call Reconstruction::set_up().
     if (tmp_iterative->set_up(this->current_activity_image_sptr) == Succeeded::no)
     {
         error("ScatterEstimation: Failure at set_up() of the reconstruction method. Aborting.");
     }
 
-    //    return iterative_object->reconstruct(this->activity_image_lowres_sptr);
     tmp_iterative->reconstruct(this->current_activity_image_sptr);
 
     if(this->run_debug_mode)
@@ -1133,15 +1132,13 @@ reconstruct_iterative(int _current_iter_num,
         FilePath tmp(convert.str(),false);
         tmp.prepend_directory_name(extras_path.get_path());
         OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-                write_to_file(tmp.get_string(), *_current_estimate_sptr);
-
+                write_to_file(tmp.get_string(), *this->current_activity_image_sptr);
     }
 }
 
 void
 ScatterEstimation::
-reconstruct_analytic(int _current_iter_num,
-                     shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
+reconstruct_analytic(int _current_iter_num)
 {
     AnalyticReconstruction* analytic_object =
             dynamic_cast<AnalyticReconstruction* > (this->reconstruction_template_sptr.get());
@@ -1154,7 +1151,7 @@ reconstruct_analytic(int _current_iter_num,
         FilePath tmp(convert.str(),false);
         tmp.prepend_directory_name(extras_path.get_path());
         OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-                write_to_file(tmp.get_string(), *_current_estimate_sptr);
+                write_to_file(tmp.get_string(), *this->current_activity_image_sptr);
 
     }
 
