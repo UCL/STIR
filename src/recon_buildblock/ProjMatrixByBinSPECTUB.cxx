@@ -502,12 +502,12 @@ set_up(
 	//... to sort angles into subsets ......................................
 
 	prj.order = new int [ prj.Nang ];
-	index_calc( prj.order );
+    index_calc( prj.order, wmh);
 
 	//... to fill ang structure ............................................
 
 	ang = new angle_type [ prj.Nang ];		
-	fill_ang( ang );			   
+    fill_ang( ang,wmh, Rrad );
 
 	//... to fill high resolution discrete distribution functions ..............
 
@@ -574,12 +574,12 @@ set_up(
                 // we do this to avoid using its own read_msk_file
                 wmh.do_msk_file = false;
 	        wmh.do_msk_att = true;
-                generate_msk( msk_3d, msk_2d, mask_from_file, &vol);
+                generate_msk( msk_3d, msk_2d, mask_from_file, &vol, wmh);
                 delete[] mask_from_file;
               }
             else
               {
-		generate_msk( msk_3d, msk_2d, attmap, &vol);
+        generate_msk( msk_3d, msk_2d, attmap, &vol, wmh);
               }
           }
 	else msk_2d = msk_3d = NULL;
@@ -591,7 +591,7 @@ set_up(
 
 	//... setting PSF maximum size (in bins) and memory allocation for PSF values .......
 
-	this->maxszb = max_psf_szb( ang );  // maximum PSF size (horizontal component of PSF)
+    this->maxszb = max_psf_szb( ang, wmh );  // maximum PSF size (horizontal component of PSF)
 	NITEMS = new int * [prj.NOS];
 	for (int kOS=0; kOS<prj.NOS; ++kOS) {
 	  NITEMS[kOS] = new int [ wm.NbOS ];
@@ -735,7 +735,7 @@ delete_UB_SPECT_arrays()
 void
 ProjMatrixByBinSPECTUB::
 compute_one_subset(const int kOS,
-                   float * Rrad) const
+                   const float *Rrad) const
 {
 
   CPUTimer timer;

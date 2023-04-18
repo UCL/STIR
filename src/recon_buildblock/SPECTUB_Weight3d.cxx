@@ -56,7 +56,7 @@ void wm_calculation(const int kOS,
                     const bool *msk_2d,
                     const int maxszb,
                     const discrf_type * const gaussdens,
-             const int *const  NITEMS, wm_da_type &wm, wmh_type &wmh, float *Rrad)
+             const int *const  NITEMS, wm_da_type &wm, wmh_type &wmh, const float *Rrad)
 {
 	
 	float weight;
@@ -314,7 +314,7 @@ void wm_size_estimation (int kOS,
 						 const discrf_type * const gaussdens,
                          int *NITEMS,
                          wmh_type& wmh,
-                         float * Rrad)
+                         const float * Rrad)
 {
 	int   jp;
 	float eff;
@@ -650,7 +650,7 @@ void fill_psf_3d (psf2da_type *psf,
 
 	//... vertical component ..............................
 	
-	psf1d_v->sgmcm   = calc_sigma_v( vox, wmh.COL);
+    psf1d_v->sgmcm   = calc_sigma_v( vox, wmh.COL, wmh);
 	psf1d_v->lngcmd2 = psf1d_v->sgmcm * wmh.maxsigm;
 	psf1d_v->lngcm   = psf1d_v->lngcmd2 * (float)2.;
 	psf1d_v->di      = min( (int) floor( thdx / psf1d_v->sgmcm ), gaussdens->lng - 1 ) ;

@@ -32,22 +32,22 @@ namespace SPECTUB {
 //  extern float * Rrad;  //! radii per view
 
 
-void wm_calculation( const int kOS,
+void wm_calculation(const int kOS,
                     const SPECTUB::angle_type *const ang,
                     SPECTUB::voxel_type vox,
-					bin_type bin, 
+                    bin_type bin,
                     const SPECTUB::volume_type& vol,
-					const proj_type& prj, 
-					const float *attmap,
-					const bool *msk_3d,
-					const bool *msk_2d,
-					const int maxszb,
+                    const proj_type& prj,
+                    const float *attmap,
+                    const bool *msk_3d,
+                    const bool *msk_2d,
+                    const int maxszb,
                     const SPECTUB::discrf_type *const gaussdens,
                     const int *const  NITEMS,
                     SPECTUB::wm_da_type& wm,
                     SPECTUB::wmh_type& wmh,
-                    float * Rrad
-					);
+                    const float *Rrad
+                    );
 
 void wm_size_estimation (int kOS,
                          const SPECTUB::angle_type * const ang,
@@ -61,7 +61,7 @@ void wm_size_estimation (int kOS,
                          const SPECTUB::discrf_type * const gaussdens,
                          int *NITEMS,
                          SPECTUB::wmh_type &wmh,
-                         float *Rrad);
+                         const float *Rrad);
 
 
 //... geometric component ............................................

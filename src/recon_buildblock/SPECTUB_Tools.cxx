@@ -47,16 +47,16 @@ namespace SPECTUB {
 
 //... global variables ..............................................
 
-extern wm_da_type wm;
-extern wmh_type wmh; 
-extern float * Rrad;
+//extern wm_da_type wm;
+//extern wmh_type wmh;
+//extern float * Rrad;
 
 
 //=============================================================================
 //=== write_wm_FC =============================================================
 //=============================================================================
 
-void write_wm_FC()
+void write_wm_FC(SPECTUB::wm_da_type& wm)
 {
 	FILE *fid;
 	
@@ -110,7 +110,7 @@ void write_wm_FC()
 //=== write_wm_hdr ============================================================
 //=============================================================================
 
-void write_wm_hdr()
+void write_wm_hdr(SPECTUB::wm_da_type& wm, SPECTUB::wmh_type& wmh)
 {
 	ofstream stream1( wm.fn_hdr.c_str() );
 	if( !stream1 ) error_wmtools_SPECT( 31, wm.fn_hdr );  
@@ -192,7 +192,7 @@ void write_wm_hdr()
 //=== write_wm_STIR ===========================================================
 //=============================================================================
 
-void write_wm_STIR()
+void write_wm_STIR(wm_da_type &wm)
 {
 	int seg_num = 0;             // segment number for STIR matrix (always zero)
 	FILE *fid;
@@ -228,7 +228,7 @@ void write_wm_STIR()
 //=== index_calc ==============================================================
 //=============================================================================
 
-void index_calc ( int *indexs )
+void index_calc ( int *indexs , SPECTUB::wmh_type& wmh)
 {
 	if ( wmh.prj.NOS == 1 ){
 		for ( int i = 0 ; i < wmh.prj.Nang ; i++ ){
@@ -332,7 +332,7 @@ void index_calc ( int *indexs )
 //=== read rotation radius ==================================================
 //=============================================================================
 
-void read_Rrad()
+void read_Rrad(float * Rrad, SPECTUB::wmh_type& wmh)
 {
 	string line;
 	ifstream stream1( wmh.Rrad_fn.c_str() );
@@ -529,7 +529,7 @@ void read_Rrad()
 //=== calc_sigma_v =========================================================
 //==========================================================================
 
-float calc_sigma_v( voxel_type	vox, collim_type COL)
+float calc_sigma_v( voxel_type	vox, collim_type COL, SPECTUB::wmh_type& wmh)
 {
 	float sigma;
 	if ( COL.do_fb ){
@@ -547,7 +547,7 @@ float calc_sigma_v( voxel_type	vox, collim_type COL)
 //=== fill_ang ================================================================
 //=============================================================================
 
-void fill_ang ( angle_type *ang )
+void fill_ang ( angle_type *ang, SPECTUB::wmh_type& wmh,const float * Rrad)
 {
 	float DX    = (float) 0.5 / wmh.psfres ;
 	float dg2rd = boost::math::constants::pi<float>() / (float)180. ;
@@ -614,7 +614,7 @@ void fill_ang ( angle_type *ang )
 //=== generate msk ============================================================
 //=============================================================================
 
-void generate_msk ( bool *msk_3d, bool *msk_2d, float *attmap, volume_type * vol )
+void generate_msk ( bool *msk_3d, bool *msk_2d, float *attmap, volume_type * vol,SPECTUB::wmh_type& wmh )
 {
 	//... initialzation of msk to true .........................
 	
@@ -672,7 +672,7 @@ void generate_msk ( bool *msk_3d, bool *msk_2d, float *attmap, volume_type * vol
 		else {
 			//... to read a mask from a (int) file ....................
 			
-			if ( wmh.do_msk_file ) read_msk_file( msk_3d );             
+            if ( wmh.do_msk_file ) read_msk_file( msk_3d, wmh);
 		}
 	}
 
@@ -717,7 +717,7 @@ void generate_msk ( bool *msk_3d, bool *msk_2d, float *attmap, volume_type * vol
 //=== read_mask file ==========================================================
 //=============================================================================
 
-void read_msk_file( bool *msk )
+void read_msk_file( bool *msk, SPECTUB::wmh_type& wmh )
 {
 	FILE *fid;
 	int *aux;
@@ -739,7 +739,7 @@ void read_msk_file( bool *msk )
 //=== read_att_map ============================================================
 //=============================================================================
 
-void read_att_map( float *attmap )
+void read_att_map( float *attmap,SPECTUB::wmh_type& wmh )
 {
 	FILE *fid;
 	if ( ( fid = fopen( wmh.att_fn.c_str() , "rb") ) == NULL ) error_wmtools_SPECT ( 124, wmh.att_fn );
@@ -763,7 +763,7 @@ void read_att_map( float *attmap )
 //=== max_psf_szb ==========================================================
 //==========================================================================
 
-int max_psf_szb( angle_type *ang )
+int max_psf_szb( angle_type *ang, SPECTUB::wmh_type& wmh)
 { 
 	int maxszb;
 	float Rrad_max = ang[0].Rrad;
@@ -803,7 +803,7 @@ int max_psf_szb( angle_type *ang )
 		maxszb = (int)floor( wmh.maxsigm * (float)2. * sig_h_max_cm / wmh.prj.szcm ) + 3;
 	
 		if ( wmh.do_psf_3d ){
-			float sig_v_max_cm = calc_sigma_v( vox, wmh.COL );
+            float sig_v_max_cm = calc_sigma_v( vox, wmh.COL, wmh );
 			int maxszb_v = (int)floor( wmh.maxsigm * (float)2. * sig_v_max_cm / wmh.prj.thcm ) + 3;
 			maxszb = maxim( maxszb , maxszb_v ); 	
 		}

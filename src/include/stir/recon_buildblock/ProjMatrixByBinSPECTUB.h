@@ -212,7 +212,7 @@ class ProjMatrixByBinSPECTUB :
 
 	
   void compute_one_subset(const int kOS,
-                          float * Rrad) const;
+                          const float *Rrad) const;
   void delete_UB_SPECT_arrays();
   mutable std::vector<bool> subset_already_processed;
 };
