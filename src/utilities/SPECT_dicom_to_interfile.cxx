@@ -220,7 +220,8 @@ stir::Succeeded GetRadionuclideInfo(const gdcm::File &file, const RadionuclideIn
       return stir::Succeeded::yes;
     }
   } catch (...){
-    stir::error(boost::format("GetRadionuclideInfo: cannot read radiopharaceutical info"));
+    stir::warning("GetRadionuclideInfo: cannot read radiopharmaceutical info");
+    dst = "";
     return stir::Succeeded::no;
   }
 
@@ -415,7 +416,8 @@ stir::Succeeded SPECTDICOMData::get_interfile_header(std::string &output_header,
   ss << "!number format := float" << std::endl;
   ss << "!number of bytes per pixel := 4" << std::endl;
   ss << "calibration factor:= " << this->calibration_factor<< std::endl;
-  ss << "isotope name:= " << this->isotope_name<< std::endl;
+  if (!this->isotope_name.empty())
+    ss << "isotope name:= " << this->isotope_name<< std::endl;
   ss << std::endl;
 
   // one energy window per header
