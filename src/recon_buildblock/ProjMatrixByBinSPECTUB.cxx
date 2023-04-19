@@ -21,14 +21,11 @@
   \author Daniel Deidda
 */
 
-//#include "stir/ProjDataInterfile.h"
 #include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-//#include "stir/KeyParser.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
-//#include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -55,18 +52,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-//#include <time.h>
 
 //... user defined libraries .............................................................
 
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
-
-/* UB-SPECT global variables */
-//namespace SPECTUB {
-//  wm_da_type wm;
-//  wmh_type wmh;
-//  float * Rrad;
-//}
 
 using namespace SPECTUB;
 START_NAMESPACE_STIR

@@ -27,11 +27,6 @@
 
 namespace SPECTUB {
 
-//  extern wm_da_type wm; //! weight (or probability) matrix
-//  extern wmh_type wmh;  //! information to construct wm
-//  extern float * Rrad;  //! radii per view
-
-
 void wm_calculation(const int kOS,
                     const SPECTUB::angle_type *const ang,
                     SPECTUB::voxel_type vox,

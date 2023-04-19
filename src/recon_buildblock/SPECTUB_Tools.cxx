@@ -22,7 +22,6 @@
 #include <boost/math/constants/constants.hpp>
 
 using namespace std;
-//using std::string;
 
 //... user defined libraries .......................................
 
@@ -44,13 +43,6 @@ namespace SPECTUB {
 
 #define DELIMITER1 '#' //delimiter character in input parameter text file
 #define DELIMITER2 '%' //delimiter character in input parameter text file
-
-//... global variables ..............................................
-
-//extern wm_da_type wm;
-//extern wmh_type wmh;
-//extern float * Rrad;
-
 
 //=============================================================================
 //=== write_wm_FC =============================================================
