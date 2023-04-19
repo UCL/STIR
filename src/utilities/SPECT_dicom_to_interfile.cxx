@@ -521,8 +521,26 @@ stir::Succeeded SPECTDICOMData::get_proj_data(const std::string &output_file) co
   return stir::Succeeded::yes;
 }
 
-int main(int argc, char * argv[])
+// remove spaces and tabs etc
+static std::string
+convert_to_filename(const std::string& s)
 {
+  char const* const white_space = " \t_";
+  // skip white space
+  const auto cp = s.find_first_not_of(white_space, 0);
+  if (cp == std::string::npos)
+    return std::string();
+  // remove trailing white spaces
+  const auto eos = s.find_last_not_of(white_space);
+  auto trimmed = s.substr(cp, eos - cp + 1);
+  // replace remaining spaces with '_'
+  std::replace(trimmed.begin(), trimmed.end(), ' ', '_');
+  return trimmed;
+}
+
+int
+main(int argc, char* argv[])
+  {
 
     if ( argc!=4) {
       std::cerr << "Usage: " << argv[0] << " <output_interfile_prefix> sinogram(dcm)> is_planar?\n";
@@ -558,7 +576,7 @@ int main(int argc, char * argv[])
       std::string header;
       s = spect.get_interfile_header(header, data_filename, w);
 
-      const std::string header_filename = output_prefix + spect.energy_window_name[w] + ".hdr";
+      const std::string header_filename = output_prefix + convert_to_filename(spect.energy_window_name[w]) + ".hdr";
       std::filebuf fb;
       fb.open (header_filename,std::ios::out);
       std::ostream os(&fb);
