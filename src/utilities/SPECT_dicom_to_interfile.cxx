@@ -174,7 +174,7 @@ stir::Succeeded GetEnergyWindowInfo(const gdcm::File &file, const EnergyWindowIn
     }
 
   } catch (...){
-    stir::error(boost::format("GetEnergyWindowInfo: cannot read energy info"));
+    stir::warning("GetEnergyWindowInfo: cannot read energy info");
     return stir::Succeeded::no;
   }
 
@@ -339,9 +339,12 @@ stir::Succeeded SPECTDICOMData::open_dicom_file(bool is_planar)
       upper_en_window_thres.resize(num_energy_windows);
       for (int w=1; w<= num_energy_windows; ++w)
         {
-          if (GetEnergyWindowInfo(file, EnergyWindowInfo::WindowName , energy_window_name[w-1], w) == stir::Succeeded::yes){
-            std::cout << "Energy window: " << energy_window_name[w-1] << std::endl;
-          }
+          if (GetEnergyWindowInfo(file, EnergyWindowInfo::WindowName, energy_window_name[w - 1], w) == stir::Succeeded::yes)
+            {
+              std::cout << "Energy window: " << energy_window_name[w - 1] << std::endl;
+            }
+          else
+            energy_window_name[w - 1] = "en" + std::to_string(w);
 
           if (GetEnergyWindowInfo(file, EnergyWindowInfo::LowerThreshold , lower_window_as_string, w) == stir::Succeeded::yes){
             lower_en_window_thres[w-1] = std::stof(lower_window_as_string);
