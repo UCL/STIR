@@ -8,7 +8,9 @@
 # See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
-: ${pardir:=$(dirname $0)}
+# Can be overridden by setting the pardir env variable before calling this script
+: ${pardir:="`stir_config --examples-dir`"}
+
 
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` output_filename_prefix GE_AC_filename STIR_NAC_filename"
@@ -25,9 +27,9 @@ invert_axis x ${output_filename_prefix}_prereg.hv ${GE_AC_filename}
 invert_axis z ${output_filename_prefix}_prereg.hv ${output_filename_prefix}_prereg.hv
 
 # convert to Nifti
-stir_math --output-format $pardir/../samples/stir_math_ITK_output_file_format.par ${output_filename_prefix}_prereg.nii ${output_filename_prefix}_prereg.hv
+stir_math --output-format $pardir/samples/stir_math_ITK_output_file_format.par ${output_filename_prefix}_prereg.nii ${output_filename_prefix}_prereg.hv
 NAC_filename_nii=${NAC_filename%%.*}_copy.nii
-stir_math --output-format $pardir/../samples/stir_math_ITK_output_file_format.par ${NAC_filename_nii} ${NAC_filename}
+stir_math --output-format $pardir/samples/stir_math_ITK_output_file_format.par ${NAC_filename_nii} ${NAC_filename}
 
 # register
 reg_aladin -ref ${NAC_filename_nii} -flo ${output_filename_prefix}_prereg.nii -res ${output_filename_prefix}.nii -rigOnly -speeeeed

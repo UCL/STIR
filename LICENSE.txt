@@ -1,4 +1,4 @@
-Licensing information for STIR 5.0.2
+Licensing information for STIR 5.1.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -67,11 +67,13 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/PixelsOnCartesianGrid.h
 ./src/include/stir/IO/stir_ecat6.h
 ./src/include/stir/IO/interfile.h
+./src/include/stir/IO/InputStreamWithRecordsFromUPENNbin.h
 ./src/include/stir/IO/InterfileHeader.h
 ./src/include/stir/IO/InterfileHeaderSiemens.h
 ./src/include/stir/IO/ecat6_utils.h
 ./src/include/stir/IO/stir_ecat_common.h
 ./src/include/stir/IO/stir_ecat7.h
+./src/include/stir/IO/InputStreamWithRecordsFromUPENNtxt.h
 ./src/include/stir/IO/ecat6_types.h
 ./src/include/stir/ProjDataInfo.inl
 ./src/include/stir/SegmentBySinogram.inl

@@ -38,11 +38,13 @@ image duration (sec)[1] := 3
 image relative start time (sec)[1] := 1
 
 number of energy windows:=1
+; lower/upper level (in keV)
 energy window lower level[1]:=425
 energy window upper level[1]:=650
 
 Scanner parameters:= 
 Scanner type := unknown
+; energy resolution as a fraction at the reference energy
 Energy resolution := 0.145
 Reference energy (in keV) := 511
 

@@ -38,10 +38,13 @@ START_NAMESPACE_STIR
   \brief
   A class in the GeneralisedPrior hierarchy. This implements a quadratic Gibbs prior.
 
-  The gradient of the prior is computed as follows:
-  
+  The prior is computed as follows:
   \f[
-  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  g_r = \frac{1}{4} \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
+  \f]
+  with gradient  
+  \f[
+  g_r = \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \f]
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.

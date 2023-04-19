@@ -70,8 +70,10 @@ It reads a parameter file, which refers to
 	END CListModeDataSAFIR Parameters:=
   \endcode
 
-  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0" and "SAFIR CListModeData\0". If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
+  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0", "SAFIR CListModeData\0" and "NeuroLF CListModeData\0".
+  If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
 */
+template<class EventDataType>
 class SAFIRCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
@@ -87,7 +89,7 @@ public:
 		return false; // cannot read from istream
 	}
 
-	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData" or "MUPET CListModeData").
+	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData", "NeuroLF CListModeData" or "MUPET CListModeData").
 	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
 	{
 		// Looking for the right key in the parameter file
@@ -102,7 +104,18 @@ public:
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
 		char* buffer = new char[32];
 		data_file.read(buffer, 32);
-		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20));
+		bool cr = false;
+		// depending on used template, check header of listmode file for correct format
+		if (std::is_same<EventDataType, CListEventDataSAFIR>::value) {
+			cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) || !strncmp(buffer, "SAFIR CListModeData\0", 20));
+		}
+		else if (std::is_same<EventDataType, CListEventDataNeuroLF>::value) {
+			cr = !strncmp(buffer, "NeuroLF CListModeData\0", 20);
+		}
+		else{
+			warning("SAFIRCListModeInputFileFormat was initialised with an unexpected template.");
+		}
+
 		if( !cr ) {
 			warning("SAFIRCListModeInputFileFormat tried to read file " + listmode_filename + " but it seems to have the wrong signature.");
 		}
@@ -123,7 +136,7 @@ public:
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
-		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR<EventDataType>>(listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
 	}
 
 protected:
@@ -156,8 +169,8 @@ protected:
 
 	bool actual_do_parsing( const std::string& filename) const {
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
-		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str()) ) {
-			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+		if( const_cast<SAFIRCListmodeInputFileFormat<EventDataType>*>(this)->parse(filename.c_str()) ) {
+			info(const_cast<SAFIRCListmodeInputFileFormat<EventDataType>*>(this)->parameter_info());
 			return true;
 		}
 		else return false;

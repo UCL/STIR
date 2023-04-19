@@ -3,8 +3,22 @@ name: Build and ctest and recon_test_pack CI
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -90,6 +104,7 @@ jobs:
           CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
           case ${{matrix.os}} in
             (ubuntu*)
+              sudo apt update
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
                   # package is called clang, need libomp-dev for OpenMP support
@@ -133,10 +148,10 @@ jobs:
           python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v0.8 https://github.com/gschramm/parallelproj
+             git clone --depth 1 --branch v1.2.10 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
-             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
              cmake --build . --target install --config Release
              cd ../..
           fi
@@ -168,6 +183,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1
       with:
         key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
 
     - name: configure
       shell: bash

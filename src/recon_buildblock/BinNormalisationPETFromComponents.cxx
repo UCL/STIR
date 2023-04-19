@@ -94,6 +94,12 @@ BinNormalisationPETFromComponents::set_up(const shared_ptr<const ExamInfo>& exam
       }
   }
 
+  this->_is_trivial =
+    (!has_crystal_efficiencies()
+     || (fabs(efficiencies.find_min() - 1) <= .0001 && fabs(efficiencies.find_max() - 1) <= .0001))
+    && (!has_geometric_factors() || (fabs(geo_data.find_min() - 1) <= .0001 && fabs(geo_data.find_max() - 1) <= .0001))
+    && (!has_block_factors() || (fabs(block_data.find_min() - 1) <= .0001 && fabs(block_data.find_max() - 1) <= .0001));
+
   this->create_proj_data();
   return Succeeded::yes;
 }
@@ -101,10 +107,9 @@ BinNormalisationPETFromComponents::set_up(const shared_ptr<const ExamInfo>& exam
 bool
 BinNormalisationPETFromComponents::is_trivial() const
 {
-  return (!has_crystal_efficiencies()
-          || (fabs(efficiencies.find_min() - 1) <= .0001 && fabs(efficiencies.find_max() - 1) <= .0001))
-         && (!has_geometric_factors() || (fabs(geo_data.find_min() - 1) <= .0001 && fabs(geo_data.find_max() - 1) <= .0001))
-         && (!has_block_factors() || (fabs(block_data.find_min() - 1) <= .0001 && fabs(block_data.find_max() - 1) <= .0001));
+  if (!this->_already_set_up)
+    error("BinNormalisationPETFromComponents: is_trivial called without set_up");
+  return this->_is_trivial;
 }
 
 void

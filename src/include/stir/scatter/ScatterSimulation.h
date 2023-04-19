@@ -180,6 +180,25 @@ public:
     void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                           int _size_xy = -1, int _size_z = -1);
 
+
+    //! Get and set methods for the downsample_scanner_bool
+    //@{
+    void set_downsample_scanner_bool(const bool arg);
+    bool get_downsample_scanner_bool() const;
+    //@}
+
+    //! Get and set methods for downsample_scanner_rings
+    //@{
+    int get_num_downsample_scanner_rings() const;
+    void set_num_downsample_scanner_rings(const int arg);
+    //@}
+
+    //! Get and set methods for downsample_scanner_dets
+    //@{
+    int get_num_downsample_scanner_dets() const;
+    void set_num_downsample_scanner_dets(const int arg);
+    //@}
+
     //! Downsample the scanner keeping the total axial length the same.
     /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
         If \c new_num_dets <=0, use the default set (currently set in set_defaults())
@@ -281,6 +300,18 @@ protected:
      * @{
      */
 
+    //! gamma-energy-part of the detection efficiency
+    /*! 
+      Formula used is based on a Gaussian pdf for the efficiency, with
+      \f[ FWHM_E = \alpha  \sqrt(E) \f]
+      where the proportionality constant \f$\alpha\f$ is determined by the
+      energy FWHM of the Scanner at the reference energy.
+
+      This pdf is then integrated from the lower to the upper energy window limits.
+
+      \sa Scanner::get_energy_resolution
+      \sa Scanner::get_reference_energy
+    */
     float detection_efficiency(const float energy) const;
 
 

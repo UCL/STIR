@@ -53,14 +53,12 @@ Succeeded
 interpolate_projdata(ProjData& proj_data_out,
 		     const ProjData& proj_data_in, 
 		     const BSpline::BSplineType spline_type,
-		     const bool remove_interleaving = false,
-		     const bool use_view_offset = false);
+		     const bool remove_interleaving = false);
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-		     const ProjData& proj_data_in,
-		     const BasicCoordinate<3, BSpline::BSplineType> & spline_type,
-		     const bool remove_interleaving = false,
-		     const bool use_view_offset = false);
+         const ProjData& proj_data_in,
+         const BasicCoordinate<3, BSpline::BSplineType> & these_types,
+         const bool remove_interleaving);
 //@}
 
 END_NAMESPACE_STIR

@@ -2,8 +2,9 @@
 # Example script to unlist and reconstruct NEMA data from https://zenodo.org/record/1304454
 # Author: Kris Thielemans
 
-# default location of directory with parameter files
-: ${pardir:=~/devel/STIR/examples/Siemens-mMR}
+# default location of directory with parameter files.
+# Can be overridden by setting the pardir env variable before calling this script
+: ${pardir:="`stir_config --examples-dir`/Siemens-mMR"}
 export pardir
 
 ### create projection data (sinograms) from listmode file

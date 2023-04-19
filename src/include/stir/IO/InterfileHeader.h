@@ -282,9 +282,10 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
   int num_detector_layers;
-  //! Energy resolution of the system in keV.
+  //! Energy resolution of the scanner at the reference energy as a ratio
+  /*! An energy resolution of 0.1 indicates a 10 percent FWHM */
   float energy_resolution;
-  //! Reference energy.
+  //! Reference energy used for the energy resolution
   float reference_energy;
   
   //! \name new variables for block geometry

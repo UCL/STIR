@@ -1249,7 +1249,7 @@ void error_wmtools_SPECT_mph( int nerr, int ip, string txt )
 			
 		//... error: value of argv[]..........................
 		
-		case 122: printf("\n\nError wm_SPECT: File with variable collimator parameters: %s not found.\n",txt.c_str() ); break;
+		case 122: printf("\n\nError wm_SPECT: File with variable parameters: %s not found.\n",txt.c_str() ); break;
 		case 124: printf("\n\nError wm_SPECT: Cannot open attenuation map: %s for reading..\n", txt.c_str() ); break;
 		case 126: printf("\n\nError wm_SPECT: Cannot open file mask: %s for reading\n",txt.c_str() ); break;
         case 150: printf("\n\nError wm_SPECT: List of hole parameters has different length (%d) than number of holes.\n", ip); break;

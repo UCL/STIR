@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
      ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                    1, scanner_sptr->get_num_rings()-1,
                                    scanner_sptr->get_num_detectors_per_ring()/2,
-                                   scanner_sptr->get_default_num_arccorrected_bins(), 
+                                   scanner_sptr->get_max_num_non_arccorrected_bins(), 
                                    false)
       ));
 

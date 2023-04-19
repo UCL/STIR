@@ -92,13 +92,14 @@ actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&
   if (norm(other.get_grid_spacing() - this->get_grid_spacing()) > 1.E-4F*norm(this->get_grid_spacing()))
     {
       char tmp[2000];
-      sprintf(tmp, "Not the same grid spacing: (%g,%g,%g) and (%g,%g,%g)",
+      snprintf(tmp, 2000, "Not the same grid spacing: (%g,%g,%g) and (%g,%g,%g)",
 	      other.get_grid_spacing()[1],
 	      num_dimensions>1?other.get_grid_spacing()[2]:0.,
 	      num_dimensions>2?other.get_grid_spacing()[3]:0.,
 	      this->get_grid_spacing()[1],
 	      num_dimensions>1?this->get_grid_spacing()[2]:0.,
 	      num_dimensions>2?this->get_grid_spacing()[3]:0.);
+      explanation = tmp;
       return false;
     }
 

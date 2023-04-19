@@ -66,6 +66,9 @@ install_manifest.txt
 *.manifest
 *.exp
 
+# Ignore Visual Studio Code User-specific files
+build/
+
 # MATLAB
 
 *.pdf

@@ -75,6 +75,10 @@ set(${dir_EXE_SOURCES}
         separate_true_from_random_scatter_for_necr.cxx
 )
 
+if (ITK_FOUND)
+  list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
+endif()
+
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
 endif()
@@ -88,9 +92,6 @@ endif()
 
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
-
-  install(DIRECTORY share/ DESTINATION ${STIR_DATA_DIR}
-		  FILES_MATCHING PATTERN "*.json")
 endif()
 
 include(stir_exe_targets)

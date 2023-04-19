@@ -180,17 +180,21 @@ void distributable_computation(
 /*!
   \brief This function essentially implements a loop over a cached listmode file
   \ingroup distributable
+
+  \param has_add if \c true, the additive term in \c record_cache is taken into account
+  \param accumulate if \c true, add to  \c output_image_ptr, otherwise fill it with zeroes before doing anything.
 !*/
 void LM_distributable_computation(
         const shared_ptr<ProjMatrixByBin> PM_sptr,
         const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
         DiscretisedDensity<3,float>* output_image_ptr,
         const DiscretisedDensity<3,float>* input_image_ptr,
-        const std::vector<BinAndCorr>& record_ptr,
+        const std::vector<BinAndCorr>& record_cache,
         const int subset_num, const int num_subsets,
-        const bool has_add);
+        const bool has_add,
+        const bool accumulate);
 
-  /*! \name Tag-names currently used by stir::distributable_computation and related functions0
+  /*! \name Tag-names currently used by stir::distributable_computation and related functions
      \ingroup distributable
   */
   //!@{

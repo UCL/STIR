@@ -37,7 +37,7 @@ main(int argc, char** argv)
   if (argc < 7 || argc > 13)
     {
       std::cerr << "Usage: " << argv[0]
-                << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num\\\n"
+                << " out_filename in_norm_filename_prefix measured_data multiply_or_divide iter_num eff_iter_num\\\n"
                 << "\t [do_eff [ do_geo [do_block [do_display [do_symmetry_per_block ]]]]]\n"
                 << "multiply_or_divide is 1 (multiply) or 0 (divide), with the latter being \"correction\"\n"
                 << "do_eff, do_geo, do_block are 1 or 0 and all default to 1\n"

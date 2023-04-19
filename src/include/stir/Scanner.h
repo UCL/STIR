@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, 2019, 2021 UCL
+    Copyright (C) 2016, 2019, 2021, 2023 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C 2017-2018, University of Leeds
     This file is part of STIR.
@@ -344,15 +344,22 @@ class Scanner
 
   //@} (end of get geometrical info)
 
-   //! \name Functions to get detector responce info
+   //! \name Functions to get detector response info
   //@{
 
-  //! get the energy resolution of the system
+  //! get the energy resolution as a fraction at the reference energy
+  /*! Values for PET scanners are around 0.1 at 511 keV, depending on the scanner of course.
+    
+    If less than or equal to 0, it is assumed to be unknown.
+  */
   inline float get_energy_resolution() const;
-  //! get the reference energy of the energy resolution
+  //! get the reference energy in keV of the energy resolution
+  /*! For PET, normally set to 511 */
   inline float get_reference_energy() const;
+  //! \c true if energy_resolution and reference_energy are set
+  inline bool has_energy_information() const;
 
-  //@} (end of get detector responce info)
+  //@} (end of get detector response info)
 
   //! \name Functions setting info
   /*! Be careful to keep consistency by setting all relevant parameters.
@@ -425,13 +432,12 @@ class Scanner
 
   //@} (end of block/bucket info)
   //! set the energy resolution of the system
-  //! A negative value indicates, unknown || not set
+  /*! \sa get_energy_resolution() */
   inline void set_energy_resolution(const float new_num);
-  //! set the reference energy of the energy resolution
-  //! A negative value indicates, unknown || not set
+  //! set the reference energy (in keV) of the energy resolution
+  /*! \sa get_reference_energy() */
   inline void set_reference_energy(const float new_num);
 
-  inline bool has_energy_information() const;
   //@} (end of set info)
   
   // Calculate a singles bin index from axial and transaxial singles bin coordinates.
@@ -491,8 +497,7 @@ private:
   int num_transaxial_crystals_per_singles_unit;
 
    //!
-  //! \brief energy_resolution
-  //! \author Nikos Efthimiou
+  //! \brief energy resolution (FWHM as a fraction of the reference_energy)
   //! \details This is the energy resolution of the system.
   //! A negative value indicates, unknown.
   //! This value is dominated by the material of the scintilation crystal

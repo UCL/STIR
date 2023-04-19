@@ -116,6 +116,18 @@ detection_efficiency(const float energy) const
   if (!this->_already_set_up)
         error("ScatterSimulation::find_detectors: need to call set_up() first");
 #endif
+  /*
+    motivation for formula:
+
+    FWHM_at_E = alpha * sqrt(E)
+
+    FWHM_at_ref = alpha * sqrt[E_ref)
+    = E_ref * resolution
+
+    hence
+
+    alpha = sqrt(E_ref) *resolution_at_ref
+  */
 
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 

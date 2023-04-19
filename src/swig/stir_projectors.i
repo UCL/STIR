@@ -95,7 +95,7 @@
     stir::ProjectorByBinPairUsingSeparateProjectors, stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
-#ifdef STIR_WITH_Parallelproj_PROJECTOR
+#ifdef HAVE_parallelproj
 %shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinParallelproj,
     stir::ForwardProjectorByBin>);
 %shared_ptr(stir::ForwardProjectorByBinParallelproj);
@@ -117,7 +117,7 @@
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
 %shared_ptr(stir::ProjectorByBinPairUsingParallelproj);
 %template(internalRPProjectorByBinPairUsingParallelproj)
-  stir::RegisteredParsingObject<stir::ProjectorByBinPairUsingeParallelproj,
+  stir::RegisteredParsingObject<stir::ProjectorByBinPairUsingParallelproj,
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif

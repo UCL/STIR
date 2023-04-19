@@ -40,6 +40,7 @@
 
 START_NAMESPACE_STIR
 
+#if STIR_VERSION < 060000
 Succeeded 
 interpolate_axial_position(ProjData& proj_data_out,
                      const ProjData& proj_data_in)
@@ -122,5 +123,6 @@ interpolate_axial_position(ProjData& proj_data_out,
       }
   return Succeeded::yes;
 }
+#endif
 
 END_NAMESPACE_STIR

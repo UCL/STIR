@@ -148,6 +148,7 @@ private:
   static const char* const registered_name;
   shared_ptr<ProjDataInMemory> invnorm_proj_data_sptr;
   bool _already_allocated;
+  bool _is_trivial;
   void create_proj_data();
 };
 

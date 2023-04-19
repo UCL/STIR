@@ -5,7 +5,8 @@
 # Author: Kris Thielemans
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/Siemens-mMR}
+# Can be overridden by setting the pardir env variable before calling this script
+: ${pardir:="`stir_config --examples-dir`/Siemens-mMR"}
 
 : ${sino_input:=sinospan11_f1g1d0b0.hs}
 : ${randoms3d:=MLrandomsspan11_f1.hs}

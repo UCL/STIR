@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018 - 2020 University College London
+    Copyright (C) 2018 - 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -39,7 +39,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 
-#include "stir/TextWriter.h"
+#include "stir/info.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -436,7 +436,7 @@ reconstruct(shared_ptr<TargetT > const& target_data_sptr)
 
   this->stop_timers();
 
-  cerr << "Total CPU Time " << this->get_CPU_timer_value() << "secs"<<endl;
+  info("Total CPU Time " + std::to_string(this->get_CPU_timer_value()) + "secs");
 
   // currently, if there was something wrong, the programme is just aborted
   // so, if we get here, everything was fine
@@ -572,7 +572,7 @@ end_of_iteration_processing(TargetT &current_estimate)
        <<    *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
   }
   
-  writeText(cerr.str().c_str(), INFORMATION_CHANNEL);
+  info(cerr.str());
 
   // Save intermediate (or last) iteration -- if the output is not disabled
   if((!(this->subiteration_num%this->save_interval) ||
@@ -608,8 +608,12 @@ randomly_permute_subset_order() const
 
    }
 
- cerr<<endl<<"Generating new subset sequence: ";
- for(int i=0;i<this->num_subsets;i++) cerr<<final_array[i]<<" ";
+ {
+   std::stringstream s;
+   s<<"Generating new subset sequence: ";
+   for(int i=0;i<this->num_subsets;i++) s<<final_array[i]<<" ";
+   info(s.str(), 2);
+ }
 
  return final_array;
 

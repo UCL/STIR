@@ -37,10 +37,12 @@ template <class elemT> class SegmentBySinogram;
   This mostly is useful in the scatter sinogram expansion.
 */  
 //@{
-Succeeded 
+#if STIR_VERSION < 060000
+STIR_DEPRECATED Succeeded 
 interpolate_axial_position(ProjData& proj_data_out,
 		     const ProjData& proj_data_in);
 //@}
+#endif
 
 END_NAMESPACE_STIR
 

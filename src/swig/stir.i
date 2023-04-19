@@ -38,6 +38,7 @@
 
 #include "stir/num_threads.h"
 
+ #include "stir/find_STIR_config.h"
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -874,6 +875,7 @@ namespace std {
 */
 
 %include "stir/num_threads.h"
+%include "stir/find_STIR_config.h"
 
 // #define used below to check what to do
 #define STIRSWIG_SHARED_PTR

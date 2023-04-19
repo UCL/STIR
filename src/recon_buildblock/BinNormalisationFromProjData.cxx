@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -117,23 +118,7 @@ bool
 BinNormalisationFromProjData::
 is_trivial() const
 {
-  // check if all data is 1 (up to a tolerance of 1e-4)
-  for (int segment_num = this->norm_proj_data_ptr->get_min_segment_num(); 
-       segment_num <= this->norm_proj_data_ptr->get_max_segment_num(); 
-       ++segment_num)
-    {
-      for (int view_num = this->norm_proj_data_ptr->get_min_view_num(); 
-           view_num <= this->norm_proj_data_ptr->get_max_view_num(); 
-           ++view_num)
-        {
-          const Viewgram<float> viewgram =
-            this->norm_proj_data_ptr->get_viewgram(view_num, segment_num);
-          if (fabs(viewgram.find_min()-1)>.0001 || fabs(viewgram.find_max()-1)>.0001)
-            return false; // return from function as we know not all data is 1
-        }
-    }
-  // if we get here. they were all 1
-  return true;
+  return false;
 }
 
 void 

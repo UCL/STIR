@@ -45,7 +45,10 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         styleLabel.setBuddy(styleComboBox)
         self.useStylePaletteCheckBox = QCheckBox("&Use style's standard palette")
         self.useStylePaletteCheckBox.setChecked(True)
-        styleComboBox.textActivated.connect(self.change_UI_style)
+        try: # Required for PyQt version >= v5.14
+            styleComboBox.textActivated.connect(self.change_UI_style)
+        except AttributeError: 
+            styleComboBox.activated.connect(self.change_UI_style)
         self.useStylePaletteCheckBox.toggled.connect(self.change_UI_palette)
 
 

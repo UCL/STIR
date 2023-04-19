@@ -541,8 +541,9 @@ set_up(
 	if ( wmh.do_att || wmh.do_msk_att ){
                 if (is_null_ptr(attenuation_image_sptr))
                     error("Attenation image not set");
-		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
-			error("Currently the attenuation map and emission image must have the same dimension, orientation and voxel size");
+                std::string explanation;
+		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr, explanation))
+			error("Currently the attenuation map and emission image must have the same dimension, orientation and voxel size:\n" + explanation);
 
 		attmap = new float [ vol.Nvox ];
 		std::copy(attenuation_image_sptr->begin_all(), attenuation_image_sptr->end_all(),attmap);

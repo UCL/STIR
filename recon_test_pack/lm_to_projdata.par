@@ -7,7 +7,8 @@ lm_to_projdata Parameters:=
   store prompts := 1  ;default
   ; what to do if it's a delayed event
   store delayeds := 0  ;default
-  
+
+  frame definition file := ${FRAMES}
   ; miscellaneous parameters
 
   ; list each event on stdout and do not store any files (use only for testing!)

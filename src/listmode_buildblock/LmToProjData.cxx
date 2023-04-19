@@ -399,7 +399,7 @@ Succeeded LmToProjData::set_up()
 							       ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
 											     1, scanner_sptr->get_num_rings()-1,
 											     scanner_sptr->get_num_detectors_per_ring()/2,
-											     scanner_sptr->get_default_num_arccorrected_bins(), 
+											     scanner_sptr->get_max_num_non_arccorrected_bins(), 
 											     false)));
       
       if ( normalisation_ptr->set_up(lm_data_ptr->get_exam_info_sptr(), proj_data_info_cyl_uncompressed_ptr)

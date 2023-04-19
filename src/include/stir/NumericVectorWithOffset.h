@@ -120,7 +120,7 @@ public:
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
-  //! \deprecated a*x+b*y (\see xapyb)
+  //! \deprecated a*x+b*y (use xapyb)
   template <typename elemT2>
     STIR_DEPRECATED inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
                       const elemT2 b, const NumericVectorWithOffset& y);
