@@ -90,11 +90,7 @@ class ProjDataVisualisationBackend:
             self.load_projdata()
 
         if self.projdata is not None:
-            if self.segment_data is None:
-                self.segment_data = self.projdata.get_segment_by_view(segment_number)
-
-            elif segment_number != self.get_current_segment_num():
-                self.segment_data = self.projdata.get_segment_by_view(segment_number)
+            self.segment_data = self.projdata.get_segment_by_view(segment_number)
             return self.segment_data
 
     @staticmethod
