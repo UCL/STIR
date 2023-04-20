@@ -70,6 +70,7 @@ endif()
 if (HDF5_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
     GEHDF5Wrapper.cxx
+    GEHDF5ListmodeInputFileFormat
  )
 endif()
 
