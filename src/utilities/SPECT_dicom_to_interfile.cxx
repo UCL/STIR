@@ -576,7 +576,9 @@ main(int argc, char* argv[])
       std::string header;
       s = spect.get_interfile_header(header, data_filename, w);
 
-      const std::string header_filename = output_prefix + convert_to_filename(spect.energy_window_name[w]) + ".hdr";
+      const std::string header_filename
+          = output_prefix + "_en_" + std::to_string(w + 1) + "_" + convert_to_filename(spect.energy_window_name[w]) + ".hdr";
+      stir::info("Writing '" + header_filename + "'");
       std::filebuf fb;
       fb.open (header_filename,std::ios::out);
       std::ostream os(&fb);
