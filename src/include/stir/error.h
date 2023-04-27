@@ -55,7 +55,7 @@ error(const char *const s, ...);
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c ERROR:, then \c string
-  and then another newline to std::cerr. Then it throws an exception (of type string).
+  and then another newline to std::cerr. Then it throws an exception.
 
   \todo At a later stage, it will also write to a log-file.
 
@@ -78,7 +78,7 @@ error(const STRING& string)
 	    << string
 	    << std::endl;
   std::cerr << sstr.str();
-  throw sstr.str();
+  throw std::runtime_error(sstr.str());
 }
 
 END_NAMESPACE_STIR
