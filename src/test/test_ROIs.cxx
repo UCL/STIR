@@ -77,13 +77,15 @@ private:
   */
   void run_tests_one_shape(Shape3D& shape,
 			   VoxelsOnCartesianGrid<float>& image,
-			   const bool do_rotated_ROI_test=true);
+			   const bool do_rotated_ROI_test=true,
+         const bool do_separate_translate_test=true);
 };
 
 void
 ROITests::run_tests_one_shape(Shape3D& shape,
 			      VoxelsOnCartesianGrid<float>& image,
-			      const bool do_rotated_ROI_test)
+			      const bool do_rotated_ROI_test,
+            const bool do_separate_translate_test)
 {
     shape.construct_volume(image, Coordinate3D<int>(1,1,1));
 
@@ -157,6 +159,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       shape.translate(translation*-1);
     }
     // test on translation (image and shape translate separately)
+    if (do_separate_translate_test)
     {
       const CartesianCoordinate3D<float> translation (3,1,10);  
       image.set_origin(image.get_origin()+translation);
@@ -376,6 +379,18 @@ ROITests::run_tests()
       VoxelsOnCartesianGrid<float>  other_image(other_range,other_origin, other_grid_spacing);
       this->run_tests_one_shape(discretised_shape, other_image);
     }
+    // need to fill in image again, as the tests change it
+    ellipsoid.construct_volume(image, make_coordinate(1, 1, 1));
+    {
+      std::cerr << "\t\tlabel image\n";
+      VoxelsOnCartesianGrid<float> other_image(image);
+      other_image += 1;
+      DiscretisedShape3D discretised_shape(other_image);
+      discretised_shape.set_label_index(2);
+      this->run_tests_one_shape(discretised_shape, image, false, false);
+    }
+
+
 
   }
 
