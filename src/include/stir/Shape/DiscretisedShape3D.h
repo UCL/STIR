@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,23 +23,27 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Shape/Shape3D.h"
 #include "stir/shared_ptr.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*! \ingroup Shape
-  \brief A class for shapes that have been discretised
+  \brief A class for shapes that have been discretised as a volume
 
   Currently only supports discretisation via VoxelsOnCartesianGrid.
 
-  For DiscretisedShaped3D objects with smooth edges, voxel values
-    will vary between 0 and 1. 
+  This class supports 2 options:
+  - a label-image with associated label index (an integer), suitable for multiple ROIs in a single file.
+  - a "weight" image, with (potentially) smooth edges, where voxel values
+    vary between 0 and 1.
 
   \par Parameters for parsing
   \verbatim
   Discretised Shape3D Parameters:=
   input filename := <filename>
+  label index := -1 ; if less than 1 (default), we will use "weights"
   END:=
   \endverbatim
   where \a filename needs to specify a volume that can be read by STIR.
@@ -100,16 +105,20 @@ public:
           \a voxel_size is identical to the image's voxel_size
 
     The argument \a num_samples is ignored.
+
+    If get_label_index() >= 0, the weight will be 1 for those voxels whose value is equal to the label_index and zero otherwise.
+    If get_label_index() < 0 (default), the weight will be the actual voxel value.
   */
  virtual float get_voxel_weight(
    const CartesianCoordinate3D<float>& coord,
    const CartesianCoordinate3D<float>& voxel_size, 
    const CartesianCoordinate3D<int>& num_samples) const;
 
- //! Construct a new image (using zoom_image) from the underlying density
+ //! Construct a new image from the underlying density
  /*! 
-   If the images do not have the same characteristics, zoom_image is called for interpolation.
-   The result is scaled such that mean ROI values remain the same (at least for ROIs which avoid edges).
+   If get_label_index() >= 0, the imags need to have the same characteristics, but in the other case,
+   zoom_image is called for interpolation.
+   The result is then scaled such that mean ROI values remain the same (at least for ROIs which avoid edges).
 
    The argument \a num_samples is ignored.
   */
@@ -124,8 +133,14 @@ public:
 
  //! provide (const) access to the underlying density
  const DiscretisedDensity<3,float>& get_discretised_density() const;
+
+ //! Return label index
+ int get_label_index() const;
+ //! Set label index
+ void set_label_index(int label_index);
   
 private:
+  int _label_index;
   shared_ptr<DiscretisedDensity<3,float> > density_sptr;
   
   inline const VoxelsOnCartesianGrid<float>& image() const;
@@ -133,6 +148,7 @@ private:
 
   //! \name Parsing functions
   //@{
+  //! Sets defaults i.e. label index=-1 and reset density_sptr
   virtual void set_defaults();  
   virtual void initialise_keymap();
   //! Checks validity of parameters

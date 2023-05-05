@@ -31,7 +31,12 @@
 
 <h3>New functionality</h3>
 <ul>
-<li>Global variables in SPECTUB have been substituted by class members, such that multiple SPECTUB projectors can be used.
+  <li>The <tt>Discretised Shape3D</tt> shape/ROI has now an extra value <tt>label index</tt>. For ROIs, this allows
+    using a single volume with multiple ROIs encoded as labels, such as output by ITKSnap and many others.
+    When used as a shape in <tt>generate_image</tt>, it could be used to extract a single ROI from such a label image.
+    <br /><a href="https://github.com/UCL/STIR/pull/1196/">PR #1196</a>.
+  </li>
+  <li>Global variables in SPECTUB have been substituted by class members, such that multiple SPECTUB projectors can be used.
     <br /><a href="https://github.com/UCL/STIR/pull/1169/">PR #1169</a>.
   </li>
   <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.

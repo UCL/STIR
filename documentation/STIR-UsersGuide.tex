@@ -3109,11 +3109,14 @@ Using no arguments will give a more extensive usage message showing
 some options to select which data to print.
 
 { \subsubsubsection{list\_ROI\_values}
-}
+\label{sec:list_ROI_values}}
 
-This is a test-release of a program that can be used to find 
-ROI values for an image. See the online documentation generated 
-by doxygen for more info.
+This program can be used to find 
+ROI values for an image. See its usage message, and/or the online documentation generated 
+by doxygen for more info. ROIs can be specified by geometric shapes or
+discretised ``masks", see section \ref{sec:shapes}.
+Example files specifying the ROIs can be found in the
+\texttt{examples/samples} folder.
 
 { \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
@@ -5509,7 +5512,8 @@ Bin Normalisation type := SPECT
 Available shapes}
 \label{sec:shapes}
 \textbf{STIR} can use shapes, \textit{e.g.} in the \texttt{generate\_image}
-utility (see section \ref{sec:generate_image}), or for specifying ROIs. The distribution contains sample parameter files in the
+utility (see section \ref{sec:generate_image}), or for specifying ROIs, see \ref{sec:list_ROI_values}.
+The distribution contains sample parameter files in the
 \texttt{samples} directory. In the following sub-sections the available shapes are listed.
 
 Most shapes have a centre and orientation. This is specified in the parameter files
@@ -5586,13 +5590,20 @@ In addition, this shape can be restricted to a wedge by specifying initial and f
 
 { \subsubsubsection{Discretised Shape3D}
 }
-This shape can be used to read for instance saved ROIs. Image values are supposed to be between $0$ and $1$.
+This shape can be used to read for instance saved ROIs. This class supports 2 options:
+\begin{itemize}
+  \item a label-image with associated label index (an integer), suitable for multiple ROIs in a single file.
+  \item a ``weight" image, with (potentially) smooth edges, where voxel values
+    are supposed to be between $0$ and $1$.
+\end{itemize}
 Note that centre and orientation are taken from the image data, not from the parameter file.
 { \subsubsubsubsection{Parameters}
 }
 \begin{verbatim}
   Discretised Shape3D Parameters:=
     input filename := <filename>
+    ; optional member (if not set, or negative, STIR will use the image as weights
+    label index := <int>
   END:=
 \end{verbatim}
 where \texttt{filename} needs to specify a volume that can be read by STIR.
