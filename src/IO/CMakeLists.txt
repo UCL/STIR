@@ -34,7 +34,7 @@ set(${dir_LIB_SOURCES}
 ) 
 
 # we can use IO from the itk library
-if (ITK_FOUND)
+if (HAVE_ITK)
   list(APPEND ${dir_LIB_SOURCES}
     ITKOutputFileFormat.cxx
     ITKImageInputFileFormat.cxx
@@ -67,7 +67,7 @@ list(APPEND ${dir_LIB_SOURCES}
 	InputStreamWithRecordsFromUPENNtxt.cxx)
 endif()
 
-if (HDF5_FOUND)
+if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     GEHDF5Wrapper.cxx
     GEHDF5ListmodeInputFileFormat
@@ -95,7 +95,7 @@ if (CERN_ROOT_FOUND)
   endif()
 endif()
 
-if (HDF5_FOUND)
+if (HAVE_HDF5)
   target_link_libraries(IO ${HDF5_CXX_LIBRARIES})
 endif()
 
@@ -103,7 +103,7 @@ if (AVW_FOUND)
   target_link_libraries(IO ${AVW_LIBRARIES})
 endif()
 
-if (ITK_FOUND) 
+if (HAVE_ITK)
   target_link_libraries(IO ITKCommon ${ITK_LIBRARIES})
 endif()
 
