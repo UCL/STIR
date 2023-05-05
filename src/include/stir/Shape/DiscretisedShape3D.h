@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,13 +23,14 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Shape/Shape3D.h"
 #include "stir/shared_ptr.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*! \ingroup Shape
-  \brief A class for shapes that have been discretised
+  \brief A class for shapes that have been discretised as a volume
 
   Currently only supports discretisation via VoxelsOnCartesianGrid.
 
