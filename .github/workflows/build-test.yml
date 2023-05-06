@@ -60,6 +60,13 @@ jobs:
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
           ROOT: "OFF"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 16
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
@@ -90,6 +97,17 @@ jobs:
             # need to force XCode version for the moment due to a linker bug
             # see https://github.com/UCL/STIR/issues/1103
             echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
+            if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+              brew install llvm@${{ matrix.compiler_version }}
+              if test XX${HOMEBREW_PREFIX} = XX; then
+                HOMEBREW_PREFIX=/usr/local
+              fi
+              LDFLAGS="-L$HOMEBREW_PREFIX/opt/llvm/lib/c++ -Wl,-rpath,$HOMEBREW_PREFIX/opt/llvm/lib/c++"
+              # make available to jobs below
+              echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
+              CC="$HOMEBREW_PREFIX/opt/llvm/bin/clang"
+              CXX="$HOMEBREW_PREFIX/opt/llvm/bin/clang++"
+            fi
           fi
           export CC CXX
           # make available to jobs below
