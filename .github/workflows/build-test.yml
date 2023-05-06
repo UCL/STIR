@@ -57,6 +57,14 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
