@@ -148,7 +148,7 @@ jobs:
           python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v1.2.10 https://github.com/gschramm/parallelproj
+             git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
              cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
