@@ -279,7 +279,6 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     // set projector to be used for the calculations
     this->PM_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-    //this->PM_sptr->enable_tof(proj_data_info_sptr->create_shared_clone(), this->use_tof);
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
@@ -288,10 +287,27 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
 
     this->projector_pair_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
 
+    if (!this->use_tofsens && (this->proj_data_info_sptr->get_num_tof_poss()>1)) // TODO this check needs to cover the case if we reconstruct only TOF bin 0
+      {
 	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone()); //KTTODO this doesn't seem necessary of use_tofsens=true or non-TOF data
-	if (!this->use_tofsens)
-        this->sens_backprojector_sptr->set_up(this->proj_data_info_sptr->create_non_tof_clone(), target_sptr);
+        this->sens_proj_data_info_sptr = this->proj_data_info_sptr->create_non_tof_clone();
+        // TODO disable caching of the matrix
+        this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
+        this->sens_backprojector_sptr->set_up(this->sens_proj_data_info_sptr, target_sptr);
+      }
+    else
+      {
+        // just use the normal backprojector
+        this->sens_proj_data_info_sptr = this->proj_data_info_sptr;
+        this->sens_backprojector_sptr = projector_pair_sptr->get_back_projector_sptr();
+      }
+    if (this->normalisation_sptr->set_up(this->list_mode_data_sptr->get_exam_info_sptr(),
+                                         this->sens_proj_data_info_sptr) == Succeeded::no)
+      {
+        warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
+                "set-up of normalisation failed.");
+        return Succeeded::no;
+      }
 
 
     if (this->current_frame_num<=0)
@@ -643,21 +659,21 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #endif
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
-      for (int view = this->proj_data_info_sptr->get_min_view_num() + subset_num;
-          view <= this->proj_data_info_sptr->get_max_view_num();
+      for (int view = this->sens_proj_data_info_sptr->get_min_view_num() + subset_num;
+          view <= this->sens_proj_data_info_sptr->get_max_view_num();
           view += this->num_subsets)
       {
           const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-          if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
+          if (! this->sens_backprojector_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
           //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
           {
               shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-              (this->projector_pair_sptr->get_symmetries_used()->clone());
+              (this->sens_backprojector_sptr->get_symmetries_used()->clone());
 
               RelatedViewgrams<float> viewgrams =
-                  this->proj_data_info_sptr->get_empty_related_viewgrams(
+                  this->sens_proj_data_info_sptr->get_empty_related_viewgrams(
                       view_segment_num, symmetries_used, false);//, timing_pos_num);
 
               viewgrams.fill(1.F);

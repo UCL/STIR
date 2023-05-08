@@ -1,8 +1,8 @@
 OSMAPOSLParameters := 
 objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
-	list mode filename := PET_ACQ_small.l.hdr.STIR
-	maximum absolute segment number to process :=  1
+	list mode filename := ${INPUT}
+	maximum absolute segment number to process :=  ${MAX_SEG_NUM}
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
    ; use multiple (almost) parallel LORs for every bin in the sinogram 
@@ -15,7 +15,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 
         Bin Normalisation type := From ProjData
 	  Bin Normalisation From ProjData :=
-	   normalisation projdata filename:= my_acfs.hs
+	   normalisation projdata filename:= ${NORM_PROJDATA}
 	End Bin Normalisation From ProjData:=
 
 	;num_events_to_use := 100
@@ -25,7 +25,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 	max cache size := ${cache} 
 	recompute cache := ${recompute_cache}
         recompute sensitivity := ${recompute_sensitivity}
-	sensitivity filename:=  my_sens_t_lm_pr_seg1.hv
+	sensitivity filename:=  ${SENS}
 	zoom :=  1
   xy output image size (in pixels) := 100
 

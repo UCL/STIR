@@ -138,6 +138,9 @@ protected:
 
   //! Backprojector used for sensitivity computation
   shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+  //! Proj data info to be used for sensitivity calculations
+  /*! This is set to non-TOF data if \c use_tofsens == \c false */
+  shared_ptr<ProjDataInfo> sens_proj_data_info_sptr;
 
   //! sets any default values
   virtual void set_defaults();
