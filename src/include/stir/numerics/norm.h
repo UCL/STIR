@@ -44,15 +44,11 @@ template <int num_dimensions, class elemT> class Array;
     
     The default template just uses the square (with conversion to double), 
     but we'll specialise it for complex numbers.
-
-    It's derived from std::unary_function such that it follows
-    the conventions for a function object.
 */    
 
 // specialisations for complex numbers are in .inl file for clarity of this file.
 template <typename T>
-struct NormSquared :
-  public std::unary_function<T, double>
+struct NormSquared
 {
   double operator()(T x) const
   {   

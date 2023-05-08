@@ -267,6 +267,18 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
     }
 }
 
+std::vector<int>
+ProjDataInfo::get_original_view_nums() const
+{
+  std::vector<int> views(this->get_num_views());
+  int view_num = this->get_min_view_num();
+  for (std::size_t i = 0; i < views.size(); ++i)
+    {
+      views[i] = view_num++;
+    }
+  return views;
+}
+
 ProjDataInfo::ProjDataInfo()
   : bed_position_horizontal(0.F), bed_position_vertical(0.F)
 {}

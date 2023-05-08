@@ -34,7 +34,7 @@ set(${dir_LIB_SOURCES}
 ) 
 
 # we can use IO from the itk library
-if (ITK_FOUND)
+if (HAVE_ITK)
   list(APPEND ${dir_LIB_SOURCES}
     ITKOutputFileFormat.cxx
     ITKImageInputFileFormat.cxx
@@ -60,9 +60,17 @@ if (CERN_ROOT_FOUND)
  )
 endif()
 
-if (HDF5_FOUND)
+if (UPENN_FOUND)
+list(APPEND ${dir_LIB_SOURCES}
+	InputStreamWithRecordsFromUPENN.cxx
+	InputStreamWithRecordsFromUPENNbin.cxx
+	InputStreamWithRecordsFromUPENNtxt.cxx)
+endif()
+
+if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     GEHDF5Wrapper.cxx
+    GEHDF5ListmodeInputFileFormat
  )
 endif()
 
@@ -87,7 +95,7 @@ if (CERN_ROOT_FOUND)
   endif()
 endif()
 
-if (HDF5_FOUND)
+if (HAVE_HDF5)
   target_link_libraries(IO ${HDF5_CXX_LIBRARIES})
 endif()
 
@@ -95,8 +103,15 @@ if (AVW_FOUND)
   target_link_libraries(IO ${AVW_LIBRARIES})
 endif()
 
-if (ITK_FOUND) 
+if (HAVE_ITK)
   target_link_libraries(IO ITKCommon ${ITK_LIBRARIES})
+endif()
+
+if (UPENN_FOUND)
+  target_include_directories(IO PUBLIC ${UPENN_INCLUDE_DIR})
+  target_link_libraries(IO ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
+        ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
+${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
 
 if (HAVE_JSON)

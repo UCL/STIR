@@ -58,10 +58,19 @@ Succeeded
 InputStreamFromROOTFileForECATPET::
 get_next_record(CListRecordROOT& record)
 {
+
+    int ring1, ring2, crystal1, crystal2;
+    double delta_timing_bin;
+    bool return_no = false;
+
+#ifdef STIR_OPENMP
+#pragma omp critical(LISTMODEIO)
+#endif
+    {
   while(true)
   {
     if (current_position == nentries)
-      return Succeeded::no;
+      return_no = true;
 
     Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
     current_position ++ ;
@@ -82,16 +91,16 @@ get_next_record(CListRecordROOT& record)
     break;
   }
 
-    int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
+    ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
             + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;
 
-    int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
+    ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
             + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
-    int crystal1 = (blockID1%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
+    crystal1 = (blockID1%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = (blockID2%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
+    crystal2 = (blockID2%block_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID2%crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
@@ -105,7 +114,11 @@ get_next_record(CListRecordROOT& record)
     crystal2 += offset_dets;
 #endif
 
-    double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+    }
+
+    if(return_no)
+        return Succeeded::no;
 
     return
             record.init_from_data(ring1, ring2,

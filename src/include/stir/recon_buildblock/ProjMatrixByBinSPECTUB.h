@@ -75,7 +75,7 @@ class Bin;
 End Projection Matrix By Bin SPECT UB Parameters:=
 \endverbatim
 */
-
+//using namespace SPECTUB;
 class ProjMatrixByBinSPECTUB : 
   public RegisteredParsingObject<
 	      ProjMatrixByBinSPECTUB,
@@ -90,6 +90,9 @@ class ProjMatrixByBinSPECTUB :
   //! Default constructor (calls set_defaults())
   ProjMatrixByBinSPECTUB();
 
+  // disable copy-constructor as currently unsafe to copy due to bare pointers
+  ProjMatrixByBinSPECTUB(const ProjMatrixByBinSPECTUB&) = delete;
+
   //! Destructor (deallocates UB SPECT memory)
   ~ProjMatrixByBinSPECTUB();
 
@@ -97,7 +100,7 @@ class ProjMatrixByBinSPECTUB :
   virtual void set_up(		 
 		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-                      );
+);
 
   bool get_keep_all_views_in_cache() const;
   //! Enable keeping the matrix in memory
@@ -176,6 +179,9 @@ class ProjMatrixByBinSPECTUB :
 
   bool already_setup;
 
+  mutable SPECTUB::wm_da_type wm;
+  mutable SPECTUB::wmh_type wmh; // this could be an arry of wmh_type for each index
+  float * Rrad;
 
   virtual void 
     calculate_proj_matrix_elems_for_one_bin(
@@ -210,7 +216,8 @@ class ProjMatrixByBinSPECTUB :
   int maxszb;
 
 	
-  void compute_one_subset(const int kOS) const;
+  void compute_one_subset(const int kOS,
+                          const float *Rrad) const;
   void delete_UB_SPECT_arrays();
   mutable std::vector<bool> subset_already_processed;
 };

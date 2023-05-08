@@ -38,10 +38,13 @@ START_NAMESPACE_STIR
   \brief
   A class in the GeneralisedPrior hierarchy. This implements a quadratic Gibbs prior.
 
-  The gradient of the prior is computed as follows:
-  
+  The prior is computed as follows:
   \f[
-  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  g_r = \frac{1}{4} \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
+  \f]
+  with gradient  
+  \f[
+  g_r = \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \f]
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
@@ -103,6 +106,8 @@ class QuadraticPrior:  public
     parabolic_surrogate_curvature_depends_on_argument() const
     { return false; }
 
+  bool is_convex() const;
+
   //! compute the value of the function
   double
     compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
@@ -116,20 +121,20 @@ class QuadraticPrior:  public
   void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! compute Hessian 
-  void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
-                const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate);
+  virtual void
+  compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                  const BasicCoordinate<3,int>& coords,
+                  const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
   //! Call accumulate_Hessian_times_input
-  virtual Succeeded 
+  virtual void
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
   //! Compute the multiplication of the hessian of the prior multiplied by the input.
   //! For the quadratic function, the hessian of the prior is 1.
   //! Therefore this will return the weights multiplied by the input.
-  virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+  virtual void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                    const DiscretisedDensity<3,elemT>& current_estimate,
                                                    const DiscretisedDensity<3,elemT>& input) const;
 
@@ -179,6 +184,19 @@ protected:
   virtual bool post_processing();
  private:
   shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
+
+  //! The second partial derivatives of the Quadratic Prior
+  /*!
+   derivative_20 refers to the second derivative w.r.t. x_j (i.e. diagonal elements of the Hessian)
+   derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
+   * @param x_j is the target voxel.
+   * @param x_k is the voxel in the neighbourhood.
+   * @return the second order partial derivatives of the Quadratic Prior
+   */
+  //@{
+  elemT derivative_20(const elemT x_j, const elemT x_k) const;
+  elemT derivative_11(const elemT x_j, const elemT x_k) const;
+  //@}
 };
 
 

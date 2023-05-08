@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017, 2018 University College London
+# Copyright 2013, 2014, 2016-2023 University College London
 
 # This file is part of STIR.
 #
@@ -42,6 +42,13 @@ else()
     message(STATUS "CERN ROOT support disabled.")
 endif()
 
+if (UPENN_FOUND)
+	set(HAVE_UPENN ON)
+	message(STATUS "UPENN libs support enabled.")
+else()
+	message(STATUS "UPENN libs support disabled.")
+endif()
+
 if (AVW_FOUND)
   set(HAVE_AVW ON)
   message(STATUS "AVW library IO added.")
@@ -59,7 +66,7 @@ else()
   message(STATUS "RDF support disabled.")
 endif()
 
-if (HDF5_FOUND)
+if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
   include_directories(${HDF5_INCLUDE_DIRS})
@@ -67,7 +74,7 @@ else()
   message(STATUS "HDF5 support disabled.")
 endif()
 
-if (ITK_FOUND) 
+if ((NOT DISABLE_ITK) AND ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)
   include(${ITK_USE_FILE})
@@ -261,6 +268,13 @@ if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
+# create an object library with all the "registries"
+# Warning: dependencies for object libraries are not transitive!
+add_library(stir_registries OBJECT ${STIR_REGISTRIES})
+# TODO, really should use stir_libs.cmake
+target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
+target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 	ADD_SUBDIRECTORY(${STIR_DIR})
@@ -270,7 +284,7 @@ endforeach(STIR_DIR)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/config/ DESTINATION ${STIR_CONFIG_DIR}
                 FILES_MATCHING PATTERN "*.json")
-            message("installing JSON file from " ${CMAKE_SOURCE_DIR}/src/config/" to " ${CMAKE_INSTALL_PREFIX}/share/stir/config)
+message(STATUS "Installing JSON files from ${CMAKE_SOURCE_DIR}/src/config/ to  ${STIR_CONFIG_DIR}")
             
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled

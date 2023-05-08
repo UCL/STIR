@@ -51,9 +51,9 @@ public :
      indicate that it is not initialised.
   */
 
-  ExamInfo()
-    : start_time_in_secs_since_1970(0.),
-
+  explicit ExamInfo(const ImagingModality modality = ImagingModality::Unknown)
+      : imaging_modality(modality),
+      start_time_in_secs_since_1970(0.),
     calibration_factor(-1.F),
     low_energy_thres(-1.F),
     up_energy_thres(-1.F)

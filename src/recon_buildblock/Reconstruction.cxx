@@ -190,14 +190,6 @@ set_disable_output(bool _val)
     this->_disable_output = _val;
 }
 
-template <typename TargetT>
-void
-Reconstruction<TargetT>::
-set_enable_output(bool _val)
-{
-    this->_disable_output = _val;
-}
-
 template < typename TargetT>
 shared_ptr<TargetT >
 Reconstruction<TargetT>::

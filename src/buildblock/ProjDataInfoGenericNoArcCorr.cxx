@@ -61,6 +61,9 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
+  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
+    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
+
   assert(!is_null_ptr(scanner_ptr));
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
@@ -74,7 +77,7 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 // setting shift_z to 0 before it is actually estimated. Otherwise the next function will use it
   this->z_shift.z()=0;
   find_cartesian_coordinates_of_detection(b1,b2,bin);
-  float shift=b1.z();
+  float shift=b2.z();
 
   this->z_shift.z()=shift;
   this->z_shift.y()=0;
@@ -387,8 +390,8 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
 
   coord_1 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos1);
   coord_2 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos2);
-  coord_1.z() += z_shift.z();
-  coord_2.z() += z_shift.z();
+  coord_1.z() -= z_shift.z();
+  coord_2.z() -= z_shift.z();
 }
 
 

@@ -37,8 +37,13 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_OSMAPOSL.cxx
 )
 
+if (DOWNLOAD_ZENODO_TEST_DATA)
+    message(STATUS "Download Zenodo test data enabled.")
+else()
+    message(STATUS "Download Zenodo test data disabled.")
+endif()
+
 if (HAVE_CERN_ROOT)
-    OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" ON)
     if (DOWNLOAD_ZENODO_TEST_DATA)
         ## DOWNLOAD THE ROOT CONSISTENCY TEST DATA FROM ZENODO (root file and corresponding header)
         ## TOTAL SIZE: ~3MB
@@ -120,7 +125,7 @@ endif()
 include(stir_test_exe_targets)
 
 # a test that uses MPI
-create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)

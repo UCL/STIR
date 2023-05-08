@@ -93,7 +93,7 @@ public:
   
   void set_bin_value(const Bin &bin);
     
-  //! \deprecated a*x+b*y (\see xapyb)
+  //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
                                      const float b, const ProjData& y);
 

@@ -60,10 +60,21 @@ Succeeded
 InputStreamFromROOTFileForCylindricalPET::
 get_next_record(CListRecordROOT& record)
 {
+    int ring1, ring2, crystal1, crystal2;
+    double delta_timing_bin;
+    bool eof = false;
+
+#ifdef STIR_OPENMP
+#pragma omp critical(LISTMODEIO)
+#endif
+    {
     while(true)
     {
       if (current_position == nentries)
-          return Succeeded::no;
+        {
+          eof = true;
+          break;
+        }
 
       Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
       current_position ++ ;
@@ -92,20 +103,20 @@ get_next_record(CListRecordROOT& record)
       break;
     }
 
-    int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
+    ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
             + static_cast<int>(submoduleID1/submodule_repeater_y)*get_num_axial_crystals_per_block_v()
             + static_cast<int>(moduleID1/module_repeater_y)*submodule_repeater_z*get_num_axial_crystals_per_block_v();
 
-    int ring2 = static_cast<int>(crystalID2/crystal_repeater_y)
+    ring2 = static_cast<int>(crystalID2/crystal_repeater_y)
             + static_cast<int>(submoduleID2/submodule_repeater_y)*get_num_axial_crystals_per_block_v()
             + static_cast<int>(moduleID2/module_repeater_y)*submodule_repeater_z*get_num_axial_crystals_per_block_v();
 
-    int crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+    crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
             + (moduleID1%module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
             + (submoduleID1%submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+    crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
             + (moduleID2%module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
             + (submoduleID2% submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
             + (crystalID2%crystal_repeater_y);
@@ -121,7 +132,11 @@ get_next_record(CListRecordROOT& record)
     crystal2 += offset_dets;
 #endif
 
-    double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+    }
+
+    if(eof)
+        return Succeeded::no;
 
     return
             record.init_from_data(ring1, ring2,

@@ -31,6 +31,7 @@ set(${dir_LIB_SOURCES}
   Sinogram.cxx
   RelatedViewgrams.cxx
   scale_sinograms.cxx
+  interpolate_axial_position.cxx
   interpolate_projdata.cxx
   extend_projdata.cxx
   multiply_crystal_factors.cxx
@@ -65,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	SeparableCartesianMetzImageFilter.cxx
 	TruncateToCylindricalFOVImageProcessor.cxx
 	ThresholdMinToSmallPositiveValueDataProcessor.cxx
+	HUToMuImageProcessor.cxx
 	ChainedDataProcessor.cxx
 	ArrayFilter1DUsingConvolution.cxx
 	SeparableConvolutionImageFilter.cxx
@@ -107,10 +109,6 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt.c)
 endif()
 
-if (HAVE_JSON)
-  list(APPEND ${dir_LIB_SOURCES} HUToMuImageProcessor.cxx)
-endif()
-
 include(stir_lib_target)
 
 
@@ -127,7 +125,7 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(buildblock PRIVATE "${TMP}")
+  target_include_directories(buildblock PUBLIC "${TMP}")
 endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef

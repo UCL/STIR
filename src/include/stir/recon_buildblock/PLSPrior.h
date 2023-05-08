@@ -121,6 +121,8 @@ class PLSPrior:  public
   /*! \todo set the anatomical image to zero if not defined */
   virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
 
+  bool is_convex() const;
+
   //! compute the value of the function
   double
     compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);

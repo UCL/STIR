@@ -5,10 +5,24 @@ on:
     branches: 
       - master
       - tof_sino_UCL
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
   pull_request:
     branches:
       - master
       - tof_sino_UCL
+    paths-ignore:
+      - '.appveyor.yml'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -29,6 +43,7 @@ jobs:
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "ON"
+          ITK: "OFF"
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
@@ -36,20 +51,41 @@ jobs:
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
+          # currently using ITK 5.2 which doesn't like clang 14
+          ITK: "OFF"
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
           ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-          BUILD_TYPE: "Debug"
           parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
           ROOT: "OFF"
+          ITK: "OFF"
+        # Currently disabled due to problems with listmode recon, see https://github.com/UCL/STIR/issues/1200
+        #- os: macOS-latest
+        #  compiler: clang
+        #  compiler_version: 16
+        #  BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+        #  parallelproj: "OFF"
+        #  BUILD_TYPE: "Release"
+        #  ROOT: "OFF"
+        #  ITK: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
@@ -57,7 +93,7 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 
@@ -76,7 +112,22 @@ jobs:
             CC=${CC}-${{ matrix.compiler_version }}
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
-
+          if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
+            # need to force XCode version for the moment due to a linker bug
+            # see https://github.com/UCL/STIR/issues/1103
+            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
+            if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+              brew install llvm@${{ matrix.compiler_version }}
+              if test XX${HOMEBREW_PREFIX} = XX; then
+                HOMEBREW_PREFIX=/usr/local
+              fi
+              LDFLAGS="-L$HOMEBREW_PREFIX/opt/llvm/lib/c++ -Wl,-rpath,$HOMEBREW_PREFIX/opt/llvm/lib/c++"
+              # make available to jobs below
+              echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
+              CC="$HOMEBREW_PREFIX/opt/llvm/bin/clang"
+              CXX="$HOMEBREW_PREFIX/opt/llvm/bin/clang++"
+            fi
+          fi
           export CC CXX
           # make available to jobs below
           echo CC="$CC" >> $GITHUB_ENV
@@ -90,14 +141,19 @@ jobs:
           CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
           case ${{matrix.os}} in
             (ubuntu*)
+              sudo apt update
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
-                  sudo apt install $CC # package is called clang
+                  # package is called clang, need libomp-dev for OpenMP support
+                  sudo apt install $CC libomp-dev
               else
                   sudo apt install $CXX
               fi
               # other dependencies
               sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev
+              if test "${{matrix.ITK}}XX" == "ONXX"; then
+                sudo apt install libinsighttoolkit5-dev
+              fi
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
@@ -132,10 +188,10 @@ jobs:
           python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v0.8 https://github.com/gschramm/parallelproj
+             git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
-             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
              cmake --build . --target install --config Release
              cd ../..
           fi
@@ -167,6 +223,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1
       with:
         key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
 
     - name: configure
       shell: bash

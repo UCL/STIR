@@ -72,8 +72,8 @@ class CListEventDataECAT966
        This organisation corresponds to physical detector blocks (which
        have 8 crystal rings). Names are not very good probably...
        */				
-    /* 'random' bit:
-        1 if event is Random (it fell in delayed time window) */
+    /* 'delayed' bit:
+        1 if event is Delayed (it fell in delayed time window) */
     /* bin field  is shifted in a funny way, use the following code to find
        bin_number:
          if ( bin > NumProjBinsBy2 ) bin -= NumProjBins ;
@@ -85,14 +85,14 @@ class CListEventDataECAT966
   unsigned    block_A_ring : 3;
   unsigned    block_B_detector : 3;
   unsigned    block_A_detector : 3;
-  unsigned    random  : 1;
+  unsigned    delayed  : 1;
   unsigned    bin : 9;
   unsigned    view : 9;
 #else
   // Do byteswapping first before using this bit field.
   unsigned    view : 9;
   unsigned    bin : 9;
-  unsigned    random  : 1;
+  unsigned    delayed  : 1;
   unsigned    block_A_detector : 3;
   unsigned    block_B_detector : 3;
   unsigned    block_A_ring : 3;
@@ -121,9 +121,9 @@ class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRin
       std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
       return Succeeded::yes;
     }
-  inline bool is_prompt() const { return this->data.random == 0; }
+  inline bool is_prompt() const { return this->data.delayed == 0; }
   inline Succeeded set_prompt(const bool prompt = true) 
-  { if (prompt) this->data.random=0; else this->data.random=1; return Succeeded::yes; }
+  { if (prompt) this->data.delayed=0; else this->data.delayed=1; return Succeeded::yes; }
 
  private:
   BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966)==4); 

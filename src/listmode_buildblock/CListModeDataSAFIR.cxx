@@ -26,6 +26,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 
   \author Jannis Fischer
   \author Kris Thielemans
+  \author Markus Jehl
 */
 #include <iostream>
 #include <fstream>
@@ -33,14 +34,14 @@ Coincidence LM Data Class for SAFIR: Implementation
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
 
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
+#include "stir/listmode/CListRecordSAFIR.h"
 
 #ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
@@ -65,7 +66,9 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
       if (lor_randomization_sigma != 0)
         error("SAFIR currently does not support LOR-randomisation unless a map is specified");
     }
-  this->exam_info_sptr.reset(new ExamInfo);
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
 
   // Here we are reading the scanner data from the template projdata
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
@@ -77,6 +80,21 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
     }
 }
 
+template <class CListRecordT>
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+    : listmode_filename(listmode_filename)
+{
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
+  this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"");
+    }
+}
 
 template <class CListRecordT>
 std::string
@@ -91,7 +109,7 @@ shared_ptr <CListRecord>
 CListModeDataSAFIR<CListRecordT>::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
+  shared_ptr<CListRecordT> sptr(new CListRecordT);
   sptr->event_SAFIR().set_scanner_sptr(this->get_proj_data_info_sptr()->get_scanner_sptr());
   sptr->event_SAFIR().set_map_sptr(map);
   return static_pointer_cast<CListRecord>(sptr);
@@ -122,13 +140,12 @@ Succeeded
 CListModeDataSAFIR<CListRecordT>::
 open_lm_file() const
 {
-	cerr << "CListModeDataSAFIR: opening file " << listmode_filename << endl;
 	shared_ptr<istream> stream_ptr(new fstream(listmode_filename.c_str(), ios::in | ios::binary ));
 	if(!(*stream_ptr))
 	{
-		warning("CListModeDataSAFIR: cannot open file " + listmode_filename + "\n");
 		return Succeeded::no;
 	}
+        info("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"", 2);
 	stream_ptr->seekg((std::streamoff)32);
 	current_lm_data_ptr.reset(
 			new InputStreamWithRecords<CListRecordT, bool>
@@ -138,7 +155,8 @@ open_lm_file() const
 	return Succeeded::yes;
 }
 	
-template class CListModeDataSAFIR<CListRecordSAFIR>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
 END_NAMESPACE_STIR
 

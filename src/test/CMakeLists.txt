@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2012, Kris Thielemans
-# Copyright (C) 2013, University College London
+# Copyright (C) 2013-2022 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -24,6 +24,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
         test_DateTime.cxx
+        test_radionuclide.cxx
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -55,6 +56,7 @@ set(buildblock_simple_tests
 	test_VoxelsOnCartesianGrid.cxx
 	test_zoom_image.cxx
 	test_ByteOrder.cxx
+        test_ImagingModality.cxx
 	test_Scanner.cxx
 	test_ArcCorrection.cxx
 	test_find_fwhm_in_image.cxx
@@ -66,12 +68,13 @@ set(buildblock_simple_tests
 	test_export_array.cxx
         test_GeneralisedPoissonNoiseGenerator.cxx
 	test_multiple_proj_data.cxx
+        test_interpolate_projdata.cxx
 )
 
 include(stir_test_exe_targets)
 
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO" "")
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO;recon_buildblock;Shape_buildblock" "")
 endforeach()
 #
 

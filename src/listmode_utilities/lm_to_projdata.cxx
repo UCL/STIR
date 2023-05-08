@@ -65,6 +65,7 @@ int main(int argc, char * argv[])
       }
   }
   LmToProjData application(argc==2 ? argv[1] : 0);
+  std::cerr << application.parameter_info();
   application.process_data();
 
   return EXIT_SUCCESS;

@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016, 2019, 2020 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020, 2022 University College London
+    Copyright (C) 2022, National Physical Laboratory
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -98,7 +99,7 @@ public:
     //! \name check functions
     //@{
     inline bool has_template_proj_data_info() const
-    { return !stir::is_null_ptr(proj_data_info_cyl_noarc_cor_sptr); }
+    { return !stir::is_null_ptr(proj_data_info_sptr); }
     //! Returns true if template_exam_info_sptr has been set.
     inline bool has_exam_info() const
     { return !stir::is_null_ptr(template_exam_info_sptr);}
@@ -178,6 +179,25 @@ public:
     //! ScatterSimulation.
     void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                           int _size_xy = -1, int _size_z = -1);
+
+
+    //! Get and set methods for the downsample_scanner_bool
+    //@{
+    void set_downsample_scanner_bool(const bool arg);
+    bool get_downsample_scanner_bool() const;
+    //@}
+
+    //! Get and set methods for downsample_scanner_rings
+    //@{
+    int get_num_downsample_scanner_rings() const;
+    void set_num_downsample_scanner_rings(const int arg);
+    //@}
+
+    //! Get and set methods for downsample_scanner_dets
+    //@{
+    int get_num_downsample_scanner_dets() const;
+    void set_num_downsample_scanner_dets(const int arg);
+    //@}
 
     //! Downsample the scanner keeping the total axial length the same.
     /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
@@ -280,6 +300,18 @@ protected:
      * @{
      */
 
+    //! gamma-energy-part of the detection efficiency
+    /*! 
+      Formula used is based on a Gaussian pdf for the efficiency, with
+      \f[ FWHM_E = \alpha  \sqrt(E) \f]
+      where the proportionality constant \f$\alpha\f$ is determined by the
+      energy FWHM of the Scanner at the reference energy.
+
+      This pdf is then integrated from the lower to the upper energy window limits.
+
+      \sa Scanner::get_energy_resolution
+      \sa Scanner::get_reference_energy
+    */
     float detection_efficiency(const float energy) const;
 
 
@@ -347,7 +379,7 @@ protected:
 
     std::string template_proj_data_filename;
 
-    shared_ptr<ProjDataInfo> proj_data_info_cyl_noarc_cor_sptr;
+    shared_ptr<ProjDataInfo> proj_data_info_sptr;
     //! \details Exam info extracted from the scanner template
     shared_ptr<ExamInfo> template_exam_info_sptr;
 

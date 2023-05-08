@@ -11,6 +11,8 @@
 : ${pardir:=$(dirname $0)}
 # convert to absolute path (assumes that it exists), from DVK's answer on stackexchange
 pardir=`cd "$pardir";pwd`
+# find scatter from standard distro
+scatter_pardir="`stir_config --examples-dir`/examples/samples/scatter_estimation_par_files"
 
 # names are from unlist_and_randoms
 : ${sino_input:=sinospan2_f1g1d0b0.hs}
@@ -61,7 +63,6 @@ echo "Estimating scatter (be patient). Log saved in output/scatter.log"
 # filename-prefix for additive sino (i.e. "precorrected" sum of scatter and randoms)
 total_additive_prefix=output/total_additive
 num_scat_iters=3
-scatter_pardir=${pardir}/../samples/scatter_estimation_par_files
 # you might have to change this for a different scanner than the Signa PET/MR
 # (it needs to be a divisor of the number of views)
 scatter_recon_num_subiterations=$num_subsets

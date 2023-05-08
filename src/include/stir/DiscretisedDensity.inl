@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2023, University College London
     Copyright (C) 2018, CSIRO
     This file is part of STIR.
 
@@ -28,6 +28,7 @@
 #include "stir/round.h"
 #include <string>
 #include <typeinfo>
+#include <stdio.h> // for snprintf
 
 START_NAMESPACE_STIR
 
@@ -81,8 +82,16 @@ actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&
     }
 
   if (norm(other.get_origin() - this->get_origin()) > 1.E-2)
-    { 
-      explanation = "Not the same origin.";
+    {
+      char tmp[2000];
+      snprintf(tmp, 2000, "Not the same origin: (%g,%g,%g) and (%g,%g,%g)",
+	      other.get_origin()[1],
+	      other.get_origin()[2],
+	      other.get_origin()[3],
+	      this->get_origin()[1],
+	      this->get_origin()[2],
+	      this->get_origin()[3]);
+      explanation = tmp;
       return false;
     }
   if (other.get_index_range() != this->get_index_range())
