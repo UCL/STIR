@@ -70,7 +70,7 @@ endif()
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     GEHDF5Wrapper.cxx
-    GEHDF5ListmodeInputFileFormat
+    GEHDF5ListmodeInputFileFormat.cxx
  )
 endif()
 
@@ -132,4 +132,4 @@ endif()
 
 # currently needed for ParametricDensity (TODO get rid of this somehow?)
 target_link_libraries(IO modelling_buildblock )
-
+target_link_libraries(IO listmode_buildblock)
