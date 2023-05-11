@@ -54,7 +54,7 @@ elseif (JANSSON_INCLUDE_DIR AND EXISTS "${JANSSON_INCLUDE_DIR}/jansson.h")
 endif ()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Jansson
+find_package_handle_standard_args(JANSSON
         REQUIRED_VARS JANSSON_LIBRARY JANSSON_INCLUDE_DIR
         VERSION_VAR JANSSON_VERSION_STRING)
 
