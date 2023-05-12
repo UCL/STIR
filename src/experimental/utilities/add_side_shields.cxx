@@ -22,6 +22,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>

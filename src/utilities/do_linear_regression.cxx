@@ -33,6 +33,7 @@
 
 #include "stir/linear_regression.h"
 #include "stir/VectorWithOffset.h"
+#include "stir/error.h"
 
 #include <fstream>
 #include <iostream>

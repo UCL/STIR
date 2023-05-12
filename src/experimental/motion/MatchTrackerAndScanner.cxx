@@ -24,6 +24,8 @@
 #include "stir/centre_of_gravity.h"
 #include "stir/thresholding.h"
 #include <vector>
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <algorithm>
 #include <iostream>
 #include <cmath>

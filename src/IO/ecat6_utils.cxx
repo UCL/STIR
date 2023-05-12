@@ -64,6 +64,7 @@ extern "C" FILE *mat_create(char *fname, Main_header *mhead);
 
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
+#include "stir/warning.h"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 #include <algorithm> // for std::swap

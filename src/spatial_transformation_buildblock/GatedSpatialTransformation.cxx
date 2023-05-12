@@ -19,6 +19,8 @@
 #include "stir/spatial_transformation/GatedSpatialTransformation.h"
 #include "stir/spatial_transformation/warp_image.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR

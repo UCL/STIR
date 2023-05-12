@@ -23,6 +23,7 @@
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
+#include "stir/error.h"
 
 #include <algorithm>
 using std::min;

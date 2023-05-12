@@ -23,6 +23,7 @@
 
 // include for min,max definitions
 #include <algorithm>
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

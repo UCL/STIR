@@ -22,6 +22,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Shape/Shape3D.h"
 #include "stir/shared_ptr.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

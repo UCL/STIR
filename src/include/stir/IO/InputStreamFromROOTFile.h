@@ -26,6 +26,7 @@
 #include "stir/Succeeded.h"
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/RegisteredObject.h"
+#include "stir/error.h"
 
 // forward declaration of ROOT's TChain
 class TChain;

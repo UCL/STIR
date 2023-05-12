@@ -27,10 +27,12 @@
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
 #include <boost/format.hpp>
+#include "stir/error.h"
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include "stir/warning.h"
 # ifdef BOOST_NO_STDC_NAMESPACE
  namespace std { using ::getenv; }
 # endif

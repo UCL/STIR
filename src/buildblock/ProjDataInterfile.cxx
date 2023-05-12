@@ -19,6 +19,7 @@
 #include "stir/ProjDataInterfile.h" 
 #include "stir/utilities.h"
 #include "stir/IO/interfile.h"
+#include "stir/error.h"
 
 #include <iostream>
 #include <fstream>

@@ -19,6 +19,7 @@
 
 #include "stir/HUToMuImageProcessor.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/round.h"
 #ifdef HAVE_JSON
   #include <nlohmann/json.hpp>

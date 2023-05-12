@@ -15,6 +15,8 @@
 */
 
 #include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

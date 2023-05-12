@@ -21,6 +21,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/shared_ptr.h"
 #include "boost/shared_array.hpp"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <fstream>
 
 START_NAMESPACE_STIR

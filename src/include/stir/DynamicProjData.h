@@ -20,6 +20,7 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/SegmentByView.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <string>
 
 START_NAMESPACE_STIR

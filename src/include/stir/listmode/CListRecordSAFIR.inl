@@ -45,6 +45,7 @@
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

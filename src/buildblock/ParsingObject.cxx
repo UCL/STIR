@@ -20,6 +20,8 @@
 */
 #include "stir/ParsingObject.h"
 #include <fstream>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACE
 using std::ifstream;

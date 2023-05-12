@@ -23,6 +23,7 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

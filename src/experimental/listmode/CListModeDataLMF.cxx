@@ -22,6 +22,7 @@
 #include "stir_experimental/listmode/CListRecordLMF.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <stdio.h>
 
 #ifndef STIR_NO_NAMESPACES

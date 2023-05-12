@@ -56,6 +56,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/CPUTimer.h"
 #ifdef STIR_OPENMP
 #include "stir/num_threads.h"

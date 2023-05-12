@@ -19,6 +19,8 @@
 */
 #include "stir/Shape/Box3D.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

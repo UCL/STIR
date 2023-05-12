@@ -24,6 +24,8 @@
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/is_null_ptr.h"
 
 // include the following to set defaults

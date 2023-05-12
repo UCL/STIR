@@ -26,6 +26,7 @@
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <string>
 

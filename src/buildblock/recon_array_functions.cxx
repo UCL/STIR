@@ -30,6 +30,7 @@
 #include "stir/Viewgram.h"
 #include "stir/SegmentByView.h"
 #include "stir/SegmentBySinogram.h"
+#include "stir/error.h"
 
 #include <numeric>
 

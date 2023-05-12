@@ -20,6 +20,8 @@
 #include "stir/round.h"
 #include "stir/zoom.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/IO/read_from_file.h"
 START_NAMESPACE_STIR
 

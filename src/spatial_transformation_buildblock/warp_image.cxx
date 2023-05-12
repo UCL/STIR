@@ -15,6 +15,7 @@
 */
 
 #include "stir/spatial_transformation/warp_image.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 //using namespace BSpline;

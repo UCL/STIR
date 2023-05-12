@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include "thresholding.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

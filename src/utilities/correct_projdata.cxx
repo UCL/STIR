@@ -137,6 +137,8 @@ This parameter will be removed.
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #ifndef USE_PMRT
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #else

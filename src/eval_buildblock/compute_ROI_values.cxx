@@ -23,6 +23,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/shared_ptr.h"
+#include "stir/error.h"
 #include <numeric>
 #include <boost/limits.hpp> // <limits> but also for old compilers
 

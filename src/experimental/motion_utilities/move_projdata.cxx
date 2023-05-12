@@ -28,6 +28,7 @@
 #include "stir_experimental/motion/transform_3d_object.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 #include <iostream>
 
 START_NAMESPACE_STIR

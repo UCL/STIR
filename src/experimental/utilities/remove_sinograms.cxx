@@ -18,6 +18,7 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <string>
 #include <algorithm>
 

@@ -23,6 +23,7 @@
 #include "stir/modelling/KineticParameters.h"
 #include "stir/DataProcessor.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

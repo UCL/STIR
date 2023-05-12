@@ -18,6 +18,7 @@
 
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"

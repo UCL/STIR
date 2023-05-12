@@ -33,6 +33,7 @@
 #include "stir/stream.h"
 #include "stir/CPUTimer.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/error.h"
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <fstream>

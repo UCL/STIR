@@ -21,6 +21,7 @@
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

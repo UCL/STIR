@@ -50,6 +50,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 #include <string>
 #include <fstream>
 #include <iostream>

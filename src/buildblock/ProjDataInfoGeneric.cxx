@@ -37,6 +37,7 @@
 #endif
 
 #include "stir/round.h"
+#include "stir/error.h"
 #include <math.h>
 
 #ifndef STIR_NO_NAMESPACES

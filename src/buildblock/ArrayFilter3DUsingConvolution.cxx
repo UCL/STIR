@@ -22,6 +22,7 @@
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
+#include "stir/error.h"
 
 #include <iostream>
 #include <fstream>

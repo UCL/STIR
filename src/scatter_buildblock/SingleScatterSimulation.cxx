@@ -7,6 +7,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

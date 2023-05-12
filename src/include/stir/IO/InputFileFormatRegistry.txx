@@ -23,6 +23,7 @@
 #include "stir/IO/InputFileFormatRegistry.h"
 #include "stir/IO/FileSignature.h"
 #include "stir/utilities.h" // for open_read_binary
+#include "stir/error.h"
 #include <utility> // for make_pair
 #include <typeinfo>
 

@@ -27,6 +27,7 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/IndexRange2D.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

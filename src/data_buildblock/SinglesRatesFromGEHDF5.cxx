@@ -23,6 +23,7 @@
 #include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/stream.h"
 #include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/error.h"
 
 #include <vector>
 #include <fstream>

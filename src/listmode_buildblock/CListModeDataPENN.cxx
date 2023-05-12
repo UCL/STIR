@@ -18,6 +18,7 @@
 #include "stir/listmode/CListModeDataPENN.h"
 #include "stir/listmode/CListRecordPENN.h"
 #include "stir/FilePath.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

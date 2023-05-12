@@ -32,7 +32,8 @@
 #include "stir_experimental/ArrayFilter3DUsingConvolution.h"
 #include "stir_experimental/ArrayFilter2DUsingConvolution.h"
 #include "stir/info.h"
-
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/CPUTimer.h"
 

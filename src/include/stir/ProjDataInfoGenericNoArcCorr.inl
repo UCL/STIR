@@ -26,6 +26,7 @@
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include "stir/LORCoordinates.h"
+#include "stir/error.h"
 #include <math.h>
 
 START_NAMESPACE_STIR

@@ -37,6 +37,7 @@
 #endif
 // for debugging, remove later
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/stream.h"
 #include <iostream>
 

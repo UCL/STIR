@@ -23,6 +23,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "TextWriter.h"
+
 START_NAMESPACE_STIR
 
 //! Print error with format string a la \c printf and throw exception
@@ -77,7 +79,7 @@ error(const STRING& string)
   sstr << "\nERROR: "
 	    << string
 	    << std::endl;
-  std::cerr << sstr.str();
+  writeText(sstr.str().c_str(), ERROR_CHANNEL);
   throw std::runtime_error(sstr.str());
 }
 

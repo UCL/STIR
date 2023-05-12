@@ -39,6 +39,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 #include "stir_experimental/motion/NonRigidObjectTransformationUsingBSplines.h"
 #include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
 

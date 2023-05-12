@@ -53,7 +53,8 @@
 #include <string>
 
 #include "stir/scatter/CreateTailMaskFromACFs.h"
-
+#include "stir/warning.h"
+#include "stir/error.h"
 
 /***********************************************************/     
 

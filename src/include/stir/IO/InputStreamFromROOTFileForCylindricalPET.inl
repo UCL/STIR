@@ -16,6 +16,7 @@
   \author Kris Thielemans
   \author Robbie Twyman
 */
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

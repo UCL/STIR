@@ -42,6 +42,8 @@
 
 #include <typeinfo>
 #include <fstream>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;

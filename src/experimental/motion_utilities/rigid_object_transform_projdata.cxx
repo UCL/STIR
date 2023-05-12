@@ -31,6 +31,7 @@ namespace stir { // for doxygen
 #include "stir_experimental/motion/transform_3d_object.h"
 #include "stir_experimental/Quaternion.h"
 #include "stir/CPUTimer.h"
+#include "stir/error.h"
 #include <string>
 
 USING_NAMESPACE_STIR

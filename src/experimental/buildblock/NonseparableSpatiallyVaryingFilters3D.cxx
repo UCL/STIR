@@ -26,6 +26,8 @@ See STIR/LICENSE.txt for details
 #include "stir/CPUTimer.h"
 #include "stir/SegmentByView.h"
 #include "stir/include.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/round.h"
 #include <iostream>

@@ -16,6 +16,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/round.h"
+#include "stir/error.h"
 
 #include <math.h>
 

@@ -20,6 +20,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/Succeeded.h"
 #include "stir/round.h"
+#include "stir/error.h"
 
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/normal_distribution.hpp>

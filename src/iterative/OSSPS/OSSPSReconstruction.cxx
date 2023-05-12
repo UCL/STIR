@@ -31,6 +31,8 @@
 #include "stir/utilities.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <iostream>
 #include <memory>

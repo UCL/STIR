@@ -23,6 +23,7 @@
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/modulo.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 	

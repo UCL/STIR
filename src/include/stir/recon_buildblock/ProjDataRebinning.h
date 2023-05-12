@@ -28,6 +28,7 @@
 #include "stir/ParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
+#include "stir/error.h"
 #include <string>
 
 START_NAMESPACE_STIR

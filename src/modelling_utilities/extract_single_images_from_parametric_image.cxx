@@ -47,6 +47,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 
 int main(int argc, char *argv[])
 {

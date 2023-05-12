@@ -28,6 +28,8 @@
 #include "stir/IO/write_data.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 // TODO currently necessary, but needs to be replaced by ProjDataInMemory
 #define USE_SegmentByView

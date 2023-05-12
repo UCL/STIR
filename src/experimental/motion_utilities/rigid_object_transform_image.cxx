@@ -39,6 +39,8 @@ namespace stir { // for doxygen
 #include "stir_experimental/Quaternion.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CPUTimer.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
