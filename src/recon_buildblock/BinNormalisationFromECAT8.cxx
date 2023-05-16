@@ -483,7 +483,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       }
       out_eff << std::endl<< std::endl;
    }
-   
+
    for ( int i = axial_effects.get_min_index(); i<=axial_effects.get_max_index();i++)
    {
        out_axial << axial_effects[i] << "   " << std::endl;
@@ -519,7 +519,7 @@ use_geometric_factors() const
   return this->_use_geometric_factors;
 }
 
-bool 
+bool
 BinNormalisationFromECAT8::
 use_axial_effects_factors() const
 {
@@ -655,11 +655,10 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	{
 	  view_efficiency += lor_efficiency;
 	}
-    
-    
+
     if (this->use_axial_effects_factors())
       {
-        const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());	
+        const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());
 	total_efficiency += view_efficiency * axial_effect_factor;
       }
     else
@@ -685,7 +684,10 @@ construct_sino_lookup_table()
 
   auto proj_data_info_no_arccorr_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(norm_proj_data_info_sptr.get());
-              
+
+  if (!proj_data_info_no_arccorr_ptr)
+    error("BinNormalisationFromECAT8: internal error. Data should be of type ProjDataInfoCylindricalNoArcCorr");
+
   this->num_Siemens_sinograms = proj_data_info_no_arccorr_ptr->get_num_non_tof_sinograms();
   
   const auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_no_arccorr_ptr);
@@ -696,9 +698,9 @@ construct_sino_lookup_table()
   for (int Siemens_sino_index=0; Siemens_sino_index< this->num_Siemens_sinograms; ++Siemens_sino_index)
     {
       int z=Siemens_sino_index;
-             
+
       for (std::size_t i=0; i<segment_sequence.size();++i)
-        { 
+        {
           bin.segment_num() = segment_sequence[i];
           const int num_ax_poss = proj_data_info_no_arccorr_ptr->get_num_axial_poss(bin.segment_num());
           if (z< num_ax_poss)
@@ -740,7 +742,7 @@ find_axial_effects(int ring1, int ring2) const
     }
   return axial_effects[Siemens_sino_index];
 }
-  
+
 
 float 
 BinNormalisationFromECAT8::get_dead_time_efficiency (const DetectionPosition<>& det_pos,

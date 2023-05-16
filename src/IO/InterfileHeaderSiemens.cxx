@@ -540,6 +540,7 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   num_buckets = 0; // should be set normally
   num_components = 0; // should be set to 8 normally
   axial_compression = 11;  // should be set normally but seems to be this always
+  is_arccorrected = false; // norm data is never arc-corrected
 
   ignore_key("data description");
   ignore_key("%expiration date (yyyy:mm:dd)");
