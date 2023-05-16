@@ -75,11 +75,15 @@ set(${dir_EXE_SOURCES}
         separate_true_from_random_scatter_for_necr.cxx
 )
 
+if (HAVE_ITK)
+  list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
+endif()
+
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
 endif()
 
-if (HDF5_FOUND)
+if (HAVE_HDF5)
  list(APPEND ${dir_EXE_SOURCES}
    construct_randoms_from_GEsingles.cxx
    GE/print_GE_singles_values.cxx

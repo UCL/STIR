@@ -7,7 +7,7 @@
   <body>
     <h1>Summary of changes in STIR release 5.2</h1>
 
-<p>This version is 100% backwards compatible with STIR 5.0.
+<p>This version is 100% backwards compatible with STIR 5.0. However, there is a <b> change in the output of scatter estimation<b>, see below for more information.
 </p>
 <h2>Overall summary</h2>
 
@@ -26,10 +26,32 @@
 
 <h3>Bug fixes</h3>
 <ul>
+<li>Scatter estimation was setting initial activity image to 1 at set-up, effectively ignoring the initial image, aside from geometric info.</li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
+  <li>The <tt>Discretised Shape3D</tt> shape/ROI has now an extra value <tt>label index</tt>. For ROIs, this allows
+    using a single volume with multiple ROIs encoded as labels, such as output by ITKSnap and many others.
+    When used as a shape in <tt>generate_image</tt>, it could be used to extract a single ROI from such a label image.
+    <br /><a href="https://github.com/UCL/STIR/pull/1196/">PR #1196</a>.
+  </li>
+  <li>Global variables in SPECTUB have been substituted by class members, such that multiple SPECTUB projectors can be used.
+    <br /><a href="https://github.com/UCL/STIR/pull/1169/">PR #1169</a>.
+  </li>
+  <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>InverseSSRB</code> now works for BlocksOnCylindrical after a rewrite.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+/  </li>
+  <li>Parallelised function <code>set_fan_data_add_gaps_help</code> across segments to reduce computation time.
+    <br /><a href="https://github.com/UCL/STIR/pull/1168/">PR #1168</a>.
+  </li>
+  <li>New utility <tt>SPECT_dicom_to_interfile</tt> which reads a DICOM file with SPECT projection data and extracts the data and writes one or more Interfile 3.3 headers
+    (still somewhat preliminary).
+    <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
+  </li>
 </ul>
 
 <h3>New examples</h3>
@@ -42,8 +64,28 @@
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>Scatter estimation was resetting the  activity image to 1 before each iteration. This led to cases where the reconstructed image (and therefore the scatter estimation)
+  did not converge, especially when using a small number of sub-iterations.
+   Now, the reconstructed image is continuouslu updated between scatter iterations by default. This should also allow users to use less sub-iterations, therefore saving some time for the scatter estimation.
+   The old behaviour can be re-enabled by setting <code>restart_reconstruction_every_scatter_iteration</code>
+   to true either via a parameter file or via the <code>set_restart_reconstruction_every_scatter_iteration()</code> function.
+   <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>. 
+  </li>
   <li>energy resolution functions and keywords have now more documentation. <code>Scanner::check_consistency</code> also checks if the energy resolution is less than 20 (as it is FWHM/reference_energy).
   <br /><a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.
+  </li>
+  <li>Errors now throw <code>std::runtime_error</code> instead of <code>std::string</code>.
+  <br /><a href="https://github.com/UCL/STIR/pull/1131/">PR #1131</a>.
+  </li>
+  <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions. View-offset is now always taken into account.
+  <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+</ul>
+
+<h3>Deprecated functionality</h3>
+<ul>
+  <li>The following functions (previously used for upsampling the scatter estimate) have been
+    made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
   </li>
 </ul>
 
@@ -66,6 +108,12 @@
   <li>Small change in scatter simulation to how non-arccorrected bins are computed. Added a check in the construction of non-arccorrected projdata that the number of tangential bins is not larger than the maximum non-arccorrected bins.
     <br /><a href="https://github.com/UCL/STIR/pull/1152/">PR #1152</a>.
   </li>
+  <li><code>extend_segment_in_views</code> does not handle view offsets correctly and does not work for BlocksOnCylindrical scanners <br /><a href="https://github.com/UCL/STIR/issues/1177/">issue #1177</a>. A new function <code>extend_segment</code> was added that works for Cylindrical and BlocksOnCylindrical and allows extension in tangential and axial direction as well.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>sample_function_on_regular_grid</code> did not handle offset correctly in all places <br /><a href="https://github.com/UCL/STIR/issues/1178/">issue #1178</a>.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -78,7 +126,10 @@
 
 <h3>Other changes to tests</h3>
 <ul>
-  <li><tt>test_Scanner.cxx</tt> tests for energy resolution. <a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.</li>
+  <li><tt>test_Scanner.cxx</tt> tests for energy resolution, <a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.</li>
+  <li>
+    New file <tt>test_interpolate_projdata</tt>, <a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
+  </li>
 </ul>
 </body>
 

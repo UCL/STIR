@@ -90,11 +90,7 @@ class ProjDataVisualisationBackend:
             self.load_projdata()
 
         if self.projdata is not None:
-            if self.segment_data is None:
-                self.segment_data = self.projdata.get_segment_by_view(segment_number)
-
-            elif segment_number != self.get_current_segment_num():
-                self.segment_data = self.projdata.get_segment_by_view(segment_number)
+            self.segment_data = self.projdata.get_segment_by_view(segment_number)
             return self.segment_data
 
     @staticmethod
@@ -102,7 +98,7 @@ class ProjDataVisualisationBackend:
         """Converts a STIR data object to a numpy array."""
         return stirextra.to_numpy(data)
 
-    def get_limits(self, dimension: ProjDataDims, segment_number: int) -> tuple[int, int]:
+    def get_limits(self, dimension: ProjDataDims, segment_number: int) -> tuple:
         """
         Returns the limits of the projection data in the indicated dimension.
         :param dimension: The dimension to get the limits for, type SinogramDimensions.
