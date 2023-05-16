@@ -573,6 +573,10 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   add_key("%cross calibration factor",& cross_calib_factor);
   ignore_key("%calibration date (yyyy:mm:dd)");
   ignore_key("%calibration time (hh:mm:ss GMT+00:00)");
+  // isotope things are vectorised in norm files and not in other raw data, so we could
+  // fix that, but as we are not interested in it anyway (tends to be Ge-68), let's just ignore it.
+  remove_key("isotope name");
+  ignore_key("isotope name");
 
   ignore_key("%number of normalization scans");
   ignore_key("%normalization scan");
@@ -587,6 +591,13 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   ignore_key("%data set description");
   ignore_key("total number of data sets");
   ignore_key("%data set");
+
+  // a few more that can be ignored
+  // note that these keywords are currently truncated due to a problem when parsing keywords with :
+  ignore_key("%calibration time (hh");
+  ignore_key("%calibration date (yyyy");
+  ignore_key("%expiration time (hh");
+  ignore_key("%expiration date (yyyy");
 }
 
 void InterfileNormHeaderSiemens::read_num_components()
