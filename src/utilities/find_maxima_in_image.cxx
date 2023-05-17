@@ -35,6 +35,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
 
 #include <iostream>
 #include <iomanip>

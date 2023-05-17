@@ -23,6 +23,8 @@
 #include "stir/stream.h"
 #include "stir/more_algorithms.h"
 #include "stir/numerics/max_eigenvector.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <vector>
 #include <cmath>
 #ifndef NEW_ROT

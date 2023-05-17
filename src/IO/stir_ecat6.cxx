@@ -34,6 +34,8 @@
 #include "stir/convert_array.h"
 #include "stir/IndexRange2D.h"
 #include "stir/utilities.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/Scanner.h" 
 #include "stir/ExamInfo.h"

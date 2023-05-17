@@ -24,6 +24,7 @@
 
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

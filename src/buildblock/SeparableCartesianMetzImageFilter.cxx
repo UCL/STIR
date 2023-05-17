@@ -20,7 +20,7 @@
 */
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

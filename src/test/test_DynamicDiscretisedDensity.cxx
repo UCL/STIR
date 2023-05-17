@@ -29,6 +29,7 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
 #include <utility>
 #include <vector>
 #include <string>

@@ -24,6 +24,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/Bin.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <fstream>
 #include <cstring>
 

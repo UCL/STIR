@@ -18,6 +18,7 @@
 #include "stir/linear_regression.h"
 #include "stir/cross_product.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <numeric>
 #include <fstream>

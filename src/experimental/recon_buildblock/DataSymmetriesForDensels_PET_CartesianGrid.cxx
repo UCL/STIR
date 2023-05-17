@@ -25,6 +25,7 @@
 #include "stir/Bin.h"
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
+#include "stir/error.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR

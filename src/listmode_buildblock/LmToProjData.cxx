@@ -75,6 +75,8 @@ FRAME_BASED_DT_CORR:
 #include "stir/CPUTimer.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <fstream>
 #include <iostream>

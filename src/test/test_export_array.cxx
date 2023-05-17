@@ -27,6 +27,8 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/copy_fill.h"
 
 #include <boost/format.hpp>

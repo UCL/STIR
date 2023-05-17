@@ -21,6 +21,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
 #include <functional>
+#include "stir/warning.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::pair;

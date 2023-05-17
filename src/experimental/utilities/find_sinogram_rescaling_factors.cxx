@@ -22,6 +22,7 @@
 #include "stir/Succeeded.h"
 #include "stir/Sinogram.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
 
 #include <fstream>
 

@@ -17,6 +17,7 @@
 
 
 #include "stir/data/SinglesRatesFromSglFile.h"
+#include "stir/error.h"
 
 #include <string>
 #include <fstream>

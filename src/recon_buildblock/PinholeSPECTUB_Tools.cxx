@@ -27,6 +27,8 @@
 #include <time.h>
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>

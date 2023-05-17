@@ -22,6 +22,7 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 #include <algorithm>
 #include <fstream>
 

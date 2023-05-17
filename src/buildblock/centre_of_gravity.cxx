@@ -22,6 +22,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/centre_of_gravity.h"
 #include "stir/assign.h"
+#include "stir/error.h"
 #include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES

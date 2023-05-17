@@ -43,6 +43,7 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/info.h"
+#include "stir/error.h"
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"

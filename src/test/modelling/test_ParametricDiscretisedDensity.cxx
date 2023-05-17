@@ -35,6 +35,7 @@
 #include <utility>
 #include <vector>
 #include <string>
+#include "stir/warning.h"
 
 #include <algorithm>
 #include <iomanip>

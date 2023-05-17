@@ -40,6 +40,8 @@
 #include "stir/modelling/KineticParameters.h"
 
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

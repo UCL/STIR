@@ -24,6 +24,8 @@
 #include "stir/Succeeded.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 using std::string;
 

@@ -23,6 +23,7 @@
 #include "stir/round.h"
 #include "stir/error.h"
 #include "stir/find_STIR_config.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

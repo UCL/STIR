@@ -20,6 +20,8 @@
 #include "stir/stream.h"
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 START_NAMESPACE_STIR
 
 template<>

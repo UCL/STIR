@@ -15,7 +15,7 @@
 */
 
 #include "stir/listmode/CListRecordPENN.h"
-
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

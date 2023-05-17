@@ -23,6 +23,7 @@
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 #include <numeric>
 #include <iostream> 

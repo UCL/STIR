@@ -20,6 +20,8 @@
 
 #include "stir/modelling/PatlakPlot.h"
 #include "stir/linear_regression.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

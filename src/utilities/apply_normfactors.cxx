@@ -28,6 +28,7 @@
 #include "stir/Sinogram.h"
 #include "stir/IndexRange2D.h"
 #include "stir/display.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <fstream>
 #include <string>

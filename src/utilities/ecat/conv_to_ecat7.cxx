@@ -44,6 +44,7 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 #include "stir/Succeeded.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <vector>
 #include <string>

@@ -31,6 +31,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 
 #include "stir/ProjDataInfo.h"
 

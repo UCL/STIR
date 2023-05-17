@@ -32,6 +32,7 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 
 #include "stir/recon_buildblock/RelatedBins.h"
+#include "stir/warning.h"
 #include <algorithm>
 //#include <iostream>
 //#include "stir/stream.h"

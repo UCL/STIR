@@ -38,7 +38,7 @@
 #include "stir/Viewgram.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/SegmentByView.h"
-
+#include "stir/warning.h"
 
 #include <fstream>
 #include <list>

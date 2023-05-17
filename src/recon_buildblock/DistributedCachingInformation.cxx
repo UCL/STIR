@@ -22,6 +22,7 @@
 
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
 #include "stir/recon_buildblock/distributed_functions.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

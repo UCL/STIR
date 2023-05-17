@@ -31,6 +31,8 @@
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include <iostream>
 #include <fstream>

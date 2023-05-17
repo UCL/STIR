@@ -25,6 +25,7 @@
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <iostream>
 
 START_NAMESPACE_STIR

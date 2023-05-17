@@ -27,6 +27,8 @@
 #include "stir/listmode/ListRecord.h"
 #include "stir/Viewgram.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #include "stir/HighResWallClockTimer.h"
 #include "stir/Viewgram.h"

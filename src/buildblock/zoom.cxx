@@ -40,6 +40,7 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
+#include "stir/error.h"
 #include <cmath>
 
 START_NAMESPACE_STIR

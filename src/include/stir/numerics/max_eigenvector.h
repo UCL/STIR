@@ -21,6 +21,7 @@
 #include "stir/numerics/norm.h"
 #include "stir/more_algorithms.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

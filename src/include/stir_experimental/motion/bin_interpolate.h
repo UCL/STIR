@@ -22,6 +22,7 @@
 #include "stir/Coordinate4D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/DetectionPositionPair.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

@@ -35,6 +35,8 @@ END:=
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream> 
 
 #ifndef STIR_NO_NAMESPACES

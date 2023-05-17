@@ -23,6 +23,7 @@
 #include "stir/Array.h"
 #include "stir/is_null_ptr.h"
 #include "stir/copy_fill.h"
+#include "stir/error.h"
 //#include "stir/Scanner.h"
 #include <vector>
 

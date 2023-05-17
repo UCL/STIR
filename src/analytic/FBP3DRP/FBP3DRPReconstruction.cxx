@@ -77,6 +77,8 @@
 #include "stir/IndexRange3D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/analytic/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"

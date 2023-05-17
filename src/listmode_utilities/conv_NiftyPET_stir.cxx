@@ -22,6 +22,7 @@
 #include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/error.h"
 
 USING_NAMESPACE_STIR
 

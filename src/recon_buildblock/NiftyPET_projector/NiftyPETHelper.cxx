@@ -29,6 +29,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/FilePath.h"
 #include "stir/IO/stir_ecat_common.h"
+#include "stir/error.h"
 // Non-STIR includes
 #include <fstream>
 #include <math.h>

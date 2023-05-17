@@ -21,6 +21,7 @@
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <time.h>
 #include <boost/format.hpp>
 using namespace std;

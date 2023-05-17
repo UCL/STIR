@@ -17,6 +17,8 @@
 #ifndef __stir_listmode_ListModeData_dummy_H__
 #define __stir_listmode_ListModeData_dummy_H__
 
+#include "stir/error.h"
+
 START_NAMESPACE_STIR
 /*!
   \brief A class to trick the Objective function that we have list mode data,

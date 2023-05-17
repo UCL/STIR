@@ -20,6 +20,7 @@
 #include "stir/Bin.h"
 #include "stir/Array.h"
 #include <boost/format.hpp>
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

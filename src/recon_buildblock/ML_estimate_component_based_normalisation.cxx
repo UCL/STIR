@@ -26,6 +26,7 @@
 #include "stir/stream.h"
 #include "stir/display.h"
 #include "stir/info.h"
+#include "stir/warning.h"
 #include "stir/ProjData.h"
 #include <boost/format.hpp>
 #include <fstream>

@@ -16,6 +16,7 @@
 */
 
 #include <fstream>
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

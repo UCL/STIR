@@ -26,6 +26,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/stream.h"
+#include "stir/error.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/date_time_functions.h"

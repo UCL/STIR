@@ -18,6 +18,8 @@
     See STIR/LICENSE.txt for details
 */
 
+#include "stir/warning.h"
+
 START_NAMESPACE_STIR
 
  

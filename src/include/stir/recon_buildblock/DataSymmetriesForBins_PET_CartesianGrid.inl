@@ -29,6 +29,8 @@
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoBlocksOnCylindrical.h"
 #include "stir/ProjDataInfoGeneric.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

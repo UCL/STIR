@@ -24,6 +24,8 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/numerics/MatrixFunction.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <algorithm>
 #include <cmath>
 

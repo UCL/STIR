@@ -41,6 +41,8 @@
 #include "stir/unique_ptr.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;

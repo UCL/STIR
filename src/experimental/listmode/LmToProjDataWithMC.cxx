@@ -14,6 +14,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <time.h>
 #include "stir/is_null_ptr.h"
 #include "stir/stream.h"

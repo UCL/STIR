@@ -22,6 +22,7 @@
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
+#include "stir/warning.h"
 #ifdef HAVE_LLN_MATRIX
 #include "ecat_model.h"
 extern "C" {

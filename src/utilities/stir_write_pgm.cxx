@@ -30,6 +30,7 @@
 #include "stir/Coordinate2D.h"
 #include "stir/shared_ptr.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 
 #include <cstdio>
 #include <fstream>

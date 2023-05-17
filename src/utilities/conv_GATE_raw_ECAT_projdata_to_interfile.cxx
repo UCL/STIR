@@ -26,6 +26,8 @@
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
 #include "stir/NumericType.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #define NUMARG 8
 

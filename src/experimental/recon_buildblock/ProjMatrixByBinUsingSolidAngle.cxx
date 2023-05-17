@@ -23,6 +23,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/round.h"
+#include "stir/error.h"
 #include <algorithm>
 #include <math.h>
 

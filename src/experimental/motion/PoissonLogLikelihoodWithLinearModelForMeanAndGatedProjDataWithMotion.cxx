@@ -21,6 +21,8 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir_experimental/motion/Transform3DObjectImageProcessor.h"

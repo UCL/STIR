@@ -16,6 +16,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/KeyParser.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

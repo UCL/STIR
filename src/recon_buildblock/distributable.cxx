@@ -50,6 +50,7 @@
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #include <algorithm>
 

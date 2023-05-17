@@ -22,6 +22,7 @@
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"
 #include "stir/Verbosity.h"
+#include "stir/error.h"
 #include "stir/recon_array_functions.h"
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/ProjDataInMemory.h"

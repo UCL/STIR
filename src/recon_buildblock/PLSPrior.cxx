@@ -27,6 +27,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <algorithm>
 using std::min;
 using std::max;

@@ -17,6 +17,8 @@
 #include "stir_experimental/recon_buildblock/BinNormalisationUsingProfile.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

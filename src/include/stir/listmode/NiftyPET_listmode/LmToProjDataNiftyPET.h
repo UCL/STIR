@@ -30,6 +30,7 @@
 */
 
 #include "stir/listmode/LmToProjDataAbstract.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

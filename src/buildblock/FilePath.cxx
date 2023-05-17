@@ -24,6 +24,9 @@
 #include "stir/FilePath.h"
 #include "stir/utilities.h"
 
+#include "stir/warning.h"
+#include "stir/error.h"
+
 #include <boost/format.hpp>
 
 #if defined(__OS_WIN__)

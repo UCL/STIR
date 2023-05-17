@@ -23,6 +23,7 @@
 #include "stir/Succeeded.h"
 #include "stir/stream.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
 #include <fstream>
 #include <vector>
 
