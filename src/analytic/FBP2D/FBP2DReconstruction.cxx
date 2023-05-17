@@ -291,8 +291,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = detail::find_basic_vs_nums_in_subset(
-      *proj_data_ptr->get_proj_data_info_sptr(), *symmetries_sptr, proj_data_ptr->get_min_segment_num(),
-      proj_data_ptr->get_max_segment_num(), 0, 1); // project everything, therefore subset 0 of 1 subsets
+      *proj_data_ptr->get_proj_data_info_sptr(), *symmetries_sptr, 0, 0, // only segment zero
+      0, 1); // project everything, therefore subset 0 of 1 subsets
 
 #ifdef STIR_OPENMP
 #  pragma omp parallel shared(proj_data_ptr, symmetries_sptr)
