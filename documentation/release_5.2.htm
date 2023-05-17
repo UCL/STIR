@@ -7,7 +7,7 @@
   <body>
     <h1>Summary of changes in STIR release 5.2</h1>
 
-<p>This version is 100% backwards compatible with STIR 5.0. However, there is a <b> change in the output of scatter estimation<b>, see below for more information.
+<p>This version is 100% backwards compatible with STIR 5.0 as far as usage goes. However, there are <b> changes in the output of scatter estimation and ECAT8 normalisation<b>, see below for more information.
 </p>
 <h2>Overall summary</h2>
 
@@ -27,6 +27,19 @@
 <h3>Bug fixes</h3>
 <ul>
 <li>Scatter estimation was setting initial activity image to 1 at set-up, effectively ignoring the initial image, aside from geometric info.</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+  <li> The ECAT8 normalisation (used for the Siemens mMR) code now takes the 4th component <i>axial effects</i> into account.
+    These normalisation factors are therefore different (even up to ~10%). This gives improved axial uniformity in the images.
+    The use of the axial effects can be switched off by adding setting <tt>use_axial_effects_factors:=0</tt> to the
+    parameter file (see an example in <tt>examples/Siemens-mMR/correct_projdata_no_axial_effects.par</tt>), or the class member
+    of the same name.<br />
+    In addition, the Siemens normalisation header is now read (using a new class <code>InterfileNormHeaderSiemens</code>) such that
+    hard-coded variables for the Siemens mMR have been removed. Further testing of this functionality is still required however.
+    <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
+  </li>
 </ul>
 
 <h3>New functionality</h3>

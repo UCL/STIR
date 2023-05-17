@@ -1,12 +1,9 @@
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020, 2021 University College London
+    Copyright (C) 2018, 2020, 2021, 2023 University College London
     Copyright (C) 2018 STFC
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -278,7 +275,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
     segment_sequence = ecat::find_segment_sequence(*data_info_ptr);
-    //XXX check if order here and segment_table are consistent
+    //TODO check if order here and segment_table are consistent
   }
 
   // Set the bed position
@@ -545,6 +542,9 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   ignore_key("data description");
   ignore_key("%expiration date (yyyy:mm:dd)");
   ignore_key("%expiration time (hh:mm:ss GMT-05:00)");
+  // currently keywords are truncated at :
+  ignore_key("%expiration time (hh");
+  ignore_key("%expiration date (yyyy");
   ignore_key("%raw normalization scans description");
 
   // remove some standard keys, which Siemens has replaced with similar names
@@ -573,6 +573,10 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   add_key("%cross calibration factor",& cross_calib_factor);
   ignore_key("%calibration date (yyyy:mm:dd)");
   ignore_key("%calibration time (hh:mm:ss GMT+00:00)");
+  // currently keywords are truncated at :
+  ignore_key("%calibration time (hh");
+  ignore_key("%calibration date (yyyy");
+
   // isotope things are vectorised in norm files and not in other raw data, so we could
   // fix that, but as we are not interested in it anyway (tends to be Ge-68), let's just ignore it.
   remove_key("isotope name");
@@ -591,13 +595,6 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   ignore_key("%data set description");
   ignore_key("total number of data sets");
   ignore_key("%data set");
-
-  // a few more that can be ignored
-  // note that these keywords are currently truncated due to a problem when parsing keywords with :
-  ignore_key("%calibration time (hh");
-  ignore_key("%calibration date (yyyy");
-  ignore_key("%expiration time (hh");
-  ignore_key("%expiration date (yyyy");
 }
 
 void InterfileNormHeaderSiemens::read_num_components()

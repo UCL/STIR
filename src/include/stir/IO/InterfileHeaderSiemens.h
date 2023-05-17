@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2013, 2016, 2020, 2021 University College London
+    Copyright (C) 2020, 2021, 2023 University College London
+    Copyright (C) 2018 STFC
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -15,7 +16,7 @@
           stir::InterfileListmodeHeaderSiemens, stir:InterfileNormHeaderSiemens
 
   \author Kris Thielemans
-
+  \author Edoardo Pasca
 */
 
 
