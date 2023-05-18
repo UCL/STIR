@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014, 2020 University College London
+  Copyright (C) 2013-2014, 2020, 2023 University College London
 
   Largely a copy of the ECAT7 version. 
 
@@ -62,6 +62,10 @@ START_NAMESPACE_ECAT
   ; use_geometric_factors:=1
   ; use_crystal_interference_factors:=1
   ; use_axial_effects_factors:=1
+
+  ; keyword that can be used to write the components to a separate text files for debugging
+  ; files are written in the current directory and are called geom_out.txt etc.
+  ; write_components_to_file := 0
   End Bin Normalisation From ECAT8:=
   \endverbatim
 
@@ -77,7 +81,7 @@ START_NAMESPACE_ECAT
   maximum ring difference, smaller than what is actually possible with the scanner), we use an
   `axial_effects_factor` of 1. This should be reasonable as the numbers are around 1 (on the mMR).
 
- This stratey allows us to give normalisation factor for span=1 data, even if the norm file is for span=11.
+ This strategy allows us to give normalisation factor for span=1 data, even if the norm file is for span=11.
 
   \todo dead-time is not yet implemented
 
@@ -145,6 +149,7 @@ public:
   bool _use_geometric_factors;
   bool _use_crystal_interference_factors;
   bool _use_axial_effects_factors;
+  bool _write_components_to_file;
 
   void read_norm_data(const string& filename);
   float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,

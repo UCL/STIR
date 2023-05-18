@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
   Copyright (C) 2013-2014, 2019, 2020, 2021 University College London
+  Copyright (C) 2020, National Physical Laboratory
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -22,6 +23,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Daniel Deidda
 */
 
 
@@ -161,6 +163,7 @@ BinNormalisationFromECAT8::set_defaults()
   this->_use_geometric_factors = true;
   this->_use_crystal_interference_factors = true;
   this->_use_axial_effects_factors = true;
+  this->_write_components_to_file = false;
 }
 
 void 
@@ -179,6 +182,7 @@ initialise_keymap()
   this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
   this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
   this->parser.add_key("use_axial_effects_factors", &this->_use_axial_effects_factors);
+  this->parser.add_key("write_components_to_file", &this->_write_components_to_file);
   this->parser.add_stop_key("End Bin Normalisation From ECAT8");
 }
 
@@ -245,19 +249,6 @@ BinNormalisationFromECAT8::
 read_norm_data(const string& filename)
 {
   
-#if 0
-MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
-  if (mptr == 0)
-    error("BinNormalisationFromECAT8: error opening %s\n", filename.c_str());
-
-  scanner_ptr.reset(
-    find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
-  
-  MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
-				    Norm3d /*= read data as well */);
-  
-  num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
-#endif
   InterfileNormHeaderSiemens norm_parser;
   norm_parser.parse(filename.c_str());
 
@@ -347,12 +338,6 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 
   axial_effects =
     Array<1,float>(num_Siemens_sinograms);
-
-#if 0
-  int geom_test = nrm_subheader_ptr->num_geo_corr_planes * (max_tang_pos_num-min_tang_pos_num +1);
-  int cry_inter = num_transaxial_crystals_per_block * (max_tang_pos_num-min_tang_pos_num +1);
-  int eff_test = scanner_ptr->get_num_detectors_per_ring() * scanner_ptr->get_num_rings();
-#endif
 
   std::ifstream binary_data;
   open_read_binary(binary_data, full_data_file_name);
@@ -446,8 +431,9 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 #endif
 
   
-#if 1
-   // to test pipe the obtained values into file
+  if (this->_write_components_to_file)
+    {
+      // to test pipe the obtained values into file
     ofstream out_geom, out_axial;
     ofstream out_inter;
     ofstream out_eff;
@@ -489,7 +475,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
        out_axial << axial_effects[i] << "   " << std::endl;
    }
 
-#endif
+    }
 
 #if 0
   display(geometric_factors, "geo");
