@@ -44,6 +44,8 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 #include <stdlib.h>
 

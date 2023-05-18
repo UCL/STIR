@@ -31,6 +31,7 @@
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/display.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>

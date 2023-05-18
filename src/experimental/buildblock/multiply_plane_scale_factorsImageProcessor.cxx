@@ -19,6 +19,8 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::copy;

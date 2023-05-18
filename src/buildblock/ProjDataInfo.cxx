@@ -41,6 +41,8 @@
 #include "stir/Bin.h"
 // include for ask and ask_num
 #include "stir/utilities.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <iostream>
 #include <typeinfo>

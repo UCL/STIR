@@ -36,6 +36,8 @@ To copy a subheader (but keeping essential info)
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
 #include "stir/IO/stir_ecat7.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <iostream>
 #include <string>

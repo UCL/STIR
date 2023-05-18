@@ -40,6 +40,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CPUTimer.h"
+#include "stir/error.h"
 #include <fstream>
 
 

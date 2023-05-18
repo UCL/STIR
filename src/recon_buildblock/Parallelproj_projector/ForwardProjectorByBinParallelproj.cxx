@@ -26,6 +26,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/recon_array_functions.h"
 #ifdef parallelproj_built_with_CUDA
 #include "parallelproj_cuda.h"

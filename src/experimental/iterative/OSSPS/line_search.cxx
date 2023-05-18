@@ -17,6 +17,9 @@
   
 */
 
+#include "stir/warning.h"
+#include "stir/error.h"
+
 #error this code does not compile right now
 
 // only used in (disabled) line_search below

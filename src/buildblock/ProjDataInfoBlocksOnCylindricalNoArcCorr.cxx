@@ -29,6 +29,7 @@
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
 #include "stir/DetectionPosition.h"
+#include "stir/error.h"
 #include <iostream>
 #include <fstream>
 

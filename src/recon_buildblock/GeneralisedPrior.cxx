@@ -22,6 +22,7 @@
 #include "stir/Succeeded.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

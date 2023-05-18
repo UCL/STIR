@@ -28,6 +28,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
+#include "stir/error.h"
 
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>

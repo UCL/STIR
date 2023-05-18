@@ -23,6 +23,7 @@
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h" // necessary as stir_ecat7 reading routine returns a VoxelsOnCartesianGrid
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <fstream>
 #include <string>
 

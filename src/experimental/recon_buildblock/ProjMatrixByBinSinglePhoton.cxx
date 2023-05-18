@@ -22,6 +22,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Coordinate3D.h"
+#include "stir/error.h"
 #include <algorithm>
 #include <math.h>
 

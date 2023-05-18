@@ -17,6 +17,8 @@
 */
 
 #include "stir/TimeGateDefinitions.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 #include <fstream>
 

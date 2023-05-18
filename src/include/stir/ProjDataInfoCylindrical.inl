@@ -30,6 +30,7 @@
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <algorithm>
 
 START_NAMESPACE_STIR

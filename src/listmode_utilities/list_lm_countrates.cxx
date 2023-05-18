@@ -26,6 +26,7 @@
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>

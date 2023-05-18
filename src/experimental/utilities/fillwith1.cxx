@@ -18,7 +18,7 @@
 #include "stir/ProjData.h"
 #include "stir/SegmentByView.h"
 #include "stir/Succeeded.h"
-
+#include "stir/error.h"
 #include <iostream> 
 
 

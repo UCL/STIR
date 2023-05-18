@@ -28,6 +28,7 @@
 #include "stir/IndexRange4D.h"
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/display.h"
+#include "stir/error.h"
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
 #ifndef STIR_NO_NAMESPACES

@@ -23,7 +23,7 @@
 #include "stir/ArrayFunction.h"
 #include "stir/Array_complex_numbers.h"
 #include "stir/IO/read_from_file.h"
-
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

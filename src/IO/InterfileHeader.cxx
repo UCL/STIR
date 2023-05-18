@@ -30,6 +30,8 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/RadionuclideDB.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <numeric>
 #include <functional>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"

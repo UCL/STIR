@@ -25,6 +25,8 @@
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

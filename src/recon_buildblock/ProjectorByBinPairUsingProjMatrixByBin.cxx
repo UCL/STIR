@@ -25,6 +25,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

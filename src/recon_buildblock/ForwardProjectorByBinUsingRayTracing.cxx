@@ -61,6 +61,8 @@
 #include "stir/IndexRange4D.h"
 #include "stir/Array.h"
 #include "stir/round.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <algorithm>
 using std::min;

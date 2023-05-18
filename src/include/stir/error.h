@@ -23,6 +23,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "TextWriter.h"
+
 START_NAMESPACE_STIR
 
 //! Print error with format string a la \c printf and throw exception
@@ -55,7 +57,7 @@ error(const char *const s, ...);
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c ERROR:, then \c string
-  and then another newline to std::cerr. Then it throws an exception (of type string).
+  and then another newline to std::cerr. Then it throws an exception.
 
   \todo At a later stage, it will also write to a log-file.
 
@@ -77,8 +79,8 @@ error(const STRING& string)
   sstr << "\nERROR: "
 	    << string
 	    << std::endl;
-  std::cerr << sstr.str();
-  throw sstr.str();
+  writeText(sstr.str().c_str(), ERROR_CHANNEL);
+  throw std::runtime_error(sstr.str());
 }
 
 END_NAMESPACE_STIR

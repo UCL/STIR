@@ -20,6 +20,7 @@
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/warning.h"
 
 #include <algorithm>
 using std::vector;

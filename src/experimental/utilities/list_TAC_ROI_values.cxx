@@ -63,6 +63,7 @@
 #include "stir/DataProcessor.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

@@ -38,6 +38,8 @@ limitations under the License.
 #include <vector>
 #include "stir/IO/read_from_file.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/Succeeded.h"
 
 #ifndef STIR_NO_NAMESPACES

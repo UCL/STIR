@@ -25,6 +25,7 @@
 #include <fstream>
 #include <boost/format.hpp>
 #include "stir/info.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

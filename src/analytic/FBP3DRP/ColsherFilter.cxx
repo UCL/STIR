@@ -28,6 +28,7 @@
 #include "stir/numerics/fourier.h"
 #include "stir/IndexRange2D.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 #ifdef __DEBUG_COLSHER
 // for debugging...

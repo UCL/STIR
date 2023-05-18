@@ -17,7 +17,7 @@ This file is part of STIR.
   \brief implementation of stir::sample_function_on_regular_grid and
          stir::sample_function_using_index_converter
 */
-
+#include "stir/warning.h"
 START_NAMESPACE_STIR
 
 template <class FunctionType, class elemT, class positionT>

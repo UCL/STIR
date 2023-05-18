@@ -22,7 +22,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/line.h"
-
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

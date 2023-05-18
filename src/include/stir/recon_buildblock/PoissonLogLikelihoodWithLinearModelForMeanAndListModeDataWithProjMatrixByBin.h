@@ -33,6 +33,7 @@
 #include "stir/ExamInfo.h"
 #include "stir/deprecated.h"
 #include "stir/recon_buildblock/distributable.h"
+#include "stir/error.h"
 START_NAMESPACE_STIR
 
 /*!

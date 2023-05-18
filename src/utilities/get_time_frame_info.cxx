@@ -18,6 +18,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <string>
 

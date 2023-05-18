@@ -21,6 +21,7 @@
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
 #include "stir/Sinogram.h"
 #include "stir/IndexRange2D.h"
 #include "stir/display.h"

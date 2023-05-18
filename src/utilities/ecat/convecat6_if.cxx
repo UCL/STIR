@@ -60,6 +60,7 @@
 #include "stir/IO/ecat6_utils.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <stdio.h>
 #include <iostream>
 #include <algorithm>

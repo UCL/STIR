@@ -34,6 +34,7 @@
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 #include "stir/DataProcessor.h"
 #include "stir/is_null_ptr.h"
 #include <boost/format.hpp>

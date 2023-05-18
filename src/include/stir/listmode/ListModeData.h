@@ -27,6 +27,7 @@
 #include "stir/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/listmode/ListRecord.h"
+#include "stir/error.h"
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
 #endif

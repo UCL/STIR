@@ -77,6 +77,8 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/round.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <math.h>
 
 #include <algorithm>

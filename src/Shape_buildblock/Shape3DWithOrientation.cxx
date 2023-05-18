@@ -21,6 +21,8 @@
 #include "stir/numerics/determinant.h"
 #include "stir/numerics/norm.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <cmath>
 
 START_NAMESPACE_STIR

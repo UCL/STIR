@@ -26,6 +26,8 @@
 #include "stir/Succeeded.h"
 #include "stir/FilePath.h"
 #include "stir/MultipleDataSetHeader.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

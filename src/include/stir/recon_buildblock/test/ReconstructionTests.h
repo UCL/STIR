@@ -22,6 +22,7 @@
 #include "stir/ArrayFunction.h"
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/Verbosity.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

@@ -18,6 +18,7 @@
 #include "stir_experimental/motion/RigidObject3DTransformation.h"
 #include "stir/stream.h"
 #include "stir_experimental/AbsTimeInterval.h"
+#include "stir/warning.h"
 
 #include <iostream>
 

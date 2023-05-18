@@ -25,6 +25,7 @@
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/interfile.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

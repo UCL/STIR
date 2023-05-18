@@ -68,6 +68,8 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream> 
 
 #ifndef STIR_NO_NAMESPACES

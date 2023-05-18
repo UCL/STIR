@@ -94,7 +94,7 @@ void InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
     decreasing_index--;
   }
   // if the largest symmetry error is larger than 0.01% of the mean absolute value, then there is something wrong
-  check(maxAbsDifference < 0.0001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.01\% of absolute values in axial direction");
+  check_if_less(maxAbsDifference, 0.0001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.01\% of absolute values in axial direction");
 
   // compare the first half of the views with the second half - even for the BlocksOnCylindrical scanner they should be identical
   maxAbsDifference = 0.0;
@@ -125,7 +125,7 @@ void InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
   }
   // if the largest symmetry error is larger than 0.1% of the mean absolute value, then there is something wrong
   // TODO: this tolerance can be tightened to 0.01% if https://github.com/UCL/STIR/issues/1176 is resolved
-  check(maxAbsDifference < 0.001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.1\% of absolute values across views");
+  check_if_less(maxAbsDifference, 0.001 * sumAbsValues / summedEntries, "symmetry errors larger than 0.1\% of absolute values across views");
 }
 
 void InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff)
@@ -144,7 +144,7 @@ void InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment
   }
 
   // confirm that the difference is smaller than an empirically found value
-  check(sumAbsDifference < maxDiff, "difference between segments is larger than expected");
+  check_if_less(sumAbsDifference, maxDiff, "difference between segments is larger than expected");
 }
 
 void InterpolationTests::scatter_interpolation_test_blocks()

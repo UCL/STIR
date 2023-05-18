@@ -15,6 +15,7 @@
 
 #include "stir/Succeeded.h"
 #include "matrix.h"
+#include "stir/warning.h"
 
 #include <iostream>
 

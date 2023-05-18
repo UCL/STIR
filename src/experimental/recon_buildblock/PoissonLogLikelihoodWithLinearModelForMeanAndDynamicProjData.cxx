@@ -21,6 +21,8 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 

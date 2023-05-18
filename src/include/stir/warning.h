@@ -18,7 +18,10 @@
 
 */
 #include "stir/common.h"
+#include "stir/Verbosity.h"
 #include <iostream>
+
+#include "TextWriter.h"
 
 START_NAMESPACE_STIR
 
@@ -62,11 +65,15 @@ warning(const char *const s, ...);
 
 template <class STRING>
 inline void
-warning(const STRING& string)
+warning(const STRING& string, const int verbosity_level = 1)
 {
-  std::cerr << "\nWARNING: "
-	    << string
-	    << std::endl;
+  if (Verbosity::get() >= verbosity_level) {
+    std::stringstream sstr;
+    sstr << "\nWARNING: "
+        << string
+        << std::endl;
+    writeText(sstr.str().c_str(), WARNING_CHANNEL);
+  }
 }
 END_NAMESPACE_STIR
 #endif

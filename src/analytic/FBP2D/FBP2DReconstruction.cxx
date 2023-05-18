@@ -36,6 +36,8 @@
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifdef STIR_OPENMP
 #include <omp.h>

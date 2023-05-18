@@ -21,6 +21,7 @@
 #include "stir/round.h"
 #include "stir/assign_to_subregion.h"
 #include "stir/extract_line.h"
+#include "stir/error.h"
 #include <algorithm>  
 #include <list>
 

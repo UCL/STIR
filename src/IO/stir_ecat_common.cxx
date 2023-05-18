@@ -26,6 +26,8 @@
 #include "stir/Scanner.h" 
 #include "stir/ProjDataInfo.h"
 #include "stir/IO/stir_ecat_common.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

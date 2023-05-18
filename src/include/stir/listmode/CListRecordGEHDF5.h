@@ -25,6 +25,7 @@
 #include "stir/ByteOrderDefine.h"
 #include <boost/static_assert.hpp>
 #include <boost/cstdint.hpp>
+#include "stir/error.h"
 #include <iostream>
 
 START_NAMESPACE_STIR

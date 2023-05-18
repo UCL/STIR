@@ -74,7 +74,7 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <iostream>
-
+#include "stir/warning.h"
   
 // First we define the different implementations. 
 // See end of file for display() itself.

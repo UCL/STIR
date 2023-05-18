@@ -16,6 +16,7 @@
 */
 #include "stir_experimental/motion/Polaris_MT_File.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 #include <fstream>
 #include <iostream>
 #ifndef STIR_NO_NAMESPACES

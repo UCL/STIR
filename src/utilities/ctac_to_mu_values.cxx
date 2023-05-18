@@ -36,6 +36,7 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/getopt.h"
+#include "stir/warning.h"
 #include <string>
 #include <exception>
 

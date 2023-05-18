@@ -24,6 +24,7 @@
 
 #include "stir/Sinogram.h"
 #include "boost/format.hpp"
+#include "stir/warning.h"
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating

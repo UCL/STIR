@@ -24,6 +24,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR

@@ -18,6 +18,8 @@
 */
 
 #include <algorithm>
+#include "stir/warning.h"
+#include "stir/error.h"
 START_NAMESPACE_STIR
 
 //! default constructor

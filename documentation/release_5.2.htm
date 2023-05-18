@@ -107,6 +107,9 @@
   <li>We now use CMake's <a href=https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/Object-Library>OBJECT library feature</a> for the registries. This avoids re-compilation of the registries for every executable and therefore speeds-up building time. Use of STIR in an external project is not affected as long as the recommended practice was followed. This is now documented in the User's Guide.
     <br /><a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
   </li>
+  <li>The <code>error</code> and <code>warning</code> functions are now no longer included from <code>common.h</code> and need to be included manually when used (as was already the case for <code>#include "stir/info.h"</code>).
+    <br /><a href="https://github.com/UCL/STIR/pull/1192/">PR #1192</a>.
+  </li>
 </ul>
 
 

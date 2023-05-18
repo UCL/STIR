@@ -19,6 +19,7 @@
 #define __stir_ImagingModality_H__
 
 #include "stir/interfile_keyword_functions.h"
+#include "stir/warning.h"
 #include <string>
 
 namespace stir {

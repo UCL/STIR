@@ -17,6 +17,7 @@
 
 */
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <algorithm>
 
 START_NAMESPACE_STIR

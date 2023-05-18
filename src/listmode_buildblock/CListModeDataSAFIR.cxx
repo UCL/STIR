@@ -35,6 +35,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
+#include "stir/error.h"
 
 //#include "boost/static_assert.hpp"
 

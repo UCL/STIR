@@ -29,6 +29,7 @@
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/stream.h"
 #include <boost/format.hpp>
 

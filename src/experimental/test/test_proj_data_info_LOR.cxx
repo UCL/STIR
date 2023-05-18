@@ -29,6 +29,8 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Bin.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;

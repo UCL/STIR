@@ -123,6 +123,8 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/stir_math.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <fstream> 
 #include <iostream> 

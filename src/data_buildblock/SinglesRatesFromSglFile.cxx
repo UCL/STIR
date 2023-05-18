@@ -19,6 +19,8 @@
 #include "stir/IndexRange.h"
 #include "stir/IndexRange2D.h"
 #include "stir/data/SinglesRatesFromSglFile.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <vector>
 #ifdef HAVE_LLN_MATRIX

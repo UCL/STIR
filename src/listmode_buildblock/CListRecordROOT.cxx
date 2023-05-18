@@ -18,6 +18,7 @@
 */
 
 #include "stir/listmode/CListRecordROOT.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

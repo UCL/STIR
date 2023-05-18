@@ -52,6 +52,8 @@
 #include <algorithm>
 #include <math.h>
 #include <boost/format.hpp>
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 
