@@ -645,7 +645,8 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
     if (this->use_axial_effects_factors())
       {
         const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());
-	total_efficiency += view_efficiency * axial_effect_factor;
+        // Need to divide here
+	total_efficiency += view_efficiency / axial_effect_factor;
       }
     else
       {
