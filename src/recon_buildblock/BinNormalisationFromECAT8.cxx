@@ -699,7 +699,7 @@ construct_sino_lookup_table()
               for (auto iter=det_pos_pairs.begin();iter!=det_pos_pairs.end(); ++iter)
                 {
                   sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = Siemens_sino_index;
-                  sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = Siemens_sino_index;
+                  //sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = Siemens_sino_index;
                 }
               break;
             }
