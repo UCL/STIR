@@ -236,12 +236,20 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr_v, const shared_ptr<cons
     return Succeeded::no;
   }
 
-  span = 
-    proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
-    proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
-  // TODO insert check all other segments are the same
+  if (this->use_axial_effects_factors())
+    {
+      const int data_max_ring_diff =
+        proj_data_info_cyl_ptr->get_max_ring_difference(proj_data_info_cyl_ptr->get_max_segment_num());
+      auto norm_proj_data_info_no_arccorr_ptr =
+        dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(norm_proj_data_info_sptr.get());
+      const int norm_max_ring_diff =
+        norm_proj_data_info_no_arccorr_ptr->get_max_ring_difference(norm_proj_data_info_no_arccorr_ptr->get_max_segment_num());
+      if (data_max_ring_diff > norm_max_ring_diff)
+        warning("ECAT8 norm axial effects given only for ring diff up to " + std::to_string(norm_max_ring_diff)
+                + ". I will use 1 for larger ring difference.");
+    }
 
-  mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
+  this->mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
 
   return Succeeded::yes;
 }
@@ -521,7 +529,6 @@ use_crystal_interference_factors() const
   return this->_use_crystal_interference_factors;
 }
 
-#if 1
 float 
 BinNormalisationFromECAT8::
 get_uncalibrated_bin_efficiency(const Bin& bin) const {
@@ -631,6 +638,12 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	    lor_efficiency_this_pair *=
 	    geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 	  }
+        if (this->use_axial_effects_factors())
+          {
+            // Need to divide here
+            lor_efficiency_this_pair /=
+              find_axial_effects(pos1.axial_coord(), pos2.axial_coord());
+          }
 	lor_efficiency += lor_efficiency_this_pair;
       }
 
@@ -644,21 +657,11 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	  view_efficiency += lor_efficiency;
 	}
 
-    if (this->use_axial_effects_factors())
-      {
-        const float axial_effect_factor = find_axial_effects(pos1.axial_coord(), pos2.axial_coord());
-        // Need to divide here
-	total_efficiency += view_efficiency / axial_effect_factor;
-      }
-    else
-      {
-	total_efficiency += view_efficiency;
-      }
+      total_efficiency += view_efficiency;
     }
   }
   return total_efficiency;
 }
-#endif
 
 void
 BinNormalisationFromECAT8::
@@ -715,21 +718,11 @@ float
 BinNormalisationFromECAT8::
 find_axial_effects(int ring1, int ring2) const
 {
-  // A variable to see if we're going to write a warning
-  // TODO should use a member variable, reset in set_up() I guess, in case somebody sets-up an
-  // existing norm object for different geometry, but maybe that's unlikely.
-  static bool first_time = true;
   const int Siemens_sino_index = sino_index[ring1][ring2];
   if (Siemens_sino_index<0)
-    {
-      if (first_time)
-        {
-          warning("ECAT8 norm axial effects not given for the largest ring differences. I will just use 1 for those.");
-          first_time = false;
-        }
-      return 1.F;
-    }
-  return axial_effects[Siemens_sino_index];
+    return 1.F;
+  else
+    return axial_effects[Siemens_sino_index];
 }
 
 

@@ -138,7 +138,6 @@ public:
   shared_ptr<const ProjDataInfo> norm_proj_data_info_sptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
-  int span;
   int mash;
   int num_blocks_per_singles_unit;
   float calib_factor, cross_calib_factor;
