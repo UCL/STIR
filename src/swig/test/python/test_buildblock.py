@@ -261,3 +261,41 @@ def test_ProjData_from_to_Array3D():
     # assert every data point is equal
     assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
 
+def test_xapyb_and_sapyb():
+    """
+    Test the xapyb and sapyb methods for FloatVoxelsOnCartesianGrid and ProjDataInMemory
+    """
+    test_value = 1.4
+    approx_val = pytest.approx(2*test_value + 3*test_value)
+
+    # Test FloatCartesianCoordinate3D
+    origin=FloatCartesianCoordinate3D(0,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    indrange=IndexRange3D(Int3BasicCoordinate(3), Int3BasicCoordinate(9))
+    image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+
+    #  xapyb
+    image.fill(test_value)
+    image.xapyb(image, 2.0,image, 3.0)
+    assert image.find_max()==approx_val
+    assert image.find_min()==approx_val
+    # sapyb
+    image.fill(test_value)
+    image.sapyb(3,image,2)
+    assert image.find_max()==approx_val
+    assert image.find_min()==approx_val
+
+    # Test ProjData
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+
+    projdata.fill(test_value)
+    projdata.xapyb(projdata, 2.0,projdata, 3.0)
+    assert projdata.to_array().find_max()==approx_val
+    assert projdata.to_array().find_min()==approx_val
+    # sapyb
+    projdata.fill(test_value)
+    projdata.sapyb(3,projdata,2)
+    assert projdata.to_array().find_max()==approx_val
+    assert projdata.to_array().find_min()==approx_val
