@@ -240,14 +240,15 @@ Scanner::Scanner(Type scanner_type)
 
   case Siemens_mCT:
     // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
+    // TOF info from Rausch et al.,  EJNMMI Phys 2, 26 (2015). https://doi.org/10.1186/s40658-015-0132-1
     set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
                55, 400, 336, (13+1)*48,
                421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
                4, 1, 13+1, 13+1, 0,0, 1,
                // energy
                0.F, 511.F,
-               // TOF TODO: timing res
-               13, 4.0625*1000/13, -1.F
+               // 312ps width of bins
+               13, 4.056*1000/13, 555.F
                ); // TODO singles info incorrect
     // energy: 435-650
     break;
