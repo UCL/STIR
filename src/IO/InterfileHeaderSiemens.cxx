@@ -172,6 +172,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   maximum_ring_difference = -1;
   axial_compression = -1;
   tof_mash_factor = -1;
+  num_tof_bins = 1;
   add_key("number of rings", &num_rings);
 
   add_key("%axial compression", &axial_compression);
@@ -354,32 +355,46 @@ void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
-  if (num_dimensions != 3)
+  if (num_dimensions != 3 && num_dimensions != 4)
     {
-    warning("Interfile error: expecting 3D data ");
+    warning("Interfile error: expecting 3D or 4D data ");
     stop_parsing();
     return true;
     }
 
   if ((matrix_size[0].size() != 1) ||
-    (matrix_size[1].size() != 1) ||
-    (matrix_size[2].size() != 1))
+      (matrix_size[1].size() != 1) ||
+      (matrix_size[2].size() != 1) ||
+      (matrix_size[num_dimensions-1].size() != 1))
     {
-    error("Interfile error: strange values for the matrix_size keyword(s)");
+    error("Siemens Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
+  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x" && matrix_labels[0] != "sinogram projections") // x is used for arccorrected data (ACF)
     {
     // use error message with index [1] as that is what the user sees.
-    error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
+    error("Siemens Interfile error: expecting 'matrix axis label[1] := bin' or 'x' or 'sinogram projections'");
     }
   num_bins = matrix_size[0][0];
 
-  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
-      (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+  if (num_dimensions == 3 &&
+      ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+       (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+       )
       )
     {
-    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
-    num_views = matrix_size[1][0];
+      if (num_tof_bins>1)
+        storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+      else
+        storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+      num_views = matrix_size[1][0];
+    }
+  else if (num_dimensions == 4 &&
+           matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms" &&
+           matrix_labels[3] == "TOF bin") // used for TOF
+    {
+      storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+      num_views = matrix_size[1][0];
+      num_tof_bins = matrix_size[3][0];
     }
   else
     {
@@ -511,8 +526,10 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
 {
-  // always...
-  storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+  if (num_tof_bins>1)
+    storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+  else
+    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
   return false;
 }
