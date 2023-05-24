@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Implementations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -25,14 +25,28 @@ CListEventCylindricalScannerWithDiscreteDetectors::
 CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr)
   : scanner_sptr(scanner_sptr)
 {
-  this->uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-     (
-     ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-                                   1, scanner_sptr->get_num_rings()-1,
-                                   scanner_sptr->get_num_detectors_per_ring()/2,
-                                   scanner_sptr->get_max_num_non_arccorrected_bins(), 
-                                   false)));
+    if (scanner_sptr->get_scanner_geometry()=="Cylindrical")
+        {
+        this->uncompressed_proj_data_info_sptr.reset
+          (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
+           (
+           ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                         1, scanner_sptr->get_num_rings()-1,
+                                         scanner_sptr->get_num_detectors_per_ring()/2,
+                                         scanner_sptr->get_default_num_arccorrected_bins(),
+                                         false)));
+    }
+    else{
+        this->uncompressed_proj_data_info_blocks_sptr.reset
+          (dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr *>
+           (
+           ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                         1, scanner_sptr->get_num_rings()-1,
+                                         scanner_sptr->get_num_detectors_per_ring()/2,
+                                         scanner_sptr->get_default_num_arccorrected_bins(),
+                                         false)));
+    }
+
 }
 
 LORAs2Points<float>
@@ -48,45 +62,80 @@ get_LOR() const
   this->get_detection_position(det_pos);
   assert(det_pos.pos1().radial_coord()==0);
   assert(det_pos.pos2().radial_coord()==0);
-  
+
   // TODO we're using an obsolete function here which uses a different coordinate system
-  this->get_uncompressed_proj_data_info_sptr()->
-    find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
-                                                         det_pos.pos1().axial_coord(),
-                                                         det_pos.pos2().axial_coord(),
-                                                         det_pos.pos1().tangential_coord(),
-                                                         det_pos.pos2().tangential_coord());
+  if (this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+  {
+      ProjDataInfoCylindricalNoArcCorr projdata;
+      projdata.find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
+                                                           det_pos.pos1().axial_coord(),
+                                                           det_pos.pos2().axial_coord(),
+                                                           det_pos.pos1().tangential_coord(),
+                                                           det_pos.pos2().tangential_coord());
+  }
+  else
+  {
+      ProjDataInfoBlocksOnCylindricalNoArcCorr projdata;
+      projdata.find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
+                                                           det_pos.pos1().axial_coord(),
+                                                           det_pos.pos2().axial_coord(),
+                                                           det_pos.pos1().tangential_coord(),
+                                                           det_pos.pos2().tangential_coord());
+  }
+
   // find shift in z
   const float shift = this->scanner_sptr->get_ring_spacing()*
     (this->scanner_sptr->get_num_rings()-1)/2.F;
   coord_1.z() -= shift;
   coord_2.z() -= shift;
-      
+
   return lor;
 }
 
-void 
+void
 CListEventCylindricalScannerWithDiscreteDetectors::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+get_bin(Bin& bin, const ProjDataInfo& proj_data_info_general) const
 {
-  assert(dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0);
+    if (proj_data_info_general.get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+        {
+//            auto proj_data_info =dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general);
+            get_bin_help(bin, *uncompressed_proj_data_info_sptr);//proj_data_info.get_scanner_sptr()->get_effective_ring_radius()
+        }
+        else
+        {
+//            auto proj_data_info = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info_general);
+            get_bin_help(bin, *uncompressed_proj_data_info_blocks_sptr);
+                                 }
+}
+template <class TProjDataInfo>
+void
+CListEventCylindricalScannerWithDiscreteDetectors::
+get_bin_help(Bin& bin, const TProjDataInfo& proj_data_info) const
+{
+  assert(dynamic_cast<TProjDataInfo const*>(&proj_data_info) != 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).
+  if (static_cast<TProjDataInfo const&>(proj_data_info).
       get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
     bin.set_bin_value(0);
   else
     bin.set_bin_value(1);
 }
-
 bool
 CListEventCylindricalScannerWithDiscreteDetectors::
 is_valid_template(const ProjDataInfo& proj_data_info) const
 {
-	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
-		return true;
+    if (proj_data_info.get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+        {
+        if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+            return true;
+    }
+    else{
+        if (dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+            return true;
+    }
 
-	return false;
+    return false;
 }
 
 END_NAMESPACE_STIR

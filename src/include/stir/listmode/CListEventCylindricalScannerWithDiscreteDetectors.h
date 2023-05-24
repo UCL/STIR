@@ -22,6 +22,7 @@
 #include "stir/Succeeded.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/listmode/CListRecord.h"
 
 START_NAMESPACE_STIR
@@ -62,6 +63,8 @@ public:
     this is only checked in debug mode (NDEBUG not defined).
   */
   inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+  template <class TProjDataInfo>
+  inline void  get_bin_help(Bin& bin, const TProjDataInfo& proj_data_info) const;
 
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
@@ -77,10 +80,18 @@ public:
        return uncompressed_proj_data_info_sptr;
      }
 
+   shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+    get_uncompressed_proj_data_info_blocks_sptr() const
+     {
+       return uncompressed_proj_data_info_blocks_sptr;
+     }
+
    shared_ptr<Scanner> scanner_sptr;
  private:
    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
      uncompressed_proj_data_info_sptr;
+   shared_ptr<const ProjDataInfoBlocksOnCylindricalNoArcCorr>
+     uncompressed_proj_data_info_blocks_sptr;
 
 };
 
