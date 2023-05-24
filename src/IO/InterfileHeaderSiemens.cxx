@@ -171,6 +171,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   num_rings = -1;
   maximum_ring_difference = -1;
   axial_compression = -1;
+  tof_mash_factor = -1;
   add_key("number of rings", &num_rings);
 
   add_key("%axial compression", &axial_compression);
@@ -187,6 +188,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("PET data type",
 	  &PET_data_type_index,
 	  &PET_data_type_values);
+  add_key("%tof mashing factor", &tof_mash_factor);
 
   // TODO should add data format:=CoincidenceList|sinogram and then check its value
   remove_key("process status");
@@ -262,11 +264,24 @@ bool InterfileRawDataHeaderSiemens::post_processing()
             num_rings, scanner_sptr->get_num_rings());
     }
 
+  if (tof_mash_factor < 0) // check if it was not set yet
+    {
+      switch (scanner_sptr->get_type())
+        {
+        case Scanner::Siemens_Vision_600:
+          tof_mash_factor = 8;
+          break;
+        default:
+          tof_mash_factor = 1;
+        }
+      warning("TOF mashing factor was not set. Using " + std::to_string(tof_mash_factor));
+    }
+
   data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_sptr,
       axial_compression, maximum_ring_difference,
       num_views, num_bins,
-      is_arccorrected);
+      is_arccorrected, tof_mash_factor);
 
   // handle segments
   {
@@ -310,8 +325,6 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
 
   ignore_key("%sinogram type"); // value: "step and shoot"
   ignore_key("scale factor (degree/pixel)");
-  ignore_key("%tof mashing factor");
-  // add_key(%tof mashing factor", &tof_mashing_factor);
   ignore_key("total number of data sets");
 
   add_key("%number of buckets",

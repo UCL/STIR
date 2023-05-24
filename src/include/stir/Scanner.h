@@ -138,7 +138,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, Siemens_Vision_600, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, PETMR_Signa_nonTOF,
 	     Discovery690, DiscoveryMI3ring, DiscoveryMI4ring, DiscoveryMI5ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype,             UPENN_5rings, UPENN_5rings_no_gaps, UPENN_6rings, UPENN_6rings_no_gaps,

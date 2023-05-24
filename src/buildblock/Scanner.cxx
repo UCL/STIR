@@ -253,6 +253,37 @@ Scanner::Scanner(Type scanner_type)
     // energy: 435-650
     break;
 
+  case Siemens_Vision_600:
+    // 8x38 blocks of size 10x20. With virtual crystals 10x21 (confirmed from norm.n.hdr)
+    // Siemens uses 50 views (why??)
+    // Vision number of TOF bins seems always 33. However, the sinogram headers say this is with TOF mashing factor 8,
+    // so we create the scanner with 33*8 possible TOF bins, and rely on InterfileHeaderSiemens
+    // to create a ProjDataInfo with mashin g8
+    set_params(
+               Siemens_Vision_600,                                       // type
+               string_list("Siemens Vision", "Vision", "1208"),  // names
+               80,                                               // rings
+               520,                                              // max n non-arc-corr bins
+               520,                                              // default n arc-corr bins
+               21*38,                                            // num detector per ring
+               410.0F,                                           // inner ring radius (mm)
+               7.0F,  // unsure on this                          // avg DoI (mm)
+               3.29114F,                                         // ring spacing (mm)
+               1.6F,                                             // bin size (mm)
+               0.0F,                                             // intrinsic tilt
+               // 8 axial block, 38 transaxial blocks total, no buckets?
+               1, 1,                                             // n axial/trans blocks per bucket
+               10, 21,                                           // n axial/trans xtals per block
+               10, 21,                                           // n axial/trans xtals per singles unit
+               1,                                                // n detector layers
+               // energy
+               0.F, 511.F,
+               33*8,                                               // max n timing position
+               143.231/8,                                          // timing position bin size
+               214.F                                             // timing resolution
+               );
+    break;
+ 
   case RPT:
 
     set_params(RPT, string_list("PRT-1", "RPT"),
@@ -1062,6 +1093,7 @@ get_num_virtual_transaxial_crystals_per_block() const
     {
     case E1080:
     case Siemens_mCT:
+    case Siemens_Vision_600:
     case Siemens_mMR:
     case UPENN_5rings:
     case UPENN_6rings:
