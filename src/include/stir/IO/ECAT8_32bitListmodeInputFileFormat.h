@@ -46,23 +46,18 @@ public InputFileFormat<ListModeData >
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const
   {
-        std::string ecat8;
-
-    for (int i=0;i<signature.size(); i++)
-    {
-
-        ecat8=std::string(1,signature.get_signature()[i])+
-                std::string(1,signature.get_signature()[i+1])+
-                std::string(1,signature.get_signature()[i+2])+
-                std::string(1,signature.get_signature()[i+3])+
-                std::string(1,signature.get_signature()[i+4])+
-                std::string(1,signature.get_signature()[i+5])+
-                std::string(1,signature.get_signature()[i+6]);
-
-        if (ecat8=="PETLINK")
-            return is_interfile_signature(signature.get_signature());
+        if(!is_interfile_signature(signature.get_signature()))
+                return false;
+        else
+        {
+            for (int i=0;i<signature.size()-8; i++)
+            {
+                const std::string signature_as_string(signature.get_signature(), signature.size());
+                return signature_as_string.find("PETLINK") != std::string::npos;
+            }
+        }
     }
-  }
+
  public:
   virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
