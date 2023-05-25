@@ -50,11 +50,8 @@ public InputFileFormat<ListModeData >
                 return false;
         else
         {
-            for (int i=0;i<signature.size()-8; i++)
-            {
-                const std::string signature_as_string(signature.get_signature(), signature.size());
-                return signature_as_string.find("PETLINK") != std::string::npos;
-            }
+            const std::string signature_as_string(signature.get_signature(), signature.size());
+            return signature_as_string.find("PETLINK") != std::string::npos;
         }
     }
 
