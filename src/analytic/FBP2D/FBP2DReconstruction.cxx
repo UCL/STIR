@@ -20,6 +20,7 @@
 */
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
@@ -291,59 +292,47 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
-  set_num_threads();
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = detail::find_basic_vs_nums_in_subset(
+      *proj_data_ptr->get_proj_data_info_sptr(), *symmetries_sptr, 0, 0, // only segment zero
+      0, 1); // project everything, therefore subset 0 of 1 subsets
+
+#ifdef STIR_OPENMP
+#  pragma omp parallel
+#endif
   {
 #ifdef STIR_OPENMP
-#pragma omp for schedule(dynamic)  
+#  pragma omp for schedule(dynamic)
 #endif
-    for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
-      {         
-        const ViewSegmentNumbers vs_num(view_num, 0);
-    
-#ifndef NDEBUG
+    // note: older versions of openmp need an int as loop
+    for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i)
+      {
+        const ViewSegmentNumbers vs = vs_nums_to_process[i];
 #ifdef STIR_OPENMP
-        info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
-#endif 
-#endif
-    
-        if (!symmetries_sptr->is_basic(vs_num))
-          continue;
-
         RelatedViewgrams<float> viewgrams;
-#ifdef STIR_OPENMP
-#pragma omp critical(FBP2D_get_viewgrams)
+#  pragma omp critical(FBP2D_get_viewgrams)
+        viewgrams = proj_data_ptr->get_related_viewgrams(vs, symmetries_sptr);
+#else
+        RelatedViewgrams<float> viewgrams = proj_data_ptr->get_related_viewgrams(vs, symmetries_sptr);
 #endif
-        {
-          viewgrams =
-            proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
-        }
 
         if (do_arc_correction)
-          viewgrams =
-            arc_correction.do_arc_correction(viewgrams);
+          viewgrams = arc_correction.do_arc_correction(viewgrams);
 
         // now filter
-        for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-             viewgram_iter != viewgrams.end();
+        for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin(); viewgram_iter != viewgrams.end();
              ++viewgram_iter)
           {
 #ifdef NRFFT
             filter.apply(*viewgram_iter);
 #else
-            std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
-                          filter);
+            std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 #endif
           }
-        // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
 
-        if(display_level>1) 
-          display( viewgrams,viewgrams.find_max(),"Ramp filter");
-
-        //  and backproject
+        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
         back_projector_sptr->back_project(viewgrams);
-      } 
-  } // end of OPENMP pragma
-
+      }
+  }
   back_projector_sptr->get_output(*density_ptr);
  
   // Normalise the image
