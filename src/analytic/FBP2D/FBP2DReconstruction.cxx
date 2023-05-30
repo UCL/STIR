@@ -295,7 +295,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       0, 1); // project everything, therefore subset 0 of 1 subsets
 
 #ifdef STIR_OPENMP
-#  pragma omp parallel shared(proj_data_ptr, symmetries_sptr)
+#  pragma omp parallel
 #endif
   {
 #ifdef STIR_OPENMP
