@@ -1133,7 +1133,7 @@ read_interfile_PDFS(istream& input,
        return 0;
      }
 
-   return new ProjDataFromStream(hdr.get_exam_info_sptr(),
+   auto pdfs_ptr = new ProjDataFromStream(hdr.get_exam_info_sptr(),
 				 hdr.data_info_sptr->create_shared_clone(),
 				 data_in,
 				 hdr.data_offset_each_dataset[0],
@@ -1143,7 +1143,9 @@ read_interfile_PDFS(istream& input,
 				 hdr.file_byte_order,
 				 static_cast<float>(hdr.image_scaling_factors[0][0]));
 
-
+   if (hdr.timing_poss_sequence.size() > 1)
+     pdfs_ptr->set_timing_poss_sequence_in_stream(hdr.timing_poss_sequence);
+   return pdfs_ptr;
 }
 
 

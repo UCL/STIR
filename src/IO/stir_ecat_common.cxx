@@ -13,7 +13,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2020, University College London
+    Copyright (C) 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -195,6 +195,21 @@ find_segment_sequence(const ProjDataInfo& pdi)
     segment_sequence[2*segment_num] = segment_num;
   }
   return segment_sequence;
+}
+
+std::vector<int>
+find_timing_poss_sequence(const ProjDataInfo& pdi)
+{
+  const int max_timing_pos_num = pdi.get_num_tof_poss()/2;
+  std::vector<int> timing_pos_sequence(2*max_timing_pos_num+1);
+  // Siemens always stores timing_poss as 0, -1, +1, ...
+  timing_pos_sequence[0] = 0;
+  for (int timing_pos_num = 1; timing_pos_num<=max_timing_pos_num; ++timing_pos_num)
+  {
+    timing_pos_sequence[2*timing_pos_num-1] = -timing_pos_num;
+    timing_pos_sequence[2*timing_pos_num] = timing_pos_num;
+  }
+  return timing_pos_sequence;
 }
 
 END_NAMESPACE_ECAT

@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
     Copyright (C) 2018 STFC
     This file is part of STIR.
 
@@ -444,6 +444,12 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   // can only do this now after the previous things were set
   if (InterfileRawDataHeaderSiemens::post_processing() == true)
     return true;
+
+  // handle TOF index order
+  if (this->data_info_ptr->get_num_tof_poss() > 1)
+    {
+      this->timing_poss_sequence = ecat::find_timing_poss_sequence(*this->data_info_ptr);
+    }
 
   compression = (standardise_interfile_keyword(compression_as_string) == "on");
 

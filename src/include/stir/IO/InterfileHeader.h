@@ -245,6 +245,7 @@ public:
   std::vector<int> min_ring_difference; 
   std::vector<int> max_ring_difference; 
   std::vector<int> num_rings_per_segment;
+  std::vector<int> timing_poss_sequence;
 
   std::vector<std::string> applied_corrections;
  

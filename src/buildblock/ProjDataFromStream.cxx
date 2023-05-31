@@ -159,6 +159,12 @@ ProjDataFromStream::activate_TOF()
 
 }
 
+void
+ProjDataFromStream::set_timing_poss_sequence_in_stream(const std::vector<int>& seq)
+{
+  this->timing_poss_sequence = seq;
+}
+
 namespace detail {
   // 2 local functions to avoid cluttering code below
 

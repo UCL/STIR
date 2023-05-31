@@ -119,6 +119,7 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
 
     ProjDataFromStream::StorageOrder storage_order;
     std::vector<int> segment_sequence;
+    std::vector<int> timing_poss_sequence;
     shared_ptr<ProjDataInfo> data_info_ptr;
 
   private:
