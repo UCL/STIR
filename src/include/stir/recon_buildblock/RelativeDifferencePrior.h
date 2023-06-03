@@ -40,13 +40,10 @@ START_NAMESPACE_STIR
   \brief
   A class in the GeneralisedPrior hierarchy. This implements a Relative Difference prior.
 
-  The gradient of the prior is computed as follows:
+  The value of the prior is computed as follows:
 
   \f[
-  g_r = \sum_{dr} w_{dr} *
-  \frac{\left(\lambda_{j}-\lambda_{k}\right)\left(\gamma\left|\lambda_{j}-\lambda_{k}\right|+\lambda_{j}+3 \lambda_{k} + 2 \epsilon \right)}
-  {\left(\lambda_{j}+\lambda_{k}+\gamma\left|\lambda_{j}-\lambda_{k}\right| + \epsilon \right)^{2}} *
-  \kappa_r * \kappa_{r+dr}
+    f= \sum_{r,dr} \frac{w_{dr}}{2} \frac{(\lambda_r - \lambda_{r+dr})^2}{(\lambda_r+ \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon)} * \kappa_r * \kappa_{r+dr}
   \f]
 
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum

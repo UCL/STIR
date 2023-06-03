@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
   \ingroup priors
   \brief
   A class in the GeneralisedPrior hierarchy. This implements the  anatomical penalty function, Parallel Level Sets (PLS),
-  proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
+  also sometimes called Directional TV, proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
   Prior Using Parallel Level Sets", IEEE Trans. med. Imag., vol. 35, no. 9, Sept. 2016.
   https://doi.org/10.1109/TMI.2016.2549601
   Note that PLS becomes smoothed TV when an uniform anatomical image is provided.
@@ -48,6 +48,7 @@ START_NAMESPACE_STIR
   \phi(f) = \sqrt{\alpha^2 + |\nabla f|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
   where \f$ f \f$ is the PET image,
+  \f$\nabla \f$ is the finite difference operator (\textrm{not} taking voxel-sizes into account) and
   \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
 
   \f[

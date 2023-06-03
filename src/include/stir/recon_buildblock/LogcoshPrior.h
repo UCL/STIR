@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
 
  The log-cosh function is given by:
   \f[
-    f = \sum_{dr} w_{dr} 1/scalar^2 * log(cosh(\lambda_r - \lambda_{r+dr})) * \kappa_r * \kappa_{r+dr}))
+    f = \sum_{r,dr} w_{dr} \frac{1}{2 s^2}  log(cosh(s(\lambda_r - \lambda_{r+dr}))) * \kappa_r * \kappa_{r+dr}
  \f]
 
  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
