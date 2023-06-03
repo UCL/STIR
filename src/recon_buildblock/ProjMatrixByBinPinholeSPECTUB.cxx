@@ -56,8 +56,6 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
 #include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include "stir/CPUTimer.h"
 #ifdef STIR_OPENMP
 #include "stir/num_threads.h"
@@ -83,21 +81,11 @@
 //void wm_inputs_mph( char ** argv, int argc );
 //void read_inputs_mph( vector<string> param );
 
-//.. global variables ....................................................................
-
-namespace SPECTUB_mph
-{
-    wmh_mph_type wmh;       // weight matrix header. Global variable
-    wm_da_type wm;          // double array weight matrix structure. Global variable
-    pcf_type pcf;           // pre-calculated functions
-}
-
 using namespace std;
 using namespace SPECTUB_mph;
 using std::string;
 
 START_NAMESPACE_STIR
-
 
 const char * const 
 ProjMatrixByBinPinholeSPECTUB::registered_name =
@@ -503,8 +491,6 @@ set_up(
     }
 #endif
 
-    using namespace SPECTUB_mph;
-
     std::stringstream info_stream;
 
     const VoxelsOnCartesianGrid<float> * image_info_ptr =
@@ -675,12 +661,12 @@ set_up(
 
     //... files with complementary information .................
     
-    read_prj_params_mph();
-    read_coll_params_mph();
+    read_prj_params_mph( wmh );
+    read_coll_params_mph( wmh );
     
     //... precalculated functions ................
     
-    fill_pcf();
+    fill_pcf( wmh, pcf );
     
     //... other variables .........................
 
@@ -736,7 +722,7 @@ set_up(
     //... to generate mask..........................................................
 
     msk_3d = new bool [ wmh.vol.Nvox ];
-    //generate_msk_mph( msk_3d, attmap );
+    //generate_msk_mph( msk_3d, attmap, wmh );
 
     // generate mask from mask file
     if (!is_null_ptr(mask_image_sptr))
@@ -754,7 +740,7 @@ set_up(
         // we do this to avoid using its own read_msk_file_mph
         wmh.do_msk_file = false;
         wmh.do_msk_att = true;
-        generate_msk_mph( msk_3d, mask_from_file );
+        generate_msk_mph( msk_3d, mask_from_file, wmh );
 
         delete[] mask_from_file;
     }
@@ -763,13 +749,13 @@ set_up(
     {
        if (is_null_ptr(attmap))
            error("No attenuation image set, so cannot compute the mask image from it.");
-       generate_msk_mph( msk_3d, attmap );
+       generate_msk_mph( msk_3d, attmap, wmh );
     }
     // generate mask from object radius
     else
     {
         wmh.do_msk_file = false;
-        generate_msk_mph( msk_3d, (float *)0 );
+        generate_msk_mph( msk_3d, (float *)0, wmh );
     }
     
     //... initialize psf2d in bins ..................................................
@@ -807,7 +793,7 @@ set_up(
             for ( int i = 0 ; i < kern.max_dimz ; i++ )
                 kern.val[ i ] = new float [ kern.max_dimx ];
             
-            fill_psfi ( &kern );
+            fill_psfi ( &kern, wmh );
             
             psf_subs.max_dimx += kern.max_dimx - 1 ;
             psf_subs.max_dimz += kern.max_dimz - 1 ;
@@ -867,7 +853,7 @@ set_up(
 
     // size estimation
     for (int kOS = 0 ; kOS < wmh.prj.NOS ; kOS++) {
-        wm_calculation_mph ( false , kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[ kOS ] );  
+        wm_calculation_mph ( false , kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[ kOS ], wmh, wm, pcf );  
     }
     info(boost::format("Done estimating size of matrix. Execution time, CPU %1% s") % timer.value(), 2);
 
@@ -888,8 +874,6 @@ delete_PinholeSPECTUB_arrays()
 {
     if (!this->already_setup)
         return;
-
-    using namespace SPECTUB_mph;
 
     //... freeing matrix memory....................................
 
@@ -953,8 +937,6 @@ void
 ProjMatrixByBinPinholeSPECTUB::
 compute_one_subset(const int kOS) const
 {
-    using namespace SPECTUB_mph;
-
     CPUTimer timer;
     timer.start();
 
@@ -971,11 +953,11 @@ compute_one_subset(const int kOS) const
 
     //... memory allocation for wm float arrays ....................................................
 
-    wm_alloc( Nitems[kOS] );
+    wm_alloc( Nitems[kOS], wm, wmh );
 
     //... wm calculation ...............................................................................
 
-    wm_calculation_mph ( true, kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[kOS] );
+    wm_calculation_mph ( true, kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[kOS], wmh, wm, pcf );
     info(boost::format("Weight matrix calculation done, CPU %1% s") % timer.value(),
         2);
 

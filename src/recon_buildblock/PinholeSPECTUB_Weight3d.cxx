@@ -66,7 +66,10 @@ void wm_calculation_mph ( bool do_calc,
                           psf2d_type *kern,
                           float *attmap,
                           bool *msk_3d,
-                          int *Nitems )
+                          int *Nitems,                
+                          wmh_mph_type &wmh,
+                          wm_da_type &wm,
+                          pcf_type &pcf )
 {
     voxel_type vox;        // structure with voxel information
 	bin_type bin;          // structure with bin information
@@ -162,7 +165,7 @@ void wm_calculation_mph ( bool do_calc,
                         
                         //...vector voxel-hole, angles and distances...............................
                         
-                        voxel_projection_mph ( &l , &vox , h );
+                        voxel_projection_mph ( &l , &vox , h, wmh );
                         
                         //... hole shape .......................................
                         
@@ -173,16 +176,16 @@ void wm_calculation_mph ( bool do_calc,
                         
                         if ( wmh.do_subsamp ){
 
-                            if ( wmh.do_depth ) fill_psf_depth ( psf_subs, &l, f, wmh.subsamp, do_calc );
+                            if ( wmh.do_depth ) fill_psf_depth ( psf_subs, &l, f, wmh.subsamp, do_calc, wmh, pcf );
 
-                            else fill_psf_geo ( psf_subs, &l, f, wmh.subsamp, do_calc );
+                            else fill_psf_geo ( psf_subs, &l, f, wmh.subsamp, do_calc, wmh );
                             
                             if ( wmh.do_psfi ) psf_convol ( psf_subs, psf_aux, kern, do_calc );
                            
                             downsample_psf( psf_subs, psf_bin, wmh.subsamp, do_calc );
                         }
                         
-                        else  fill_psf_geo ( psf_bin, &l, f, 1, do_calc );
+                        else  fill_psf_geo ( psf_bin, &l, f, 1, do_calc, wmh );
                         
                         //... calculus of simple attenuation .............................
                         
@@ -194,7 +197,7 @@ void wm_calculation_mph ( bool do_calc,
                                 bin.y = d->y0 + l.x1d_l * d->sinth;
                                 bin.z = d->z0 + l.z1d_l ;
                                 
-                                coeff_att = calc_att_mph( bin, vox, attmap );
+                                coeff_att = calc_att_mph( bin, vox, attmap, wmh );
                             }
                         }
                         
@@ -236,7 +239,7 @@ void wm_calculation_mph ( bool do_calc,
                                         bin.y = d->ybin0 + (float) ib * d->incy ;
                                         bin.z = d->zbin0 + (float) jb * wmh.prj.thcm ;
                                         
-                                        coeff_att = calc_att_mph( bin, vox, attmap );
+                                        coeff_att = calc_att_mph( bin, vox, attmap, wmh );
                                     }
                                     
                                     //... calculus and storage of the weight............
@@ -269,7 +272,7 @@ void wm_calculation_mph ( bool do_calc,
 //=== fill_psfi ============================================================
 //==========================================================================
 
-void fill_psfi( psf2d_type * kern )
+void fill_psfi( psf2d_type * kern, wmh_mph_type &wmh )
 {
     //float K0 = (float)0.39894228040143 / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
     float K0 = (1.0f/boost::math::constants::root_two_pi<float>()) / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
@@ -385,7 +388,7 @@ bool check_zang_par( voxel_type * v, hole_type * h ){
 //=== voxel_projection =====================================================
 //==========================================================================
 
-void voxel_projection_mph ( lor_type * l, voxel_type * v, hole_type * h )
+void voxel_projection_mph ( lor_type * l, voxel_type * v, hole_type * h, wmh_mph_type &wmh )
 {
    
     //...vector voxel-hole, angles and distances...............................
@@ -444,7 +447,7 @@ void voxel_projection_mph ( lor_type * l, voxel_type * v, hole_type * h )
 //=== fill_psf_geo =========================================================
 //==========================================================================
 
-void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor, bool do_calc )
+void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor, bool do_calc, wmh_mph_type &wmh )
 {    
     psf->xc = l->x1d_l + wmh.prj.FOVxcmd2;   // x distance of center of PSF to the begin of the FOVcm
     psf->zc = l->z1d_l + wmh.prj.FOVzcmd2;   // z distance of center of PSF to the begin of the FOVcm
@@ -516,7 +519,7 @@ void fill_psf_geo ( psf2d_type * psf, lor_type *l, discrf2d_type *f, int factor,
 //=== fill_psf_depth ==========================================================
 //=============================================================================
 
-void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor, bool do_calc )
+void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor, bool do_calc, wmh_mph_type &wmh, pcf_type &pcf )
 {
 
     float xc_d = l->x1d_l + wmh.prj.FOVxcmd2;   // x distance of center of PSF from the begin of the FOVcm
@@ -609,7 +612,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
                 if_d  = if0_d  + i * incxf_d  ;
                 if_dc = if0_dc + i * incxf_dc ;
                 
-                v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+                v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
                 
                 psf->val [ j ][ i ] += v ;
                 psf->val [ j - 1 ][ i - 1 ] += v ;
@@ -628,7 +631,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
             if_d  = if0_d  ;
             if_dc = if0_dc ;
 
-            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
             
             psf->val [ j ][ 0 ] += v ;
             psf->val [ j - 1 ][ 0 ] -= v ;
@@ -636,7 +639,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
             if_d  = if0_d   + psf->dimx * incxf_d  ;
             if_dc = if0_dc  + psf->dimx * incxf_d  ;
             
-            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
             
             psf->val [ j ][ psf->dimx - 1 ] -= v ;
             psf->val [ j - 1 ][ psf->dimx - 1 ] += v ;
@@ -652,7 +655,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
             if_d  = if0_d  + i * incxf_d  ;
             if_dc = if0_dc + i * incxf_dc ;
 
-            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
             
             psf->val [ 0 ][ i ] += v ;
             psf->val [ 0 ][ i - 1 ] -= v ;
@@ -660,7 +663,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
             jf_d  = jf0_d   + psf->dimz * inczf_d  ;
             jf_dc = jf0_dc  + psf->dimz * inczf_d  ;
        
-            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+            v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
             
             psf->val [ psf->dimz - 1 ][ i ] -= v ;
             psf->val [ psf->dimz - 1 ][ i - 1 ] += v ;
@@ -674,7 +677,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
         jf_d  = jf0_d  ;
         jf_dc = jf0_dc ;
         
-        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
         
         psf->val [ 0 ][ 0 ] += v ;
         psf->sum += v ;
@@ -684,7 +687,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
         if_d  = if0_d   + psf->dimx * incxf_d  ;
         if_dc = if0_dc  + psf->dimx * incxf_d  ;
         
-        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
         
         psf->val [ 0 ][ psf->dimx - 1 ] -= v ;
         psf->sum -= v ;
@@ -694,7 +697,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
         jf_d  = jf0_d   + psf->dimz * inczf_d  ;
         jf_dc = jf0_dc  + psf->dimz * inczf_d  ;
         
-        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
 
         psf->val [ psf->dimz - 1 ][ psf->dimx - 1  ] += v ;
         psf->sum += v ;
@@ -704,7 +707,7 @@ void fill_psf_depth( psf2d_type *psf, lor_type *l, discrf2d_type *f, int factor,
         if_d  = if0_d  ;
         if_dc = if0_dc ;
         
-        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr );
+        v = bresenh_f( if_d, jf_d, if_dc, jf_dc, f->val, f->i_max, f->j_max, dcr, wmh, pcf );
         
         psf->val [ psf->dimz - 1 ][ 0 ] -= v ;
         psf->sum -= v ;
@@ -837,7 +840,7 @@ void psf_convol( psf2d_type * psf, psf2d_type * psf_aux, psf2d_type * kern, bool
 //=== bresenh_f ============================================================
 //==========================================================================
 
-float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax, float dcr )
+float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax, float dcr, wmh_mph_type &wmh, pcf_type &pcf )
 {
     
     int er;	//the error term
@@ -932,7 +935,7 @@ float bresenh_f( int i1, int j1, int i2, int j2, float ** f , int imax, int jmax
 //=== calc_att_mph =============================================================
 //=============================================================================
 
-float calc_att_mph( bin_type bin, voxel_type vox, float * attmap )
+float calc_att_mph( bin_type bin, voxel_type vox, float * attmap, wmh_mph_type &wmh )
 {
 	float dx, dy, dz;
 	float dlast_x, dlast_y, dlast_z, dlast;

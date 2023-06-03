@@ -384,43 +384,43 @@ namespace SPECTUB_mph
 
     //... functions from wmtools_SPECT.cpp .........................................
 
-    void wm_alloc ( int * Nitems);                        // allocate wm
+    void wm_alloc ( int * Nitems, wm_da_type &wm, wmh_mph_type &wmh );                        // allocate wm
 
-    void free_wm () ;                                      // delete wm
-
-
-    void write_wm_FC_mph ();                               // write double array weight matrix
-
-    void write_wm_hdr_mph ();                              // write header of a matrix
-
-    void write_wm_STIR_mph ();                             // write matrix in STIR format
+    // void free_wm () ;                                      // delete wm
 
 
-    void read_prj_params_mph ();                          // read ring parameters from a file
+    // void write_wm_FC_mph ();                               // write double array weight matrix
 
-    void read_coll_params_mph ();                          // read collimator parameters from a file
+    // void write_wm_hdr_mph ();                              // write header of a matrix
 
-    void which_hole();
+    // void write_wm_STIR_mph ();                             // write matrix in STIR format
 
 
-    void fill_pcf ();                                      // fill precalculated functions
+    void read_prj_params_mph ( wmh_mph_type &wmh );                          // read ring parameters from a file
 
-    void free_pcf ();                                      // fill precalculated functions
+    void read_coll_params_mph ( wmh_mph_type &wmh );                          // read collimator parameters from a file
+
+    // void which_hole();
+
+
+    void fill_pcf ( wmh_mph_type &wmh, pcf_type &pcf );                                      // fill precalculated functions
+
+    // void free_pcf ();                                      // fill precalculated functions
 
 
 
     void calc_cumsum ( discrf2d_type *f );
 
-    void generate_msk_mph ( bool *msk_3d, float *att );    // create a boolean mask for wm (no weights outside the msk)
+    void generate_msk_mph ( bool *msk_3d, float *att, wmh_mph_type &wmh );    // create a boolean mask for wm (no weights outside the msk)
 
-    void read_msk_file_mph ( bool * msk );                 // read mask from a file
+    // void read_msk_file_mph ( bool * msk );                 // read mask from a file
 
 
     std::string wm_SPECT_read_value_1d ( std::ifstream * stream1, char DELIMITER );
 
-    void wm_SPECT_read_hvalues_mph ( std::ifstream * stream1, char DELIMITER, int * nh, bool do_cyl );
+    void wm_SPECT_read_hvalues_mph ( std::ifstream * stream1, char DELIMITER, int * nh, bool do_cyl, wmh_mph_type &wmh );
 
-    void read_att_map_mph ( float *attmap );               // read attenuation map from a file
+    // void read_att_map_mph ( float *attmap );               // read attenuation map from a file
 
 
 

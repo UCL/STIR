@@ -137,6 +137,9 @@ class ProjMatrixByBinPinholeSPECTUB :
     //! Default constructor (calls set_defaults())
     ProjMatrixByBinPinholeSPECTUB();
 
+    // disable copy-constructor as currently unsafe to copy due to bare pointers
+    ProjMatrixByBinPinholeSPECTUB(const ProjMatrixByBinPinholeSPECTUB&) = delete;
+
     //! Destructor (deallocates UB SPECT memory)
     ~ProjMatrixByBinPinholeSPECTUB();
 
@@ -243,6 +246,10 @@ class ProjMatrixByBinPinholeSPECTUB :
     shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
     bool already_setup;
+
+    mutable SPECTUB_mph::wmh_mph_type wmh;       // weight matrix header.
+    mutable SPECTUB_mph::wm_da_type wm;          // double array weight matrix structure.
+    mutable SPECTUB_mph::pcf_type pcf;           // pre-calculated functions
 
     virtual void 
         calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const;
