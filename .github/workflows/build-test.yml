@@ -95,10 +95,14 @@ jobs:
           case ${{matrix.os}} in
             (ubuntu* | macOS*)
               df -h
+              # saves about 2GB
+              echo removing dotnet
               sudo rm -rf /usr/share/dotnet
-              df -h
+              # saves about 10 GB
+              echo removing agent_tools
               sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-              df -h
+              # saves about 10 GB
+              echo removing android files
               sudo rm -rf /usr/local/lib/android
               df -h
               ;;
