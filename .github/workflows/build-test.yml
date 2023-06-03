@@ -95,6 +95,12 @@ jobs:
           case ${{matrix.os}} in
             (ubuntu* | macOS*)
               df -h
+              sudo rm -rf /usr/share/dotnet
+              df -h
+              sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+              df -h
+              sudo rm -rf /usr/local/lib/android
+              df -h
               ;;
             (windows*)
               # no idea how to do this
