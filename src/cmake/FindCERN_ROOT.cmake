@@ -3,10 +3,26 @@
 # @Author Nikos Efthimiou (nikos.efthimiou AT gmail.com)
 # @Author Kris Thielemans
 
-# Attempts to find_package(ROOT), If that fails, use root-config.
-# If that fails, try and find TROOT.h and libCore*
-# Uses the ROOT_DIR CMake variable, then ROOTSYS, and then ROOTSYS environment variable
+## CMAKE ARGS
 #
+# ROOT_DIR - Path to the ROOT cmake directory. This is the preferred method for finding ROOT.
+# ROOTSYS  - Path to the ROOT installation directory. This is the second preferred method for finding ROOT.
+# CERN_ROOT_DEBUG - Print some extra info
+
+## FINDING ROOT 
+#
+# Attempts to `find_package(ROOT)`, If that fails, use root-config.
+# The primary method for ROOT being found to to use the `find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)` call. 
+# This process utilizes the `ROOT_DIR` variable to find the relevant CMake files. 
+# There are two methods by which this variable can be set:
+# 1. Set the `ROOT_DIR` a CMake argument. Point to `${ROOT_install_dir}/cmake` directory.
+# 2. Use the `${ROOTSYS}` environmental variable. If the above is not provided, CMake will determine the variable from the `${ROOTSYS}`. 
+#    This variable may be set by sourcing the `thisroot.sh` script, included by ROOT, see https://root.cern/install/build_from_source/.
+
+# Finaly, if the above methods fail, CMake will attempt some older workarounds to determine the ROOT variables (e.g try and find TROOT.h and libCore*). 
+# However, these methods are depreciated.
+
+## ROOT CMAKE VARIABLES SET BY THIS CONFIGURATION
 # Defines CERN_ROOT_LIBRARIES, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
 #
 # when find_package(ROOT) worked, it will also set
@@ -15,11 +31,10 @@
 # ROOT_LIBRARIES    - libraries to link against
 # ROOT_USE_FILE     - path to a CMake module which may be included to help
 
-# Set CERN_ROOT_DEBUG for some extra info
 
 # This file contains lines from FindROOT.cmake distributed in ROOT 6.08.
 # Therefore, this file is presumably licensed under the LGPL 2.1.
-# New parts Copyright 2016, 2020 University College London
+# New parts Copyright 2016, 2020, 2023 University College London
 
 if (NOT DEFINED ROOTSYS)
   set(ROOTSYS "$ENV{ROOTSYS}")
@@ -27,6 +42,12 @@ endif()
 
 if (NOT DEFINED ROOT_DIR AND DEFINED ROOTSYS)
   set(ROOT_DIR:PATH ${ROOTSYS}/cmake)
+endif()
+
+if (DEFINED ROOT_DIR)
+  if (CERN_ROOT_DEBUG)
+    message(STATUS "ROOT_DIR is set to ${ROOT_DIR}")
+  endif()
 endif()
 
 find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)
