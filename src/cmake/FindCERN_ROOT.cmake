@@ -2,6 +2,8 @@
 # Simple (or not) script to find CERN ROOT include dir and libs.
 # @Author Nikos Efthimiou (nikos.efthimiou AT gmail.com)
 # @Author Kris Thielemans
+# @Author the ROOT team
+# @Atuhor Rebert Twyman (improved documentation)
 
 ## CMAKE ARGS
 #
@@ -12,15 +14,16 @@
 ## FINDING ROOT 
 #
 # Attempts to `find_package(ROOT)`, If that fails, use root-config.
-# The primary method for ROOT being found to to use the `find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)` call. 
+# The primary method for ROOT being found is to use the `find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)` call. 
 # This process utilizes the `ROOT_DIR` variable to find the relevant CMake files. 
 # There are two methods by which this variable can be set:
-# 1. Set the `ROOT_DIR` a CMake argument. Point to `${ROOT_install_dir}/cmake` directory.
-# 2. Use the `${ROOTSYS}` environmental variable. If the above is not provided, CMake will determine the variable from the `${ROOTSYS}`. 
-#    This variable may be set by sourcing the `thisroot.sh` script, included by ROOT, see https://root.cern/install/build_from_source/.
+# 1. Set the `ROOT_DIR` CMake argument. Point to `<ROOT_install_dir>/cmake` directory.
+# 2. Use the `ROOTSYS` CMake or environment variable. If `ROOT_DIR` is not provided, we will determine set `ROOT_DIR` to `${ROOTSYS}/cmake`. 
+#    The `ROOTSYS` environment variable may be set by sourcing the `thisroot.sh` script, included by ROOT, see https://root.cern/install/build_from_source/.
 
-# Finaly, if the above methods fail, CMake will attempt some older workarounds to determine the ROOT variables (e.g try and find TROOT.h and libCore*). 
-# However, these methods are depreciated.
+# Finally, if the above methods fail, we will attempt some older workarounds to determine the ROOT variables 
+# (e.g try and find TROOT.h and libCore* via `root-config` or `find_library`). 
+# However, these methods are deprecated.
 
 ## ROOT CMAKE VARIABLES SET BY THIS CONFIGURATION
 # Defines CERN_ROOT_LIBRARIES, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
