@@ -100,6 +100,11 @@
   <li>The <code>error</code> and <code>warning</code> functions are now no longer included from <code>common.h</code> and need to be included manually when used (as was already the case for <code>#include "stir/info.h"</code>).
     <br /><a href="https://github.com/UCL/STIR/pull/1192/">PR #1192</a>.
   </li>
+  <li>add .h and .i as dependencies for SWIG generated wrappers to make sure they get rebuild.
+    (Currently adding all .h files, which is too much, but CMake needs a fix before we can do
+    this properly).
+    <br /><a href="https://github.com/UCL/STIR/pull/1218/">PR #1218</a>.
+    </li>
 </ul>
 
 
