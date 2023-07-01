@@ -1,8 +1,9 @@
 
 This directory contains some files that are intended for beginning STIR developers. The first version of these files was constructed for (and presented at) the STIR workshop at IEEE MIC 2004.
 
-Source code files
 -----------------
+
+# Source code files
 
 `demo1.cxx`
 	A simple program that backprojects some projection data.
@@ -14,25 +15,25 @@ Source code files
 	- output of an image
 
 `demo2.cxx`
-	A small modification of demo1.cxx to ask the user for the back projector she wants to use.
+	A small modification of `demo1.cxx` to ask the user for the back projector they want to use.
 	It illustrates
 	- how to ask the user for objects for which different types
 	  exist (e.g. back-projector, forward-projectors, image processors 
-	  etc), anything based on the RegisteredObject hierarchy.
+	  etc), anything based on the `RegisteredObject` hierarchy.
 	- that STIR is able to select basic processing units at run-time
 	- how to use the (very) basic display facilities in STIR
 
 `demo3.cxx`
-	A modification of demo2.cxx that parses all parameters from a parameter file.
+	A modification of `demo2.cxx` that parses all parameters from a parameter file.
 	It illustrates
 	- basic class derivation principles
-	- how to use ParsingObject to have automatic capabilities of parsing parameters files (and interactive questions to the user)
+	- how to use `ParsingObject` to have automatic capabilities of parsing parameters files (and interactive questions to the user)
 	- how most STIR programs parse the parameter files.
 Note that the same functionality could be provided without deriving a new class from `ParsingObject`. One could have a `KeyParser` object in `main()` and fill it in directly.
 
 `demo4_obj_fun.cxx`
 	A modified `demo3.cxx` that computes the objective function  value of the image generated from `demo3.cxx`.
-	  It illustrates
+	  It illustrates:
 		- how to initialise and setup an objective function object
 		- how to compute the objective function (log-likelihood) value of an image
 	    - how to compute the objective function (log-likelihood) gradient
@@ -45,13 +46,14 @@ Note that the same functionality could be provided without deriving a new class 
 		- how to compute the objective function (log-likelihood) value and gradient
 	    - Demonstrates how important step sizes for each iteration of an optimisation algorithm.
  
+
+# Supporting files
+
 `CMakeLists.txt`
 	A CMake file to say which files to build.
-
-Supporting files
-----------------
+	
 `extra_stir_dirs.cmake`
-	A sub-cmakefile that needs to be moved to `${STIR_PROJECT_DIR}/src/local` (or at least pointed to, see compilation instructions - step 1). This way, it will be picked up by CMake. Its contents simply say that there are extra files in examples/src.
+	A sub-cmakefile that needs to be moved to `${STIR_PROJECT_DIR}/src/local` (or at least pointed to, see compilation instructions - step 1). This way, it will be picked up by CMake. Its contents simply say that there are extra files in `examples/src`.
 
 `demo.par`
 	An example parameter file for `demo3.cxx`, using the interpolating backprojector (i.e. the default one set-up by `demo3.cxx`).
@@ -60,10 +62,10 @@ Supporting files
 	An example parameter file for `demo3.cxx`, using the  backprojector that uses a projection matrix (using the ray tracing model).
 
 `demo_obj_fun.par`
-	An example parameter file for demo4_obj_fun.cxx, used to compute the objective function value of an image and perform  some iterative gradient ascent updates.
+	An example parameter file for `demo4_obj_fun.cxx`, used to compute the objective function value of an image and perform  some iterative gradient ascent updates.
 
 `demo5_line_search.par`
-	An example parameter file for demo5_line_search.cxx, used to perform a line search of a image and objective function.
+	An example parameter file for `demo5_line_search.cxx`, used to perform a line search of a image and objective function.
 
 `generate_image.par`
 	An example parameter file for generate_image that allows it to construct a simple image that can be used for constructing  projection data, and it used as the template image in `demo*.par`.
@@ -77,21 +79,22 @@ Supporting files
 ### Step 1: Tell STIR to use these files. 2 alternatives
 
 #### Alternative 1: 
-Copy `extra_stir_dirs.cmake` to a default location to include in the STIR cmake configuration
+Copy `extra_stir_dirs.cmake` to a default location (`${PROJECT_SOURCE_DIR}/src/local/`) to include in the STIR cmake configuration
 ```
 mkdir -p ${PROJECT_SOURCE_DIR}/src/local/
 cp ${PROJECT_SOURCE_DIR}/examples/C++/src/extra_stir_dirs.cmake ${PROJECT_SOURCE_DIR}/src/local/
 ```
-Reconfigure your project. It should find the `extra_stir_dirs.cmake` in the destination directory above.
+Reconfigure your project in the build directory.
 ```
 cd ${your-build-dir}
 ccmake .
 ```
+It should find the `extra_stir_dirs.cmake` file in the destination directory above.
 
 #### Alternative 2: 
-Set the `STIR_LOCAL` CMake variable to this directory. Navigate to the STIR build directory
+Set the `STIR_LOCAL` cmake variable to this directory. Navigate to the STIR build directory
 ```
-cd your-build-dir
+cd ${your-build-dir}
 ```
 Reconfigure your project with the flag:
 ```
@@ -142,7 +145,7 @@ manip_image output.hv
 ```
 ${EXE_LOC}/demo2
 ```
-`demo2` contains a call `stir::display`, so you'll see the display immediately ( at least when on Unix)
+`demo2` contains a call `stir::display`, so you'll see the display immediately (at least when on Unix)
 
 #### `demo3`
 ```
@@ -162,13 +165,13 @@ ${EXE_LOC}/demo3
 ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
 ```
 
-Feel free to alter the "step size" and "number of iterations" in "demo_obj_fun.par". However, it is quite easy to cause unstable behaviour in the estimates. Additionally, there is a lack of positivity constraint on the density images (typical for PET reconstruction).
+Feel free to alter the "step size" and "number of iterations" in `demo_obj_fun.par`. However, it is quite easy to cause unstable behaviour in the estimates. Additionally, there is a lack of positivity constraint on the density images (typical for PET reconstruction).
 
 #### `demo5_line_search`
 ```
 ${EXE_LOC}/demo5_line_search demo5_line_search.par
 ```
-Feel free to alter the objective function, image filename, and the step size configuration in the parameter file. Try plotting the output `alphas.dat` and `Phis.dat` and visualise how the step size can impact the objective function value
+Feel free to alter the objective function, image filename, and the step size configuration in the parameter file. Try plotting the output `alphas.dat` and `Phis.dat` and visualise how the step size can impact the objective function value.
 Now try `use exponential alphas := 1`?
 
 ### What now ?
@@ -179,4 +182,4 @@ Good luck
 Kris Thielemans
 12 November 2004
 (with minor updates until 2017)
-Robert Twyman, 2020,2021 (addition of demo4_obj_fun and demo5_line_search)
+Robert Twyman, 2020,2021 (addition of `demo4_obj_fun.cxx` and `demo5_line_search.cxx`)
