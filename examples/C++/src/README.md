@@ -75,21 +75,29 @@ Note that the same functionality could be provided without deriving a new class 
 
 -----------------------------------------------
 
-## How to compile using CMake (on Unix-type systems)
-### Step 1: Tell STIR to use these files. 2 alternatives
+## How to compile
+
+These files are can be compiled with the rest of STIR using the STIR-extension mechanism discussed
+in the *Extending STIR with your own files* section of the STIR developers guide. Below are the
+explicit steps for Unix-type systems. Hopefully it is obvious how to do this on Windows.
+
+### Step 1: Tell CMake to use these files when building STIR.
+
+There are 2 alternatives:
 
 #### Alternative 1: 
-Copy `extra_stir_dirs.cmake` to a default location (`${PROJECT_SOURCE_DIR}/src/local/`) to include in the STIR cmake configuration
+Copy `extra_stir_dirs.cmake` to the default location (`..../STIR/src/local/`) that will be used by STIR's CMake configuration.
 ```
-mkdir -p ${PROJECT_SOURCE_DIR}/src/local/
-cp ${PROJECT_SOURCE_DIR}/examples/C++/src/extra_stir_dirs.cmake ${PROJECT_SOURCE_DIR}/src/local/
+cd ${your-STIR-source-dir}
+mkdir -p src/local/
+cp examples/C++/src/extra_stir_dirs.cmake src/local/
 ```
 Reconfigure your project in the build directory.
 ```
 cd ${your-build-dir}
 ccmake .
 ```
-It should find the `extra_stir_dirs.cmake` file in the destination directory above.
+CMake should find the `extra_stir_dirs.cmake` file in the destination directory above and have set the `STIR_LOCAL` CMake variable accordingly.
 
 #### Alternative 2: 
 Set the `STIR_LOCAL` cmake variable to this directory. Navigate to the STIR build directory
@@ -101,8 +109,10 @@ Reconfigure your project with the flag:
 ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/C++/src  .
 ```
 
-### Step 2: Compile
-Make the examples
+### Step 2: Build
+
+If you now build STIR, the examples will be built as well. When using `make`, you can specifically
+ask to build the examples
 ```
 make demo1 demo2 demo3 demo4_obj_fun demo5_line_search
 ```
@@ -145,7 +155,7 @@ manip_image output.hv
 ```
 ${EXE_LOC}/demo2
 ```
-`demo2` contains a call `stir::display`, so you'll see the display immediately (at least when on Unix)
+`demo2` contains a call to `stir::display`, so if you compiled STIR with `GRAPHICS=X`, you'll see the display immediately.
 
 #### `demo3`
 ```
@@ -155,7 +165,7 @@ or
 ```
 ${EXE_LOC}/demo3 demoPM.par
 ```
-The folowing one will ask the questions interactively
+The folowing command line will ask the questions interactively
 ```
 ${EXE_LOC}/demo3 
 ```
@@ -172,7 +182,7 @@ Feel free to alter the "step size" and "number of iterations" in `demo_obj_fun.p
 ${EXE_LOC}/demo5_line_search demo5_line_search.par
 ```
 Feel free to alter the objective function, image filename, and the step size configuration in the parameter file. Try plotting the output `alphas.dat` and `Phis.dat` and visualise how the step size can impact the objective function value.
-Now try `use exponential alphas := 1`?
+Now try `use exponential alphas := 1`.
 
 ### What now ?
 Play around, modify the `*.par` files, the templates, the source, and have fun.
