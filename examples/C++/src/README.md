@@ -146,6 +146,8 @@ To run each of the demos:
 ```
 ${EXE_LOC}/demo1
 ```
+Input a projection data filename (e.g. `sino.hs`) and image data filename (e.g. `image.hv`) when prompted.
+
 You can display the output using for instance
 ```
 manip_image output.hv
@@ -155,6 +157,10 @@ manip_image output.hv
 ```
 ${EXE_LOC}/demo2
 ```
+
+As before, input a projection data filename (e.g. `sino.hs`) and image data filename (e.g. `image.hv`) when prompted. 
+Subsequently enter `Matrix` when asked `Which type do you want? Possible values are:` (in reference to backprojector type) and `Ray Tracing` when prompted with `matrix type := `. _Other options may fail as they have deprecated._
+
 `demo2` contains a call to `stir::display`, so if you compiled STIR with `GRAPHICS=X`, you'll see the display immediately.
 
 #### `demo3`
@@ -165,7 +171,9 @@ or
 ```
 ${EXE_LOC}/demo3 demoPM.par
 ```
-The folowing command line will ask the questions interactively
+Inspect these parameter files for more details.
+
+The following command will ask the configuration questions interactively. Follow prompts as before. 
 ```
 ${EXE_LOC}/demo3 
 ```

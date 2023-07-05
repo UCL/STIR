@@ -26,7 +26,8 @@
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjData.h"
@@ -54,7 +55,8 @@ private:
 void
 MyStuff::set_defaults()
 {
-  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation);
+  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+  back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
