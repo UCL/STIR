@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2018, University College London
+    Copyright (C) 2013, 2018, 2023 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -1060,7 +1060,7 @@ read_interfile_PDFS_Siemens(istream& input,
   if (hdr.compression)
     warning("Siemens projection data is compressed. Reading of raw data will fail.");
 
-  return new ProjDataFromStream(hdr.get_exam_info_sptr(),
+  auto pdfs_ptr = new ProjDataFromStream(hdr.get_exam_info_sptr(),
     hdr.data_info_ptr->create_shared_clone(),
     data_in,
     hdr.data_offset_each_dataset[0],
@@ -1070,6 +1070,9 @@ read_interfile_PDFS_Siemens(istream& input,
     hdr.file_byte_order,
     1.);
 
+  if (hdr.timing_poss_sequence.size() > 1)
+    pdfs_ptr->set_timing_poss_sequence_in_stream(hdr.timing_poss_sequence);
+  return pdfs_ptr;
 }
 
 ProjDataFromStream* 
