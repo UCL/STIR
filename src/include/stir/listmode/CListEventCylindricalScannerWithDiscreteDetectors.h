@@ -9,7 +9,7 @@
       
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -19,73 +19,25 @@
 #ifndef __stir_listmode_CListEventCylindricalScannerWithDiscreteDetectors_H__
 #define __stir_listmode_CListEventCylindricalScannerWithDiscreteDetectors_H__
 
-#include "stir/Succeeded.h"
-#include "stir/DetectionPositionPair.h"
+#include "stir/listmode/CListEventScannerWithDiscreteDetectors.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/listmode/CListRecord.h"
 
 START_NAMESPACE_STIR
 
-//! Class for storing and using a coincidence event from a list mode file for a cylindrical single layer scanner
+//! Class for storing and using a coincidence event from a list mode file for a cylindrical scanner
 /*! \ingroup listmode
-    For scanners with discrete detectors, the list mode events usually store detector indices
-    in some way. This class provides access mechanisms to those detection positions, and
-    also provides more efficient implementations of some virtual members of CListEvent.
+   At present, could just as well be a `typedef`.
 */
-class CListEventCylindricalScannerWithDiscreteDetectors : public CListEvent
+class CListEventCylindricalScannerWithDiscreteDetectors : public CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr>
 {
-public:
-  inline explicit 
-    CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr);
-
-  const Scanner * get_scanner_ptr() const
-    { return this->scanner_sptr.get(); }
-
-  //! This routine returns the corresponding detector pair   
-  virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
-
-  //! This routine sets in a coincidence event from detector "indices"
-  virtual void set_detection_position(const DetectionPositionPair<>&) = 0;
-
-  //! find LOR between detector pairs
-  /*! Overrides the default implementation to use get_detection_position()
-    which should be faster.
-  */
-  inline virtual LORAs2Points<float> get_LOR() const;
-
-  //! find bin for this event
-  /*! Overrides the default implementation to use get_detection_position()
-    which should be faster.
-
-    \warning This implementation is only valid for \c proj_data_info of 
-    type ProjDataInfoCylindricalNoArcCorr. However, because of efficiency reasons
-    this is only checked in debug mode (NDEBUG not defined).
-  */
-  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
-
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
-   *  this check avoids a crash when an unsupported template is used as input.
-   */
-  inline virtual bool is_valid_template(const ProjDataInfo&) const;
-
- protected:
-   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-    get_uncompressed_proj_data_info_sptr() const
-     {
-       return uncompressed_proj_data_info_sptr;
-     }
-
-   shared_ptr<Scanner> scanner_sptr;
  private:
-   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-     uncompressed_proj_data_info_sptr;
-
+  typedef CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr> base_type;
+public:
+  using base_type::base_type;
 };
 
 END_NAMESPACE_STIR
 
-#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl"
+//#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl"
 
 #endif
