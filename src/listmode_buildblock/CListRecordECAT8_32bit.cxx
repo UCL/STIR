@@ -48,10 +48,10 @@ CListEventECAT8_32bit::
 get_detection_position(DetectionPositionPair<>& det_pos) const
 {
   /* data is organised by segment, axial coordinate, view, tangential */
-  const int num_tangential_poss = this->scanner_sptr->get_default_num_arccorrected_bins();
+  const int num_tangential_poss = this->scanner_sptr->get_max_num_non_arccorrected_bins();
   const int num_views = this->scanner_sptr->get_num_detectors_per_ring()/2;
 
-  const int tang_pos_num = this->data.offset % num_tangential_poss;//(this->num_sinograms * this-> num_views);
+  const int tang_pos_num = this->data.offset % num_tangential_poss;
   const int rest = this->data.offset / num_tangential_poss;
   const int view_num = rest % num_views;
   int z = rest / num_views;
