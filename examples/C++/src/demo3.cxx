@@ -26,6 +26,7 @@
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
+#include <memory>
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -36,6 +37,7 @@
 #include "stir/ParsingObject.h"
 #include "stir/Succeeded.h"
 #include "stir/display.h"
+#include <stdio.h>
 
 namespace stir {
 
@@ -55,8 +57,8 @@ private:
 void
 MyStuff::set_defaults()
 {
-  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-  back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
+  auto projection_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
+  BackProjectorByBinUsingProjMatrixByBin back_projector(projection_matrix_sptr);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 

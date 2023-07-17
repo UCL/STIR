@@ -159,7 +159,8 @@ ${EXE_LOC}/demo2
 ```
 
 As before, input a projection data filename (e.g. `sino.hs`) and image data filename (e.g. `image.hv`) when prompted. 
-Subsequently enter `Matrix` when asked `Which type do you want? Possible values are:` (in reference to backprojector type) and `Ray Tracing` when prompted with `matrix type := `. _Other options may fail as they have deprecated._
+Subsequently, enter `Matrix` (or `parallelproj` if installed) when prompted by `Which type do you want? Possible values are:` (in reference to back projector type) and `Ray Tracing` when prompted by `matrix type := `. 
+_Other options such as `Interpolation` may fail as they have been deprecated._
 
 `demo2` contains a call to `stir::display`, so if you compiled STIR with `GRAPHICS=X`, you'll see the display immediately.
 
