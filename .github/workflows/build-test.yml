@@ -32,14 +32,14 @@ jobs:
     strategy:
       matrix:
         include:
-        # - os: ubuntu-latest
-        #   compiler: gcc
-        #   compiler_version: 9
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-        #   BUILD_TYPE: "Release"
-        #   parallelproj: "ON"
-        #   ROOT: "ON"
-        #   ITK: "OFF"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 9
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "ON"
+          ITK: "OFF"
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
@@ -49,30 +49,30 @@ jobs:
           ROOT: "OFF"
           # currently using ITK 5.2 which doesn't like clang 14
           ITK: "OFF"
-        # - os: ubuntu-latest
-        #   compiler: gcc
-        #   compiler_version: 10
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
-        #   BUILD_TYPE: "Debug"
-        #   parallelproj: "OFF"
-        #   ROOT: "OFF"
-        #   ITK: "ON"
-        # - os: ubuntu-latest
-        #   compiler: gcc
-        #   compiler_version: 12
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
-        #   BUILD_TYPE: "RelWithDebInfo"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   ITK: "ON"
-        # - os: macOS-latest
-        #   compiler: gcc
-        #   compiler_version: 11
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #   parallelproj: "OFF"
-        #   BUILD_TYPE: "Debug"
-        #   ROOT: "OFF"
-        #   ITK: "OFF"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 10
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
+          BUILD_TYPE: "Debug"
+          parallelproj: "OFF"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: macOS-latest
+          compiler: gcc
+          compiler_version: 11
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
+          ROOT: "OFF"
+          ITK: "OFF"
         # Currently disabled due to problems with listmode recon, see https://github.com/UCL/STIR/issues/1200
         #- os: macOS-latest
         #  compiler: clang
