@@ -24,7 +24,7 @@
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjData.h"

@@ -23,7 +23,9 @@
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include <memory>
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
@@ -55,8 +57,9 @@ int main()
 
   density_sptr->fill(0);
 
-  /////////////// back project
-  BackProjectorByBinUsingInterpolation back_projector;
+  /////////////// back project, using ray tracing
+  auto projection_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
+  BackProjectorByBinUsingProjMatrixByBin back_projector(projection_matrix_sptr);
 
   back_projector.set_up(proj_data_info_sptr, density_sptr);
 
