@@ -353,8 +353,12 @@ jobs:
 
           generate_image generate_image.par
           forward_project sino.hs image.hv  small.hs
+
+          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
           ${EXE_LOC}/demo3 demo.par
           ${EXE_LOC}/demo3 demoPM.par
+          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
+          ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
     - name: Python
       shell: bash
