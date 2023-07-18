@@ -59,7 +59,7 @@ void
 MyStuff::set_defaults()
 {
   auto projection_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
-  BackProjectorByBinUsingProjMatrixByBin back_projector_sptr(projection_matrix_sptr);
+  back_projector_sptr = std::make_shared<BackProjectorByBinUsingProjMatrixByBin>(projection_matrix_sptr);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
