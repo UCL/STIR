@@ -46,7 +46,8 @@ class MyStuff: public ParsingObject
 public:
   void set_defaults();
   void initialise_keymap();
-  void run();
+  void run(const bool display_off);
+
 private:
   std::string input_filename;
   std::string template_filename;
@@ -58,7 +59,7 @@ void
 MyStuff::set_defaults()
 {
   auto projection_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
-  BackProjectorByBinUsingProjMatrixByBin back_projector(projection_matrix_sptr);
+  BackProjectorByBinUsingProjMatrixByBin back_projector_sptr(projection_matrix_sptr);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
@@ -74,7 +75,7 @@ MyStuff::initialise_keymap()
 }
 
 void
-MyStuff::run()
+MyStuff::run(const bool display_off)
 {
 
   shared_ptr<ProjData> 
@@ -95,7 +96,8 @@ MyStuff::run()
   /////////////// output
   output_file_format_sptr->write_to_file("demo3_density", *density_sptr);
 
-  display(*density_sptr, density_sptr->find_max(), "Output");
+  if (!display_off)
+    display(*density_sptr, density_sptr->find_max(), "Output");
 }
 
 }// end of namespace stir
@@ -104,17 +106,22 @@ int main(int argc, char **argv)
 {
   using namespace stir;
 
-  if (argc!=2)
-    {
-      std::cerr << "Normal usage: " << argv[0] << " parameter-file\n";
-      std::cerr << "I will now ask you the questions interactively\n";
-    }
   MyStuff my_stuff;
   my_stuff.set_defaults();
-  if (argc!=2)
+  bool display_off = false;
+  if (argc<2)
+  {      
+    std::cerr << "Normal usage: " << argv[0] << " parameter-file [--display_off]\n";
+    std::cerr << "I will now ask you the questions interactively\n";
     my_stuff.ask_parameters();
+  }
   else
+  {
     my_stuff.parse(argv[1]);
-  my_stuff.run();
+    if (argc>=3)
+      // Set the display_off to true if the second argument is "--display_off"
+      display_off = (strcmp(argv[2], "--display_off")==0);
+  }
+  my_stuff.run(display_off);
   return EXIT_SUCCESS;
 }
