@@ -347,6 +347,15 @@ jobs:
           cd ${GITHUB_WORKSPACE}/examples/PET_simulation
           ./run_simulation.sh 1> /dev/null
 
+          # Run the Demo executables
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
+          cd ${GITHUB_WORKSPACE}/examples/C++/src
+
+          generate_image generate_image.par
+          forward_project sino.hs image.hv  small.hs
+          ${EXE_LOC}/demo3 demo.par
+          ${EXE_LOC}/demo3 demoPM.par
+
     - name: Python
       shell: bash
       run: |
