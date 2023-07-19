@@ -264,6 +264,7 @@ jobs:
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
@@ -345,6 +346,19 @@ jobs:
           # Run examples to see if they work
           cd ${GITHUB_WORKSPACE}/examples/PET_simulation
           ./run_simulation.sh 1> /dev/null
+
+          # Run the Demo executables
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
+          cd ${GITHUB_WORKSPACE}/examples/C++/src
+
+          generate_image generate_image.par
+          forward_project sino.hs image.hv  small.hs
+
+          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
+          ${EXE_LOC}/demo3 demo.par --display_off
+          ${EXE_LOC}/demo3 demoPM.par --display_off
+          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
+          ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
     - name: Python
       shell: bash
