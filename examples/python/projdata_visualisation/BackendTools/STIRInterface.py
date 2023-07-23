@@ -43,7 +43,7 @@ class ProjDataVisualisationBackend:
         if self.projdata_filename != "":
             print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
             try:
-                self.projdata = stir.ProjData_read_from_file(self.projdata_filename)
+                self.projdata = stir.ProjData.read_from_file(self.projdata_filename)
                 self.segment_data = self.refresh_segment_data()
                 print("ProjDataVisualisationBackend.load_data: Data loaded.")
                 self.print_projdata_configuration()
