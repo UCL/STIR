@@ -36,7 +36,7 @@ def plot_sinogram_profiles(projection_data_list, sumaxis=0, select=0):
         if isinstance(f, str):
             print(f"Handling:\n  {f}")
             label = f
-            f = stir.ProjData_read_from_file(f)
+            f = stir.ProjData.read_from_file(f)
  
         if isinstance(f, stir.ProjData):
             f = stirextra.to_numpy(f)
