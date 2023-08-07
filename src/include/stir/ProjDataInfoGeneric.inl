@@ -83,8 +83,22 @@ ProjDataInfoGeneric::get_tantheta(const Bin& bin) const
   CartesianCoordinate3D<float> _p1;
   CartesianCoordinate3D<float> _p2;
   find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+
+  _p1.z() += z_shift.z();
+  _p2.z() += z_shift.z();
+
+  // do the below transformation to check whether the points are swapped when phi is obtained
+  // if they are swapped theta needs to be inverted, otherwise the oblique segments contain flipped streaks
+  LORAs2Points<float> lor_as_2_points(_p1, _p2);
+  const double R = sqrt(fmax(square(_p1.x()) + square(_p1.y()), square(_p2.x()) + square(_p2.y())));
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  lor_as_2_points.change_representation(lor, R);
+  float sign = 1.0;
+  if (abs(_p1.z() - lor.z1()) + abs(_p2.z() - lor.z2()) > abs(_p1.z() - lor.z2()) + abs(_p2.z() - lor.z1()))
+    sign *= -1;
+
   CartesianCoordinate3D<float> p2_minus_p1 = _p2 - _p1;
-  return p2_minus_p1.z() / (sqrt(square(p2_minus_p1.x())+square(p2_minus_p1.y()))); 
+  return sign * p2_minus_p1.z() / (sqrt(square(p2_minus_p1.x()) + square(p2_minus_p1.y())));
 }
 
 float

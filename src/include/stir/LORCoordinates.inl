@@ -346,8 +346,19 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
   auto l2 = static_cast<coordT2>((-b - root) / a);
   
   // TODO won't work when coordT1!=coordT2
-  intersection_coords.p1() = d*l1 + c1;
-  intersection_coords.p2() = d*l2 + c1;
+  const CartesianCoordinate3D<coordT2> distance1 = d * l1 + c1 - coords.p1();
+  const CartesianCoordinate3D<coordT2> distance2 = d * l2 + c1 - coords.p1();
+  if (square(distance1.x()) + square(distance1.y()) + square(distance1.z())
+      < square(distance2.x()) + square(distance2.y()) + square(distance2.z()))
+  {
+    intersection_coords.p1() = d * l1 + c1;
+    intersection_coords.p2() = d * l2 + c1;
+  }
+  else
+  {
+    intersection_coords.p2() = d * l1 + c1;
+    intersection_coords.p1() = d * l2 + c1;
+  }
   assert(fabs(square(intersection_coords.p1().x())+square(intersection_coords.p1().y())
 	      - square(radius))
 	 <square(radius)*10.E-5);
