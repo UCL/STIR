@@ -136,6 +136,9 @@
   <li><code>sample_function_on_regular_grid</code> did not handle offset correctly in all places <br /><a href="https://github.com/UCL/STIR/issues/1178/">issue #1178</a>.
     <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
+  <li>Ray tracing projection for BlocksOnCylindrical scanner geometries contained a bug where some bins were swapped across oblique segments <br /><a href="https://github.com/UCL/STIR/issues/1223/">issue #1223</a>. This sometimes lead to large artifacts in reconstructions.
+    <br /><a href="https://github.com/UCL/STIR/pull/1231/">PR #1231</a>.
+  </li>
 </ul>
 
 <h3>Documentation changes</h3>

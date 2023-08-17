@@ -80,11 +80,10 @@ ProjDataInfoGeneric::get_t(const Bin& bin) const
 float
 ProjDataInfoGeneric::get_tantheta(const Bin& bin) const
 {
-  CartesianCoordinate3D<float> _p1;
-  CartesianCoordinate3D<float> _p2;
-  find_cartesian_coordinates_of_detection(_p1, _p2, bin);
-  CartesianCoordinate3D<float> p2_minus_p1 = _p2 - _p1;
-  return p2_minus_p1.z() / (sqrt(square(p2_minus_p1.x())+square(p2_minus_p1.y()))); 
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+	get_LOR(lor, bin);
+
+  return (lor.z2() - lor.z1()) / (2 * lor.radius());
 }
 
 float

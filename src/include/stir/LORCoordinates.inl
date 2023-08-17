@@ -342,12 +342,11 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
   }
   const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
 
-  auto l1 = static_cast<coordT2>((-b + root) / a);
-  auto l2 = static_cast<coordT2>((-b - root) / a);
+  auto l1 = static_cast<coordT2>((-b - root) / a);
+  auto l2 = static_cast<coordT2>((-b + root) / a);
   
-  // TODO won't work when coordT1!=coordT2
-  intersection_coords.p1() = d*l1 + c1;
-  intersection_coords.p2() = d*l2 + c1;
+  intersection_coords.p1() = d * l1 + c1;
+  intersection_coords.p2() = d * l2 + c1;
   assert(fabs(square(intersection_coords.p1().x())+square(intersection_coords.p1().y())
 	      - square(radius))
 	 <square(radius)*10.E-5);

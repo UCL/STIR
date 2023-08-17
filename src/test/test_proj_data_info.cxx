@@ -148,7 +148,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 #endif
   for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num(); ++segment_num)
     {
-      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num(); view_num += 3)
+      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num(); view_num += 1)
         {
           // loop over axial_positions. Avoid using first and last positions, as
           // if there is axial compression, the central LOR of a bin might actually not
@@ -176,10 +176,13 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                   {
                     const Bin new_bin = proj_data_info.get_bin(lor);
 #if 1
-                    const int diff_segment_num = intabs(org_bin.segment_num() - new_bin.segment_num());
-                    const int diff_view_num = intabs(org_bin.view_num() - new_bin.view_num());
+                    // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
+                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
+                    const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
                     const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                    const int diff_tangential_pos_num = intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
+                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
                     if (new_bin.get_bin_value() > 0)
                       {
                         if (diff_segment_num > max_diff_segment_num)
@@ -220,10 +223,13 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                     lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
                     const Bin new_bin = proj_data_info.get_bin(lor_as_points);
 #if 1
-                    const int diff_segment_num = intabs(org_bin.segment_num() - new_bin.segment_num());
-                    const int diff_view_num = intabs(org_bin.view_num() - new_bin.view_num());
+                    // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
+                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
+                    const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
                     const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                    const int diff_tangential_pos_num = intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
+                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
                     if (new_bin.get_bin_value() > 0)
                       {
                         if (diff_segment_num > max_diff_segment_num)
