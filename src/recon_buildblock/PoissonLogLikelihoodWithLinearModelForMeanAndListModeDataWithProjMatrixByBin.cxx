@@ -530,10 +530,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                             ||  tmp.my_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
                             ||  tmp.my_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(tmp.my_bin.segment_num())
                             ||  tmp.my_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(tmp.my_bin.segment_num())
-        #ifdef STIR_TOF
-                            ||  tmp.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
-                            ||  tmp.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num()
-        #endif
+                            ||  tmp.my_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
+                            ||  tmp.my_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num()
                             )
                     {
                         continue;
@@ -568,11 +566,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             // add additive term to current cache
             if(this->has_add)
               {
-#ifdef STIR_TOF
-                // TODO
-                if (additive_proj_data_sptr->get_num_tof_poss() > 1)
-                    error("listmode processing with caching is not yet supported for TOF");
-#else
                 info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
 
 #ifdef STIR_OPENMP
@@ -586,13 +579,20 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #endif
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic) //collapse(2)
+#if _OPENMP <201107
+    #pragma omp parallel for schedule(dynamic)
+#else
+    #pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
 #endif
                 for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
-                seg <= this->additive_proj_data_sptr->get_max_segment_num();
-                ++seg)
+                     seg <= this->additive_proj_data_sptr->get_max_segment_num();
+                     ++seg)
+                  for (int timing_pos_num = this->additive_proj_data_sptr->get_min_tof_pos_num();
+                       timing_pos_num <= this->additive_proj_data_sptr->get_max_tof_pos_num();
+                       ++timing_pos_num)
                   {
-                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg));
+                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg, timing_pos_num));
 
                     for (BinAndCorr &cur_bin : record_cache)
                       {
@@ -609,7 +609,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                           }
                       }
                   }
-#endif // STIR_TOF
               } // end additive correction
 
             if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
@@ -639,12 +638,10 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
     info(boost::format("Calculating sensitivity for subset %1%") %subset_num);
 
-#ifdef STIR_TOF
     int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
     if (min_timing_pos_num<0 || max_timing_pos_num>0)
       error("TOF code for sensitivity needs work");
-#endif
 
     this->sens_backprojector_sptr->
       start_accumulating_in_new_target();

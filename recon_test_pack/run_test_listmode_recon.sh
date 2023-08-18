@@ -126,6 +126,35 @@ for TOForNOT in "nonTOF" "TOF"; do
         fi
         echo "=============== Using ${suffix} definition ============="
 
+        # create sinograms
+        echo "=== Unlist listmode data (for comparison)"
+        logfile=lm_to_projdata_${suffix}.log
+        export OUT_PROJDATA_FILE="my_sinogram_${suffix}"
+        if lm_to_projdata  lm_to_projdata.par > "$logfile" 2>&1
+        then
+            echo "---- Executable ran ok"
+        else
+            echo "---- There were problems here! Check $logfile"
+            exit 1 # abort as the rest will fail anyway
+            ThereWereErrors=1;
+            ErrorLogs="$ErrorLogs $logfile"
+        fi
+
+        export ADD_SINO="my_additive_sinogram_${suffix}.hs"
+        echo "=== Create additive sino ${ADD_SINO}"
+        # Just create a constant sinogram with a value max_prompts/50
+        add_value=`list_projdata_info --max "${OUT_PROJDATA_FILE}_f1g1d0b0.hs" 2> /dev/null |grep max|awk -F: '{print $2/50}'`
+        logfile=stir_math_add_sino_${suffix}.log
+        if stir_math -s --including-first --times-scalar 0 --add-scalar "$add_value" "$ADD_SINO" "${OUT_PROJDATA_FILE}_f1g1d0b0.hs"  > "$logfile" 2>&1
+        then
+            echo "---- Executable ran ok"
+        else
+            echo "---- There were problems here! Check $logfile"
+            exit 1 # abort as the rest will fail anyway
+            ThereWereErrors=1;
+            ErrorLogs="$ErrorLogs $logfile"
+        fi
+
         echo "=== Reconstruct listmode data without cache"
         export filename=my_output_t_lm_pr_seg${MAX_SEG_NUM}_${suffix}
         SENS_lm=my_sens_t_lm_pr_seg${MAX_SEG_NUM}.hv
@@ -190,19 +219,6 @@ for TOForNOT in "nonTOF" "TOF"; do
         if compare_image my_output_t_lm_pr_seg${MAX_SEG_NUM}_${suffix}_1.hv my_output_t_lm_pr_seg${MAX_SEG_NUM}_${suffix}_with_old_cache_1.hv > "$logfile" 2>&1
         then
             echo "---- This test seems to be ok !"
-        else
-            echo "---- There were problems here!"
-            ThereWereErrors=1;
-            ErrorLogs="$ErrorLogs $logfile"
-        fi
-
-        # create sinograms
-        echo "=== Unlist listmode data (for comparison)"
-        logfile=lm_to_projdata_${suffix}.log
-        export OUT_PROJDATA_FILE="my_sinogram_${suffix}"
-        if lm_to_projdata  lm_to_projdata.par > "$logfile" 2>&1
-        then
-            echo "---- Executable ran ok"
         else
             echo "---- There were problems here!"
             ThereWereErrors=1;

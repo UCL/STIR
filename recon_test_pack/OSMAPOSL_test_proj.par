@@ -2,6 +2,7 @@ OSMAPOSLParameters :=
 objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:= 
 	input file := ${INPUT}
+        additive sinogram := ${ADD_SINO}
 	maximum absolute segment number to process :=  ${MAX_SEG_NUM}
 	projector pair type := Matrix
   Projector Pair Using Matrix Parameters :=

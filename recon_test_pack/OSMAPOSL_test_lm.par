@@ -2,6 +2,7 @@ OSMAPOSLParameters :=
 objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
 	list mode filename := ${INPUT}
+        additive sinogram := ${ADD_SINO}
 	maximum absolute segment number to process :=  ${MAX_SEG_NUM}
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
