@@ -171,3 +171,6 @@ if(STIR_WITH_EXPERIMENTAL)
 else()
   remove_definitions(-DSTIR_WITH_EXPERIMENTAL)
 endif()
+
+# This version of STIR comes with TOF capabilities
+set(STIR_TOF 1)
