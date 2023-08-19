@@ -254,7 +254,7 @@ set_defaults()
   store_delayeds = true;
   interactive=false;
   num_segments_in_memory = -1;
-  num_timing_poss_in_memory = 1;
+  num_timing_poss_in_memory = -1;
   normalisation_ptr.reset(new TrivialBinNormalisation);
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
@@ -377,6 +377,16 @@ Succeeded LmToProjData::set_up()
   if (num_segments == 0)
     {
       error("LmToProjData: num_segments_in_memory cannot be 0");
+    }
+  const int num_timing_poss = template_proj_data_info_ptr->get_num_tof_poss();
+  if (num_timing_poss_in_memory == -1 || interactive)
+    num_timing_poss_in_memory = num_timing_poss;
+  else
+    num_timing_poss_in_memory =
+      min(num_timing_poss_in_memory, num_timing_poss);
+  if (num_timing_poss == 0)
+    {
+      error("LmToProjData: num_timing_poss_in_memory cannot be 0");
     }
 
   // handle store_prompts and store_delayeds
