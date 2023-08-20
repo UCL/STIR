@@ -3,6 +3,7 @@ output filename prefix := out/FBP
 input file := input.hs
 Z output image size (in pixels):=64
 z zoom:=.5
+xy output image size (in pixels) := 129
 Back Projector type:= matrix
   Back Projector Using Matrix Parameters :=
 	Matrix type := SPECT UB
