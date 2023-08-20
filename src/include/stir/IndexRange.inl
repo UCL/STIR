@@ -71,6 +71,9 @@ std::size_t
 IndexRange<num_dimensions>::size_all() const
 {
   this->check_state();
+  if (this->is_regular_range == regular_true && this->get_length()>0)
+    return this->get_length() * this->begin()->size_all();
+  //else
   size_t acc=0;
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     acc += this->num[i].size_all();
