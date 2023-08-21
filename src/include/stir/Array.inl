@@ -25,6 +25,8 @@
 #include <algorithm>
 #include "stir/assign.h"
 #include "stir/error.h"
+//#include "stir/info.h"
+//#include <string>
 
 START_NAMESPACE_STIR
 
@@ -84,29 +86,46 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
-    : base_type()
+  : base_type(), _allocated_full_data_ptr(0)
 {}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
-    : base_type()
+  : base_type(), _allocated_full_data_ptr(0)
 {
-  grow(range);
+  //grow(range);
+  this->_allocated_full_data_ptr = new elemT[range.size_all()];
+  // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(range.size_all()));
+  std::fill(this->_allocated_full_data_ptr, this->_allocated_full_data_ptr + range.size_all(), elemT(0));
+  this->init(range, this->_allocated_full_data_ptr, false);
 }
 
 template <int num_dimensions, typename elemT>
-#ifdef SWIG
-// swig-specific work-around (see Array.h)
 Array<num_dimensions, elemT>::Array(const self& t)
-#else
+:  base_type(t), _allocated_full_data_ptr(0)
+{
+  // info("constructor copy of size " + std::to_string(this->size_all()));
+}
+
+#ifndef SWIG
+// swig cannot parse this ATM, but we don't need it anyway in the wrappers
+template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const base_type& t)
+:  base_type(t), _allocated_full_data_ptr(0)
+{
+  // info("constructor basetype of size " + std::to_string(this->size_all()));
+}
 #endif
-: base_type(t)
-{}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::~Array()
-{}
+{
+  if (this->_allocated_full_data_ptr)
+    {
+      // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(this->size_all()));
+      delete [] this->_allocated_full_data_ptr;
+    }
+}
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator
