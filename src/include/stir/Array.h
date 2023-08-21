@@ -137,16 +137,19 @@ public:
   inline explicit Array(const IndexRange<num_dimensions>&);
 
 #ifndef SWIG
-  //! Construct an Array from an object of its base_type
-  inline Array(const base_type& t);
-#else
   // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
   // therefore, we declare this constructor using the "self" type,
   // i.e. it's just a copy-constructor.
   // This is less powerful as in C++, but swig-generated interfaces don't need to know about the base_type anyway
-  inline Array(const self& t);
+  //! Construct an Array from an object of its base_type
+  inline Array(const base_type& t);
 #endif
 
+  //! Copy constructor
+  // implementation needed as the above doesn't disable the auto-generated copy-constructor
+  inline Array(const self& t);
+
+  
   //! virtual destructor, frees up any allocated memory
   inline ~Array() override;
 
@@ -289,6 +292,9 @@ public:
   //! boolean to test if get_full_data_ptr is called
   // This variable is declared mutable such that get_const_full_data_ptr() can change it.
   mutable bool _full_pointer_access;
+
+  //! A pointer to the allocated chunk if the array is constructed that way, zero otherwise
+  elemT* _allocated_full_data_ptr;
 };
 
 /**************************************************
