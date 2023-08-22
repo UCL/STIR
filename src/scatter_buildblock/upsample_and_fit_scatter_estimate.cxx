@@ -55,6 +55,8 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   shared_ptr<ProjDataInfo> 
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
 
+  if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
+      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
