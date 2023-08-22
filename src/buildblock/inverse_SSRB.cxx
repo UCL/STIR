@@ -68,57 +68,61 @@ inverse_SSRB(ProjData& proj_data_4D, const ProjData& proj_data_3D)
       for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num);
            out_ax_pos_num <= proj_data_4D.get_max_axial_pos_num(out_segment_num); ++out_ax_pos_num)
         {
-          sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num);
-          const float out_m = proj_data_4D_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
+          for (int k=proj_data_4D.get_proj_data_info_sptr()->get_min_tof_pos_num();
+            k<=proj_data_4D.get_proj_data_info_sptr()->get_max_tof_pos_num(); ++k)
+          {
+            sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num, false, k);
+            const float out_m = proj_data_4D_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
 
-          // Go through all direct sinograms to check which pair are closest.
-          bool sinogram_set = false;
-          for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
-               ++in_ax_pos_num)
-            {
-              // for the first slice there is no previous
-              const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0)
+            // Go through all direct sinograms to check which pair are closest.
+            bool sinogram_set = false;
+            for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
+                ++in_ax_pos_num)
+              {
+                  // for the first slice there is no previous
+                  const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0)
+                                                        ? std::numeric_limits<float>::max()
+                                                        : abs(out_m - in_m.at(in_ax_pos_num - 1));
+                  const auto distance_to_current = abs(out_m - in_m.at(in_ax_pos_num));
+                  // for the last slice there is no next
+                  const auto distance_to_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0)
                                                     ? std::numeric_limits<float>::max()
-                                                    : abs(out_m - in_m.at(in_ax_pos_num - 1));
-              const auto distance_to_current = abs(out_m - in_m.at(in_ax_pos_num));
-              // for the last slice there is no next
-              const auto distance_to_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0)
-                                                ? std::numeric_limits<float>::max()
-                                                : abs(out_m - in_m.at(in_ax_pos_num + 1));
-              if (distance_to_current <= distance_to_previous && distance_to_current <= distance_to_next)
-                {
-                  if (distance_to_current <= 1E-4)
+                                                    : abs(out_m - in_m.at(in_ax_pos_num + 1));
+                  if (distance_to_current <= distance_to_previous && distance_to_current <= distance_to_next)
                     {
-                      sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num, 0);
-                      sino_4D += sino_3D_1;
-                    }
-                  else if (distance_to_previous < distance_to_next)
-                    { // interpolate between the previous axial slice and this one
-                      const auto distance_sum = distance_to_previous + distance_to_current;
-                      sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num - 1, 0);
-                      sino_3D_2 = proj_data_3D.get_sinogram(in_ax_pos_num, 0);
-                      sino_3D_1.sapyb(distance_to_current / distance_sum, sino_3D_2, distance_to_previous / distance_sum);
-                      sino_4D += sino_3D_1;
-                    }
-                  else
-                    { // interpolate between the next axial slice and this one
-                      const auto distance_sum = distance_to_next + distance_to_current;
-                      sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num + 1, 0);
-                      sino_3D_2 = proj_data_3D.get_sinogram(in_ax_pos_num, 0);
-                      sino_3D_1.sapyb(distance_to_current / distance_sum, sino_3D_2, distance_to_next / distance_sum);
-                      sino_4D += sino_3D_1;
-                    }
+                      if (distance_to_current <= 1E-4)
+                        {
+                          sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num, 0,false, k);
+                          sino_4D += sino_3D_1;
+                        }
+                      else if (distance_to_previous < distance_to_next)
+                        { // interpolate between the previous axial slice and this one
+                          const auto distance_sum = distance_to_previous + distance_to_current;
+                          sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num - 1, 0, false, k);
+                          sino_3D_2 = proj_data_3D.get_sinogram(in_ax_pos_num, 0, false, k);
+                          sino_3D_1.sapyb(distance_to_current / distance_sum, sino_3D_2, distance_to_previous / distance_sum);
+                          sino_4D += sino_3D_1;
+                        }
+                      else
+                        { // interpolate between the next axial slice and this one
+                          const auto distance_sum = distance_to_next + distance_to_current;
+                          sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num + 1, 0, false, k);
+                          sino_3D_2 = proj_data_3D.get_sinogram(in_ax_pos_num, 0, false, k);
+                          sino_3D_1.sapyb(distance_to_current / distance_sum, sino_3D_2, distance_to_next / distance_sum);
+                          sino_4D += sino_3D_1;
+                        }
 
-                  if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
-                    return Succeeded::no;
-                  sinogram_set = true;
-                  break;
+                      if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
+                        return Succeeded::no;
+                      sinogram_set = true;
+                      break;
+                    }
                 }
-            }
-          if (!sinogram_set)
-            { // it is logically not possible to get here
-              error("no matching sinogram found for segment %d and axial pos %d", out_segment_num, out_ax_pos_num);
-            }
+              if (!sinogram_set)
+                { // it is logically not possible to get here
+                  error("no matching sinogram found for segment %d and axial pos %d", out_segment_num, out_ax_pos_num);
+                }
+          }  
         }
     }
   return Succeeded::yes;

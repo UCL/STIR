@@ -207,9 +207,12 @@ interpolate_projdata(ProjData& proj_data_out,
 
   // initialise interpolator
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
+  for (int k=proj_data_out_info.get_min_tof_pos_num();
+  k<=proj_data_out_info.get_max_tof_pos_num(); ++k)
+  {
   SegmentBySinogram<float> segment = remove_interleaving ? 
-    make_non_interleaved_segment(*(make_non_interleaved_proj_data_info(proj_data_in_info)), proj_data_in.get_segment_by_sinogram(0)) :
-    proj_data_in.get_segment_by_sinogram(0);
+    make_non_interleaved_segment(*(make_non_interleaved_proj_data_info(proj_data_in_info)), proj_data_in.get_segment_by_sinogram(0,k)) :
+    proj_data_in.get_segment_by_sinogram(0,k);
 
   std::function<BasicCoordinate<3, double> (const BasicCoordinate<3, int>&)> index_converter;
   if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
@@ -292,11 +295,12 @@ interpolate_projdata(ProjData& proj_data_out,
     };
   }
   
-  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0);
+  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0,false, k);
   sample_function_using_index_converter(sino_3D_out, proj_data_interpolator, index_converter);
 
   if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
     return Succeeded::no;
+  }
   return Succeeded::yes;
 }
 
