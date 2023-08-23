@@ -128,6 +128,22 @@ Array<num_dimensions, elemT>::~Array()
 }
 
 template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexcept
+  : Array()
+{
+  swap(*this, other);
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+Array<num_dimensions, elemT>::
+operator=(Array<num_dimensions, elemT> other)
+{
+  swap(*this, other);
+  return *this;
+}
+
+template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator
 Array<num_dimensions, elemT>::end_all()
 {
@@ -590,8 +606,30 @@ Array<1, elemT>::Array(const base_type& il)
 {}
 
 template <typename elemT>
+Array<1, elemT>::Array(const Array<1, elemT>& other)
+  : base_type(other)
+{}
+
+template <typename elemT>
 Array<1, elemT>::~Array()
 {}
+
+template <typename elemT>
+Array<1, elemT>::Array(Array<1, elemT>&& other) noexcept
+  : Array()
+{
+  swap(*this, other);
+}
+
+template <typename elemT>
+Array<1, elemT>&
+Array<1, elemT>::operator=(const Array<1, elemT>& other)
+{
+  // use the base_type assignment, as this tries to avoid reallocating memory
+  base_type::operator=(other);
+  return *this;
+}
+
 
 template <typename elemT>
 typename Array<1, elemT>::full_iterator

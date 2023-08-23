@@ -150,6 +150,24 @@ public:
   //! Destructor
   inline virtual ~VectorWithOffset();
 
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(VectorWithOffset& first, VectorWithOffset& second) // nothrow
+  {
+    using std::swap;
+    //  swap the members of two objects
+    swap(first.num, second.num);
+    swap(first.length, second.length);
+    swap(first.start, second.start);
+    swap(first.begin_allocated_memory, second.begin_allocated_memory);
+    swap(first.end_allocated_memory, second.end_allocated_memory);
+    swap(first.pointer_access, second.pointer_access);
+    swap(first._owns_memory_for_data, second._owns_memory_for_data);
+  }
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  VectorWithOffset(VectorWithOffset&& other) noexcept;
   //! change vector with new index range and point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
@@ -163,6 +181,7 @@ public:
   inline void recycle();
 
   //! assignment operator with another vector
+  /*! implementation avoids reallocating if sufficient memory already exists. */
   inline VectorWithOffset& operator=(const VectorWithOffset& il);
 
   //! \name index range operations

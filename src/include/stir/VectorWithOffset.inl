@@ -316,12 +316,31 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
 }
 
 template <class T>
+VectorWithOffset<T>::
+VectorWithOffset(VectorWithOffset<T>&& other) noexcept
+  : VectorWithOffset()
+{
+  swap(*this, other);
+}
+
+template <class T>
 VectorWithOffset<T>::~VectorWithOffset()
 {
   // check if data is being accessed via a pointer (see get_data_ptr())
   assert(pointer_access == false);
   _destruct_and_deallocate();
 }
+
+#if 0
+template <class T>
+VectorWithOffset<T>&
+VectorWithOffset<T>::
+operator=(VectorWithOffset<T> other)
+{
+  swap(*this, other);
+  return *this;
+}
+#endif
 
 template <class T>
 void

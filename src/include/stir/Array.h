@@ -149,9 +149,27 @@ public:
   // implementation needed as the above doesn't disable the auto-generated copy-constructor
   inline Array(const self& t);
 
-  
   //! virtual destructor, frees up any allocated memory
   inline ~Array() override;
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(Array& first, Array& second) // nothrow
+  {
+    using std::swap;
+    //  swap the members of two objects
+    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
+    swap(first._allocated_full_data_ptr, second._allocated_full_data_ptr);
+  }
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  Array(Array&& other) noexcept;
+
+  //! assignment operator
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  Array& operator=(Array other);
+
 
   //! change the array to a new range of indices, pointing to \c data_ptr
   /*!
@@ -364,8 +382,28 @@ public:
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);
 
+  //! Copy constructor
+  // implementation needed as the above doesn't replace the normal copy-constructor
+  // and the auto-generated is disabled because of the move constructor
+  inline Array(const self& t);
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  Array(Array&& other) noexcept;
+
   //! virtual destructor
   inline ~Array() override;
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(Array& first, Array& second) // nothrow
+  {
+    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
+  }
+
+  //! assignment
+  inline Array& operator=(const Array& other);
+
 
   //! change vector with new index range and point to \c data_ptr
   /*!
