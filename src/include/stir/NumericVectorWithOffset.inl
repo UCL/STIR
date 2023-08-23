@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020 University College London
+    Copyright (C) 2013, 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -14,7 +14,7 @@
 /*!
   \file
   \ingroup Array
-  \brief inline implementations for NumericVectorWithOffset
+  \brief inline implementations for stir::NumericVectorWithOffset
 
   \author Kris Thielemans
   \author PARAPET project
@@ -52,6 +52,24 @@ template <class T, class NUMBER>
 NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffset<T>& t)
     : base_type(t)
 {}
+
+template <class T, class NUMBER>
+NumericVectorWithOffset<T, NUMBER>::
+NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
+  : NumericVectorWithOffset()
+{
+  swap(*this, other);
+}
+
+// assignment
+template <class T, class NUMBER>
+NumericVectorWithOffset<T, NUMBER>&
+NumericVectorWithOffset<T, NUMBER>::
+operator=(const NumericVectorWithOffset<T, NUMBER>& other)
+{
+  base_type::operator=(other);
+  return *this;
+}
 
 // addition
 template <class T, class NUMBER>
