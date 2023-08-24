@@ -96,7 +96,8 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
   //grow(range);
   this->_allocated_full_data_ptr = new elemT[range.size_all()];
   // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(range.size_all()));
-  std::fill(this->_allocated_full_data_ptr, this->_allocated_full_data_ptr + range.size_all(), elemT(0));
+  // set elements to zero
+  std::for_each(this->_allocated_full_data_ptr, this->_allocated_full_data_ptr + range.size_all(), [](elemT& e) { assign(e, 0); });
   this->init(range, this->_allocated_full_data_ptr, false);
 }
 

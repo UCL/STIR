@@ -290,27 +290,28 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
 }
 
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int sz, T * const data_ptr)
+VectorWithOffset<T>::VectorWithOffset(const int sz, T * const data_ptr, T * const end_of_data_ptr)   
     : length(static_cast<unsigned>(sz)),
       start(0),
       pointer_access(false),
       _owns_memory_for_data(false)
 {
   this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = data_ptr + sz;
+  this->end_allocated_memory = end_of_data_ptr;
   this->num = this->begin_allocated_memory - this->start;
   this->check_state();
 }
 
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T * const data_ptr)
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
+                                      T * const data_ptr, T * const end_of_data_ptr)   
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
       pointer_access(false),
       _owns_memory_for_data(false)
 {
   this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = data_ptr + (max_index - min_index + 1);
+  this->end_allocated_memory = end_of_data_ptr;
   this->num = this->begin_allocated_memory - this->start;
   this->check_state();
 }
@@ -330,17 +331,6 @@ VectorWithOffset<T>::~VectorWithOffset()
   assert(pointer_access == false);
   _destruct_and_deallocate();
 }
-
-#if 0
-template <class T>
-VectorWithOffset<T>&
-VectorWithOffset<T>::
-operator=(VectorWithOffset<T> other)
-{
-  swap(*this, other);
-  return *this;
-}
-#endif
 
 template <class T>
 void

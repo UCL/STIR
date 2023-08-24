@@ -139,10 +139,27 @@ public:
   inline VectorWithOffset(const int min_index, const int max_index);
 
   //! Construct a VectorWithOffset of given length pointing to existing data
-  inline explicit VectorWithOffset(const int hsz, T * const data_ptr);
-  
+  inline
+    VectorWithOffset(const int hsz, T * const data_ptr, T * const end_of_data_ptr);
+
+  //! Construct a VectorWithOffset of given length pointing to existing data
+  inline
+    VectorWithOffset(const int hsz, T * const data_ptr)
+    : VectorWithOffset(hsz, data_ptr, data_ptr + hsz)
+  {}
+
   //! Construct a VectorWithOffset with offset \c min_index point to existing data
-  inline VectorWithOffset(const int min_index, const int max_index, T * const data_ptr);
+  inline 
+    VectorWithOffset(const int min_index, const int max_index, 
+		     T * const data_ptr,
+		     T * const end_of_data_ptr);
+
+  //! Construct a VectorWithOffset with offset \c min_index point to existing data
+  inline 
+    VectorWithOffset(const int min_index, const int max_index, 
+		     T * const data_ptr)
+    : VectorWithOffset(min_index, max_index, data_ptr, data_ptr + (max_index - min_index + 1))
+  {}
 
   //! copy constructor
   inline VectorWithOffset(const VectorWithOffset& il);
