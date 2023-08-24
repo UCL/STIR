@@ -370,6 +370,8 @@ public:
   //! constructor given first and last indices, initialising elements to 0
   inline Array(const int min_index, const int max_index);
 
+#if 0
+  // TODO. these are not implemented yet.
   //! constructor given an IndexRange<1>, pointing to \c data_ptr
   inline Array(const IndexRange<1>& range, elemT * const data_ptr );
 
@@ -378,6 +380,7 @@ public:
     \arg data_ptr should start to a contiguous block of correct size
   */
   inline Array(const int min_index, const int max_index, elemT * const data_ptr);
+#endif
 
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);

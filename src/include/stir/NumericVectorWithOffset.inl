@@ -43,12 +43,6 @@ inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int min
 {}
 
 template <class T, class NUMBER>
-inline
-NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int min_index, const int max_index, NUMBER * const data_ptr)
-  : base_type(min_index, max_index, data_ptr)
-{}
-
-template <class T, class NUMBER>
 NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffset<T>& t)
     : base_type(t)
 {}
