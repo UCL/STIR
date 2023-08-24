@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2020, 2023 UCL
+    Copyright (C) 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -58,9 +58,6 @@ public:
 
   //! Construct a NumericVectorWithOffset of elements with offset \c min_index
   inline NumericVectorWithOffset(const int min_index, const int max_index);
-
-  //! Construct a NumericVectorWithOffset of elements with offset \c min_index pointing to \c data_ptr
-  inline NumericVectorWithOffset(const int min_index, const int max_index, elemT * const data_ptr);
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
