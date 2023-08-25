@@ -177,7 +177,7 @@ def test_zoom_image():
     new_size=6
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size)
     ind=zoomed_image.get_indices_closest_to_physical_coordinates(middle_in_mm)
-    assert zoomed_image[ind]==1./(zoom*zoom)
+    assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
     # awkward syntax...
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_sum))
     assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
