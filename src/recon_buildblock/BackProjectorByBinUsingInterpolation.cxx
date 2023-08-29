@@ -454,8 +454,6 @@ BackProjectorByBinUsingInterpolation::
   back_project_2D_all_symmetries(const Sinogram<float> &sino, PETPlane &image, int view,
                                     const int min_tang_pos, const int max_tang_pos)
 {
-  start_timers();
-
   assert(sino.get_min_bin() == - sino.get_max_bin());
   assert(min_tang_pos == -max_tang_pos);
   assert(image.get_min_x() == - image.get_max_x());
@@ -508,7 +506,6 @@ BackProjectorByBinUsingInterpolation::
     backproj2D_Cho_view_viewplus90_180minview_90minview(image, projs, cphi, sphi, s);
   }
   
-  stop_timers();
 }
 
 void 
@@ -516,8 +513,6 @@ BackProjectorByBinUsingInterpolation::
   back_project_2D_view_plus_90(const Sinogram<float> &sino, PETPlane &image, int view,
                                const int min_tang_pos, const int max_tang_pos)
 {
-  start_timers();
-
   assert(sino.get_min_bin() == - sino.get_max_bin());
   assert(min_tang_pos == -max_tang_pos);
   assert(image.get_min_x() == - image.get_max_x());
@@ -560,7 +555,6 @@ BackProjectorByBinUsingInterpolation::
     backproj2D_Cho_view_viewplus90(image, projs, cphi, sphi, s);
   }
  
-  stop_timers();
 }
 
 #endif
@@ -663,8 +657,6 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
        min_tang_pos_to_use
        : 0 );
 
-
-  start_timers();
 
   const JacobianForIntBP jacobian(proj_data_info_cyl_sptr, use_exact_Jacobian_now);
 
@@ -803,7 +795,6 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
           axial_pos_to_z_offset);
       }
     }
-  stop_timers();
 }
 
 /*
@@ -866,8 +857,6 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   // KTXXX not necessary anymore
   //assert(image.get_min_z() == 0);
-
-  start_timers();
 
   const JacobianForIntBP jacobian(proj_data_info_cyl_sptr, use_exact_Jacobian_now);
 
@@ -1001,7 +990,6 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 							       axial_pos_to_z_offset);
       }
     }
-  stop_timers();
 }
 
 

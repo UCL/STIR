@@ -152,8 +152,6 @@ back_project(DiscretisedDensity<3,float>& density,
 
   check(*viewgrams.get_proj_data_info_sptr(), density);
 
-  start_timers();
-
   // first check symmetries
   {
     const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
@@ -178,7 +176,6 @@ back_project(DiscretisedDensity<3,float>& density,
          max_axial_pos_num,
          min_tangential_pos_num,
          max_tangential_pos_num);
-  stop_timers();
 }
 #endif
 // -------------------------------------------------------------------------------------------------------------------- //
@@ -270,8 +267,6 @@ back_project(const RelatedViewgrams<float>& viewgrams,
 
   check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
 
-  start_timers();
-
 #ifdef STIR_OPENMP
   const int thread_num=omp_get_thread_num();
   if(is_null_ptr(_local_output_image_sptrs[thread_num]))
@@ -303,7 +298,6 @@ back_project(const RelatedViewgrams<float>& viewgrams,
          max_axial_pos_num,
          min_tangential_pos_num,
          max_tangential_pos_num);
-  stop_timers();
 }
 
 void
