@@ -21,6 +21,7 @@
 */
 
 #include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 
 START_NAMESPACE_STIR
 /*!
@@ -48,19 +49,25 @@ public:
   /*! Note: function is const such that it can be called in a
       function of a derived class that is const.
   */
-  inline void start_timers() const;
+  inline void start_timers(bool do_reset = false) const;
 
-  //! get current value of the timer (since first use or last reset)
+  //! get current value of the CPU timer (since first use or last reset)
   inline double get_CPU_timer_value() const;
+
+  //! get current value of the wall-clock timer (since first use or last reset)
+  inline double get_wall_clock_timer_value() const;
 
 private:
 
-  //! A timer that measured CPU time.
+  //! A timer that measures CPU time.
   /*! Note: member is mutable such that it can be modified in a const function.
   */
   mutable CPUTimer cpu_timer;
 
-  // TODO include other times (such as wall-clock)
+  //! A timer that measures wall clock time.
+  /*! Note: member is mutable such that it can be modified in a const function.
+  */
+  mutable HighResWallClockTimer wall_clock_timer;
 
 };
 
