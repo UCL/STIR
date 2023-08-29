@@ -155,7 +155,17 @@ protected:
 
       If overriding this function in a derived class, you need to call this one.
    */
+  virtual void check(const ProjDataInfo& proj_data_info) const;
+
+  //! check if the arguments are the same as what was used for set_up()
+  /*! calls error() if anything is wrong.
+
+      If overriding this function in a derived class, you need to call this one.
+
+      Calls check(const ProjDataInfo&)
+   */
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
+
   bool _already_set_up;
 
   //! The density ptr set with set_up()
