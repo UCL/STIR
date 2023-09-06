@@ -13,7 +13,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-12-21, Hammersmith Imanet Ltd
     Copyright (C) 2011-2012, Kris Thielemans
-    Copyright (C) 2013, 2017, 2022 University College London
+    Copyright (C) 2013, 2017, 2022, 2023 University College London
     Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
@@ -157,6 +157,12 @@ ProjDataFromStream::activate_TOF()
         timing_poss_sequence[i] = timing_pos_num;
     }
 
+}
+
+void
+ProjDataFromStream::set_timing_poss_sequence_in_stream(const std::vector<int>& seq)
+{
+  this->timing_poss_sequence = seq;
 }
 
 namespace detail {

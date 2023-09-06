@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 %\usepackage{a4wide}
 %\usepackage{layout}
+\usepackage{graphicx}
 
 \geometry{
   margin=2.cm
@@ -26,6 +27,9 @@
 \newcommand{\cmdline}[1]{\par \noindent $>$ \texttt{#1}\par}
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
+
+\sloppy % prevent text from running into margins
+
 \begin{document}
 
 \begin{spacing}{2}
@@ -40,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 5.0}}
+ Version 5.1}}
 \end{center}
 
 \end{spacing}
@@ -65,7 +69,9 @@ C. Falc\'{o}n \\
 R. Twyman \\
 {\it \small University College London}\\
 D. Deidda \\
-{\it \small National Physical Laboratory}
+{\it \small National Physical Laboratory}\\
+M. Strugari \\
+{\it \small Dalhousie University}
 \\
 \\
 
@@ -75,7 +81,11 @@ See STIR/LICENSE.txt for details.
 
 \newpage
 
+\normalsize
+
 \tableofcontents
+
+
 
 
 \section{
@@ -486,20 +496,26 @@ to the standard (as used by DICOM).
 \end{itemize}
 You might need to edit these files to add information for your scanner.
 
-See section \ref{sec:RunningWithOPENMP} for information on OpenMP an dmult-threading (if enabled when building \textit{STIR}).
+See section \ref{sec:stirconfig} for a utility to display the directory where the configuration files are found.
+
+See section \ref{sec:RunningWithOPENMP} for information on OpenMP and mult-threading (if enabled when building \textit{STIR}).
 
 \section{
 Running \textit{STIR} programs}
 
 Here we describe:
 \begin{itemize}
-\item documentation and program conventions
-\item supported file formats 
-\item rebinning algorithms
-\item reconstruction programs
-\item utility programs
-\item user-selectable components
-\item display properties
+\item documentation and program conventions (section \ref{sec:conventions})
+\item supported file formats (section \ref{sec:fileformats})
+\item list mode processing (section \ref{sec:listmodeprocessing})
+\item rebinning algorithms (section \ref{sec:Rebinning})
+\item reconstruction programs (section \ref{sec:imagereconstructionprograms})
+\item scatter estimation and simulation (section \ref{sec:scatterestimation})
+\item parametric image construction using kinetic modelling (section \ref{sec:KineticModels})
+\item motion correction (section \ref{sec:motioncorrection})
+\item utility programs (section \ref{sec:Utilities})
+\item user-selectable components such as projectors, filters etc (section \ref{sec:user-selectablecomponents})
+\item display properties (section \ref{sec:display})
 \end{itemize}
 
 \textit{STIR} is highly configurable and modular. It is therefore difficult to give a complete (and readable)
@@ -565,7 +581,7 @@ selected.
 
 Sample parameter files for particular programs (or part of a 
 parameter file relevant to a particular common component) are 
-presented in subsequent sections. See also the files in \textbf{STIR}/\textbf{samples}.
+presented in subsequent sections. See also the files in \texttt{STIR/examples/samples/}.
 
 
 \subsection{
@@ -628,7 +644,7 @@ processor.
 
 \subsection{
 File formats}
-
+\label{sec:fileformats}
 The STIR utility and reconstruction programs frequently need 
 to read and write files of image and projection data. Files formats 
 are encountered in which data and header information are maintained 
@@ -653,7 +669,7 @@ find sample Interfile headers in the \textbf{recon\_test\_pack} or by using
 \texttt{create\_projdata\_template}.
 
 \item For SPECT projection data, we use Interfile version 3.3 (with a few small changes).
-You can find a sample SPECT Interfile header in the \textbf{samples} directory.
+You can find a sample SPECT Interfile header in the \texttt{samples} directory.
 
 \item For images, we use the proposed Interfile version. Currently, images have to 
 be written as PET data, even for SPECT.
@@ -772,7 +788,7 @@ scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
 \end{table}
 
 
-A full example is given in \texttt{examples/samples/root\_header.hroot}. Below are
+A full example is given in \texttt{STIR/examples/samples/root\_header.hroot}. Below are
 2 shorter examples.
 If the scanner is known to \texttt{stir::Scanner}, you can use this
 \begin{verbatim}
@@ -841,7 +857,7 @@ End GATE_Cylindrical_PET Parameters :=
 end ROOT header := 
 \end{verbatim}
 
-See \texttt{examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
+See \texttt{STIR/examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
 
 OpenGATE energy information is recorded in MeV units into the ROOT file.
 For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
@@ -930,7 +946,7 @@ The exclusions of an event type is false by default.
 \end{table}
 
 
-\subsection{Multi header format}
+\subsubsection{Multi header format}
 \label{multi-file-format}
 It is often useful to be able to constract a single dataset from multiply components (e.g. images
 or projection data). We have a (STIR-specific) header format for this which is very simple, for example
@@ -945,8 +961,14 @@ Each ``component'' will be read independently, so could in principle be in a dif
 from the others.
 
 We currently support this format for dynamic images and projection data.
+
+\subsubsection{SPECT DICOM projection data}
+SPECT raw projection data in DICOM format is currently only supported by running the  \texttt{SPECT\_dicom\_to\_interfile} utility,
+see \ref{utility:SPECT_dicom_to_interfile}.
+
 \subsection{
 List mode processing}
+\label{sec:listmodeprocessing}
 
 Some scanners produce list mode data, which is essentially a 
 list of events. \textit{STIR} provides utilities to use
@@ -968,7 +990,7 @@ needs to be run as follows:
 \cmdline{lm\_to\_projdata par\_filename}
 
 
-See \textbf{STIR/samples/lm\_to\_projdata.par} for an example file. Please 
+See \textbf{STIR/examples/samples/lm\_to\_projdata.par} for an example file. Please 
 check out the online documentation (as generated by doxygen) 
 for more info.
 
@@ -1037,7 +1059,7 @@ Run without arguments to see a usage message.
 
 \subsection{
 Rebinning algorithms}
-
+\label{sec:Rebinning}
 In 3D PET, the name \textit{rebinning} is used for the 
 process of manipulating the 3D projection data set to the equivalent 
 of 2D projection data. This reduces the number of segments (see 
@@ -1140,7 +1162,7 @@ For the meaning of these parameters, check the documentation for the
 
 \subsection{
 Image reconstruction programs}
-
+\label{sec:imagereconstructionprograms}
 
 
 
@@ -1254,7 +1276,8 @@ zero end planes of segment 0 := 1
 Projector pair type := Matrix 
  Projector Pair Using Matrix Parameters := 
    ; Use the PET Ray-tracing matrix.
-   ;  This needs to be changed to SPECT UB when using SPECT data
+   ;  Change to SPECT UB when using SPECT data with parallel-hole collimators
+   ;  Change to Pinhole SPECT UB when using SPECT data with pinhole collimators
    Matrix type := Ray Tracing
      Ray Tracing Matrix Parameters:=
    End Ray Tracing Matrix Parameters:= 
@@ -1353,7 +1376,7 @@ END :=
 \end{verbatim}
 }
 
-See \textbf{STIR/samples/} for example parameter files.
+See \texttt{STIR/examples/samples/} for example parameter files.
 
 The following gives a brief explanation of the parameters. Where 
 appropriate, the notation \textit{[min, max, default]} is used to 
@@ -1786,7 +1809,7 @@ See [Bei08] for some info on performance.
 }
 
  Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. 
- See \textbf{STIR/samples/} for example parameter file(s). The
+ See \texttt{STIR/examples/samples/} for example parameter file(s). The
  following describes the parameters that are specific to OSSPS:
 
  \begin{description}
@@ -1814,10 +1837,8 @@ Since \textit{STIR} 2.0, you can specify an objective function that takes list m
 and uses a projection matrix. This can be used to do a static image reconstruction
 without any resolution loss etc. 
 
-\textbf{WARNING: The current implementation has not been thoroughly tested.} Please use
-the mailing lists for questions and results.
+The following gives the main parameters to use for the objective function (illustrated with OSMAPOSL).
 
-The following gives the main parameters to use for OSMAPOSL.
 { \small
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1828,13 +1849,40 @@ OSMAPOSLParameters :=
     time frame definition filename:= timeframes.fdef
     ; time frame to use data for the reconstruction
     time frame number:=1
-    ; maximum ring difference (defaults to all ring differences)
-    ;max ring difference num to process:=
+    ; or use a total number of events (if  larger than 0, frame definitions will be ignored)
+    ; note that this counts the total of prompts
+    num events to use := 0
+    ; maximum segment number to process (defaults to all segments)
+    ;maximum absolute segment number to process:=
+
+    ;; acquisition modelling
+
     ; matrix to use for forward and back projection (defaults to ray tracing)
     ;Matrix type:= using ray tracing
+    ;bin normalisation type := None ; see elsewhere for allowed values
+
     ; background term
     additive sinogram:=
-    sensitivity filename:=filename
+
+    ; sensitivity keywords (see the corresponding objective function for projection data)
+
+    ;; speeding-up things (experimental. will likely change)
+
+    ; if set to 1, additive_sinogram will be completely stored in memory, as opposed to re-reading from disk
+    reduce memory usage := 0
+    ; cache listmode events in memory and on file
+      ; set this number > 0 to enable this feature
+      ; depending on this max size, one or more files will be created in cache_path (see below)
+      max cache size := 0
+
+      ; location of cache files (defaults to current working directory, needs to exist)
+      cache path :=
+
+      ; if set to 1, any existing cache file will be overwritten (defaults to 1)
+      recompute cache := 1
+
+    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test
+    skip checking balanced subsets := 0
 
     ; other usual objective function parameters 
 
@@ -1846,15 +1894,28 @@ End:=
 \end{verbatim}
 }
 
-Currently, the sensitivity filename needs to be specified as the code to compute it using
-a bin normalisation type has not yet been copied to the 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
-class. You could run OSMAPOSL first with projection data without axial compression (and view
-``mashing'') to create the sensitivity filename. Similarly, if you want to use OSSPS,
-you will need to run the projection data version first to get the ``precomputed denominator''.
+Some parameters are the same as for the projection data case, see \ref{sec:PoissonProjectionDataObjectiveFunction}.
 
-The additive sinogram is as discussed in \ref{sec:PoissonProjectionDataObjectiveFunction}, 
-but needs to be without axial compression (and view ``mashing'').
+Note that for some scanners, listmode data are stored using axial compression or view mashing
+(see the STIR glossary). Therefore, a listmode file has ``intrinsic'' projection data
+info associated to it.
+You can see what this is using
+\cmdline{list\_lm\_info --geom <filename>}
+You need to provide the additive sinogram (and noormalisation when using \texttt{From ProjData}, see \ref{sec:binnormalisationFromProjData}) with the same dimensions.
+
+{ \subsubsubsubsection{Use of caching (experimental feature)}
+}\\
+Since STIR 5.1, it is possible to use cache listmode events in memory (and on disk). This is enabled by setting
+\texttt{max cache size} to a non-zero (and preferably large) number. This will result in faster reading, but also
+enables multi-threaded calculation if OpenMP is used.
+
+It is also possible to re-use existing cached files, currently called \texttt{<cache path>/my\_CACHE\%d.bin}.
+This could be handy to distribute files to someone that doesn't have a particular listmode reader (e.g.
+the UPenn format depends on files that we cannot distribute with STIR). However, the cache files are simple
+binary files and could be compiler dependent. Moreover, when re-using existing cache files, there is \textbf{no}
+check on time frames or number of events, which might lead to surprising (i.e. wrong!) results. Therefore,
+\texttt{recompute\_cache} defaults to 1 (i.e. ignore existing cache files).
+
 
 { \subsubsubsection{Parametric image estimation algorithms}
 }
@@ -1864,10 +1925,10 @@ dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respectively.
 Their parameters are identical to the static versions of the algorithms, except that
 they need a different type of objective function. Currently, the only defined version is
 where the input is dynamic projection data and the Patlak linear model is used to go from
-dynamic images to parametric images. See section {sec:KineticModels} for more information.
+dynamic images to parametric images. See section \ref{sec:KineticModels} for more information.
 
 Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
-can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
+can be found in \texttt{STIR/examples/samples/}. The only change is the fact that dynamic data
 form the input, and that a (linear) kinetic model has to be specified, see \ref{sec:KineticModels}.
 
 \begin{verbatim}
@@ -1941,7 +2002,7 @@ End:=
   is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
 
 Below is an excerpt of a possible parameter file for KOSMAPOSL. A complete parameter file
-can be found in \textbf{STIR/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+can be found in \texttt{STIR/examples/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
 
 
  \begin{verbatim}
@@ -2032,7 +2093,7 @@ from the file are assigned a default value. If a parameter file
 is not used, the program prompts the user for the required information.
 
 
-A sample.par file can be found in the \textbf{samples/} directory. 
+A sample.par file can be found in the \texttt{samples} directory. 
 Below are the parameters you probably need.
 
 
@@ -2092,8 +2153,7 @@ Also, the Colsher filter is numerically computed at a finer grid
 in an initial stage to avoid DC problems.
 
 
-A sample.par file can be found in the \textbf{samples/} 
-directory. See separate documentation on FBP3DRP, the doxygen documentation 
+A sample.par file can be found in the \texttt{samples} directory. See separate documentation on FBP3DRP, the doxygen documentation 
 (or the source) for more info. Similar to FBP2D, an apodizing window can be specified.
 FBP3DRP defaults to using the ``pure'' Colsher filter. \\
 \textbf{Warning:} the current version of the interpolating backprojector, 
@@ -2102,6 +2162,7 @@ on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
 Scatter Estimation and simulation}
+\label{sec:scatterestimation}
 Coincidence events where one or more of the photons are scattered form a major contribution to the data
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
@@ -2517,6 +2578,7 @@ The parameter files include the information of the kinetic model as described fo
 
 \subsection{
 Motion Correction}
+\label{sec:motioncorrection}
 Motion correction has become an important task in PET imaging. Amongst several approaches to
 motion-correct PET data, two are the most common: reconstruct-transform-average (RTA) [Kle96] and
 motion-compensated image reconstruction (MCIR) [Li06]. In RTA, separate images are reconstructed for each
@@ -2785,14 +2847,21 @@ to the orientation the original files have been stored in gipl format.
 
 
 \subsection{
-Utilities}
+Utilities} \label{sec:Utilities}
 
 Programs are given in the \textbf{STIR/utilities} directory, that 
 allow the user to display, manipulate and convert \textbf{interfile} 
 data, either image or projection data.
-
 Utilities specific to files in ECAT 6 or 7 format or in the \textbf{ecat}
 sub-directory.
+
+\subsubsection{Displaying STIR configuration and version information}
+\label{sec:stirconfig}
+\textbf{stir\_config} allows displaying the directory where the configuration files
+are found (see section \ref{sec:configuration}), where the documentation and examples are installed
+and the STIR version. Run without arguments to get usage information.
+(Equivalent functions in C++/Python are \texttt{get\_STIR\_config\_dir},
+\texttt{get\_STIR\_doc\_dir} and \texttt{get\_STIR\_examples\_dir}).
 
 \subsubsection{
 Displaying and performing operations on data}
@@ -2917,7 +2986,7 @@ size, etc. It will then output new projection data (in Interfile
 format). However, the binary file will not contain any data.
 
 It currently only supports PET data. For SPECT, you will have to copy the
-sample Interfile header from the \textbf{samples} directory and edit it by hand.
+sample Interfile header from the \texttt{samples} directory and edit it by hand.
 You will also need to provide a file with the binary data (but this can be empty if
 you are only going to use this as a template).
 
@@ -3040,11 +3109,14 @@ Using no arguments will give a more extensive usage message showing
 some options to select which data to print.
 
 { \subsubsubsection{list\_ROI\_values}
-}
+\label{sec:list_ROI_values}}
 
-This is a test-release of a program that can be used to find 
-ROI values for an image. See the online documentation generated 
-by doxygen for more info.
+This program can be used to find 
+ROI values for an image. See its usage message, and/or the online documentation generated 
+by doxygen for more info. ROIs can be specified by geometric shapes or
+discretised ``masks", see section \ref{sec:shapes}.
+Example files specifying the ROIs can be found in the
+\texttt{examples/samples} folder.
 
 { \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
@@ -3103,7 +3175,7 @@ template).
 
 Basic Usage:
 \cmdline{compute\_sqrt\_Hessian\_row\_sum compute\_sqrt\_Hessian\_row\_sum.par}
-An example parameter file is included in the samples folder.
+An example parameter file is included in the \texttt{samples} folder.
 
 \subsubsection{
 Converting data}
@@ -3336,6 +3408,17 @@ has not been used recently however, so beware.
 These programs convert from/to GIPL format. The latter program has a somewhat wrong name.
 It will actually read an image in any format supported by STIR.
 
+{ \subsubsubsection{SPECT\_dicom\_to\_interfile}\label{utility:SPECT_dicom_to_interfile}}
+This (still somewhat preliminary) utility reads a DICOM file with SPECT projection data and extracts the data and writes one or more Interfile 3.3
+headers. You will need to pass a filename-prefix. The utility will output several files:
+\begin{itemize}
+\item \texttt{<prefix>.s} the raw data
+\item \texttt{<prefix><string>.hdr} multiple headers, one per energy window grouping, where the \texttt{<string>} is given by the grouping name, read from (0054,0018).
+\end{itemize}
+Note that we currently do not read the Energy Window Vector (0054,0010), which could mean that the output data is incorrect.
+Also, dynamic and gated studies are not supported. You will have to edit the headers yourself.
+
+See also \url{https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.4.8.html}{Section C.8.4.8 of the DICOM standard}.
 
 \subsubsection{
 Filtering image data}
@@ -3358,7 +3441,7 @@ name\texttt{>} {\textbackslash}\\
 
 where the square brackets denote optional parameters (their value 
 will be asked interactively). Example postfilter.par files can 
-be found in the \textbf{STIR/samples} directory.
+be found in the \texttt{STIR/examples/samples} directory.
 
 
 \subsubsection{
@@ -3396,7 +3479,7 @@ It is run as
 \cmdline{correct\_projdata correct\_projdata\_par\_filename}
 
 
-A sample parameter file is given in \textbf{STIR}/\textbf{samples} and 
+A sample parameter file is given in \texttt{STIR/examples/samples/} and 
 is more or less as follows
 
 \begin{verbatim}
@@ -3862,7 +3945,7 @@ available to programs is fully extendable (at compile time).
 How to do this is beyond the scope of this document. Here we 
 only discuss how to specify a particular data processor at run-time, 
 and list the currently available ones. Samples of their parameters 
-should be available in \textbf{STIR/samples}.
+should be available in \texttt{STIR/examples/samples}.
 
 
 Each data processor has a unique name associated to it (given 
@@ -3885,7 +3968,7 @@ with any projector. This supercedes functionality provided by
  \textbf{PresmoothingForwardProjectorByBin} and 
  \textbf{PostsmoothingBackProjectorByBin},
   which can now be considered deprecated. Examples are available
-in \textbf{examples/samples/forward\_projector\_proj\_matrix\_ray\_tracing\_pre\_smoothing.par} 
+in \texttt{STIR/examples/samples/forward\_projector\_proj\_matrix\_ray\_tracing\_pre\_smoothing.par} 
 (and a similarly named back-projector example).
 
 { \subsubsubsection{Separable Convolution}
@@ -4205,7 +4288,7 @@ Which priors are available to programs is fully extendable (at
 compile time). How to do this is beyond the scope of this document. 
 Here we only discuss how to specify a particular prior, and list 
 the currently available ones. Samples of their parameters should 
-be available in \textbf{STIR/samples}.
+be available in \texttt{STIR/examples/samples}.
 
 
 
@@ -4452,7 +4535,7 @@ to be given in the.par file (or will be asked interactively).
 
 
 Samples of OSMAPOSL reconstruction parameter files selecting 
-different types of projectors should be available in \textbf{STIR/samples}.
+different types of projectors should be available in \texttt{STIR/examples/samples}.
 
 \textbf{Warning: for most iterative algorithms, it is recommended 
 to use matching forward and back-projector. This is unfortunately 
@@ -4498,8 +4581,7 @@ End Projector Pair Using NiftyPET Parameters:=
 }
 This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
 \url{https://github.com/gschramm/parallelproj}{github.com/gschramm/parallelproj}. This project provides implementations
-of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not
-any \em{Python}).
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not any \textit{Python}).
 
 This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
 
@@ -4919,11 +5001,10 @@ End Interpolation Matrix Parameters:=
 See \ref{sec:IncrementalInterpolationBackProjector} for an explanation 
 of the first two parameters.
 
-{ \subsubsubsection{SPECT UB}
-}
+{ \subsubsubsection{SPECT UB} }
 \label{sec:projmatrixSPECTUB}
 This is a flexible implementation specific to SPECT data. See [Fus13] and [Fus14] for some information.
-A sample is given below
+A sample is given below:
 
 \begin{verbatim}
 Projection Matrix By Bin SPECT UB Parameters:=
@@ -4962,93 +5043,248 @@ should be done using alternative strategies. The geometrical part is calculated 
 PSF (area 1) within the bin. The geometrical part is multiplied by the attenuation factor calculated
 using a modified version of the Siddon algorithm.  
 
-{ \subsubsubsubsection{Parameters}
-}
+{ \subsubsubsubsection{Parameters} }
 \begin{description}
-\item[maximum number of sigmas] [0,$\infty$,2{]}
 
-  This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are
-  modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of
-  sigmas would produce an increase of the weight matrix size that would not result in a better correction
-  for PSF. It does not make sense to take into account very small contributions. A balance between the
-  precision of the correction for PSF and the size of the matrix and the time of the reconstruction
-  process should be done.
+\item[maximum number of sigmas] [0, $\infty$, 2{]}
+
+This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of sigmas would produce an increase of the weight matrix size that would not result in a better correction for PSF. It does not make sense to take into account very small contributions. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
 
 %\item[spatial resolution PSF:= 0.00001]
-%	
 % This is the spatial resolution in which to sample PSF distributions. PSF is modelled as a Gaussian or as a trapezoid (linear projection of a square) in case of no correction for PSF.  The calculus of the area within the bin is calculated by means of the Gaussian distribution function (cumulative sum). The parameter indicates the discretization interval for such functions (float, cm, typically 0.001-0.02, depending on the voxel size)
 
-\item[psf type] 
- 
-  The possible values are \{ 2D, 3D, Geometrical (default) \} to indicate, respectively, a planar
-  reconstruction (no information mixed between planes, planes reconstructed sequentially, 1d -PSF),
-  volumetric (mixed information between planes, volume reconstructed at once, 2d-PSF), or no correction
-  for PSF (in this case PSF is the trapezoid obtained by the projection of the square voxel).
+\item[psf type] \{2D, 3D, Geometrical (default)\}
 
-\item[collimator slope, collimator slope sigma 0 (cm)] (default 0) 
+Indicate, respectively, a planar reconstruction (no information mixed between planes, planes reconstructed sequentially, 1d -PSF), volumetric (mixed information between planes, volume reconstructed at once, 2d-PSF), or no correction for PSF (in this case PSF is the trapezoid obtained by the projection of the square voxel).
 
-  These two 2 parameters define the PSF.
-  They are ignored if \textit{psf type} is \textit{Geometrical}.  These values are mostly dependent on
-  your collimator.  The PSF is modelled as a Gaussian with sigma dependent on the distance from the
-  collimator
+\item[collimator slope, collimator slope sigma 0 (cm)] (default 0)
+
+These two 2 parameters define the PSF. They are ignored if \textit{psf type} is \textit{Geometrical}. These values are mostly dependent on your collimator. The PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
 \begin{equation}
  \sigma(d) = \mathrm{slope} * d + \mathrm{\sigma_0}
-\end{equation} \noindent
-  with $d$ the distance (in cm) of the voxel to the collimator radius.
+\end{equation} 
+\noindent with $d$ the distance (in cm) of the voxel to the collimator radius.
 
-  In the range of usual distances between the object and the detector, the dependence of the sigma with the
-  distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally
-  or use analytical methods to determine it.
+In the range of usual distances between the object and the detector, the dependence of the sigma with the distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally or use analytical methods to determine it.
 
-\item[attenuation type] 
+\item[attenuation type] \{Simple, Full, No (default)\}
 
-  The possible values are \{ Simple, Full, No (default) \}. Attenuation is calculated as the negative
-  exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation
-  coefficient. It requires an attenuation map (see next keyword). The simple option for correction for
-  attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the
-  central ray). One single factor is applied to weight the contribution from one voxel to all the bins in
-  a detection plane. It is a very good approximation for uniform attenuation maps. The full option means
-  that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained
-  along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
+Attenuation is calculated as the negative exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation coefficient. It requires an attenuation map (see next keyword). The simple option for correction for attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the central ray). One single factor is applied to weight the contribution from one voxel to all the bins in a detection plane. It is a very good approximation for uniform attenuation maps. The full option means that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
 
-  See [Fus14] for an evaluation and more explanation.
+See [Fus14] for an evaluation and more explanation.
 
-\item[attenuation map]
+\item[attenuation map] \hfill
 
-  A filename giving the attenuation map as the attenuation coefficient at each voxel (in
-  $\mathrm{cm}^{-1}$).  Currently, this file has the same geometric characteristics as the image to be
-  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
 
-\item[mask type]
+\item[mask type] \{Cylinder, Attenuation Map, Explicit Mask, No (default)\}
 
-  This is a parameter to indicate if any mask should be applied to the volume, to reduce the matrix size
-  by removing weights from voxels that, according the prevoius information, do no contribute to the
-  projections. Possible values are:
- \begin{description}
- \item[Cylinder] the cylinder inscribed into the volume is used as a mask. The radius of the cylinder is
-   the maximum volume dimension (x-y),
- \item[Attenuation Map] the attenuation map is used as a mask. No weight is calculated where the
-   attenuation map is zero ( assiming no attenuation=no activity). NaNs values are set to zero.
- \item[Explicit Mask] the mask is defined in a file. The mask should have the same geometrical
-   prescription than the image. It could be useful for instance to remove the weight of voxels from the
-   table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is
-   considered. 
-  \item[No] (default). No attenuation correction.
- \end{description}
+This is a parameter to indicate if any mask should be applied to the volume, to reduce the matrix size by removing weights from voxels that, according to the previous information, do not contribute to the projections. Possible values are:
+\begin{description}
+\item[Cylinder:] The cylinder inscribed into the volume is used as a mask. The radius of the cylinder is the maximum volume dimension (x-y),
+\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (assuming no attenuation = no activity). NaNs values are set to zero.
+\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
+\item[No:] No masking.
+\end{description}
 
-\item[mask file]
+\item[mask file] \hfill
 
- A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are 
- (exactly) zero in the mask will be ignored.
- Currently, this file has the same geometric characteristics as the image to be
-  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are (exactly) zero in the mask will be ignored. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, row, slices and voxel dimensions, orientation).
 
 \item[keep all views in cache] [0,1,0{]}
 
-  If this variable is set to 0 (default), only a single view is kept in memory. This avoids running
-  out-of-memory but means that the matrix has to be recomputed at every iteration.
+If this variable is set to 0 (default), only a single view is kept in memory. This avoids running out-of-memory but means that the matrix has to be recomputed at every iteration.
 
 \end{description}
+
+
+
+
+{ \subsubsubsection{Pinhole SPECT UB} }
+\label{sec:projmatrixPinholeSPECTUB}
+This is a flexible implementation specific to pinhole-SPECT data acquired in circular orbits as illustrated in Fig.~\ref{PinholeSPECTUB_coords}. The code was written by Carles Falc\'{o}n and  integrated into STIR by Matthew Strugari to create the weight matrix for single- and multi-pinhole collimators in SPECT. The code calculates the contribution of each voxel of the image to each detector element (one per angle and ring) and includes the geometric projection (shadow of the collimator hole) as well as corrections for the spatially variant collimator-detector response function in terms of intrinsic  PSF, depth of interaction (DOI), attenuation inside the crystal, and attenuation inside the subject --- full (different attenuation factors for each bin of PSF) and simple (the same attenuation factor for the whole PSF). Information about detector and collimator characteristics are read from text files with a fixed structure. See Sec.~\ref{sec:projmatrixSPECTUB} and [Str22a], [Str22b], [Fus13], and [Fus14] for additional information. A sample of PinholeSPECTUB parameter files are given below and in the \texttt{STIR/examples/samples/} directory.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[height=5cm]{graphics/STIR-UsersGuide_PinholeSPECTUB}
+\caption{PinholeSPECTUB system of reference and sign criteria illustrated for a polygonal collimator setup. Note that the projection matrix adheres to STIR's coordinate system as indicated by the x, y, and z axes. The detector and collimator use a rotating frame of reference where the transaxial x' and axial z' axes coincide with STIR's axes when the detector is at 0 $\mathrm{\deg}$. The collimator uses a right-handed coordinate system as indicated by the y' axis which points toward the detector. Further information is given in the parameter descriptions.}
+\label{PinholeSPECTUB_coords}
+\end{center}
+\end{figure}
+
+\begin{verbatim}
+Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+
+   maximum number of sigmas := 2.0
+   spatial resolution PSF := 0.001
+   subsampling factor PSF := 1
+   
+   detector file := detector.txt
+   collimator file := collimator.txt
+
+   ; PSF and DOI correction { Yes // No }
+   psf correction := no
+   doi correction := no
+   
+   ; Attenuation correction { Simple // Full // No }
+   attenuation type := no
+   attenuation map :=
+   
+   object radius (cm) := 2.3
+   mask file := 
+   ; If no mask file is set, we can either compute it from attenuation map or object radius
+   mask from attenuation map := 0
+   
+   keep all views in cache := 0
+
+End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+\end{verbatim}
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+%\item[minimum weight:] Minimum weight to take into account (float, typically 0.0-0.02, default 0.0). It makes reference just to the geometric (PSF) part of the weight. The weight could be lower than this value after applying the attenuation factor.
+
+\item[maximum number of sigmas:] Number of sigmas to consider when correcting for intrinsic PSF (float, typically 1.5–2.5, default 2.0). To increase unnecessarily the number of sigma would produce an increase of the weight matrix size that would not result in a better PSF correction. PSFs are modelled by Gaussian functions whose extension is infinite. It does not make sense to take into account very small contribution. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
+
+\item[spatial resolution PSF:] This is the spatial high resolution in which to sample distributions (float, cm, typically 0.001-0.0001, default 0.001, depends on the voxel size). It applies to geometric, PSF, and DOI calculations. The geometric contribution to one bin is the plane integral of the shadow of the hole within the bin. To easily compute thousands of integrals, the code pre-calculates the cumulative sum of the shadow of the hole at high resolution. This parameter indicates the discretization interval for such functions. The smaller this parameter the longer it takes to calculate the DOI correction (linear proportion).
+
+\item[subsampling factor PSF:] This is the subsampling factor to compute convolutions when PSF or DOI corrections are enabled (integer, typically 1-8, default 1). In some cases, the Gaussian that describes the intrinsic PSF has just a few voxels. To convolve the shadow of the hole with a low resolution intrinsic PSF could have low accuracy. The subsampling factor reduces temporally the resolution of the PSF to perform more accurate calculus and then down sample the final PSF to the bin size. It has a great influence on the computation time.
+
+\item[detector file:] Name of the file containing the detector information. See below for information on the structure of this file.
+
+\item[collimator file:] Name of the file containing the collimator information. See below for information on the structure of this file.
+
+\item[psf correction:] \{Yes, No (default)\} Enable or disable corrections for intrinsic PSF.
+
+\item[doi correction:] \{Yes, No (default)\} Enable or disable corrections for DOI. \textbf{Note:} There is currently a bug associated with the DOI correction at small angles from the pinhole axis.
+
+\item[attenuation type:] \{Simple, Full, No (default)\} Attenuation is calculated as the negative exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation coefficient. It requires an attenuation map (see next parameter). The simple option for correction for attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the central ray). One single factor is applied to weight the contribution from one voxel to all the bins in a detection plane. It is a very good approximation for uniform attenuation maps. The full option means that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
+
+See [Fus14] for an evaluation and more explanation.
+
+\item[attenuation map:] A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). If the attenuation map is provided but the attenuation type is set to ``No'', then simple attenuation will be applied automatically. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+
+\item[object radius (cm):] The radius of the object in the xy plane of the image volume. All voxels belonging to this cylinder are weighted according to this radius whether or not a mask is used. If a mask is not used, all voxels outside of this cylinder are masked by default. If a mask is specified, this radius should be no smaller than the object in the mask volume to avoid errors in the geometric or convolution calculation of the PSF. See the following two parameters for more information.
+
+
+%\item[mask type:] \{Attenuation Map, Explicit Mask, No (default)\} Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. The cylindrical mask is applied by default according to the object radius. This parameter applies additional masking. Possible values are:
+
+%\begin{description}
+
+%\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero.
+%\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
+
+%\item[No:] No additional masking.
+
+%\end{description}
+
+\item[mask file:] Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. If a mask file is provided, any voxels which are (exactly) zero in the mask will be ignored during reconstruction. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation correction is considered. If not, attenuation map should suffice. If no mask file is set, masking will be applied either either outside of the object radius, or with the attenuation map (see next parameter).  Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+
+\item[mask from attenuation map:]  [0,1,0{]} If this variable is set to 0 (default), then masking will be applied either outside of the object radius, or with the mask file if it is set (see previous parameter). If this variable is set to 1 and no mask file is provided, then the attenuation map will be used to mask the image volume. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero. \textbf{Note:} If this variable is set to 1 AND the mask file is specified, then this parameter will be automatically set to 0.
+
+\item[keep all views in cache:] [0,1,0{]} If this variable is set to 0 (default), only a single view is kept in memory. This avoids running out-of-memory but means that the matrix has to be recomputed at every iteration.
+
+\end{description}
+
+{ {\subsection*{{Detector file} }
+This file contains information about projections (see Fig.~\ref{PinholeSPECTUB_coords} for projection image orientation and angle criteria). Parameters are defined with a delimiting colon ``:". The labels before the colon are just information for users. The colon indicates the following value is a parameter to read, so it should be avoided in comments. The parameters should always keep the same order because they are read sequentially. The structure is demonstrated below with settings for the Cubresa Spark preclinical SPECT system in an aquisition with four projections over 360 degrees (see [Str22b]).
+
+\begin{verbatim}
+Information of detector
+Comments are allowed here or anywhere in lines not containing parameters.
+Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+# Sigma = FWHM/(2*sqrt(2*ln(2))) where FWHM = 0.85 mm
+# CsI at 140.5 keV from NIST
+Number of rings: 1
+#intrinsic PSF#
+Sigma (cm): 0.0361
+Crystal thickness (cm): 0.3
+Crystal attenuation coefficient (cm -1): 4.407   
+\#……repeat for each ring …………\#
+Nangles: 4
+ang0 (deg): 180.
+incr (deg): 90.0
+z0 (cm): 0.
+\#…………until here……………\#
+\end{verbatim}
+
+\noindent Note that detector radius (in mm), projection matrix size, and scaling factor (mm/pixel) are read directly from the Interfile header. The detector radius refers to the front of the crystal (external face). In case of no DOI correction, the program automatically adds half of the crystal thickness to the detector radius. The projection matrix size can be different in the axial and transaxial directions. The code works internally in radians although the angular parameters in input files are specified in degrees. This file should contain all the parameters although not used for that particular matrix. If not, indices will not match.
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+\item[Number of rings:] There can be several rings of detectors. Each one can have a different configuration according to the parameters for Nangles, ang0($\mathrm{\deg}$), incr($\mathrm{\deg}$), and z0($\mathrm{cm}$).
+
+\item[Sigma (cm):] Sigma $\sigma$ defines the standard deviation of the Gaussian that describes the intrinsic PSF. It can be calculated from the intrinsic resolution (FWHM) of the system as 
+\begin{equation}
+ \sigma = \frac{\mathrm{FWHM}}{2\sqrt{2\ln{2}}}.
+\end{equation}
+
+\item[Crystal thickness (cm):] Thickness of the scintillating crystal.
+
+\item[Crystal attenuation coefficient (cm -1):] Attenuation coefficient of the crystal for the photon energy of interest.
+
+\item[Nangles:] Number of angles for projection images stored in the current detector ring.
+
+\item[ang0 (deg):] Starting angle of the detector in the current detector ring where the first projection was acquired. For example, 0 $\mathrm{\deg}$ refers to a detector above the patient table and 180 $\mathrm{\deg}$ refers to a detector below the patient table.
+
+\item[incr (deg):] Angular increment of the detector between projections in the current detector ring. When looking from the patient table into the gantry, a positive angular increment refers to a CCW rotation.
+
+\item[z0 (cm):] This refers to the axial position of the detector in the current ring relative to the center of the image volume.
+
+\end{description}
+
+{ {\subsection*{{Collimator file} }
+This file contains information about projections (see Fig.~\ref{PinholeSPECTUB_coords} for collimator/pinhole orientation and angle criteria). Parameters are defined with a delimiting colon. The labels before the colon are just information for users. The colon indicates the following value is a parameter to read, so it should be avoided in comments. The parameters should always keep the same order because they are read sequentially. The structure is demonstrated below with settings for the Cubresa Spark preclinical SPECT system in an aquisition with four projections over 360 degrees and a single-pinhole collimator (see [Str22b]).
+
+\begin{verbatim}
+Information of collimator
+Comments are allowed here or anywhere in lines not containing parameters.
+Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+Model (cyl/pol): pol
+Collimator radius (cm): 2.8
+Wall thickness (cm): 1.
+#holes#
+Number of holes: 4
+nh / ind / x(cm) / y(cm) / z(cm) / shape(rect-round) / sizex(cm) / sizez(cm)
+/ angx(deg) / angz(deg) / accx(deg) / accz(deg)
+h1:	1	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h2:	2	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h3:	3	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h4:	4	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+\end{verbatim}
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+\item[Model (cyl/pol):] The collimator could be either cylindrical or polygonal (flat faces). In both cases, the holes are supposed to be parallel to detector plane.
+
+\item[Collimator radius (cm):] In case of polygonal collimator, the radius refers to the apothem, i.e., radius of rotation. This is the radial distance from the central axis to the center of the face of the collimator.
+
+\item[Wall thickness (cm):] Thickness of the face of the collimator.
+
+\item[Number of holes:] The number of holes is the total, considering all angular projections and rings. 
+
+\item[nh:] For each hole, the following information should be introduced in rows (value previous to ``:" is a label and is not read).
+
+\begin{description}
+
+\item[ind:] Index from 1 to the number of detector elements defining which detection element the hole projects to. In case one hole projects to more than one detector element, it should be added twice, once for each detector element using the relative position to that detector element. Assign the same detector element index to different holes to indicate that they project to the same detector element.
+
+\item[x, y, z coordinate (cm):] \textit{Polygonal collimator:} Center of the hole in the collimator plane. That is, 0. 0. 0. refers to the middle of the collimator face and in the middle of the collimator wall. Coordinates x, z refer to spatial position in the plane (transaxial and axial, respectively) and y is the radial position of the hole in the wall thickness, so it should be kept between $\pm$~wall\_thickness/2. \textbf{Note:} The collimator coordinate system is a right-handed coordinate system (see Fig.~\ref{PinholeSPECTUB_coords}). When the detector and collimator are at 0 $\mathrm{\deg}$, the axial and transaxial axes coincide with STIR's coordinate system whereas the collimator y-axis points radially outward toward the detector. \\ \textit{Cylindrical collimator:} Replace x(cm) y(cm) z(cm) with ang(deg) y(cm) z(cm) for cylindrical coordinates. 
+
+\item[shape (rect-round):] rect or round depending on if the hole has rectangular or round shape, respectively.
+
+\item[x, z hole size (cm):] Hole dimensions in the x (transaxial) and z (axial) directions.
+
+\item[x, z angle (deg):] Angle by which to tilt the central axis of the hole in the x and z directions. \textbf{Note:} The normal of a pinhole with a 0 $\mathrm{\deg}$ tilt lies along the y-axis (i.e., pointing toward the detector). A positive tilt angle will rotate the normal toward the indicated axis by the defined amount.
+
+\item[x, z acceptance angles (deg):] Aperture with respect to the hole axis given by half of the total acceptance angle.
+
+\end{description}
+\end{description}
+
 
 { \subsubsubsection{From File} }
 \label{sec:projmatrixfromfile}
@@ -5149,7 +5385,7 @@ In addition to the types listed below, you can also enter 'None',
 which means that the data won't be normalised at all.
 
 { \subsubsubsection{From Projdata}
-}
+}\label{sec:binnormalisationFromProjData}
 This can be used when the normalisation factors are stored simply 
 as projection data. Currently, these data have to have exactly 
 the same characteristics (size etc.) as the projection data which 
@@ -5276,8 +5512,9 @@ Bin Normalisation type := SPECT
 Available shapes}
 \label{sec:shapes}
 \textbf{STIR} can use shapes, \textit{e.g.} in the \texttt{generate\_image}
-utility (see section \ref{sec:generate_image}), or for specifying ROIs. The distribution contains sample parameter files in the
-\textbf{samples} directory. In the following sub-sections the available shapes are listed.
+utility (see section \ref{sec:generate_image}), or for specifying ROIs, see \ref{sec:list_ROI_values}.
+The distribution contains sample parameter files in the
+\texttt{samples} directory. In the following sub-sections the available shapes are listed.
 
 Most shapes have a centre and orientation. This is specified in the parameter files
 by giving the ``origin'' and a $3x3$ matrix specifying $3$ direction vectors.
@@ -5353,21 +5590,27 @@ In addition, this shape can be restricted to a wedge by specifying initial and f
 
 { \subsubsubsection{Discretised Shape3D}
 }
-This shape can be used to read for instance saved ROIs. Image values are supposed to be between $0$ and $1$.
+This shape can be used to read for instance saved ROIs. This class supports 2 options:
+\begin{itemize}
+  \item a label-image with associated label index (an integer), suitable for multiple ROIs in a single file.
+  \item a ``weight" image, with (potentially) smooth edges, where voxel values
+    are supposed to be between $0$ and $1$.
+\end{itemize}
 Note that centre and orientation are taken from the image data, not from the parameter file.
 { \subsubsubsubsection{Parameters}
 }
 \begin{verbatim}
   Discretised Shape3D Parameters:=
     input filename := <filename>
+    ; optional member (if not set, or negative, STIR will use the image as weights
+    label index := <int>
   END:=
 \end{verbatim}
 where \texttt{filename} needs to specify a volume that can be read by STIR.
 
 
 \subsection{
-Display}
-
+Display}\label{sec:display}
 Some of the programs (e.g. in utilities/, recon\_tests/) use 
 the display routines. Which version is actually used depends 
 on the compilation settings (in particular the \textit{GRAPHICS} cmake 
@@ -5376,7 +5619,7 @@ variable), see section \ref{sec:UsingCMake}.
 
 \subsubsection{
 X Windows display}
-\label{sec:display}
+\label{sec:displayX}
 \textbf{Warning} This functionality is deprecated and will be removed in a next version.
 
 This provides a (very basic) way of displaying bitmaps when using 
@@ -5463,6 +5706,31 @@ in terms of classes that actually end up in the library.}
 
 See the doxygen documentation for an overview of the directory tree with brief descriptions.
 
+\section{Using STIR in an external C++ project
+\label{sec:ExternalProjectC++}}
+STIR exports its CMake settings. Therefore, an external project can do
+\begin{verbatim}
+find_package(STIR 5.1 CONFIG)
+add_library(my_lib file1.cxx file2.cxx)
+# my_lib uses STIR functionality
+target_link_libraries(my_lib ${STIR_LIBRARIES})
+add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
+target_link_libraries(my_exe my_lib)
+\end{verbatim}
+In addition, if your CMake is older than 3.12, you need to add
+\begin{verbatim}
+include_directories("${STIR_INCLUDE_DIRS}")
+\end{verbatim}
+to your CMake file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+a list of compiled files).
+
+Note that if CMake did not find the STIR files, you can point it to where they are installed.
+For example, if you installed STIR with
+\texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
+\texttt{STIR\_DIR=\$HOME/install/lib/cmake}.
+\footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
+
 \section{
 Future developments and Support}
 
@@ -5525,7 +5793,7 @@ More kinetic models: Spectral Analysis, Logan Plot
 \section{
 References}
 
-{[}Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
+\tab {[}Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
 emission tomography using relaxed ordered subsets algorithms,} IEEE
 Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
 
@@ -5587,6 +5855,8 @@ beamwise backprojection using geometrical symmetries for 3D PET
 reconstruction in a cylindrical scanner geometry. \textit{Phys Med. 
 Biol.}, 43: 3009-3024.
 
+{[}Ehr16{]} Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others \textbf{(2016)}, 
+PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 {[}Gem84] Geman S and Geman D \textbf{(1984)} Stochastic relaxation, 
 Gibbs distributions, and the Bayesian restoration of images. \textit{IEEE 
@@ -5616,16 +5886,9 @@ New York}.
 reconstruction using ordered subsets of projection data. \textit{IEEE 
 Trans. Med. Imaging}, MI-13: 601-609.
 
-{[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
-  \textbf{ (2013)}
-  Integration of advanced 3D SPECT modeling into the open-source STIR framework,
-  \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676
+{[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans, \textbf{ (2013)} Integration of advanced 3D SPECT modeling into the open-source STIR framework, \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676.
 
-[Fus14{]} Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris
-  Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}
-  Evaluation of the novel 3D SPECT Modelling Algorithm in the
-  STIR Reconstruction Framework: Simple vs. full attenuation correction, 
-  \textit{proc. IEEE MIC 2013}, Seoul, Korea.
+{[}Fus14] Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}  Evaluation of the novel 3D SPECT Modelling Algorithm in the STIR Reconstruction Framework: Simple vs. full attenuation correction, \textit{proc. IEEE MIC 2013}, Seoul, Korea.
 
 {[}Jac00] Jacobson M, Levkovitz R, Ben-Tal A, Thielemans K, Spinks 
 T, Belluzzo D, Pagani E, Bettinardi V, Gilardi M C, Zverovich 
@@ -5757,21 +6020,23 @@ in high-resolution PET incorporating scattered and random events. \textit{IEEE T
 Med Imaging}, vol. 27, 1018-1033, 
 \url{http://dx.doi.org/10.1109/TMI.2008.917248}{doi 10.1109/TMI.2008.917248}.
 
-
  {[}Rea98] Reader A J, Visvikis A, Erlandsson K, Ott R J, and Flower 
 M A \textbf{(1998)} Intercomparison of four reconstruction techniques 
 for positron volume imaging with rotating planar detectors. \textit{Phys. 
 Med. Biol.}, 43: 823-34.
 
-
 {[}She82] Shepp L A and Vardi Y \textbf{(1982)} Maximum likelihood reconstruction 
 for emission tomography. \textit{IEEE Trans. Med. Imaging}, 1: 113-122.
-
 
 {[}Sil90] Silverman B W, Jones M C, Wilson J D, and Nychka D W \textbf{(1990)} 
 A smoothed EM approach to indirect estimation problems, with 
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
+
+[Str22a] Strugari M, Falcon C, Erlandsson K, Hutton B, Reid G A, Pottie I, Darvesh S, Beyea S, Brewer K and Thielemans K, \textbf{(2022)} Integration of advanced 3D SPECT modelling for pinhole collimators into the open-source STIR framework, \textit{proc. IEEE MIC 2022}, Milan, Italy.
+
+[Str22b] Strugari M, DeBay D, Beyea S, and Brewer K, \textbf{(2022)} NEMA NU 1-2018 performance characterization and Monte Carlo model validation 
+of the Cubresa Spark SiPM-based preclinical spect scanner. \textit{EJNMMI Phys}. Preprint. \url{https://doi.org/10.21203/rs.3.rs-1946160/v1}{doi /10.21203/rs.3.rs-1946160/v1}.
 
 {[}Thi07{]} Thielemans K, Manjeshwar R, Tsoumpas C and Jansen F\textbf{(2007)}, 
 A new algorithm for scaling of PET scatter estimates using all coincidence events. 
@@ -5825,8 +6090,5 @@ Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med I
 {[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G \textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
-
-{[}Ehr16{]} Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others \textbf{(2016)}, 
-PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 \end{document}

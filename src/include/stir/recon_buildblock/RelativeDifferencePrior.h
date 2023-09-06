@@ -121,10 +121,18 @@ class RelativeDifferencePrior:  public
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  virtual void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                                    const BasicCoordinate<3,int>& coords,
+                                    const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
-  virtual Succeeded 
+  virtual void
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
+
+    //! Compute the multiplication of the hessian of the prior multiplied by the input.
+  virtual void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+                                                   const DiscretisedDensity<3,elemT>& current_estimate,
+                                                   const DiscretisedDensity<3,elemT>& input) const;
 
   //! get the gamma value used in RDP
   float get_gamma() const;
@@ -155,6 +163,8 @@ class RelativeDifferencePrior:  public
 
   //! Has to be called before using this object
   virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
+  
+  bool is_convex() const;
   
 protected:
   //! Create variable gamma for Relative Difference Penalty
@@ -189,6 +199,22 @@ protected:
   virtual bool post_processing();
  private:
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+
+  //! The second partial derivatives of the Relative Difference Prior
+  /*!
+   derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
+   derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
+   See J. Nuyts, et al., 2002, Equation 7.
+   In the instance x_j, x_k and epsilon equal 0.0, these functions return 0.0 to prevent returning an undefined value
+   due to 0/0 computation. This is a "reasonable" solution to this issue.
+   * @param x_j is the target voxel.
+   * @param x_k is the voxel in the neighbourhood.
+   * @return the second order partial derivatives of the Relative Difference Prior
+   */
+  //@{
+  elemT derivative_20(const elemT x_j, const elemT x_k) const;
+  elemT derivative_11(const elemT x_j, const elemT x_k) const;
+  //@}
 };
 
 

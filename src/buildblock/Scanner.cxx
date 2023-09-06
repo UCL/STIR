@@ -5,7 +5,7 @@
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2016, University of Hull
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C) 2013-2016,2019-2021 University College London
+    Copyright (C) 2013-2016,2019-2021, 2923 University College London
     Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
@@ -240,18 +240,50 @@ Scanner::Scanner(Type scanner_type)
 
   case Siemens_mCT:
     // 13x13 blocks, 1 virtual "crystal" along axial and transaxial direction, 48 blocks along the ring, 4 blocks in axial direction
+    // TOF info from Rausch et al.,  EJNMMI Phys 2, 26 (2015). https://doi.org/10.1186/s40658-015-0132-1
     set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011", "1104" /* used in norm files */, "1094" /* used in attenuation files */),
                55, 400, 336, (13+1)*48,
                421.0F, 7.0F, 4.054F, 2.005F, 0.0F,
                4, 1, 13+1, 13+1, 0,0, 1,
                // energy
                0.F, 511.F,
-               // TOF TODO: timing res
-               13, 4.0625*1000/13, -1.F
+               // 312ps width of bins
+               13, 4.056*1000/13, 555.F
                ); // TODO singles info incorrect
     // energy: 435-650
     break;
 
+  case Siemens_Vision_600:
+    // 8x38 blocks of size 10x20. With virtual crystals 10x21 (confirmed from norm.n.hdr)
+    // Siemens uses 50 views (why??)
+    // Vision number of TOF bins seems always 33. However, the sinogram headers say this is with TOF mashing factor 8,
+    // so we create the scanner with 33*8 possible TOF bins, and rely on InterfileHeaderSiemens
+    // to create a ProjDataInfo with mashin g8
+    set_params(
+               Siemens_Vision_600,                                       // type
+               string_list("Siemens Vision", "Vision", "1208"),  // names
+               80,                                               // rings
+               520,                                              // max n non-arc-corr bins
+               520,                                              // default n arc-corr bins
+               21*38,                                            // num detector per ring
+               410.0F,                                           // inner ring radius (mm)
+               7.0F,  // unsure on this                          // avg DoI (mm)
+               3.29114F,                                         // ring spacing (mm)
+               1.6F,                                             // bin size (mm)
+               0.0F,                                             // intrinsic tilt
+               // 8 axial block, 38 transaxial blocks total, no buckets?
+               1, 1,                                             // n axial/trans blocks per bucket
+               10, 21,                                           // n axial/trans xtals per block
+               10, 21,                                           // n axial/trans xtals per singles unit
+               1,                                                // n detector layers
+               // energy
+               0.F, 511.F,
+               33*8,                                               // max n timing position
+               143.231/8,                                          // timing position bin size
+               214.F                                             // timing resolution
+               );
+    break;
+ 
   case RPT:
 
     set_params(RPT, string_list("PRT-1", "RPT"),
@@ -352,12 +384,13 @@ Scanner::Scanner(Type scanner_type)
     set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"),
            24, 329, 293, 2 * 280,
                886.2F/2.F, 8.4F, 6.54F, 2.397F,
-           static_cast<float>(-4.5490*_PI/180),//sign?
-           4, 2, 6, 8, 1, 1, 1,
-               0.0F, 511.F,
-            (short int)(0.F),
-            (float)(0.F),
-            (float)(0.F) );// TODO not sure about sign of view_offset
+	       static_cast<float>(-4.5490*_PI/180),//sign?
+               4, 2, 6, 8, 1, 1, 1, // TODO not sure about sign of view_offset
+               0.22F, // energy resolution
+               511.F,
+               (short int)(0.F),
+               (float)(0.F),
+               (float)(0.F));
     break;
 
   case ntest_TOF_50: // dummy
@@ -663,6 +696,106 @@ case PETMR_Signa:
              ""//crystal_map_file_name_v
             );  
   break;
+
+  case UPENN_5rings:
+    set_params(UPENN_5rings, string_list("UPENN_5rings"),
+               (40+16)*5,
+               331, 331,
+               576+18,
+               382.0F, 7.0F,
+               3.9655, 2.0F,
+               static_cast<float>(0),
+               7,     //            int num_axial_blocks_per_bucket_v,
+               4,     //            int num_transaxial_blocks_per_bucket_v,
+               8,  //            int num_axial_crystals_per_block_v,
+               8, //            int num_transaxial_crystals_per_block_v,
+               8*7,  //            int num_axial_crystals_per_singles_unit_v,
+               8 * 4, // +1 gap     //            int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.109F, 511.F
+           #ifdef STIR_TOF
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
+
+case UPENN_6rings:
+    set_params(UPENN_6rings, string_list("UPENN_6rings"),
+               (40+16)*6,
+               331, 331,
+               576+18,
+               382.0F, 7.0F,
+               3.9655, 2.02035F,
+               static_cast<float>(0),
+               7 * 6,     //            int num_axial_blocks_per_bucket_v,
+               1,     //            int num_transaxial_blocks_per_bucket_v,
+               8,  //            int num_axial_crystals_per_block_v,
+               33, //            int num_transaxial_crystals_per_block_v,
+               8,  //            int num_axial_crystals_per_singles_unit_v,
+               33, //int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.109F, 511.F
+           #ifdef STIR_TOF
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
+
+  case UPENN_5rings_no_gaps:
+    set_params(UPENN_5rings_no_gaps, string_list("UPENN_5rings_no_gaps"),
+               40*5,
+               301, 301,
+               576,
+               382.0F, 7.0F,
+               3.9655, 2.08349F,
+               static_cast<float>(0),
+               7 * 5,     //            int num_axial_blocks_per_bucket_v,
+               4,     //            int num_transaxial_blocks_per_bucket_v,
+               8,  //            int num_axial_crystals_per_block_v,
+               8, //            int num_transaxial_crystals_per_block_v,
+               8,  //            int num_axial_crystals_per_singles_unit_v,
+               8 * 4,  //            int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.109F, 511.F
+           #ifdef STIR_TOF
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
+
+  case UPENN_6rings_no_gaps:
+    set_params(UPENN_6rings_no_gaps, string_list("UPENN_6rings_no_gaps"),
+               40 * 6,
+               321, 321,
+               576,
+               382.0F, 7.0F,
+               3.9655, 2.08F,
+               static_cast<float>(0),
+               5 * 6,     //            int num_axial_blocks_per_bucket_v,
+               4,     //            int num_transaxial_blocks_per_bucket_v,
+               8,  //            int num_axial_crystals_per_block_v,
+               8, //            int num_transaxial_crystals_per_block_v,
+               8,  //            int num_axial_crystals_per_singles_unit_v,
+               8,  //            int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.109F, 511.F
+           #ifdef STIR_TOF
+               ,
+               (short int)(512),
+               (float)(19.53125),
+               (float)(272.55F)
+           #endif
+);
+    break;
   
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support
 
@@ -889,6 +1022,7 @@ void Scanner::set_up()
             error("Scanner::scanner_geometry needs to be one of Cylindrical, BlocksOnCylindrical, Generic");
         }
     }
+  initialise_max_FOV_radius();
   _already_setup = true;
 }
 
@@ -901,6 +1035,29 @@ set_detector_map( const DetectorCoordinateMap::det_pos_to_coord_type& coord_map 
       (unsigned)num_rings != detector_map_sptr->get_num_axial_coords() ||
       (unsigned)num_detector_layers != detector_map_sptr->get_num_radial_coords())
       error("Scanner:set_detector_map: inconsistent number of detectors");
+}
+
+void
+Scanner::
+initialise_max_FOV_radius() {
+  if (!this->detector_map_sptr)
+  {
+    // for cylindrical scanners, all detectors have the same distance from the rotational axis
+    max_FOV_radius = inner_ring_radius;
+  }
+  else
+  {
+    // for other geometries, loop through all detectors and set the radius to the largest found distance
+    max_FOV_radius = inner_ring_radius;
+    for (auto tangential_pos = 0; tangential_pos < detector_map_sptr->get_num_tangential_coords(); tangential_pos++)
+      for (auto axial_pos = 0; axial_pos < detector_map_sptr->get_num_axial_coords(); axial_pos++)
+        for (auto radial_pos = 0; radial_pos < detector_map_sptr->get_num_radial_coords(); radial_pos++)
+    {
+      auto coord = detector_map_sptr->get_coordinate_for_det_pos(stir::DetectionPosition<>(tangential_pos, axial_pos, radial_pos));
+      const auto detector_radius = sqrt(coord.x() * coord.x() + coord.y() * coord.y()) - average_depth_of_interaction;
+      max_FOV_radius = fmax(max_FOV_radius, detector_radius);
+    }
+  }
 }
 
 void
@@ -936,7 +1093,10 @@ get_num_virtual_transaxial_crystals_per_block() const
     {
     case E1080:
     case Siemens_mCT:
+    case Siemens_Vision_600:
     case Siemens_mMR:
+    case UPENN_5rings:
+    case UPENN_6rings:
       return 1;
     default:
       return 0;
@@ -1117,9 +1277,9 @@ check_consistency() const
               get_transaxial_crystal_spacing(), get_num_transaxial_crystals_per_block(), get_transaxial_block_spacing());
           return Succeeded::no;
         }
-  
-        if (get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()
-            < round (2*inner_ring_radius*tan(_PI/get_num_transaxial_blocks()/get_num_transaxial_blocks_per_bucket())*1000.0)/1000.0)
+        
+        if (round(get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()*1000.0)/1000.0
+            < round (2*inner_ring_radius*tan(_PI/2/get_num_transaxial_buckets())*1000.0)/1000.0)
       {
          warning("Scanner %s: inconsistent transaxial spacing:\n"
               "\ttransaxial_block_spacing %f muliplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that encircles a cylinder with inner_ring_radius %f",
@@ -1146,6 +1306,14 @@ check_consistency() const
     }
   
   }
+
+  if (this->energy_resolution > 20.F)
+    {
+      warning("Scanner: energy resolution is a ratio (FWHM/reference_energy) and expected to be less than 1 "
+              "(although we allow up to 20 to denote no energy information), but it is set to " +
+              std::to_string(this->energy_resolution));
+      return Succeeded::no;
+    }
 
   return Succeeded::yes;
 }
@@ -1347,11 +1515,10 @@ Scanner* Scanner::ask_parameters()
   // old scanners. This should stay here as a transitional step.
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
-      info("more options are available for the scanner: \n(a) Energy Resolution :=\n(b) Reference energy (in keV)\t:="
-        "\n(c) Scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) \n(d) TOF:="
-        "\n\n(a) and (b) are used in Scatter Simulation. \n (c) is used to choose more precise models of the scanner. "
-        "\n(d) is used in BlocksOnCylindrical Geometry to build the proper crystal map."
-        "\nIn case, you need them, set them manually in your interfile header before 'end scanner parameters:='.");
+      if (!scanner_ptr->has_energy_information())
+          warning("Energy information not set, which is needed in scatter simulation. If you need it, set"
+               "\n Energy Resolution :=\n Reference energy (in keV)\t:="
+               "\nmanually in your interfile header before 'end scanner parameters:='.");
       
       //This is needed for finding effective central bin size, because it is different for different geometries.
       const string ScannerGeometry =
@@ -1418,7 +1585,7 @@ Scanner* Scanner::ask_parameters()
               ask_num("Timing resolution (ps) :", 0.0f, 1000.0f, 0.0f);
 
      float EnergyResolution =
-          ask_num("Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
+          ask_num("Enter the energy resolution (as FWHM/reference_energy) of the scanner (expected to be less than 1): ", 0.0f, 20.0f, -1.0f);
 
       float ReferenceEnergy =
           ask_num("Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, -1.0f);

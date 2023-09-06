@@ -120,7 +120,9 @@ public:
   inline std::vector<int> get_segment_sequence_in_stream() const;
   //! Get the timing bins sequence
   inline std::vector<int> get_timing_poss_sequence_in_stream() const;
-    
+  //! set the timing bins sequence
+  void set_timing_poss_sequence_in_stream(const std::vector<int>& seq);
+
   //! Get & set viewgram 
   Viewgram<float> get_viewgram(const int view_num, const int segment_num,
                                const bool make_num_tangential_poss_odd=false,

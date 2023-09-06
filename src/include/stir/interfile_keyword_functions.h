@@ -21,7 +21,6 @@
 
 
 #include <string>
-#include <functional>
 
 START_NAMESPACE_STIR
 
@@ -46,7 +45,7 @@ standardise_interfile_keyword(const std::string& keyword);
 
     Useful for  constructing a std::map for instance.
 */
-struct interfile_less : public std::binary_function<std::string, std::string, bool>
+struct interfile_less
 {
   bool operator()(const std::string& a, const std::string& b) const
   {

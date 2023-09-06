@@ -25,6 +25,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
+
 
 #include "stir/TextWriter.h"
 
@@ -58,6 +60,6 @@ void error(const char *const s, ...)
   }
   writeText(ss.str().c_str(), ERROR_CHANNEL);
   std::string msg = tmp;
-  throw msg;
+  throw std::runtime_error(msg);
 }
 END_NAMESPACE_STIR

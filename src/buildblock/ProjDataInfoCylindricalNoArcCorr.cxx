@@ -67,6 +67,9 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   ring_radius(ring_radius_v),
   angular_increment(angular_increment_v)
 {
+  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
+    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
+    
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
   if(scanner_ptr->is_tof_ready())

@@ -29,6 +29,7 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/date_time_functions.h"
+#include "stir/is_null_ptr.h"
 #include <memory>
 #include <iostream>
 
@@ -117,9 +118,20 @@ int main(int argc, char *argv[])
   // set filename to last remaining argument
   const std::string filename(argv[0]);
   auto image_aptr = read_from_file<DynamicDiscretisedDensity>(filename);
+  if (is_null_ptr(image_aptr))
+    {
+      std::cerr << "Error reading " << filename << ". Exiting\n";
+      exit(EXIT_FAILURE);
+    }
 
   if (print_exam)
     std::cout << image_aptr->get_exam_info_sptr()->parameter_info();
+
+  if (image_aptr->get_num_time_frames() == 0)
+    {
+      std::cerr << "No time frames in " << filename << ". Header problem ? Exiting\n";
+      exit(EXIT_FAILURE);
+    }
 
   if (print_geom)
     {

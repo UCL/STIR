@@ -11,9 +11,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
-    This software is distributed under the terms 
-    of the GNU Lesser General  Public Licence (LGPL)
-    See STIR/LICENSE.txt for details
+    SPDX-License-Identifier: Apache-2.0
 */
 
 #ifndef __stir_listmode_CListRecordLMF_H__

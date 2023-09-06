@@ -87,6 +87,8 @@ public:
   FilterRootPrior(shared_ptr<DataProcessor<DataT> >const&, 
 		  const float penalization_factor);
 
+  bool is_convex() const;
+
  //! compute the value of the function
   /*! \warning Generally there is no function associated to this prior,
     so we just return 0 and write a warning the first time it's called.

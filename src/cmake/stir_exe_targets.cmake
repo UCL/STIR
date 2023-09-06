@@ -2,7 +2,7 @@
 #
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2013 Kris Thielemans
-# Copyright 2016,2021 University College London
+# Copyright 2016,2021,2023 University College London
 
 # This file is part of STIR.
 #
@@ -21,7 +21,7 @@
 foreach(source ${${dir_EXE_SOURCES}})
   if(BUILD_EXECUTABLES)
    get_filename_component(executable ${source} NAME_WE)
-   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES}  ${ALL_TXXS} ${source} ${STIR_REGISTRIES})
+   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES}  ${ALL_TXXS} ${source} $<TARGET_OBJECTS:stir_registries>)
    target_link_libraries(${executable} ${STIR_LIBRARIES})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
    target_include_directories(${executable} PUBLIC ${Boost_INCLUDE_DIR})

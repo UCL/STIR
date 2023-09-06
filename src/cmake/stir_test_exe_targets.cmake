@@ -1,5 +1,5 @@
 # Copyright (C) 2011, Kris Thielemans
-# Copyright (C) 2013-2014, University College London
+# Copyright (C) 2013-2014, 2023 University College London
 
 # This file is part of STIR.
 #
@@ -20,15 +20,17 @@
 #
 # Alternatively, you can directly use one of 3 macros as follows:
 #
-#     create_stir_test(sometest.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+#     create_stir_test(sometest.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 # without registries
 #     create_stir_test(sometest.cxx "${STIR_LIBRARIES}" "")
 # A test that uses any of the MPI routines (e.g. in the reconstruction library)
-#     create_stir_mpi_test(sometest.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+#     create_stir_mpi_test(sometest.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 # The above will execute the test with ${MPIEXEC_MAX_NUMPROCS} processors 
 # (probably defaulting to 2 depending on your CMake version)
 # A test for which you will use ADD_TEST yourself
-#     create_stir_involved_test(sometest.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+#     create_stir_involved_test(sometest.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
+# Note: from CMake 3.12, it is recommended to simply use stir_registries as opposed to $<TARGET_OBJECTS:stir_registries>,
+# but we're backwards compatible for a while longer.
 
 # Even more advanced usage:
 #     create_stir_test (test_something.cxx "buildblock;IO;data_buildblock;recon_buildblock;buildblock" "")
@@ -48,6 +50,10 @@ if(NOT TARGET BUILD_TESTS)
 endif()
 
 #### define macros
+macro(add_STIR_CONFIG_DIR test_target)
+  set_tests_properties(${test_target}
+    PROPERTIES ENVIRONMENT "STIR_CONFIG_DIR=${PROJECT_SOURCE_DIR}/src/config")
+endmacro()
 
 macro (create_stir_involved_test source  libraries dependencies)
  if(BUILD_TESTING)
@@ -65,6 +71,7 @@ macro (create_stir_test source  libraries dependencies)
  if(BUILD_TESTING)
    create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
    ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+   add_STIR_CONFIG_DIR(${executable})
  endif()
 endmacro( create_stir_test)
 
@@ -74,6 +81,7 @@ macro (create_stir_mpi_test source  libraries dependencies)
    if(STIR_MPI)
      create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
      ADD_TEST(${executable}  ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}  ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${executable} ${MPIEXEC_POSTFLAGS})
+     add_STIR_CONFIG_DIR(${executable})
    else()
      create_stir_test(${source}  "${libraries}" "${dependencies}")
    endif()
@@ -84,7 +92,7 @@ endmacro( create_stir_mpi_test)
 #### use the above macros for each target in dir_SIMPLE_TEST_EXE_SOURCES etc
 
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
-   create_stir_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_test (${executable} "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 endforeach()
 
 # identical to above, but without including the registries as dependencies
@@ -93,6 +101,6 @@ foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
 endforeach()
 
 foreach(executable ${${dir_INVOLVED_TEST_EXE_SOURCES}})
-   create_stir_involved_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_involved_test (${executable} "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 endforeach()
 

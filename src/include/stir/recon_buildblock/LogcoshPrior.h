@@ -108,6 +108,12 @@ public:
     //! Constructs it explicitly with scalar
     LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
+    virtual bool
+    parabolic_surrogate_curvature_depends_on_argument() const
+    { return false; }
+
+    bool is_convex() const;
+
     //! compute the value of the function
     double
     compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
@@ -120,13 +126,13 @@ public:
     void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
                                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-    //! compute Hessian
-    void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
-                         const BasicCoordinate<3,int>& coords,
-                         const DiscretisedDensity<3,elemT> &current_image_estimate);
+    virtual void
+    compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+                    const BasicCoordinate<3,int>& coords,
+                    const DiscretisedDensity<3,elemT> &current_image_estimate) const;
 
-    //! Compute the multiplication of the hessian of the prior multiplied by the input.
-    virtual Succeeded accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+    //! Compute the multiplication of the hessian of the prior (at \c current_estimate) and the \c input.
+    virtual void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                      const DiscretisedDensity<3,elemT>& current_estimate,
                                                      const DiscretisedDensity<3,elemT>& input) const;
 
@@ -220,18 +226,18 @@ private:
       { return tanh(x)/x; }
     }
 
-    //! The Hessian of log(cosh()) is sech^2(x) = (1/cosh(x))^2
+    //! The second partial derivatives of the LogCosh Prior
     /*!
-     This function returns the hessian of the logcosh function
-     * @param d the difference between the ith and jth voxel.
-     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
-     * @return the second derivative of the log-cosh function
+     derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
+     derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
+     * @param x_j is the target voxel.
+     * @param x_k is the voxel in the neighbourhood.
+     * @return the second order partial derivatives of the LogCosh Prior
      */
-    static inline float Hessian(const float d, const float scalar)
-    {
-      const float x = d * scalar;
-      return square((1/ cosh(x)));
-    }
+    //@{
+    elemT derivative_20(const elemT x_j, const elemT x_k) const;
+    elemT derivative_11(const elemT x_j, const elemT x_k) const;
+    //@}
 };
 
 

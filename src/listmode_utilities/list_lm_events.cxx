@@ -174,7 +174,8 @@ int main(int argc, char *argv[])
                        << ",r:" << det_pos.pos2().axial_coord()
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")\t";
-                  cout << " delta time: " << event_ptr->get_delta_time();
+                  cout << " TOF-bin: " << det_pos.timing_pos()
+                       << " delta time: " << event_ptr->get_delta_time();
                   listed = true; 
                 }
             }
@@ -186,7 +187,7 @@ int main(int argc, char *argv[])
                 {
                   LORAs2Points<float> lor;
                   lor=event_ptr->get_LOR();
-                  cout << "LOR "
+                  cout << " LOR "
                        << "(" << lor.p1().z()
                        << "," << lor.p1().y()
                        << "," << lor.p1().x()

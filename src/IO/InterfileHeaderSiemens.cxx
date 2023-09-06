@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
     Copyright (C) 2018 STFC
     This file is part of STIR.
 
@@ -31,7 +31,6 @@
 #include <functional>
 
 #ifndef STIR_NO_NAMESPACES
-using std::binary_function;
 using std::pair;
 using std::sort;
 using std::cerr;
@@ -172,6 +171,8 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   num_rings = -1;
   maximum_ring_difference = -1;
   axial_compression = -1;
+  tof_mash_factor = -1;
+  num_tof_bins = 1;
   add_key("number of rings", &num_rings);
 
   add_key("%axial compression", &axial_compression);
@@ -188,6 +189,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("PET data type",
 	  &PET_data_type_index,
 	  &PET_data_type_values);
+  add_key("%tof mashing factor", &tof_mash_factor);
 
   // TODO should add data format:=CoincidenceList|sinogram and then check its value
   remove_key("process status");
@@ -206,7 +208,6 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("%compressor version");
   ignore_key("%study date (yyyy");
   ignore_key("%study time (hh");
-  ignore_key("isotope name");
   ignore_key("isotope gamma halflife (sec)");
   ignore_key("isotope branching factor");
   ignore_key("radiopharmaceutical");
@@ -264,11 +265,24 @@ bool InterfileRawDataHeaderSiemens::post_processing()
             num_rings, scanner_sptr->get_num_rings());
     }
 
+  if (tof_mash_factor < 0) // check if it was not set yet
+    {
+      switch (scanner_sptr->get_type())
+        {
+        case Scanner::Siemens_Vision_600:
+          tof_mash_factor = 8;
+          break;
+        default:
+          tof_mash_factor = 1;
+        }
+      warning("TOF mashing factor was not set. Using " + std::to_string(tof_mash_factor));
+    }
+
   data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_sptr,
       axial_compression, maximum_ring_difference,
       num_views, num_bins,
-      is_arccorrected);
+      is_arccorrected, tof_mash_factor);
 
   // handle segments
   {
@@ -312,8 +326,6 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
 
   ignore_key("%sinogram type"); // value: "step and shoot"
   ignore_key("scale factor (degree/pixel)");
-  ignore_key("%tof mashing factor");
-  // add_key(%tof mashing factor", &tof_mashing_factor);
   ignore_key("total number of data sets");
 
   add_key("%number of buckets",
@@ -343,32 +355,46 @@ void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
-  if (num_dimensions != 3)
+  if (num_dimensions != 3 && num_dimensions != 4)
     {
-    warning("Interfile error: expecting 3D data ");
+    warning("Interfile error: expecting 3D or 4D data ");
     stop_parsing();
     return true;
     }
 
   if ((matrix_size[0].size() != 1) ||
-    (matrix_size[1].size() != 1) ||
-    (matrix_size[2].size() != 1))
+      (matrix_size[1].size() != 1) ||
+      (matrix_size[2].size() != 1) ||
+      (matrix_size[num_dimensions-1].size() != 1))
     {
-    error("Interfile error: strange values for the matrix_size keyword(s)");
+    error("Siemens Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x") // x is used for arccorrected data (ACF)
+  if (matrix_labels[0] != "bin" && matrix_labels[0] != "x" && matrix_labels[0] != "sinogram projections") // x is used for arccorrected data (ACF)
     {
     // use error message with index [1] as that is what the user sees.
-    error("Interfile error: expecting 'matrix axis label[1] := bin' or 'x'");
+    error("Siemens Interfile error: expecting 'matrix axis label[1] := bin' or 'x' or 'sinogram projections'");
     }
   num_bins = matrix_size[0][0];
 
-  if ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
-      (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+  if (num_dimensions == 3 &&
+      ((matrix_labels[1] == "projection" && matrix_labels[2] == "plane") || // used for emission
+       (matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms") // used for ACF
+       )
       )
     {
-    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
-    num_views = matrix_size[1][0];
+      if (num_tof_bins>1)
+        storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+      else
+        storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+      num_views = matrix_size[1][0];
+    }
+  else if (num_dimensions == 4 &&
+           matrix_labels[1] == "sinogram views" && matrix_labels[2] == "number of sinograms" &&
+           matrix_labels[3] == "TOF bin") // used for TOF
+    {
+      storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+      num_views = matrix_size[1][0];
+      num_tof_bins = matrix_size[3][0];
     }
   else
     {
@@ -418,6 +444,12 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   // can only do this now after the previous things were set
   if (InterfileRawDataHeaderSiemens::post_processing() == true)
     return true;
+
+  // handle TOF index order
+  if (this->data_info_ptr->get_num_tof_poss() > 1)
+    {
+      this->timing_poss_sequence = ecat::find_timing_poss_sequence(*this->data_info_ptr);
+    }
 
   compression = (standardise_interfile_keyword(compression_as_string) == "on");
 
@@ -496,13 +528,14 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   ignore_key("%singles scale factor");
   ignore_key("%total number of singles blocks");
   ignore_key("%time sync");
-  ignore_key("%comment");
   }
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
 {
-  // always...
-  storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+  if (num_tof_bins>1)
+    storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+  else
+    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
   return false;
 }

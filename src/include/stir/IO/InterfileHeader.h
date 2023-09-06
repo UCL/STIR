@@ -245,6 +245,7 @@ public:
   std::vector<int> min_ring_difference; 
   std::vector<int> max_ring_difference; 
   std::vector<int> num_rings_per_segment;
+  std::vector<int> timing_poss_sequence;
 
   std::vector<std::string> applied_corrections;
  
@@ -283,9 +284,10 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
   int num_detector_layers;
-  //! Energy resolution of the system in keV.
+  //! Energy resolution of the scanner at the reference energy as a ratio
+  /*! An energy resolution of 0.1 indicates a 10 percent FWHM */
   float energy_resolution;
-  //! Reference energy.
+  //! Reference energy used for the energy resolution
   float reference_energy;
 
   int max_num_timing_poss;

@@ -196,6 +196,10 @@ public:
   void set_output_filename_prefix(const std::string&);
   std::string get_output_filename_prefix() const;
 
+  //! \brief set projdata to be filled with output
+  /*! will only store data from the last defined time frame! */
+  void set_output_projdata_sptr(shared_ptr<ProjData>&);
+
   void set_store_prompts(bool);
   bool get_store_prompts() const;
   void set_store_delayeds(bool);
@@ -285,6 +289,8 @@ protected:
   shared_ptr<BinNormalisation> normalisation_ptr;
   //! This will be used for post-normalisation
   shared_ptr<BinNormalisation> post_normalisation_ptr;
+  //! This will be used to return the output directly, if set
+  shared_ptr<ProjData> output_proj_data_sptr;
 
   //@}
 
