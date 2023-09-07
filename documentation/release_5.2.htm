@@ -85,6 +85,10 @@
   <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions. View-offset is now always taken into account.
   <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
+  <li>The info, warning and error calls are thread safe now (which makes them slower), and the logging output in <code>distributable.cxx</code> was changed from verbosity 2 (which is the STIR default) to verbosity 3.
+    This is to reduce the default output during iterative reconstructions.
+  <br /><a href="https://github.com/UCL/STIR/pull/1243/">PR #1243</a>.
+  </li>
 </ul>
 
 <h3>Deprecated functionality</h3>
