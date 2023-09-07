@@ -57,8 +57,8 @@ endif()
 ####### Set Version number etc
 set(VERSION_MAJOR   5)
 set(VERSION_MINOR   1)
-set(VERSION_PATCH   0)
-set(VERSION   050100) # only used in STIRConfig.h.in
+set(VERSION_PATCH   1)
+set(VERSION   050101) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
