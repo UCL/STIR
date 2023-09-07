@@ -3,13 +3,8 @@
 /*!
   \file
   \ingroup listmode
-<<<<<<< HEAD:src/include/stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl
-  \brief Implementations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
-
-=======
   \brief Implementations of class stir::CListEventScannerWithDiscreteDetectors
     
->>>>>>> upstream/master:src/include/stir/listmode/CListEventScannerWithDiscreteDetectors.inl
   \author Kris Thielemans
   \author Nikos Efthimiou
   \author Elise Emond

@@ -10,6 +10,7 @@
 */
 /*
     Copyright (C) 2023, University College London
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
