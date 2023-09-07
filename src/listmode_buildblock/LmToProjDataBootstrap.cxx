@@ -25,6 +25,8 @@
 #include "stir/listmode/ListRecord.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
+#include "stir/error.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <algorithm>
 

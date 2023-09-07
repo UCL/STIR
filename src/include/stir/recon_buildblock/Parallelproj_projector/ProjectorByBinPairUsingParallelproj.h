@@ -51,8 +51,8 @@ public:
   ProjectorByBinPairUsingParallelproj();
 
   Succeeded
-    set_up(const shared_ptr<ProjDataInfo>&,
-           const shared_ptr<DiscretisedDensity<3,float> >&);
+    set_up(const shared_ptr<const ProjDataInfo>&,
+           const shared_ptr<const DiscretisedDensity<3,float> >&) override;
 
   /// Set verbosity
   void set_verbosity(const bool verbosity);
@@ -60,9 +60,9 @@ public:
 private:
   shared_ptr<detail::ParallelprojHelper> _helper;
 
-  void set_defaults();
-  void initialise_keymap();
-  bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   bool _verbosity;
 };
 

@@ -33,6 +33,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 #include <iostream> 
 #include <limits>
 #include <string>

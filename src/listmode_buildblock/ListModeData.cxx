@@ -20,6 +20,7 @@
 #include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

@@ -34,6 +34,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "boost/format.hpp"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

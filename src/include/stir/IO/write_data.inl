@@ -22,6 +22,7 @@
 #include "stir/Succeeded.h"
 #include "stir/detail/test_if_1d.h"
 #include "stir/IO/write_data_1d.h"
+#include "stir/warning.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR

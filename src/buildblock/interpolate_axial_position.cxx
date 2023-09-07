@@ -37,6 +37,7 @@
 #include <omp.h>
 #endif
 #include "stir/num_threads.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

@@ -28,6 +28,8 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/is_null_ptr.h"
 #include "stir/FilePath.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 using std::vector;
 using std::pair;

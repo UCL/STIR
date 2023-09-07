@@ -22,6 +22,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/detail/test_if_1d.h"
 #include "stir/IO/read_data_1d.h"
+#include "stir/warning.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR

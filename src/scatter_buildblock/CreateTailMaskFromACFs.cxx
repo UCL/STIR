@@ -11,6 +11,7 @@
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 #include "stir/Bin.h"
 #include "boost/lambda/lambda.hpp"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

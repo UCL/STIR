@@ -29,6 +29,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR

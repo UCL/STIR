@@ -95,6 +95,27 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   #endif()
 endif()
 
+# Currently, CMake doesn't know about dependencies of swig-generated files, so
+# we will add it ourselves. Sadly, there are too many here, but it's probably safest.
+set(swig_stir_dependencies
+  factory_shared.i
+  numpy.i
+  stir_array.i
+  stir_coordinates.i
+  stir_dataprocessors.i
+  stir_exam.i
+  stir_normalisation.i
+  stir_objectivefunctions.i
+  stir_priors.i
+  stir_projdata.i
+  stir_projectors.i
+  stir_reconstruction.i
+  stir_shapes.i
+  stir_voxels.i
+  stir_voxels_IO.i
+  ${ALL_HEADERS}
+  )
+
 if(BUILD_SWIG_PYTHON)
   if (${CMAKE_VERSION} VERSION_LESS "3.14") # from 3.14 findPython has Numpy support
       if (Python_EXECUTABLE)
@@ -125,6 +146,7 @@ if(BUILD_SWIG_PYTHON)
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
   SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin ${SWIG_DOXY_OPTIONS})
+  set(SWIG_MODULE_stir_EXTRA_DEPS ${swig_stir_dependencies})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stir python stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
@@ -171,6 +193,7 @@ if (BUILD_SWIG_OCTAVE)
   SET(OCTAVE_PREFIX "")
 
   SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS})
+  set(SWIG_MODULE_stiroct_EXTRA_DEPS ${swig_stir_dependencies})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stiroct octave stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
@@ -195,6 +218,7 @@ if (BUILD_SWIG_MATLAB)
 
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} ${SWIG_DOXY_OPTIONS})
+  set(SWIG_MODULE_stirMATLAB_EXTRA_DEPS ${swig_stir_dependencies})
   # TODO depending on SWIG version add "-mexname stirMATLAB_wrap" above
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stirMATLAB matlab stir.i $<TARGET_OBJECTS:stir_registries>)

@@ -29,6 +29,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/stir_math.h"
 #include "stir/ArrayFunction.h"
+#include "stir/warning.h"
 
 #include "stir/IndexRange3D.h"
 #include "stir/ArrayFilter3DUsingConvolution.h"

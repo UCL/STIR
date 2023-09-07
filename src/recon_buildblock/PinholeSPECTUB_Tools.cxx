@@ -61,17 +61,12 @@ float dg2rd = boost::math::constants::pi<float>() / (float)180. ;
 #define DELIMITER1 '#' //delimiter character in input parameter text file
 #define DELIMITER2 '%' //delimiter character in input parameter text file
 
-//... global variables ..............................................
-
-extern wmh_mph_type wmh;
-extern wm_da_type wm;
-extern pcf_type pcf;
 
 //=============================================================================
 //=== wm_alloc =============================================================
 //=============================================================================
 
-void wm_alloc( int * Nitems)
+void wm_alloc( int * Nitems, wm_da_type &wm, wmh_mph_type &wmh )
 {
 
     //... double array wm.val and wm.col .....................................................
@@ -277,7 +272,7 @@ void write_wm_STIR_mph()
 //=== precalculated functions ===============================================
 //==============================================================================
 
-void fill_pcf()
+void fill_pcf( wmh_mph_type &wmh, pcf_type &pcf )
 {
     
     //... distribution function for a round shape hole .................
@@ -574,7 +569,7 @@ void read_prj_params_mph()
 }*/
 
 
-void read_prj_params_mph()
+void read_prj_params_mph( wmh_mph_type &wmh )
 {
 	string token;
     detel_type d;
@@ -727,7 +722,7 @@ void read_prj_params_mph()
 //=== read collimator params mph ===============================================
 //==============================================================================
 
-void read_coll_params_mph( )
+void read_coll_params_mph( wmh_mph_type &wmh )
 {
 	string token;
     vector<string> param;
@@ -755,9 +750,9 @@ void read_coll_params_mph( )
 //    wmh.collim.holes = new hole_type [ wmh.collim.Nht ];
     
     int nh = 0;
-    if ( wmh.collim.model == "cyl" ) wm_SPECT_read_hvalues_mph( &stream1, DELIMITER, &nh, true );
+    if ( wmh.collim.model == "cyl" ) wm_SPECT_read_hvalues_mph( &stream1, DELIMITER, &nh, true, wmh );
     else{
-        if ( wmh.collim.model == "pol" ) wm_SPECT_read_hvalues_mph( &stream1, DELIMITER, &nh, false );
+        if ( wmh.collim.model == "pol" ) wm_SPECT_read_hvalues_mph( &stream1, DELIMITER, &nh, false, wmh );
         else error_wmtools_SPECT_mph ( 334, 0, wmh.collim.model );
     }
     
@@ -788,7 +783,7 @@ void read_coll_params_mph( )
 //======== wm_SPECT_read_hvalues_mph ==============================
 //=====================================================================
 
-void wm_SPECT_read_hvalues_mph( ifstream * stream1 , char DELIMITER, int * nh, bool do_cyl )
+void wm_SPECT_read_hvalues_mph( ifstream * stream1 , char DELIMITER, int * nh, bool do_cyl, wmh_mph_type &wmh )
 {
     
     size_t pos1, pos2, pos3;
@@ -992,7 +987,7 @@ void wm_SPECT_read_hvalues_mph( ifstream * stream1 , char DELIMITER, int * nh, b
 //=== generate_msk_mph ========================================================
 //=============================================================================
 
-void generate_msk_mph ( bool *msk_3d, float *attmap )
+void generate_msk_mph ( bool *msk_3d, float *attmap, wmh_mph_type &wmh )
 {
     
 //    bool do_save_resulting_msk = true;

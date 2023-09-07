@@ -37,6 +37,7 @@ if the files are identical or not.
 #include "stir/recon_array_functions.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
 #include <numeric>
 #include <stdlib.h>
 

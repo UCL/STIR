@@ -4360,11 +4360,15 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
 
 { \subsubsubsection{Quadratic} \label{sec:priors:Quadratic}
 }
-This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
+This implements a quadratic Gibbs prior. The value of the prior is computed as follows:
  \[
-  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+ f = \frac{1}{4} \sum_{r,dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
+ \]
+ and its gradient
+ \[
+  g_r = \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \]
-  \noindent where $\lambda$ is the image where the gradient is computed
+  \noindent where $\lambda$ is the image where the prior is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
 
@@ -4400,13 +4404,11 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
 
 { \subsubsubsection{Relative Difference} \label{sec:priors:Relative_Difference}
 }
-This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The gradient of the prior is computed as follows:
-  \[g_r = \sum_{dr} w_{dr} *
-  \frac{\left(\lambda_{r}-\lambda_{r+dr}\right)\left(\gamma\left|\lambda_{r}-\lambda_{r+dr}\right|+\lambda_{r}+3 \lambda_{r+dr} + 2 \epsilon \right)}
-  {\left(\lambda_{r}+\lambda_{r+dr}+\gamma\left|\lambda_{r}-\lambda_{r+dr}\right| + \epsilon \right)^{2}} *
-  \kappa_r * \kappa_{r+dr}\]
-
-  \noindent where $\lambda$ is the image where the gradient is computed
+This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The value of the prior is computed as follows:
+  \[
+      f= \sum_{r,dr} \frac{w_{dr}}{2} \frac{(\lambda_r - \lambda_{r+dr})^2}{(\lambda_r+ \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon)} * \kappa_r * \kappa_{r+dr}
+  \]
+  \noindent where $\lambda$ is the image where the prior is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
   $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
@@ -4444,20 +4446,22 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
 
 { \subsubsubsection{Logcosh} \label{sec:priors:Logcosh}
 }
-This implements a Logcosh. The gradient of the prior is computed as follows:
-  \[g_r = \sum_{dr} w_{dr} * \frac{1}{s} * \tanh(s*(\lambda_{r} - \lambda_{dr})) *
-  \kappa_r * \kappa_{r+dr}\]
-
-  \noindent where $\lambda$ is the image where the gradient is computed
+This implements a Logcosh. The value of the prior is computed as follows:
+  \[
+      f = \sum_{r,dr} w_{dr} \frac{1}{2 s^2}  log(cosh(s(\lambda_r - \lambda_{r+dr}))) * \kappa_r * \kappa_{r+dr}
+  \]
+  \noindent where $\lambda$ is the image where the prior is computed
    and $r$ and $dr$ are indices and the sum
-  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.\footnote{The actual
+  implementation takes care of numerical problems for very large or small
+  arguments of the logcosh function.}
   $s$ (a.k.a. scalar) controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior.
 
   The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel\_size divided by the Euclidean distance between the points.
- 
+
 { \subsubsubsubsection{Parameters}
 }
   These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
@@ -4482,14 +4486,16 @@ This implements a Logcosh. The gradient of the prior is computed as follows:
 
 
 { \subsubsubsection{PLS}
-This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
+This implements the  anatomical penalty function, Parallel Level Sets (PLS), also sometimes called Directional TV,
+proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
   PLS becomes smoothed TV when an uniform anatomical image is provided.  
 The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
 
   \[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
   \]
-  where $ f $ is the PET image, $ \xi $ is the normalised gradient calculated as follows:
+  where $ f $ is the PET image, $\nabla$ is the finite difference operator (\textrm{not} taking voxel-sizes into account) and
+  $ \xi $ is the normalised gradient calculated as follows:
 
   \[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
@@ -4537,10 +4543,10 @@ to be given in the.par file (or will be asked interactively).
 Samples of OSMAPOSL reconstruction parameter files selecting 
 different types of projectors should be available in \texttt{STIR/examples/samples}.
 
+Currently, the default projector uses the ray-tracing matrix (see \ref{sec:projmatrixusingraytracing}).
+
 \textbf{Warning: for most iterative algorithms, it is recommended 
-to use matching forward and back-projector. This is unfortunately 
-not the default due to historical reasons. It is recommended to replace
-the default by using a projection matrix as detailed below.}
+to use matching forward and back-projector.}
 
 { \subsubsubsection{Matrix}
 }

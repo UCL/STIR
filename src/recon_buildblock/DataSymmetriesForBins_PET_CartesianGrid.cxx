@@ -35,6 +35,8 @@
 #include <boost/format.hpp>
 #include "stir/ProjDataInfoBlocksOnCylindrical.h"
 #include "stir/ProjDataInfoGeneric.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 using std::min;
 using std::max;

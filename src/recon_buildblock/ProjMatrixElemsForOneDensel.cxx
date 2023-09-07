@@ -23,6 +23,7 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/recon_buildblock/DataSymmetriesForDensels.h"
 #include "stir/recon_buildblock/RelatedDensels.h"
+#include "stir/warning.h"
 
 #include <fstream>
 

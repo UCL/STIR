@@ -55,6 +55,8 @@
 #include "stir/ExamInfo.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/unique_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 #include <fstream>
 #include <string>

@@ -27,6 +27,8 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include <algorithm>
 #include <math.h>

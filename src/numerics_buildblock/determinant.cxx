@@ -21,6 +21,7 @@
 #include "stir/numerics/determinant.h"
 #include <complex>
 #include "stir/Array_complex_numbers.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

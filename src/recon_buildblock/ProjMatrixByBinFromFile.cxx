@@ -36,6 +36,8 @@
 //#include "stir/info.h"
 #include "boost/cstdint.hpp"
 #include "boost/scoped_ptr.hpp"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <fstream>
 #include <algorithm>
 

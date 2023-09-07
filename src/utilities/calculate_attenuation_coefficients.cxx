@@ -62,6 +62,7 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/info.h"
+#include "stir/warning.h"
 #include <boost/format.hpp>
 #include <iostream>
 #include <list>

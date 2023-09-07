@@ -16,6 +16,8 @@
 
 
 #include "stir/IO/stir_ecat7.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <string>
 #include <stdio.h>

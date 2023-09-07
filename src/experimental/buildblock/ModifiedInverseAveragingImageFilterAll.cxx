@@ -26,6 +26,8 @@
 #include "stir/CPUTimer.h"
 #include "stir/SegmentByView.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/round.h"
 #include <iostream>

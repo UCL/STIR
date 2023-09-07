@@ -8,6 +8,8 @@
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
 #include "stir_experimental/fft.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir_experimental/local_helping_functions.h"
 #include <iostream>

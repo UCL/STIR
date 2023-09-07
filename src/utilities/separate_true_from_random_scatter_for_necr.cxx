@@ -39,6 +39,7 @@ limitations under the License.
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 #include <algorithm>
+#include "stir/error.h"
 
 
 

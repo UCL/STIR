@@ -25,6 +25,8 @@
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include <limits>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

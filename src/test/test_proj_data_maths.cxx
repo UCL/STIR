@@ -28,6 +28,7 @@
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
 #include "stir/copy_fill.h"
+#include "stir/error.h"
 START_NAMESPACE_STIR
 
 

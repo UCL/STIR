@@ -25,6 +25,7 @@
 #include "stir/array_index_functions.h"
 #include "stir/modulo.h"
 #include <algorithm>
+#include "stir/error.h"
 
 
 START_NAMESPACE_STIR

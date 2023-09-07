@@ -32,6 +32,7 @@
 #include "stir/round.h"
 #include "stir/shared_ptr.h"
 #include "stir/zoom.h"
+#include "stir/error.h"
 #include <memory>
 #include <math.h>
 

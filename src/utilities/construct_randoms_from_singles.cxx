@@ -23,6 +23,7 @@
 #include "stir/multiply_crystal_factors.h"
 #include "stir/stream.h"
 #include "stir/IndexRange2D.h"
+#include "stir/error.h"
 #include <iostream>
 #include <fstream>
 #include <string>

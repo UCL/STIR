@@ -22,6 +22,7 @@
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

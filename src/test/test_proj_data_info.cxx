@@ -170,7 +170,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 #endif
   for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num(); ++segment_num)
     {
-      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num(); view_num += 3)
+      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num(); view_num += 1)
         {
           // loop over axial_positions. Avoid using first and last positions, as
           // if there is axial compression, the central LOR of a bin might actually not
@@ -201,6 +201,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                       const double delta_time = proj_data_info.get_tof_delta_time(org_bin);
                       LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
                       proj_data_info.get_LOR(lor, org_bin);
+
                       {
                         const Bin new_bin = proj_data_info.get_bin(lor, delta_time);
 #if STIR_TOF_DEBUG > 1
@@ -263,32 +264,31 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 #endif
                         const Bin new_bin = proj_data_info.get_bin(lor_as_points, proj_data_info.get_tof_delta_time(org_bin));
 #if 1
-                        const int diff_segment_num = intabs(org_bin.segment_num() - new_bin.segment_num());
-                        const int diff_view_num = intabs(org_bin.view_num() - new_bin.view_num());
-                        const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                        const int diff_tangential_pos_num = intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
-                        const int diff_timing_pos_num = intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num());
-                        if (new_bin.get_bin_value() > 0)
-                          {
-                            if (diff_segment_num > max_diff_segment_num)
-                              max_diff_segment_num = diff_segment_num;
-                            if (diff_view_num > max_diff_view_num)
-                              max_diff_view_num = diff_view_num;
-                            if (diff_axial_pos_num > max_diff_axial_pos_num)
-                              max_diff_axial_pos_num = diff_axial_pos_num;
-                            if (diff_tangential_pos_num > max_diff_tangential_pos_num)
-                              max_diff_tangential_pos_num = diff_tangential_pos_num;
-                            if (diff_timing_pos_num > max_diff_timing_pos_num)
-                              max_diff_timing_pos_num = diff_timing_pos_num;
-                          }
-                        if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(),
-                                   "round-trip get_LOR then get_bin (LORAs2Points): value")
-                            || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin (LORAs2Points): segment")
-                            || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
-                            || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
-                            || !check(diff_tangential_pos_num <= 1,
-                                      "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos")
-                            || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin (LORAs2Points): timing_pos"))
+
+                    // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
+                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
+                    const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
+                    const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
+                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
+                    if (new_bin.get_bin_value() > 0)
+                      {
+                        if (diff_segment_num > max_diff_segment_num)
+                          max_diff_segment_num = diff_segment_num;
+                        if (diff_view_num > max_diff_view_num)
+                          max_diff_view_num = diff_view_num;
+                        if (diff_axial_pos_num > max_diff_axial_pos_num)
+                          max_diff_axial_pos_num = diff_axial_pos_num;
+                        if (diff_tangential_pos_num > max_diff_tangential_pos_num)
+                          max_diff_tangential_pos_num = diff_tangential_pos_num;
+                      }
+                    if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(),
+                               "round-trip get_LOR then get_bin (LORAs2Points): value")
+                        || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin (LORAs2Points): segment")
+                        || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
+                        || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
+                        || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))

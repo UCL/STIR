@@ -21,6 +21,7 @@
 
 #include "stir/data/SinglesRatesFromSglFile.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/error.h"
 
 #include <string>
 #include <fstream>

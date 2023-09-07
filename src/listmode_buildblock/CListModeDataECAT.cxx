@@ -20,6 +20,8 @@
 #include "stir/listmode/CListRecordECAT966.h"
 #include "stir/listmode/CListRecordECAT962.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"

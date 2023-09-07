@@ -15,6 +15,7 @@
 */
 
 #include "stir/spatial_transformation/InvertAxis.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

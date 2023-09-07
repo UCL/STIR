@@ -27,6 +27,8 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/linear_regression.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <fstream>
 #include <ctime>
 

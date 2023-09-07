@@ -294,11 +294,6 @@ const double _c_light_div2 = _c_light * 0.5;
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
-
 END_NAMESPACE_STIR
-
-// include these such that we don't have to include them all over the place
-#include "stir/error.h"
-#include "stir/warning.h"
 
 #endif 

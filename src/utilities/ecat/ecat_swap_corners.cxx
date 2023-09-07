@@ -99,6 +99,7 @@
 #include "stir/utilities.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <iostream>
 #include <algorithm>
 #ifndef STIR_NO_NAMESPACES

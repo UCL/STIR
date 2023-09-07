@@ -25,6 +25,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/Scanner.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #include <iostream>
 #include <fstream>

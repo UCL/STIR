@@ -32,6 +32,8 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 
 

@@ -39,6 +39,8 @@
 #include <boost/format.hpp>
 #include <fstream>
 #include <math.h>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 using std::string;
 using std::istream;

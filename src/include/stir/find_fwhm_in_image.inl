@@ -19,6 +19,7 @@
 
  */
 #include <algorithm>
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
                           

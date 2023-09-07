@@ -16,6 +16,7 @@
     See STIR/LICENSE.txt for details
 */
 #include <iostream>
+#include "stir/error.h"
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else

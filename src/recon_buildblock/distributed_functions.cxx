@@ -29,6 +29,7 @@
 #include <fstream>
 #include "stir/Succeeded.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 #include <boost/shared_array.hpp>
 
 using std::ios;

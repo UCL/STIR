@@ -19,6 +19,7 @@
 #include "stir_experimental/recon_buildblock/ProjMatrixByDenselOnCartesianGridUsingElement.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/Bin.h"
+#include "stir/error.h"
 #include <math.h>
 
 START_NAMESPACE_STIR

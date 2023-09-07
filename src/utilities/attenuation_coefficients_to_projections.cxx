@@ -34,6 +34,7 @@
 #include "stir/Viewgram.h"
 #include "stir/ArrayFunction.h"
 #include "stir/thresholding.h"
+#include "stir/warning.h"
 #include <iostream>
 
 USING_NAMESPACE_STIR

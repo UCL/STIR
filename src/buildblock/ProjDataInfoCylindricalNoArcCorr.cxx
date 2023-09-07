@@ -31,6 +31,8 @@
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
 #include <algorithm>
+#include "stir/error.h"
+
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else

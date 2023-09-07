@@ -33,11 +33,12 @@
     See STIR/LICENSE.txt for details
 */
 
+#include <iomanip>
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
-
+#include "stir/error.h"
 
 std::vector<double>
 compute_linear_alphas(const float alpha_min, const float alpha_max, const float num_evaluations)

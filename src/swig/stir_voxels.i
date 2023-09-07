@@ -42,6 +42,13 @@
     {
       return write_to_file(filename, *$self);
     }
+
+    // add sapyb to VoxelsOnCartesianGrid
+    void sapyb(const float a,  const Array<3, float>& y, const float b)
+    { 
+      $self->sapyb(a,y,b); 
+    }
+
  }
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;

@@ -28,6 +28,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <iostream>
 #include <string>
 #include "stir/data/SinglesRatesFromGEHDF5.h"

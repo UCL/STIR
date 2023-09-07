@@ -25,6 +25,7 @@
 #include "boost/lambda/lambda.hpp"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/error.h"
 #include <iostream>
 
 START_NAMESPACE_STIR

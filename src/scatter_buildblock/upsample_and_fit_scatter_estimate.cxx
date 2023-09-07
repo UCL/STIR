@@ -31,6 +31,8 @@
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include <iostream>
 #include <fstream>
@@ -52,16 +54,15 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   BSpline::BSplineType spline_type,
                                   const bool remove_interleaving)
 {
+  info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+
   shared_ptr<ProjDataInfo> 
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
-  if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-      interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
-
-  info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
-  
+  {
       bool actual_remove_interleaving = remove_interleaving;
 
       if (remove_interleaving && emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()!="Cylindrical")
@@ -69,14 +70,11 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
           warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata");
                actual_remove_interleaving = false;
       }
-      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-          interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
         interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
+  }
 
-  const TimeFrameDefinitions& time_frame_defs =
-    emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
-
+  // now call inverse_SSRB, and normalise/scale if we need to
   if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
@@ -95,6 +93,8 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
               return; // all done
             }
 
+          // Set all scale_factors to min_scale_factor (which is equal to max_scale_factor here)
+          // Sadly a bit complicated to get index range ok
 	  const ProjDataInfo& proj_data_info = *emission_proj_data.get_proj_data_info_sptr();
 	  IndexRange2D sinogram_range(proj_data_info.get_min_segment_num(),proj_data_info.get_max_segment_num(),0,0);
 	  for (int segment_num=proj_data_info.get_min_segment_num();

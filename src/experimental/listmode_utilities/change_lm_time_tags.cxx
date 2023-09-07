@@ -22,6 +22,8 @@
 #include "stir/listmode/CListModeData.h"
 #include <fstream>
 #include <iostream>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 static
 void open_next(std::fstream& s, const std::string& filename_prefix, int& num)

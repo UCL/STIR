@@ -10,6 +10,8 @@
 
 #include "stir/IO/InputStreamFromROOTFileForECATPET.h"
 #include <TChain.h>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

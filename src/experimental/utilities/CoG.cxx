@@ -41,6 +41,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/CartesianCoordinate2D.h"
+#include "stir/warning.h"
 #include "stir/centre_of_gravity.h"
 #include <iostream>
 #include <iomanip>

@@ -29,6 +29,8 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/stream.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 

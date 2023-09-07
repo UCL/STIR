@@ -48,6 +48,8 @@
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

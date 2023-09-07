@@ -34,6 +34,7 @@
 #include "stir/interpolate_axial_position.h"
 #include "stir/extend_projdata.h"
 #include "stir/numerics/sampling_functions.h"
+#include "stir/error.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR

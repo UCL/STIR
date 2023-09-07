@@ -27,6 +27,8 @@
 #include "stir/ML_norm.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/stream.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifdef STIR_OPENMP
 #  include <omp.h>

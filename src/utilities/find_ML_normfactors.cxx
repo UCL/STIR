@@ -25,6 +25,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/utilities.h"
 #include "stir/info.h"
+#include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <iostream>

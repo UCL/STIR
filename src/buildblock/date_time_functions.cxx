@@ -19,6 +19,7 @@
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
 #include "stir/warning.h"
+#include "stir/error.h"
 #include "stir/round.h"
 #include "boost/lexical_cast.hpp"
 #include "boost/format.hpp"

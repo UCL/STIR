@@ -19,6 +19,7 @@
 
 #include "stir/MultipleDataSetHeader.h"
 #include <boost/format.hpp>
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

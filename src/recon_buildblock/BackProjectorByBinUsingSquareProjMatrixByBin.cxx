@@ -29,6 +29,7 @@
 #include "stir/BasicCoordinate.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

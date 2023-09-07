@@ -35,6 +35,8 @@
 #include "itkImageSeriesReader.h"
 #include "itkOrientImageFilter.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include "boost/format.hpp"
 #include <string> // for std::stod
 

@@ -19,6 +19,7 @@
 */
 #include "stir/RunTests.h"
 #include "stir/date_time_functions.h"
+#include "stir/error.h"
 
 #include <iostream>
 

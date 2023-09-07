@@ -29,6 +29,7 @@
 #include "stir/round.h"
 #include "stir/DetectionPosition.h"
 #include "stir/is_null_ptr.h"
+#include "stir/error.h"
 #include <iostream>
 #include <fstream>
 

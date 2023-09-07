@@ -43,6 +43,8 @@
 #include "stir/numerics/fourier.h"
 #include "stir/interpolate.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #define POSITIVE_Z_SHIFT -1
 #define NEGATIVE_Z_SHIFT 1

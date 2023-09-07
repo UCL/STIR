@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 
   The prior is computed as follows:
   \f[
-  g_r = \frac{1}{4} \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
+  f = \frac{1}{4} \sum_{r,dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
   \f]
   with gradient  
   \f[

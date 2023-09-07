@@ -93,6 +93,27 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
+    - name: disk space
+      shell: bash
+      run: |
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              df -h
+              # saves about 2GB
+              echo removing dotnet
+              sudo rm -rf /usr/share/dotnet
+              # saves about 10 GB
+              echo removing agent_tools
+              sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+              # saves about 10 GB
+              echo removing android files
+              sudo rm -rf /usr/local/lib/android
+              df -h
+              ;;
+            (windows*)
+              # no idea how to do this
+              ;;
+           esac
     - uses: actions/checkout@v3
       with:
         submodules: recursive
@@ -166,6 +187,8 @@ jobs:
               if test "${{matrix.ITK}}XX" == "ONXX"; then
                 sudo apt install libinsighttoolkit5-dev
               fi
+              # free up some disk space
+              sudo apt clean
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
@@ -257,10 +280,20 @@ jobs:
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
           cmake -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
+          # report disk space
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              df -h
+              ;;
+            (windows*)
+              # no idea how to do this
+              ;;
+           esac
 
     - name: build
       shell: bash
@@ -329,6 +362,19 @@ jobs:
           # Run examples to see if they work
           cd ${GITHUB_WORKSPACE}/examples/PET_simulation
           ./run_simulation.sh 1> /dev/null
+
+          # Run the Demo executables
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
+          cd ${GITHUB_WORKSPACE}/examples/C++/src
+
+          generate_image generate_image.par
+          forward_project sino.hs image.hv  small.hs
+
+          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
+          ${EXE_LOC}/demo3 demo.par --display_off
+          ${EXE_LOC}/demo3 demoPM.par --display_off
+          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
+          ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
     - name: Python
       shell: bash

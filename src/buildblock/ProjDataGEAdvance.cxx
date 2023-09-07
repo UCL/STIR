@@ -29,6 +29,8 @@
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_data.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <vector>
 #include <algorithm>

@@ -27,6 +27,8 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 #include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 using std::string;
 
 START_NAMESPACE_STIR

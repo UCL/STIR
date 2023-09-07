@@ -27,6 +27,7 @@
 #include "boost/static_assert.hpp"
 #include "stir/DetectionPositionPair.h"
 #include <boost/cstdint.hpp>
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

@@ -23,6 +23,7 @@
 #include "stir/display.h"
 #include "stir/CPUTimer.h"
 #include "stir/utilities.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <fstream>
 #include <string>

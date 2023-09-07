@@ -29,6 +29,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
 #include <boost/format.hpp>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;

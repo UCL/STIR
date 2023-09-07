@@ -28,6 +28,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/recon_array_functions.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

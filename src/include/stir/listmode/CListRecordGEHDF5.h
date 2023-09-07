@@ -25,6 +25,7 @@
 #include "stir/ByteOrderDefine.h"
 #include <boost/static_assert.hpp>
 #include <boost/cstdint.hpp>
+#include "stir/error.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -200,7 +201,7 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
     get_time_in_millisecs() should therefore be zero at the first time stamp.
   */
  CListRecordGEHDF5(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const unsigned long first_time_stamp) :
-  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr),
+  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))),
     first_time_stamp(first_time_stamp)
     {}
 
@@ -261,9 +262,9 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
-    det_pos.pos1().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
+    det_pos.pos1().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
-    det_pos.pos2().tangential_coord() = this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
   }
 

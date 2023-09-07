@@ -25,6 +25,7 @@
 #include "stir/round.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
+#include "stir/warning.h"
 #include "stir_experimental/motion/ObjectTransformation.h"
 #include "stir_experimental/motion/RigidObject3DTransformation.h"
 #include "stir_experimental/numerics/more_interpolators.h"

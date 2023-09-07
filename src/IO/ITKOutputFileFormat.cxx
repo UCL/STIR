@@ -23,6 +23,7 @@
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"

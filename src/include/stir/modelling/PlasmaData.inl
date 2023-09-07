@@ -18,6 +18,8 @@
 */
 #include "stir/decay_correction_factor.h"
 #include "stir/numerics/integrate_discrete_function.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <functional>
 
 START_NAMESPACE_STIR

@@ -26,6 +26,7 @@
 
 #include "stir/analytic/FBP2D/RampFilter.h"
 #include <math.h>
+#include "stir/error.h"
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>

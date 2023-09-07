@@ -24,6 +24,8 @@
 #include "stir/listmode/LmToProjDataWithRandomRejection.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 #include <iostream>
 #include <algorithm>
 

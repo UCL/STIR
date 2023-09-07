@@ -29,6 +29,7 @@
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include "stir/is_null_ptr.h"
 #include "stir/DataProcessor.h"
 #include <vector>

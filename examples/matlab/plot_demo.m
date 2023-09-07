@@ -26,7 +26,7 @@ xlabel('x')
 title('slice 10, line 45 (starting from 0)')
 
 %% example for projection data (aka sinograms)
-projdata=stir.ProjData.read_from_file('../../recon_test_pack/SPECT/input.hs');
+projdata=stir.ProjData.read_from_file('../../recon_test_pack/SPECT/SPECTUB/input.hs');
 %% display direct sinograms
 % Of course, for SPECT there are only 'direct' sinograms (and no oblique sinograms)
 seg=projdata.get_segment_by_sinogram(0);

@@ -30,6 +30,7 @@
 #include "stir/Succeeded.h"
 #include "stir/numerics/overlap_interpolate.h"
 #include <typeinfo>
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 ArcCorrection::

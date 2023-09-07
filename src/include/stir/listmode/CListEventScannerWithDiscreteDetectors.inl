@@ -3,8 +3,13 @@
 /*!
   \file
   \ingroup listmode
+<<<<<<< HEAD:src/include/stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl
   \brief Implementations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
 
+=======
+  \brief Implementations of class stir::CListEventScannerWithDiscreteDetectors
+    
+>>>>>>> upstream/master:src/include/stir/listmode/CListEventScannerWithDiscreteDetectors.inl
   \author Kris Thielemans
   \author Nikos Efthimiou
   \author Elise Emond
@@ -13,28 +18,46 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2017, 2022, University College London
     Copyright (C) 2017, University of Leeds
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
+
 
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/LORCoordinates.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
-CListEventCylindricalScannerWithDiscreteDetectors::
-CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+template <class ProjDataInfoT>
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
+CListEventScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr_v)
 {
-    this->uncompressed_proj_data_info_sptr = std::dynamic_pointer_cast< const ProjDataInfoCylindricalNoArcCorr >(proj_data_info_sptr->create_shared_clone());
-
-    if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
-        error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abort.");
+  if (!scanner_sptr_v)
+    error("CListEventScannerWithDiscreteDetectors constructor called with zero scanner pointer");
+  this->scanner_sptr = scanner_sptr_v;
+  auto pdi_ptr =
+     ProjDataInfo::ProjDataInfoCTI(scanner_sptr_v, 
+                                   1, scanner_sptr->get_num_rings()-1,
+                                   scanner_sptr->get_num_detectors_per_ring()/2,
+                                   scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                   false);
+  auto pdi_ptr_cast =
+    dynamic_cast<ProjDataInfoT *>(pdi_ptr);
+  if (!pdi_ptr_cast)
+    {
+      delete pdi_ptr;
+      error("CListEventScannerWithDiscreteDetectors constructor called with scanner that gives wrong type of ProjDataInfo");
+    }
+  this->uncompressed_proj_data_info_sptr.reset(pdi_ptr_cast);
 }
 
+template <class ProjDataInfoT>
 LORAs2Points<float>
-CListEventCylindricalScannerWithDiscreteDetectors::
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
 get_LOR() const
 {
   LORAs2Points<float> lor;
@@ -65,14 +88,16 @@ get_LOR() const
   return lor;
 }
 
-void
-CListEventCylindricalScannerWithDiscreteDetectors::
+
+template <class ProjDataInfoT>
+void 
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
 get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
-  assert(dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0);
+  assert(dynamic_cast<ProjDataInfoT const*>(&proj_data_info) != 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).
+  if (static_cast<ProjDataInfoT const&>(proj_data_info).
       get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
     bin.set_bin_value(0);
   else
@@ -81,11 +106,12 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
   }
 }
 
+template <class ProjDataInfoT>
 bool
-CListEventCylindricalScannerWithDiscreteDetectors::
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
 is_valid_template(const ProjDataInfo& proj_data_info) const
 {
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+	if (dynamic_cast<ProjDataInfoT const*>(&proj_data_info)!= 0)
         return true;
 
     return false;

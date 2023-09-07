@@ -34,6 +34,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/linear_regression.h"
 #include "stir/VectorWithOffset.h"
+#include "stir/warning.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

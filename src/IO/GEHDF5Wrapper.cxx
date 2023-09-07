@@ -27,6 +27,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <sstream>
 
 

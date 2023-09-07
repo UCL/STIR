@@ -37,6 +37,8 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Bin.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include <vector>
 #include <algorithm>

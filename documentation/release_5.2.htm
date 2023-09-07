@@ -39,6 +39,9 @@
   <li>Global variables in SPECTUB have been substituted by class members, such that multiple SPECTUB projectors can be used.
     <br /><a href="https://github.com/UCL/STIR/pull/1169/">PR #1169</a>.
   </li>
+  <li>Global variables in PinholeSPECTUB have been substituted by class members, such that multiple PinholeSPECTUB projectors can be used.
+    <br /><a href="https://github.com/UCL/STIR/pull/1212/">PR #1212</a>.
+  </li>
   <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
     <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
   </li>
@@ -60,6 +63,8 @@
 
 <h4>Python</h4>
 <ul>
+  <li>Examples use <code>stir.ProjData.read_from_file</code> as opposed to <code>stir.ProjData_read_from_file</code>. The former is supported since SWIG 3.0, and the <a href="https://swig.org/Doc4.1/Python.html#Python_nn20">default from SWIG 4.1</a>.
+    </li>
 </ul>
 
 <h3>Changed functionality</h3>
@@ -94,6 +99,23 @@
   <li>We now use CMake's <a href=https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/Object-Library>OBJECT library feature</a> for the registries. This avoids re-compilation of the registries for every executable and therefore speeds-up building time. Use of STIR in an external project is not affected as long as the recommended practice was followed. This is now documented in the User's Guide.
     <br /><a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
   </li>
+  <li>The <code>error</code> and <code>warning</code> functions are now no longer included from <code>common.h</code> and need to be included manually when used (as was already the case for <code>#include "stir/info.h"</code>).
+    <br /><a href="https://github.com/UCL/STIR/pull/1192/">PR #1192</a>.
+  </li>
+  <li>add .h and .i as dependencies for SWIG generated wrappers to make sure they get rebuild.
+    (Currently adding all .h files, which is too much, but CMake needs a fix before we can do
+    this properly).
+    <br /><a href="https://github.com/UCL/STIR/pull/1218/">PR #1218</a>.
+    </li>
+</ul>
+
+<h3>Changes for developers</h3>
+<ul>
+  <li>moved all functionality in <code>CListEventCylindricalScannerWithDiscreteDetectors</code> to template class
+    <code>CListEventScannerWithDiscreteDetectors</code> (templated in <code>ProjDataInfoT</code>). This enables
+    re-use for generic/blocksoncylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1222/">PR #1222</a>.
+  </li>
 </ul>
 
 
@@ -113,6 +135,9 @@
   </li>
   <li><code>sample_function_on_regular_grid</code> did not handle offset correctly in all places <br /><a href="https://github.com/UCL/STIR/issues/1178/">issue #1178</a>.
     <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li>Ray tracing projection for BlocksOnCylindrical scanner geometries contained a bug where some bins were swapped across oblique segments <br /><a href="https://github.com/UCL/STIR/issues/1223/">issue #1223</a>. This sometimes lead to large artifacts in reconstructions.
+    <br /><a href="https://github.com/UCL/STIR/pull/1231/">PR #1231</a>.
   </li>
 </ul>
 

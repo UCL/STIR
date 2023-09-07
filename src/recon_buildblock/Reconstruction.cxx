@@ -29,7 +29,8 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
-
+#include "stir/warning.h"
+#include "stir/error.h"
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"

@@ -26,6 +26,7 @@
 #include "stir/IO/read_from_file.h"
 //#include "stir/utilities.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 
 
 #ifndef STIR_NO_NAMESPACES

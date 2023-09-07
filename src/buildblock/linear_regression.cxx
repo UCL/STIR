@@ -22,6 +22,7 @@
 */
 
 #include "stir/linear_regression.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

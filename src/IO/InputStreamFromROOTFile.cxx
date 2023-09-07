@@ -24,6 +24,7 @@
 #include "stir/error.h"
 #include "stir/FilePath.h"
 #include "stir/info.h"
+#include "stir/error.h"
 
 #include <TROOT.h>
 #include <TSystem.h>

@@ -46,9 +46,15 @@ public InputFileFormat<ListModeData >
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const
   {
-    // TODO need to do check that it's a siemens list file etc
-    return is_interfile_signature(signature.get_signature());
-  }
+        if(!is_interfile_signature(signature.get_signature()))
+                return false;
+        else
+        {
+            const std::string signature_as_string(signature.get_signature(), signature.size());
+            return signature_as_string.find("PETLINK") != std::string::npos;
+        }
+    }
+
  public:
   virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const

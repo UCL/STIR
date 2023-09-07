@@ -25,6 +25,7 @@ x//
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
+#include "stir/warning.h"
 #include <iostream>
 
 USING_NAMESPACE_STIR

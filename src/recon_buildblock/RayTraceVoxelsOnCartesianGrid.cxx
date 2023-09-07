@@ -33,6 +33,7 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/round.h"
+#include "stir/warning.h"
 #include <math.h>
 #include <algorithm>
 

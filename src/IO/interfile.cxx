@@ -47,6 +47,7 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/date_time_functions.h"

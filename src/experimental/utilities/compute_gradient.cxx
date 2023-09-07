@@ -24,7 +24,7 @@
 #include "stir/KeyParser.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-
+#include "stir/error.h"
 
 /*
 example

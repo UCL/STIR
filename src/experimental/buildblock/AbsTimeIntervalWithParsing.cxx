@@ -17,6 +17,7 @@
 
 #include "stir_experimental/AbsTimeIntervalWithParsing.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 

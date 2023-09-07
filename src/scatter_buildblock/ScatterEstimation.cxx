@@ -40,6 +40,8 @@
 #include "stir/NumericInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/warning.h"
+#include "stir/error.h"
 
 // The calculation of the attenuation coefficients
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"

@@ -23,6 +23,7 @@
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 

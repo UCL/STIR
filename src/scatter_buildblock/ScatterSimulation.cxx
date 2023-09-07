@@ -33,6 +33,7 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/warning.h"
 #include "stir/stream.h"
 #include "stir/round.h"
 #include <fstream>
