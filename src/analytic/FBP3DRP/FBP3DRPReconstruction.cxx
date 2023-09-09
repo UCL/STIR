@@ -396,7 +396,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   alpha_fit = 1.0F;
   beta_fit = 0.0F;
 
-  start_timers();
   {
     //char file[max_filename_length];
     //sprintf(file,"%s.full_log",output_filename_prefix.c_str());
@@ -564,7 +563,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   if(display_level>0) 
     display(image, image.find_max(), "Final image");
 
-  stop_timers();
   do_log_file(image);
 
   full_log.close();

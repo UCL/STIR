@@ -74,7 +74,6 @@ Succeeded
 DataProcessor<DataT>::
 apply(DataT& data)
 {
-  start_timers();
   //assert(consistency_check(data) == Succeeded::yes);
   if (!is_set_up_already )
     if (set_up(data) == Succeeded::no)
@@ -82,6 +81,7 @@ apply(DataT& data)
 	warning("DataProcessor::apply: Building was unsuccesfull. No processing done.\n");
 	return Succeeded::no;
       }
+  start_timers();
   virtual_apply(data);
   stop_timers();
   return Succeeded::yes;
@@ -94,7 +94,6 @@ DataProcessor<DataT>::
 apply(DataT& data,
       const DataT& in_data)
 {
-  start_timers();
   //assert(consistency_check(in_data) == Succeeded::yes);
   if (!is_set_up_already )
     if (set_up(in_data) == Succeeded::no)
@@ -102,6 +101,7 @@ apply(DataT& data,
 	warning("DataProcessor::apply: Building was unsuccesfull. No processing done.\n");
 	return Succeeded::no;
       }
+  start_timers();
   virtual_apply(data, in_data);
   stop_timers();
   return Succeeded::yes;

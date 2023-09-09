@@ -153,11 +153,10 @@ namespace stir {
 
     /*!
       \param bReset indicates whether the elapsed time should be reset before the timer is started.
-      The timer must not be running.
+      The timer must not be running if asking to reset.
     */
     inline void HighResWallClockTimer::start(bool bReset /* = false */)
       {
-	assert(!m_bRunning);
 	if (bReset) reset();
 	m_bRunning = true;
 #if defined(_AIX)
