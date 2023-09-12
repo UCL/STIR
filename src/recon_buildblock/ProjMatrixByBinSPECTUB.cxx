@@ -397,18 +397,17 @@ set_up(
       wmh.predef_col = false;
 	  wmh.COL.A = collimator_slope;
 	  wmh.COL.B = collimator_sigma_0;
+      // no fan-beam
       wmh.COL.do_fb = false;
 
     if ( !wmh.do_psf )
  	  // code to enable fan-beam collimator at some point... (not validated)
 	  // before enabling, you will have to change the parameter file to give parameters of the fan-beam
 	  //int num = collimator_number;
-      //if ( num ==0 ) {
+      //if ( wmh.COL.do_fb ==0 ) {
 	  info_stream << "No correction for PSF. Parallel geometry" << std::endl;
 	  //}
 	  //else {
-	  //	wmh.COL.do_fb = true;
-	  //	wmh.COL.F     = collimator_number;
 	  //	info_stream << "No correction for PSF. Fanbeam geometry with focal distance = " << wmh.COL.F << " cm " << std::endl;
 	  //}		
 
