@@ -205,10 +205,11 @@ set_attenuation_image_sptr(const std::string& value)
 
 void
 ProjMatrixByBinSPECTUB::
-set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D)
+set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope, const bool full_3D)
 {
+  // convert sigma_0 to cm. slope is dimensionless
   this->collimator_sigma_0 = collimator_sigma_0_in_mm / 10;
-  this->collimator_slope = collimator_slope_in_mm / 10;
+  this->collimator_slope = collimator_slope;
   if (collimator_slope == 0.F && collimator_sigma_0 == 0.F)
     {
       this->psf_type = "geometrical";
