@@ -79,6 +79,17 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
 #ifdef STIR_OPENMP
   // Using too many threads is counterproductive according to my timings, so I limited to 8 (not necessarily optimal!).
   const auto num_threads_to_use = std::min(8,get_max_num_threads());
+#  if _OPENMP >=201012
+#    define ATOMICWRITE _Pragma("omp atomic write") \
+
+#    define CRITICALSECTION
+#  else
+#    define ATOMICWRITE
+#    define CRITICALSECTION _Pragma("omp critical(PARALLELPROJHELPER_INIT)")
+#  endif
+#else
+#  define ATOMICWRITE
+#  define CRITICALSECTION
 #endif
   for (int seg : segment_sequence)
     {
@@ -97,66 +108,37 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
                   bin.view_num() = view_num;
                   bin.tangential_pos_num() = tangential_pos_num;
                   // compute index for this bin (independent of multi-threading)
-                  std::size_t this_index = index + (bin.tangential_pos_num() - p_info.get_min_tangential_pos_num())*3;
+                  const std::size_t this_index = index + (bin.tangential_pos_num() - p_info.get_min_tangential_pos_num())*3;
                   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
                   LORAs2Points<float> lor_points;
 
                   p_info.get_LOR(lor, bin);
                   if (lor.get_intersections_with_cylinder(lor_points, radius) == Succeeded::no)
-                    {  // memory is already allocated, so just passing in points that will produce nothing
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index] = 0;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index] = 0;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index+1] = 0;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index+1] = 0;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index+2] = 0;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index+2] = 0;
+                    {
+                      // memory is already allocated, so just passing in points that will produce nothing
+                      CRITICALSECTION
+                        {
+                          ATOMICWRITE xstart[this_index] = 0;
+                          ATOMICWRITE xend[this_index] = 0;
+                          ATOMICWRITE xstart[this_index+1] = 0;
+                          ATOMICWRITE xend[this_index+1] = 0;
+                          ATOMICWRITE xstart[this_index+2] = 0;
+                          ATOMICWRITE xend[this_index+2] = 0;
+                        }
                   }
                   else
                   {
-                    const CartesianCoordinate3D<float> p1 = lor_points.p1()*rescale;
-                    const CartesianCoordinate3D<float> p2 = lor_points.p2()*rescale;
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index] = p1[1];
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index] = p2[1];
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index+1] = p1[2];
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index+1] = p2[2];
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xstart[this_index+2] = p1[3];
-#ifdef STIR_OPENMP
-#pragma omp atomic write
-#endif
-                    xend[this_index+2] = p2[3];
+                    const auto p1 = lor_points.p1()*rescale;
+                    const auto p2 = lor_points.p2()*rescale;
+                    CRITICALSECTION
+                      {
+                        ATOMICWRITE xstart[this_index] = p1[1];
+                        ATOMICWRITE xend[this_index] = p2[1];
+                        ATOMICWRITE xstart[this_index+1] = p1[2];
+                        ATOMICWRITE xend[this_index+1] = p2[2];
+                        ATOMICWRITE xstart[this_index+2] = p1[3];
+                        ATOMICWRITE xend[this_index+2] = p2[3];
+                      }
                   }
                 }
               index += p_info.get_num_tangential_poss()*3;
