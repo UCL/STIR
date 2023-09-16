@@ -4,6 +4,8 @@
 !version of keys := 3.3
 
 !GENERAL DATA := 
+patient orientation := head_in
+patient rotation :=  prone
 !data offset in bytes := 0
 !name of data file := attmap.v
 

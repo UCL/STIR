@@ -10,6 +10,8 @@ name of data file := mask.v
 imagedata byte order := LITTLEENDIAN
 
 !SPECT STUDY (general) := 
+patient orientation := head_in
+patient rotation := prone
 process status := Reconstructed
 !number format := float
 !number of bytes per pixel := 4

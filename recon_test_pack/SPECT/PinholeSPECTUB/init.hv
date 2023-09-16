@@ -10,6 +10,8 @@
 imagedata byte order := LITTLEENDIAN
 
 !SPECT STUDY (general) := 
+patient orientation := head_in
+patient rotation :=  prone
 !process status := reconstructed
 !number format := float
 !number of bytes per pixel := 4

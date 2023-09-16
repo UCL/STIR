@@ -1,4 +1,5 @@
 !INTERFILE  :=
+imaging modality := PET
 name of data file := Utahscat600k_ca_seg4.s
 originating system := PRT-1
 !GENERAL DATA :=
