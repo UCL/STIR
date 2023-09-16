@@ -7,7 +7,7 @@
 */
 /*
     Copyright (C) 2003 - 2005-01-17, Hammersmith Imanet Ltd
-
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -40,39 +40,14 @@ static void bitreversal(VectorWithOffset<T>& data)
   }
 }
 
-/* We cache factors exp(i*_PI/pow(2,k)). They will be computed during the first
-   call of the Fourier functions, and then stored in static arrays.
-*/
-// exparray[k][i] = exp(i*_PI/pow(2,k))
-typedef VectorWithOffset<VectorWithOffset<std::complex<float> > > exparray_t;
-static   exparray_t exparray;
 
-static void init_exparray(const int k, const int pow2k)
+// internal function to create vector of size pow2k with exparray[i] = exp(sign*i*_PI/pow2k)
+static VectorWithOffset<std::complex<float>> get_exparray(const int pow2k, const int sign)
 {
-  if (exparray.get_max_index() >= k && exparray[k].size()>0)
-    return;
-
-  if (exparray.get_max_index() <k)
-    exparray.grow(0, k);
-  exparray[k].grow(0,pow2k-1);
+  VectorWithOffset<std::complex<float>> a(pow2k);
   for (int i=0; i< pow2k; ++i)
-    exparray[k][i]= std::exp(std::complex<float>(0, static_cast<float>((i*_PI)/pow2k)));
-}
-
-// expminarray[k][i] = exp(-i*_PI/pow(2,k))
-// obviously just the complex conjugate of exparray
-static   exparray_t expminarray;
-
-static void init_expminarray(const int k, const int pow2k)
-{
-  if (expminarray.get_max_index() >= k && expminarray[k].size()>0)
-    return;
-
-  if (expminarray.get_max_index() <k)
-    expminarray.grow(0, k);
-  expminarray[k].grow(0,pow2k-1);
-  for (int i=0; i< pow2k; ++i)
-    expminarray[k][i]= std::exp(std::complex<float>(0, static_cast<float>(-(i*_PI)/pow2k)));
+    a[i]= std::exp(std::complex<float>(0, static_cast<float>((sign*i*_PI)/pow2k)));
+  return a;
 }
 
 
@@ -100,12 +75,7 @@ void fourier_1d(T& c, const int sign)
   const int pow2nn=c.get_length(); // ==round(pow(2,nn)); 
   for (; k<nn; ++k, pow2k*=2)
   {
-    if (sign==1)
-      init_exparray(k,pow2k);
-    else
-      init_expminarray(k,pow2k);
-    const exparray_t& cur_exparray =
-      sign==1? exparray : expminarray;      
+    const auto cur_exparray = get_exparray(pow2k, sign);
     for (int j=0; j< pow2nn;j+= pow2k*2) 
       for (int i=0; i< pow2k; ++i)
       {
@@ -115,7 +85,7 @@ void fourier_1d(T& c, const int sign)
         typename T::value_type const t1 = c1; 
 	/* here is what we have to do:
             typename T::value_type const t2 = 
-              c2*cur_exparray[k][i];
+              c2*cur_exparray[i];
             c1 = t1+t2; c2 = t1-t2;
 	 however, this would create an unnecessary copy of t2, which is 
 	 potentially large.
@@ -125,7 +95,7 @@ void fourier_1d(T& c, const int sign)
 	 loops over the same data.
 	 Using expression templates would speed this up.
 	*/
-        c2 *= cur_exparray[k][i];
+        c2 *= cur_exparray[i];
         c1 += c2;
         c2 *= -1;
         c2 += t1;
