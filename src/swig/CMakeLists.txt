@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014, 2018, 2020, 2022 University College London
+# Copyright 2014, 2018, 2020, 2022, 2023 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -151,6 +151,9 @@ if(BUILD_SWIG_PYTHON)
     SWIG_ADD_MODULE(stir python stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
     SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+     set_property(TARGET ${SWIG_MODULE_stir_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
+   endif()
   endif()
   SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
   SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${STIR_Python_dependency})
@@ -198,6 +201,9 @@ if (BUILD_SWIG_OCTAVE)
     SWIG_ADD_MODULE(stiroct octave stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
     SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+     set_property(TARGET ${SWIG_MODULE_stiroct_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
+   endif()
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
   SWIG_WORKAROUND(${SWIG_MODULE_stiroct_REAL_NAME})
@@ -224,6 +230,9 @@ if (BUILD_SWIG_MATLAB)
     SWIG_ADD_MODULE(stirMATLAB matlab stir.i $<TARGET_OBJECTS:stir_registries>)
   else()
     SWIG_ADD_LIBRARY(stirMATLAB LANGUAGE matlab TYPE MODULE SOURCES stir.i $<TARGET_OBJECTS:stir_registries>)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+     set_property(TARGET ${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
+   endif()
   endif()
   if (WIN32)
      set (Matlab_CXXLINKER_FLAGS "/EXPORT:mexFunction")
