@@ -11,6 +11,8 @@ imagedata byte order := LITTLEENDIAN
 !number of bytes per pixel := 4
 
 !SPECT STUDY (General) := 
+patient orientation := head_in
+patient rotation :=  supine
 ;number of dimensions := 2
 ;matrix axis label [2] := axial coordinate
 !matrix size [2] := 64

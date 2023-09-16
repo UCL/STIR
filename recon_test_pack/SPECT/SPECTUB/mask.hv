@@ -1,11 +1,14 @@
 !INTERFILE  :=
+!imaging modality := nucmed
 name of data file := mask.v
 !GENERAL DATA :=
+patient orientation := head_in
+patient rotation :=  supine
 !GENERAL IMAGE DATA :=
-!type of data := PET
+!type of data := Tomographic
 imagedata byte order := LITTLEENDIAN
-!PET STUDY (General) :=
-!PET data type := Image
+
+!SPECT STUDY (general) := 
 process status := Reconstructed
 !number format := signed integer
 !number of bytes per pixel := 4
