@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -20,6 +21,7 @@
  Modification history:
 
   <TT>
+  Sep 2023 -- Kris Thielemans -- fixed WIN32 version
   May 2015 -- Kris Thielemans -- removed overflow when using gettimeofday and reinstated AZ's WIN32 version (as MS had get_nanosec() wrong)
   May 2008 -- Kris Thielemans -- renamed PTimer to HighResWallClockTimer and renamed functions to by compatible with stir::Timer
   18 Aug 99 -- Mustapha Sadki -- corrected the formula for HighResWallClockTimer::stop() & HighResWallClockTimer::GetTime() for WIN32\n
@@ -232,12 +234,18 @@ namespace stir {
 	assert(Result); // if failed, high-resolution timers are not supported by this hardware
 
 	LONGLONG Delta = m_Finish.QuadPart - m_Start.QuadPart;
-
-        int Resolution = get_resolution_in_nanosecs();
-
-        m_Secs += static_cast<int>(Delta / Resolution);
-        m_Nanosecs += static_cast<int>(Delta % Resolution);
-        if (m_Nanosecs >= 1000000000)
+	LARGE_INTEGER Freq;
+  Result = QueryPerformanceFrequency(&Freq);
+  assert(Result); // if failed, high-resolution timers are not supported by this hardware
+  const auto DeltaSecs = Delta / Freq.QuadPart;
+  m_Secs += static_cast<int>(DeltaSecs);
+  // handle remainder
+  Delta -= DeltaSecs * Freq.QuadPart;
+  // convert to nano-secs
+  Delta *= 1000000000;
+  Delta /= Freq.QuadPart;
+  m_Nanosecs += static_cast<int>(Delta);
+  if (m_Nanosecs >= 1000000000)
 	  {
             m_Secs++;
             m_Nanosecs -= 1000000000;
