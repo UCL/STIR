@@ -85,7 +85,12 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
 #    define CRITICALSECTION
 #  else
 #    define ATOMICWRITE
-#    define CRITICALSECTION _Pragma("omp critical(PARALLELPROJHELPER_INIT)")
+#    if defined(_MSC_VER) && (_MSC_VER < 1910)
+       // no _Pragma until VS 2017
+#      define CRITICALSECTION
+#    else
+#      define CRITICALSECTION _Pragma("omp critical(PARALLELPROJHELPER_INIT)")
+#    endif
 #  endif
 #else
 #  define ATOMICWRITE
