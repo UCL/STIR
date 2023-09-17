@@ -126,7 +126,6 @@ struct fourier_auxiliary
 };
 
 // specialisation for the one-dimensional case
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 template <typename elemT>
 struct fourier_auxiliary<std::complex<elemT> >
@@ -138,29 +137,6 @@ struct fourier_auxiliary<std::complex<elemT> >
   }
 };
 
-
-#else  //no partial template specialisation
-
-// we just list float and double explicitly
-struct fourier_auxiliary<std::complex<float> >
-{
-  static void 
-  do_fourier(VectorWithOffset<std::complex<float> >& c, const int sign)
-  {
-    fourier_1d(c, sign);
-  }
-};
-
-struct fourier_auxiliary<std::complex<double> >
-{
-  static void 
-  do_fourier(VectorWithOffset<std::complex<double> >& c, const int sign)
-  {
-    fourier_1d(c, sign);
-  }
-};
-#endif
-
 } // end of namespace detail
 
 // now the fourier function is easy to define in terms of the class above
@@ -168,11 +144,7 @@ template <typename T>
 void 
 fourier(T& c, const int sign)
 {
-#if !defined(_MSC_VER) || _MSC_VER>1200
   detail::fourier_auxiliary<typename T::value_type>::do_fourier(c,sign);
-#else
-  detail::fourier_auxiliary<T::value_type>::do_fourier(c,sign);
-#endif
 }
 
 
@@ -180,7 +152,7 @@ fourier(T& c, const int sign)
  DFT of real data
 *****************************************************************/
 
-
+// specialisation for the one-dimensional case
 
 template <typename T>
 Array<1,std::complex<T> >
@@ -346,9 +318,6 @@ struct fourier_for_real_data_auxiliary
   }
 };
 
-// specialisation for the one-dimensional case
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
 template <typename elemT>
 struct fourier_for_real_data_auxiliary<1,elemT>
 {
@@ -365,52 +334,6 @@ struct fourier_for_real_data_auxiliary<1,elemT>
       inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
   }
 };
-
-
-#else  //no partial template specialisation
-
-// we just list float explicitly
-
-struct fourier_for_real_data_auxiliary<1,float>
-{
-  static Array<1,std::complex<float> >
-    do_fourier_for_real_data(const Array<1,float>& c, const int sign)
-  {
-    return
-      fourier_1d_for_real_data(c, sign);
-  }
-  static Array<1,float>
-    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<float> >& c, const int sign)
-  {
-    return
-      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
-  }
-};
-
-#if 0 
-/* Disabled double for now. 
- If you want to use double, you will probably have
- to make sure that Array<1,std::complex<double> > is instantiated.
- At time of writing, you would do this at the end of Array.h
- */
-struct fourier_for_real_data_auxiliary<1,double>
-{
-  static Array<1,std::complex<double> >
-    do_fourier_for_real_data(const Array<1,double>& c, const int sign)
-  {
-    return
-      fourier_1d_for_real_data(c, sign);
-  }
-  static Array<1,double>
-    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<double> >& c, const int sign)
-  {
-    return
-      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
-  }
-};
-#endif // end of double
-
-#endif // end of BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 } // end of namespace detail
 
