@@ -70,8 +70,10 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
     
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  //this->initialise_uncompressed_view_tangpos_to_det1det2();
-  //this->initialise_det1det2_to_uncompressed_view_tangpos();
+#ifdef STIR_OPENMP_SAFE_BUT_SLOW
+  this->initialise_uncompressed_view_tangpos_to_det1det2();
+  this->initialise_det1det2_to_uncompressed_view_tangpos();
+#endif
 }
 
 ProjDataInfoCylindricalNoArcCorr:: 
@@ -90,8 +92,10 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  //this->initialise_uncompressed_view_tangpos_to_det1det2();
-  //this->initialise_det1det2_to_uncompressed_view_tangpos();
+#ifdef STIR_OPENMP_SAFE_BUT_SLOW
+  this->initialise_uncompressed_view_tangpos_to_det1det2();
+  this->initialise_det1det2_to_uncompressed_view_tangpos();
+#endif
 }
 
 
@@ -225,6 +229,10 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
         (v_num - ( (tp_num + 1) >> 1 ) + num_detectors/2) % num_detectors;
     }
   }
+  // thanks to yohjp: http://stackoverflow.com/questions/27975737/how-to-handle-cached-data-structures-with-multi-threading-e-g-openmp
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+#pragma omp atomic write
+#endif
   uncompressed_view_tangpos_to_det1det2_initialised = true;
 }
 
@@ -324,6 +332,10 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
       det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].swap_detectors = swap_detectors==0;     
     }
   }
+  // thanks to yohjp: http://stackoverflow.com/questions/27975737/how-to-handle-cached-data-structures-with-multi-threading-e-g-openmp
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+#pragma omp atomic write
+#endif
   det1det2_to_uncompressed_view_tangpos_initialised = true;
 }
 
