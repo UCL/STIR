@@ -80,13 +80,12 @@ virtual void set_up(
     /// Set verbosity
     void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
-    /// Set use truncation - truncate before forward
-    /// projection and after back projection
-    void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
-
     // set/get number of gpu chunks to use
     void set_num_gpu_chunks(int num_gpu_chunks) {_num_gpu_chunks = num_gpu_chunks; }
     int  get_num_gpu_chunks() { return _num_gpu_chunks; }
+
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool val);
 
 protected:
 
@@ -102,7 +101,7 @@ private:
     friend class ProjectorByBinPairUsingParallelproj;
     void set_helper(shared_ptr<detail::ParallelprojHelper>);
     bool _cuda_verbosity;
-    bool _use_truncation;
+    bool _restrict_to_cylindrical_FOV;
     int _num_gpu_chunks;
 };
 

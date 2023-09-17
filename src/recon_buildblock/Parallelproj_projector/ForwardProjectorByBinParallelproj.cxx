@@ -42,7 +42,7 @@ ForwardProjectorByBinParallelproj::registered_name =
   "Parallelproj";
 
 ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj() :
-    _cuda_verbosity(true), _use_truncation(true), _num_gpu_chunks(1)
+    _cuda_verbosity(true), _restrict_to_cylindrical_FOV(true), _num_gpu_chunks(1)
 {
     this->_already_set_up = false;
     this->_do_not_setup_helper = false;
@@ -59,6 +59,7 @@ initialise_keymap()
   parser.add_start_key("Forward Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Forward Projector Using Parallelproj Parameters");
   parser.add_key("verbosity", &_cuda_verbosity);
+  parser.add_key("restrict to cylindrical FOV", &_restrict_to_cylindrical_FOV);
   parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
 
@@ -67,8 +68,22 @@ ForwardProjectorByBinParallelproj::
 set_defaults()
 {
   _cuda_verbosity = true;
-  _use_truncation = true;
+  _restrict_to_cylindrical_FOV = true;
   _num_gpu_chunks = 1;
+}
+
+bool
+ForwardProjectorByBinParallelproj::
+get_restrict_to_cylindrical_FOV() const
+{
+  return this->_restrict_to_cylindrical_FOV;
+}
+
+void
+ForwardProjectorByBinParallelproj::
+set_restrict_to_cylindrical_FOV(bool val)
+{
+  this->_restrict_to_cylindrical_FOV = val;
 }
 
 
@@ -84,6 +99,10 @@ ForwardProjectorByBinParallelproj::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
+#ifdef STIR_TOF
+  if (proj_data_info_sptr->get_num_tof_poss() > 1)
+    error("STIR-ParallelProj interface does not support TOF data yet. Sorry!");
+#endif
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
@@ -135,10 +154,7 @@ set_input(const DiscretisedDensity<3,float> & density)
 {
     ForwardProjectorByBin::set_input(density);
 
-    // Before forward projection, we enforce a truncation outside of the FOV.
-    // This is because the parallelproj projector seems to have some trouble at the edges and this
-    // could cause some voxel values to spiral out of control.
-    //if (_use_truncation)
+    if (this->_restrict_to_cylindrical_FOV)
       {
         const float radius = this->_proj_data_info_sptr->get_scanner_sptr()->get_inner_ring_radius();
         const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;
