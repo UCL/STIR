@@ -95,6 +95,8 @@ ProjDataInfo::get_tof_bin(const double delta) const
   return min_tof_pos_num;
 }
 
+#if 0
+// KT: code disabled as buggy but currently not needed
 int
 ProjDataInfo::get_unmashed_tof_bin(const double delta) const
 {
@@ -112,6 +114,7 @@ ProjDataInfo::get_unmashed_tof_bin(const double delta) const
   return min_tof_pos_num;
 
 }
+#endif
 
 int
 ProjDataInfo::get_tof_mash_factor() const

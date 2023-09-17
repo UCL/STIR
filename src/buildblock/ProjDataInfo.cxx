@@ -82,7 +82,7 @@ ProjDataInfo::get_k(const Bin& bin) const
 double
 ProjDataInfo::get_tof_delta_time(const Bin& bin) const
 {
-  return mm_to_tof_delta_time(get_k(bin)); // get_k gives "left" edge N.E: corrected returns the center.
+  return mm_to_tof_delta_time(get_k(bin));
 }
 
 float
@@ -197,6 +197,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                   + std::to_string(scanner_ptr->get_max_num_timing_poss())
                   + ").");
 
+#if 0
+        // KT: code disabled as buggy but currently not needed
         tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
         min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
         max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
@@ -210,7 +212,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         {
             Bin bin;
             bin.timing_pos_num() = k;
-
+            // if we ever re-enable this code, there is a BUG here:
+            // get_k relies on num_tof_bins, so this should have been set to the unmashed value from the scanner
             float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
             float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
 
@@ -220,15 +223,13 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
             tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].high_lim));
 
         }
-
+#endif
         // Now, initialise the mashed TOF bins.
         tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
+        // TODO cope with even numbers!
         min_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)/2;
         max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) -1;
-
-        min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
-        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
 
         num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
 
