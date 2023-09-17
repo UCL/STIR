@@ -221,14 +221,6 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
         back_project(viewgrams);
       }
   }
-#ifdef STIR_OPENMP
-  // "reduce" data constructed by threads
-  {
-    for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
-      if(!is_null_ptr(_local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-        (*_density_sptr) += *(_local_output_image_sptrs[i]);
-  }
-#endif
 }
 
 void
