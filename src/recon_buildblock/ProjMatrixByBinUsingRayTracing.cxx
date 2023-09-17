@@ -137,7 +137,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_restrict_to_cylindrical_FOV(bool val)
 {
-  this->already_setup = (this->restrict_to_cylindrical_FOV == val);
+  this->already_setup = this->already_setup && (this->restrict_to_cylindrical_FOV == val);
   this->restrict_to_cylindrical_FOV = val;
 }
 
@@ -152,7 +152,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_num_tangential_LORs(int val)
 {
-  this->already_setup = (this->num_tangential_LORs == val);
+  this->already_setup = this->already_setup && (this->num_tangential_LORs == val);
   this->num_tangential_LORs = val;
 }
 
@@ -167,7 +167,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_use_actual_detector_boundaries(bool val)
 {
-  this->already_setup = (this->use_actual_detector_boundaries == val);
+  this->already_setup = this->already_setup && (this->use_actual_detector_boundaries == val);
   this->use_actual_detector_boundaries = val;
 }
 
@@ -182,7 +182,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_do_symmetry_90degrees_min_phi(bool val)
 {
-  this->already_setup = (this->do_symmetry_90degrees_min_phi == val);
+  this->already_setup = this->already_setup && (this->do_symmetry_90degrees_min_phi == val);
   this->do_symmetry_90degrees_min_phi = val;
 }
 
@@ -198,7 +198,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_do_symmetry_180degrees_min_phi(bool val)
 {
-  this->already_setup = (this->do_symmetry_180degrees_min_phi == val);
+  this->already_setup = this->already_setup && (this->do_symmetry_180degrees_min_phi == val);
   this->do_symmetry_180degrees_min_phi = val;
 }
 
@@ -214,7 +214,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_do_symmetry_swap_segment(bool val)
 {
-  this->already_setup = (this->do_symmetry_swap_segment == val);
+  this->already_setup = this->already_setup && (this->do_symmetry_swap_segment == val);
   this->do_symmetry_swap_segment = val;
 }
 
@@ -230,7 +230,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_do_symmetry_swap_s(bool val)
 {
-  this->already_setup = (this->do_symmetry_swap_s == val);
+  this->already_setup = this->already_setup && (this->do_symmetry_swap_s == val);
   this->do_symmetry_swap_s = val;
 }
 
@@ -246,7 +246,7 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_do_symmetry_shift_z(bool val)
 {
-  this->already_setup = (this->do_symmetry_shift_z == val);
+  this->already_setup = this->already_setup && (this->do_symmetry_shift_z == val);
   this->do_symmetry_shift_z = val;
 }
 
