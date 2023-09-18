@@ -204,16 +204,16 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 
                       {
                         const Bin new_bin = proj_data_info.get_bin(lor, delta_time);
-#if STIR_TOF_DEBUG > 1
-                        std::cerr << "T:" << org_bin.timing_pos_num() << ", swapped=" << lor.is_swapped() << ", z1=" << lor.z1()
-                                  << ", z2=" << lor.z2() << ", phi=" << lor.phi() << ", beta=" << lor.beta() << std::endl;
-#endif
 #if 1
-                        const int diff_segment_num = intabs(org_bin.segment_num() - new_bin.segment_num());
-                        const int diff_view_num = intabs(org_bin.view_num() - new_bin.view_num());
+                        // the differences need to also consider wrap-around in views, which would flip tangential pos and segment and TOF bin
+                        const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                          intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
+                        const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
                         const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                        const int diff_tangential_pos_num = intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
-                        const int diff_timing_pos_num = intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num());
+                        const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                          intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
+                        const int diff_timing_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                          intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
                         if (new_bin.get_bin_value() > 0)
                           {
                             if (diff_segment_num > max_diff_segment_num)
@@ -272,6 +272,8 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                     const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
                     const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
                       intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
+                    const int diff_timing_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                      intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
                     if (new_bin.get_bin_value() > 0)
                       {
                         if (diff_segment_num > max_diff_segment_num)
@@ -282,13 +284,16 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                           max_diff_axial_pos_num = diff_axial_pos_num;
                         if (diff_tangential_pos_num > max_diff_tangential_pos_num)
                           max_diff_tangential_pos_num = diff_tangential_pos_num;
+                        if (diff_timing_pos_num > max_diff_timing_pos_num)
+                          max_diff_timing_pos_num = diff_timing_pos_num;
                       }
                     if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(),
                                "round-trip get_LOR then get_bin (LORAs2Points): value")
                         || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin (LORAs2Points): segment")
                         || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
                         || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
-                        || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos"))
+                        || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos")
+                        || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
@@ -1327,8 +1332,7 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
           for (bin.segment_num() = max(-5, proj_data_info.get_min_segment_num());
                bin.segment_num() <= min(5, proj_data_info.get_max_segment_num()); ++bin.segment_num())
             for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
-                 bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
-                 bin.axial_pos_num() += std::min(3, proj_data_info.get_num_axial_poss(bin.segment_num())))
+                 bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
 #  ifdef STIR_OPENMP
             // insert a parallel for here for testing.
             // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
@@ -1385,15 +1389,13 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
 #   endif
 #   endif
     for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
-         segment_num += std::max(1, proj_data_info.get_num_segments() / 2))
+         ++segment_num)
       for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num();
-             view_num += std::min(5, proj_data_info.get_num_views()))
+           ++view_num)
         for (int axial_pos_num = proj_data_info.get_min_axial_pos_num(segment_num);
-             axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num);
-             axial_pos_num += std::min(3, proj_data_info.get_num_axial_poss(bin.segment_num())))
+             axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num); ++axial_pos_num)
           for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num();
-               tangential_pos_num <= proj_data_info.get_max_tangential_pos_num();
-               tangential_pos_num += std::min(7, proj_data_info.get_num_tangential_poss()))
+               tangential_pos_num <= proj_data_info.get_max_tangential_pos_num(); ++tangential_pos_num)
             for (bin.timing_pos_num() = proj_data_info.get_min_tof_pos_num();
                  bin.timing_pos_num() <= proj_data_info.get_max_tof_pos_num();
                  bin.timing_pos_num() += std::max(1, (proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num())
