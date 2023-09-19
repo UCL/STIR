@@ -28,7 +28,7 @@ namespace ecat {
 
 CListEventECAT8_32bit::
 CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr())))
+  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr)
 {
   const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());

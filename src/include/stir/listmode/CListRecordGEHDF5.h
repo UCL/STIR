@@ -201,7 +201,7 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
     get_time_in_millisecs() should therefore be zero at the first time stamp.
   */
  CListRecordGEHDF5(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const unsigned long first_time_stamp) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))),
+   CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr),
     first_time_stamp(first_time_stamp)
     {}
 

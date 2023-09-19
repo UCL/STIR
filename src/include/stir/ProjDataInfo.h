@@ -217,8 +217,11 @@ public:
   inline int get_num_tangential_poss() const;
   //! Get number of tof bin for a given time difference
   inline int get_tof_bin(const double delta) const;
+#if 0
+// KT: code disabled as buggy but currently not needed
   //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
   inline int get_unmashed_tof_bin(const double delta) const;
+#endif
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -444,9 +447,11 @@ public:
   //! Vector which holds the lower and higher boundary for each TOF position in ps`, for faster access.
   mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_ps;
   //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in mm, for faster access.
+#if 0
   mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_mm;
   //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in ps`, for faster access.
   mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_ps;
+#endif
 
   //! Set horizontal bed position
   void set_bed_position_horizontal(const float bed_position_horizontal_arg)
@@ -480,10 +485,12 @@ private:
   int min_tof_pos_num;
   //! Maximum TOF pos
   int max_tof_pos_num;
+#if 0
   //! Minimum TOF pos regardless of the mashing factor
   int min_unmashed_tof_pos_num;
   //! Maximum TOF pos regardless of the mashing factor
   int max_unmashed_tof_pos_num;
+#endif
   //! TOF mash factor.
   int tof_mash_factor;
   //! Finally (with any mashing factor) TOF bin increament.

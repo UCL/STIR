@@ -29,10 +29,14 @@ START_NAMESPACE_STIR
 
 template <class ProjDataInfoT>
 CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
-CListEventScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr_v)
+CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
-  if (!scanner_sptr_v)
-    error("CListEventScannerWithDiscreteDetectors constructor called with zero scanner pointer");
+  if (!proj_data_info_sptr)
+    error("CListEventScannerWithDiscreteDetectors constructor called with zero pointer");
+
+  this->uncompressed_proj_data_info_sptr = std::dynamic_pointer_cast< const ProjDataInfoT >(proj_data_info_sptr->create_shared_clone());
+
+#if 0 // TODO: actually create uncompressed.
   this->scanner_sptr = scanner_sptr_v;
   auto pdi_ptr =
      ProjDataInfo::ProjDataInfoCTI(scanner_sptr_v, 
@@ -48,6 +52,7 @@ CListEventScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr_v
       error("CListEventScannerWithDiscreteDetectors constructor called with scanner that gives wrong type of ProjDataInfo");
     }
   this->uncompressed_proj_data_info_sptr.reset(pdi_ptr_cast);
+#endif
 }
 
 template <class ProjDataInfoT>
@@ -56,7 +61,7 @@ CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
 get_LOR() const
 {
   LORAs2Points<float> lor;
-  bool swap = this->get_delta_time() < 0.F;
+  const bool swap = this->get_delta_time() < 0.F;
   // provide somewhat shorter names for the 2 coordinates, taking swap into account
   CartesianCoordinate3D<float>& coord_1 = swap ? lor.p2() : lor.p1();
   CartesianCoordinate3D<float>& coord_2 = swap ? lor.p1() : lor.p2();
