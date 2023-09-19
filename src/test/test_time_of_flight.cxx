@@ -41,6 +41,7 @@
 #endif
 #include "stir/info.h"
 #include "stir/warning.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
 
@@ -288,6 +289,8 @@ void TOF_Tests::test_CListEventROOT()
   event.get_bin(bin, *test_proj_data_info_sptr);
   check(bin.timing_pos_num() != 0, "test CListEventROOT non-zero TOF bin");
 
+  DetectionPositionPair<> det_pos;
+  event.get_detection_position(det_pos);
   LORAs2Points<float> lor_2pts(event.get_LOR());
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc;
   test_proj_data_info_sptr->get_LOR(lor_sc, bin);
@@ -300,6 +303,27 @@ void TOF_Tests::test_CListEventROOT()
     Bin bin_swapped;
     bin_swapped.time_frame_num() = 1;
     event.get_bin(bin_swapped, *test_proj_data_info_sptr);
+    check_if_equal(bin_swapped, bin, "CListEventROOT: get_bin with swapped detectors");
+    {
+      DetectionPositionPair<> det_pos_swapped;
+      event.get_detection_position(det_pos_swapped);
+      if (det_pos_swapped.timing_pos() == det_pos.timing_pos())
+        {
+          check_if_equal(det_pos_swapped.pos1(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+                    check_if_equal(det_pos_swapped.pos1(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+        }
+      else if (det_pos_swapped.timing_pos() == -det_pos.timing_pos())
+        {
+          check_if_equal(det_pos_swapped.pos2(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+                    check_if_equal(det_pos_swapped.pos2(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+        }
+      else
+        {
+          check_if_equal(std::abs(det_pos_swapped.timing_pos()), std::abs(det_pos.timing_pos()),
+                         "CListEventROOT: get_detection_position with swapped detectors: wrong timing_pos");
+        }
+    }
+
     LORAs2Points<float> lor_2pts_swapped(event.get_LOR());
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc_swapped;
     test_proj_data_info_sptr->get_LOR(lor_sc_swapped, bin_swapped);
