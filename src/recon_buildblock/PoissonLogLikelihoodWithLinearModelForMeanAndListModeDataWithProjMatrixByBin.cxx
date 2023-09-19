@@ -772,15 +772,20 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
 
         double current_time = 0.;
 
-        // need get_bin_value(), so currently need to cast
-        shared_ptr<ProjDataFromStream> add;
+        // need get_bin_value(), so currently need to cast to either of the 2 below (ugly. TODO)
+        shared_ptr<ProjDataFromStream> add_from_stream_sptr;
+        shared_ptr<ProjDataInMemory> add_in_mem_sptr;
 
         if (!is_null_ptr(this->additive_proj_data_sptr))
           {
-            add = std::dynamic_pointer_cast<ProjDataFromStream>(this->additive_proj_data_sptr);
-            // TODO could create a ProjDataInMemory instead, but for now we give up.
-            if (is_null_ptr(add))
-              error("Additive projection data is in unsupported file format. You need to create an Interfile copy. sorry.");
+            add_in_mem_sptr = std::dynamic_pointer_cast<ProjDataInMemory>(this->additive_proj_data_sptr);
+            if (is_null_ptr(add_in_mem_sptr))
+              {
+                add_from_stream_sptr = std::dynamic_pointer_cast<ProjDataFromStream>(this->additive_proj_data_sptr);
+                // TODO could create a ProjDataInMemory instead, but for now we give up.
+                if (is_null_ptr(add_from_stream_sptr))
+                  error("Additive projection data is in unsupported file format. You need to create an Interfile copy. sorry.");
+              }
           }
 
         ProjMatrixElemsForOneBin proj_matrix_row;
@@ -849,8 +854,10 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                    // additive sinogram
                    if (!is_null_ptr(this->additive_proj_data_sptr))
                      {
-                       float add_value = add->get_bin_value(measured_bin);
-                       float value= fwd_bin.get_bin_value()+add_value;
+                       // TODO simplify once we don't need the casting for get_bin_value() anymore
+                       const float add_value = add_in_mem_sptr ? add_in_mem_sptr->get_bin_value(measured_bin) :
+                         add_from_stream_sptr->get_bin_value(measured_bin);
+                       const float value= fwd_bin.get_bin_value()+add_value;
                        fwd_bin.set_bin_value(value);
                      }
 
