@@ -134,7 +134,7 @@ if [ $? -ne 0 ]; then
 fi
 
 
-echo "===  compare result (up to 6%)"
+echo "===  compare result (up to 7%)"
 # threshold needs to be a bit high as scatter_cylinder.hs was generated without random sampling
 compare_projdata -t .07 my_estimated_scatter_3.hs my_upsampled_scatter_cylinder.hs > my_estimate_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then

@@ -31,15 +31,30 @@ build_script:
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
   - echo Using Boost %BOOST_ROOT%
+  # find miniconda
+  - for /D %%d in (C:\Miniconda*-x64) do set MINICONDA=%%d
+  - echo Using Miniconda %MINICONDA%
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
+  # install parallelproj and Python stuff
+  - conda install -c conda-forge  -yq libparallelproj swig numpy pytest
+  - CALL conda.bat activate base
+  - python --version
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF
+  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE="%MINICONDA%\\python.exe"
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
+  - conda deactivate
 
 test_script:
   - cd C:\projects\stir\build
+  - CALL conda.bat activate base
+  - python --version
   - ctest --output-on-failure  -C %CONFIGURATION%
   - cd ..\recon_test_pack
   - run_tests --nointbp "C:\projects\stir\install\bin\"
+  - cd ..\src
+  - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
+  - python -m pytest .
+  - conda deactivate

@@ -153,7 +153,6 @@ class ProjMatrixByBinSPECTUB :
     //Alex
     //Fix to compile, missing function definition in header
     ProjMatrixByBinSPECTUB * clone() const;
-
  private:
 
   // parameters that will be parsed

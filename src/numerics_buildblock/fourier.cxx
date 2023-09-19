@@ -7,7 +7,7 @@
 */
 /*
     Copyright (C) 2003 - 2005-01-17, Hammersmith Imanet Ltd
-
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -40,39 +40,14 @@ static void bitreversal(VectorWithOffset<T>& data)
   }
 }
 
-/* We cache factors exp(i*_PI/pow(2,k)). They will be computed during the first
-   call of the Fourier functions, and then stored in static arrays.
-*/
-// exparray[k][i] = exp(i*_PI/pow(2,k))
-typedef VectorWithOffset<VectorWithOffset<std::complex<float> > > exparray_t;
-static   exparray_t exparray;
 
-static void init_exparray(const int k, const int pow2k)
+// internal function to create vector of size pow2k with exparray[i] = exp(sign*i*_PI/pow2k)
+static VectorWithOffset<std::complex<float>> get_exparray(const int pow2k, const int sign)
 {
-  if (exparray.get_max_index() >= k && exparray[k].size()>0)
-    return;
-
-  if (exparray.get_max_index() <k)
-    exparray.grow(0, k);
-  exparray[k].grow(0,pow2k-1);
+  VectorWithOffset<std::complex<float>> a(pow2k);
   for (int i=0; i< pow2k; ++i)
-    exparray[k][i]= std::exp(std::complex<float>(0, static_cast<float>((i*_PI)/pow2k)));
-}
-
-// expminarray[k][i] = exp(-i*_PI/pow(2,k))
-// obviously just the complex conjugate of exparray
-static   exparray_t expminarray;
-
-static void init_expminarray(const int k, const int pow2k)
-{
-  if (expminarray.get_max_index() >= k && expminarray[k].size()>0)
-    return;
-
-  if (expminarray.get_max_index() <k)
-    expminarray.grow(0, k);
-  expminarray[k].grow(0,pow2k-1);
-  for (int i=0; i< pow2k; ++i)
-    expminarray[k][i]= std::exp(std::complex<float>(0, static_cast<float>(-(i*_PI)/pow2k)));
+    a[i]= std::exp(std::complex<float>(0, static_cast<float>((sign*i*_PI)/pow2k)));
+  return a;
 }
 
 
@@ -100,12 +75,7 @@ void fourier_1d(T& c, const int sign)
   const int pow2nn=c.get_length(); // ==round(pow(2,nn)); 
   for (; k<nn; ++k, pow2k*=2)
   {
-    if (sign==1)
-      init_exparray(k,pow2k);
-    else
-      init_expminarray(k,pow2k);
-    const exparray_t& cur_exparray =
-      sign==1? exparray : expminarray;      
+    const auto cur_exparray = get_exparray(pow2k, sign);
     for (int j=0; j< pow2nn;j+= pow2k*2) 
       for (int i=0; i< pow2k; ++i)
       {
@@ -115,7 +85,7 @@ void fourier_1d(T& c, const int sign)
         typename T::value_type const t1 = c1; 
 	/* here is what we have to do:
             typename T::value_type const t2 = 
-              c2*cur_exparray[k][i];
+              c2*cur_exparray[i];
             c1 = t1+t2; c2 = t1-t2;
 	 however, this would create an unnecessary copy of t2, which is 
 	 potentially large.
@@ -125,7 +95,7 @@ void fourier_1d(T& c, const int sign)
 	 loops over the same data.
 	 Using expression templates would speed this up.
 	*/
-        c2 *= cur_exparray[k][i];
+        c2 *= cur_exparray[i];
         c1 += c2;
         c2 *= -1;
         c2 += t1;
@@ -156,7 +126,6 @@ struct fourier_auxiliary
 };
 
 // specialisation for the one-dimensional case
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 template <typename elemT>
 struct fourier_auxiliary<std::complex<elemT> >
@@ -168,29 +137,6 @@ struct fourier_auxiliary<std::complex<elemT> >
   }
 };
 
-
-#else  //no partial template specialisation
-
-// we just list float and double explicitly
-struct fourier_auxiliary<std::complex<float> >
-{
-  static void 
-  do_fourier(VectorWithOffset<std::complex<float> >& c, const int sign)
-  {
-    fourier_1d(c, sign);
-  }
-};
-
-struct fourier_auxiliary<std::complex<double> >
-{
-  static void 
-  do_fourier(VectorWithOffset<std::complex<double> >& c, const int sign)
-  {
-    fourier_1d(c, sign);
-  }
-};
-#endif
-
 } // end of namespace detail
 
 // now the fourier function is easy to define in terms of the class above
@@ -198,11 +144,7 @@ template <typename T>
 void 
 fourier(T& c, const int sign)
 {
-#if !defined(_MSC_VER) || _MSC_VER>1200
   detail::fourier_auxiliary<typename T::value_type>::do_fourier(c,sign);
-#else
-  detail::fourier_auxiliary<T::value_type>::do_fourier(c,sign);
-#endif
 }
 
 
@@ -210,7 +152,7 @@ fourier(T& c, const int sign)
  DFT of real data
 *****************************************************************/
 
-
+// specialisation for the one-dimensional case
 
 template <typename T>
 Array<1,std::complex<T> >
@@ -376,9 +318,6 @@ struct fourier_for_real_data_auxiliary
   }
 };
 
-// specialisation for the one-dimensional case
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
 template <typename elemT>
 struct fourier_for_real_data_auxiliary<1,elemT>
 {
@@ -395,52 +334,6 @@ struct fourier_for_real_data_auxiliary<1,elemT>
       inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
   }
 };
-
-
-#else  //no partial template specialisation
-
-// we just list float explicitly
-
-struct fourier_for_real_data_auxiliary<1,float>
-{
-  static Array<1,std::complex<float> >
-    do_fourier_for_real_data(const Array<1,float>& c, const int sign)
-  {
-    return
-      fourier_1d_for_real_data(c, sign);
-  }
-  static Array<1,float>
-    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<float> >& c, const int sign)
-  {
-    return
-      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
-  }
-};
-
-#if 0 
-/* Disabled double for now. 
- If you want to use double, you will probably have
- to make sure that Array<1,std::complex<double> > is instantiated.
- At time of writing, you would do this at the end of Array.h
- */
-struct fourier_for_real_data_auxiliary<1,double>
-{
-  static Array<1,std::complex<double> >
-    do_fourier_for_real_data(const Array<1,double>& c, const int sign)
-  {
-    return
-      fourier_1d_for_real_data(c, sign);
-  }
-  static Array<1,double>
-    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<double> >& c, const int sign)
-  {
-    return
-      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
-  }
-};
-#endif // end of double
-
-#endif // end of BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 } // end of namespace detail
 

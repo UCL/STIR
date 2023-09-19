@@ -135,7 +135,6 @@ forward_project(RelatedViewgrams<float>& viewgrams,
   if (viewgrams.get_num_viewgrams()==0)
     return;
   check(*viewgrams.get_proj_data_info_sptr(), density);
-  start_timers();
 
   // first check symmetries
   {
@@ -267,7 +266,6 @@ forward_project(RelatedViewgrams<float>& viewgrams,
     error("You need to call set_input() forward_project()");
 
   check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
-  start_timers();
 
   // first check symmetries
   {
@@ -292,7 +290,6 @@ forward_project(RelatedViewgrams<float>& viewgrams,
          max_axial_pos_num,
          min_tangential_pos_num,
          max_tangential_pos_num);
-  stop_timers();
 }
 
 void
