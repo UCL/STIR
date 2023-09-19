@@ -1,6 +1,7 @@
 /*
+ *  Copyright (C) 2016, UCL
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2019-2020, UCL
+    Copyright (C) 2019-2020, 2023, UCL
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -18,27 +19,9 @@
 #ifndef __stir_ProjDataInMemory_H__
 #define __stir_ProjDataInMemory_H__
 
-#include "stir/ProjDataFromStream.h" 
+#include "stir/ProjData.h"
 #include "stir/Array.h"
 #include <string>
-
-/* Implementation note (KT)
-   
-   I first used the std::stringstream class (when available).
-   However, this class currently has a problem that you cannot preallocate
-   a buffer size. This means that when we write to the stringstream, it will
-   grow piece by piece. For some implementations (i.e. those that keep the memory
-   contiguous), this might mean multiple reallocations and copying of data.
-   Of course, for 'smart' implementations of stringstream, this wouldn't happen.
-
-   So, we now use boost::interprocess::bufferstream instead. You could use
-   use old style strstream instead, but that's now very deprecated, so that's not recommended.
-*/
-//#define STIR_USE_OLD_STRSTREAM
-
-#if defined(BOOST_NO_STRINGSTREAM) && !defined(STIR_USE_OLD_STRSTREAM)
-#define STIR_USE_OLD_STRSTREAM 
-#endif
 
 START_NAMESPACE_STIR
 
@@ -51,7 +34,7 @@ class Succeeded;
   Mainly useful for temporary storage of projection data.
 
 */
-class ProjDataInMemory : public ProjDataFromStream
+class ProjDataInMemory : public ProjData
 {
 public: 
     
@@ -71,6 +54,41 @@ public:
 
   //! Copy constructor
   ProjDataInMemory (const ProjDataInMemory& proj_data);
+
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false
+#ifdef STIR_TOF
+                               , const int timing_pos=0
+#endif
+                               ) const override;
+  Succeeded set_viewgram(const Viewgram<float>& v);
+
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false
+#ifdef STIR_TOF
+                               , const int timing_pos=0
+#endif
+                               ) const override;
+
+  Succeeded set_sinogram(const Sinogram<float>& s) override;
+
+  //! Get all sinograms for the given segment
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num
+#ifdef STIR_TOF
+                                                   , const int timing_pos=0
+#endif
+                               ) const override;
+  //! Get all viewgrams for the given segment
+  SegmentByView<float> get_segment_by_view(const int segment_num
+#ifdef STIR_TOF
+                                           , const int timing_pos=0
+#endif
+                               ) const override;
+
+  //! Set all sinograms for the given segment
+  Succeeded set_segment(const SegmentBySinogram<float>&) override;
+  //! Set all viewgrams for the given segment
+  Succeeded set_segment(const SegmentByView<float>&) override;
 
   //! set all bins to the same value
   /*! will call error() if setting failed */
@@ -174,13 +192,21 @@ public:
 private:
   Array<1,float> buffer;
   
-  size_t get_size_of_buffer_in_bytes() const;
-
-  //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
+  //! allocates buffer for storing the data. Has to be called by constructors
   void create_buffer(const bool initialise_with_0 = false);
+  //! offset of the whole 3d sinogram in the stream
+  std::streamoff  offset;
+  //! offset of a complete non-tof sinogram
+  std::streamoff offset_3d_data;
 
-  //! Create a new stream
-  void create_stream();
+  //!the order in which the segments occur in the stream
+  std::vector<int> segment_sequence;
+  //!the order in which the timing bins occur in the stream
+  std::vector<int> timing_poss_sequence;
+
+  //! Calculate the offset for a specific bin
+  /*! Throws if out-of-range or other error */
+  std::streamoff get_index(const Bin&) const;
 };
 
 END_NAMESPACE_STIR
