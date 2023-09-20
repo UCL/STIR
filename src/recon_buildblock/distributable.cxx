@@ -492,10 +492,10 @@ void distributable_computation(
           const int thread_num=omp_get_thread_num();
           info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, timing_pos_num: %d")
                % thread_num % omp_get_num_threads()
-               % view_segment_num.segment_num() % view_segment_num.view_num() % timing_pos_num, 2);
+               % view_segment_num.segment_num() % view_segment_num.view_num() % timing_pos_num, 3);
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d, timing_pos_num: %d")
-               % view_segment_num.segment_num() % view_segment_num.view_num() % timing_pos_num,2);
+               % view_segment_num.segment_num() % view_segment_num.view_num() % timing_pos_num,3);
 #endif
 
 #ifdef STIR_OPENMP

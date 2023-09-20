@@ -185,6 +185,7 @@ ProjMatrixByBinSPECTUB::
 set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
 {
   this->attenuation_image_sptr = value;
+  this->attenuation_map="";
   if (this->attenuation_type == "no")
     {
       info("Setting attenuation type to 'simple'");
@@ -204,10 +205,11 @@ set_attenuation_image_sptr(const std::string& value)
 
 void
 ProjMatrixByBinSPECTUB::
-set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D)
+set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope, const bool full_3D)
 {
+  // convert sigma_0 to cm. slope is dimensionless
   this->collimator_sigma_0 = collimator_sigma_0_in_mm / 10;
-  this->collimator_slope = collimator_slope_in_mm / 10;
+  this->collimator_slope = collimator_slope;
   if (collimator_slope == 0.F && collimator_sigma_0 == 0.F)
     {
       this->psf_type = "geometrical";
@@ -355,7 +357,7 @@ set_up(
 	  // note: convert to cm for UB SPECT library
 	  Rrad[ i ] = radius_all_views[i]/10;	
 	}
-	
+
 	//... resolution parameters ..............................................	
 	wmh.min_w   = minimum_weight;
 	wmh.maxsigm = maximum_number_of_sigmas;
@@ -393,30 +395,30 @@ set_up(
 		}
 	}
 	
-	if ( wmh.do_psf ){ 		
-	  wmh.predef_col = false;
+      wmh.predef_col = false;
 	  wmh.COL.A = collimator_slope;
 	  wmh.COL.B = collimator_sigma_0;
-	}
-	else{
+      // no fan-beam
+      wmh.COL.do_fb = false;
+
+    if ( !wmh.do_psf )
  	  // code to enable fan-beam collimator at some point... (not validated)
 	  // before enabling, you will have to change the parameter file to give parameters of the fan-beam
 	  //int num = collimator_number;
-	  //if ( num ==0 ) {
-	  wmh.COL.do_fb = false;
+      //if ( wmh.COL.do_fb ==0 ) {
 	  info_stream << "No correction for PSF. Parallel geometry" << std::endl;
 	  //}
 	  //else {
-	  //	wmh.COL.do_fb = true;
-	  //	wmh.COL.F     = collimator_number;
 	  //	info_stream << "No correction for PSF. Fanbeam geometry with focal distance = " << wmh.COL.F << " cm " << std::endl;
 	  //}		
-	}
+
 	
 	//... attenuation parameters .........................	
 	boost::algorithm::to_lower(attenuation_type);
+    wmh.att_fn=this->attenuation_map;
+
 	if ( attenuation_type == "no" ) {
-		wmh.do_att = false;
+        wmh.do_full_att=wmh.do_att = false;
 	}
 	else{
 		wmh.do_att = true;
@@ -439,13 +441,21 @@ set_up(
 	}
 	else{
 		wmh.do_msk = true;
-		if( mask_type == "cylinder" ) wmh.do_msk_cyl = true;
+        if( mask_type == "cylinder" )
+        {
+            wmh.do_msk_cyl = true;
+            wmh.do_msk_att = wmh.do_msk_file = false;
+        }
 		else {
-			if( mask_type == "attenuation map" ) wmh.do_msk_att = true;
+            if( mask_type == "attenuation map" )
+            {
+                wmh.do_msk_att = true;
+                wmh.do_msk_cyl = wmh.do_msk_file = false;
+            }
 			else{
 				if( mask_type == "explicit mask" ){
 					wmh.do_msk_file = true;
-					
+                    wmh.do_msk_cyl = wmh.do_msk_att = false;
 					wmh.msk_fn = mask_file;
 					
 					info_stream << "MASK filename = " << wmh.msk_fn << std::endl;
@@ -471,7 +481,7 @@ set_up(
 	//:: Control of read parameters
 	info_stream << "" << std::endl;
 	info_stream << "Parameters of SPECT UB matrix: (in cm)" << std::endl;
-	info_stream << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< std::endl;
+    info_stream << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< std::endl;
 	info_stream << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << std::endl;
 	info_stream << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm << std::endl;
 	info_stream << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << std::endl;
@@ -640,6 +650,8 @@ set_up(
 
 			wmh.index[ i ] = prj.order[ i + kOS * prj.NangOS ];
 			wmh.Rrad [ i ] = Rrad[ wmh.index[ i ] ];
+            if (wmh.Rrad [ i ]!=wmh.Rrad [ 0 ])
+                wmh.fixed_Rrad=false;
 		}
 
 		//... NITEMS initialization  ......................

@@ -484,9 +484,6 @@ forward_project_all_symmetries(
   const int min_tang_pos_num_in_loop =
     min_abs_tangential_pos_num==0 ? 1 : min_abs_tangential_pos_num;
   
-  start_timers();
-
- 
     Array <4,float> Projall(IndexRange4D(min_ax_pos_num, max_ax_pos_num, 0, 1, 0, 1, 0, 3));
     // KT 21/05/98 removed as now automatically zero 
     // Projall.fill(0);
@@ -653,8 +650,6 @@ forward_project_all_symmetries(
 
         }// end of } else {
     }// end of test for offset loop
-  
-    stop_timers();
   
 }
 
@@ -906,8 +901,6 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     
     const int   projrad = (int) (sino.get_num_tangential_poss() / 2) - 1;
     
-    start_timers();
-    
     //TODO for the moment, just handle 1 plane and use some 3D variables 
     const int min_ax_pos = 0;
     const int max_ax_pos = 0;
@@ -1024,8 +1017,6 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
       }// end of } else {
     }// end of test for offset loop
     
-    stop_timers();
-    
 }
 
 #endif // old 2D versions
@@ -1115,7 +1106,6 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 			         const int min_axial_pos_num, const int max_axial_pos_num,
 			         const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  start_timers();
 
   // KT 20/06/2001 should now work for non-arccorrected data as well
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
@@ -1446,7 +1436,6 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
     }// end loop over D
   }// end of else
     
-  stop_timers();
 }
 
 #if 0 // disabled as currently not used. needs to be written in the new style anyway

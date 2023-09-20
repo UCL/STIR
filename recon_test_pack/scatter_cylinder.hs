@@ -1,9 +1,11 @@
 !INTERFILE  :=
+!imaging modality := PT
 name of data file := scatter_cylinder.s
 originating system := unknown
 !version of keys := STIR4.0
 !GENERAL DATA :=
-!imaging modality := PT
+patient orientation := head_in
+patient rotation :=  supine
 !GENERAL IMAGE DATA :=
 !type of data := PET
 imagedata byte order := LITTLEENDIAN

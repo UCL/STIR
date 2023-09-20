@@ -5,11 +5,11 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-cmake_minimum_required(VERSION 3.1.0)
-
-
-# avoid warning about WIN32 no longer defined in CYGWIN
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
+if (CMAKE_HOST_WIN32)
+  cmake_minimum_required(VERSION 3.12.0)
+else()
+  cmake_minimum_required(VERSION 3.1.0)
+endif()
 
 # enable ccache https://ccache.samba.org/
 find_program(CCACHE_PROGRAM ccache)
@@ -57,8 +57,8 @@ endif()
 ####### Set Version number etc
 set(VERSION_MAJOR   5)
 set(VERSION_MINOR   1)
-set(VERSION_PATCH   0)
-set(VERSION   050100) # only used in STIRConfig.h.in
+set(VERSION_PATCH   2)
+set(VERSION   050102) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})

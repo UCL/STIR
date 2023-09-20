@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -54,8 +55,13 @@ class Timer
 public:
   inline Timer();
   inline virtual ~Timer();  
-  inline void start();
+  //! start stopwatch, optionally resetting first
+  /*! the stopwatch should not be running already if asking to reset */
+  inline void start(bool do_reset = false);
+  //! stop stopwatch
   inline void stop();
+  //! reset stopwatch
+  /*! the stopwatch should not be running */
   inline void reset();
   //! return value is undefined when start() is not called first.
   inline double value() const;

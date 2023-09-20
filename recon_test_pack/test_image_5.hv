@@ -1,6 +1,9 @@
 !INTERFILE  :=
+imaging modality := PET
 name of data file := test_image_5.v
 !GENERAL DATA :=
+patient rotation := supine
+patient orientation := head_in
 !GENERAL IMAGE DATA :=
 !type of data := PET
 imagedata byte order := LITTLEENDIAN
@@ -20,7 +23,4 @@ matrix axis label [3] := z
 !matrix size [3] := 31
 scaling factor (mm/pixel) [3] := 3.375
 number of time frames := 1
-image scaling factor[1] := 1
-data offset in bytes[1] := 0
-quantification units := 1
 !END OF INTERFILE :=
