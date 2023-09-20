@@ -52,7 +52,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
-    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
     if (half_block < 0 )
         half_block = 0;
 }

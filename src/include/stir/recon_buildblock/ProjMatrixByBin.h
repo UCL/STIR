@@ -116,10 +116,7 @@ public:
   
   The implementation is inline as it just gets it in
   terms of the cached_proj_matrix_elems_for_one_bin or 
-  calculate_proj_matrix_elems_for_one_bin.
-
-  N.E: Updated to accomondate TOF information.
-*/
+  calculate_proj_matrix_elems_for_one_bin.*/
   inline void 
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
@@ -249,7 +246,7 @@ private:
 
   //! Activates the application of the timing kernel to the LOR
   //! and performs initial set_up().
-  //! \warning Must be called after set_up()
+  //! \warning Must be called during set_up()
   void enable_tof(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,const bool v = true);
 
   //! A local copy of the scanner's time resolution in mm.
