@@ -52,6 +52,7 @@ int main(int argc, char * argv[])
           list_registered_names(cerr);
         exit(EXIT_SUCCESS);
       }
+#if 0
       if (strcmp(argv[1], "--test_timing_positions") == 0)
       {
         cerr << "A test function for TOF data which I could not fit anywhere else right now:\n"
@@ -63,7 +64,8 @@ int main(int argc, char * argv[])
         application.run_tof_test_function();
         exit(EXIT_SUCCESS);
       }
-  }
+#endif
+    }
   LmToProjData application(argc==2 ? argv[1] : 0);
   std::cerr << application.parameter_info();
   application.process_data();

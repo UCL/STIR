@@ -914,6 +914,7 @@ process_data()
     cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
 }
 
+#if 0
 void
 LmToProjData::run_tof_test_function()
 {
@@ -996,6 +997,7 @@ LmToProjData::run_tof_test_function()
 #endif
 }
 
+#endif
 
 
 /************************* Local helper routines *************************/
