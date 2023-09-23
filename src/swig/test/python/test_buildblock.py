@@ -205,6 +205,15 @@ def test_Scanner():
     assert s.succeeded()
     assert d==d2
 
+def test_Radionuclide():
+    modality = ImagingModality(ImagingModality.PT)
+    db = RadionuclideDB()
+    r = db.get_radionuclide(modality, "^18^Fluorine")
+    assert abs(r.get_half_life() - 6584) < 1
+    modality = ImagingModality(ImagingModality.NM)
+    r = db.get_radionuclide(modality, "^99m^Technetium")
+    assert abs(r.get_half_life() - 6.0058*3600) < 10
+
 def test_Bin():
     segment_num=1;
     view_num=2;
