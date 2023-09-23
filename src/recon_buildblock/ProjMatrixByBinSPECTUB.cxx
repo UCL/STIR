@@ -374,7 +374,11 @@ set_up(
 	
 	//....PSF and collimator parameters ........................................	
         boost::algorithm::to_lower(psf_type);
-	if ( psf_type == "geometrical" ) wmh.do_psf = false;
+	if ( psf_type == "geometrical" )
+          {
+            wmh.do_psf = false;
+            wmh.do_psf_3d = false;
+          }
 	else{
 		wmh.do_psf = true;
 		
