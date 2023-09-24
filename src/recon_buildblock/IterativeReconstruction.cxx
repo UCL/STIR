@@ -460,10 +460,10 @@ set_up(shared_ptr<TargetT > const& target_data_sptr)
 
 
   if (this->num_subsets<1 )
-    { warning("number of subsets should be positive"); return Succeeded::no; }
+    { error("number of subsets should be positive"); return Succeeded::no; }
 
   if (is_null_ptr(this->objective_function_sptr))
-    { warning("You have to specify an objective function"); return Succeeded::no; }
+    { error("You have to specify an objective function"); return Succeeded::no; }
 
   const int new_num_subsets =
     this->objective_function_sptr->set_num_subsets(this->num_subsets);
@@ -474,24 +474,24 @@ set_up(shared_ptr<TargetT > const& target_data_sptr)
       this->num_subsets = new_num_subsets;
     }
 
+  if (this->num_subiterations<1)
+    { error("Range error in number of subiterations (has to be >= 1)"); return Succeeded::no; }
+  
+  if(this->start_subset_num<0 || this->start_subset_num>=this->num_subsets) 
+    { error("Range error in starting subset (has to be between 0 and num_subsets-1)"); return Succeeded::no; }
+
+  if(this->save_interval<1 || this->save_interval>this->num_subiterations) 
+    { error("Range error in iteration save interval (has to be between 1 and num_subiterations-1)"); return Succeeded::no;}
+ 
+  if (this->inter_iteration_filter_interval<0)
+    { error("Range error in inter-iteration filter interval (has to be >= 0)"); return Succeeded::no; }
+
+  if (this->start_subiteration_num<1)
+    { error("Range error in starting subiteration number (has to be >= 1)"); return Succeeded::no; }
+
   if (this->objective_function_sptr->set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
 
-  if (this->num_subiterations<1)
-    { warning("Range error in number of subiterations"); return Succeeded::no; }
-  
-  if(this->start_subset_num<0 || this->start_subset_num>=this->num_subsets) 
-    { warning("Range error in starting subset"); return Succeeded::no; }
-
-  if(this->save_interval<1 || this->save_interval>this->num_subiterations) 
-    { warning("Range error in iteration save interval"); return Succeeded::no;}
- 
-  if (this->inter_iteration_filter_interval<0)
-    { warning("Range error in inter-iteration filter interval "); return Succeeded::no; }
-
-  if (this->start_subiteration_num<1)
-    { warning("Range error in starting subiteration number"); return Succeeded::no; }
-  
   ////////////////// subset order
 
   // KT 05/07/2000 made randomise_subset_order int

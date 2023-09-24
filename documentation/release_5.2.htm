@@ -63,14 +63,20 @@
   </li>
 </ul>
 
-<h3>New examples</h3>
-<ul>
-</ul>
-
-<h4>Python</h4>
+<h4>Python (and MATLAB)</h4>
 <ul>
   <li>Examples use <code>stir.ProjData.read_from_file</code> as opposed to <code>stir.ProjData_read_from_file</code>. The former is supported since SWIG 3.0, and the <a href="https://swig.org/Doc4.1/Python.html#Python_nn20">default from SWIG 4.1</a>.
-    </li>
+  </li>
+  <li>Addition of <code>DetectionPosition</code> and <code>DetectionPositionPair</code>.</li>
+  <li><code>bin.time_frame_num</code> is now no longer a function in Python, but acts like a variable
+    (as the other <code>Bin</code> members).
+  </li>
+  <li>Addition of <code>RadionuclideDB</code></li>
+</ul>
+
+<h3>New examples</h3>
+<ul>
+  <li><tt>examples/python/construct_projdata_demo.py</tt> illustrates constructing a <code>ProjDataInMemory</code></li>
 </ul>
 
 <h3>Changed functionality</h3>
@@ -95,6 +101,8 @@
     This is to reduce the default output during iterative reconstructions.
   <br /><a href="https://github.com/UCL/STIR/pull/1243/">PR #1243</a>.
   </li>
+  <li>The <code>Succeeded</code> class has a new method <code>bool succeeded()</code> enabling more concise code (avoiding the need for comparing with <code>Succeeded::yes</code> which is especially verbose in Python).
+    </li>
 </ul>
 
 <h3>Deprecated functionality</h3>
