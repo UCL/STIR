@@ -93,6 +93,9 @@ public:
 	stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos( const stir::DetectionPosition<>& det_pos ) const
 	{ 
 		auto coord = det_pos_to_coord.at(det_pos);
+    if (sigma == 0.0)
+      return coord;
+
 #ifdef STIR_OPENMP
 		auto thread_id = omp_get_thread_num();
 #else
@@ -123,8 +126,8 @@ public:
 
 protected:
 
- DetectorCoordinateMap(double sigma = 0.0) :
-        sigma(sigma)
+ explicit DetectorCoordinateMap(double sigma = 0.0) :
+  sigma(sigma)
   {
 #ifdef STIR_OPENMP
     generators.resize(omp_get_max_threads());
