@@ -27,7 +27,9 @@
 #include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/unordered_map.hpp>
+#ifdef STIR_OPENMP
 #include <omp.h>
+#endif
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DetectionPosition.h"
@@ -66,32 +68,16 @@ public:
 
 	//! Constructor calls read_detectormap_from_file( filename ).
 	DetectorCoordinateMap(const std::string& filename, double sigma = 0.0) :
-		sigma(sigma)
-		{ 
-      read_detectormap_from_file(filename);
-#ifdef STIR_OPENMP
-      distributions.resize(omp_get_max_threads());
-      for (auto &distribution : distributions)
-        distribution = std::normal_distribution<double>(0.0, sigma);
-#else
-      distributions.resize(1);
-      distributions[0] = std::normal_distribution<double>(0.0, sigma);
-#endif
-    }
+		DetectorCoordinateMap(sigma)
+	{ 
+		read_detectormap_from_file(filename);
+	}
 	//! Constructor calls set_detector_map(coord_map).
 	DetectorCoordinateMap(const det_pos_to_coord_type& coord_map, double sigma = 0.0) :
-		sigma(sigma)
-		{
-      set_detector_map( coord_map ); 
-#ifdef STIR_OPENMP
-      distributions.resize(omp_get_max_threads());
-      for (auto &distribution : distributions)
-        distribution = std::normal_distribution<double>(0.0, sigma);
-#else
-      distributions.resize(1);
-      distributions[0] = std::normal_distribution<double>(0.0, sigma);
-#endif
-  }
+		DetectorCoordinateMap(sigma)
+	{
+		set_detector_map( coord_map ); 
+	}
 
 	//! Reads map from file and stores it.
 	void read_detectormap_from_file( const std::string& filename );
@@ -102,20 +88,20 @@ public:
 	stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<>& index) const
 	{
 		return input_index_to_det_pos.at(index);
-    }
+  }
 	//! Returns a cartesian coordinate given a detection position.
 	stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos( const stir::DetectionPosition<>& det_pos ) const
 	{ 
 		auto coord = det_pos_to_coord.at(det_pos);
 #ifdef STIR_OPENMP
-    auto thread_id = omp_get_thread_num();
+		auto thread_id = omp_get_thread_num();
 #else
-    auto thread_id = 0;
+		auto thread_id = 0;
 #endif
     
-		coord.x() += static_cast<float>(distributions[thread_id](generator));
-		coord.y() += static_cast<float>(distributions[thread_id](generator));
-		coord.z() += static_cast<float>(distributions[thread_id](generator));
+		coord.x() += static_cast<float>(distributions[thread_id](generators[thread_id]));
+		coord.y() += static_cast<float>(distributions[thread_id](generators[thread_id]));
+		coord.z() += static_cast<float>(distributions[thread_id](generators[thread_id]));
 		return coord;
 	}
 	//! Returns a cartesian coordinate given an (unsorted) index.
@@ -141,10 +127,12 @@ protected:
         sigma(sigma)
   {
 #ifdef STIR_OPENMP
+    generators.resize(omp_get_max_threads());
     distributions.resize(omp_get_max_threads());
     for (auto &distribution : distributions)
       distribution = std::normal_distribution<double>(0.0, sigma);
 #else
+    generators.resize(1);
     distributions.resize(1);
     distributions[0] = std::normal_distribution<double>(0.0, sigma);
 #endif
@@ -161,7 +149,7 @@ private:
     stir::DetectionPosition<>> detection_position_map_given_cartesian_coord_keys_2_decimal;
 
   const double sigma;
-  mutable std::default_random_engine generator;
+  mutable std::vector<std::default_random_engine> generators;
   mutable std::vector<std::normal_distribution<double>> distributions;
 
   static det_pos_to_coord_type
