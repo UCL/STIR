@@ -1,0 +1,229 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: STIR Software for Tomographic Image Reconstruction
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+    - family-names: Mustafovic
+      given-names:  Sanida
+      affiliation:  Imperial College London (UK)
+    - family-names: Efthimiou
+      given-names:  Nikos
+      orcid:        'https://orcid.org/0000-0003-1947-5033'
+    - family-names: Brown
+      given-names:  Richard
+      orcid:        'https://orcid.org/0000-0001-6989-9200'
+      affiliation:  University College London
+    - family-names: Tsoumpas
+      given-names:  Charalampos
+    - family-names: Twyman
+      given-names:  Robert
+      affiliation:  University College London
+    - family-names: Deidda
+      given-names:  Daniel
+      orcid:        'https://orcid.org/0000-0002-2766-4339'
+      affiliation:  National Physics Laboratory (UK)
+    - family-names: Borgeaud
+      given-names:  Tim
+      affiliation:  Hammersmith Imanet Ltd
+    - family-names: Falcon
+      given-names:  Carles
+    - family-names: Khateri
+      given-names:  Parisa
+      affiliation:  ETH Zuerich
+    - family-names: Wadhwa
+      given-names:  Palak
+      affiliation:  University of Leeds (UK)
+    - family-names: Beisel
+      given-names:  Tobias
+    - family-names: Strugari
+      given-names:  Matthew
+      affiliation:  Dalhousie University (Canada)
+    - family-names: Jacobson
+      given-names:  Matthew
+    - family-names: Gillman
+      given-names:  Ashley
+      orcid:        'https://orcid.org/0000-0001-9130-1092'
+      affiliation:  >-
+        Commonwealth Scientific and Industrial Research
+        Organisation, and University of Queensland
+    - family-names: Zverovich
+      given-names:  Alexey
+      affiliation:  Brunel University (UK)
+    - family-names: Emond
+      given-names:  Elise
+      affiliation:  University College London
+    - family-names: Biguri
+      given-names:  Ander
+      orcid:        'https://orcid.org/0000-0002-2636-3032'
+      affiliation:  University College London
+    - family-names: Fuster Marti
+      given-names:  Berta
+      affiliation:  University of Barcelona (Spain)
+    - family-names: Labbe
+      given-names:  Claire
+    - family-names: Fischer
+      given-names:  Jannis
+      orcid:        'https://orcid.org/0000-0002-8329-0220'
+    - family-names: Jehl
+      given-names:  Markus
+      affiliation:  Positrigo
+    - family-names: Roethlisberger
+      given-names:  Michael
+      affiliation:  ETH Zuerich
+    - family-names: Aguiar
+      given-names:  Pablo
+    - family-names: Brusaferri
+      given-names:  Ludovica
+      affiliation:  University College London
+    - family-names: Bertolli
+      given-names:  Ottavia
+      affiliation:  University College London
+    - family-names: Pasca
+      given-names:  Edoardo
+      affiliation:  UK Research & Innovation
+      orcid:        'https://orcid.org/0000-0001-6957-2160'
+    - family-names: Niknejad
+      given-names:  Tahereh
+    - family-names: Dikaios
+      given-names:  Nikos
+    - family-names: Sadki
+      given-names:  Mustapha
+      affiliation:  Brunel University (UK)
+    - family-names: Fardell
+      given-names:  Gemma
+      orcid:        'https://orcid.org/0000-0003-2388-5211'
+      affiliation:  UK Research & Innovation
+    - family-names: Kerrouche
+      given-names:  Nacer
+      affiliation:  Hammersmith Imanet Ltd
+    - family-names: Ovtchinnikov
+      given-names:  Evgueni
+      orcid:        'https://orcid.org/0000-0002-9359-6514'
+      affiliation:  UK Research & Innovation
+    - family-names: Ehrhardt
+      given-names:  Matthias J.
+      orcid:        'https://orcid.org/0000-0001-8523-353X'
+    - family-names: Schmidtlein
+      given-names:  C Ross
+    - family-names: Valente
+      given-names:  Patrick
+      affiliation:  Brunel University (UK)
+    - family-names: Thomas
+      given-names:  Benjamin
+      orcid:        'https://orcid.org/0000-0002-9784-1177'
+      affiliation:  University College London
+    - family-names: Schramm
+      given-names:  Georg
+      affiliation:  Katholieke Universiteit Leuven (Belgium)
+    - family-names: Völgyes
+      given-names:  David
+    - family-names: Dinelle
+      given-names:  Katie
+    - family-names: Belluzzo
+      given-names:  Damiano
+      affiliation:  Hospedale San Raffaele Milano (Italy)
+    - family-names: Ching
+      given-names:  Daniel
+    - family-names: Hague
+      given-names:  Darren
+      affiliation:  Brunel University (UK)
+    - family-names: Tunnicliffe
+      given-names:  Harry
+      affiliation:  University of Leeds (UK)
+    - family-names: Chen
+      given-names:  Gefei
+    - family-names: Dao
+      given-names:  Viet Anh
+      affiliation:  University of Leeds (UK)
+    - family-names: Mikhaylova
+      given-names:  Ekaterina
+      affiliation:  Positrigo
+    - family-names: da Costa-Luis
+      given-names:  Casper O.
+      orcid:        'https://orcid.org/0000-0002-7211-1557'
+    - family-names: Porter
+      given-names:  Sam David
+      affiliation:  University College London, National Physics Laboratory (UK)
+    - family-names: Rashidnasab
+      given-names:  Alaleh
+      affiliation:  University College London
+    - family-names: Whitehead
+      given-names:  Alexander C.
+      affiliation:  University College London
+    - family-names: Gillen
+      given-names:  Rebecca
+      affiliation:  University College London
+    - family-names: Vavrek
+      given-names:  Jayson
+    - family-names: Kohr
+      given-names:  Holger
+    - family-names: Tsai
+      given-names:  Yu-jung
+      affiliation:  University College London
+    - name: tokkot
+    - family-names: El Katib
+      given-names:  Mahmoud
+    - family-names: Thielemans
+      given-names:  Kris
+      orcid:        'https://orcid.org/0000-0002-5514-199X'
+      affiliation:   University College London
+identifiers:
+    - type: doi
+      value: 10.1088/0031-9155/57/4/867
+    - type: doi
+      value: 10.1186/s40658-019-0248-9
+    - type: doi
+      value: 10.3390/jimaging8060172
+    - type: doi
+      value: 10.1109/NSSMIC.2018.8824341
+    - type: doi
+      value: 10.1186/2197-7364-1-s1-a44
+    - type: doi
+      value: 10.1109/nssmic.2013.6829258
+    - type: doi
+      value: 10.1118/1.4816676
+    - type: doi
+      value: 10.1007/s12149-011-0514-y
+    - type: doi
+      value: 10.1016/j.compmedimag.2011.01.002
+    - type: doi
+      value: 10.1088/1742-6596/317/1/012002
+    - type: doi
+      value: 10.1109/nssmic.2008.4774198
+    - type: doi
+      value: 10.1109/nssmic.2006.354345
+    - type: doi
+      value: 10.1109/nssmic.2005.1596753
+    - type: doi
+      value: 10.1109/nssmic.2004.1466455
+    - type: doi
+      value: 10.1109/nssmic.2004.1466782
+    - type: doi
+      value: 10.1109/nssmic.2002.1239610
+    - type: doi
+      value: 10.1109/NSSMIC.2001.1008688
+    - type: doi
+      value: 10.1088/0031-9155/45/8/325
+    - type: doi
+      value: 10.1007/978-3-642-60125-5_50
+    - type: doi
+      value: 10.1088/1361-6420/ab013f
+    - type: doi
+      value: 10.1109/TRPMS.2018.2884176
+    - type: doi
+      value: 10.1109/nssmic.2018.8824312
+    - type: doi
+      value: 10.1109/NSS/MIC42101.2019.9059665
+repository-code: 'https://github.com/UCL/STIR'
+keywords:
+  - pet
+  - spect
+  - medical imaging
+  - image reconstruction
+  - open-source software
+license: Apache-2.0
