@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014, 2019 University College London
+  Copyright (C) 2013-2014, 2019, 2020, 2021 University College London
+  Copyright (C) 2020, National Physical Laboratory
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -22,6 +23,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Daniel Deidda
 */
 
 
@@ -36,9 +38,10 @@
 #include "stir/Bin.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
-#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
+#include "stir/utilities.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <algorithm>
@@ -160,7 +163,9 @@ BinNormalisationFromECAT8::set_defaults()
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
   this->_use_geometric_factors = true;
-  this->_use_crystal_interference_factors = true;  
+  this->_use_crystal_interference_factors = true;
+  this->_use_axial_effects_factors = true;
+  this->_write_components_to_file = false;
 }
 
 void 
@@ -178,6 +183,8 @@ initialise_keymap()
   //this->parser.add_key("use_dead_time", &this->_use_dead_time);
   this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
   this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
+  this->parser.add_key("use_axial_effects_factors", &this->_use_axial_effects_factors);
+  this->parser.add_key("write_components_to_file", &this->_write_components_to_file);
   this->parser.add_stop_key("End Bin Normalisation From ECAT8");
 }
 
@@ -229,12 +236,20 @@ set_up(const shared_ptr<const ExamInfo> &exam_info_sptr_v, const shared_ptr<cons
     return Succeeded::no;
   }
 
-  span = 
-    proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
-    proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
-  // TODO insert check all other segments are the same
+  if (this->use_axial_effects_factors())
+    {
+      const int data_max_ring_diff =
+        proj_data_info_cyl_ptr->get_max_ring_difference(proj_data_info_cyl_ptr->get_max_segment_num());
+      auto norm_proj_data_info_no_arccorr_ptr =
+        dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(norm_proj_data_info_sptr.get());
+      const int norm_max_ring_diff =
+        norm_proj_data_info_no_arccorr_ptr->get_max_ring_difference(norm_proj_data_info_no_arccorr_ptr->get_max_segment_num());
+      if (data_max_ring_diff > norm_max_ring_diff)
+        warning("ECAT8 norm axial effects given only for ring diff up to " + std::to_string(norm_max_ring_diff)
+                + ". I will use 1 for larger ring difference.");
+    }
 
-  mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
+  this->mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
 
   return Succeeded::yes;
 }
@@ -244,65 +259,17 @@ BinNormalisationFromECAT8::
 read_norm_data(const string& filename)
 {
   
-#if 0
-MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
-  if (mptr == 0)
-    error("BinNormalisationFromECAT8: error opening %s\n", filename.c_str());
+  InterfileNormHeaderSiemens norm_parser;
+  norm_parser.parse(filename.c_str());
 
-  scanner_ptr.reset(
-    find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
-  
-  MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
-				    Norm3d /*= read data as well */);
-  
-  num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
-#endif
-#if 0
-  InterfileHeader interfile_parser;
- ignore_key("data format");
-  interfile_parser.parse(filename.c_str());
+  this->norm_proj_data_info_sptr =  norm_parser.data_info_ptr;
+  this->scanner_ptr = norm_parser.data_info_ptr->get_scanner_sptr();
 
-#else
-  KeyParser parser;
-  std::string originating_system;
-  std::string data_file_name;
-  int num_buckets;
-  {
-    parser.add_start_key("INTERFILE");
-    parser.add_stop_key("END OF INTERFILE"); // add this for safety (even though it isn't always there)
-    parser.add_key("originating_system", &originating_system);
-    parser.add_key("name_of_data_file", &data_file_name);
-    parser.add_key("%number of buckets", &num_buckets);
-    parser.add_key("%scanner quantification factor (Bq*s/ECAT counts)",& calib_factor);
-    parser.add_key("%cross calibration factor",& cross_calib_factor);
-    parser.parse(filename.c_str());
-  }
-#endif
-  // remove trailing \r
-  std::string s=/*interfile_parser.*/originating_system;
-  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
-  /*interfile_parser.*/originating_system=s;
-  s=/*interfile_parser.*/data_file_name;
-  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
-  /*interfile_parser.*/data_file_name=s;
-  
-  this->scanner_ptr.reset(Scanner::get_scanner_from_name(/*interfile_parser.*/originating_system));
-  switch(this->scanner_ptr->get_type())
-    {
-      //case Scanner::E1080:
-    case Scanner::Siemens_mCT:
-    case Scanner::Siemens_mMR:
-      break;
-    default:
-      error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
-    }
-
-	char directory_name[max_filename_length];
+        char directory_name[max_filename_length];
 	get_directory_name(directory_name, filename.c_str());
 	char full_data_file_name[max_filename_length];
-	strcpy(full_data_file_name, data_file_name.c_str());
+	strcpy(full_data_file_name, norm_parser.data_file_name.c_str());
 	prepend_directory_name(full_data_file_name, directory_name);
-
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
   // Calculate the number of axial blocks per singles unit and 
   // total number of blocks per singles unit.
@@ -348,7 +315,8 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), //XXXnrm_subheader_ptr->num_r_elements, 
                   /*arc_corrected =*/false)
 						     ));
-  
+
+  this->construct_sino_lookup_table();
   /*
     Extract geometrical & crystal interference, and crystal efficiencies from the
     normalisation data.    
@@ -377,21 +345,26 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   efficiency_factors =
     Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
 		   0, scanner_ptr->get_num_detectors_per_ring()-1));
-  
 
-#if 0
-  int geom_test = nrm_subheader_ptr->num_geo_corr_planes * (max_tang_pos_num-min_tang_pos_num +1);
-  int cry_inter = num_transaxial_crystals_per_block * (max_tang_pos_num-min_tang_pos_num +1);
-  int eff_test = scanner_ptr->get_num_detectors_per_ring() * scanner_ptr->get_num_rings();
-#endif
+  axial_effects =
+    Array<1,float>(num_Siemens_sinograms);
 
-  std::ifstream binary_data(full_data_file_name, std::ios::binary | std::ios::in);
+  std::ifstream binary_data;
+  open_read_binary(binary_data, full_data_file_name);
   if (read_data(binary_data, geometric_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading geo factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[1]))
+    error("Error reading ECAT8 norm file: wrong offset after component 1");
   if (read_data(binary_data, crystal_interference_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading crystal_interference_factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[2]))
+    error("Error reading ECAT8 norm file: wrong offset after component 2");
   if (read_data(binary_data, efficiency_factors, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading efficiency_factors from '%s'", full_data_file_name);
+  if (binary_data.tellg() != std::streampos(norm_parser.data_offset_each_dataset[3]))
+    error("Error reading ECAT8 norm file: wrong offset after component 3");
+  if (read_data(binary_data, axial_effects, ByteOrder::little_endian) != Succeeded::yes)
+    error("failed reading axial_effects_factors from '%s'", full_data_file_name);
 
   if (scanner_ptr->get_type() == Scanner::Siemens_mMR)
   {
@@ -468,14 +441,16 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 #endif
 
   
-#if 1
-   // to test pipe the obtained values into file
-    ofstream out_geom;
+  if (this->_write_components_to_file)
+    {
+      // to test pipe the obtained values into file
+    ofstream out_geom, out_axial;
     ofstream out_inter;
     ofstream out_eff;
     out_geom.open("geom_out.txt",ios::out);
     out_inter.open("inter_out.txt",ios::out);
     out_eff.open("eff_out.txt",ios::out);
+    out_axial.open("axial_out.txt",ios::out);
 
     for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
     {
@@ -505,7 +480,12 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       out_eff << std::endl<< std::endl;
    }
 
-#endif
+   for ( int i = axial_effects.get_min_index(); i<=axial_effects.get_max_index();i++)
+   {
+       out_axial << axial_effects[i] << "   " << std::endl;
+   }
+
+    }
 
 #if 0
   display(geometric_factors, "geo");
@@ -535,6 +515,13 @@ use_geometric_factors() const
   return this->_use_geometric_factors;
 }
 
+bool
+BinNormalisationFromECAT8::
+use_axial_effects_factors() const
+{
+  return this->_use_axial_effects_factors;
+}
+
 bool 
 BinNormalisationFromECAT8::
 use_crystal_interference_factors() const
@@ -542,25 +529,9 @@ use_crystal_interference_factors() const
   return this->_use_crystal_interference_factors;
 }
 
-#if 1
 float 
 BinNormalisationFromECAT8::
 get_uncalibrated_bin_efficiency(const Bin& bin) const {
-
-  // TODO disable when not HR+ or HR++
-  /*
-  Additional correction for HR+ and HR++
-  ======================================
-  Modification of the normalisation based on segment number
-  Due to the difference in efficiency for the trues and scatter as the axial
-  angle increases
-  Scatter has a higher efficiency than trues when the axial angle is 0 (direct
-  planes)
-  As the axial angle increase the difference in efficiencies between trues and
-  scatter become closer
-    */
-  const float geo_Z_corr = 1;
-
   
   float	total_efficiency = 0 ;
   
@@ -599,7 +570,8 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 					      uncompressed_bin, detection_position_pair);
 
       
-        
+      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+     const DetectionPosition<>& pos2 = detection_position_pair.pos2();
       float lor_efficiency= 0.;   
       
       /*
@@ -664,12 +636,14 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	if (this->use_geometric_factors())
 	  {
 	    lor_efficiency_this_pair *=
-#ifdef SAME_AS_PETER
-              1.F;
-#else	    // this is 3dbkproj (at the moment)
 	    geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
-#endif
 	  }
+        if (this->use_axial_effects_factors())
+          {
+            // Need to divide here
+            lor_efficiency_this_pair /=
+              find_axial_effects(pos1.axial_coord(), pos2.axial_coord());
+          }
 	lor_efficiency += lor_efficiency_this_pair;
       }
 
@@ -682,31 +656,74 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 	{
 	  view_efficiency += lor_efficiency;
 	}
+
+      total_efficiency += view_efficiency;
     }
-    
-    if (this->use_geometric_factors())
-      {
-	/* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-	// for oblique plaanes use the single radial profile from segment 0 
-	
-#ifdef SAME_AS_PETER	
-	const int geo_plane_num = 0;
-	
-	total_efficiency += view_efficiency * 
-	  geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
-	  geo_Z_corr;
-#else
-	total_efficiency += view_efficiency * geo_Z_corr;
-#endif
-      }
-    else
-      {
-	total_efficiency += view_efficiency;
-      }
   }
   return total_efficiency;
 }
-#endif
+
+void
+BinNormalisationFromECAT8::
+construct_sino_lookup_table()
+{
+  const int num_rings = this->scanner_ptr->get_num_rings();
+  this->sino_index=Array<2,int>(IndexRange2D(0, num_rings-1,
+                                             0, num_rings-1));
+  // fill with invalid index such that we can detect out-of-range
+  // see find_axial_effects
+  this->sino_index.fill(-1);
+
+  auto proj_data_info_no_arccorr_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(norm_proj_data_info_sptr.get());
+
+  if (!proj_data_info_no_arccorr_ptr)
+    error("BinNormalisationFromECAT8: internal error. Data should be of type ProjDataInfoCylindricalNoArcCorr");
+
+  this->num_Siemens_sinograms = proj_data_info_no_arccorr_ptr->get_num_non_tof_sinograms();
+  
+  const auto segment_sequence = ecat::find_segment_sequence(*proj_data_info_no_arccorr_ptr);
+  Bin bin;
+  bin.tangential_pos_num()=0;
+  bin.view_num()=0;
+  std::vector<DetectionPositionPair<> > det_pos_pairs;
+  for (int Siemens_sino_index=0; Siemens_sino_index< this->num_Siemens_sinograms; ++Siemens_sino_index)
+    {
+      int z=Siemens_sino_index;
+
+      for (std::size_t i=0; i<segment_sequence.size();++i)
+        {
+          bin.segment_num() = segment_sequence[i];
+          const int num_ax_poss = proj_data_info_no_arccorr_ptr->get_num_axial_poss(bin.segment_num());
+          if (z< num_ax_poss)
+            {
+              bin.axial_pos_num() = z;
+              proj_data_info_no_arccorr_ptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+              for (auto iter=det_pos_pairs.begin();iter!=det_pos_pairs.end(); ++iter)
+                {
+                  sino_index[iter->pos1().axial_coord()][iter->pos2().axial_coord()] = Siemens_sino_index;
+                  //sino_index[iter->pos2().axial_coord()][iter->pos1().axial_coord()] = Siemens_sino_index;
+                }
+              break;
+            }
+          else
+            {
+              z -= num_ax_poss;
+            }
+        }
+    }
+}
+
+float
+BinNormalisationFromECAT8::
+find_axial_effects(int ring1, int ring2) const
+{
+  const int Siemens_sino_index = sino_index[ring1][ring2];
+  if (Siemens_sino_index<0)
+    return 1.F;
+  else
+    return axial_effects[Siemens_sino_index];
+}
 
 
 float 
