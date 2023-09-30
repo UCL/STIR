@@ -52,6 +52,19 @@ public:
 protected:
   // Returns false if OK, true if not.
   virtual bool post_processing();
+  //! ignore multiple GMT times
+  /*!
+  Siemens uses keywords like
+  \verbatim
+  %study date (yyyy:mm:dd") := ...
+  %study time (hh:mm:ss GMT+00:00) := ...
+  \endvarbatim
+  You can ignore this for all (?) time zones by using
+  \code
+  ignore_Siemens_date_and_time_keys("%study");
+  \endcode
+  */
+  void ignore_Siemens_date_and_time_keys(const std::string& keyword);
 
 private:
 

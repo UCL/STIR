@@ -10,7 +10,7 @@
 /*!
   \file 
   \ingroup InterfileIO 
-  \brief implementations for the stir::InterfileHeaderSiemens class
+  \brief implementations for the stir::InterfileHeaderSiemens classes
 
   \author Kris Thielemans
   \author PARAPET project
@@ -163,6 +163,36 @@ void InterfileHeaderSiemens::set_type_of_data()
 }
 
 
+void
+InterfileHeaderSiemens::ignore_Siemens_date_and_time_keys(const std::string& keyword)
+{
+  ignore_key(keyword + " date (yyyy:mm:dd)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+00:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+01:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+02:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+03:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+04:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+05:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+06:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+07:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+08:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+09:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+10:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+11:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-01:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-02:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-03:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-04:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-05:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-06:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-07:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-08:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-09:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-10:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-11:00)");
+}
+
+
 /**********************************************************************/
 
 InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
@@ -205,13 +235,11 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("%listmode header file");
   ignore_key("%listmode data file");
   ignore_key("%compressor version");
-  ignore_key("%study date (yyyy");
-  ignore_key("%study time (hh");
+  ignore_Siemens_date_and_time_keys("%study");
   ignore_key("isotope gamma halflife (sec)");
   ignore_key("isotope branching factor");
   ignore_key("radiopharmaceutical");
-  ignore_key("%tracer injection date (yyyy");
-  ignore_key("%tracer injection time (hh");
+  ignore_Siemens_date_and_time_keys("%tracer injection");
   ignore_key("relative time of tracer injection (sec)");
   ignore_key("tracer activity at time of injection (bq)");
   ignore_key("injected volume (ml)");
@@ -223,8 +251,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("method of scatter correction");
   ignore_key("%method of random correction");
   ignore_key("%decay correction");
-  ignore_key("%decay correction reference date (yyyy");
-  ignore_key("%decay correction reference time (hh");
+  ignore_Siemens_date_and_time_keys("%decay correction reference");
   ignore_key("decay correction factor");
   ignore_key("scatter fraction (%)");
   ignore_key("scan data type description");
@@ -542,11 +569,7 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   is_arccorrected = false; // norm data is never arc-corrected
 
   ignore_key("data description");
-  ignore_key("%expiration date (yyyy:mm:dd)");
-  ignore_key("%expiration time (hh:mm:ss GMT-05:00)");
-  // currently keywords are truncated at :
-  ignore_key("%expiration time (hh");
-  ignore_key("%expiration date (yyyy");
+  ignore_Siemens_date_and_time_keys("%expiration");
   ignore_key("%raw normalization scans description");
 
   // remove some standard keys, which Siemens has replaced with similar names
@@ -573,11 +596,7 @@ InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
   ignore_key("%global scanner calibration factor");
   add_key("%scanner quantification factor (Bq*s/ECAT counts)",& calib_factor);
   add_key("%cross calibration factor",& cross_calib_factor);
-  ignore_key("%calibration date (yyyy:mm:dd)");
-  ignore_key("%calibration time (hh:mm:ss GMT+00:00)");
-  // currently keywords are truncated at :
-  ignore_key("%calibration time (hh");
-  ignore_key("%calibration date (yyyy");
+  ignore_Siemens_date_and_time_keys("%calibration");
 
   // isotope things are vectorised in norm files and not in other raw data, so we could
   // fix that, but as we are not interested in it anyway (tends to be Ge-68), let's just ignore it.
