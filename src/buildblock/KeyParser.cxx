@@ -309,8 +309,12 @@ string
 KeyParser::get_keyword(const string& line) const
 {
   // keyword stops at either := or an index []	
-  // TODO should check that = follows : to allow keywords with colons in there
-  const string::size_type eok = line.find_first_of(":[",0);
+  string::size_type eok = line.find_first_of(":[",0);
+  // check that = follows : to allow keywords containing colons
+  while (line[eok] == ':' && eok+1 < line.size() && line[eok+1] != '=')
+    {
+      eok = line.find_first_of(":[", eok+1);
+    }
   return line.substr(0,eok);
 }
 
