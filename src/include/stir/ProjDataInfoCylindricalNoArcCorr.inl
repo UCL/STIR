@@ -131,14 +131,14 @@ get_bin_for_det_pair(Bin& bin,
 		     const int det_num2, const int ring_num2,
 			 const int timing_pos_num) const
 {  
-  if (get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
+  if (!get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
   {
 	bin.timing_pos_num() = timing_pos_num;
 	return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
   }
   else
   {
-	bin.timing_pos_num() = -timing_pos_num;
+    bin.timing_pos_num() = get_max_tof_pos_num()-timing_pos_num;
     return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num2, ring_num1);
   }
 }

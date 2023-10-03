@@ -588,13 +588,13 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
   const float z1 = (m_in_mm - max_a*tantheta);
   const float z2 = (m_in_mm - min_a*tantheta);
     
-    
+  const bool swap = false;//get_tof_delta_time(bin)<0;
   lor = 
     LORInAxialAndNoArcCorrSinogramCoordinates<float>(z1, z2,
 						     phi,
 						     asin(s_in_mm/get_ring_radius()),
 						     get_ring_radius(),
-                 false);// needs to set "swapped" to false given above code 
+                 swap);// needs to set "swapped" to false given above code
 }  
 
 #if 0

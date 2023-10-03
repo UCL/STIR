@@ -263,6 +263,10 @@ find_sym_op_general_bin(
    // If doing z shifts, set the axial_pos_shift to axial_pos_num, else, set to 0
    const int axial_pos_shift = do_symmetry_shift_z ? axial_pos_num : 0;
 
+   // set timing shift for timing pos transformation
+   Bin time_bin(segment_num, view_num, axial_pos_num, 0, 0);
+   find_basic_bin(time_bin.segment_num(), time_bin.view_num(), time_bin.axial_pos_num(), time_bin.tangential_pos_num(), time_bin.timing_pos_num());
+
   const int z_shift = 
 	do_symmetry_shift_z ?
 	num_planes_per_axial_pos[segment_num]*axial_pos_num
@@ -353,7 +357,7 @@ find_sym_op_general_bin(
     if ( !do_symmetry_swap_segment || segment_num > 0) 
     {   
       if ( do_symmetry_swap_s && s < 0) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_shift, z_shift, transform_z);
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_shift, z_shift, transform_z, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss());
       else
       {
         if (z_shift==0)
@@ -369,13 +373,13 @@ find_sym_op_general_bin(
           return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);
         else*/  
           if ( do_symmetry_swap_s && s < 0) 
-            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift);
+            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss());
           else        
             return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);   // s > 0
       }  
       else // segment_num = 0 
       {
-        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift);
+        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss());
         else
         {
           if (z_shift==0)
@@ -484,7 +488,7 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
     {
       //when swap_s, must invert timing pos for lor probs. Symmetry operation should correct bin
       tangential_pos_num *= -1;
-      timing_pos_num *= -1;
+      timing_pos_num = proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss() - timing_pos_num;
       change=true;
     }
   if ( do_symmetry_shift_z && axial_pos_num != 0    )  { axial_pos_num  =  0;     change = true; }   

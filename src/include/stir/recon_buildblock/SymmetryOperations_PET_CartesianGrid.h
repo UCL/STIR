@@ -339,8 +339,8 @@ class SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq : public SymmetryOpera
 private:
   typedef SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq self;
 public:
-  SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(const int num_views, const int axial_pos_shift, const int z_shift, const int q)
-    : view180(num_views), axial_pos_shift(axial_pos_shift), z_shift(z_shift), q(q)
+  SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(const int num_views, const int axial_pos_shift, const int z_shift, const int q, const int max_tof_pos_num)
+    : view180(num_views), axial_pos_shift(axial_pos_shift), z_shift(z_shift), q(q), timing_shift(max_tof_pos_num)
   {}
 
   inline void 
@@ -364,6 +364,7 @@ private:
   int axial_pos_shift;
   int z_shift;
   int q;
+  int timing_shift;
 };
 
 class SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq : public SymmetryOperation
@@ -497,8 +498,8 @@ class SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy : public SymmetryOperatio
 private:
   typedef SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy self;
 public:
-  SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(const int num_views, const int axial_pos_shift, const int z_shift)
-    : view180(num_views), axial_pos_shift(axial_pos_shift), z_shift(z_shift)
+  SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(const int num_views, const int axial_pos_shift, const int z_shift, const int max_tof_pos_num)
+    : view180(num_views), axial_pos_shift(axial_pos_shift), z_shift(z_shift), timing_shift(max_tof_pos_num)
   {}
 
   inline void 
@@ -521,6 +522,7 @@ private:
   int view180;
   int axial_pos_shift;
   int z_shift;
+  int timing_shift;
 };
 
 class SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq : public SymmetryOperation

@@ -74,9 +74,9 @@ float
 ProjDataInfo::get_k(const Bin& bin) const
 {
     if (!(num_tof_bins%2))
-        return bin.timing_pos_num() * tof_increament_in_mm + tof_increament_in_mm / 2.f;
+        return (bin.timing_pos_num() - (num_tof_bins)/2.f)* tof_increament_in_mm ;
     else
-        return (bin.timing_pos_num() * tof_increament_in_mm);
+        return (bin.timing_pos_num() - (num_tof_bins-1)/2.f)* tof_increament_in_mm ;
 }
 
 double
@@ -228,14 +228,14 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
         // TODO cope with even numbers!
-        min_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)/2;
-        max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) -1;
+        min_tof_pos_num = 0;//- (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)/2;
+        max_tof_pos_num = (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)-1 ;//min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) -1;
 
         num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
 
         // Ensure that we have a central tof bin.
-        if (num_tof_bins%2 == 0)
-            error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
+//        if (num_tof_bins%2 == 0)
+//            error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
 
         // Upper and lower boundaries of the timing poss;
         tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
