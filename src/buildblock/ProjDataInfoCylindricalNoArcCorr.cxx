@@ -501,6 +501,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
     get_scanner_ptr()->get_num_detectors_per_ring();
 
   int d1, d2, r1, r2;
+  int tpos = timing_pos_num;
 
   this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
 
@@ -510,6 +511,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
       d2 = det1;
       r1 = Ring_B;
       r2 = Ring_A;
+      tpos *= -1;
   }
   else
   {
@@ -547,7 +549,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2 = lor.p2();
   
 #endif
-  if (timing_pos_num < 0)
+  if (tpos < 0)
     std::swap(coord_1, coord_2);
 }
 

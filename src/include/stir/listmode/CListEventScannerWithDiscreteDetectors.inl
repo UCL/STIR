@@ -60,7 +60,7 @@ CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
 get_LOR() const
 {
   LORAs2Points<float> lor;
-  const bool swap = this->get_delta_time() < 0.F;
+  const bool swap = true;// this->get_delta_time() < 0.F;
   // provide somewhat shorter names for the 2 coordinates, taking swap into account
   CartesianCoordinate3D<float>& coord_1 = swap ? lor.p2() : lor.p1();
   CartesianCoordinate3D<float>& coord_2 = swap ? lor.p1() : lor.p2();
