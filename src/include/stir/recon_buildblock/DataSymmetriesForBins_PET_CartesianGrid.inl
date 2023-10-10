@@ -263,10 +263,6 @@ find_sym_op_general_bin(
    // If doing z shifts, set the axial_pos_shift to axial_pos_num, else, set to 0
    const int axial_pos_shift = do_symmetry_shift_z ? axial_pos_num : 0;
 
-   // set timing shift for timing pos transformation
-   Bin time_bin(segment_num, view_num, axial_pos_num, 0, 0);
-   find_basic_bin(time_bin.segment_num(), time_bin.view_num(), time_bin.axial_pos_num(), time_bin.tangential_pos_num(), time_bin.timing_pos_num());
-
   const int z_shift = 
 	do_symmetry_shift_z ?
 	num_planes_per_axial_pos[segment_num]*axial_pos_num

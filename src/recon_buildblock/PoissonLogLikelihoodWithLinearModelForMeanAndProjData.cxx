@@ -692,14 +692,14 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                  this->proj_data_sptr, 
                                  subset_num, 
                                  this->num_subsets, 
-                                 -this->max_segment_num_to_process,
+                                 0,
                                  this->max_segment_num_to_process,
                                  this->zero_seg0_end_planes!=0,
                                  NULL,
                                  this->additive_proj_data_sptr,
                                  this->normalisation_sptr,
                                  caching_info_ptr,
-                                   -this->max_timing_pos_num_to_process,
+                                   0,
                                    this->max_timing_pos_num_to_process,
                                  add_sensitivity);
 }
@@ -741,7 +741,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
                                          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                          this->caching_info_ptr,
-										 -this->max_timing_pos_num_to_process,
+                                         0,
 										 this->max_timing_pos_num_to_process
                                          );
                 
@@ -857,7 +857,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr,
-                                 use_tofsens ? -this->max_timing_pos_num_to_process : 0,
+                                 use_tofsens ? 0 : 0,
                                  use_tofsens ? this->max_timing_pos_num_to_process : 0);
 
   std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
@@ -892,7 +892,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-	int min_timing_pos_num = use_tofsens ? -this->max_timing_pos_num_to_process : 0;
+    int min_timing_pos_num = use_tofsens ? 0 : 0;
 	int max_timing_pos_num = use_tofsens ? this->max_timing_pos_num_to_process : 0;
 	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
 	{

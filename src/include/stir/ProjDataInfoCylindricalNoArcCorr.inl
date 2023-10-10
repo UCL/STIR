@@ -131,7 +131,7 @@ get_bin_for_det_pair(Bin& bin,
 		     const int det_num2, const int ring_num2,
 			 const int timing_pos_num) const
 {  
-  if (!get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
+  if (get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
   {
 	bin.timing_pos_num() = timing_pos_num;
 	return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
@@ -156,7 +156,7 @@ get_bin_for_det_pos_pair(Bin& bin,
                          dp.pos2().axial_coord(),
                          this->get_tof_mash_factor()==0
                            ? 0 // use timing_pos==0 in the nonTOF case
-                           : stir::round((float)dp.timing_pos()/this->get_tof_mash_factor()));
+                           : (int)((float)dp.timing_pos()/this->get_tof_mash_factor()));
 }
 void
 ProjDataInfoCylindricalNoArcCorr::
@@ -189,7 +189,7 @@ get_det_pos_pair_for_bin(
   //lousy work around because types don't match (short/int). TODO remove!
   int t1, a1, t2, a2;
   get_det_pair_for_bin(t1, a1, t2, a2, bin);
-  if (bin.timing_pos_num()>=0)
+  if (bin.timing_pos_num()-get_max_tof_pos_num()/2.F>=0)
     {
       dp.pos1().tangential_coord()=t1;
       dp.pos1().axial_coord()=a1;

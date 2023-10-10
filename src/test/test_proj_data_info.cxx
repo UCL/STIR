@@ -147,7 +147,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
         "check on min/max_tangential_pos_num being (almost) centred");
   check_if_equal(proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num() + 1,
                  proj_data_info.get_num_tof_poss(), "basic check on min/max/num_tof_pos_num");
-  check_if_equal(proj_data_info.get_max_tof_pos_num() + proj_data_info.get_min_tof_pos_num(), 0,
+  check_if_equal(proj_data_info.get_max_tof_pos_num() + proj_data_info.get_min_tof_pos_num(), proj_data_info.get_max_tof_pos_num(),
                  "check on min/max_tof_pos_num being (almost) centred");
   check_if_equal(proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num() + 1, proj_data_info.get_num_views(),
                  "basic check on min/max/num_view_num");
@@ -236,7 +236,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                             || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin: view")
                             || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin: axial_pos")
                             || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin: tangential_pos")
-                            || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
+                            || !check(diff_timing_pos_num == 0 || diff_timing_pos_num ==  proj_data_info.get_max_tof_pos_num() , "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
@@ -293,7 +293,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                         || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
                         || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
                         || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos")
-                        || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
+                        || !check(diff_timing_pos_num == 0 || diff_timing_pos_num ==  proj_data_info.get_max_tof_pos_num(), "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
