@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015-2017, 2020, University College London
+    Copyright (C) 2013, 2015-2017, 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -28,6 +28,9 @@
 #include "stir/Succeeded.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/SegmentByView.h"
+#include "stir/SegmentIndices.h"
+#include "stir/ViewgramIndices.h"
+#include "stir/SinogramIndices.h"
 //#include <ios>
 
 #include "stir/ExamData.h"
@@ -118,12 +121,17 @@ public:
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
+  inline Viewgram<float> 
+  get_viewgram(const ViewgramIndices&);
   //! Set viewgram
   virtual Succeeded 
     set_viewgram(const Viewgram<float>&) = 0;
   //! Get sinogram
   virtual Sinogram<float> 
     get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
+  //! Get sinogram
+  inline Sinogram<float> 
+    get_sinogram(const SinogramIndices&);
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
@@ -154,9 +162,16 @@ public:
   //! Get segment by sinogram
   virtual SegmentBySinogram<float>
     get_segment_by_sinogram(const int segment_num) const;
+
+  inline SegmentBySinogram<float>
+    get_segment_by_sinogram(const SegmentIndices&) const;
+
   //! Get segment by view
   virtual SegmentByView<float> 
     get_segment_by_view(const int segment_num) const;
+  inline SegmentByView<float>
+    get_segment_by_view(const SegmentIndices&) const;
+
   //! Set segment by sinogram
   virtual Succeeded 
     set_segment(const SegmentBySinogram<float>&);
