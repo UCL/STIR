@@ -35,15 +35,15 @@ template <typename elemT>
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const Array<3,elemT>& v, 
 		  const shared_ptr<const ProjDataInfo>& pdi_ptr,
-		  const int segment_num)
+		  const SegmentIndices& ind)
   : 
-  Segment<elemT>(pdi_ptr, segment_num), 
+  Segment<elemT>(pdi_ptr, ind),
   Array<3,elemT>(v)
 {
   assert( get_min_view_num() == pdi_ptr->get_min_view_num());
   assert( get_max_view_num() == pdi_ptr->get_max_view_num());
-  assert( get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(segment_num));
-  assert( get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(segment_num));
+  assert( get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(ind.segment_num()));
+  assert( get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(ind.segment_num()));
   assert( get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
   assert( get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
 }
@@ -51,11 +51,11 @@ SegmentBySinogram(const Array<3,elemT>& v,
 template <typename elemT>  
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr,
-		  const int segment_num)
+		  const SegmentIndices& ind)
   : 
-  Segment<elemT>(pdi_ptr, segment_num), 
-  Array<3,elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(segment_num),
-                              pdi_ptr->get_max_axial_pos_num(segment_num),
+  Segment<elemT>(pdi_ptr, ind),
+  Array<3,elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(ind.segment_num()),
+                              pdi_ptr->get_max_axial_pos_num(ind.segment_num()),
                               pdi_ptr->get_min_view_num(),
                               pdi_ptr->get_max_view_num(),
                               pdi_ptr->get_min_tangential_pos_num(),
@@ -64,9 +64,26 @@ SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr,
 
 template <typename elemT>
 SegmentBySinogram<elemT>::
+SegmentBySinogram(const Array<3,elemT>& v,
+		  const shared_ptr<const ProjDataInfo>& pdi_sptr,
+		  int segment_num)
+  :
+  SegmentBySinogram(v, pdi_sptr, SegmentIndices(segment_num))
+{}
+
+template <typename elemT>
+SegmentBySinogram<elemT>::
+SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
+		  const int segment_num)
+  :
+  SegmentBySinogram(pdi_sptr, SegmentIndices(segment_num))
+{}
+
+template <typename elemT>
+SegmentBySinogram<elemT>::
 SegmentBySinogram(const SegmentByView<elemT>& s_v )
   : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(),
-                   s_v.get_segment_num()),	      
+                   s_v.get_segment_indices()),
    Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
 		                 s_v.get_min_view_num(), s_v.get_max_view_num(),
 		                 s_v.get_min_tangential_pos_num(), s_v.get_max_tangential_pos_num()))

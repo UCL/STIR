@@ -30,10 +30,15 @@ START_NAMESPACE_STIR
 
   \deprecated
 */
-// Note: needs to be a class due to forward declarations
 class ViewSegmentNumbers : public ViewgramIndices
 {
+public:
   using ViewgramIndices::ViewgramIndices;
+  // default constructor (needed for Visual Studio)
+  ViewSegmentNumbers() : ViewgramIndices() {}
+  ViewSegmentNumbers(const ViewgramIndices& ind)
+    : ViewgramIndices(ind)
+  {}
 };
 
 END_NAMESPACE_STIR

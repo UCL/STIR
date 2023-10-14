@@ -44,7 +44,6 @@ template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class SegmentByView;
 template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
-class ViewSegmentNumbers;
 class Succeeded;
 class ProjDataInMemory;
 //class ExamInfo;
@@ -119,14 +118,21 @@ public:
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
   //! Get viewgram
+  /*!
+    \deprecated Use get_viewgram(const ViewgramIndices&) instead.
+   */
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
+  //! Get viewgram
   inline Viewgram<float> 
   get_viewgram(const ViewgramIndices&);
   //! Set viewgram
   virtual Succeeded 
     set_viewgram(const Viewgram<float>&) = 0;
   //! Get sinogram
+  /*!
+    \deprecated Use get_sinogram(const SinogramIndices&) instead .
+   */
   virtual Sinogram<float> 
     get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
   //! Get sinogram
@@ -141,34 +147,66 @@ public:
     get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
+  Viewgram<float> get_empty_viewgram(const ViewgramIndices&) const;
+
+  //! Get empty viewgram
+  /*!
+    \deprecated Use get_viewgram(const ViewgramIndices&) instead.
+   */
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
     const bool make_num_tangential_poss_odd = false) const;
   
   //! Get empty_sinogram
+  Sinogram<float>
+    get_empty_sinogram(const SinogramIndices&) const;
+
+  //! Get empty_sinogram
+  /*!
+    \deprecated Use get_sinogram(const SinogramIndices&) instead .
+   */
   Sinogram<float> 
     get_empty_sinogram(const int ax_pos_num, const int segment_num,
     const bool make_num_tangential_poss_odd = false) const;
 
-   //! Get empty segment sino
-  SegmentByView<float> 
+   //! Get empty segment by view
+  SegmentByView<float>
+  get_empty_segment_by_view(const SegmentIndices&) const;
+  //! Get empty segment by sino
+  SegmentBySinogram<float>
+    get_empty_segment_by_sinogram(const SegmentIndices&) const;
+  //! Get empty segment view
+  /*!
+    \deprecated Use get_empty_segment_by_sinogram(const SegmentIndices&) instead .
+   */
+  SegmentByView<float>
     get_empty_segment_by_view(const int segment_num, 
 		  	   const bool make_num_tangential_poss_odd = false) const;
-  //! Get empty segment view
-  SegmentBySinogram<float> 
+  //! Get empty segment sino
+  /*!
+    \deprecated Use get_empty_segment_by_sinogram(const SegmentIndices&) instead .
+   */
+  SegmentBySinogram<float>
     get_empty_segment_by_sinogram(const int segment_num, 
 				   const bool make_num_tangential_poss_odd = false) const;
 
-
   //! Get segment by sinogram
+  /*!
+    \deprecated Use get_segment_by_sinogram(const SegmentIndices&) instead.
+  */
   virtual SegmentBySinogram<float>
     get_segment_by_sinogram(const int segment_num) const;
 
+  //! Get segment by sinogram
   inline SegmentBySinogram<float>
     get_segment_by_sinogram(const SegmentIndices&) const;
 
   //! Get segment by view
-  virtual SegmentByView<float> 
+  /*!
+    \deprecated Use get_segment_by_view(const SegmentIndices&) instead.
+  */
+  virtual SegmentByView<float>
     get_segment_by_view(const int segment_num) const;
+  //! Get segment by view
   inline SegmentByView<float>
     get_segment_by_view(const SegmentIndices&) const;
 
@@ -181,7 +219,7 @@ public:
 
   //! Get related viewgrams
   virtual RelatedViewgrams<float> 
-    get_related_viewgrams(const ViewSegmentNumbers&,
+    get_related_viewgrams(const ViewgramIndices&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false) const;
   //! Set related viewgrams
@@ -190,8 +228,7 @@ public:
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   RelatedViewgrams<float> 
-    get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-    //const int view_num, const int segment_num, 
+    get_empty_related_viewgrams(const ViewgramIndices& viewgram_indices,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
     const bool make_num_tangential_poss_odd = false) const;   
 
