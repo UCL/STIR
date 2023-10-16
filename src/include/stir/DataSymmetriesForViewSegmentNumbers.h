@@ -22,12 +22,10 @@
 #ifndef __DataSymmetriesForViewSegmentNumbers_H__
 #define __DataSymmetriesForViewSegmentNumbers_H__
 
-#include "stir/common.h"
+#include "stir/ViewSegmentNumbers.h"
 #include <vector>
 
 START_NAMESPACE_STIR
-
-class ViewSegmentNumbers;
 
 #if 0
 class ViewSegmentIndexRange;
@@ -46,6 +44,8 @@ class ViewSegmentIndexRange;
   The class mainly defines members to find \c basic ViewSegmentNumbers. These form a 
   'basis' for all ViewSegmentNumbers in the sense that all ViewSegmentNumbers
   can be obtained by using symmetry operations on the 'basic' ones.
+
+  \par Warning: This class wil be renamed/revised to work with \c ViewgramIndices instead.
 */
 class DataSymmetriesForViewSegmentNumbers
 {
@@ -74,11 +74,25 @@ public:
   virtual void
     get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
 
+#if 0
+  // not yet, as would need copying of vector
+  //! fills in a vector with all the view/segments that are related to 'v_s' (including itself)
+  virtual std::vector<ViewgramIndices>
+    get_related_view_segment_numbers(const ViewgramIndices& ind) const
+  {
+  }
+#endif
+
   //! returns the number of view_segment_numbers related to 'v_s'
   /*! The default implementation is in terms of get_related_view_segment_numbers, which will be 
       slow of course */
   virtual int
     num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
+
+  std::size_t num_related_viewgram_indices(const ViewgramIndices& ind) const
+    {
+      return static_cast<std::size_t>(num_related_view_segment_numbers(ind));
+    }
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
   
