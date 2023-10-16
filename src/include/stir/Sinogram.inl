@@ -103,8 +103,8 @@ Sinogram(const Array<2,elemT>& p,
   proj_data_info_ptr(pdi_ptr),
   _indices(ind)
 {
-  assert(axial_pos_num <= proj_data_info_ptr->get_max_axial_pos_num(ind.segment_num()));
-  assert(axial_pos_num >= proj_data_info_ptr->get_min_axial_pos_num(ind.segment_num()));
+  assert(ind.axial_pos_num() <= proj_data_info_ptr->get_max_axial_pos_num(ind.segment_num()));
+  assert(ind.axial_pos_num() >= proj_data_info_ptr->get_min_axial_pos_num(ind.segment_num()));
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 
   assert( get_min_view_num() == pdi_ptr->get_min_view_num());
@@ -127,8 +127,8 @@ Sinogram(const shared_ptr<const ProjDataInfo >& pdi_ptr,
   proj_data_info_ptr(pdi_ptr),
   _indices(ind)
 {
-  assert(axial_pos_num <= proj_data_info_ptr->get_max_axial_pos_num(ind.segment_num()));
-  assert(axial_pos_num >= proj_data_info_ptr->get_min_axial_pos_num(ind.segment_num()));
+  assert(ind.axial_pos_num() <= proj_data_info_ptr->get_max_axial_pos_num(ind.segment_num()));
+  assert(ind.axial_pos_num() >= proj_data_info_ptr->get_min_axial_pos_num(ind.segment_num()));
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 }
 

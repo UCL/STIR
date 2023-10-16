@@ -103,8 +103,8 @@ Viewgram(const Array<2,elemT>& p,
   Array<2,elemT>(p), proj_data_info_sptr(pdi_sptr),
   _indices(ind)
 {
-  assert(view_num <= proj_data_info_sptr->get_max_view_num());
-  assert(view_num >= proj_data_info_sptr->get_min_view_num());
+  assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());
+  assert(ind.view_num() >= proj_data_info_sptr->get_min_view_num());
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 
   assert( get_min_axial_pos_num() == pdi_sptr->get_min_axial_pos_num(ind.segment_num()));
@@ -125,8 +125,8 @@ Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
   proj_data_info_sptr(pdi_sptr),
   _indices(ind)
 {
-  assert(view_num <= proj_data_info_sptr->get_max_view_num());
-  assert(view_num >= proj_data_info_sptr->get_min_view_num());
+  assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());
+  assert(ind.view_num() >= proj_data_info_sptr->get_min_view_num());
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 }
 
