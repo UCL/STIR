@@ -484,7 +484,7 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
     {
       //when swap_s, must invert timing pos for lor probs. Symmetry operation should correct bin
       tangential_pos_num *= -1;
-      timing_pos_num = proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss() - timing_pos_num;
+      timing_pos_num = proj_data_info_ptr->get_max_tof_pos_num() - timing_pos_num;
       change=true;
     }
   if ( do_symmetry_shift_z && axial_pos_num != 0    )  { axial_pos_num  =  0;     change = true; }   
