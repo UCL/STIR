@@ -135,9 +135,11 @@
   <li>The following functions (previously used for upsampling the scatter estimate) have been
     made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
   </li>
-  <li>Constructors/functions in <code>ProjData</code> related classes that explicitly use <code>axial_pos_num</code>, <code>view_num</code> in their arguments are now deprecated,
-    and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> and <code>SinogramIndices</code>.
+  <li>Constructors/functions in <code>ProjData</code> related classes that explicitly use <code>axial_pos_num</code>, <code>view_num</code> etc in their arguments are now deprecated,
+    and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> or <code>SinogramIndices</code>. The former will not be
+    compatible with TOF information that will be introduced in version 6.0.0.
   </li>
+  <li>STIR version 6.0.0 will likely require C++ 14 (currently we require C++ 11, but already support C++ 20).</li>
 </ul>
 
 <h3>Build system and dependencies</h3>
