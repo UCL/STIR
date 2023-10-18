@@ -75,6 +75,17 @@
     but you could use it to optimise the number of OpenMP threads to use for your data.
     <br /><a href="https://github.com/UCL/STIR/pull/1237/">PR #1237</a>.
   </li>
+  <li>New classes <code>SegmentIndices</code>, <code>ViewgramIndices</code> and <code>SinogramIndices</code>, used by <code>ProjData</code> related classes, as opposed
+    to having to specify all the elements directly, e.g. in C++
+    <pre>
+      auto sinogram = proj_data.get_sinogram(sinogram_indices);
+    </pre>
+    This makes these functions more future proof, in particular for TOF. The older functions are now deprecated.
+    Note that as <code>Bin</code> is now derived from <code>ViewgramIndices</code>, instantations of <code>Bin</code> can now be used to specify the indices as well in most places.
+    <br/>
+    There is still more work to do here, mostly related to the symmetries.
+    <br /><a href="https://github.com/UCL/STIR/pull/1273/">PR #1273</a>.
+  </li>
 </ul>
 
 <h4>Python (and MATLAB)</h4>
@@ -124,6 +135,11 @@
   <li>The following functions (previously used for upsampling the scatter estimate) have been
     made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
   </li>
+  <li>Constructors/functions in <code>ProjData</code> related classes that explicitly use <code>axial_pos_num</code>, <code>view_num</code> etc in their arguments are now deprecated,
+    and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> or <code>SinogramIndices</code>. The former will not be
+    compatible with TOF information that will be introduced in version 6.0.0.
+  </li>
+  <li>STIR version 6.0.0 will likely require C++ 14 (currently we require C++ 11, but already support C++ 20).</li>
 </ul>
 
 <h3>Build system and dependencies</h3>

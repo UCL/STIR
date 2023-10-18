@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -29,6 +30,7 @@
 
 #include "stir/Array.h"
 #include "stir/ProjDataInfo.h" 
+#include "stir/SinogramIndices.h"
 #include "stir/shared_ptr.h"
 
 
@@ -40,7 +42,7 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class for 2d projection data.
 
-  This represents a subset of the full projection. segment_num and axial_pos_num 
+  This represents a subset of the full projection. SegmentIndices and axial_pos_num 
   are fixed.
   
 */
@@ -60,14 +62,30 @@ public:
 #endif
 
 public:
-  //! Construct sinogram from proj_data_info pointer, ring and segment number.  Data are set to 0.
+  //! Construct sinogram from proj_data_info pointe and indices.  Data are set to 0.
+  inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                  const SinogramIndices&);
+
+  //! Construct sinogram with data set to the array.
+  inline Sinogram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo >& proj_data_info_sptr,
+                  const SinogramIndices&);
+
+  //! Construct sinogram from proj_data_info pointer, axial position and segment number.  Data are set to 0.
+  /*!
+    \deprecated Use version with SinogramIndices instead.
+  */
   inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
                   const int ax_pos_num, const int segment_num); 
 
   //! Construct sinogram with data set to the array.
+  /*!
+    \deprecated Use version with SinogramIndices instead.
+  */
   inline Sinogram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo >& proj_data_info_ptr, 
                   const int ax_pos_num, const int segment_num); 
-  
+
+  //! Get indices
+  inline SinogramIndices get_sinogram_indices() const;
   //! Get segment number
   inline int get_segment_num() const; 
   //! Get number of axial positions
@@ -129,8 +147,7 @@ public:
 private:
   
   shared_ptr<const ProjDataInfo> proj_data_info_ptr; 
-  int axial_pos_num;
-  int segment_num;
+  SinogramIndices _indices;
     
 };
 

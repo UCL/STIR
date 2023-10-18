@@ -71,10 +71,21 @@ int RelatedViewgrams<elemT>::get_basic_segment_num() const
 }
 
 template <typename elemT>
-ViewSegmentNumbers RelatedViewgrams<elemT>::
+ViewgramIndices
+RelatedViewgrams<elemT>::
+get_basic_viewgram_indices() const
+{
+  assert(viewgrams.size()>0);
+  check_state();
+  return viewgrams[0].get_viewgram_indices();
+}
+
+template <typename elemT>
+ViewgramIndices
+RelatedViewgrams<elemT>::
 get_basic_view_segment_num() const
 {
-  return ViewSegmentNumbers(get_basic_view_num(), get_basic_segment_num());
+  return this->get_basic_viewgram_indices();
 }
 
 template <typename elemT>

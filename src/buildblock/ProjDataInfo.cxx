@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, 2022, University College London
+    Copyright (C) 2018, 2022, 2023, University College London
     Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
@@ -262,6 +262,15 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
   return v;
 }
 
+Viewgram<float> 
+ProjDataInfo::get_empty_viewgram(const ViewgramIndices& ind) const
+{  
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  Viewgram<float> v(proj_data_info_sptr, ind);
+  return v;
+}
+
 
 Sinogram<float>
 ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
@@ -275,6 +284,15 @@ ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
 
   Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num);
    
+  return s;
+}
+
+Sinogram<float>
+ProjDataInfo::get_empty_sinogram(const SinogramIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  Sinogram<float> s(proj_data_info_sptr, ind);
   return s;
 }
 
@@ -296,6 +314,14 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
   return s;
 }  
 
+SegmentBySinogram<float>
+ProjDataInfo::get_empty_segment_by_sinogram(const SegmentIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  SegmentBySinogram<float> s(proj_data_info_sptr, ind);
+  return s;
+}
 
 SegmentByView<float>
 ProjDataInfo::get_empty_segment_by_view(const int segment_num, 
@@ -315,17 +341,24 @@ ProjDataInfo::get_empty_segment_by_view(const int segment_num,
   return s;
 }
 
+SegmentByView<float>
+ProjDataInfo::get_empty_segment_by_view(const SegmentIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  SegmentByView<float> s(proj_data_info_sptr, ind);
+  return s;
+}
+
 RelatedViewgrams<float> 
-ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-                   //const int view_num, const int segment_num,
+ProjDataInfo::get_empty_related_viewgrams(const ViewgramIndices& viewgram_indices,
 		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
 		   const bool make_num_tangential_poss_odd) const
 {
+  if (make_num_tangential_poss_odd)
+    error("make_num_tangential_poss_odd is no longer supported");
   vector<ViewSegmentNumbers> pairs;
-  symmetries_used->get_related_view_segment_numbers(
-                                                    pairs, 
-                                                    ViewSegmentNumbers(view_segmnet_num.view_num(),view_segmnet_num.segment_num())
-    );
+  symmetries_used->get_related_view_segment_numbers(pairs, viewgram_indices);
 
   vector<Viewgram<float> > viewgrams;
   viewgrams.reserve(pairs.size());
@@ -333,8 +366,7 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
   for (unsigned int i=0; i<pairs.size(); i++)
   {
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_empty_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_tangential_poss_odd));
+    viewgrams.push_back(get_empty_viewgram(pairs[i]));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);

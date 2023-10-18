@@ -54,12 +54,19 @@ ADD_REPR(stir::DetectionPosition, %arg(*$self))
 #endif
 %template(DetectionPositionPair) stir::DetectionPositionPair<unsigned int>;
 
-%attributeref(stir::Bin, int, segment_num);
+%attributeref(stir::SegmentIndices, int, segment_num);
+#ifdef STIR_TOF
+%attributeref(stir::SegmentIndices, int, timing_pos_num);
+#endif
+%attributeref(stir::ViewgramIndices, int, view_num);
+%attributeref(stir::SinogramIndices, int, axial_pos_num);
 %attributeref(stir::Bin, int, axial_pos_num);
-%attributeref(stir::Bin, int, view_num);
 %attributeref(stir::Bin, int, tangential_pos_num);
 %attributeref(stir::Bin, int, time_frame_num);
 %attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
+%include "stir/SegmentIndices.h"
+%include "stir/ViewgramIndices.h"
+%include "stir/SinogramIndices.h"
 %include "stir/Bin.h"
 #ifdef STIR_TOF
 ADD_REPR(stir::Bin, %arg(*$self))
