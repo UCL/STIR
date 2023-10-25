@@ -13,4 +13,4 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(${dir} buildblock)
+target_link_libraries(${dir} PUBLIC buildblock)
