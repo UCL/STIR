@@ -130,17 +130,17 @@ endif()
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)
-  target_link_libraries(buildblock ${LLN_LIBRARIES})
+  target_link_libraries(buildblock PUBLIC ${LLN_LIBRARIES})
 endif()
 
 if (RDF_FOUND)
   # TODO cannot do this as it creates circular dependencies
-  # target_link_libraries(buildblock local_IO_GE)
+  # target_link_libraries(buildblock PUBLIC local_IO_GE)
 endif()
 
 # TODO currently needed as filters need fourier
-#target_link_libraries(buildblock numerics_buildblock)
+#target_link_libraries(buildblock PUBLIC numerics_buildblock)
 
 if (STIR_OPENMP)
-  target_link_libraries(buildblock ${OpenMP_EXE_LINKER_FLAGS})
+  target_link_libraries(buildblock PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()

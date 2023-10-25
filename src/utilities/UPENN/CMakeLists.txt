@@ -12,5 +12,5 @@ set(${dir_EXE_SOURCES}
 
 include(stir_exe_targets)
 
-target_link_libraries(conv_UPENN_projdata_to_STIR ${UPENN_libgeom}
+target_link_libraries(conv_UPENN_projdata_to_STIR PUBLIC ${UPENN_libgeom}
     ${UPENN_liblor} ${UPENN_libimagio} ${UPENN_libimagio++} -lboost_system)
