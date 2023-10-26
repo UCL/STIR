@@ -42,6 +42,13 @@
     <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
   </li>
   <li>Interfile header parsing now correctly identifies keywords that contain a colon by checking for <tt>:=</tt>./li>
+  <li>
+    The <code>set_up()</code> method of the ray-tracing projection matrix now skips further processing
+    if it was already called with data of the same characteristics. This will means that any cached data
+    will be re-used, potentially leading to a speed-up when re-using it from Python.
+    <br /><a href="https://github.com/UCL/STIR/pull/1281/">PR #1281</a>.
+  </li>
+
 </ul>
 
 <h3>New functionality</h3>
