@@ -269,14 +269,32 @@ set_up(
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
+  auto image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
+
+  if (!image_info_ptr)
+    error("ProjMatrixByBinUsingRayTracing initialised with wrong type of DiscretisedDensity.");
+
+  if (this->already_setup)
+    {
+      if (*this->proj_data_info_ptr == *proj_data_info_ptr_v &&
+          this->voxel_size == image_info_ptr->get_voxel_size() &&
+          this->origin == image_info_ptr->get_origin())
+        {
+          CartesianCoordinate3D<int> new_min_index;
+          CartesianCoordinate3D<int> new_max_index;
+          image_info_ptr->get_regular_range(new_min_index, new_max_index);
+          if (this->max_index == new_max_index &&
+              this->min_index == new_min_index)
+            {
+              info("ProjMatrixByBinUsingRayTracing::set_up skipped as already set-up with same characteristics.", 3);
+            }
+          return;
+        }
+    }
+
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
 
   proj_data_info_ptr= proj_data_info_ptr_v; 
-  const VoxelsOnCartesianGrid<float> * image_info_ptr =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
-
-  if (image_info_ptr == NULL)
-    error("ProjMatrixByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
  
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
