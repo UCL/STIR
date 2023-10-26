@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
-    Copyright (C) 2015, 2020, 2022 University College London
+    Copyright (C) 2015, 2020, 2022, 2023 University College London
     Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2021, Rutherford Appleton Laboratory STFC
     This file is part of STIR.
@@ -63,16 +63,13 @@
 #include <cstring>
 #include <fstream>
 #include <algorithm>
-#include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::istream;
 using std::fstream;
 using std::ios;
 using std::string;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -128,8 +125,7 @@ read_from_file(const string& filename,
 #ifndef STIR_USE_GE_IO 
       {
 #ifndef NDEBUG
-	warning("ProjData::read_from_file trying to read %s as GE Advance file", 
-		filename.c_str());
+	info("ProjData::read_from_file trying to read " + filename + " as GE Advance file", 3);
 #endif
 	return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
       }
@@ -137,8 +133,7 @@ read_from_file(const string& filename,
 #else // use VOLPET
       {
 #ifndef NDEBUG
-	warning("ProjData::read_from_file trying to read %s as GE VOLPET file", 
-		filename.c_str());
+	info("ProjData::read_from_file trying to read " + filename + " as GE VOLPET file", 3);
 #endif
 	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
 	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename, openmode) );
@@ -153,8 +148,7 @@ read_from_file(const string& filename,
   if (GE_IO::is_IE_signature(signature))
     {
 #ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as GE IE file", 
-	      filename.c_str());
+      info("ProjData::read_from_file trying to read " + filename + " as GE IE file", 3);
 #endif
       return shared_ptr<ProjData>( new GE_IO::ProjDataIE(filename) );
     }
@@ -166,22 +160,21 @@ read_from_file(const string& filename,
   if (strncmp(signature, "MATRIX", 6) == 0)
   {
 #ifndef NDEBUG
-    warning("ProjData::read_from_file trying to read %s as ECAT7", filename.c_str());
+    info("ProjData::read_from_file trying to read " + filename + " as ECAT7", 3);
 #endif
     USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT7;
 
     if (is_ECAT7_emission_file(actual_filename) || is_ECAT7_attenuation_file(actual_filename))
     {
-      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s",
-	      actual_filename.c_str());
+      info("Reading frame 1, gate 1, data 0, bed 0 from file " + actual_filename, 3);
       shared_ptr<ProjData> proj_data_sptr(ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0));
       return proj_data_sptr;
     }
     else
     {
       if (is_ECAT7_file(actual_filename))
-	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", actual_filename.c_str());
+	error("ProjData::read_from_file ECAT7 file " + actual_filename + " is of unsupported file type");
     }
   }
 #endif // HAVE_LLN_MATRIX
@@ -190,7 +183,7 @@ read_from_file(const string& filename,
   if (is_interfile_signature(signature))
   {
 #ifndef NDEBUG
-    warning("ProjData::read_from_file trying to read %s as Interfile", filename.c_str());
+    info("ProjData::read_from_file trying to read " + filename + " as Interfile", 3);
 #endif
     shared_ptr<ProjData> ptr(read_interfile_PDFS(filename, openmode));
     if (!is_null_ptr(ptr))
@@ -202,7 +195,7 @@ read_from_file(const string& filename,
   if (GE_IO::is_RDF_file(actual_filename))
     {
 #ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as RDF", filename.c_str());
+      info("ProjData::read_from_file trying to read " + filename + " as RDF", 3);
 #endif
       shared_ptr<ProjData> ptr(new GE_IO::ProjDataRDF(filename));
       if (!is_null_ptr(ptr))
@@ -214,7 +207,7 @@ read_from_file(const string& filename,
   if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))
     {
 #ifndef NDEBUG
-      warning("ProjData::read_from_file trying to read %s as GE HDF5", filename.c_str());
+      info("ProjData::read_from_file trying to read " + filename + " as GE HDF5", 3);
 #endif
       shared_ptr<ProjData> ptr(new GE::RDF_HDF5::ProjDataGEHDF5(filename));
       if (!is_null_ptr(ptr))
@@ -222,9 +215,8 @@ read_from_file(const string& filename,
   }
 #endif // GE HDF5
 
-  error("\nProjData::read_from_file could not read projection data %s.\n"
-	"Unsupported file format? Aborting.",
-	  filename.c_str());
+  error("ProjData::read_from_file could not read projection data " + filename + ".\n"
+	"Unsupported file format? Aborting.");
   // need to return something to satisfy the compiler, but we never get here
   shared_ptr<ProjData> null_ptr;
   return null_ptr;
