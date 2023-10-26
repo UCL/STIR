@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013-2014, University College London
+    Copyright (C) 2013-2014, 2018, 2019, 2021, 2023 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -297,14 +297,11 @@ set_up(
   
   if(sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.x() + 1.E-3 ||
      sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.y() + 1.E-3)
-     warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
-             "that is smaller than the bin size divided by num_tangential_LORs.\n"
-             "This matrix will completely miss some voxels for some (or all) views.\n");
-  if(sampling_distance_of_adjacent_LORs_xy < voxel_size.x() - 1.E-3 ||
-     sampling_distance_of_adjacent_LORs_xy < voxel_size.y() - 1.E-3)
-     warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
-             "that is larger than the bin size.\n"
-             "Backprojecting with this matrix might have artefacts at views 0 and 90 degrees.\n");
+     warning(boost::format("ProjMatrixByBinUsingRayTracing used for pixel size (x,y)=(%g,%g) "
+                           "that is smaller than the central bin size (%g) divided by num_tangential_LORs (%d).\n"
+                           "This matrix will completely miss some voxels for some (or all) views. It is therefore to best to increase "
+                           "'number of rays in tangential direction to trace for each bin'.")
+             % voxel_size.x() % voxel_size.y() % sampling_distance_of_adjacent_LORs_xy % num_tangential_LORs);
 
   if (use_actual_detector_boundaries)
     {
@@ -315,7 +312,7 @@ set_up(
       if (proj_data_info_cyl_ptr== 0)
         {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                  " is reset to false as the projection data should be non-arccorected.\n");
+                  " is reset to false as the projection data should be non-arccorrected.");
           use_actual_detector_boundaries = false;
         }
       else 
@@ -345,7 +342,7 @@ set_up(
       if (proj_data_info_blk_ptr== 0)
       {
         warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                " is reset to false as the projection data should be non-arccorected.\n");
+                " is reset to false as the projection data should be non-arccorrected.");
         use_actual_detector_boundaries = false;
       }
       else
@@ -362,7 +359,7 @@ set_up(
         if (!nocompression)
          {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                    " is reset to false as the projection data as either mashed or uses axial compression\n");
+                    " is reset to false as the projection data as either mashed or uses axial compression.");
             use_actual_detector_boundaries = false;
          }
       }
@@ -375,7 +372,7 @@ set_up(
         if (proj_data_info_blk_ptr== 0)
         {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                  " is reset to false as the projection data should be non-arccorected.\n");
+                  " is reset to false as the projection data should be non-arccorrected.");
           use_actual_detector_boundaries = false;
         }
         else
@@ -392,14 +389,14 @@ set_up(
           if (!nocompression)
           {
             warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                      " is reset to false as the projection data as either mashed or uses axial compression\n");
+                      " is reset to false as the projection data as either mashed or uses axial compression.");
             use_actual_detector_boundaries = false;
           }
         }
     }
  
     if (use_actual_detector_boundaries)
-        warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
+      info("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true.", 3);
 
   }  
 
