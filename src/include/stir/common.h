@@ -34,34 +34,23 @@
 
 <UL>
  <LI> macros for namespace support: 
-   #defines STIR_NO_NAMESPACES if the compiler does not support namespaces
-   #defines START_NAMESPACE_STIR etc.
-
- <LI> #defines STIR_NO_COVARIANT_RETURN_TYPES when the compiler does not
-   support virtual functions of a derived class differing only in the return
-   type.
-   Define when your compiler does not handle the following:
-   \code
-   class A { virtual A* f();}
-   class B:A { virtual B* f(); }
-   \endcode
+   \c \#defines \c START_NAMESPACE_STIR etc.
+ </LI>
 
  <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
-   use as #ifdef  __OS_WIN__ ... #elif ... #endif
+   use as \c "#ifdef  __OS_WIN__ ... #elif ... #endif"
    Possible values are __OS_WIN__, __OS_MAC__, __OS_VAX__, __OS_UNIX__
    The __OS_UNIX__ case has 'subbranches'. At the moment we attempt to find
    out on __OS_AIX__, __OS_SUN__, __OS_OSF__, __OS_LINUX__.
    (If the attempts fail to determine the correct OS, you can pass
     the correct value as a preprocessor definition to the compiler)
- 
- <LI> #includes cstdio, cstdlib, cstring, cmath
+ </LI>
+ <LI> \c \#includes cstdio, cstdlib, cstring, cmath
+ </LI>
 
- <LI> a trick to get ANSI C++ 'for' scoping rules work for compilers
-   which do not follow the new standard
-
- <LI> #ifdef STIR_ASSERT, then define our own assert, else include &lt;cassert&gt;
-
+ <LI> \c \#ifdef \c STIR_ASSERT, then define our own assert, else include &lt;cassert&gt;
+ </LI>
 </UL>
 
 <H3> Speeding up std::copy</H3>
@@ -69,6 +58,7 @@
  <UL>
  <LI> For old compilers (check the source!), overloads of std::copy for built-in 
       types to use memmove (so it's faster)
+ </LI>
  </UL>
 
 <H3> stir namespace members declared here</H3>
@@ -83,8 +73,6 @@
 <h3> stir include files included here</H3>
   <UL>
   <li> <tt>stir/config.h</tt> sets various preprocessor defines (generated from STIRConfig.in)</li>
-  <li> <tt>stir/error.h</tt> defining stir::error</li>
-  <li> <tt>stir/warning.h</tt> defining stir::warning</li>
   </UL>
 */
 #include "stir/config.h"
@@ -96,22 +84,12 @@
 #include <boost/math/constants/constants.hpp>
 
 //*************** namespace macros
-#ifndef STIR_NO_NAMESPACES
-
 # define START_NAMESPACE_STIR namespace stir {
 # define END_NAMESPACE_STIR }
 # define USING_NAMESPACE_STIR using namespace stir;
 # define START_NAMESPACE_STD namespace std {
 # define END_NAMESPACE_STD }
 # define USING_NAMESPACE_STD using namespace std;
-#else
-# define START_NAMESPACE_STIR 
-# define END_NAMESPACE_STIR 
-# define USING_NAMESPACE_STIR 
-# define START_NAMESPACE_STD
-# define END_NAMESPACE_STD 
-# define USING_NAMESPACE_STD 
-#endif
 
 
 //*************** define __OS_xxx__
@@ -239,23 +217,6 @@ END_NAMESPACE_STD
 
 #endif // #ifdef STIR_SPEED_UP_STD_COPY
 
-//*************** for() scope trick
-
-/* ANSI C++ (re)defines the scope of variables declared in a for() statement.
-   Example: the 'i' variable has scope only within the for statement.
-   for (int i=0; ...)
-     do_something;
-   The next trick (by AZ) solves this problem.
-   At the moment, we only need it for VC++ 
-   */
-   
-#if defined(STIR_ENABLE_FOR_SCOPE_WORKAROUND)
-#	ifndef for
-#		define for if (0) ; else for
-#	else
-#		error 'for' is already #defined to something 
-#	endif
-#endif
 
 //*************** assert
 
