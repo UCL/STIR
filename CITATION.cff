@@ -18,31 +18,34 @@ authors:
       given-names:  Richard
       orcid:        'https://orcid.org/0000-0001-6989-9200'
       affiliation:  University College London
+    - family-names: Twyman Skelly
+      given-names:  Robert
+      affiliation:  University College London and Prescient Imaging
     - family-names: Tsoumpas
       given-names:  Charalampos
-    - family-names: Twyman
-      given-names:  Robert
-      affiliation:  University College London
     - family-names: Deidda
       given-names:  Daniel
       orcid:        'https://orcid.org/0000-0002-2766-4339'
       affiliation:  National Physics Laboratory (UK)
+    - family-names: Falcon
+      given-names:  Carles
     - family-names: Borgeaud
       given-names:  Tim
       affiliation:  Hammersmith Imanet Ltd
-    - family-names: Falcon
-      given-names:  Carles
     - family-names: Khateri
       given-names:  Parisa
       affiliation:  ETH Zuerich
+    - family-names: Jehl
+      given-names:  Markus
+      affiliation:  Positrigo
     - family-names: Wadhwa
       given-names:  Palak
       affiliation:  University of Leeds (UK)
-    - family-names: Beisel
-      given-names:  Tobias
     - family-names: Strugari
       given-names:  Matthew
       affiliation:  Dalhousie University (Canada)
+    - family-names: Beisel
+      given-names:  Tobias
     - family-names: Jacobson
       given-names:  Matthew
     - family-names: Gillman
@@ -69,9 +72,6 @@ authors:
     - family-names: Fischer
       given-names:  Jannis
       orcid:        'https://orcid.org/0000-0002-8329-0220'
-    - family-names: Jehl
-      given-names:  Markus
-      affiliation:  Positrigo
     - family-names: Roethlisberger
       given-names:  Michael
       affiliation:  ETH Zuerich
@@ -80,13 +80,17 @@ authors:
     - family-names: Brusaferri
       given-names:  Ludovica
       affiliation:  University College London
-    - family-names: Bertolli
-      given-names:  Ottavia
-      affiliation:  University College London
     - family-names: Pasca
       given-names:  Edoardo
       affiliation:  UK Research & Innovation
       orcid:        'https://orcid.org/0000-0001-6957-2160'
+    - family-names: Thomas
+      given-names:  Benjamin
+      orcid:        'https://orcid.org/0000-0002-9784-1177'
+      affiliation:  University College London
+    - family-names: Bertolli
+      given-names:  Ottavia
+      affiliation:  University College London
     - family-names: Niknejad
       given-names:  Tahereh
     - family-names: Dikaios
@@ -113,10 +117,6 @@ authors:
     - family-names: Valente
       given-names:  Patrick
       affiliation:  Brunel University (UK)
-    - family-names: Thomas
-      given-names:  Benjamin
-      orcid:        'https://orcid.org/0000-0002-9784-1177'
-      affiliation:  University College London
     - family-names: Schramm
       given-names:  Georg
       affiliation:  Katholieke Universiteit Leuven (Belgium)
@@ -143,12 +143,12 @@ authors:
     - family-names: Mikhaylova
       given-names:  Ekaterina
       affiliation:  Positrigo
-    - family-names: da Costa-Luis
-      given-names:  Casper O.
-      orcid:        'https://orcid.org/0000-0002-7211-1557'
     - family-names: Porter
       given-names:  Sam David
       affiliation:  University College London, National Physics Laboratory (UK)
+    - family-names: da Costa-Luis
+      given-names:  Casper O.
+      orcid:        'https://orcid.org/0000-0002-7211-1557'
     - family-names: Rashidnasab
       given-names:  Alaleh
       affiliation:  University College London
@@ -160,11 +160,11 @@ authors:
       affiliation:  University College London
     - family-names: Vavrek
       given-names:  Jayson
-    - family-names: Kohr
-      given-names:  Holger
     - family-names: Tsai
       given-names:  Yu-jung
       affiliation:  University College London
+    - family-names: Kohr
+      given-names:  Holger
     - name: tokkot
     - family-names: El Katib
       given-names:  Mahmoud
