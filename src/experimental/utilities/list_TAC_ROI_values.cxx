@@ -23,7 +23,7 @@
   \param output_filename a text file sorted in list form of: | Frame_num | Start Time | End Time | Mean | StdDev | CV |
   \param data_filename should be in ECAT7 format.
   \param --CV is used to output the Coefficient of Variation as well.
-  \Note When ROI_filename.par is not given, the user will be asked for the parameters.
+  Note: When ROI_filename.par is not given, the user will be asked for the parameters.
 
   The .par file has the following format
   \verbatim

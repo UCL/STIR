@@ -17,7 +17,8 @@
  \author Alexey Zverovich
  \author PARAPET project
 
-
+*/
+/*
  Modification history:
 
   <TT>

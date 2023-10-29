@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
   \phi(f) = \sqrt{\alpha^2 + |\nabla f|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
   where \f$ f \f$ is the PET image,
-  \f$\nabla \f$ is the finite difference operator (\textrm{not} taking voxel-sizes into account) and
+  \f$\nabla \f$ is the finite difference operator (\b not taking voxel-sizes into account) and
   \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
 
   \f[

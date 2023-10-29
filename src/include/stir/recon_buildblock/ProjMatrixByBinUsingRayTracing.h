@@ -38,8 +38,8 @@ class ProjDataInfo;
   \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
   by using a Length of Intersection (LOI) model. 
 
-  Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
-  #defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx. 
+  Currently, the LOIs are divided by voxel_size.x(), unless \c NEWSCALE is
+  \c \#defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx.
 
   It is possible to use multiple LORs in tangential direction. The result
   will then be the average of the various contributions. Currently all these
