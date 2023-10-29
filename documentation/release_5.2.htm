@@ -15,7 +15,8 @@
   improvements to the documentation. See also <a href="https://github.com/UCL/STIR/milestone/6">the
     5.2 milestone on GitHub</a>.
 </p>
-<p>Overall code management and assistance by Kris Thielemans (UCL and ASC).</p>
+    <p>Overall code management and assistance by Kris Thielemans (UCL and ASC). Other main contributors
+    were Daniel Deidda (NPL) and Markus Jehl (Positrigo).</p>
 
 <h2>Patch release info</h2>
 <ul>
@@ -149,12 +150,12 @@
     and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> or <code>SinogramIndices</code>. The former will not be
     compatible with TOF information that will be introduced in version 6.0.0.
   </li>
-  <li>STIR version 6.0.0 will likely require C++ 14 (currently we require C++ 11, but already support C++ 20).</li>
+  <li>STIR version 6.0.0 will require C++ 14 (currently we require C++ 11, but already support C++ 20).</li>
 </ul>
 
 <h3>Build system and dependencies</h3>
 <ul>
-  <li>CMake 3.12 is now required on Windows. (It will be required on all platforms in the next version).</li>
+  <li>CMake 3.12 is now required on Windows. (It will be required on all platforms in STIR 6.0).</li>
   <li>We now use CMake's <a href=https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/Object-Library>OBJECT library feature</a> for the registries. This avoids re-compilation of the registries for every executable and therefore speeds-up building time. Use of STIR in an external project is not affected as long as the recommended practice was followed. This is now documented in the User's Guide.
     <br /><a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
   </li>
@@ -206,10 +207,12 @@
 
 <h3>Documentation changes</h3>
 <ul>
+  <li>Updated the STIR developers guide, which was quite out-of-date w.r.t. C++ features etc.</li>
 </ul>
 
 <h3>recon_test_pack changes</h3>
 <ul>
+  <li>Updated headers of most images and projection data to avoid warnings.</li>
 </ul>
 
 <h3>Other changes to tests</h3>
