@@ -1,4 +1,4 @@
-Licensing information for STIR 5.1.0
+Licensing information for STIR 5.2.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -27,7 +27,6 @@ Explicit list of files that carry the PARAPET license
 ./documentation/STIR-glossary.tex
 ./documentation/STIR-general-overview.tex
 ./documentation/STIR-developers-overview.tex
-./src/IO/InterfileHeaderSiemens.cxx
 ./src/IO/stir_ecat_common.cxx
 ./src/IO/ecat6_utils.cxx
 ./src/IO/interfile.cxx
@@ -69,7 +68,6 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/IO/interfile.h
 ./src/include/stir/IO/InputStreamWithRecordsFromUPENNbin.h
 ./src/include/stir/IO/InterfileHeader.h
-./src/include/stir/IO/InterfileHeaderSiemens.h
 ./src/include/stir/IO/ecat6_utils.h
 ./src/include/stir/IO/stir_ecat_common.h
 ./src/include/stir/IO/stir_ecat7.h
@@ -84,7 +82,6 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/interpolate.h
 ./src/include/stir/ProjDataInfoCylindrical.h
 ./src/include/stir/ByteOrder.inl
-./src/include/stir/ViewSegmentNumbers.h
 ./src/include/stir/evaluation/ROIValues.h
 ./src/include/stir/TimedBlock.h
 ./src/include/stir/CartesianCoordinate3D.inl
@@ -122,10 +119,10 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/BasicCoordinate.h
 ./src/include/stir/BasicCoordinate.inl
 ./src/include/stir/VectorWithOffset.h
+./src/include/stir/SegmentIndices.inl
 ./src/include/stir/doxygen_doc_for_boost.h
 ./src/include/stir/utilities.h
 ./src/include/stir/NumericInfo.h
-./src/include/stir/ViewSegmentNumbers.inl
 ./src/include/stir/RunTests.h
 ./src/include/stir/utilities.inl
 ./src/include/stir/convert_range.inl
@@ -154,10 +151,12 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/Scanner.inl
 ./src/include/stir/DiscretisedDensity.inl
 ./src/include/stir/SegmentByView.h
+./src/include/stir/ViewgramIndices.inl
 ./src/include/stir/ProjDataGEAdvance.h
 ./src/include/stir/Coordinate4D.h
 ./src/include/stir/CartesianCoordinate2D.h
 ./src/include/stir/Sinogram.inl
+./src/include/stir/SinogramIndices.inl
 ./src/include/stir/error.h
 ./src/include/stir/line.h
 ./src/include/stir/Succeeded.h
