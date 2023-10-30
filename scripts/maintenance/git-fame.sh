@@ -37,7 +37,7 @@ exit
 | Darren Hague           |      50    
 
 # Also, SPECTUB files were checked in by KT, but actually written by Carles Falcon.
-# Finally PinholeSPECTUB is attributed (mostly to Carles), but git fame doesn't count his loc for some reason.
+# Finally PinholeSPECTUB is now attributed correctly (mostly to Carles)
 # Just before release 5.1, we have the following loc
     $ wc -l *SPECTUB*x
   1346 PinholeSPECTUB_Tools.cxx
@@ -48,12 +48,12 @@ exit
    989 SPECTUB_Weight3d.cxx
 
 Roughly leading to
-| Carles Falcon          |      3000
+| Carles Falcon          |      3500
 | Berta Marti-Fuster     |      1000
     
 Summary for corrections to output:
 | Author                 |    loc
-| Carles Falcon          |   3000
+| Carles Falcon          |   3500
 | Berta Marti-Fuster     |   1000
 | Claire Labbe           |   1000
 | Mustapha Sadki         |    400
