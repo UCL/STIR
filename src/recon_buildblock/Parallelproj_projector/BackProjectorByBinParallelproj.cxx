@@ -67,6 +67,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
   parser.add_key("verbosity", &_cuda_verbosity);
+  parser.add_key("restrict to cylindrical FOV", &_restrict_to_cylindrical_FOV);
   parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
 
@@ -76,8 +77,22 @@ set_defaults()
 {
   _cuda_verbosity = true;
   _num_gpu_chunks = 1;
+  _restrict_to_cylindrical_FOV = true;
 }
 
+bool
+BackProjectorByBinParallelproj::
+get_restrict_to_cylindrical_FOV() const
+{
+  return this->_restrict_to_cylindrical_FOV;
+}
+
+void
+BackProjectorByBinParallelproj::
+set_restrict_to_cylindrical_FOV(bool val)
+{
+  this->_restrict_to_cylindrical_FOV = val;
+}
 
 void
 BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
@@ -91,6 +106,10 @@ BackProjectorByBinParallelproj::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
+#ifdef STIR_TOF
+  if (proj_data_info_sptr->get_num_tof_poss() > 1)
+    error("STIR-ParallelProj interface does not support TOF data yet. Sorry!");
+#endif
     BackProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
@@ -201,10 +220,7 @@ get_output(DiscretisedDensity<3,float> &density) const
     // --------------------------------------------------------------- //
     std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
 
-    // After the back projection, we enforce a truncation outside of the FOV.
-    // This is because the parallelproj projector seems to have some trouble at the edges and this
-    // could cause some voxel values to spiral out of control.
-    //if (_use_truncation)
+    if (this->_restrict_to_cylindrical_FOV)
       {
         const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
         const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;

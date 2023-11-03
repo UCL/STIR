@@ -85,6 +85,9 @@ public:
    void set_num_gpu_chunks(int num_gpu_chunks) {_num_gpu_chunks = num_gpu_chunks; }
    int  get_num_gpu_chunks() { return _num_gpu_chunks; }
 
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool val);
+
 protected:
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,
@@ -100,6 +103,7 @@ protected:
   void set_helper(shared_ptr<detail::ParallelprojHelper>);
   bool _cuda_verbosity;
   int _num_gpu_chunks;
+  bool _restrict_to_cylindrical_FOV;
 };
 
 END_NAMESPACE_STIR

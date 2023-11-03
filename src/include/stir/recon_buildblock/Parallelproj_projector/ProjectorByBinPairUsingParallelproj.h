@@ -57,6 +57,9 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity);
 
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool val);
+
 private:
   shared_ptr<detail::ParallelprojHelper> _helper;
 
@@ -64,6 +67,8 @@ private:
   void initialise_keymap() override;
   bool post_processing() override;
   bool _verbosity;
+  bool _restrict_to_cylindrical_FOV;
+  bool _already_set_up;
 };
 
 END_NAMESPACE_STIR
