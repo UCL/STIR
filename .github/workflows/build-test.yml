@@ -7,6 +7,7 @@ on:
       - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
+      - 'CITATION.cff'
       - '**/*.md'
       - '**/*.html'
       - '**/*.htm'
@@ -18,6 +19,7 @@ on:
       - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
+      - 'CITATION.cff'
       - '**/*.md'
       - '**/*.html'
       - '**/*.htm'
@@ -334,7 +336,7 @@ jobs:
             ./run_scatter_tests.sh
             ./run_test_zoom_image.sh
             ./run_ML_norm_tests.sh
-            if [[ $BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
+            if test "${{matrix.ROOT}}XX" == "ONXX"; then ./run_root_GATE.sh; fi
             ./run_tests_modelling.sh
             cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
             ./run_SPECT_tests.sh

@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023 University College London
     Copyright (C) 2022 National Physical Laboratory
     This file is part of STIR.
 
@@ -34,16 +34,47 @@
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
 
-%newobject stir::Scanner::get_scanner_from_name;
-%include "stir/Scanner.h"
+%shared_ptr(stir::DetectionPosition<unsigned int>);
+%shared_ptr(stir::DetectionPositionPair<unsigned int>);
 
-%attributeref(stir::Bin, int, segment_num);
+%attributeref(stir::DetectionPosition<unsigned int>, unsigned int, tangential_coord);
+%attributeref(stir::DetectionPosition<unsigned int>, unsigned int, axial_coord);
+%attributeref(stir::DetectionPosition<unsigned int>, unsigned int, radial_coord);
+%include "stir/DetectionPosition.h"
+#ifdef STIR_TOF
+ADD_REPR(stir::DetectionPosition, %arg(*$self))
+#endif
+%template(DetectionPosition) stir::DetectionPosition<unsigned int>;
+
+%attributeref(stir::DetectionPositionPair<unsigned int>, stir::DetectionPosition<unsigned int>, pos1);
+%attributeref(stir::DetectionPositionPair<unsigned int>, stir::DetectionPosition<unsigned int>, pos2);
+%include "stir/DetectionPositionPair.h"
+#ifdef STIR_TOF
+ //ADD_REPR(stir::DetectionPositionPair, %arg(*$self))
+#endif
+%template(DetectionPositionPair) stir::DetectionPositionPair<unsigned int>;
+
+%attributeref(stir::SegmentIndices, int, segment_num);
+#ifdef STIR_TOF
+%attributeref(stir::SegmentIndices, int, timing_pos_num);
+#endif
+%attributeref(stir::ViewgramIndices, int, view_num);
+%attributeref(stir::SinogramIndices, int, axial_pos_num);
 %attributeref(stir::Bin, int, axial_pos_num);
-%attributeref(stir::Bin, int, view_num);
 %attributeref(stir::Bin, int, tangential_pos_num);
 %attributeref(stir::Bin, int, timing_pos_num);
+%attributeref(stir::Bin, int, time_frame_num);
 %attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
+%include "stir/SegmentIndices.h"
+%include "stir/ViewgramIndices.h"
+%include "stir/SinogramIndices.h"
 %include "stir/Bin.h"
+#ifdef STIR_TOF
+ADD_REPR(stir::Bin, %arg(*$self))
+#endif
+
+%newobject stir::Scanner::get_scanner_from_name;
+%include "stir/Scanner.h"
 
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;

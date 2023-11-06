@@ -17,6 +17,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -26,51 +27,37 @@
 
 START_NAMESPACE_STIR
 
-Bin::Bin():segment(0),view(0),
-    axial_pos(0),tangential_pos(0),timing_pos(0), bin_value(0.0f),time_frame(1)
+Bin::Bin()
+  : axial_pos(0),tangential_pos(0), bin_value(0.0f),time_frame(1)
 {}
 
-
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, float bin_value)
-     :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(0), bin_value(bin_value),time_frame(1)
-     {}
+  : ViewgramIndices(view_num, segment_num, /*timing_pos_num*/0),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(bin_value),time_frame(1)
+{}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num)
-     :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),timing_pos(0), bin_value(0.0f),time_frame(1)
-     {}
+  : ViewgramIndices(view_num, segment_num, /*timing_pos_num*/0),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(0.0f),time_frame(1)
+{}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num, float bin_value)
-     :segment(segment_num),view(view_num),
-     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(bin_value),time_frame(1)
-     {}
+  : ViewgramIndices(view_num, segment_num, timing_pos_num),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(bin_value),time_frame(1)
+{}
 
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num)
-     :segment(segment_num),view(view_num),
-      axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), timing_pos(timing_pos_num), bin_value(0.0f), time_frame(1)
-     {}
-
+  : ViewgramIndices(view_num, segment_num, timing_pos_num),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(0.0f), time_frame(1)
+{}
      
 int
  Bin:: axial_pos_num()const
 { return axial_pos;}
 
 int
- Bin::segment_num()const 
-{return segment;}
-
-int
  Bin::tangential_pos_num()  const
 { return tangential_pos;}
-
-int
- Bin::view_num() const
-{ return view;}
-
-int
-Bin::timing_pos_num() const
-{ return timing_pos; }
 
 int
  Bin:: time_frame_num() const
@@ -81,23 +68,11 @@ int&
 { return axial_pos;}
 
 int&
- Bin:: segment_num()
-{return segment;}
-
-int&
  Bin::tangential_pos_num()
 { return tangential_pos;}
 
 int&
- Bin:: view_num() 
-{ return view;}
-
-int&
-Bin:: timing_pos_num()
-{ return timing_pos;}
-
-int&
-Bin:: time_frame_num()
+ Bin:: time_frame_num()
 {return time_frame;}
 
 #if 0
@@ -135,9 +110,8 @@ bool
 Bin::operator==(const Bin& bin2) const
 { 
   return 
-    segment == bin2.segment && view == bin2.view && 
+    base_type::operator==(bin2) &&
     axial_pos == bin2.axial_pos && tangential_pos == bin2.tangential_pos &&
-    timing_pos == bin2.timing_pos &&
     time_frame == bin2.time_frame &&
     bin_value == bin2.bin_value;
 }

@@ -472,6 +472,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         return Succeeded::yes; // Stop here!!!
     }
 
+    this->num_cache_files = 0;
     if(this->cache_lm_file)
       {
         info("Listmode reconstruction: Creating cache...", 2);

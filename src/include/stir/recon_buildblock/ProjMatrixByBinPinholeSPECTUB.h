@@ -3,17 +3,7 @@
     Copyright (C) 2021, University College London
     This file is part of STIR.
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-		http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -53,7 +43,7 @@ class Bin;
 
   \warning this class currently only works with VoxelsOnCartesianGrid. 
 
-  \Sample parameter file
+  \par Sample parameter file
 
 \verbatim
     Projection Matrix By Bin Pinhole SPECT UB Parameters:=
@@ -83,7 +73,7 @@ class Bin;
     End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
 \endverbatim
 
-  \Sample detector file
+  \par Sample detector file
   
 \verbatim
     Information of detector
@@ -104,7 +94,7 @@ class Bin;
     \#…………until here……………\#
 \endverbatim
 
-  \Sample collimator file
+  \par Sample collimator file
 \verbatim
     Information of collimator
     Comments are allowed here or anywhere in lines not containing parameters.

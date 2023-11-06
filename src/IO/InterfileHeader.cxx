@@ -306,12 +306,6 @@ bool InterfileHeader::post_processing()
     warning("Interfile error: no matrix size keywords present\n");
     return true;
   }
-  if (matrix_size[matrix_size.size()-1].size()!=1)
-  {
-    warning("Interfile error: last dimension (%d) of 'matrix size' cannot be a list of numbers\n",
-      matrix_size[matrix_size.size()-1].size());
-    return true;
-  }
   for (unsigned int dim=0; dim != matrix_size.size(); ++dim)
   {
     if (matrix_size[dim].size()==0)

@@ -58,6 +58,7 @@ private:
 
   void check_symmetry(const SegmentBySinogram<float>& segment);
   void compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff);
+  void compare_segment_shape(const SegmentBySinogram<float>& shape_segment, const SegmentBySinogram<float>& test_segment, int erosion);
 };
 
 void InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
@@ -147,6 +148,46 @@ void InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment
   check_if_less(sumAbsDifference, maxDiff, "difference between segments is larger than expected");
 }
 
+void InterpolationTests::compare_segment_shape(const SegmentBySinogram<float>& shape_segment, const SegmentBySinogram<float>& test_segment, int erosion)
+{
+  auto maxTestValue = test_segment.find_max();
+  // compute difference and compare against empirically found value from visually validated sinograms
+  auto sumVoxelsOutsideMask = 0U;
+  for (auto axial = test_segment.get_min_axial_pos_num(); axial <= test_segment.get_max_axial_pos_num(); axial++)
+  {
+    for (auto view = test_segment.get_min_view_num(); view <= test_segment.get_max_view_num(); view++)
+    {
+      for (auto tang = test_segment.get_min_tangential_pos_num(); tang <= test_segment.get_max_tangential_pos_num(); tang++)
+      {
+        if (test_segment[axial][view][tang] < 0.1 * maxTestValue)
+          continue;
+
+        // now go through the erosion neighbourhood of the voxel to see if it is near a non-zero voxel
+        bool isNearNonZero = false;
+        for (auto axialShape = std::max(axial - erosion, test_segment.get_min_axial_pos_num()); 
+             axialShape <= std::min(axial + erosion, test_segment.get_max_axial_pos_num()); axialShape++)
+        {
+          for (auto viewShape = std::max(view - erosion, test_segment.get_min_view_num()); 
+               viewShape <= std::min(view + erosion, test_segment.get_max_view_num()); viewShape++)
+          {
+            for (auto tangShape = std::max(tang - erosion, test_segment.get_min_tangential_pos_num()); 
+                 tangShape <= std::min(tang + erosion, test_segment.get_max_tangential_pos_num()); tangShape++)
+            {
+              if (shape_segment[axialShape][viewShape][tangShape] > 0)
+                isNearNonZero = true;
+            }
+          }
+        }
+        if (isNearNonZero == false)
+          sumVoxelsOutsideMask++;
+      }
+    }
+  }
+
+  // confirm that the difference is smaller than an empirically found value
+  check_if_equal(sumVoxelsOutsideMask, 0U, "there were non-zero voxels outside the masked area");
+}
+
 void InterpolationTests::scatter_interpolation_test_blocks()
 {
   info("Performing symmetric interpolation test for BlocksOnCylindrical scanner");
@@ -172,8 +213,9 @@ void InterpolationTests::scatter_interpolation_test_blocks()
 
   // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
   auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  auto cylinder = EllipsoidalCylinder(40, 80, 80, CartesianCoordinate3D<float>(emission_map.get_max_z()/2 * emission_map.get_grid_spacing()[1], 0, 0));
+  auto cylinder = EllipsoidalCylinder(41, 80, 80, CartesianCoordinate3D<float>(emission_map.get_max_z()/2 * emission_map.get_grid_spacing()[1], 0, 0));
   cylinder.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+  write_to_file("downsampled_cylinder_map", emission_map);
 
   // project the cylinder onto the downsampled scanner proj data
   auto pm = ProjMatrixByBinUsingRayTracing();
@@ -316,7 +358,7 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
   interpolated_proj_data.write_to_file("interpolated_sino_asym.hs");
 
   // compare to ground truth
-  compare_segment(interpolated_proj_data.get_segment_by_sinogram(0), full_size_model_sino.get_segment_by_sinogram(0), 4697);
+  compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 2);
 }
 
 void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
@@ -384,7 +426,7 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   interpolated_proj_data.write_to_file("interpolated_sino_cyl_asym.hs");
 
   // compare to ground truth
-  compare_segment(interpolated_proj_data.get_segment_by_sinogram(0), full_size_model_sino.get_segment_by_sinogram(0), 17500);
+  compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 2);
 }
 
 void

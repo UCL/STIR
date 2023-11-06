@@ -17,7 +17,7 @@
 \textbf{{\huge STIR \\
 General Overview}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 2.3}}
+\textbf{\textit{version 5.2}}
 
 
 \end{spacing}
@@ -57,18 +57,21 @@ See STIR/LICENSE.txt for details.
 \section{
 Disclaimer}
 Many names used below are trademarks owned by various companies. They are
-is fully acknowledged, but not explicitly stated.
+fully acknowledged, but not explicitly stated.
+
+This document has been brought somewhat up-to-date for version 5.2, but there is more work to do.
 
 \section{
 Overview}
 
 STIR (\textit{Software for Tomographic Image Reconstruction}) is Open 
 Source software (written in C++) consisting of classes, functions 
-and utilities for 3D PET image reconstruction, although it is 
+and utilities for 3D PET and SPECT image reconstruction, although it is 
 general enough to accommodate other imaging modalities. An overview
 of STIR 2.x is given in [Thi12], which you ideally refer to in your paper.
+See the STIR website for more details on how to reference STIR, depending on which functionality you use.
 
-STIR consists of 2 parts. 
+STIR consists of 3 parts. 
 \begin{itemize}
 \item
 A library providing building blocks for image and projection 
@@ -76,6 +79,7 @@ data manipulation and image reconstruction.
 \item
 Applications using this library including basic image manipulations, 
 file format conversions and of course image reconstructions.
+\item Python interface to the library via SWIG.
 \end{itemize}
 
 The library has been designed so that it can be used for many 
@@ -85,8 +89,8 @@ on distributed memory architectures, although these are not distributed
 yet. This will enable the software to be run not only on single 
 processors, but also on massively parallel computers, or on clusters 
 of workstations. \\
-STIR is portable on all systems supporting the GNU C++ compiler 
-or MS Visual C++ (or hopefully any ANSI C++ compliant compiler). 
+STIR is portable on all systems supporting the GNU C++ compiler, CLang++, Intel C++, 
+or MS Visual C++ (or hopefully any C++-11 compliant compiler). 
 The library is fully documented.\\
 The object-oriented features make this library very modular and 
 flexible. This means that it is relatively easy to add new algorithms, 
@@ -94,17 +98,16 @@ filters, projectors or even a different type of image discretisation.
 It is even possible to select at run-time which version of these 
 components you want to use.\\
 The software is \textbf{freely available} for downloading under the 
-GNU LPGL (the library) or GNU GPL (the applications) license, 
-see the 'Registration' section of our web-site. \\
+Apache 2.0 license.\\
 \textbf{It is the hope of the collaborators of the STIR project that 
-other researchers in the PET community will use this library 
+other researchers in the PET and SPECT will use this library 
 for their own work, extending it and making their work available 
 as well.} Please subscribe to some of our mailing 
 lists if you are interested. \\
 In its current status, the software is mainly a research tool. 
 It is probably not friendly enough to use in a clinical setting. In any 
 case, \textbf{STIR should not be used to generate images for diagnostic
-purposes}, as there is no warranty, and most definitely no FDA approval
+purposes}, as there is no warranty, and most definitely no FDA approval nor CE marking
 
 
 
@@ -132,10 +135,7 @@ The building block classes included in this library are as follows:
 algorithm type, etc.);
 \item multi-dimensional arrays (any dimension) with various 
 operations, including numeric manipulations;
-\item reading and writing (I/O) data in Interfile format (for 
-which a 3D PET extension is proposed), reading of GE Advance 
-sinogram data, limited reading and writing of ECAT6 and ECAT7 
-and conversion between ECAT6 and Interfile;
+\item reading of various raw data as well as writing in Interfile format;
 \item classes of projection data (complete data set, segments, 
 sinograms, viewgrams) and images (2D and 3D);
 \item various filter transfer functions (1D, 2D and 3D);
@@ -156,7 +156,7 @@ Examples of hierarchies are given in the following figures:
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=5.667in, height=1.137in]{graphics/STIR-general-overviewFig1}
-\caption{Current hierarchy for back projectors.}
+\caption{Somewhat outdated hierarchy for back projectors.}
 \end{center}
 \end{figure}
 
@@ -193,7 +193,7 @@ Optionally with SSRB first.
 \subsection{3DRP}
 The 3DRP [Kin89] algorithm is often considered the 'reference' 
 algorithm for 3D PET. It is a 3D FBP algorithm which uses reprojection 
-to fill in the missing data.
+to fill in the missing data. However, this is not actively maintained anymore.
 
 \subsection{
 Ordered Subsets Maximum A Posteriori using the One Step Late 
@@ -203,11 +203,7 @@ The Expectation Maximization (EM) algorithm [She82] as well as
 its accelerated variant OSEM (Ordered Set Expectation Maximization) 
 [Hud94] are iterative methods for computing the maximum likelihood 
 estimate of the tracer distribution based on the measured projection 
-data. Their benefits have been examined in various reports. Notably, 
-it has been found (e.g. [Rea98b]) that 3D OSEM can produce images 
-of higher quality, in terms of both resolution and contrast, 
-than analytic algorithms of common commercial use such as the 
-reprojection (3DRP) algorithm [Kin89].
+data.
 
 One drawback of OSEM is its tendency to develop noise artefacts 
 with increasing iterations. As a remedy, various modifications 
@@ -371,47 +367,17 @@ a number of data-sets and expected end-results.
 
 \section{
 Currently supported systems}
+We regularly run STIR on Lniux, MacOS and Windows. Check our GitHub Actions
+and Appveyor for details.
 
-These are the systems we tested our software on. We think that 
-it will work in other cases as well with minor tuning. Experience 
-will tell\dots 
-
-
-
-\subsection{
-Computing platforms}
-
-
-\subsubsection{
-Serial versions of algorithms}
-A lot of STIR was developed kust before 2000. Therefore, the code
-contains in various places work-arounds for deficient C++ compilers
-(e.g. GNU g++ 2.95.2 or Microsoft Visual C++ 6.0 service pack 3). 
-However, we are no longer
-testing STIR on such older systems. It might be possible to revive this,
-but we strongly recommend that you get a recent compiler instead.
-\begin{itemize}
-\item 
-Intel based PCs using Windows XP or higher (NT probably still works if you
-find a compiler for it). These were tested with Microsoft Visual C++ 2003, 2005 up to
-Visual Studio 2010,
-and various GNU g++ versions (up to at least 4.5.3) via CYGWIN (http://cygwin.com).
-\item 
-Linux using GNU g++ (from 3.5 to 4.6).
-Intel's C++ compiler 12.1.0  works fine (tested on Linux), older versions had some problems with the Fourier transform code but the reconstruction itself was fine.
-\item
-MacOS using GNU g++.
-\end{itemize}
-However, people run STIR on various other systems, including Solaris. Please
-check the mailing lists.
 
 \textbf{Warning}: 
 We currently have a problem 
 in the incremental backprojection routines due to different rounding 
-of floating point calculations on Sparc, HP and Opteron processors. 
-Thanks to a fix of Bing Bai this problem might have disappeared on your processor, but it is still there on recent 64-bit processors.
+of floating point calculations.
 You will find out if this problem still exists when you run the 
 recon\_text\_pack available on the STIR web-site. Please let us know.
+This currently only affects the FBP routines.
 See the User's Guide for how to use another backprojector.
 
 
@@ -419,7 +385,8 @@ See the User's Guide for how to use another backprojector.
 Parallel versions of algorithms}
 \begin{itemize}
 \item a parallel version of \texttt{OSMAPOSL} and \texttt{OSSPS} using MPI 
-\item a threaded version of FBP2D using OPENMP, but for most systems, there is no performance gain.
+\item OpenMP versions of many functions
+\item CUDA versions for NiftyPET and parallelproj
 \end{itemize}
 
 
@@ -427,18 +394,7 @@ Parallel versions of algorithms}
 
 \subsection{
 PET scanners}
-\begin{itemize}
-\item 
-GE Advance, Discovery LS, Discovery ST, Discvoery STE, Discovery RX,
-Discovery 600 
-\item 
-PRT-1 
-\item 
-ECAT 921, 931, 953, 951, 962, 966 (and most other ECAT systems) 
-\item 
-HRRT apparently works as well
-\item Philips Allegro (using its convention of having a ``virtual'' extra crystal to cover the gaps).
-\end{itemize}
+See \texttt{buildblock/Scanners.cxx}.
 
 Other cylindrical PET scanners can easily be added. This can be done
 without modifying the code (see the Wiki).
@@ -449,37 +405,27 @@ File formats}
 \begin{itemize}
 \item 
 An extension of the Interfile standard (see the ''Other info'' section of the STIR website.)
+\item
+ITK can be used to read many image file formats
+\item Siemens ``interfile-like'' data
+\item GE RDF9 (if you have the HDF5 libraries)
 \item 
 The commercial AnalyzeAVW library from the BIR, Mayo University, can be used
-to read images via a conversion utility.
+to read images via a conversion utility. This will be dropped in version 6.0.
 \item 
-GE Advance VOLPET sinogram format, but for reading only (with 
-very limited support for the header). If you have a research contract with GE,
-you might be able to get a STIR extension to read Discovery ST, STE and RX data in both 
-VOLPET and RDF format.
+GE Advance VOLPET sinogram format, but for reading only. This will be dropped in version 6.0.
 \item 
-ECAT 7 matrix format for reading only (for reading multiple
-frames/gates, an Interfile 
-header has to be created using a utility we provide). Single 
-frame/gate/bed images can be directly read or written. Single 
-frame/gate/bed sinograms can be directly read.
+ECAT 7 matrix format for reading only might work but is no longer supported.
 However, this file format needs the ECAT Matrix library (developed 
 previously by M. Sibomana and C. Michel at Louvain la Neuve, Belgium).
 This library is no longer maintained however.
-\item 
-ECAT 6 matrix format was supported in previous version of STIR, but
-is currently broken on some systems (probably due to a bug in the ECAT 
-MATRIX library for ECAT 6). ECAT6 was supported by using conversion 
-utilities to and from 
-Interfile. Single frame/gate/bed images could be directly read 
-or written.
 \end{itemize}
 
 See the User's Guide for more detail on the supported file formats.\\
 In addition, a separate set of classes is avalailable
 to read list-mode 
 data. Only a few scanners are currently supported (such as the 
-ECAT HR+ and HR++), although it should not be too difficult to 
+ECAT HR+ and HR++, GE RDF9, Siemens mMR and SAFIR), although it should not be too difficult to 
 add your own (if you know the list-mode file format!). 
 
 

@@ -9,7 +9,7 @@
   stir::BackProjectorByBinUsingInterpolation, for the case of piecewise 
   linear interpolation.
 
-  \warning This #includes BackProjectorByBinUsingInterpolation_3DCho.cxx 
+  \warning This \c \#includes BackProjectorByBinUsingInterpolation_3DCho.cxx
 
   This very ugly way of including a .cxx file is used to avoid replication of
   a lot of (difficult) code.

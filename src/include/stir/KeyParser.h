@@ -110,7 +110,9 @@ public :
   \brief A class to parse Interfile headers
 
   Currently, Interfile 3.3 parsing rules are hard-coded, with
-  some extensions.
+  some extensions. Note that some functions such as `get_keyword()` are `virtual`
+  such that a derived class could use non-Interfile parsing (but this might need
+  more work).
 
   KeyParser reads input line by line and parses each line separately.
   It allows for '\\r' at the end of the line (as in files
@@ -349,16 +351,14 @@ protected :
 
   
   //! convert 'rough' keyword into a standardised form
-  /*! \todo Implementation note: this function is non-static such that it can
-      be overloaded. Probably a template with a function object would be 
-      better. */
+  /*! Calls standardise_interfile_keyword().
+. */
   virtual std::string 
     standardise_keyword(const std::string& keyword) const;
 
 
   //! gets a keyword from a string
-  /*! Implementation note: this function is non-static as it uses 
-      standardise_keyword().
+  /*! Find `:=` or `[`. Note that the returned keyword is not standardised yet.
   */ 
   virtual std::string 
     get_keyword(const std::string&) const;

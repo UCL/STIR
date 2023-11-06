@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -37,7 +38,7 @@ template <typename elemT> class Sinogram;
 
 /*!
   \ingroup projdata
-  \brief A class for storing (3d) projection data with a fixed segment_num.
+  \brief A class for storing (3d) projection data with fixed SegmentIndices.
 
   Storage order is as follows:
   \code
@@ -55,16 +56,30 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
+  SegmentByView(const Array<3,elemT>& v,
+		const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+		const SegmentIndices&);
+
+  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
+  SegmentByView(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+		const SegmentIndices&);
+
+  //! Constructor that sets the data to a given 3d Array
+  /*!
+    \deprecated Use version with SegmentIndices instead
+  */
   SegmentByView(const Array<3,elemT>& v,  
         const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
 		const int segment_num,
 		const int timing_pos_num = 0);
 
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
+  /*!
+    \deprecated Use version with SegmentIndices instead
+  */
   SegmentByView(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
 		const int segment_num,
 		const int timing_pos_num = 0);
-
   
   //! Conversion from 1 storage order to the other
   SegmentByView(const SegmentBySinogram<elemT>& );

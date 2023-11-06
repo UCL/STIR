@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2023 University College London
     Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
@@ -30,12 +30,14 @@
 #include <cstdio> // for size_t
 #include <sstream>
 #include <iterator>
+
 #ifdef SWIGOCTAVE
 // TODO terrible work-around to avoid conflict between stir::error and Octave error
 // they are in conflict with eachother because we need "using namespace stir" below (swig bug)
 #define __stir_error_H__
 #endif
 
+#include "stir/stream.h" // to get access to stream output for STIR types for ADD_REPR etc
 #include "stir/num_threads.h"
 
  #include "stir/find_STIR_config.h"
@@ -60,6 +62,9 @@
  #include "stir/ProjDataInMemory.h"
  #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
+
+ #include "stir/Radionuclide.h"
+ #include "stir/RadionuclideDB.h"
 
  #include "stir/DataSymmetriesForViewSegmentNumbers.h"
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
@@ -112,6 +117,8 @@
 #include "stir/HUToMuImageProcessor.h"
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
@@ -567,6 +574,10 @@
 %ignore *::ask_parameters;
 %ignore *::create_shared_clone;
 %ignore *::read_from_stream;
+%ignore *::get_data_ptr;
+%ignore *::get_const_data_ptr;
+%ignore *::release_data_ptr;
+%ignore *::release_const_data_ptr;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
@@ -890,6 +901,7 @@ namespace std {
  // Macros for adding __repr_()_ for Python and disp() for MATLAB
 
  // example usage: ADD_REPR(stir::ImagingModality, %arg($self->get_name()));
+ // second argument piped to stream, so could be a std::string, but also another type
 %define ADD_REPR(classname, defrepr)
 %extend classname
 {
@@ -900,18 +912,20 @@ namespace std {
 #if defined(SWIGPYTHON)
     std::string __repr__()
     {
-      std::string repr = "<classname::";
-      repr += defrepr;
-      repr += ">";
-      return repr;
+      std::stringstream s;
+      s << "<classname::";
+      s << (defrepr);
+      s << ">";
+      return s.str();
     }
 #endif
 #if defined(SWIGMATLAB)
     void disp()
     {
-      std::string repr = "<" + "classname::";
-      repr += defrepr;
-      repr += ">";
+      std::stringstream s;
+      s << "<classname::";
+      s << (defrepr);
+      s << ">";
       mexPrintf(repr.c_str());
     }
 #endif
@@ -1000,11 +1014,26 @@ namespace std {
  /* Parse the header files to generate wrappers */
 //%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
+ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
+
 %include "stir/NumericType.h"
 %include "stir/ByteOrder.h"
-%include "stir/DetectionPosition.h"
 
 %include "stir_coordinates.i"
+
+#if 0
+ // TODO enable this in STIR version 6 (breaks backwards compatibility
+%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z1);
+%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z2);
+%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, beta);
+%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, phi);
+#else
+%ignore *::z1() const;
+%ignore *::z2() const;
+%ignore *::beta() const;
+%ignore *::phi() const;
+#endif
+%ignore *::check_state;
 %include "stir/LORCoordinates.h"
 
 %template(FloatLOR) stir::LOR<float>;
@@ -1084,6 +1113,12 @@ namespace std {
 
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
+%ignore operator<<;
+%ignore operator>>;
+%ignore stir::DetPairData::operator()(const int a, const int b) const;
+%ignore stir::DetPairData3D::operator()(const int a, const int b) const;
+%ignore stir::FanProjData::operator()(const int, const int, const int, const int) const;
+%ignore stir::GeoData3D::operator()(const int, const int, const int, const int) const;
 %include "stir/ML_norm.h"
 
 %shared_ptr(stir::InvertAxis);

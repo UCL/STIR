@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2016, 2017, University of Hull
-    Copyright (C) 2013, 2015-2017, 2020, University College London
+    Copyright (C) 2013, 2015-2017, 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -30,6 +30,9 @@
 #include "stir/Succeeded.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/SegmentByView.h"
+#include "stir/SegmentIndices.h"
+#include "stir/ViewgramIndices.h"
+#include "stir/SinogramIndices.h"
 
 //#include <ios>
 
@@ -44,7 +47,6 @@ template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class SegmentByView;
 template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
-class ViewSegmentNumbers;
 class Succeeded;
 class ProjDataInMemory;
 //class ExamInfo;
@@ -121,18 +123,32 @@ public:
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
   //! Get viewgram
+  /*!
+    \deprecated Use get_viewgram(const ViewgramIndices&) instead.
+   */
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,
                  const bool make_num_tangential_poss_odd = false,
                  const int timing_pos = 0) const = 0;
+  //! Get viewgram
+  inline Viewgram<float> 
+  get_viewgram(const ViewgramIndices&) const;
+
   //! Set viewgram
   virtual Succeeded 
     set_viewgram(const Viewgram<float>&) = 0;
   //! Get sinogram
+  /*!
+    \deprecated Use get_sinogram(const SinogramIndices&) instead .
+   */
   virtual Sinogram<float> 
     get_sinogram(const int ax_pos_num, const int segment_num,
                  const bool make_num_tangential_poss_odd = false,
                  const int timing_pos = 0) const = 0;
+  //! Get sinogram
+  inline Sinogram<float> 
+    get_sinogram(const SinogramIndices&) const;
+
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
@@ -144,32 +160,72 @@ public:
     get_subset(const std::vector<int>& views) const;
 
   //! Get empty viewgram
+  Viewgram<float> get_empty_viewgram(const ViewgramIndices&) const;
+
+  //! Get empty viewgram
+  /*!
+    \deprecated Use get_viewgram(const ViewgramIndices&) instead.
+   */
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
     const bool make_num_tangential_poss_odd = false, const int timing_pos = 0) const;
   
   //! Get empty_sinogram
+  Sinogram<float>
+    get_empty_sinogram(const SinogramIndices&) const;
+
+  //! Get empty_sinogram
+  /*!
+    \deprecated Use get_sinogram(const SinogramIndices&) instead .
+   */
   Sinogram<float> 
     get_empty_sinogram(const int ax_pos_num, const int segment_num,
     const bool make_num_tangential_poss_odd = false, const int timing_pos = 0) const;
 
-   //! Get empty segment sino
-  SegmentByView<float> 
+   //! Get empty segment by view
+  SegmentByView<float>
+  get_empty_segment_by_view(const SegmentIndices&) const;
+  //! Get empty segment by sino
+  SegmentBySinogram<float>
+    get_empty_segment_by_sinogram(const SegmentIndices&) const;
+  //! Get empty segment view
+  /*!
+    \deprecated Use get_empty_segment_by_sinogram(const SegmentIndices&) instead .
+   */
+  SegmentByView<float>
     get_empty_segment_by_view(const int segment_num, 
 		  	   const bool make_num_tangential_poss_odd = false,
 			   const int timing_pos = 0) const;
-  //! Get empty segment view
-  SegmentBySinogram<float> 
+  //! Get empty segment sino
+  /*!
+    \deprecated Use get_empty_segment_by_sinogram(const SegmentIndices&) instead .
+   */
+  SegmentBySinogram<float>
     get_empty_segment_by_sinogram(const int segment_num, 
 				   const bool make_num_tangential_poss_odd = false,
 				   const int timing_pos = 0) const;
 
-
   //! Get segment by sinogram
+  /*!
+    \deprecated Use get_segment_by_sinogram(const SegmentIndices&) instead.
+  */
   virtual SegmentBySinogram<float>
     get_segment_by_sinogram(const int segment_num, const int timing_pos = 0) const;
+
+  //! Get segment by sinogram
+  inline SegmentBySinogram<float>
+    get_segment_by_sinogram(const SegmentIndices&) const;
+
   //! Get segment by view
-  virtual SegmentByView<float> 
+  /*!
+    \deprecated Use get_segment_by_view(const SegmentIndices&) instead.
+  */
+  virtual SegmentByView<float>
     get_segment_by_view(const int segment_num, const int timing_pos = 0) const;
+
+  //! Get segment by view
+  inline SegmentByView<float>
+    get_segment_by_view(const SegmentIndices&) const;
+
   //! Set segment by sinogram
   virtual Succeeded 
     set_segment(const SegmentBySinogram<float>&);
@@ -178,8 +234,9 @@ public:
     set_segment(const SegmentByView<float>&);
 
   //! Get related viewgrams
+  // TODOTOF remove timing_pos arg
   virtual RelatedViewgrams<float> 
-    get_related_viewgrams(const ViewSegmentNumbers&,
+    get_related_viewgrams(const ViewgramIndices&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false,
 	const int timing_pos = 0) const;
@@ -191,9 +248,8 @@ public:
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   RelatedViewgrams<float> 
-    get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-    //const int view_num, const int segment_num, 
-    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
+    get_empty_related_viewgrams(const ViewgramIndices& viewgram_indices,
+                                const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
     const bool make_num_tangential_poss_odd = false,
 	const int timing_pos = 0) const;
 

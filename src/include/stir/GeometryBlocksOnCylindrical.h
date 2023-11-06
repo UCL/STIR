@@ -36,12 +36,12 @@ START_NAMESPACE_STIR
   \ingroup projdata
 	\brief A helper class to build the crystal map based on scanner info.
 
-	\This class builds two maps between cartesian coordinates (z, y, x)
-	\ and the corresponding detection position (tangential_num, axial_num, radial_num) for each crystal.
-	\The crystal map, then, is used in ProjDataInfoBlocksOnCylindrical, ProjDataInfoBlocksOnCylindricalNoArcCorr, and CListRecordSAFIR
+	This class builds two maps between cartesian coordinates (z, y, x)
+	and the corresponding detection position (tangential_num, axial_num, radial_num) for each crystal.
+	The crystal map, then, is used in ProjDataInfoBlocksOnCylindrical, ProjDataInfoBlocksOnCylindricalNoArcCorr, and CListRecordSAFIR
 
-	\The center of first ring is the center of coordinates.
-	\Distances are from center to center of crystals.
+	The center of first ring is the center of coordinates.
+	Distances are from center to center of crystals.
 
 */
 

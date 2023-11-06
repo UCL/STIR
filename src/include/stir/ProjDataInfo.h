@@ -5,7 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016-17, University of Hull
-    Copyright (C) 2017-2018, 2020, 2022, University College London
+    Copyright (C) 2017-2018, 2020, 2022, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -27,6 +27,9 @@
 #ifndef __stir_ProjDataInfo_H__
 #define __stir_ProjDataInfo_H__
 
+#include "stir/SegmentIndices.h"
+#include "stir/ViewgramIndices.h"
+#include "stir/SinogramIndices.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
@@ -405,25 +408,40 @@ public:
   //@{
 
   //! Get empty viewgram
+  Viewgram<float> get_empty_viewgram(const ViewgramIndices&) const;
+  //! Get empty_sinogram
+  Sinogram<float> get_empty_sinogram(const SinogramIndices&) const;
+  //! Get empty segment sino
+  SegmentByView<float> get_empty_segment_by_view(const SegmentIndices&) const;
+  //! Get empty segment view
+  SegmentBySinogram<float> get_empty_segment_by_sinogram(const SegmentIndices&) const;
+
+  //! Get empty viewgram
+  /*! \deprecated */
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
     const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
   
   //! Get empty_sinogram
+  /*! \deprecated */
   Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
     const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
 
   //! Get empty segment sino
+  /*! \deprecated */
   SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
 		  	   const bool make_num_tangential_poss_odd = false,
 			   const int timing_pos_num = 0) const;
   //! Get empty segment view
+  /*! \deprecated */
   SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
 				   const bool make_num_tangential_poss_odd = false,
 				   const int timing_pos_num = 0) const;
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
-  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
+  /*! make_num_tangential_poss_odd has to be \c false */
+  //TODOTOF
+  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewgramIndices&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false,
 	const int timing_pos_num = 0) const;

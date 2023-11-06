@@ -143,7 +143,7 @@ public:
   //! Transform bin from some projection data
   /*!  Finds 'closest' (in some sense) bin to the transformed LOR.
 
-     if NEW_ROT is not #defined at compilation time, 
+     if \c NEW_ROT is not \c \#defined at compilation time, 
     it will throw an exception when arc-corrected data is used.*/
   void transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
 	             const ProjDataInfo& in_proj_data_info) const;

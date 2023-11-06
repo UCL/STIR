@@ -25,7 +25,8 @@ START_NAMESPACE_STIR
 BloodFrameData::BloodFrameData()
 { } 
 
-//! constructor giving a vector //ChT::ToDO: Better to use iterators
+//! constructor giving a vector
+//ChT::ToDO: Better to use iterators
 BloodFrameData::BloodFrameData(const std::vector<BloodFrame> & blood_plot)
 {this->_blood_plot=blood_plot;}
 

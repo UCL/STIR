@@ -61,11 +61,11 @@ get_exam_info_sptr() const
 
 Succeeded
 BinNormalisation::
-set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v )
+set_up(const shared_ptr<const ExamInfo>& exam_info_sptr_v, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v )
 {
   _already_set_up = true;
-  this->proj_data_info_sptr = proj_data_info_sptr_v->create_shared_clone();
-  this->exam_info_sptr=exam_info_sptr;
+  this->proj_data_info_sptr = proj_data_info_sptr_v;
+  this->exam_info_sptr = exam_info_sptr_v;
   return Succeeded::yes;  
 }
 

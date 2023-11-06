@@ -166,6 +166,8 @@ back_project(DiscretisedDensity<3,float>& density,
       {
     ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    // TODOTOF find_basic_view_segment_numbers doesn't fill in timing_pos_num
+    vs.timing_pos_num() = basic_vs.timing_pos_num();
     if (vs != basic_vs)
       error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
     }
@@ -217,12 +219,13 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
         viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
+        info(boost::format("Processing view %1% of segment %2%, TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
 #else
         const RelatedViewgrams<float> viewgrams = 
           proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
+        info(boost::format("Processing view %1% of segment %2%, TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
 #endif
 
-        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
         back_project(viewgrams);
       }
   }
@@ -285,6 +288,8 @@ back_project(const RelatedViewgrams<float>& viewgrams,
       {
     ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    // TODOTOF find_basic_view_segment_numbers doesn't fill in timing_pos_num
+    vs.timing_pos_num() = basic_vs.timing_pos_num();
     if (vs != basic_vs)
       error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
     }

@@ -142,14 +142,16 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 
     if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
       viewgrams.get_num_viewgrams())
-      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams (wrong number). Problem with symmetries!");
 
     for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
      iter != viewgrams.end();
      ++iter)
       {
-    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+        ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    // TODOTOF find_basic_view_segment_numbers doesn't fill in timing_pos_num
+    vs.timing_pos_num() = basic_vs.timing_pos_num();
     if (vs != basic_vs)
       error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
     }
@@ -281,6 +283,8 @@ forward_project(RelatedViewgrams<float>& viewgrams,
       {
     ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
     get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    // TODOTOF find_basic_view_segment_numbers doesn't fill in timing_pos_num
+    vs.timing_pos_num() = basic_vs.timing_pos_num();
     if (vs != basic_vs)
       error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
     }
