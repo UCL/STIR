@@ -116,8 +116,6 @@ Sinogram(const Array<2,elemT>& p,
   assert( get_max_view_num() == pdi_ptr->get_max_view_num());
   assert( get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
   assert( get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
-  assert( get_min_timing_pos_num() == pdi_sptr->get_min_timing_pos_num());
-  assert( get_max_timing_pos_num() == pdi_sptr->get_max_timing_pos_num());
 }
 
 
