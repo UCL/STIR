@@ -70,8 +70,12 @@
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
  #include "stir/recon_buildblock/TrivialBinNormalisation.h"
- #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListRecord.h"
+ #include "stir/listmode/ListEvent.h"
+ #include "stir/listmode/CListRecord.h"
  #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/CListModeData.h"
+ #include "stir/listmode/LmToProjData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -955,6 +959,7 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
 %include "stir_projdata.i"
+%include "stir_listmode.i"
 %include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 %include "stir_voxels.i"
@@ -989,10 +994,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/multiply_crystal_factors.h"
 %include "stir/decay_correction_factor.h"
 
-%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
-%shared_ptr(stir::LmToProjData);
-%include "stir/listmode/LmToProjData.h"
-
 %shared_ptr(stir::ScatterSimulation);
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
   stir::ScatterSimulation, stir::ScatterSimulation>);
@@ -1010,18 +1011,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::CreateTailMaskFromACFs);
 %include "stir/scatter/CreateTailMaskFromACFs.h"
-
-%shared_ptr(stir::ListModeData);
-%include "stir/listmode/ListModeData.h"
-
-%extend stir::ListModeData {
-  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
-    {
-      using namespace stir;
-      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
-      return ret;
-    }
-}
 
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
