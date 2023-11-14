@@ -908,9 +908,6 @@ namespace std {
 %shared_ptr(stir::ParsingObject);
 
 %shared_ptr(stir::Verbosity);
-%shared_ptr(stir::LORAs2Points<float>);
-%shared_ptr(stir::LOR<float>);
-%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 
 //  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
@@ -951,24 +948,7 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/ByteOrder.h"
 
 %include "stir_coordinates.i"
-
-#if 0
- // TODO enable this in STIR version 6 (breaks backwards compatibility
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z1);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z2);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, beta);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, phi);
-#else
-%ignore *::z1() const;
-%ignore *::z2() const;
-%ignore *::beta() const;
-%ignore *::phi() const;
-#endif
-%ignore *::check_state;
-%include "stir/LORCoordinates.h"
-
-%template(FloatLOR) stir::LOR<float>;
-%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
+%include "stir_LOR.i"
 
 %include "stir_array.i"
 %include "stir_exam.i"
