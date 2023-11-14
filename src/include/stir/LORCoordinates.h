@@ -222,8 +222,11 @@ class LORInCylinderCoordinates : public LOR<coordT>
   inline
     LORInCylinderCoordinates(const LORInAxialAndSinogramCoordinates<coordT>&);
 
+#if 0
+  // disabled as would need radius argument as well, but currently not needed
   inline
     LORInCylinderCoordinates(const LORAs2Points<coordT>&);
+#endif
 
   self_type* clone() const override
   { return new self_type(*this); }
@@ -375,8 +378,10 @@ class LORInAxialAndSinogramCoordinates
   inline
     LORInAxialAndSinogramCoordinates(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&);
 
+#if 0
   inline
     LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>&);
+#endif
 
   self_type* clone() const override
   { return new self_type(*this); }
@@ -503,8 +508,10 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   inline
   LORInAxialAndNoArcCorrSinogramCoordinates(const LORInAxialAndSinogramCoordinates<coordT>&);
 
+#if 0
   inline
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>&);
+#endif
 
   self_type* clone() const override
   { return new self_type(*this); }
