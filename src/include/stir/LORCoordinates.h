@@ -161,7 +161,12 @@ class LORCylindricalCoordinates_z_and_radius
 template <class coordT>
 class LORInCylinderCoordinates : public LOR<coordT>
 {
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef  LORInCylinderCoordinates<coordT> self_type;
+ private:
   void check_state() const
   {
     assert(_radius>0);
@@ -217,16 +222,14 @@ class LORInCylinderCoordinates : public LOR<coordT>
   inline
     LORInCylinderCoordinates(const LORInAxialAndSinogramCoordinates<coordT>&);
 
+#if 0
+  // disabled as would need radius argument as well, but currently not needed
   inline
     LORInCylinderCoordinates(const LORAs2Points<coordT>&);
+#endif
 
-  virtual
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self_type* 
-#else
-      LOR<coordT>*
-#endif    
-    clone() const { return new self_type(*this); }
+  self_type* clone() const override
+  { return new self_type(*this); }
 
   virtual
     Succeeded
@@ -259,6 +262,10 @@ class LORInCylinderCoordinates : public LOR<coordT>
 template <class coordT>
 class LORAs2Points : public LOR<coordT>
 {
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef LORAs2Points<coordT> self_type;
  public:
   const CartesianCoordinate3D<coordT>& p1() const { return _p1; }
@@ -282,13 +289,8 @@ class LORAs2Points : public LOR<coordT>
   inline
     LORAs2Points(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&);
 
-  virtual
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self_type* 
-#else
-      LOR<coordT>*
-#endif
-      clone() const { return new self_type(*this); }
+  self_type* clone() const override
+  { return new self_type(*this); }
 
   virtual
     Succeeded
@@ -326,7 +328,12 @@ class LORInAxialAndSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef LORInAxialAndSinogramCoordinates<coordT> self_type;
+ private:
   typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
   // sorry: has to be first to give the compiler a better chance of inlining
   void check_state() const
@@ -371,18 +378,13 @@ class LORInAxialAndSinogramCoordinates
   inline
     LORInAxialAndSinogramCoordinates(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&);
 
-#if __cplusplus>= 201103L
+#if 0
   inline
     LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  virtual
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self_type* 
-#else
-      LOR<coordT>*
-#endif
-      clone() const { return new self_type(*this); }
+  self_type* clone() const override
+  { return new self_type(*this); }
 
   void reset(coordT radius=1)
     {
@@ -506,18 +508,13 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   inline
   LORInAxialAndNoArcCorrSinogramCoordinates(const LORInAxialAndSinogramCoordinates<coordT>&);
 
-#if __cplusplus>= 201103L
+#if 0
   inline
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  virtual
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self_type* 
-#else
-      LOR<coordT>*
-#endif
-      clone() const { return new self_type(*this); }
+  self_type* clone() const override
+  { return new self_type(*this); }
 
   virtual
     Succeeded

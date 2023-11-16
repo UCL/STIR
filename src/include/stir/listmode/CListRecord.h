@@ -23,7 +23,7 @@
 #ifndef __stir_listmode_CListRecord_H__
 #define __stir_listmode_CListRecord_H__
 
-#include "ListRecord.h"
+#include "stir/listmode/ListRecord.h"
 
 START_NAMESPACE_STIR
 class Bin;
