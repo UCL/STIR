@@ -9,11 +9,11 @@
 
 #%% Initial imports
 import stir
-import os
 
 #%% read file
 filename = '20170809_NEMA_60min_UCL.l.hdr'
 # example using the hroot file in recon_test_pack, which needs some env variables to be set
+#import os
 #os.environ["INPUT_ROOT_FILE"]="test_PET_GATE.root"
 #os.environ["EXCLUDE_SCATTERED"] = "1"
 #os.environ["EXCLUDE_RANDOM"] = "0"
@@ -29,7 +29,7 @@ proj_data_info = lm.get_proj_data_info()
 #%% loop over first few events and print some information
 # create some variables for re-use in the loop
 record = lm.get_empty_record()
-bin = stir.Bin()
+b = stir.Bin()
 for i in range(50):
     lm.get_next_record(record)
     if (record.is_time()):
@@ -37,7 +37,7 @@ for i in range(50):
     if (record.is_event()):
         event = record.event()
         lor = event.get_LOR()
-        event.get_bin(bin, proj_data_info);
+        event.get_bin(b, proj_data_info);
         # TODO We can will be able to simply print bin once STIR_TOF is on
         print(f"Event: p/d: {event.is_prompt()} LOR: {[lor.p1(), lor.p2()]}, ",
-              f"bin: s:{bin.segment_num}, a: {bin.axial_pos_num}, v: {bin.view_num}, t:{bin.tangential_pos_num}")
+              f"bin: s:{b.segment_num}, a: {b.axial_pos_num}, v: {b.view_num}, t:{b.tangential_pos_num}")

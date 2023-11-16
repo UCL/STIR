@@ -18,9 +18,9 @@ import os
 
 #%% read file
 # location of script
-dir = os.path.dirname(__file__)
+loc = os.path.dirname(__file__)
 # location of ROOT file
-dir = os.path.join(dir, "..", "..", "..", "..", "recon_test_pack")
+loc = os.path.join(loc, "..", "..", "..", "..", "recon_test_pack")
 filename = "root_header.hroot"
 
 os.environ["INPUT_ROOT_FILE"]="test_PET_GATE.root"
@@ -29,15 +29,15 @@ os.environ["EXCLUDE_RANDOM"] = "0"
 
 def test_get_record():
     try:
-        lm=stir.ListModeData.read_from_file(os.path.join(dir, filename))
+        lm=stir.ListModeData.read_from_file(os.path.join(loc, filename))
         proj_data_info = lm.get_proj_data_info()
-    except:
+    except RuntimeError:
         print(f"Could not open {filename}")
         print("ROOT support not enabled?")
         return
 
     record = lm.get_empty_record()
-    bin = stir.Bin()
+    b = stir.Bin()
     # first event
     lm.get_next_record(record)
     assert record.is_time()
@@ -45,10 +45,10 @@ def test_get_record():
     assert record.is_event()
     event = record.event()
     lor = event.get_LOR()
-    event.get_bin(bin, proj_data_info);
+    event.get_bin(b, proj_data_info);
     diff = stir.FloatCartesianCoordinate3D(lor.p1() - stir.Float3BasicCoordinate((2.03125, -149.102, -299.989)))
     assert abs(diff.x()) < .1 and abs(diff.y()) < .1 and abs(diff.z()) < .1
-    assert bin.segment_num == 1 and bin.axial_pos_num == 1 and bin.view_num == 112 and bin.tangential_pos_num == -102
+    assert b.segment_num == 1 and b.axial_pos_num == 1 and b.view_num == 112 and b.tangential_pos_num == -102
     # second event
     lm.get_next_record(record)
     assert record.is_time()
@@ -56,8 +56,8 @@ def test_get_record():
     assert record.is_event()
     event = record.event()
     lor = event.get_LOR()
-    event.get_bin(bin, proj_data_info);
+    event.get_bin(b, proj_data_info);
     diff = stir.FloatCartesianCoordinate3D(lor.p1() - stir.Float3BasicCoordinate((-2.03125, 325.646, -78.6102)))
     assert abs(diff.x()) < .1 and abs(diff.y()) < .1 and abs(diff.z()) < .1
-    assert bin.segment_num == -1 and bin.axial_pos_num == 1 and bin.view_num == 12 and bin.tangential_pos_num == -14
+    assert b.segment_num == -1 and b.axial_pos_num == 1 and b.view_num == 12 and b.tangential_pos_num == -14
 
