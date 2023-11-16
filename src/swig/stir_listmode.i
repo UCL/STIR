@@ -16,13 +16,15 @@
 */
 %shared_ptr(stir::ListRecord);
 %shared_ptr(stir::ListEvent);
+%shared_ptr(stir::ListTime);
 %shared_ptr(stir::CListRecord);
 %shared_ptr(stir::CListEvent);
 %shared_ptr(stir::CListRecordWithGatingInput);
 
-%include "stir/listmode/ListRecord.h"
 %include "stir/listmode/ListEvent.h"
-%include "stir/listmode/CListRecord.h"
+%include "stir/listmode/ListTime.h"
+%include "stir/listmode/ListRecord.h"
+%include "stir/listmode/CListRecord.h" // currently also contains CListEvent
 
 %rename (get_empty_record) *::get_empty_record_sptr;
 
@@ -33,6 +35,8 @@ ADD_REPR_PARAMETER_INFO(stir::LmToProjData);
 
 %shared_ptr(stir::ListModeData);
 %include "stir/listmode/ListModeData.h"
+%shared_ptr(stir::CListModeData);
+%include "stir/listmode/CListModeData.h"
 
 %extend stir::ListModeData {
   static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
