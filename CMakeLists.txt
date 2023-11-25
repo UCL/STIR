@@ -5,11 +5,7 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-if (CMAKE_HOST_WIN32)
-  cmake_minimum_required(VERSION 3.12.0)
-else()
-  cmake_minimum_required(VERSION 3.1.0)
-endif()
+cmake_minimum_required(VERSION 3.14.0)
 
 # enable ccache https://ccache.samba.org/
 find_program(CCACHE_PROGRAM ccache)
