@@ -143,10 +143,7 @@ endif()
 target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::petprj)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_auxe)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_lmproc)
-	target_link_libraries(recon_buildblock PUBLIC CUDA::cudart)
+   target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_auxe NiftyPET::mmr_lmproc NiftyPET::petprj)
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
