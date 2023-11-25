@@ -58,3 +58,7 @@ endif()
 include(stir_lib_target)
 
 target_link_libraries(listmode_buildblock PUBLIC data_buildblock )
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+   target_link_libraries(listmode_buildblock PRIVATE NiftyPET::mmr_auxe NiftyPET::mmr_lmproc NiftyPET::petprj)
+endif()
