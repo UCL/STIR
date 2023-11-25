@@ -37,6 +37,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 9
+          CUDA: "OFF"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -45,6 +46,7 @@ jobs:
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
+          CUDA: "OFF"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -54,6 +56,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
+          CUDA: "OFF"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
@@ -62,14 +65,25 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 12
+          CUDA: "OFF"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
           BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          CUDA: "ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
+          CUDA: "OFF"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -152,6 +166,12 @@ jobs:
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
 
+    - if: ${{ matrix.CUDA }} == "ON"
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+          cuda: '12.1.0'
+
     - name: install_dependencies
       shell: bash
       run: |
@@ -215,6 +235,12 @@ jobs:
              cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
              cmake --build . --target install --config Release
              cd ../..
+          fi
+          # Install NiftyPET
+          if test "${{matrix.CUDA}}XX" == "ONXX"; then
+             export PATHTOOLS=${GITHUB_WORKSPACE}/NiftyPET_tools
+             export HMUDIR=${GITHUB_WORKSPACE}/mmr_hardwareumaps
+             python -m pip install "nipet>=2"
           fi
 
           # Install ROOT (warning: currently only valid on Ubuntu)
