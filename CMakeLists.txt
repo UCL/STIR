@@ -183,7 +183,7 @@ endif()
 
 if(NOT DISABLE_NiftyPET_PROJECTOR)
   if (CUDAToolkit_FOUND)
-    find_package(NiftyPETnipet REQUIRED COMPONENTS mmr_auxe mmr_lmproc petprj CONFIG)
+    find_package(NiftyPETnipet REQUIRED COMPONENTS mmr_auxe mmr_lmproc petprj)
     if (NiftyPETnipet_FOUND)
       set(STIR_WITH_NiftyPET_PROJECTOR ON)
     endif()
