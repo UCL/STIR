@@ -246,8 +246,7 @@ jobs:
              export HMUDIR=${GITHUB_WORKSPACE}/mmr_hardwareumaps
              python -m pip install "nipet>=2"
              niftypet_cmake_prefix=$(python -c "from niftypet.nipet import cmake_prefix; print(cmake_prefix)")
-             ls -R "$niftypet_cmake_prefix"
-             echo NiftyPET_PREFIX="$niftypet_cmake_prefix" >> $GITHUB_ENV
+             echo NiftyPET_DIR="$niftypet_cmake_prefix" >> $GITHUB_ENV
           fi
 
           # Install ROOT (warning: currently only valid on Ubuntu)
@@ -298,7 +297,7 @@ jobs:
           echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
-          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_DIR=${NiftyPET_PREFIX}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DNiftyPETnipet_DIR=${NiftyPET_DIR}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
@@ -334,7 +333,7 @@ jobs:
           if test ${BUILD_TYPE} = Debug; then
               EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection|test_blocks_on_cylindrical_projectors"
           fi
-          if test ${{matrix.cuda_version}} != "0"
+          if test ${{matrix.cuda_version}} != "0"; then
               # No CUDA drivers on GitHub Actions
               EXCLUDE="${EXCLUDE}|parallelproj|NiftyPET|test_blocks_on_cylindrical_projectors"
           fi
