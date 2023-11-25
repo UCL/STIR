@@ -37,7 +37,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 9
-          CUDA: "OFF"
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -46,7 +46,7 @@ jobs:
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
-          CUDA: "OFF"
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -56,7 +56,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
-          CUDA: "OFF"
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
@@ -65,7 +65,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 12
-          CUDA: "OFF"
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
@@ -74,7 +74,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 12
-          CUDA: "ON"
+          cuda_version: "12.1.0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -83,7 +83,7 @@ jobs:
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
-          CUDA: "OFF"
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -102,7 +102,7 @@ jobs:
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
 
-    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
     - name: disk space
@@ -166,11 +166,12 @@ jobs:
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
 
-    - if: ${{ matrix.CUDA }} == "ON"
+    - if: ${{ ! matrix.cuda_version == '0' }}
       uses: Jimver/cuda-toolkit@v0.2.11
       id: cuda-toolkit
       with:
-          cuda: '12.1.0'
+          cuda: ${{ matrix.cuda_version }}
+          linux-local-args: '["--toolkit"]'
 
     - name: install_dependencies
       shell: bash
@@ -232,15 +233,20 @@ jobs:
              git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
-             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
+             if test "${{matrix.cuda_version}}" == "0"; then
+               extra_args="-DSKIP_CUDA_LIB:BOOL=ON"
+             fi
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
           fi
           # Install NiftyPET
-          if test "${{matrix.CUDA}}XX" == "ONXX"; then
+          if test ! "${{matrix.cuda_version}}" == "0"; then
              export PATHTOOLS=${GITHUB_WORKSPACE}/NiftyPET_tools
              export HMUDIR=${GITHUB_WORKSPACE}/mmr_hardwareumaps
              python -m pip install "nipet>=2"
+             niftypet_cmake_prefix=$(python -c "from niftypet.nipet import cmake_prefix; print(cmake_prefix)")
+             echo NiftyPET_PREFIX="$niftypet_cmake_prefix" >> $GITHUB_ENV
           fi
 
           # Install ROOT (warning: currently only valid on Ubuntu)
@@ -269,7 +275,7 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
-        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
         max-size: "2G"
 
     - name: configure
@@ -291,6 +297,7 @@ jobs:
           echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_DIR=${NiftyPET_PREFIX}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
