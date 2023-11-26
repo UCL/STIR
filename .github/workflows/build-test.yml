@@ -246,6 +246,7 @@ jobs:
              export HMUDIR=${GITHUB_WORKSPACE}/mmr_hardwareumaps
              python -m pip install "nipet>=2"
              niftypet_cmake_prefix=$(python -c "from niftypet.nipet import cmake_prefix; print(cmake_prefix)")
+             find /home/runner/work/STIR/STIR/my-env/ -name prjb.h
              echo NiftyPET_DIR="$niftypet_cmake_prefix" >> $GITHUB_ENV
           fi
 
@@ -321,8 +322,9 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
-
+          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install || true
+          #debug
+          make VERBOSE=ON
     - name: ctest
       shell: bash
       env:
