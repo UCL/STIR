@@ -249,16 +249,20 @@ interpolate_projdata(ProjData& proj_data_out,
     };
   }
   else
-  { // for BlocksOnCylindrical, views and tangential positions are not subsampled and can be mapped 1:1
-    if (proj_data_in_info.get_num_tangential_poss() != proj_data_out_info.get_num_tangential_poss())
+  { // for BlocksOnCylindrical, views and tangential positions are scaled by a fixed value that should be a factor 
+    // of the number of detectors per bucket, such that the intersections between buckets are handled correctly
+    auto scale_factor = (double)proj_data_out_info.get_num_tangential_poss() / (double)proj_data_in_info.get_num_tangential_poss();
+
+    if (proj_data_in_info.get_scanner_sptr()->get_num_detectors_per_ring() * (int)scale_factor != 
+        proj_data_out_info.get_scanner_sptr()->get_num_detectors_per_ring())
     {
-      error("Interpolation of BlocksOnCylindrical scanners assumes that number of tangential positions "
-            "is the same in the downsampled scanner.");
+      warning("The scanner downsampling is not done by an integer factor. This can produce issues in the interpolation due to the block geometry.");
     }
-    if (proj_data_in_info.get_num_views() != proj_data_out_info.get_num_views())
+    if (proj_data_in_info.get_scanner_sptr()->get_num_transaxial_crystals_per_bucket() * (int)scale_factor != 
+        proj_data_out_info.get_scanner_sptr()->get_num_transaxial_crystals_per_bucket())
     {
-      error("Interpolation of BlocksOnCylindrical scanners assumes that number of views "
-            "is the same in the downsampled scanner.");
+      warning("The scanner downsampling per bucket is not done by an integer factor. "
+              "This can produce issues in the interpolation due to the block geometry");
     }
 
     // only extending in axial direction - an extension of 2 was found to be sufficient
@@ -275,7 +279,7 @@ interpolate_projdata(ProjData& proj_data_out,
     }
 
     // define a function to translate indices in the output proj data to indices in input proj data
-    index_converter = [&proj_data_out_info, m_offset, m_sampling](const BasicCoordinate<3, int>& index_out) 
+    index_converter = [&proj_data_out_info, m_offset, m_sampling, scale_factor](const BasicCoordinate<3, int>& index_out) 
         -> BasicCoordinate<3, double>
     {
       // translate index on output to coordinate
@@ -285,8 +289,8 @@ interpolate_projdata(ProjData& proj_data_out,
       // translate to indices in input proj data
       BasicCoordinate<3, double> index_in;
       index_in[1] = (out_m - m_offset) / m_sampling;
-      index_in[2] = index_out[2];
-      index_in[3] = index_out[3];
+      index_in[2] = index_out[2] / scale_factor;
+      index_in[3] = index_out[3] / scale_factor;
 
       return index_in;
     };

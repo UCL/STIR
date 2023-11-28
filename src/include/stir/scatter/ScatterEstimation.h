@@ -172,6 +172,8 @@ public:
 
     inline void set_num_iterations(int);
 
+    inline void set_downsample_scanner(bool downsample_scanner, int downsampled_detectors_per_ring = 0);
+
     void set_output_scatter_estimate_prefix(const std::string&);
     void set_export_scatter_estimates_of_each_iteration(bool);
 
@@ -385,6 +387,8 @@ private:
     float min_scale_value;
 
     bool downsample_scanner_bool;
+    int downsampled_detectors_per_ring;
+
     //!
     unsigned int half_filter_width;
 

@@ -78,6 +78,7 @@ set_defaults()
     this->override_scanner_template = true;
     this->override_density_image = true;
     this->downsample_scanner_bool = true;
+    this->downsampled_detectors_per_ring = 0;
     this->remove_interleaving = true;
     this->atten_image_filename = "";
     this->atten_coeff_filename = "";
@@ -146,6 +147,8 @@ initialise_keymap()
                          &this->scatter_sim_par_filename);
     this->parser.add_key("use scanner downsampling in scatter simulation",
                          &this->downsample_scanner_bool);
+    this->parser.add_key("override number of downsampled detectors per ring",
+                         &this->downsampled_detectors_per_ring);
 
     this->parser.add_key("override attenuation image",
                          &this->override_density_image);
@@ -605,7 +608,7 @@ set_up()
     }
 
     if (this->downsample_scanner_bool)
-        this->scatter_simulation_sptr->downsample_scanner();
+        this->scatter_simulation_sptr->downsample_scanner(-1, this->downsampled_detectors_per_ring);
 
     // Check if Load a mask proj_data
 
