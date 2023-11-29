@@ -83,7 +83,7 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
     shared_ptr<Cnst> cnt_sptr = MAKE_SHARED<Cnst>();
 
     cnt_sptr->DEVID = cuda_device; // device (GPU) ID.  allows choosing the device on which to perform calculations
-    cnt_sptr->VERBOSE = cuda_verbose;
+    cnt_sptr->LOG = cuda_verbose;
 
     if (scanner.get_type() == Scanner::Siemens_mMR) {
         if (!(span==0 || span==1 || span==11))
@@ -123,8 +123,10 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
         cnt_sptr->MRD = mxRD; // maximum ring difference
 
         cnt_sptr->ALPHA = aLPHA; //angle subtended by a crystal
+#if 0 // NiftyPET v1 or so. Now this is hardwored as R_RING in sct.h
         float R = 32.8f; // ring radius
         cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
+#endif
         cnt_sptr->AXR = SZ_RING; //axial crystal dim
 
         cnt_sptr->COSUPSMX = 0.725f; //cosine of max allowed scatter angle
