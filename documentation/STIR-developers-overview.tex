@@ -1261,8 +1261,21 @@ in particular a list of your subdirectories. For instance,
 # add my include directory to compiler switches (or better: use target_include_directories)
 include_directories(include)
 
-# check CMakeLists in next directories
-add_subdirectory(buildblock my_buildblock)
+# check CMakeLists in next directory
+# note: 2nd argument needs to have different name than any of the existing STIR libraries
+add_subdirectory(${STIR_LOCAL}/buildblock my_buildblock)
+
+# add registries (if you have any)
+list(APPEND STIR_REGISTRIES 
+  ${STIR_LOCAL}/buildblock/my_registries.cxx)
+
+# add to list of libraries to include in linking
+list(APPEND STIR_LIBRARIES my_buildblock)
+
+# copy variables to PARENT_SCOPE
+SET( STIR_REGISTRIES ${STIR_REGISTRIES} PARENT_SCOPE)
+SET( STIR_LIBRARIES ${STIR_LIBRARIES} PARENT_SCOPE)
+
 \end{verbatim}
 where \textbf{buildblock} is the name of your subdirectory and \textbf{my\_buildblock} is a name for the
 sub-directory where CMake will build the files (make sure the latter is different from any
@@ -1286,12 +1299,6 @@ set(${dir_LIB_SOURCES}
 # declare dependencies on other STIR libraries, for instance
 target_link_libraries($(dir) PUBLIC buildblock)
 
-# add to list of libraries for STIR to include in linking
-list(APPEND STIR_LIBRARIES $(dir))
-
-# add source file for registries (if you have one)
-list(APPEND STIR_REGISTRIES my_registry)
-
 include(stir_lib_target)
 \end{verbatim}
 
@@ -1311,7 +1318,7 @@ content like this
 #include "myOutputFileFormat.h"
 static myOutputFileFormat::RegisterIt dummy1;
 \end{verbatim}
-If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeLists.txt}
+If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{extra\_stir\_dirs.cmake}
 as above, everything should work as expected.
 
 \section{Contributing to STIR}
