@@ -16,6 +16,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nikos Efthimiou
 */
 #include "stir/Shape/Shape3D.h"
 #include "stir/Shape/DiscretisedShape3D.h"
@@ -229,6 +230,15 @@ Shape3D::
 initialise_keymap()
 {
   this->parser.add_key("origin (in mm)", &origin);
+  this->parser.add_key("frames", &frames);
+}
+
+bool
+Shape3D::is_in_frame(const unsigned int this_frame) const
+{
+  if(frames.size() == 0)
+    return true;
+  return std::find(frames.begin(), frames.end(), this_frame-1)!=frames.end() ? true : false;
 }
 
 std::string 

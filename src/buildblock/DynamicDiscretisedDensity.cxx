@@ -7,11 +7,13 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
   \author Richard Brown
-  
+  \author Nikos Efthimiou
+
 */
 /*
     Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2023, Athinoula A. Martinos Center for Biomedical Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -104,6 +106,12 @@ DiscretisedDensity<3,float> &
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num)
 {  return *this->_densities.at(frame_num-1) ; }
+
+shared_ptr<DiscretisedDensity<3, float> >
+DynamicDiscretisedDensity::get_density_sptr(const unsigned int frame_num) const
+{
+    return this->_densities.at(frame_num-1);
+}
 
 const float 
 DynamicDiscretisedDensity::
