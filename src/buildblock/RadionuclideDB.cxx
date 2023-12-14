@@ -130,7 +130,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
     case ImagingModality::NM:
       modality_string = "nucmed"; break;
     default:
-      warning("RadionuclideDB::get_radionuclide_from_json called with unknown modality. Returning \"unknown\" radionuclide.");
+      warning(std::string("RadionuclideDB::get_radionuclide_from_json called with unknown modality. Returning \"unknown\" radionuclide."));
       return Radionuclide();
     }
 
@@ -151,7 +151,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
 
   if (rnuclide_entry == all_nuclides.end())
     {
-      warning("RadionuclideDB: radionuclide " + rname + " not found in JSON database. Returning \"unknown\" radionuclide.");
+      warning(std::string("RadionuclideDB: radionuclide " + rname + " not found in JSON database. Returning \"unknown\" radionuclide."));
       return Radionuclide();
     }
 
@@ -180,7 +180,7 @@ get_radionuclide_from_json(ImagingModality rmodality, const std::string &rname) 
         
   if (decay_entry == decays.end())
     {
-      warning("RadionuclideDB: radionuclide " + rname + ": modality " + modality_string + " not found in JSON database. Returning \"unknown\" radionuclide.");
+      warning(std::string("RadionuclideDB: radionuclide " + rname + ": modality " + modality_string + " not found in JSON database. Returning \"unknown\" radionuclide."));
       return Radionuclide();
     }
 
@@ -240,7 +240,7 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname)
         return get_radionuclide(rmodality, "^99m^Technetium");
       else
         {
-          warning("RadioNuclideDB::get_radionuclide: unknown modality. Returning \"unknown\" radionuclide.");
+          warning(std::string("RadioNuclideDB::get_radionuclide: unknown modality. Returning \"unknown\" radionuclide."));
           return Radionuclide();
         }
     }
@@ -256,7 +256,7 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname)
     if(rmodality.get_modality()==ImagingModality::PT){
         if (rname != "^18^Fluorine")
           {
-            warning("RadioNuclideDB::get_radionuclide: since STIR was compiled without nlohmann-json-dev, We only have information for ^18^Fluorine for the PET modality. Returning \"unknown\" radionuclide.");
+            warning(std::string("RadioNuclideDB::get_radionuclide: since STIR was compiled without nlohmann-json-dev, We only have information for ^18^Fluorine for the PET modality. Returning \"unknown\" radionuclide."));
             return Radionuclide();
           }
 
@@ -268,7 +268,7 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname)
     }else if(rmodality.get_modality()==ImagingModality::NM){
         if (rname != "^99m^Technetium")
           {
-            warning("RadioNuclideDB::get_radionuclide: since STIR was compiled without nlohmann-json-dev, We only have information for ^99m^Technetium for the NM modality. Returning \"unknown\" radionuclide.");
+            warning(std::string("RadioNuclideDB::get_radionuclide: since STIR was compiled without nlohmann-json-dev, We only have information for ^99m^Technetium for the NM modality. Returning \"unknown\" radionuclide."));
             return Radionuclide();
           }
 
@@ -280,7 +280,7 @@ get_radionuclide(ImagingModality rmodality, const std::string& rname)
     }
     else
       {
-        warning("RadioNuclideDB::get_radionuclide: unknown modality. Returning \"unknown\" radionuclide.");
+        warning(std::string("RadioNuclideDB::get_radionuclide: unknown modality. Returning \"unknown\" radionuclide."));
         return Radionuclide();
       }
 
