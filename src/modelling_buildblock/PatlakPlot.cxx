@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,6 +13,7 @@
   \ingroup modelling
   \brief Implementations of inline functions of class stir::PatlakPlot
   \author Charalampos Tsoumpas
+  \author Ander Biguri
 
   \sa PatlakPlot.h, ModelMatrix.h and KineticModel.h
 
@@ -36,6 +38,7 @@ set_defaults()
   this->_time_shift=0.;
   this->_in_correct_scale=false;
   this->_in_total_cnt=false;
+  this->_assume_poisson_distribution=false;
 }
 
 const char * const 
@@ -193,7 +196,7 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
       frame_num<=num_frames ; ++frame_num )
     {      
       patlak_x[frame_num-1]=patlak_model_array[1][frame_num]/patlak_model_array[2][frame_num];
-      weights[frame_num-1]=1;                    
+      weights[frame_num-1]=1;  // if (_assume_poisson_distribution) handled later in the main loop.
     }   
   {  // Do linear_regression for each voxel // for k j i 
     float slope=0.F;
@@ -221,7 +224,19 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
                 // (remember, these are integrals over the time frame, not single values at discrete t) 
                 for ( frame_num = starting_frame; 
                       frame_num<=num_frames ; ++frame_num )
+                {
                   patlak_y[frame_num-1]=dyn_image[frame_num][k][j][i]/patlak_model_array[2][frame_num];
+                  if(this->_assume_poisson_distribution)
+                  {
+                    weights[frame_num-1]=dyn_image[frame_num][k][j][i]/(patlak_model_array[2][frame_num]*patlak_model_array[2][frame_num]);
+                    // if is zero, leave as is, zero weight?
+                    if(weights[frame_num-1]){
+                      weights[frame_num-1]=1/weights[frame_num-1];
+                    }else{
+                       weights[frame_num-1]=0.00001;
+                    }
+                  }
+                }
                 // Apply the regression to this pixel
                 linear_regression(y_intersection, slope,
                                   chi_square,
@@ -337,6 +352,7 @@ initialise_keymap()
   this->parser.add_key("Time Shift", &this->_time_shift);
   this->parser.add_key("In total counts", &this->_in_total_cnt);
   this->parser.add_key("In correct scale", &this->_in_correct_scale);
+  this->parser.add_key("Poisson distributed images", &this->_assume_poisson_distribution);
   this->parser.add_key("Time Frame Definition Filename", &this->_time_frame_definition_filename); 
   this->parser.add_stop_key("end Patlak Plot Parameters");
 }

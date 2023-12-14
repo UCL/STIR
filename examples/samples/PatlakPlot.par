@@ -9,6 +9,12 @@ blood data filename :=
 Time Shift := 0
 ; following settings are appropriate for STIR reconstructed images
 In total counts := 1
+; enable this for fully calibrated images from your scanner
+; (should remain zero for STIR images currently)
 In correct scale := 0
+
+; enable this if you want to use weighted linear regression, assuming
+; that each voxel and time frame is Poisson distributed
+Poisson distributed images := 0 ; defaults to 0
 
 end Patlak Plot Parameters:=

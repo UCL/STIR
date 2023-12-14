@@ -260,6 +260,12 @@ Backward compatibility for reconstructed images can be achieved by setting the <
 <li>
     More setter functions on ScatterEstimation.
 </li>
+<li>
+ <code>PatlakPlot::apply_linear_regression</code> now has the possibility to use weighted
+ linear regression, assuming that the TAC activity values (in units of <i>counts</i>)
+ Poisson distributed which is a reasonable approximation for OSEM images (although somewhat
+ dangerous for noisy data).
+</li>
 </ul>
 
 
