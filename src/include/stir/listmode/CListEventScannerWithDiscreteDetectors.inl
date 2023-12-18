@@ -34,25 +34,24 @@ CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& pro
   if (!proj_data_info_sptr)
     error("CListEventScannerWithDiscreteDetectors constructor called with zero pointer");
 
-  this->uncompressed_proj_data_info_sptr = std::dynamic_pointer_cast< const ProjDataInfoT >(proj_data_info_sptr->create_shared_clone());
-
-#if 0 // TODO: actually create uncompressed.
-  this->scanner_sptr = scanner_sptr_v;
+  auto scanner_sptr = proj_data_info_sptr->get_scanner_sptr();
+  // get bare pointer of uncompressed ProjDataInfo
   auto pdi_ptr =
-     ProjDataInfo::ProjDataInfoCTI(scanner_sptr_v, 
-                                   1, scanner_sptr->get_num_rings()-1,
-                                   scanner_sptr->get_num_detectors_per_ring()/2,
-                                   scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                   false);
-  auto pdi_ptr_cast =
-    dynamic_cast<ProjDataInfoT *>(pdi_ptr);
+     ProjDataInfo::construct_proj_data_info(scanner_sptr, 
+                                            1, scanner_sptr->get_num_rings()-1,
+                                            scanner_sptr->get_num_detectors_per_ring()/2,
+                                            scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                            /* arc correction = */ false,
+                                            /* TOF mashing = */ 1).release();
+  // check type
+  auto pdi_ptr_cast = dynamic_cast<ProjDataInfoT *>(pdi_ptr);
   if (!pdi_ptr_cast)
     {
       delete pdi_ptr;
       error("CListEventScannerWithDiscreteDetectors constructor called with scanner that gives wrong type of ProjDataInfo");
     }
+  // set shared_ptr from bare pointer (will take ownership)
   this->uncompressed_proj_data_info_sptr.reset(pdi_ptr_cast);
-#endif
 }
 
 template <class ProjDataInfoT>
