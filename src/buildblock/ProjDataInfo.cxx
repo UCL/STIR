@@ -782,8 +782,9 @@ blindly_equals(const root_type * const that) const
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
-   (proj.is_tof_data() && is_tof_data() ? (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
-                                                 (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) : true) &&
+   (get_tof_mash_factor() == proj.get_tof_mash_factor()) &&
+   (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
+   (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) &&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
@@ -814,7 +815,7 @@ operator !=(const root_type& that) const
      \c true only if the types are the same, they are equal, or the range for the
      TOF, segments, axial and tangential positions is at least as large.
 
-  \warning Currently view ranges have to be identical.
+  \warning Currently view and TOF ranges have to be identical.
 */
 bool
 ProjDataInfo::
@@ -828,13 +829,15 @@ operator>=(const ProjDataInfo& proj_data_info) const
   if (larger_proj_data_info == proj_data_info)
     return true;
 
+  if (proj_data_info.get_tof_mash_factor() != larger_proj_data_info.get_tof_mash_factor())
+    return false;
+
   if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
       proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
       proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
       proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
-          ((proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
-                    proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())  &&
-                    (proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data())))
+      proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
+      proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())         
     return false;
 
   for (int segment_num=proj_data_info.get_min_segment_num();
