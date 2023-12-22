@@ -265,9 +265,6 @@ public:
       return exam_info_uptr;
   }
 
-  //! Return the status of TOF
-  bool get_tof_status() const;
-
   //! Attempts to change the number of subsets. 
   /*! \return The number of subsets that will be used later, which is not
       guaranteed to be what you asked for. */
@@ -334,9 +331,6 @@ public:
 
 protected:
   int num_subsets;
-
-  //! If set TOF information will be taken into account.
-  bool use_tof;
 
   shared_ptr<GeneralisedPrior<TargetT> > prior_sptr;
 
