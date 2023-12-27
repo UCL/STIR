@@ -157,7 +157,7 @@ for TOForNOT in "nonTOF" "TOF"; do
 
         echo "=== Reconstruct listmode data without cache"
         export filename=my_output_t_lm_pr_seg${MAX_SEG_NUM}_${suffix}
-        SENS_lm=my_sens_t_lm_pr_seg${MAX_SEG_NUM}.hv
+        SENS_lm=my_sens_t_lm_pr_seg${MAX_SEG_NUM}_${suffix}.hv
         export cache=0
         export recompute_cache=0
         export recompute_sensitivity=1
@@ -169,6 +169,7 @@ for TOForNOT in "nonTOF" "TOF"; do
             echo "---- There were problems here!"
             ThereWereErrors=1;
             ErrorLogs="$ErrorLogs $logfile"
+            break
         fi
 
         echo "=== Reconstruct listmode data with cache and store it on disk"
@@ -186,6 +187,7 @@ for TOForNOT in "nonTOF" "TOF"; do
             echo "---- There were problems here!"
             ThereWereErrors=1;
             ErrorLogs="$ErrorLogs $logfile"
+            break
         fi
 
         echo "=== Compare reconstructed images with and without caching LM file"
@@ -212,6 +214,7 @@ for TOForNOT in "nonTOF" "TOF"; do
             echo "---- There were problems here!"
             ThereWereErrors=1;
             ErrorLogs="$ErrorLogs $logfile"
+            break
         fi
 
         echo "=== Compare reconstructed images without caching LM file and with loading cache from disk"
