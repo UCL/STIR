@@ -32,22 +32,15 @@
 #include "stir/round.h"
 #include <algorithm>
 #include "stir/error.h"
-
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include <boost/static_assert.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 using std::string;
 using std::pair;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 ProjDataInfoCylindricalNoArcCorr:: 
@@ -55,26 +48,28 @@ ProjDataInfoCylindricalNoArcCorr()
 {}
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
                                  const float ring_radius_v, const float angular_increment_v,
 				 const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v, 
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views,const int num_tangential_poss,
                                  const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
+: ProjDataInfoCylindrical(scanner_sptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss),
   ring_radius(ring_radius_v),
   angular_increment(angular_increment_v)
 {
-  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
-    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
-    
+  if (!scanner_sptr)
+    error("ProjDataInfoCylindricalNoArcCorr: first argument (scanner_ptr) is zero");
+  if (num_tangential_poss > scanner_sptr->get_max_num_non_arccorrected_bins())
+    error("ProjDataInfoCylindricalNoArcCorr: number of tangential positions exceeds the maximum number of non arc-corrected bins set for the scanner.");
+
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  if(scanner_ptr->is_tof_ready())
+  if(scanner_sptr->is_tof_ready())
     set_tof_mash_factor(tof_mash_factor);
 #ifdef STIR_OPENMP_SAFE_BUT_SLOW
   this->initialise_uncompressed_view_tangpos_to_det1det2();
@@ -83,30 +78,20 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 }
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views, const int num_tangential_poss,
                                  const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
+  : ProjDataInfoCylindricalNoArcCorr(scanner_sptr,
+                                     scanner_sptr ? scanner_sptr->get_effective_ring_radius() : 0.F, // avoid segfault if scanner_sptr==0
+                                     scanner_sptr ? static_cast<float>(_PI/scanner_sptr->get_num_detectors_per_ring()) : 0.F,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss)
-{
-  assert(!is_null_ptr(scanner_ptr));
-  ring_radius = scanner_ptr->get_effective_ring_radius();
-  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
-  uncompressed_view_tangpos_to_det1det2_initialised = false;
-  det1det2_to_uncompressed_view_tangpos_initialised = false;
-
-  if(scanner_ptr->is_tof_ready())
-    set_tof_mash_factor(tof_mash_factor);
-#ifdef STIR_OPENMP_SAFE_BUT_SLOW
-  this->initialise_uncompressed_view_tangpos_to_det1det2();
-  this->initialise_det1det2_to_uncompressed_view_tangpos();
-#endif
-}
+                                     num_views, num_tangential_poss,
+                                     tof_mash_factor)
+{}
 
 
 
