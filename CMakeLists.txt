@@ -55,10 +55,10 @@ else()
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   5)
-set(VERSION_MINOR   2)
+set(VERSION_MAJOR   6)
+set(VERSION_MINOR   0)
 set(VERSION_PATCH   0)
-set(VERSION   050200) # only used in STIRConfig.h.in
+set(VERSION   060000) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})

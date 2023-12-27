@@ -349,9 +349,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   if (base_type::post_processing() == true)
     return true;
  
-#if STIR_VERSION < 060000
    this->proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
+#if STIR_VERSION < 060000
    if (this->get_max_segment_num_to_process() < 0)
      this->set_max_ring_difference(this->max_ring_difference_num_to_process);
    else
