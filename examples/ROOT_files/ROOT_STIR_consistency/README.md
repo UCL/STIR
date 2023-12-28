@@ -8,14 +8,17 @@ See STIR/LICENSE.txt for details
 
 These files were included to :
 * Test non-TOF ROOT and STIR consistency, particularly the rotation.
-* Test the TOF STIR implementation was correct (NOT YET IMPLEMENTED).
+* Test the TOF STIR implementation is correct.
+
+See src/recon_test/test_consistency_with_GATE.cxx. This test is run
+automatically when using ctest.
 
 Directories
 -----
 
-- `SourceFiles/`: Contains 8 `generate_image` parameter files and GATE macro files for the emission source positions. One pair of files for each test.
+- `SourceFiles/`: Contains 8 `generate_image` parameter files and GATE macro files for the emission source positions. One pair of files for each simulation.
 - `Gate_macros/`: Contains the GATE macro files for generating the data.
-- `DebugScripts`: Contains scripts for better understanding the tests.
+- `DebugScripts/`: Contains scripts for better understanding the tests.
 
 
 FILES
@@ -30,14 +33,15 @@ ______
 
 Methodology
 ----
- 1. Generate the ROOT data. 
-     1. Run `./run_pretest_script.sh` in the terminal to generate the ROOT files (requires Gate) for different point sources, or
-     2. Download the ROOT data and proceed without Gate simulation.
+ 1. Get the ROOT data: either
+     - Run `./run_pretest_script.sh` in the terminal to generate the ROOT files (requires Gate) for different point sources, or
+    - Download the ROOT data and proceed without Gate simulation. This is done
+    by ctest when the STIR build was configured with `DOWNLOAD_ZENODO_TEST_DATA=ON`.
      
- 2. Run the STIR test: `src/recon_test/test_view_offset_root`.
+ 2. Run the STIR test: `src/recon_test/test_consistency_with_GATE` (Best via ctest).
     This test should tell you whether it failed or not by testing if the LOR passes by, 
     or close to, the original point source position.
- 3. Run the python scripts in `DebugScripts` to better understand erros and to give a more in-depth analysis.
+ 3. Run the python scripts in `DebugScripts` to better understand errors and to give a more in-depth analysis.
 
 
 _____
