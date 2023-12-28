@@ -7,12 +7,12 @@
   <body>
     <h1>Summary of changes in STIR release 6.0</h1>
 
-<p>This version is 95% backwards compatible with STIR 4.0 for the user (see below).
+<p>This version is 95% backwards compatible with STIR 5.x for the user (see below).
 Developers might need to make code changes as 
 detailed below.
 </p>
 <h2>Overall summary</h2>
-<p>
+<p>This release is a major upgrade adding Time of Flight (TOF) capabilities to STIR.
 </p>
 
 
@@ -58,6 +58,8 @@ improvements to the documentation.
 <h3>Changed functionality</h3>
 <ul>
 <li>
+    We now always check (<code>ProjDataInfo*NoArcCorr</code>) if number of tangential positions in the projection data exceeds the maximum number
+    of non arc-corrected bins set for the scanner. If it is, an error is raised.
 </li>
 </ul>
 
@@ -77,7 +79,7 @@ improvements to the documentation.
 
 <h3>Minor bug fixes</h3>
 <ul>
-<li>
+  <li>
 </li>
 </ul>
 
