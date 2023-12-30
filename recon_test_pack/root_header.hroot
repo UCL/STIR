@@ -11,7 +11,7 @@ Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 501
 Default number of arc-corrected bins 	 := 501
 View offset (degrees)					 := 0
-Number of TOF time bins := 410
+Number of TOF time bins := 411
 Size of timing bin (ps) := 10.00
 Timing resolution (ps) := 400.0
 

@@ -266,6 +266,8 @@ set_defaults()
     bin_size = -1.f;
     view_offset = 0.f;
     tof_mash_factor = 1;
+    reference_energy = 511.F;
+    energy_resolution = -1.F;
 }
 
 Succeeded
