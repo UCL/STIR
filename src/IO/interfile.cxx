@@ -56,9 +56,8 @@
 #include <algorithm>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 
-
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
@@ -70,7 +69,6 @@ using std::vector;
 using std::istream;
 using std::string;
 using std::ios;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -488,7 +486,7 @@ static void write_interfile_image_data_descriptions(std::ostream& output_header,
 
     output_header << "number of image data types := " << data_type_descriptions.size() << '\n';
     output_header << "index nesting level := {data type}\n";
-    for (int i=0; i<data_type_descriptions.size(); i++)
+    for (unsigned int i=0; i<data_type_descriptions.size(); i++)
         output_header << "image data type description[" << i+1 << "] := " << data_type_descriptions[i] << "\n";
 }
 
@@ -909,7 +907,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
     VectorWithOffset<float> scaling_factors(image.get_num_params());
-    for (int i=1; i<=image.get_num_params(); i++) {
+    for (int i=1; i<=static_cast<int>(image.get_num_params()); i++) {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();
         write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
@@ -958,7 +956,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
     VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
-    for (int i=1; i<=image.get_num_time_frames(); i++)
+    for (int i=1; i<=static_cast<int>(image.get_num_time_frames()); i++)
 {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();
@@ -1535,8 +1533,14 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
               		     << proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 
             } // end generic scanner
-            
-          else error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: Cylindrical/BlocksOnCylindrical/Genreic");
+          else if (!dynamic_pointer_cast<const ProjDataInfoSubsetByView>(pdfs.get_proj_data_info_sptr()))
+            {
+              error("write_basic_interfile_PDFS_header: cannot write subset data yet. Sorry");
+            }
+          else
+            {
+              error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: Cylindrical/BlocksOnCylindrical/Generic");
+            }
         }  
     }
 

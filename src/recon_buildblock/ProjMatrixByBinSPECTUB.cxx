@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
-    Copyright (C) 2013-2014, 2019, 2020 University College London
+    Copyright (C) 2013-2014, 2019, 2020, 2023 University College London
     Copyright (C) 2023 National Physical Laboratory
     This file is part of STIR.
 
@@ -352,6 +352,15 @@ set_up(
 	const VectorWithOffset<float> radius_all_views =
 	  proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
 
+        {
+          const auto max_radius = *std::max_element(radius_all_views.begin(), radius_all_views.end());
+          const auto max_im_radius = std::max(vol.Xcmd2, vol.Ycmd2)*10;
+          if (max_im_radius > max_radius)
+            {
+              warning("Image radius (" + std::to_string(max_im_radius) + " is larger than max detector radius (" +
+                      std::to_string(max_radius) + "). Are you sure this is correct? (Proceeding anyway)");
+            }
+        }
 	Rrad = new float [ wmh.prj.Nang ];
 	for ( int i = 0 ; i < wmh.prj.Nang ; i++ ) {
 	  // note: convert to cm for UB SPECT library
@@ -374,7 +383,11 @@ set_up(
 	
 	//....PSF and collimator parameters ........................................	
         boost::algorithm::to_lower(psf_type);
-	if ( psf_type == "geometrical" ) wmh.do_psf = false;
+	if ( psf_type == "geometrical" )
+          {
+            wmh.do_psf = false;
+            wmh.do_psf_3d = false;
+          }
 	else{
 		wmh.do_psf = true;
 		

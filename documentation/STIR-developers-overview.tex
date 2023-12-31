@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 5.1}}
+\textbf{\textit{version 5.2}}
 
 \end{center}
 
@@ -60,7 +60,8 @@ formats (you can get e.g. RTF or LaTeX output by simply running
 doxygen on the source files that come in the STIR distribution). 
 
 \subsection{Language support}
-STIR is written in C++ and currently requires C++-11, but it should be compatible with nNewer versions of the C++ standard.
+STIR is written in C++ and currently requires C++-11, but it is compatible with newer versions of the C++ standard.
+We will enforce C++-14 from STIR 6.0.
 
 Python and MATLAB support is provided via \R2Lurl{http://www.swig.org/}{SWIG}. This means that Python/MATLAB interfaces follow
 the C++ classes closely, although some differences are required as these languages do not support templates for instance.
@@ -139,31 +140,25 @@ projection data.
 
 
 In 3D PET, two data storage modes are generally used for a \textbf{segment}\footnote{{The 
-GE Advance file format does \textit{not} store the data per segment, 
-but per view. In addition, the segments are then mixed. However, 
+GE file formats does \textit{not} store the data per segment, 
+but per view. However, 
 once read into STIR, this organisation is no longer available. 
-\\
-The ECAT6 sinograms also have no easy way to understand which 
-ring-pair corresponds to which sinogram number for 3D PET. This 
-is the main reason why STIR does not attempt to read ECAT6 sinograms 
-directly, but leaves this to a separate conversion utility.}}
+}}
 \begin{itemize}
 \item 
 where the 3D data is ordered by \textbf{sinogram} (i.e \textbf{axial position}, \textbf{view 
-angle}, \textbf{tangential position}) (CTI terminology: \textit{Volume} mode) 
+angle}, \textbf{tangential position})
 (see Figure \ref{fig:sinogramstorage})
 \item where the 3D dataset is ordered by \textbf{view} (i.e \textbf{view angle}, \textbf{axial 
-position}, \textbf{tangential position}) (CTI terminology: \textit{View}  
-mode) (see Figure \ref{fig:viewgramstorage})
+position}, \textbf{tangential position})
+(see Figure \ref{fig:viewgramstorage})
 \end{itemize}
 
 This notation means that for a sinogram, the tangential position 
 runs fastest.\\
 In both modes, the 3D dataset has been stored in several segments 
 where the number of axial positions in each \textbf{segment} depends 
-on the \textbf{axial compression (span)}.\\
-Note that we find the CTI terminology confusing, so you will 
-see it nowhere in STIR except in this document.
+on the \textbf{axial compression (span)}.
 
 
 From both modes, 2 different types of 2D datasets can be obtained 
@@ -175,6 +170,18 @@ position.
 view.
 \end{itemize} 
 
+Note that in STIR version 6.0, Time-of-Flight (TOF) will be supported. This introduces another
+index. However, \texttt{Sinogram} and \texttt{Viewgram} will remain 2D objects, and \texttt{Segment*} 3D.
+This will also be the case once we have layers and energy windows.
+In STIR 5.2, we have therefore introduced new classes
+\texttt{SinogramIndices}, \texttt{ViewgramIndices}\footnote{Replacing \texttt{ViewSegmentNumbers} in previous versions of STIR.}
+and \texttt{SegmentIndices}, containing all ``other''
+indices necessary to get at the corresponding data. This means that the recommended coding style is now
+\begin{verbatim}
+ViewgramIndices vg_idx(view_num,segment_num);
+auto viewgram = proj_data.get_viewgram(vg_idx);
+\end{verbatim}
+In the next version of STIR, we will introduce extra methods to be able to conveniently loop over all viewgrams etc.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -231,8 +238,8 @@ Configuration file}
 The file \textit{stir}/\textit{common.h} contains general configuration 
 info and tries to iron out some incompatibilities for certain 
 compilers. If you include any STIR \textit{.h} file, you are guaranteed 
-to have included \textit{stir}/\textit{common.h} as well, hence it should 
-never be included explicitly by a 'user'.
+to have included \textit{stir}/\textit{common.h} as well, hence there is usually no need
+to include it explicitly.
 
 \subsection{
 Namespace}
@@ -241,12 +248,9 @@ The STIR library has its own C++ namespace: \textit{stir}. All symbols
 are within this namespace. The effect of this is that conflicts 
 with other symbols are impossible (except when somebody else 
 is using the same namespace). STIR also uses sub-namespaces for 
-certain things. This usage will probably be expanded in the future.\\
-For older compilers, the namespace can be disabled (see \textit{stir}/\textit{common.h}). 
-For this reason, we have introduced some macros such as \textit{START\_NAMESPACE\_STIR.} You 
-could use the macros in your own code as well, although people 
-with a compiler that does not support namespace really should 
-upgrade.
+certain things. This usage will probably be expanded in the future.
+In most of the code, we use macros such as \textit{START\_NAMESPACE\_STIR}
+(originally used for older compilers).
 
 \subsection{
 Naming conventions }
@@ -262,6 +266,7 @@ a variable or member used to indicate the number of things starts
 with \textit{num}, e.g. \textit{num\_gates}.
 \item 
 the number of an item in a sequence end with \textit{num}, e.g. \textit{gate\_num}.
+\footnote{We are slowly starting to use \texttt{\_idx} in a few places as ``indices'' are a more general concept, and avoid confusion between the pre- and postfix use of \texttt{num}.}
 \item 
 a relative time (normally with respect to the scan start) end 
 with \textit{rel\_time}, e.g. \textit{tracer\_injection\_rel\_time}.
@@ -389,15 +394,14 @@ with info on the file and line number where the assertion failed.
 \subsection{\label{ssect:AdvancedCppFeatures}
 Advanced (?) C++ features used}
 
-We attempted to follow the ANSI C++ standard as close as possible. 
-We expect to have some marginal problems with a 'strict' ANSI 
-C++ compiler, although there should now be very few cases (as 
-gcc warns about a lot of stuff). We have used some preprocessor 
-macros (see \textit{stir/common.h}) to isolate work-arounds for older 
+STIR uses C++-11 an dis compatible with C++-20 to the best of our knowledge.
+For legacy reasons, we have some preprocessor 
+macros (see \textit{stir/common.h}) that were used isolate work-arounds for older 
 compilers. Ideally, all these \#ifdefs should disappear at a 
-later development stage of the library. We gradually give up 
-on supporting older compilers anyway.
+later development stage of the library.
 
+This section describes some C++ features used in STIR that might not be so familiar to
+non-C++ programmers.
 
 \subsubsection{Templates}
 The library uses templates very often. This allows us to write 
@@ -417,23 +421,15 @@ this is not necessary as all methods of a template class are inlined, or the
 actual definition is in a \textit{.txx} file that you can include.\\
 We do use partial class template specialisation in some places. 
 However, (very ugly) work-arounds are provided for compilers 
-that do not support this feature (although not anymore in recent code).\\
-Very occasionally we use member templates (in such a form that 
-it could be compiled by Visual C++ 6.0, i.e. inline in the class definition). 
+that do not support this feature (although these areee being gradually removed).\\
+Very occasionally we use member templates. 
 
 \subsubsection{Run Time Type Information}
 Another C++ feature that we use is Run Time Type 
 Information (RTTI). We almost exclusively use this to check validity 
 of pointer (or reference) casts down a hierarchy ('down-casting'). 
 See section \ref{sect:classhierarchies} 
-for an example. If a compiler does not support 
-RTTI (but all compilers do these days), it would be possible to declare 
-a (essentially empty) \texttt{dynamic\_cast} 
-template function such that the above code would compile. The 
-resulting programme would become inherently type-unsafe though, 
-and we recommend that you upgrade your compiler. Some code does 
-rely on explicit type checking, you would have to check this 
-in detail if you don't have RTTI.
+for an example.
 
 \subsubsection{
 Iterators}
@@ -447,7 +443,7 @@ the elements of a vector:
 \begin{verbatim}
 void f(vector<int>& v)
 {
-  for (vector<int>::iterator iter = v.begin(); iter != v.end(); ++iter)
+  for (auto iter = v.begin(); iter != v.end(); ++iter)
      *iter += 2;
 }
 \end{verbatim}
@@ -464,7 +460,7 @@ So, typical code in C++ would look as follows:
 template <class Container>
 void f(Container& v)
 {
-  for (typename Container::iterator iter = v.begin(); iter != v.end(); ++iter)
+  for (auto iter = v.begin(); iter != v.end(); ++iter)
      *iter += 2;
 }
 \end{verbatim}
@@ -483,7 +479,7 @@ can be done as follows
 template <int n, class elemT>
 void f(Array<n,elemT>& a)
 {
-  for (typename Array<n,elemT>::full_iterator iter = a.begin_all(); 
+  for (auto iter = a.begin_all(); 
        iter != a.end_all(); ++iter)
      *iter += 2;
 }
@@ -511,18 +507,14 @@ have to call \textit{delete} on them. They are even exception proof
 (something which you cannot achieve with an ordinary pointer). 
 Generally, the destructor of the smart pointer will make sure 
 that the object it points to is deleted (when appropriate).\\
-\textit{std::auto\_ptr} is a standard smart pointer class which is 
+\textit{std::unique\_ptr} is a standard smart pointer class which is 
 suitable for pointers to objects where there's only one smart 
-pointer for each object. Unfortunately, its syntax has been decided 
-rather late in ANSI C++ and its implementation requires some 
-advanced C++ features, leading to a non-standard implementation 
-of \texttt{std::auto\_ptr} in older compilers (including VC 6.0) and it is now
-superseded by \texttt{std::unique\_ptr} in C++11. For this 
-reason, we do not use this smart pointer class too much, and 
+pointer for each object. Unfortunately, a lot of STIR was written
+pre-C++-11 and we do not use this smart pointer class too much, and 
 generally use \texttt{shared\_ptr} instead. This is somewhat unfortunate 
 as these two smart pointers are generally quite different concepts. 
 
-\texttt{shared\_ptr} is a STIR (or boost) smart pointer class which 
+\texttt{shared\_ptr} is a wrapper around the \texttt{std} (or boost\footnote{Boost smart pointer are probably no longer supported, and will no longer be from STIR 6.0.}) smart pointer class which 
 is suitable when there are (potentially) more than one pointer 
 pointing to the same object. It keeps a reference count such 
 that the object is (only) deleted when the last shared pointer 
@@ -561,7 +553,8 @@ We provide the convenience function \textit{stir::is\_null\_ptr()}
 to test if a pointer is `null', i.e. does not point to anything. \textit{is\_null\_ptr} 
 works with ordinary pointers, shared\_ptrs and auto\_ptrs. Use 
 it to avoid that your code depends on what type of (smart) pointer 
-you are using.
+you are using. Note however that since C++-11, it is more convenient to use the
+automatic converstion to \texttt{bool}.
 
 \subsection{Generic functionality of STIR classes}
 This is a (very incomplete) section describing some functionality that
@@ -749,8 +742,9 @@ extended to accommodate different file formats.
 \end{figure}
 
 
-Currently missing is support for fan-beam data.\\
-List-mode data is experimentally supported since version 1.2.
+Currently missing is support for fan-beam data.
+
+List-mode data is supported as well. See the \textit{Listmode} base-class and its hierarchy.
 
 \subsection{
 Data (or image) processor hierarchy}
@@ -1046,6 +1040,11 @@ following example.
       number = 1;
       a = 2.4F;
     }
+    bool post_processing() // will be renamed to post_parsing()
+    {
+      // do some checks and handle some extra variables
+      return false; // everything was ok
+    }
   };
 
   int main(int argc, char **argv)
@@ -1088,8 +1087,7 @@ For output, you can use
 You will have to include \texttt{stir/IO/write\_to\_file.h} for this to work. This
 will write using the default output file format and is equivalent to the following:
 \begin{verbatim}
-    typedef DiscretisedDensity<3,float> DataType ;
-    shared_ptr<OutputFileFormat<DataType > output_format_sptr =
+    auto output_format_sptr =
        OutputFileFormat<DataType >::default_sptr();
    output_format_sptr->write_to_file(filename, density);
 \end{verbatim}
@@ -1189,10 +1187,10 @@ Type Information (RTTI), preferably in the form of dynamic\_cast.
 template <typename elemT> 
 void f(DiscretisedDensity<3, elemT>& density)
 {
-  VoxelsOnCartesianGrid<elemT> * voxels_ptr =
+  auto voxels_ptr =
      dynamic_cast< VoxelsOnCartesianGrid<elemT> * > (&density);
-  if (voxels_ptr == NULL)
-     error("f: can only handle images of type VoxelsOnCartesianGrid\n");
+  if (!voxels_ptr)
+     error("f: can only handle images of type VoxelsOnCartesianGrid");
   ...
 }
 \end{verbatim}
@@ -1286,7 +1284,7 @@ set(${dir_LIB_SOURCES}
 )
 
 # declare dependencies on other STIR libraries, for instance
-target_link_libraries($(dir) buildblock)
+target_link_libraries($(dir) PUBLIC buildblock)
 
 # add to list of libraries for STIR to include in linking
 list(APPEND STIR_LIBRARIES $(dir))

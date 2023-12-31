@@ -88,8 +88,11 @@ public:
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_timing_pos_num() const;
   //! get 'basic' view_segment_num
+  /*! \deprecated Use get_basic_viewgram_indices() instead. */
+  inline ViewgramIndices get_basic_view_segment_num() const;
+  //! get 'basic' viewgram indices
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
-  inline ViewSegmentNumbers get_basic_view_segment_num() const;
+  inline ViewgramIndices get_basic_viewgram_indices() const;
 
   //! returns the number of viewgrams in this object
   inline int get_num_viewgrams() const;

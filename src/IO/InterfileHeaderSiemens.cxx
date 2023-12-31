@@ -1,19 +1,16 @@
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
+    Copyright (C) 2018, 2020, 2021, 2023 University College London
     Copyright (C) 2018 STFC
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 /*!
   \file 
   \ingroup InterfileIO 
-  \brief implementations for the stir::InterfileHeaderSiemens class
+  \brief implementations for the stir::InterfileHeaderSiemens classes
 
   \author Kris Thielemans
   \author PARAPET project
@@ -29,6 +26,7 @@
 #include "stir/IO/stir_ecat_common.h"
 #include <numeric>
 #include <functional>
+#include "stir/stream.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -48,15 +46,17 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 {
   // always PET
   exam_info_sptr->imaging_modality = ImagingModality::PT;
-  
+
+  byte_order_values.clear();
   byte_order_values.push_back("LITTLEENDIAN");
   byte_order_values.push_back("BIGENDIAN");
-  
+
+  PET_data_type_values.clear();
   PET_data_type_values.push_back("Emission");
   PET_data_type_values.push_back("Transmission");
   PET_data_type_values.push_back("Blank");
   PET_data_type_values.push_back("AttenuationCorrection");
-  PET_data_type_values.push_back("Normalisation");
+  PET_data_type_values.push_back("Normalization");
   PET_data_type_values.push_back("Image");
   
   for (int patient_position_idx = 0; patient_position_idx <= PatientPosition::unknown_position; ++patient_position_idx)
@@ -163,13 +163,43 @@ void InterfileHeaderSiemens::set_type_of_data()
 }
 
 
+void
+InterfileHeaderSiemens::ignore_Siemens_date_and_time_keys(const std::string& keyword)
+{
+  ignore_key(keyword + " date (yyyy:mm:dd)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+00:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+01:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+02:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+03:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+04:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+05:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+06:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+07:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+08:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+09:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+10:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT+11:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-01:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-02:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-03:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-04:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-05:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-06:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-07:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-08:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-09:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-10:00)");
+  ignore_key(keyword + " time (hh:mm:ss GMT-11:00)");
+}
+
+
 /**********************************************************************/
 
 InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
      : InterfileHeaderSiemens()
 {
   // first set to some crazy values
-  num_segments = -1;
+  num_segments = 0;
   num_rings = -1;
   maximum_ring_difference = -1;
   axial_compression = -1;
@@ -208,13 +238,11 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("%listmode header file");
   ignore_key("%listmode data file");
   ignore_key("%compressor version");
-  ignore_key("%study date (yyyy");
-  ignore_key("%study time (hh");
+  ignore_Siemens_date_and_time_keys("%study");
   ignore_key("isotope gamma halflife (sec)");
   ignore_key("isotope branching factor");
   ignore_key("radiopharmaceutical");
-  ignore_key("%tracer injection date (yyyy");
-  ignore_key("%tracer injection time (hh");
+  ignore_Siemens_date_and_time_keys("%tracer injection");
   ignore_key("relative time of tracer injection (sec)");
   ignore_key("tracer activity at time of injection (bq)");
   ignore_key("injected volume (ml)");
@@ -226,8 +254,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   ignore_key("method of scatter correction");
   ignore_key("%method of random correction");
   ignore_key("%decay correction");
-  ignore_key("%decay correction reference date (yyyy");
-  ignore_key("%decay correction reference time (hh");
+  ignore_Siemens_date_and_time_keys("%decay correction reference");
   ignore_key("decay correction factor");
   ignore_key("scatter fraction (%)");
   ignore_key("scan data type description");
@@ -250,8 +277,8 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   const std::string PET_data_type =
     standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]);
-  if (PET_data_type != "emission" && PET_data_type != "transmission")
-    { error("Interfile error: expecting emission or transmission for 'PET data type'"); }
+  if (PET_data_type != "emission" && PET_data_type != "transmission"  && PET_data_type != "normalization")
+    { error("Interfile error: expecting 'emission' or 'transmission' or 'normalization' for 'PET data type'"); }
 
   // handle scanner
 
@@ -293,7 +320,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
     segment_sequence = ecat::find_segment_sequence(*data_info_ptr);
-    //XXX check if order here and segment_table are consistent
+    //TODO check if order here and segment_table are consistent
   }
 
   // Set the bed position
@@ -566,5 +593,115 @@ bool InterfileListmodeHeaderSiemens::post_processing()
   return false;
 }
 
+InterfileNormHeaderSiemens::InterfileNormHeaderSiemens()
+  : InterfileRawDataHeaderSiemens()
+{
+  // some defaults
+  calib_factor = 1.F;
+  cross_calib_factor = 1.F;
+  num_buckets = 0; // should be set normally
+  num_components = 0; // should be set to 8 normally
+  axial_compression = 11;  // should be set normally but seems to be this always
+  is_arccorrected = false; // norm data is never arc-corrected
+
+  ignore_key("data description");
+  ignore_Siemens_date_and_time_keys("%expiration");
+  ignore_key("%raw normalization scans description");
+
+  // remove some standard keys, which Siemens has replaced with similar names
+  remove_key("matrix size");
+  remove_key("matrix axis label");
+  remove_key("scaling factor (mm/pixel)");
+
+  // keywords for the components
+  add_key("%number of normalization components",
+          KeyArgument::INT, (KeywordProcessor)&InterfileNormHeaderSiemens::read_num_components, &num_components);
+  add_vectorised_key("%matrix size", &matrix_size);
+  add_vectorised_key("%matrix axis label", &matrix_labels);
+  ignore_key("%matrix axis unit");
+  ignore_key("%normalization component");
+  ignore_key("%normalization components description");
+  add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
+  remove_key("number of dimensions");
+  add_vectorised_key("number of dimensions", &number_of_dimensions);
+  ignore_key("%scale factor");
+
+  // other things
+  add_key("%number of buckets", &num_buckets);
+
+  ignore_key("%global scanner calibration factor");
+  add_key("%scanner quantification factor (Bq*s/ECAT counts)",& calib_factor);
+  add_key("%cross calibration factor",& cross_calib_factor);
+  ignore_Siemens_date_and_time_keys("%calibration");
+
+  // isotope things are vectorised in norm files and not in other raw data, so we could
+  // fix that, but as we are not interested in it anyway (tends to be Ge-68), let's just ignore it.
+  remove_key("isotope name");
+  ignore_key("isotope name");
+
+  ignore_key("%number of normalization scans");
+  ignore_key("%normalization scan");
+  remove_key("image duration (sec)");
+  ignore_key("image duration (sec)");
+#if 0
+  // change to vectorised key
+  // would need to set image_durations length from "number of normalization scans"
+  add_vectorised_key("image duration (sec)", &image_durations);
+#endif
+  ignore_key("%data format");
+  ignore_key("%data set description");
+  ignore_key("total number of data sets");
+  ignore_key("%data set");
+}
+
+void InterfileNormHeaderSiemens::read_num_components()
+{
+  set_variable();
+
+  matrix_labels.resize(num_components);
+  matrix_size.resize(num_components);
+  // matrix_axis_units.resize(num_components);
+  // matrix_axis_units.resize(num_components);
+  // pixel_sizes.resize(num_components);
+  // normalization_components.resize(num_components);
+  data_offset_each_dataset.resize(num_components);
+  number_of_dimensions.resize(num_components);
+}
+
+bool InterfileNormHeaderSiemens::post_processing()
+{
+  if (matrix_size.size() < 4)
+    error("Error parsing ECAT8 norm file header: '%number of normalization components='" +
+          std::to_string(matrix_size.size())+
+          "' but should be at least 4");
+  // %normalization component [1]:=geometric effects
+  if (matrix_size[0].size() != 2)
+    error("Error parsing ECAT8 norm file header: '%matrix size[1]' should have length 2");
+  // %normalization component [3]:=crystal efficiencies
+  if (matrix_size[2].size() != 2)
+    error("Error parsing ECAT8 norm file header: '%matrix size[3]' should have length 2");
+
+  // TODO should do far more checks...
+
+  // remove trailing \r (or other white space) occuring in mMR norm files (they sometimes have \r\r at end of line)
+  std::string s=exam_info_sptr->originating_system;
+  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
+  exam_info_sptr->originating_system=s;
+  s=data_file_name;
+  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
+  data_file_name=s;
+
+  // norm headers don't seem to have "number of views". We need to get it from elsewhere...
+  // The crystal efficiencies have as first dimension the number of crystals, so let's use that.
+  const int num_detectors_per_ring = matrix_size[2][0];
+  this->num_views = num_detectors_per_ring/2;
+  // find num_bins from geometric effects
+  this->num_bins = matrix_size[0][0];
+
+  if (InterfileRawDataHeaderSiemens::post_processing() == true)
+    return true;
+
+  return false;
+}
 
 END_NAMESPACE_STIR

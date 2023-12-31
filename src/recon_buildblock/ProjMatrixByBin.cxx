@@ -75,7 +75,6 @@ enable_tof(const shared_ptr<const ProjDataInfo>& _proj_data_info_sptr, const boo
     if (v)
     {
         tof_enabled = true;
-        proj_data_info_sptr = _proj_data_info_sptr;
         gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
         r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
     }
@@ -130,10 +129,13 @@ reserve_num_elements_in_cache(const std::size_t num_elems)
 void
 ProjMatrixByBin::
 set_up(   
-    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr_v // TODO should be Info only
     )
 {
+  this->proj_data_info_sptr = proj_data_info_sptr_v;
+  this->image_info_sptr.reset(
+                              dynamic_cast<const VoxelsOnCartesianGrid<float>* > (density_info_sptr_v->clone() ));
   if (is_cache_enabled())
     {
       const int max_abs_tangential_pos_num =
@@ -159,7 +161,6 @@ set_up(
   else
   {
 	  tof_enabled = false;
-	  this->proj_data_info_sptr = proj_data_info_sptr;
   }
 
   this->cache_collection.recycle();

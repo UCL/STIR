@@ -3,6 +3,7 @@ shallow_clone: true
 skip_commits:
   files:
     - .github/**/*
+    - 'CITATION.cff'
     - '**/*.md'
     - '**/*.html'
     - '**/*.htm'

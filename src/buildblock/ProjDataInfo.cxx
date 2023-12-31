@@ -5,7 +5,7 @@
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University of Leeds
-    Copyright (C) 2018, 2020-2022 University College London
+    Copyright (C) 2018, 2020-2023 University College London
     Copyright (C) 2016-2019, University of Hull
     This file is part of STIR.
 
@@ -394,6 +394,15 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
   return v;
 }
 
+Viewgram<float> 
+ProjDataInfo::get_empty_viewgram(const ViewgramIndices& ind) const
+{  
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  Viewgram<float> v(proj_data_info_sptr, ind);
+  return v;
+}
+
 
 Sinogram<float>
 ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
@@ -408,6 +417,15 @@ ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
 
   Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num, timing_pos_num);
    
+  return s;
+}
+
+Sinogram<float>
+ProjDataInfo::get_empty_sinogram(const SinogramIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  Sinogram<float> s(proj_data_info_sptr, ind);
   return s;
 }
 
@@ -430,6 +448,14 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
   return s;
 }  
 
+SegmentBySinogram<float>
+ProjDataInfo::get_empty_segment_by_sinogram(const SegmentIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  SegmentBySinogram<float> s(proj_data_info_sptr, ind);
+  return s;
+}
 
 SegmentByView<float>
 ProjDataInfo::get_empty_segment_by_view(const int segment_num, 
@@ -450,29 +476,35 @@ ProjDataInfo::get_empty_segment_by_view(const int segment_num,
   return s;
 }
 
+SegmentByView<float>
+ProjDataInfo::get_empty_segment_by_view(const SegmentIndices& ind) const
+{
+  // we can't access the shared ptr, so we have to clone 'this'.
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
+  SegmentByView<float> s(proj_data_info_sptr, ind);
+  return s;
+}
+
 RelatedViewgrams<float> 
-ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segment_num,
-                   //const int view_num, const int segment_num,
+ProjDataInfo::get_empty_related_viewgrams(const ViewgramIndices& viewgram_indices,
 		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
 		   const bool make_num_tangential_poss_odd,
 		   const int timing_pos_num) const
 {
+  if (make_num_tangential_poss_odd)
+    error("make_num_tangential_poss_odd is no longer supported");
   vector<ViewSegmentNumbers> pairs;
-  symmetries_used->get_related_view_segment_numbers(
-                                                    pairs, 
-                                                    ViewSegmentNumbers(view_segment_num.view_num(),view_segment_num.segment_num())
-    );
+  symmetries_used->get_related_view_segment_numbers(pairs, viewgram_indices);
 
   vector<Viewgram<float> > viewgrams;
   viewgrams.reserve(pairs.size());
 
   for (unsigned int i=0; i<pairs.size(); i++)
   {
+    // TODOTOF
+    pairs[i].timing_pos_num() = timing_pos_num;
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_empty_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(),
-										  make_num_tangential_poss_odd,
-										  timing_pos_num));
+    viewgrams.push_back(get_empty_viewgram(pairs[i]));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);
@@ -750,8 +782,9 @@ blindly_equals(const root_type * const that) const
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
-   (proj.is_tof_data() && is_tof_data() ? (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
-                                                 (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) : true) &&
+   (get_tof_mash_factor() == proj.get_tof_mash_factor()) &&
+   (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
+   (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) &&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
@@ -782,7 +815,7 @@ operator !=(const root_type& that) const
      \c true only if the types are the same, they are equal, or the range for the
      TOF, segments, axial and tangential positions is at least as large.
 
-  \warning Currently view ranges have to be identical.
+  \warning Currently view and TOF ranges have to be identical.
 */
 bool
 ProjDataInfo::
@@ -796,13 +829,15 @@ operator>=(const ProjDataInfo& proj_data_info) const
   if (larger_proj_data_info == proj_data_info)
     return true;
 
+  if (proj_data_info.get_tof_mash_factor() != larger_proj_data_info.get_tof_mash_factor())
+    return false;
+
   if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
       proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
       proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
       proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
-          ((proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
-                    proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())  &&
-                    (proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data())))
+      proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
+      proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())         
     return false;
 
   for (int segment_num=proj_data_info.get_min_segment_num();

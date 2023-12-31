@@ -79,16 +79,25 @@ BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
 
 Succeeded 
 BinNormalisationFromProjData::
-set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
-  base_type::set_up(exam_info_sptr, proj_data_info_ptr);
+  if (!base_type::set_up(exam_info_sptr, proj_data_info_sptr).succeeded())
+    return Succeeded::no;
 
-  if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
+  const auto& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
+  // complication: if the emission data is TOF but the norm is not, `apply()` et al. multiply all
+  // TOF bins with the non-TOF norm. So, we need to allow for that.
+  auto proj_to_check_sptr = proj_data_info_sptr;
+  if (!norm_proj.is_tof_data() && proj_data_info_sptr->is_tof_data())
+    proj_to_check_sptr = proj_data_info_sptr->create_non_tof_clone();
+  const auto& proj = *proj_to_check_sptr;
+
+  if (norm_proj == proj)
     return Succeeded::yes;
   else
   {
-    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
-    const ProjDataInfo& proj = *proj_data_info_ptr;
+    // Check if the emission data is "smaller" than the norm data (e.g. fewer segments)
+    // We will require equal tangential_pos ranges as `apply()` currently needs that.
     bool ok = 
       (norm_proj >= proj) &&
       (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
@@ -98,7 +107,7 @@ set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const 
       return Succeeded::yes;
     else
       {
-	warning(boost::format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
+	warning(boost::format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata info (made non-TOF if norm is non-TOF):\n%s\n--- (end of incompatible projection data info)---\n")
 		% norm_proj.parameter_info()
 		% proj.parameter_info());
 	return Succeeded::no;

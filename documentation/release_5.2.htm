@@ -7,7 +7,7 @@
   <body>
     <h1>Summary of changes in STIR release 5.2</h1>
 
-<p>This version is 100% backwards compatible with STIR 5.0. However, there is a <b> change in the output of scatter estimation<b>, see below for more information.
+<p>This version is 100% backwards compatible with STIR 5.0 as far as usage goes. However, there are <b> changes in the output of scatter estimation and ECAT8 normalisation</b>, see below for more information.
 </p>
 <h2>Overall summary</h2>
 
@@ -15,11 +15,12 @@
   improvements to the documentation. See also <a href="https://github.com/UCL/STIR/milestone/6">the
     5.2 milestone on GitHub</a>.
 </p>
-<p>Overall code management and assistance by Kris Thielemans (UCL and ASC).</p>
+    <p>Overall code management and assistance by Kris Thielemans (UCL and ASC). Other main contributors
+    were Daniel Deidda (NPL) and Markus Jehl (Positrigo).</p>
 
 <h2>Patch release info</h2>
 <ul>
-  <li> 5.2.0 released ??/??/2023</li>
+  <li> 5.2.0 released 30/10/2023</li>
 </ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -28,6 +29,27 @@
 <ul>
   <li>Scatter estimation was setting initial activity image to 1 at set-up, effectively ignoring the initial image, aside from geometric info.</li>
   <li>Setting SPECTUB resolution model with STIR python or SIRF divided slope by 10 in error. The problem did not occur when set using parameter file</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+  <li> The ECAT8 normalisation (used for the Siemens mMR) code now takes the 4th component <i>axial effects</i> into account.
+    These normalisation factors are therefore different (even up to ~10%). This gives improved axial uniformity in the images.
+    The use of the axial effects can be switched off by adding setting <tt>use_axial_effects_factors:=0</tt> to the
+    parameter file (see an example in <tt>examples/Siemens-mMR/correct_projdata_no_axial_effects.par</tt>), or the class member
+    of the same name.<br />
+    In addition, the Siemens normalisation header is now read (using a new class <code>InterfileNormHeaderSiemens</code>) such that
+    hard-coded variables for the Siemens mMR have been removed. Further testing of this functionality is still required however.
+    <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
+  </li>
+  <li>Interfile header parsing now correctly identifies keywords that contain a colon by checking for <tt>:=</tt>.</li>
+  <li>
+    The <code>set_up()</code> method of the ray-tracing projection matrix now skips further processing
+    if it was already called with data of the same characteristics. This will means that any cached data
+    will be re-used, potentially leading to a speed-up when re-using it from Python.
+    <br /><a href="https://github.com/UCL/STIR/pull/1281/">PR #1281</a>.
+  </li>
+
 </ul>
 
 <h3>New functionality</h3>
@@ -61,16 +83,33 @@
     but you could use it to optimise the number of OpenMP threads to use for your data.
     <br /><a href="https://github.com/UCL/STIR/pull/1237/">PR #1237</a>.
   </li>
+  <li>New classes <code>SegmentIndices</code>, <code>ViewgramIndices</code> and <code>SinogramIndices</code>, used by <code>ProjData</code> related classes, as opposed
+    to having to specify all the elements directly, e.g. in C++
+    <pre>
+      auto sinogram = proj_data.get_sinogram(sinogram_indices);
+    </pre>
+    This makes these functions more future proof, in particular for TOF. The older functions are now deprecated.
+    Note that as <code>Bin</code> is now derived from <code>ViewgramIndices</code>, instantations of <code>Bin</code> can now be used to specify the indices as well in most places.
+    <br/>
+    There is still more work to do here, mostly related to the symmetries.
+    <br /><a href="https://github.com/UCL/STIR/pull/1273/">PR #1273</a>.
+  </li>
+</ul>
+
+<h4>Python (and MATLAB)</h4>
+<ul>
+  <li>Examples use <code>stir.ProjData.read_from_file</code> as opposed to <code>stir.ProjData_read_from_file</code>. The former is supported since SWIG 3.0, and the <a href="https://swig.org/Doc4.1/Python.html#Python_nn20">default from SWIG 4.1</a>.
+  </li>
+  <li>Addition of <code>DetectionPosition</code> and <code>DetectionPositionPair</code>.</li>
+  <li><code>bin.time_frame_num</code> is now no longer a function in Python, but acts like a variable
+    (as the other <code>Bin</code> members).
+  </li>
+  <li>Addition of <code>RadionuclideDB</code></li>
 </ul>
 
 <h3>New examples</h3>
 <ul>
-</ul>
-
-<h4>Python</h4>
-<ul>
-  <li>Examples use <code>stir.ProjData.read_from_file</code> as opposed to <code>stir.ProjData_read_from_file</code>. The former is supported since SWIG 3.0, and the <a href="https://swig.org/Doc4.1/Python.html#Python_nn20">default from SWIG 4.1</a>.
-    </li>
+  <li><tt>examples/python/construct_projdata_demo.py</tt> illustrates constructing a <code>ProjDataInMemory</code></li>
 </ul>
 
 <h3>Changed functionality</h3>
@@ -95,18 +134,30 @@
     This is to reduce the default output during iterative reconstructions.
   <br /><a href="https://github.com/UCL/STIR/pull/1243/">PR #1243</a>.
   </li>
+  <li>The <code>Succeeded</code> class has a new method <code>bool succeeded()</code> enabling more concise code (avoiding the need for comparing with <code>Succeeded::yes</code> which is especially verbose in Python).
+  </li>
+  <li>The example files for the Siemens mMR now use lower min/max thresholds for the (single) scatter scale. This gives better results, see <a href="https://github.com/UCL/STIR/issues/1163/">Issue #1163</a>.
+  <br /><a href="https://github.com/UCL/STIR/pull/1279/">PR #1279</a>.
+  </li>
 </ul>
 
-<h3>Deprecated functionality</h3>
+<h3>Deprecated functionality and upcoming changes to required tool versions</h3>
 <ul>
   <li>The following functions (previously used for upsampling the scatter estimate) have been
     made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
   </li>
+  <li>Constructors/functions in <code>ProjData</code> related classes that explicitly use <code>axial_pos_num</code>, <code>view_num</code> etc in their arguments are now deprecated,
+    and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> or <code>SinogramIndices</code>. The former will not be
+    compatible with TOF information that will be introduced in version 6.0.0.
+  </li>
+  <li>Use of the AVW library to read Analyze files will be removed in 6.0, as this has not been checked in more than 15 years. Use ITK instead.</li>
+  <li>GE VOLPET and IE support will be removed in 6.0, as we have no files to test this, and it's obsolete anyway.</li>
+  <li>STIR version 6.0.0 will require C++ 14 (currently we require C++ 11, but already support C++ 20) and CMake 3.14.</li>
 </ul>
 
 <h3>Build system and dependencies</h3>
 <ul>
-  <li>CMake 3.12 is now required on Windows. (It will be required on all platforms in the next version).</li>
+  <li>CMake 3.12 is now required on Windows.</li>
   <li>We now use CMake's <a href=https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/Object-Library>OBJECT library feature</a> for the registries. This avoids re-compilation of the registries for every executable and therefore speeds-up building time. Use of STIR in an external project is not affected as long as the recommended practice was followed. This is now documented in the User's Guide.
     <br /><a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
   </li>
@@ -158,10 +209,12 @@
 
 <h3>Documentation changes</h3>
 <ul>
+  <li>Updated the STIR developers guide, which was quite out-of-date w.r.t. C++ features etc.</li>
 </ul>
 
 <h3>recon_test_pack changes</h3>
 <ul>
+  <li>Updated headers of most images and projection data to avoid warnings.</li>
 </ul>
 
 <h3>Other changes to tests</h3>

@@ -44,8 +44,8 @@ class ProjDataInfoCylindrical;
   \brief This class implements forward projection using Siddon's algorithm for
   ray tracing. That is, it computes length of intersection with the voxels.
 
-  Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
-  #defined during compilation time of ForwardProjectorByBinUsingRayTracing_Siddon.cxx. 
+  Currently, the LOIs are divided by voxel_size.x(), unless \c NEWSCALE is
+  \c \#defined during compilation time of ForwardProjectorByBinUsingRayTracing_Siddon.cxx.
 
   If the z voxel size is exactly twice the sampling in axial direction,
   multiple LORs are used, to avoid missing voxels. (TODOdoc describe how).
