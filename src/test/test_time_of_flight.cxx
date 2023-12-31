@@ -310,12 +310,12 @@ void TOF_Tests::test_CListEventROOT()
       if (det_pos_swapped.timing_pos() == det_pos.timing_pos())
         {
           check_if_equal(det_pos_swapped.pos1(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
-                    check_if_equal(det_pos_swapped.pos1(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+          check_if_equal(det_pos_swapped.pos2(), det_pos.pos2(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos2");
         }
       else if (det_pos_swapped.timing_pos() == -det_pos.timing_pos())
         {
-          check_if_equal(det_pos_swapped.pos2(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
-                    check_if_equal(det_pos_swapped.pos2(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos1");
+          check_if_equal(det_pos_swapped.pos2(), det_pos.pos1(), "CListEventROOT: get_detection_position with swapped detectors: opposite timing_pos, but different pos1/2");
+          check_if_equal(det_pos_swapped.pos1(), det_pos.pos2(), "CListEventROOT: get_detection_position with swapped detectors: opposite timing_pos, but different pos1/2");
         }
       else
         {
