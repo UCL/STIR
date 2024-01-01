@@ -43,6 +43,10 @@
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
 
+  \par Note
+
+  Output is non-TOF, even if a TOF template is used.
+
   \warning attenuation image data are supposed to be in units cm^-1.
   Reference: water has mu .096 cm^-1.
 
@@ -158,7 +162,7 @@ main (int argc, char * argv[])
 
   if (template_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data())
   {
-	  warning("The scanner template provided contains timing information. The calculation of the attenuation coefficients will not take them into consideration.\n");
+	  info("The scanner template provided contains TOF information. The calculation of the attenuation coefficients will be non-TOF anyway.");
   }
 
   const std::string output_file_name = argv[1];

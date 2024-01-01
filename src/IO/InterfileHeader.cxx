@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -32,6 +32,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include <boost/format.hpp>
 #include <numeric>
 #include <functional>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
@@ -613,7 +614,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
-  tof_mash_factor=-1;
+  tof_mash_factor = 1;
   add_key("%TOF mashing factor",
           &tof_mash_factor);
   max_num_timing_poss = -1;
@@ -694,6 +695,13 @@ int InterfilePDFSHeader::find_storage_order()
     return true; 
   }
 
+  if (num_dimensions == 4)
+    {
+      // non-TOF
+      num_timing_poss = 1;
+      tof_mash_factor = 0;
+    }
+
   if (matrix_labels[0] != "tangential coordinate")
   { 
     // use error message with index [1] as that is what the user sees.
@@ -723,6 +731,8 @@ int InterfilePDFSHeader::find_storage_order()
                 num_rings_per_segment = matrix_size[1];
 #endif
             }
+            else
+              error("Interfile header parsing: currently need 'matrix axis label [5] := timing positions' for TOF data");
         }
         else
         {
@@ -1544,6 +1554,11 @@ bool InterfilePDFSHeader::post_processing()
                 data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
             }
         }
+  if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
+    error(boost::format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data (%d), "
+                        "TOF mashing factor (%d) and max number of TOF bins in scanner info (%d)")
+          % num_timing_poss % tof_mash_factor % scanner_sptr_from_file->get_max_num_timing_poss());
+
   //cerr << data_info_sptr->parameter_info() << endl;
   
   // Set the bed position

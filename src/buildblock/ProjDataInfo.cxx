@@ -325,20 +325,15 @@ string
 ProjDataInfo::parameter_info()  const
 {
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
   s << scanner_ptr->parameter_info();
   s << "\n";
   s << "start vertical bed position (mm) := "
     << get_bed_position_vertical() << endl;
   s << "start horizontal bed position (mm) := "
     << get_bed_position_horizontal() << endl;
-  s << "\nNumber of TOF positions in data: " << get_num_tof_poss() << '\n';
+  s << "\nTOF mashing factor in data:      " << get_tof_mash_factor() << '\n';
+  s << "Number of TOF positions in data: " << get_num_tof_poss() << '\n';
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
