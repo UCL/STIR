@@ -188,13 +188,6 @@ protected:
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 
  private:
-  void do_segments(DiscretisedDensity<3,float>& image, 
-            const ProjData& proj_data_org,
-	    const int start_segment_num, const int end_segment_num,
-	    const int start_axial_pos_num, const int end_axial_pos_num,
-	    const int start_tang_pos_num,const int end_tang_pos_num,
-	    const int start_view, const int end_view,
-		const int start_timing_pos_num = 0, const int end_timing_pos_num = 0);
 
 #ifdef STIR_OPENMP
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads
