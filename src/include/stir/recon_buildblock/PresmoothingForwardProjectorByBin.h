@@ -57,8 +57,6 @@ public:
   PresmoothingForwardProjectorByBin();
 
   ~ PresmoothingForwardProjectorByBin();
-  
-//  void update_filtered_density_image(const DiscretisedDensity<3,float>&);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
