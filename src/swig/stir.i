@@ -70,8 +70,12 @@
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
  #include "stir/recon_buildblock/TrivialBinNormalisation.h"
- #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListRecord.h"
+ #include "stir/listmode/ListEvent.h"
+ #include "stir/listmode/CListRecord.h"
  #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/CListModeData.h"
+ #include "stir/listmode/LmToProjData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -977,9 +981,6 @@ namespace std {
 %shared_ptr(stir::ParsingObject);
 
 %shared_ptr(stir::Verbosity);
-%shared_ptr(stir::LORAs2Points<float>);
-%shared_ptr(stir::LOR<float>);
-%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 
 //  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
@@ -1020,30 +1021,14 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/ByteOrder.h"
 
 %include "stir_coordinates.i"
-
-#if 0
- // TODO enable this in STIR version 6 (breaks backwards compatibility
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z1);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z2);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, beta);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, phi);
-#else
-%ignore *::z1() const;
-%ignore *::z2() const;
-%ignore *::beta() const;
-%ignore *::phi() const;
-#endif
-%ignore *::check_state;
-%include "stir/LORCoordinates.h"
-
-%template(FloatLOR) stir::LOR<float>;
-%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
+%include "stir_LOR.i"
 
 %include "stir_array.i"
 %include "stir_exam.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
 %include "stir_projdata.i"
+%include "stir_listmode.i"
 %include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 %include "stir_voxels.i"
@@ -1077,10 +1062,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/multiply_crystal_factors.h"
 %include "stir/decay_correction_factor.h"
 
-%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
-%shared_ptr(stir::LmToProjData);
-%include "stir/listmode/LmToProjData.h"
-
 %shared_ptr(stir::ScatterSimulation);
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
   stir::ScatterSimulation, stir::ScatterSimulation>);
@@ -1098,18 +1079,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::CreateTailMaskFromACFs);
 %include "stir/scatter/CreateTailMaskFromACFs.h"
-
-%shared_ptr(stir::ListModeData);
-%include "stir/listmode/ListModeData.h"
-
-%extend stir::ListModeData {
-  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
-    {
-      using namespace stir;
-      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
-      return ret;
-    }
-}
 
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
