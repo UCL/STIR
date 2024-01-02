@@ -45,41 +45,6 @@
 
 START_NAMESPACE_STIR
 
-//! A helper class to keep the combination of a view, a segment and
-//! a key tight.
-//! \author Nikos Efthimiou
-//!
-class cache_index{
-public:
-    cache_index():
-    key(0){
-        view_num = 0;
-        seg_num = 0;
-    }
-
-    inline bool operator==(const cache_index& Y) const
-    {
-        return view_num == Y.view_num &&
-                seg_num == Y.seg_num &&
-                key == Y.key;
-    }
-
-    inline bool operator!=(const cache_index& Y) const
-    {
-        return !(*this == Y);
-    }
-
-    inline bool operator< (const cache_index& Y) const
-    {
-        return view_num < Y.view_num &&
-                seg_num < Y.seg_num &&
-                key < Y.key;
-    }
-
-    int view_num;
-    int seg_num;
-    boost::uint32_t key;
-};
 
 // Helper class.
 class FloatFloat{
