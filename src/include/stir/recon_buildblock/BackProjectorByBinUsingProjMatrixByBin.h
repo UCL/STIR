@@ -1,7 +1,3 @@
-//
-//
-
-
 #ifndef _BackProjectorByBinUsingProjMatrixByBin_
 #define _BackProjectorByBinUsingProjMatrixByBin_
 
@@ -65,7 +61,7 @@ public:
   virtual void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 	 
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
@@ -73,30 +69,26 @@ public:
   virtual void actual_back_project(DiscretisedDensity<3,float>& image,
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
-		                   const int min_tangential_pos_num, const int max_tangential_pos_num);
+		                   const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
 
   shared_ptr<ProjMatrixByBin> &
     get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
 
-  void enable_tof(ProjMatrixElemsForOneBin* );
-
-  BackProjectorByBinUsingProjMatrixByBin* clone() const;
+  BackProjectorByBinUsingProjMatrixByBin* clone() const override;
   
 protected:
 
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
+  // currently not exposed, but leaving this ine for the future
   void actual_back_project(DiscretisedDensity<3,float>& image,
                                    const Bin& bin);
 
 private:
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
-  ProjMatrixElemsForOneBin* tof_row;
-
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 };
 
 

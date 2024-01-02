@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
-  cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
+  cout << "Scanner: " << lm_data_ptr->get_scanner().get_name() << endl;
 
   unsigned long num_listed_events = 0;
   {      

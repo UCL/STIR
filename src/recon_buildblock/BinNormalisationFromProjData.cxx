@@ -102,7 +102,15 @@ set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const 
       (norm_proj >= proj) &&
       (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
       (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num());
-
+    
+    for (int segment_num=proj.get_min_segment_num();
+	 ok && segment_num<=proj.get_max_segment_num();
+	 ++segment_num)
+      {
+	ok = 
+	  norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
+	  norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
+      }
     if (ok)
       return Succeeded::yes;
     else

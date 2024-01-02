@@ -259,10 +259,10 @@ Scanner::Scanner(Type scanner_type)
     // Siemens uses 50 views (why??)
     // Vision number of TOF bins seems always 33. However, the sinogram headers say this is with TOF mashing factor 8,
     // so we create the scanner with 33*8 possible TOF bins, and rely on InterfileHeaderSiemens
-    // to create a ProjDataInfo with mashin g8
+    // to create a ProjDataInfo with mashing 8
     set_params(
                Siemens_Vision_600,                                       // type
-               string_list("Siemens Vision", "Vision", "1208"),  // names
+               string_list("Siemens Vision 600", "Vision 600", "1208"),  // names
                80,                                               // rings
                520,                                              // max n non-arc-corr bins
                520,                                              // default n arc-corr bins
@@ -643,6 +643,17 @@ case PETMR_Signa:
                0.0F, 511.F,
                0, 0.F, 0.F);
     break;
+
+#if 0
+    case Vereos:
+    // Courtesy of Jesus Silva, Molecular Imaging Research Group, Health Research Institute of Santiago de Compostela, Galicia, Spain
+    // However, unchecked and possibly incompatible with recent changes, so currently commented out by KT
+    set_params(Vereos, string_list("Philips Vereos", "Vereos"),
+               40, 306, 612,
+               382.0F, 11.0F, 4.1026F, 2.2876F, 0.0F,
+               1, 1, 40, 34, 1, 1, 1);
+    break;
+#endif
 
   case GeminiTF:
     set_params(GeminiTF,string_list("GeminiTF", "Philips GeminiTF"),
