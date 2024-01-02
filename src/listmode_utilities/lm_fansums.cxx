@@ -126,7 +126,7 @@ post_processing()
     read_from_file<ListModeData>(input_filename);
 
   const int num_rings =
-      lm_data_ptr->get_scanner_ptr()->get_num_rings();
+      lm_data_ptr->get_scanner().get_num_rings();
   if (max_segment_num_to_process==-1)
     max_segment_num_to_process = num_rings-1;
   else
@@ -134,7 +134,7 @@ post_processing()
       min(max_segment_num_to_process, num_rings-1);
 
   const int max_fan_size = 
-    lm_data_ptr->get_scanner_ptr()->get_max_num_non_arccorrected_bins();
+    lm_data_ptr->get_scanner().get_max_num_non_arccorrected_bins();
   if (fan_size==-1)
     fan_size = max_fan_size;
   else
@@ -164,9 +164,9 @@ compute()
 
   //*********** get Scanner details
   const int num_rings = 
-    lm_data_ptr->get_scanner_ptr()->get_num_rings();
+    lm_data_ptr->get_scanner().get_num_rings();
   const int num_detectors_per_ring = 
-    lm_data_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+    lm_data_ptr->get_scanner().get_num_detectors_per_ring();
   
 
   //*********** Finally, do the real work
