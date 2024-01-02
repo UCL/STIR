@@ -104,7 +104,7 @@ public:
   Succeeded check_state() const;
   
   //! get the Densel coordinates corresponding to this row
-  inline Densel get_densel() const;
+  inline const Densel& get_densel() const;
   //! and set the Densel coordinates
   inline void set_densel(const Densel&);
 

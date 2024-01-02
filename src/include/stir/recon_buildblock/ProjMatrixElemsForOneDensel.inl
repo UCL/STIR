@@ -22,7 +22,7 @@
 
 START_NAMESPACE_STIR
 
-Densel 
+const Densel&
 ProjMatrixElemsForOneDensel::
 get_densel() const
 {

@@ -112,11 +112,9 @@ public:
   Succeeded check_state() const;
   
   //! get the bin coordinates corresponding to this row
-  inline Bin get_bin() const;
+  inline const Bin& get_bin() const;
   //! and set the bin coordinates
   inline void set_bin(const Bin&);
-  //! get a ref to the bin
-  inline Bin* get_bin_ptr();
 
   //! functions for allowing iterator access
   inline iterator begin() ;
