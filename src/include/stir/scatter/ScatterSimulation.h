@@ -435,6 +435,7 @@ protected:
     int downsample_scanner_dets;
 
     bool downsample_scanner_bool;
+    bool _already_set_up;
 
  private:
     int total_detectors;
@@ -446,7 +447,6 @@ protected:
     // numbers that we don't want to recompute all the time
     mutable float detector_efficiency_no_scatter;
 
-    bool _already_set_up;
 
     //! a function that checks if image sizes are ok
     /*! It will call \c error() if not.

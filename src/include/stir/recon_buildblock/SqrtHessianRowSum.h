@@ -112,9 +112,9 @@ public:
     void compute_approximate_Hessian_row_sum();
 
 protected:
+    bool _already_setup = false;
 
 private:
-    bool _already_setup = false;
 
     //! Objective function object
     shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
