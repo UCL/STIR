@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2017, 2018 University of Hull
-    Copyright (C) 2016, 2017, 2020 University College London
+    Copyright (C) 2016, 2017, 2020, 2023, 2024 University College London
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -30,6 +30,10 @@
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR
+
+constexpr static char max_num_timing_bins_keyword[] = "Maximum number of (unmashed) TOF time bins";
+constexpr static char size_timing_bin_keyword[] = "Size of unmashed TOF time bins (ps)";
+constexpr static char timing_resolution_keyword[] = "Timing resolution (ps)";
 
 CListModeDataROOT::
 CListModeDataROOT(const std::string& hroot_filename)
@@ -62,11 +66,22 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("energy resolution", &this->energy_resolution);
     this->parser.add_key("reference energy", &this->reference_energy);
 
-    this->parser.add_key("number of TOF time bins", &this->max_num_timing_bins);
-    this->parser.add_key("Size of timing bin (ps)", &this->size_timing_bin);
-    this->parser.add_key("Timing resolution (ps)", &this->timing_resolution);
+    this->parser.add_key(max_num_timing_bins_keyword,
+                         &max_num_timing_bins);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key(max_num_timing_bins_keyword, "Number of TOF time bins");
+#endif
+    this->parser.add_key(size_timing_bin_keyword,
+                         &size_timing_bin);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key(size_timing_bin_keyword, "Size of timing bin (ps)");
+#endif
+    this->parser.add_key(timing_resolution_keyword, &this->timing_resolution);
 
-    this->parser.add_key("%TOF mashing factor", &this->tof_mash_factor);
+    this->parser.add_key("TOF mashing factor", &this->tof_mash_factor);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key("TOF mashing factor", "%TOF mashing factor");
+#endif
     //
 
     // ROOT related
@@ -265,6 +280,8 @@ set_defaults()
     ring_spacing = -.1f;
     bin_size = -1.f;
     view_offset = 0.f;
+    max_num_timing_bins = -1;
+    size_timing_bin = -1.F;
     tof_mash_factor = 1;
     reference_energy = 511.F;
     energy_resolution = -1.F;
@@ -373,6 +390,10 @@ check_scanner_definition(std::string& ret)
 
        return Succeeded::no;
     }
+    if (max_num_timing_bins <= 0 || size_timing_bin <= 1.F || timing_resolution <= 0.F)
+      info(boost::format("CListModeDataROOT: TOF information is missing. Set relevant keywords if you need TOF:\n\t%s\n\t%s\n\t%s")
+           % max_num_timing_bins_keyword % size_timing_bin_keyword % timing_resolution_keyword);
+
 
     return Succeeded::yes;
 }

@@ -1061,9 +1061,9 @@ initialise_max_FOV_radius() {
   {
     // for other geometries, loop through all detectors and set the radius to the largest found distance
     max_FOV_radius = inner_ring_radius;
-    for (auto tangential_pos = 0; tangential_pos < detector_map_sptr->get_num_tangential_coords(); tangential_pos++)
-      for (auto axial_pos = 0; axial_pos < detector_map_sptr->get_num_axial_coords(); axial_pos++)
-        for (auto radial_pos = 0; radial_pos < detector_map_sptr->get_num_radial_coords(); radial_pos++)
+    for (auto tangential_pos = 0U; tangential_pos < detector_map_sptr->get_num_tangential_coords(); tangential_pos++)
+      for (auto axial_pos = 0U; axial_pos < detector_map_sptr->get_num_axial_coords(); axial_pos++)
+        for (auto radial_pos = 0U; radial_pos < detector_map_sptr->get_num_radial_coords(); radial_pos++)
     {
       auto coord = detector_map_sptr->get_coordinate_for_det_pos(stir::DetectionPosition<>(tangential_pos, axial_pos, radial_pos));
       const auto detector_radius = sqrt(coord.x() * coord.x() + coord.y() * coord.y()) - average_depth_of_interaction;
@@ -1402,13 +1402,7 @@ string
 Scanner::parameter_info() const
 {
   // warning: these should match the parsing keywords in InterfilePDFSHeader
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[10000];
-  ostrstream s(str, 10000);
-#else
   std::ostringstream s;
-#endif
   s << "Scanner parameters:= "<<'\n';
 
   s << "Scanner type := " << get_name() <<'\n';
@@ -1433,8 +1427,8 @@ Scanner::parameter_info() const
 
   if (is_tof_ready())
   {
-    s << "Number of TOF time bins :=" << get_max_num_timing_poss() << "\n";
-    s << "Size of timing bin (ps) :=" << get_size_of_timing_pos() << "\n";
+    s << "Maximum number of (unmashed) TOF time bins :=" << get_max_num_timing_poss() << "\n";
+    s << "Size of unmashed TOF time bins (ps) :=" << get_size_of_timing_pos() << "\n";
     s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
   }
 
