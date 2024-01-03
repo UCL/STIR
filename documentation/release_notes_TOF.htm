@@ -50,7 +50,7 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
-<li>
+<li>projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes)
 </li>
 </ul>
 
@@ -60,6 +60,12 @@ improvements to the documentation.
 <li>
     We now always check (<code>ProjDataInfo*NoArcCorr</code>) if number of tangential positions in the projection data exceeds the maximum number
     of non arc-corrected bins set for the scanner. If it is, an error is raised.
+</li>
+</ul>
+
+<h3>Changed functionality breaking backwards incompatibility</h3>
+<ul>
+<li><code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
 </li>
 </ul>
 
