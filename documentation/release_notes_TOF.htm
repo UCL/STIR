@@ -50,8 +50,9 @@ improvements to the documentation.
 
 <h3>New functionality</h3>
 <ul>
-<li>projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes)
-</li>
+  <li>
+    projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes)
+  </li>
 </ul>
 
 
@@ -125,6 +126,10 @@ from the above):</H2>
 <ul>
   <li><code>Bin</code> can now be output to stream as text</li>
   <li>added <code>RunTests::check_if_equal</code> for <code>Bin</code></li>
+  <li>
+    <code>KeyParser</code> has a new facility to add an alias to a keyword. This can be used to rename a keyword
+    for instance while remaining backwards compatible. By default, a warning will be written, but this can be disabled.
+  </li>
 </ul>
 
 
