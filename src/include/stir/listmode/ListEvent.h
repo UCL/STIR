@@ -24,8 +24,6 @@
 #ifndef __stir_listmode_ListEvent_H__
 #define __stir_listmode_ListEvent_H__
 
-#include "stir/round.h"
-#include "stir/Succeeded.h"
 #include "stir/Bin.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/CartesianCoordinate3D.h"

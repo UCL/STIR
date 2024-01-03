@@ -108,6 +108,7 @@ set(swig_stir_dependencies
   stir_objectivefunctions.i
   stir_priors.i
   stir_projdata.i
+  stir_listmode.i
   stir_projectors.i
   stir_reconstruction.i
   stir_shapes.i

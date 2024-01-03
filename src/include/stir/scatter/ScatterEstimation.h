@@ -291,9 +291,10 @@ public:
 
     std::string output_additive_estimate_prefix;
 
-private:
     //! variable to check if we have called set_up()
     bool _already_setup;
+
+private:
 
     //! attenuation in 3D
     shared_ptr<BinNormalisation>  atten_norm_3d_sptr;

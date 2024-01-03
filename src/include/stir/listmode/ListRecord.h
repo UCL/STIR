@@ -24,9 +24,8 @@
 #ifndef __stir_listmode_ListRecord_H__
 #define __stir_listmode_ListRecord_H__
 
-#include "ListEvent.h"
-#include "ListTime.h"
-#include "stir/Succeeded.h"
+#include "stir/listmode/ListEvent.h"
+#include "stir/listmode/ListTime.h"
 
 START_NAMESPACE_STIR
 
