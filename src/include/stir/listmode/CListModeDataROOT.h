@@ -149,12 +149,14 @@ private:
     //! Pointer to the listmode data
     shared_ptr<InputStreamFromROOTFile > root_file_sptr;
 
-//! \name Variables that can be set in the hroot file to define a scanner's geometry.
+//! \name Variables that can be set in the hroot file to define a scanner's geometry etc.
 //! They are compared to the Scanner  (if set)  and the InputStreamFromROOTFile
 //! geometry, as given by the repeaters. Can be used to check for inconsistencies.
 //@{
     //! The name of the originating scanner
     std::string originating_system;
+    //! \name Geometry
+    //@{
     //! Number of rings, set in the hroot file (optional)
     int num_rings;
     //! Number of detectors per ring, set in the hroot file (optional)
@@ -173,19 +175,30 @@ private:
     float ring_spacing;
     //! Bin size, set in the hroot file (optional)
     float bin_size;
+    //@}
 
+    //! \name TOF information
+    /*! These describe the maximum capabilities of the scanner, i.e. in 
+      list-mode data, even if vendors often never construct sinogram with
+      this TOF resolution.
+    */
+    //@{
     int max_num_timing_bins;
 
     float size_timing_bin;
 
     float timing_resolution;
 
+    int tof_mash_factor;
+    //@}
+
+    //! \name energy information
+    //@{
     float energy_resolution;
 
     float reference_energy;
-//@}
-
-    int tof_mash_factor;
+   //@}
+   //@}
 
     KeyParser parser;
 

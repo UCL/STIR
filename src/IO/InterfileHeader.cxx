@@ -546,7 +546,14 @@ InterfilePDFSHeader::InterfilePDFSHeader()
     (KeywordProcessor)&InterfilePDFSHeader::resize_segments_and_set, 
     &max_ring_difference);
   
-  
+  tof_mash_factor = 1;
+  add_key("TOF mashing factor",
+          &tof_mash_factor);
+#if STIR_VERSION < 070000
+  add_alias_key("TOF mashing factor", "%TOF mashing factor");
+#endif
+
+  // Scanner keys
   // warning these keys should match what is in Scanner::parameter_info()
   // TODO get Scanner to parse these
   ignore_key("Scanner parameters");
@@ -615,15 +622,18 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
-  tof_mash_factor = 1;
-  add_key("%TOF mashing factor",
-          &tof_mash_factor);
   max_num_timing_poss = -1;
-  add_key("Number of TOF time bins",
+  add_key("Maximum number of (unmashed) TOF time bins",
           &max_num_timing_poss);
+#if STIR_VERSION < 070000
+  add_alias_key("Maximum number of (unmashed) TOF time bins", "Number of TOF time bins");
+#endif
   size_of_timing_pos = -1.f;
-  add_key("Size of timing bin (ps)",
+  add_key("Size of unmashed TOF time bins (ps)",
           &size_of_timing_pos);
+#if STIR_VERSION < 070000
+  add_alias_key("Size of unmashed TOF time bins (ps)", "Size of timing bin (ps)");
+#endif
   timing_resolution = -1.f;
   add_key("Timing resolution (ps)",
           &timing_resolution);
