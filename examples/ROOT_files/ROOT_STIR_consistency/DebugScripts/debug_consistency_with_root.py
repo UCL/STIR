@@ -124,7 +124,7 @@ def point_cloud_3D_all(dict_of_data_handlers):
     """
     generates a single plot with pointclouds of generated LOR-positions, original source-positions and tolerance-whiskers for all sources
     Args:
-        dict_of_data_handlers (dictionary containing objects of type ROOTConsistencyDataHandler): dictionary of objects containing all relevant data for the plot
+        dict_of_data_handlers (dict[int, ROOTConsistencyDataHandler]): dictionary of objects containing all relevant data for the plot
     """
 
     fig = plt.figure(figsize=(10, 10))
