@@ -231,12 +231,13 @@ public:
     \return Succeeded::yes when a corresponding segment is found
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \obsolete
+    \warning Takes a "TOF-mashed" bin as argument ATM.
   */		       
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
 			 const int det1_num, const int ring1_num,
 			 const int det2_num, const int ring2_num,
-			 const int timing_pos_num = 0) const;
+			 const int mashed_timing_pos_num = 0) const;
  public:
   //! This routine gets the detector pair corresponding to a bin.
   /*!
