@@ -67,14 +67,13 @@ void do_block(vector<Bin>& list_of_bins_in_block,
         for (int other_det=0; other_det<num_detectors_per_ring; ++other_det)
           for (int other_ring=max(0,ring+min_ring_diff); other_ring<=min(num_rings-1,ring+max_ring_diff); ++other_ring)
           {
-            // first check for impossible coincidence (because it cannot be handled by get_bin_for_det_pair)
+            // first check for impossible coincidence (because it cannot be handled by get_bin_for_det_pos_pair)
             if (det == other_det)
               continue;
 
-            Succeeded success =
-              proj_data_info.get_bin_for_det_pair(bin, 
-						  det, ring,
-						  other_det, other_ring);
+            const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(det, ring), DetectionPosition<>(other_det, other_ring));
+            const Succeeded success =
+              proj_data_info.get_bin_for_det_pos_pair(bin, det_pos_pair);
             if (success == Succeeded::yes)
               list_of_bins_in_block.push_back(bin);
           }

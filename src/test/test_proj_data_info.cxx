@@ -878,11 +878,11 @@ ProjDataInfoTests::run_lor_get_s_test()
       Cdet2 = scannerCyl_ptr->get_num_detectors_per_ring() / 2 + Cdet1;
       if (Cdet2 >= scannerCyl_ptr->get_num_detectors_per_ring())
         Cdet2 = Cdet1 - scannerCyl_ptr->get_num_detectors_per_ring() / 2;
-
-      proj_data_info_cyl_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring2);
+      const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(Cdet1, Cring1), DetectionPosition<>(Cdet2, Cring2));
+      proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_cyl_ptr->get_LOR(lorC, bin);
 
-      proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring2);
+      proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_blocks_ptr->get_LOR(lorB, bin);
 
       check_if_equal(0., lorC.s(),
@@ -911,7 +911,9 @@ ProjDataInfoTests::run_lor_get_s_test()
       Cring2 = 0;
       Cdet2 = 2 * Ctb + det_id_diff + Ctb - 1 - i;
 
-      proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring1);
+      const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(Cdet1, Cring1), DetectionPosition<>(Cdet2, Cring2));
+
+      proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_blocks_ptr->get_LOR(lorB, bin);
       /*float R=block_trans_spacing*(sin(_PI*5/12)+sin(_PI/4)+sin(_PI/12));
         float s=R*cos(_PI/3)+

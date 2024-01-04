@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
     DetectionPositionPair<> det_pos;
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 
-    proj_data_info_sptr->get_bin_for_det_pair (bin,
-                                               det_num_a, ring_a, det_num_b, ring_b);
+    const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(det_num_a, ring_a), DetectionPosition<>(det_num_b, ring_b));
+    proj_data_info_sptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
     cout << "bin: (segment " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
          << ", view = " << bin.view_num() 
          << ", tangential_pos_num = " << bin.tangential_pos_num() << ")\n";

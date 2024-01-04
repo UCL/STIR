@@ -170,10 +170,8 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 	   ring_a>=get_scanner_ptr()->get_num_rings() ||
 	   ring_b<0 ||
 	   ring_b>=get_scanner_ptr()->get_num_rings()));
-
-  if (get_bin_for_det_pair(bin,
-			   det_num_a, ring_a,
-			   det_num_b, ring_b) == Succeeded::no ||
+  const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(det_num_a, ring_a), DetectionPosition<>(det_num_b, ring_b));
+  if (!get_bin_for_det_pos_pair(bin, det_pos_pair).succeeded() ||
       bin.tangential_pos_num() < get_min_tangential_pos_num() ||
       bin.tangential_pos_num() > get_max_tangential_pos_num())
     bin.set_bin_value(-1);

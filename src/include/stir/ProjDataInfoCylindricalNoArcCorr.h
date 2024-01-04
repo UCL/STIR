@@ -224,18 +224,21 @@ public:
     get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >&,
 				  const Bin&) const;
 
+ private:
+  // old function, now private. Use get_bin_for_det_pos_pair instead.
   //! This gets Bin coordinates for a particular detector pair
   /*! 
     \return Succeeded::yes when a corresponding segment is found
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \obsolete
+    \warning Takes a "TOF-mashed" bin as argument ATM.
   */		       
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
 			 const int det1_num, const int ring1_num,
 			 const int det2_num, const int ring2_num,
-			 const int timing_pos_num = 0) const;
-
+			 const int mashed_timing_pos_num = 0) const;
+ public:
   //! This routine gets the detector pair corresponding to a bin.
   /*!
   \see get_det_pair_for_view_tangential_pos_num() for
