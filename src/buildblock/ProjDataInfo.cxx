@@ -715,23 +715,15 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 
   shared_ptr<Scanner> scanner_ptr(Scanner::ask_parameters());
   
-  const bool is_Advance =
-    scanner_ptr->get_type() == Scanner::Advance ||
-    scanner_ptr->get_type() == Scanner::DiscoveryLS; 
-  const bool is_DiscoveryST =
-    scanner_ptr->get_type() == Scanner::DiscoveryST; 
-  const bool is_GE =
-    is_Advance || is_DiscoveryST;
-
    const int num_views = scanner_ptr->get_max_num_views()/
      ask_num("Mash factor for views",1, scanner_ptr->get_max_num_views(),1);
 
    const int tof_mash_factor = scanner_ptr->is_tof_ready() ?
            ask_num("Time-of-flight mash factor:", 0,
-                   scanner_ptr->get_max_num_timing_poss(), 25) : 0;
+                   scanner_ptr->get_max_num_timing_poss(), 1) : 0;
 
   const bool arc_corrected =
-    ask("Is the data arc-corrected?",true);
+    ask("Is the data arc-corrected?",false);
 
    const int num_tangential_poss=
      ask_num("Number of tangential positions",1,
@@ -739,22 +731,23 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 	     arc_corrected 
 	     ? scanner_ptr->get_default_num_arccorrected_bins()
 	     : scanner_ptr->get_max_num_non_arccorrected_bins());
-  
-   int span = is_GE ? 0 : 1;
+
+   const bool is_GE = scanner_ptr->get_name().substr(0,2) == "GE";
+   const bool is_Siemens = scanner_ptr->get_name().substr(0,6) == "Siemens";
+   int span = is_GE ? 2 : (is_Siemens ? 11 : 1);
    span = 
-     ask_num("Span value (use 0 for mixed-span case of the Advance) : ", 0,scanner_ptr->get_num_rings()-1,span);
+     ask_num("Span value : ", 0,scanner_ptr->get_num_rings()-1,span);
 
   
    const int max_delta = ask_num("Max. ring difference acquired : ",
     0,
     scanner_ptr->get_num_rings()-1,
-    is_Advance ? 11 : scanner_ptr->get_num_rings()-1);
- 
+    scanner_ptr->get_num_rings()-1);
 
-  ProjDataInfo * pdi_ptr =
+   ProjDataInfo * pdi_ptr =
     span==0
-    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor)
-    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
+     ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor)
+     : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
 
   cout << pdi_ptr->parameter_info() <<endl;
 

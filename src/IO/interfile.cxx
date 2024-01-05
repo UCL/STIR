@@ -568,9 +568,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR4.0\n";
+    output_header << "!version of keys := STIR6.0\n";
 #else
-  output_header << "!version of keys := STIR4.0\n";
+  output_header << "!version of keys := STIR6.0\n";
 #endif
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
@@ -1209,7 +1209,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR4.0\n";
+    output_header << "!version of keys := STIR6.0\n";
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
@@ -1302,9 +1302,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   // it's PET data if we get here
   // N.E. Added timing locations
-  pdfs.get_proj_data_info_sptr()->get_num_tof_poss()>1 ?
-              output_header << "number of dimensions := 5\n" :
-                               output_header << "number of dimensions := 4\n";
+  const bool is_TOF = pdfs.get_proj_data_info_sptr()->get_num_tof_poss()>1;
+  output_header << "number of dimensions := " + std::to_string(is_TOF ? 5: 4) + "\n";
 
   // TODO support more ?
   {
@@ -1386,15 +1385,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!matrix size [" << order_of_bin << "] := "
           <<pdfs.get_proj_data_info_sptr()->get_num_tangential_poss() << "\n";
 
-    // If TOF is supported; add this in the header.
-    if (pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->is_tof_ready() &&
-            pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1)
+    if (is_TOF)
     {
-        // Moved in scanner section
-		//    output_header << "%number of TOF time bins :=" <<
-		//                     pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_max_of_timing_bins()  << "\n";
-    output_header << "%TOF mashing factor := " <<
-                     pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
+      output_header << "TOF mashing factor := " <<
+        pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
     }
   }
 
