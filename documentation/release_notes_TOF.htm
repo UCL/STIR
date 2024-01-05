@@ -58,10 +58,14 @@ improvements to the documentation.
 
 <h3>Changed functionality</h3>
 <ul>
-<li>
+  <li>
     We now always check (<code>ProjDataInfo*NoArcCorr</code>) if number of tangential positions in the projection data exceeds the maximum number
     of non arc-corrected bins set for the scanner. If it is, an error is raised.
-</li>
+  </li>
+  <li>
+    Write <code>STIR6.0</code> as Interfile key version to denote TOF changes.
+    This is currently ignored for parsing though.
+  </li>
 </ul>
 
 <h3>Changed functionality breaking backwards incompatibility</h3>
