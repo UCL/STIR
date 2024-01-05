@@ -743,10 +743,11 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
     0,
     scanner_ptr->get_num_rings()-1,
     scanner_ptr->get_num_rings()-1);
- 
 
-  ProjDataInfo * pdi_ptr =
-    ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
+   ProjDataInfo * pdi_ptr =
+    span==0
+     ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor)
+     : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
 
   cout << pdi_ptr->parameter_info() <<endl;
 

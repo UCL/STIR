@@ -77,7 +77,7 @@ generate_image  generate_uniform_cylinder.par
 echo "===  make attenuation image"
 generate_image  generate_atten_cylinder.par
 if [ "$TOF" -eq 0 ]; then
-  echo "===  create template sinogram (DSTE in 3D with max ring diff 3 to save time)"
+  echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
   template_sino=my_DSTE_3D_rd3_template.hs
   cat > my_input.txt <<EOF
 Discovery STE
@@ -85,8 +85,8 @@ Discovery STE
 1
 n
 
+0
 2
-3
 EOF
 else
   echo "===  create template sinogram (D690 in 3D with view-mash =2, TOF-mash=11, max ring diff 3 to save time)"
