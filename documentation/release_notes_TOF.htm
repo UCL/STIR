@@ -66,8 +66,18 @@ improvements to the documentation.
 
 <h3>Changed functionality breaking backwards incompatibility</h3>
 <ul>
-<li><code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
-</li>
+  <li>
+    <code>ProjDataInfo::ask_parameters()</code> and therefore <code>create_projdata_template</code>
+    has changed:
+    <ol>
+      <li>If the scanner definition in STIR has TOF capabilities, it will ask for the TOF mashing factor.</li>
+      <li>The default for arc-correction has changed to <i>N</i>, i.e. <code>false</code>.</li>
+      <li>Default value for span is now 11 for Siemens and 2 for GE scanners.</li>
+      <li>The span=0 case (i.e. span-3 for segment 0, span=1 for oblique ones, erroneously
+        by STIR used for the GE Advance) is no longer allowed. GE uses span=2.<br />
+        (Reading a "span=0" case is still supported")</li>
+    </ol>
+  </li>
 </ul>
 
 
@@ -118,9 +128,13 @@ from the above):</H2>
 
 <h3>Backward incompatibities</h3>
 <ul>
-<li><code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private. 
-  Use <code>get_bin_for_det_pos_pair</code> instead.
-</li>
+  <li>
+    <code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
+  </li>
+  <li>
+    <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
+    Use <code>get_bin_for_det_pos_pair</code> instead.
+  </li>
 </ul>
 
 <h3>New functionality</h3>
