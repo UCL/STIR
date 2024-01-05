@@ -207,6 +207,7 @@ class ProjMatrixByBinPinholeSPECTUB :
     bool get_keep_all_views_in_cache() const;
     void set_keep_all_views_in_cache(bool value = false);
 
+    ProjMatrixByBinPinholeSPECTUB * clone() const;
 
   private:
 

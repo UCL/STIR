@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2016, 2019, 2021, 2023 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C 2017-2018, University of Leeds
@@ -18,6 +19,7 @@
 
   \brief Declaration of class stir::Scanner
 
+  \author Nikos Efthimiou
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -88,6 +90,11 @@ class Succeeded;
       but provide extra members to find out how many of these virtual crystals there are.
 
       \warning This information is only sensible for discrete detector-based scanners.
+      \warning Currently, in a TOF compatible scanner template, the last three types have to
+                be explicitly defined to avoid ambiguity.
+      \warning The energy resolution has to be specified but it is used only for scatter correction.
+      \warning In order to define a nonTOF scanner the timing resolution has to be set to 0 or 1.
+                Anything else will trigger a TOF reconstruction.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
@@ -131,12 +138,11 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,Siemens_mCT, RPT,HiDAC,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, Siemens_Vision_600, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa,
 	     Discovery690, DiscoveryMI3ring, DiscoveryMI4ring, DiscoveryMI5ring,
-         HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype,
-             UPENN_5rings, UPENN_5rings_no_gaps, UPENN_6rings, UPENN_6rings_no_gaps,
-         User_defined_scanner,
+	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype,             UPENN_5rings, UPENN_5rings_no_gaps, UPENN_6rings, UPENN_6rings_no_gaps,
+             User_defined_scanner,
 	     Unknown_scanner};
 
   virtual ~Scanner() {}
@@ -152,24 +158,27 @@ class Scanner
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
-          int num_detectors_per_ring_v, int num_rings_v, 
+          int num_detectors_per_ring_v, int num_rings_v,
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
-          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float inner_ring_radius_v, float average_depth_of_interaction_v,
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-          int num_axial_crystals_per_singles_unit_v, 
+          int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
+          short int max_num_of_timing_poss = -1,
+          float size_timing_pos = -1.0f,
+          float timing_resolution = -1.0f,
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
           float axial_block_spacing_v = -1.0f,
           float transaxial_block_spacing_v = -1.0f,
-          const std::string& crystal_map_file_name = "");
+          const std::string& crystal_map_file_name = "");            
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -178,18 +187,21 @@ class Scanner
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const std::string& name,
-          int num_detectors_per_ring_v, int num_rings_v, 
+          int num_detectors_per_ring_v, int num_rings_v,
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
-          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float inner_ring_radius_v, float average_depth_of_interaction_v,
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-          int num_axial_crystals_per_singles_unit_v, 
+          int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
+          short int max_num_of_timing_poss = -1,
+          float size_timing_pos = -1.0f,
+          float timing_resolution = -1.0f,
           const std::string& scanner_geometry_v = "Cylindrical",
           float axial_crystal_spacing_v = -1.0f,
           float transaxial_crystal_spacing_v = -1.0f,
@@ -197,7 +209,7 @@ class Scanner
           float transaxial_block_spacing_v = -1.0f,
           const std::string& crystal_map_file_name = "");
 
-  //! Initialised internal geometry
+  //! Initialise internal geometry
   /*! Currently called in the set_params() functions, but needs to be
       called explicitly when afterwards using any of the other \c set_ functions
   */
@@ -220,6 +232,7 @@ class Scanner
   inline Type get_type() const;
   //! checks consistency 
   /*! Calls warning() with diagnostics when there are problems
+   * N.E: Should something check be added for TOF information?
    */
   Succeeded check_consistency() const;
 
@@ -306,6 +319,12 @@ class Scanner
   inline int get_num_transaxial_singles_units() const;
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
+  //! Get the maximum number of TOF bins.
+  inline int get_max_num_timing_poss() const;
+  //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
+  inline float get_size_of_timing_pos() const;
+  //! Get the timing resolution of the scanner.
+  inline float get_timing_resolution() const;
 
   //! \name number of "fake" crystals per block, inserted by the scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
@@ -437,22 +456,32 @@ class Scanner
   //! set the reference energy (in keV) of the energy resolution
   /*! \sa get_reference_energy() */
   inline void set_reference_energy(const float new_num);
+  //! Set the maximum number of TOF bins.
+  inline void set_num_max_of_timing_poss(int new_num);
+  //! Set the delta t which correspnds to the max number of TOF bins.
+  inline void set_size_of_timing_poss(float new_num);
+  //! Set timing resolution
+  inline void set_timing_resolution(float new_num_in_ps);
+  //@} (end of set info)
 
   //@} (end of set info)
   
-  // Calculate a singles bin index from axial and transaxial singles bin coordinates.
+  //! Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
 
-  // Method used to calculate a singles bin index from
-  // a detection position.
+  //! Method used to calculate a singles bin index from
+  //! a detection position.
   inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const; 
  
 
-  // Get the axial singles bin coordinate from a singles bin.
+  //! Get the axial singles bin coordinate from a singles bin.
   inline int get_axial_singles_unit(int singles_bin_index) const;
 
-  // Get the transaxial singles bin coordinate from a singles bin.
+  //! Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
+
+  //! True if it is TOF compatible.
+  inline bool is_tof_ready() const;
   
   //! Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
   // used in CListRecordSAFIR.inl for accessing the coordinates
@@ -502,13 +531,15 @@ private:
   //! A negative value indicates, unknown.
   //! This value is dominated by the material of the scintilation crystal
   float energy_resolution;
-
-  //!
-  //! \brief reference_energy
-  //! \author Nikos Efthimiou
-  //! \details In PET application this should always be 511 keV.
+  //! In PET application this should always be 511 keV.
   //! A negative value indicates, unknown.
   float reference_energy;
+  //! The timing resolution of the scanner, in psec.
+  float timing_resolution;
+  //! The number of TOF bins. Without any mash factors
+  int max_num_of_timing_poss;
+  //! This number corresponds the the least significant clock digit.
+  float size_timing_pos;
 
   //!
   //! \brief scanner info needed for block geometry
@@ -529,33 +560,9 @@ private:
   // function to create the maps
   void read_detectormap_from_file( const std::string& filename );
 
-
-  // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v, 
-                  int max_num_non_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v,
-                  float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f,
-                  const std::string& scanner_geometry_v = "",
-                  float axial_crystal_spacing_v = -1.0f,
-                  float transaxial_crystal_spacing_v = -1.0f,
-                  float axial_block_spacing_v = -1.0f,
-                  float transaxial_block_spacing_v = -1.0f,
-                  const std::string& crystal_map_file_name = "");
-
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v, 
+                  int num_rings_v,
                   int max_num_non_arccorrected_bins_v,
                   int default_num_arccorrected_bins_v,
                   int num_detectors_per_ring_v,
@@ -563,20 +570,22 @@ private:
                   float average_depth_of_interaction_v,
                   float ring_spacing_v,
                   float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f,
+                  short int max_num_of_timing_poss_v = -1.0f,
+                  float size_timing_pos_v = -1.0f,
+                  float timing_resolution_v = -1.0f,
                   const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,
                   float transaxial_crystal_spacing_v = -1.0f,
                   float axial_block_spacing_v = -1.0f,
                   float transaxial_block_spacing_v = -1.0f,
                   const std::string& crystal_map_file_name = "");
-
 
 };
 

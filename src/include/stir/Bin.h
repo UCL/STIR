@@ -7,7 +7,7 @@
 
   \brief Declaration of class stir::Bin
   
-
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Mustapha Sadki
@@ -17,6 +17,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2023, University College London
     This file is part of STIR.
 
@@ -36,8 +37,14 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
+ The timing position reflects the detection time difference between the two events for TOF.
+ It is an "index" into the projection data like the other values.
+
  The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
  handling list mode data.
+
+ \warning N.E: Constructors with default values were removed. I faced many problems with ambguity. I had to make
+ changes to all the framework, when one set a float value, it has to be as 'x.f'
 */
 
 class Bin : public ViewgramIndices
@@ -47,9 +54,20 @@ public:
   //! default constructor (leaves most members uninitialised)
   inline Bin();
 
-  //!  A constructor : constructs a bin with value (defaulting to 0)
+  //!  constructs a bin with value (timing_pos defaulting to 0)
   inline Bin(int segment_num,int view_num, int axial_pos_num,
-    int tangential_pos_num,float bin_value=0);
+    int tangential_pos_num,float bin_value);
+
+  //!  constructs a bin with value (timing_pos and value defaulting to 0)
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num);
+
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num, int timing_pos_num, float bin_value);
+
+  //!  constructs a bin with value (value defaulting to 0)
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num, int timing_pos_num);
   
   //!get axial position number
   inline int axial_pos_num()const;
@@ -61,7 +79,6 @@ public:
   inline int& axial_pos_num(); 
   inline int& tangential_pos_num(); 
   inline int& time_frame_num();
-  
   
   //! get an empty copy
   inline Bin get_empty_copy() const;
@@ -88,7 +105,7 @@ private :
   // shared_ptr<ProjDataInfo> proj_data_info_ptr; 
   
   int  axial_pos; 
-  int  tangential_pos; 
+  int  tangential_pos;
   float bin_value;
   int time_frame;
   

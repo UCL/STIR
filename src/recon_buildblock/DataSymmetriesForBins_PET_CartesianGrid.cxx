@@ -340,12 +340,34 @@ DataSymmetriesForBins_PET_CartesianGrid
 	  "with tangential_pos_num s.t. get_s(...,tang_pos_num)==-get_s(...,-tang_pos_num)\n");
 
   //PW Disabling some symmetries due to phi offset.
-  if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
+  if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F &&
+      (this->do_symmetry_90degrees_min_phi|| this->do_symmetry_180degrees_min_phi))
   {
     warning("Disabling symmetries as image is rotated due to phi offset of the scanner.");
     this->do_symmetry_90degrees_min_phi = false;
     this->do_symmetry_180degrees_min_phi = false;
   }
+
+  //RT Disabling some symmetries due to tof data
+  if (proj_data_info_ptr->is_tof_data())
+  {
+    if (this->do_symmetry_90degrees_min_phi|| this->do_symmetry_180degrees_min_phi){
+      warning("Disabling rotational symmetries with TOF data as this is untested.");
+      this->do_symmetry_90degrees_min_phi = false;
+      this->do_symmetry_180degrees_min_phi = false;
+    }
+
+    if (this->do_symmetry_swap_segment){
+      warning("Disabling segment swapping with TOF data as this is untested.");
+      this->do_symmetry_swap_segment = false;
+    }
+
+    if (this->do_symmetry_swap_s){
+      warning("Disabling swap s with TOF data as this is untested.");
+      this->do_symmetry_swap_s = false;
+    }
+  }
+
   if (fabs(image_info_ptr->get_origin().x())>.01F || fabs(image_info_ptr->get_origin().y())>.01F)
     {
       // disable symmetries with shifted images

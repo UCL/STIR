@@ -38,8 +38,8 @@ public:
 
   //! an empty constructor (sets everything to 0)
   inline  SinogramIndices();
-  //! constructor taking view and segment number as arguments
-  inline SinogramIndices( const int axial_pos_num,const int segment_num);
+  //! constructor specifying indices
+  inline SinogramIndices( const int axial_pos_num,const int segment_num, const int timing_pos_num);
 
   //! get view number for const objects
   inline int axial_pos_num() const;

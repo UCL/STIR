@@ -34,13 +34,19 @@ class SegmentIndices
 {
 public:
   //! constructor segment number as arguments
-  explicit inline SegmentIndices(const int segment_num = 0);
+  explicit inline SegmentIndices(const int segment_num = 0, const int timing_pos_num = 0);
 
   //! get segment number for const objects
   inline int segment_num() const;
 
   //! get reference to segment number
   inline int& segment_num();
+
+  //! get TOF index for const objects
+  inline int timing_pos_num() const;
+
+  //! get reference to TOF index
+  inline int& timing_pos_num();
 
   //! comparison operator, only useful for sorting
   /*! In future, there will be multiple indices, and order will then be based as in
@@ -54,6 +60,7 @@ public:
 
 private:
   int _segment;
+  int _timing_pos;
 };
 
 END_NAMESPACE_STIR

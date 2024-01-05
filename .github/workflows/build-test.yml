@@ -2,7 +2,9 @@ name: Build and ctest and recon_test_pack CI
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
+      - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -12,7 +14,9 @@ on:
       - '**/*.tex'
 
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -115,6 +119,18 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
+
+    - name: disk space
+      shell: bash
+      run: |
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              sudo .github/workflows/GHA_increase_disk_space.sh
+              ;;
+            (windows*)
+              # no idea what to do here
+              ;;
+           esac
 
     - name: set_compiler_variables
       shell: bash
@@ -331,14 +347,17 @@ jobs:
       if: failure()
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        path: |
+          ${{ github.workspace }}/recon_test_pack/**/*.log
+          ${{ github.workspace }}/recon_test_pack/**/my_*v
+          ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session if triggered
       uses: mxschmitt/action-tmate@v3
       timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
 
     - name: examples
       shell: bash

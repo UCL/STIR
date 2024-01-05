@@ -13,6 +13,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInMemory
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 

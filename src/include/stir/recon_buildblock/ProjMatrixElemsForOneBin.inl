@@ -25,7 +25,7 @@
 
 START_NAMESPACE_STIR
 
-Bin 
+const Bin&
 ProjMatrixElemsForOneBin::
 get_bin() const
 {

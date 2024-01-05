@@ -38,17 +38,13 @@ public:
   TrivialDataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
   virtual 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    TrivialDataSymmetriesForBins 
-#else
-    DataSymmetriesForViewSegmentNumbers
-#endif
-    * clone() const;
+    TrivialDataSymmetriesForBins * clone() const;
 
   virtual void
     get_related_bins(std::vector<Bin>&, const Bin& b,
                       const int min_axial_pos_num, const int max_axial_pos_num,
-                      const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+                      const int min_tangential_pos_num, const int max_tangential_pos_num,
+                     const int min_timing_pos_num, const int max_timing_pos_num0) const;
 
   virtual void
     get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,

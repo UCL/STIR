@@ -47,6 +47,11 @@ Viewgram<elemT>::get_view_num() const
 
 template <typename elemT>
 int
+Viewgram<elemT>::get_timing_pos_num() const
+{ return this->_indices.timing_pos_num(); }
+
+template <typename elemT>
+int
 Viewgram<elemT>::get_min_axial_pos_num() const
   {return this->get_min_index();}
 
@@ -81,7 +86,7 @@ Viewgram<elemT>::get_max_tangential_pos_num() const
 template <typename elemT>
 Viewgram<elemT>
 Viewgram<elemT>::get_empty_copy(void) const
-  {
+{
     Viewgram<elemT> copy(proj_data_info_sptr, get_viewgram_indices());
     return copy;
 }
@@ -134,17 +139,17 @@ template <typename elemT>
 Viewgram<elemT>::
 Viewgram(const Array<2,elemT>& p, 
 	 const shared_ptr<const ProjDataInfo>& pdi_sptr,
-	 const int v_num, const int s_num) 
+	 const int v_num, const int s_num, const int t_num) 
   :
-  Viewgram(p, pdi_sptr, ViewgramIndices(v_num, s_num))
+  Viewgram(p, pdi_sptr, ViewgramIndices(v_num, s_num, t_num))
 {}
 
 template <typename elemT>
 Viewgram<elemT>::
 Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
-	 const int v_num, const int s_num) 
+	 const int v_num, const int s_num, const int t_num)
   :
-  Viewgram(pdi_sptr, ViewgramIndices(v_num, s_num))
+  Viewgram(pdi_sptr, ViewgramIndices(v_num, s_num, t_num))
 {}
 
 END_NAMESPACE_STIR

@@ -75,14 +75,14 @@ public:
     \deprecated Use version with SinogramIndices instead.
   */
   inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
-                  const int ax_pos_num, const int segment_num); 
+                  const int ax_pos_num, const int segment_num, const int timing_pos_num = 0);
 
   //! Construct sinogram with data set to the array.
   /*!
     \deprecated Use version with SinogramIndices instead.
   */
   inline Sinogram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo >& proj_data_info_ptr, 
-                  const int ax_pos_num, const int segment_num); 
+                  const int ax_pos_num, const int segment_num, const int timing_pos_num = 0);
 
   //! Get indices
   inline SinogramIndices get_sinogram_indices() const;
@@ -90,6 +90,8 @@ public:
   inline int get_segment_num() const; 
   //! Get number of axial positions
   inline int get_axial_pos_num() const;
+  //! Get timing position index
+  inline int get_timing_pos_num() const;
   //! Get minimum view number
   inline int get_min_view_num() const;
   //! Get maximum view number

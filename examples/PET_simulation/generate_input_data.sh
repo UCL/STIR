@@ -42,6 +42,7 @@ cat > my_input.txt <<EOF
 Discovery STE
 
 1
+0
 n
 
 0

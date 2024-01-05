@@ -7,14 +7,17 @@
   \ingroup projection 
   \brief declaration of stir::ProjMatrixByBin and its helpers classes
   
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
+  \author Robert Twyman
   \author PARAPET project
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2013, 2015, 2022 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -30,9 +33,11 @@
 #include "stir/shared_ptr.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/TimedObject.h"
-#include <boost/cstdint.hpp>
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/numerics/FastErf.h"
+#include <cstdint>
 //#include <map>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif
@@ -97,6 +102,8 @@ public:
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
   ) = 0;
 
+  virtual ProjMatrixByBin* clone() const = 0;
+
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const  DataSymmetriesForBins* get_symmetries_ptr() const;
   //! get a shared_ptr to an object encoding all symmetries that are used by this ProjMatrixByBin
@@ -114,7 +121,7 @@ public:
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
        const Bin&) STIR_MUTABLE_CONST;
-  
+
 #if 0
   // TODO
   /*! \brief Facility to write the 'independent' part of the matrix to file.
@@ -144,7 +151,6 @@ public:
   // void reserve_num_elements_in_cache(const std::size_t);
   //! Remove all elements from the cache
   void clear_cache() STIR_MUTABLE_CONST;
-
   
 protected:
   shared_ptr<DataSymmetriesForBins> symmetries_sptr;
@@ -183,6 +189,8 @@ protected:
 
   bool cache_disabled;  
   bool cache_stores_only_basic_bins;
+  //! If activated TOF reconstruction will be performed.
+  bool tof_enabled;
 
   /*! \brief The method that tries to get data from the cache.
   
@@ -194,16 +202,29 @@ protected:
 	 	 ProjMatrixElemsForOneBin&
                  ) const;		
   
+  //! We need a local copy of the discretised density in order to find the
+  //! cartesian coordinates of each voxel.
+  shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
+
+  //! We need a local copy of the proj_data_info to get the integration boundaries and RayTracing
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+
   //! The method to store data in the cache.
   void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
     STIR_MUTABLE_CONST;
 
 private:
   
-  typedef boost::uint32_t CacheKey;
-
-	//  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
-  typedef boost::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
+  typedef std::uint64_t CacheKey;
+  //! \name bit-field sizes for the cache key
+  // note: sum needs to be less than  64 - 3  (for the 3 sign bits)
+  //@{
+  const CacheKey tang_pos_bits = 12;
+  const CacheKey axial_pos_bits = 28;
+  const CacheKey timing_pos_bits = 20;
+  //@}
+  //  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
+  typedef std::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
   typedef MapProjMatrixElemsForOneBin::iterator MapProjMatrixElemsForOneBinIterator;
   typedef MapProjMatrixElemsForOneBin::const_iterator const_MapProjMatrixElemsForOneBinIterator;
  
@@ -223,7 +244,27 @@ private:
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
   CacheKey cache_key(const Bin& bin) const;
 
-   
+  //! Activates the application of the timing kernel to the LOR
+  //! and performs initial set_up().
+  //! \warning Must be called during set_up()
+  void enable_tof(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,const bool v = true);
+
+  //! A local copy of the scanner's time resolution in mm.
+  float gauss_sigma_in_mm;
+  //! 1/(2*sigma_in_mm)
+  float r_sqrt2_gauss_sigma;
+
+  //! The function which actually applies the TOF kernel on the LOR.
+  inline void apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST;
+
+
+
+  //! Get the interal value erf(m - v_j) - erf(m -v_j)
+  inline float get_tof_value(const float d1, const float d2) const;
+
+  //! erf map
+  FastErf erf_interpolation;
+
 };
 
 

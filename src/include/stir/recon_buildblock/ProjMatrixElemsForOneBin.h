@@ -10,7 +10,8 @@
   \ingroup projection
   
   \brief Declaration of class stir::ProjMatrixElemsForOneBin
-    
+
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -19,6 +20,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -110,7 +112,7 @@ public:
   Succeeded check_state() const;
   
   //! get the bin coordinates corresponding to this row
-  inline Bin get_bin() const;
+  inline const Bin& get_bin() const;
   //! and set the bin coordinates
   inline void set_bin(const Bin&);
 
@@ -122,6 +124,8 @@ public:
 
   //! reset lor to 0 length
   void erase();
+  //! remove a single value_type
+  inline iterator erase(iterator it);
   //! add a new value_type object at the end
   /*! 
      \warning For future compatibility, it is required 
@@ -199,9 +203,6 @@ private:
   std::vector<value_type> elements;    
   Bin bin;
 
-
-  //! remove a single value_type
-  inline iterator erase(iterator it);
 };
 
 

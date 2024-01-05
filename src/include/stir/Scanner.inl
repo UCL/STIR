@@ -238,6 +238,28 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
+int Scanner::get_max_num_timing_poss() const
+{
+    return max_num_of_timing_poss;
+}
+
+float Scanner::get_size_of_timing_pos() const
+{
+    return size_timing_pos;
+}
+
+float Scanner::get_timing_resolution() const
+{
+    return timing_resolution;
+}
+
+bool Scanner::is_tof_ready() const
+{
+    return (max_num_of_timing_poss > 0
+            && size_timing_pos > 0.0f
+            && timing_resolution > 0.0f);
+}
+
 std::string
 Scanner::get_scanner_geometry() const
 {
@@ -429,6 +451,21 @@ void Scanner::set_crystal_map_file_name(const std::string& new_crystal_map_file_
 {
   crystal_map_file_name = new_crystal_map_file_name;
    _already_setup = false;
+}
+
+void Scanner::set_num_max_of_timing_poss(const int new_num)
+{
+    max_num_of_timing_poss = new_num;
+}
+
+void Scanner::set_size_of_timing_poss(const float new_num)
+{
+    size_timing_pos = new_num;
+}
+
+void Scanner::set_timing_resolution(const float new_num_in_ps)
+{
+    timing_resolution = new_num_in_ps;
 }
 
 /********    Calculate singles bin index from detection position    *********/

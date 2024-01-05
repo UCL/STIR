@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2022, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -179,6 +179,7 @@ public:
   const ProjData& get_proj_data() const;
   const shared_ptr<ProjData>& get_proj_data_sptr() const;
   const int get_max_segment_num_to_process() const;
+  const int get_max_timing_pos_num_to_process() const;
   const bool get_zero_seg0_end_planes() const;
   const ProjData& get_additive_proj_data() const;
   const shared_ptr<ProjData>& get_additive_proj_data_sptr() const;
@@ -200,6 +201,7 @@ public:
   int set_num_subsets(const int num_subsets);
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
+  void set_max_timing_pos_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
   //N.E. Changed to ExamData
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
@@ -307,6 +309,10 @@ protected:
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
 
+  //! the maximum absolute time-of-flight bin number to use in the reconstruction
+  /*! convention: if -1, use get_max_tof_pos_num()*/
+  int max_timing_pos_num_to_process;
+
   /**********************/
    ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
@@ -318,6 +324,9 @@ protected:
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
 
+  //! Triggers calculation of sensitivity using time-of-flight
+  bool use_tofsens;
+
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;
 
@@ -325,7 +334,7 @@ protected:
   shared_ptr<ProjData> additive_proj_data_sptr;
 
   shared_ptr<BinNormalisation> normalisation_sptr;
-
+  
  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
@@ -361,6 +370,39 @@ protected:
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
+
+  /*! \name variables/methods for TOF sensitivity processing
+
+  TOF can use a non-TOF backprojector to compute the sensitivity. This is because the TOF kernel
+  sums to 1 when summing over all TOF bins. The non-TOF computation is obviously faster.
+  However, it does mean we need to keep track of a different back-projector etc, as well as
+  remembering which one was used in a previous distributable computation.
+  */
+  //!@{
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> sens_symmetries_sptr;
+  //! flag to check if we set-up distributable_computation with the original projectors or not
+  mutable bool latest_setup_distributable_computation_was_with_orig_projectors;
+  //! flag to check if setup_distributable_computation has been called already or not
+  mutable bool distributable_computation_already_setup;
+  //! return if we are using a different projector or not for the sensitivity calculation
+  /*! will always be \c true in the non-TOF case (or SPECT) */
+  bool sensitivity_uses_same_projector() const;
+  //! ProjDataInfo to be used for the sensitivity calculation
+  /*! Will be a non-TOF clone for TOF data when \c use_tofsens = \c false */
+  shared_ptr<const ProjDataInfo> sens_proj_data_info_sptr;
+  //! flag to check if we set-up normalisation with the original data or not
+  mutable bool latest_setup_norm_was_with_orig_data;
+  //! flag to check if normalisation has been set_up already or not
+  mutable bool norm_already_setup = false;
+
+  //!  helper function to makre sure we set-up normalisation_sptr correctly
+  void ensure_norm_is_set_up(bool for_original_data = true) const;
+  //! convenience for ensure_norm_is_set_up(false)
+  void ensure_norm_is_set_up_for_sensitivity() const;
+  //!@}
 #if 0
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;

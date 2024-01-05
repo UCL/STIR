@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -32,6 +32,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include <boost/format.hpp>
 #include <numeric>
 #include <functional>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
@@ -545,7 +546,14 @@ InterfilePDFSHeader::InterfilePDFSHeader()
     (KeywordProcessor)&InterfilePDFSHeader::resize_segments_and_set, 
     &max_ring_difference);
   
-  
+  tof_mash_factor = 1;
+  add_key("TOF mashing factor",
+          &tof_mash_factor);
+#if STIR_VERSION < 070000
+  add_alias_key("TOF mashing factor", "%TOF mashing factor");
+#endif
+
+  // Scanner keys
   // warning these keys should match what is in Scanner::parameter_info()
   // TODO get Scanner to parse these
   ignore_key("Scanner parameters");
@@ -614,6 +622,25 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
+  max_num_timing_poss = -1;
+  add_key("Maximum number of (unmashed) TOF time bins",
+          &max_num_timing_poss);
+#if STIR_VERSION < 070000
+  add_alias_key("Maximum number of (unmashed) TOF time bins", "Number of TOF time bins");
+#endif
+  size_of_timing_pos = -1.f;
+  add_key("Size of unmashed TOF time bins (ps)",
+          &size_of_timing_pos);
+#if STIR_VERSION < 070000
+  add_alias_key("Size of unmashed TOF time bins (ps)", "Size of timing bin (ps)");
+#endif
+  timing_resolution = -1.f;
+  add_key("TOF timing resolution (ps)",
+          &timing_resolution);
+#if STIR_VERSION < 070000
+  add_alias_key("TOF timing resolution (ps)", "timing resolution (ps)");
+#endif
+
   // new keys for block geometry
   scanner_geometry = "Cylindrical";
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
@@ -675,12 +702,20 @@ int InterfilePDFSHeader::find_storage_order()
 
 	}
 */
-  if (num_dimensions != 4)
+  if (num_dimensions != 4 &&
+          num_dimensions != 5)
   { 
-    warning("Interfile error: expecting 4D structure "); 
+    warning("Interfile error: expecting 4D structure or 5D in case of TOF information ");
     stop_parsing();
     return true; 
   }
+
+  if (num_dimensions == 4)
+    {
+      // non-TOF
+      num_timing_poss = 1;
+      tof_mash_factor = 0;
+    }
 
   if (matrix_labels[0] != "tangential coordinate")
   { 
@@ -694,16 +729,36 @@ int InterfilePDFSHeader::find_storage_order()
   if (matrix_labels[3] == "segment")
   {
     num_segments = matrix_size[3][0];
-    
+
     if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
     {
-      storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
-      num_views = matrix_size[2][0];
+        // If TOF information is in there
+        if (matrix_labels.size() > 4)
+        {
+            if (matrix_labels[4] == "timing positions")
+            {
+                num_timing_poss = matrix_size[4][0];
+                storage_order = ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
+                num_views = matrix_size[2][0];
 #ifdef _MSC_VER
-      num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+                num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
 #else      
-      num_rings_per_segment = matrix_size[1];
+                num_rings_per_segment = matrix_size[1];
 #endif
+            }
+            else
+              error("Interfile header parsing: currently need 'matrix axis label [5] := timing positions' for TOF data");
+        }
+        else
+        {
+            storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
+            num_views = matrix_size[2][0];
+#ifdef _MSC_VER
+            num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+#else
+            num_rings_per_segment = matrix_size[1];
+#endif
+        }
     }
     else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
     {
@@ -924,6 +979,7 @@ find_segment_sequence(vector<int>& segment_sequence,
 }	  
 	  
 // MJ 17/05/2000 made bool
+// NE 28/12/2016 Accounts for TOF stuff.
 bool InterfilePDFSHeader::post_processing()
 {
   
@@ -1308,6 +1364,28 @@ bool InterfilePDFSHeader::post_processing()
      }
    // end of new variables for block geometry
 
+    if (guessed_scanner_ptr->is_tof_ready())
+    {
+        if (max_num_timing_poss != guessed_scanner_ptr->get_max_num_timing_poss())
+          {
+            warning(boost::format("Interfile warning: 'Maximum number of (unmashed) TOF time bins' (%d) is expected to be %d.") %
+                    max_num_timing_poss % guessed_scanner_ptr->get_max_num_timing_poss());
+            mismatch_between_header_and_guess = true;
+          }
+        if (abs(size_of_timing_pos - guessed_scanner_ptr->get_size_of_timing_pos()) > 0.001F)
+          {
+            warning(boost::format("Interfile warning: 'Size of unmashed TOF timing bin (ps)' (%f) is expected to be %f.") %
+                    size_of_timing_pos % guessed_scanner_ptr->get_size_of_timing_pos());
+            mismatch_between_header_and_guess = true;
+          }
+        if (abs(timing_resolution - guessed_scanner_ptr->get_timing_resolution()) > 0.01F)
+          {
+            warning(boost::format("Interfile warning: 'TOF timing resolution (ps)' (%f) is expected to be %f.") %
+                    timing_resolution % guessed_scanner_ptr->get_timing_resolution());
+            mismatch_between_header_and_guess = true;
+          }
+    }
+
     // end of checks. If they failed, we ignore the guess
     if (mismatch_between_header_and_guess)
       {
@@ -1359,27 +1437,31 @@ bool InterfilePDFSHeader::post_processing()
 
   // finally, we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
-  shared_ptr<Scanner> scanner_ptr_from_file(
+
+  shared_ptr<Scanner> scanner_sptr_from_file(
     new Scanner(guessed_scanner_ptr->get_type(), 
-                get_exam_info().originating_system,
-		num_detectors_per_ring, 
-                num_rings, 
-		max_num_non_arccorrected_bins, 
-		default_num_arccorrected_bins,
-		static_cast<float>(inner_ring_diameter_in_cm*10./2),
+                get_exam_info_sptr()->originating_system,
+                num_detectors_per_ring,
+                num_rings,
+                max_num_non_arccorrected_bins,
+                default_num_arccorrected_bins,
+                static_cast<float>(inner_ring_diameter_in_cm*10./2),
                 static_cast<float>(average_depth_of_interaction_in_cm*10),
-		static_cast<float>(distance_between_rings_in_cm*10.),
-		static_cast<float>(default_bin_size_in_cm*10),
-		static_cast<float>(view_offset_in_degrees*_PI/180),
-		num_axial_blocks_per_bucket, 
-		num_transaxial_blocks_per_bucket,
-		num_axial_crystals_per_block,
-		num_transaxial_crystals_per_block,
-		num_axial_crystals_per_singles_unit,
+                static_cast<float>(distance_between_rings_in_cm*10.),
+                static_cast<float>(default_bin_size_in_cm*10),
+                static_cast<float>(view_offset_in_degrees*_PI/180),
+                num_axial_blocks_per_bucket,
+                num_transaxial_blocks_per_bucket,
+                num_axial_crystals_per_block,
+                num_transaxial_crystals_per_block,
+                num_axial_crystals_per_singles_unit,
                 num_transaxial_crystals_per_singles_unit,
                 num_detector_layers,
                 energy_resolution,
                 reference_energy,
+                max_num_timing_poss,
+                size_of_timing_pos,
+                timing_resolution,
                 scanner_geometry,
                 static_cast<float>(axial_distance_between_crystals_in_cm*10.),
                 static_cast<float>(transaxial_distance_between_crystals_in_cm*10.),
@@ -1389,54 +1471,52 @@ bool InterfilePDFSHeader::post_processing()
                 ));
 
   bool is_consistent =
-    scanner_ptr_from_file->check_consistency() == Succeeded::yes;
-  if (scanner_ptr_from_file->get_type() == Scanner::Unknown_scanner ||
-      scanner_ptr_from_file->get_type() == Scanner::User_defined_scanner ||
+    scanner_sptr_from_file->check_consistency() == Succeeded::yes;
+  if (scanner_sptr_from_file->get_type() == Scanner::Unknown_scanner ||
+      scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner ||
       mismatch_between_header_and_guess ||
       !is_consistent)
     {
       warning(boost::format("Interfile parsing ended up with the following scanner:\n%s\n") %
-	      scanner_ptr_from_file->parameter_info().c_str());
+	      scanner_sptr_from_file->parameter_info());
     }
  
   
   // float azimuthal_angle_sampling =_PI/num_views;
-  
-  
    
-    if (scanner_geometry == "Cylindrical")
-      {
+  if (scanner_geometry == "Cylindrical")
+    {
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
-	effective_central_bin_size_in_cm =
-	  scanner_ptr_from_file->get_default_bin_size()/10;
-      else if (fabs(effective_central_bin_size_in_cm - 
-		    scanner_ptr_from_file->get_default_bin_size()/10)>.001)	
+    effective_central_bin_size_in_cm =
+      scanner_sptr_from_file->get_default_bin_size()/10;
+      else if (fabs(effective_central_bin_size_in_cm -
+            scanner_sptr_from_file->get_default_bin_size()/10)>.001)
 	warning(boost::format("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
 		"Value in header is %g while the default for the scanner is %g\n"
 		"Using value from header.") %
 		effective_central_bin_size_in_cm %
-		(scanner_ptr_from_file->get_default_bin_size()/10));
+		(scanner_sptr_from_file->get_default_bin_size()/10));
       
       data_info_sptr.reset(
 	new ProjDataInfoCylindricalArcCorr (
-					    scanner_ptr_from_file,
+                        scanner_sptr_from_file,
 					    float(effective_central_bin_size_in_cm*10.),
 					    sorted_num_rings_per_segment,
 					    sorted_min_ring_diff,
 					    sorted_max_ring_diff,
-					    num_views,num_bins));
+					    num_views,num_bins, tof_mash_factor));
     }
   else
     {
       data_info_sptr.reset(
 	new ProjDataInfoCylindricalNoArcCorr (
-					      scanner_ptr_from_file,
+                          scanner_sptr_from_file,
 					      sorted_num_rings_per_segment,
 					      sorted_min_ring_diff,
 					      sorted_max_ring_diff,
-					      num_views,num_bins));
+					      num_views,num_bins, tof_mash_factor));
       if (effective_central_bin_size_in_cm>0 &&
 	  fabs(effective_central_bin_size_in_cm - 
 	       data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
@@ -1453,7 +1533,7 @@ bool InterfilePDFSHeader::post_processing()
       {
         data_info_sptr.reset(
           new ProjDataInfoBlocksOnCylindricalNoArcCorr (
-                  scanner_ptr_from_file,
+                  scanner_sptr_from_file,
                   sorted_num_rings_per_segment,
                   sorted_min_ring_diff,
                   sorted_max_ring_diff,
@@ -1473,7 +1553,7 @@ bool InterfilePDFSHeader::post_processing()
         {
             data_info_sptr.reset(
         new ProjDataInfoGenericNoArcCorr (
-                      scanner_ptr_from_file,
+                      scanner_sptr_from_file,
                       sorted_num_rings_per_segment,
                       sorted_min_ring_diff,
                       sorted_max_ring_diff,
@@ -1489,6 +1569,11 @@ bool InterfilePDFSHeader::post_processing()
                 (data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.));
             }
         }
+  if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
+    error(boost::format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data (%d), "
+                        "TOF mashing factor (%d) and max number of TOF bins in scanner info (%d)")
+          % num_timing_poss % tof_mash_factor % scanner_sptr_from_file->get_max_num_timing_poss());
+
   //cerr << data_info_sptr->parameter_info() << endl;
   
   // Set the bed position

@@ -41,7 +41,7 @@ class ProjDataInfo;
     away some bins. Half of the bins will be thrown away at each 'side' of a sinogram (see below).
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
   Default value -1 means 'do all segments'.
-  \param num_tof_bins_to_combine currently has to be 1.
+  \param num_tof_bins_to_combine can be used to increase TOF mashing.
 
   The original SSRB algorithm was developed in M.E. Daube-Witherspoon and 
   G. Muehllehner, (1987) <i>Treatment of axial data in three-dimensional PET</i>,
@@ -93,6 +93,7 @@ SSRB(const ProjDataInfo& in_proj_data_info,
   Default value -1 means 'do all segments'.
   \param do_normalisation (default true) wether to normalise the output sinograms 
   corresponding to how many input sinograms contribute to them.
+  \param num_tof_bins_to_combine currently has to be 1. If it doesn't, error() will be called.
 
   \see SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
@@ -124,6 +125,7 @@ SSRB(const std::string& output_filename,
   corresponding to how many input sinograms contribute to them.
   
   \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
+  \warning TOF info has to match currently. If it doesn't, error() will be called.
 */  
 void 
 SSRB(ProjData& out_projdata,

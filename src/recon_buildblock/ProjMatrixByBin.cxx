@@ -4,15 +4,18 @@
   \ingroup projection
   
   \brief  implementation of the stir::ProjMatrixByBin class 
-    
+
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
+  \author Robert Twyman
   \author PARAPET project
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2013, 2015, 2022 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -38,6 +41,8 @@ void ProjMatrixByBin::set_defaults()
 {
   cache_disabled=false;
   cache_stores_only_basic_bins=true;
+  gauss_sigma_in_mm = 0.f;
+  r_sqrt2_gauss_sigma = 0.f;
 }
 
 void 
@@ -62,6 +67,18 @@ void
 ProjMatrixByBin::
 enable_cache(const bool v)
 { cache_disabled = !v;}
+
+void
+ProjMatrixByBin::
+enable_tof(const shared_ptr<const ProjDataInfo>& _proj_data_info_sptr, const bool v)
+{
+    if (v)
+    {
+        tof_enabled = true;
+        gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
+        r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
+    }
+}
 
 void 
 ProjMatrixByBin::
@@ -112,14 +129,39 @@ reserve_num_elements_in_cache(const std::size_t num_elems)
 void
 ProjMatrixByBin::
 set_up(   
-    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr_v // TODO should be Info only
     )
 {
+  this->proj_data_info_sptr = proj_data_info_sptr_v;
+  this->image_info_sptr.reset(
+                              dynamic_cast<const VoxelsOnCartesianGrid<float>* > (density_info_sptr_v->clone() ));
+  if (is_cache_enabled())
+    {
+      const int max_abs_tangential_pos_num =
+        std::max(-proj_data_info_sptr->get_min_tangential_pos_num(), proj_data_info_sptr->get_max_tangential_pos_num());
+      // next isn't strictly speaking the max, as it could be larger for other segments, but that's pretty unlikely
+      const int max_abs_axial_pos_num =
+        std::max(-proj_data_info_sptr->get_min_axial_pos_num(0), proj_data_info_sptr->get_max_axial_pos_num(0));
+      const int max_abs_timing_pos_num = std::max(-proj_data_info_sptr->get_min_tof_pos_num(), proj_data_info_sptr->get_max_tof_pos_num());
+
+      if ((static_cast<CacheKey>(max_abs_axial_pos_num) >= (static_cast<CacheKey>(1) << axial_pos_bits)) ||
+          (static_cast<CacheKey>(max_abs_tangential_pos_num) >= (static_cast<CacheKey>(1) << tang_pos_bits)) ||
+          (static_cast<CacheKey>(max_abs_timing_pos_num) >= (static_cast<CacheKey>(1) << timing_pos_bits)))
+        error("ProjMatrixByBin: not enough bits reserved for this data in the caching mechanism. You will have to switch caching off. Sorry.");
+    }
+
   const int min_view_num = proj_data_info_sptr->get_min_view_num();
   const int max_view_num = proj_data_info_sptr->get_max_view_num();
   const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
   const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
+
+  if (proj_data_info_sptr->is_tof_data())
+	  enable_tof(proj_data_info_sptr,true);
+  else
+  {
+	  tof_enabled = false;
+  }
 
   this->cache_collection.recycle();
   this->cache_collection.resize(min_view_num, max_view_num);
@@ -137,24 +179,33 @@ set_up(
         omp_init_lock(&this->cache_locks[view_num][seg_num]);
 #endif
     }
+
+  // Setup the custom erf code
+  erf_interpolation.set_num_samples(200000); //200,000 =~12.8MB
+  erf_interpolation.set_up();
 }
 
 
 /*!
     \warning Preconditions
-    <li>abs(axial_pos_num) fits in 17 bits</li>
-    <li>abs(tangential_pos_num) fits in 11 bits</li>   
+    <li>abs(axial_pos_num) fits in 13 (4095) bits
+    <li>abs(tangential_pos_num) fits in 10 (1024) bits
+    <li>abs(tof_pos_num) fits in 7 bits (127)
   */
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const
 {
-  assert(static_cast<boost::uint32_t>(abs(bin.axial_pos_num())) < (static_cast<boost::uint32_t>(1)<<18));
-  assert(abs(bin.tangential_pos_num()) < (1<<12));
-  return (CacheKey)( 
-                    (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
-                    | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<13) 
-                    | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
-                    |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
+  assert(static_cast<CacheKey>(abs(bin.axial_pos_num())) < (static_cast<CacheKey>(1) << axial_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.tangential_pos_num())) < (static_cast<CacheKey>(1) << tang_pos_bits));
+  assert(static_cast<CacheKey>(abs(bin.timing_pos_num())) < (static_cast<CacheKey>(1) << timing_pos_bits));
+
+  return static_cast<CacheKey>(
+                               (static_cast<CacheKey>(bin.axial_pos_num()>=0?0:1) << (timing_pos_bits + tang_pos_bits + axial_pos_bits + 2))
+                               | (static_cast<CacheKey>(abs(bin.axial_pos_num())) << (timing_pos_bits + tang_pos_bits + 2))
+                               | (static_cast<CacheKey>(bin.tangential_pos_num()>=0?0:1) << (timing_pos_bits + tang_pos_bits + 1))
+                               | (static_cast<CacheKey>(abs(bin.tangential_pos_num())) << (timing_pos_bits+1))
+                               | (static_cast<CacheKey>(bin.timing_pos_num()>=0?0:1) << timing_pos_bits)
+                               | (static_cast<CacheKey>(abs(bin.timing_pos_num()))));
 } 
 
 

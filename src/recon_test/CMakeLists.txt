@@ -112,13 +112,13 @@ if (HAVE_CERN_ROOT)
 
     # Add test if the data is downloaded (only checking root_header_test1.hroot)
     if(EXISTS "${ROOT_STIR_consistency_data_dir}/root_header_test1.hroot")
-        list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_view_offset_root.cxx)
-        set(test_name test_view_offset_root)
-        # test_view_offset_root requires working directory to be examples/ROOT_files/ROOT_STIR_consistency
+        list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_consistency_with_GATE.cxx)
+        # test_consistency_with_GATE requires working directory to be examples/ROOT_files/ROOT_STIR_consistency
         # for output files to be written there
-        ADD_TEST(NAME ${test_name}
+        ADD_TEST(NAME test_consistency_with_GATE
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
-                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_view_offset_root)
+                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_consistency_with_GATE)
+
     endif()
 endif()
 

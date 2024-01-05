@@ -66,6 +66,20 @@ PostsmoothingBackProjectorByBin::
   set_defaults();
 }
 
+BackProjectorByBin*
+PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const
+{
+    return original_back_projector_ptr.get();
+}
+
+PostsmoothingBackProjectorByBin*
+PostsmoothingBackProjectorByBin::clone() const
+{
+    PostsmoothingBackProjectorByBin* sptr(new PostsmoothingBackProjectorByBin(*this));
+//    sptr->original_back_projector_ptr.reset(this->original_back_projector_ptr->clone());
+    return sptr;
+}
+
 PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin(
                        const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
@@ -131,5 +145,6 @@ actual_back_project(const RelatedViewgrams<float>& viewgrams,
                                                 min_axial_pos_num, max_axial_pos_num,
                                                 min_tangential_pos_num, max_tangential_pos_num);
 }
+
 
 END_NAMESPACE_STIR

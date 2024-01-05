@@ -124,9 +124,9 @@ ForwardProjectorByBinUsingProjMatrixByBin::
     // straightforward version which relies on ProjMatrixByBin to sort out all 
     // symmetries
     // would be slow if there's no caching at all, but is very fast if everything is cached
-    
+
     ProjMatrixElemsForOneBin proj_matrix_row;
-    
+
     RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
     
     while( r_viewgrams_iter!=viewgrams.end())
@@ -134,20 +134,22 @@ ForwardProjectorByBinUsingProjMatrixByBin::
       Viewgram<float>& viewgram = *r_viewgrams_iter;
       const int view_num = viewgram.get_view_num();
       const int segment_num = viewgram.get_segment_num();
+      const int timing_num = viewgram.get_timing_pos_num();
       
       for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
         for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
         { 
-          Bin bin(segment_num, view_num, ax_pos, tang_pos, 0);
+          Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_num, 0.f);
           proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
           proj_matrix_row.forward_project(bin,image);
           viewgram[ax_pos][tang_pos] = bin.get_bin_value();
         }
-        ++r_viewgrams_iter; 
+      ++r_viewgrams_iter; 
     }	   
   }
   else
   {
+
     // Complicated version which handles the symmetries explicitly.
     // Faster when no caching is performed, about just as fast when there is caching, 
     // but of only basic bins.
@@ -166,9 +168,10 @@ ForwardProjectorByBinUsingProjMatrixByBin::
         if (already_processed[ax_pos][tang_pos])
           continue;          
         
-        Bin basic_bin(viewgrams.get_basic_segment_num(),viewgrams.get_basic_view_num(),ax_pos,tang_pos);
+        Bin basic_bin(viewgrams.get_basic_segment_num(),viewgrams.get_basic_view_num(),ax_pos,tang_pos,
+        		viewgrams.get_basic_timing_pos_num());
         symmetries->find_basic_bin(basic_bin);
-        
+
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
         
         vector<AxTangPosNumbers> r_ax_poss;
@@ -204,7 +207,8 @@ ForwardProjectorByBinUsingProjMatrixByBin::
             Bin bin(viewgram_iter->get_segment_num(),
                     viewgram_iter->get_view_num(),
                     axial_pos_tmp,
-                    tang_pos_tmp);
+                    tang_pos_tmp,
+					viewgram_iter->get_timing_pos_num());
             
             unique_ptr<SymmetryOperation> symm_op_ptr = 
               symmetries->find_symmetry_operation_from_basic_bin(bin);
@@ -222,5 +226,24 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                 (max_tangential_pos_num - min_tangential_pos_num + 1)));      
   }
 }
+
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+void
+ForwardProjectorByBinUsingProjMatrixByBin::
+ actual_forward_project(Bin& this_bin,
+                        const DiscretisedDensity<3, float> &density)
+{
+  // KT does not understand this `if` statement. The cache has nothing to do with symmetries etc.
+    if (proj_matrix_ptr->is_cache_enabled())
+    {
+        ProjMatrixElemsForOneBin proj_matrix_row;
+
+        proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, this_bin);
+        proj_matrix_row.forward_project(this_bin,density);
+    }
+    else
+        error("ForwardProjectorByBinUsingProjMatrixByBin: Symmetries should be handled by ProjMatrix. Abort. ");
+}
+#endif
 
 END_NAMESPACE_STIR

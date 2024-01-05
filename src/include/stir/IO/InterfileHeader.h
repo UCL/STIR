@@ -245,10 +245,12 @@ public:
   std::vector<int> min_ring_difference; 
   std::vector<int> max_ring_difference; 
   std::vector<int> num_rings_per_segment;
+  std::vector<int> timing_poss_sequence;
 
   std::vector<std::string> applied_corrections;
  
   // derived values
+  int num_timing_poss;
   int num_segments;
   int num_views;
   int num_bins;
@@ -287,6 +289,12 @@ private:
   float energy_resolution;
   //! Reference energy used for the energy resolution
   float reference_energy;
+
+  int max_num_timing_poss;
+  float size_of_timing_pos;
+  float timing_resolution;
+
+  int tof_mash_factor;
   
   //! \name new variables for block geometry
   //@{

@@ -24,6 +24,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
 
@@ -50,7 +51,6 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
   return Succeeded::yes;
 }
 
-
 void
 ProjectorByBinPair::
 check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
@@ -62,7 +62,7 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
   if (! this->_density_info_sptr->has_same_characteristics(density_info))
     error("ProjectorByBinPair set-up with different geometry for density or volume data.");
-}  
+}
 
 //ForwardProjectorByBin const * 
 const shared_ptr<ForwardProjectorByBin>

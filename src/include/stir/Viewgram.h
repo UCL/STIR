@@ -75,15 +75,15 @@ public:
     \deprecated Use version with ViewgramIndices instead
   */
   inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
-                  const int v_num, const int s_num); 
+                  const int v_num, const int s_num, const int t_num = 0);
 
   //! Construct with data set to the array.
   /*!
     \deprecated Use version with ViewgramIndices instead
   */
   inline Viewgram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
-                  const int v_num, const int s_num); 
-  
+                  const int v_num, const int s_num, const int t_num = 0);
+
 
   //! Get indices
   inline ViewgramIndices get_viewgram_indices() const;
@@ -91,6 +91,8 @@ public:
   inline int get_segment_num() const; 
   //! Get number of views
   inline int get_view_num() const;
+  //! Get timing position index
+  inline int get_timing_pos_num() const;
   //! Get minimum number of axial positions
   inline int get_min_axial_pos_num() const;
   //! Get maximum number of axial positions 

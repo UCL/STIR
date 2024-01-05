@@ -52,20 +52,21 @@ ProjDataInfoGenericNoArcCorr()
 {}
 
 ProjDataInfoGenericNoArcCorr::
-ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views,const int num_tangential_poss)
-: ProjDataInfoGeneric(scanner_ptr,
+: ProjDataInfoGeneric(scanner_sptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
-  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
-    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
+  if (!scanner_sptr)
+    error("ProjDataInfoGenericNoArcCorr: first argument (scanner_ptr) is zero");
+  if (num_tangential_poss > scanner_sptr->get_max_num_non_arccorrected_bins())
+    error("ProjDataInfoGenericNoArcCorr: number of tangential positions exceeds the maximum number of non arc-corrected bins set for the scanner.");
 
-  assert(!is_null_ptr(scanner_ptr));
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 #ifdef STIR_OPENMP_SAFE_BUT_SLOW
@@ -410,9 +411,12 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
 
 Bin
 ProjDataInfoGenericNoArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor, const double delta_time) const
 {
-	Bin bin;
+  if (delta_time != 0.)
+    error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
+
+  Bin bin;
 
   const LORAs2Points<float> & lor_as_2points = dynamic_cast<const LORAs2Points<float> &>(lor);
 

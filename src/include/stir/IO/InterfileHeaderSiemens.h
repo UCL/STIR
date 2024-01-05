@@ -133,6 +133,7 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
 
     ProjDataFromStream::StorageOrder storage_order;
     std::vector<int> segment_sequence;
+    std::vector<int> timing_poss_sequence;
     shared_ptr<ProjDataInfo> data_info_ptr;
 
   private:
@@ -145,6 +146,7 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
 
     int axial_compression;
     int maximum_ring_difference;
+    int tof_mash_factor;
 
     std::vector<int> segment_table;
     int num_segments;

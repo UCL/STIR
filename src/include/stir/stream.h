@@ -14,6 +14,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2023 University College London
 
     This file is part of STIR.
 
@@ -26,6 +27,8 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/Bin.h"
+#include "stir/DetectionPosition.h"
 #include <iostream>
 #include <vector>
 
@@ -80,6 +83,38 @@ template <typename elemT>
 inline 
 std::ostream& 
 operator<<(std::ostream& str, const std::vector<elemT>& v);
+
+/*!
+  \brief Outputs a Bin to a stream.
+
+  Output is of the form
+  \verbatim
+  [segment_num=xx,....., value=..]
+  \endverbatim
+*/
+inline std::ostream& operator<<(std::ostream& out, const Bin& bin)
+{
+  return out << "[segment_num=" << bin.segment_num() << ", axial_pos_num=" << bin.axial_pos_num()
+             << ", view_num=" << bin.view_num() << ", tangential_pos_num=" << bin.tangential_pos_num()
+             << ", timing_pos_num=" << bin.timing_pos_num()
+             << ", time_frame_num=" << bin.time_frame_num()
+             << ", value=" << bin.get_bin_value() << "]";
+}
+
+/*!
+  \brief Outputs a DetectionPosition to a stream.
+
+  Output is of the form
+  \verbatim
+  [radial=.., axial=..., tangential=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream& operator<<(std::ostream& out, const DetectionPosition<T>& det_pos)
+{
+  return out << "[radial=" << det_pos.radial_coord() << ", axial=" << det_pos.axial_coord()
+             << ", tangential=" << det_pos.tangential_coord() << "]";
+}
 
 /*!
   \brief Inputs a vector from a stream.

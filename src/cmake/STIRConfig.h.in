@@ -96,4 +96,10 @@ namespace stir {
 #cmakedefine STIR_PROJECTORS_AS_V3
 #cmakedefine STIR_ROOT_ROTATION_AS_V4
 #cmakedefine STIR_LEGACY_IGNORE_VIEW_OFFSET
+
+#define STIR_TOF 1
+/*! \def STIR_TOF
+  \brief Defined if TOF capabilities are enabled.
+*/
+
 #endif //  __stir_config__H__

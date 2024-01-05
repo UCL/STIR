@@ -48,6 +48,11 @@ Sinogram<elemT>::get_axial_pos_num() const
 
 template <typename elemT>
 int
+Sinogram<elemT>::get_timing_pos_num() const
+{ return this->_indices.timing_pos_num(); }
+
+template <typename elemT>
+int
 Sinogram<elemT>::get_min_view_num() const
   {return this->get_min_index();}
 
@@ -136,15 +141,15 @@ template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const Array<2,elemT>& p,
          const shared_ptr<const ProjDataInfo >& pdi_sptr,
-         const int ax_pos_num, const int s_num) 
-  : Sinogram(p, pdi_sptr, SinogramIndices(ax_pos_num, s_num))
+         const int ax_pos_num, const int s_num, const int t_num) 
+  : Sinogram(p, pdi_sptr, SinogramIndices(ax_pos_num, s_num, t_num))
 {}
 
 template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const shared_ptr<const ProjDataInfo >& pdi_sptr,
-         const int ax_pos_num, const int s_num) 
-  : Sinogram(pdi_sptr, SinogramIndices(ax_pos_num, s_num))
+         const int ax_pos_num, const int s_num, const int t_num)
+  : Sinogram(pdi_sptr, SinogramIndices(ax_pos_num, s_num, t_num))
 {}
 
 END_NAMESPACE_STIR

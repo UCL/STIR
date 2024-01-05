@@ -125,14 +125,23 @@ protected:
 #if STIR_VERSION < 060000  
   //! Maximum ring difference to take into account
   /*! @deprecated */
-  int  max_ring_difference_num_to_process;
+  int  max_ring_difference_num_to_process;  
 #endif
+    
+  //! Triggers calculation of sensitivity using time-of-flight
+  bool use_tofsens;
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_sptr;
+
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+  //! Proj data info to be used for sensitivity calculations
+  /*! This is set to non-TOF data if \c use_tofsens == \c false */
+  shared_ptr<ProjDataInfo> sens_proj_data_info_sptr;
 
   //! sets any default values
   virtual void set_defaults();

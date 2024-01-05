@@ -103,8 +103,8 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
     boost::int32_t         raw;
   };
   std::vector<int> segment_sequence;
+  std::vector<int> timing_poss_sequence;
   std::vector<int> sizes;
-
 };
 
 //! A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner

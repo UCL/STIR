@@ -4,8 +4,9 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, 2022, 2023, University College London
     Copyright (C) 2018, University of Leeds
+    Copyright (C) 2018, 2020-2023 University College London
+    Copyright (C) 2016-2019, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -17,6 +18,7 @@
 
   \brief Implementation of non-inline functions of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -53,6 +55,8 @@
 #else
 #include <sstream>
 #endif
+#include "stir/info.h"
+#include "boost/foreach.hpp"
 #include "boost/format.hpp"
 
 #ifndef STIR_NO_NAMESPACES
@@ -66,6 +70,30 @@ using std::equal;
 
 START_NAMESPACE_STIR
 
+float
+ProjDataInfo::get_k(const Bin& bin) const
+{
+    if (!(num_tof_bins%2))
+        return bin.timing_pos_num() * tof_increament_in_mm + tof_increament_in_mm / 2.f;
+    else
+        return (bin.timing_pos_num() * tof_increament_in_mm);
+}
+
+double
+ProjDataInfo::get_tof_delta_time(const Bin& bin) const
+{
+  return mm_to_tof_delta_time(get_k(bin));
+}
+
+float
+ProjDataInfo::get_sampling_in_k(const Bin& bin) const
+{
+    return (get_k(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num(),
+                               bin.timing_pos_num()+1)) -
+            get_k(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num(),
+                               bin.timing_pos_num()-1))
+            )/2.f;
+}
 
 float 
 ProjDataInfo::get_sampling_in_t(const Bin& bin) const
@@ -155,10 +183,91 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
+//! \todo N.E: This function is very ugly and unnessesary complicated. Could be much better.
 void
-ProjDataInfo::set_tof_mash_factor(const int)
+ProjDataInfo::set_tof_mash_factor(const int new_num)
 {
-  warning("TOF support not yet enabled.");
+    if (scanner_ptr->is_tof_ready() && new_num > 0 )
+    {
+        tof_mash_factor = new_num;
+        if(tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
+            error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor ("
+                  + std::to_string(tof_mash_factor) +
+                  + ") must be smaller than or equal to the scanner's number of max timing bins ("
+                  + std::to_string(scanner_ptr->get_max_num_timing_poss())
+                  + ").");
+
+#if 0
+        // KT: code disabled as buggy but currently not needed
+        tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
+        min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
+        max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
+
+        // Upper and lower boundaries of the timing poss;
+        tof_bin_unmashed_boundaries_mm.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
+        tof_bin_unmashed_boundaries_ps.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
+
+        // Silently intialise the unmashed TOF bins.
+        for (int k = min_unmashed_tof_pos_num; k <= max_unmashed_tof_pos_num; ++k )
+        {
+            Bin bin;
+            bin.timing_pos_num() = k;
+            // if we ever re-enable this code, there is a BUG here:
+            // get_k relies on num_tof_bins, so this should have been set to the unmashed value from the scanner
+            float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
+            float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
+
+            tof_bin_unmashed_boundaries_mm[k].low_lim = cur_low;
+            tof_bin_unmashed_boundaries_mm[k].high_lim = cur_high;
+            tof_bin_unmashed_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].low_lim));
+            tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].high_lim));
+
+        }
+#endif
+        // Now, initialise the mashed TOF bins.
+        tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
+
+        // TODO cope with even numbers!
+        min_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)/2;
+        max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) -1;
+
+        num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
+
+        // Ensure that we have a central tof bin.
+        if (num_tof_bins%2 == 0)
+            error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
+
+        // Upper and lower boundaries of the timing poss;
+        tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
+
+        tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
+
+        for (int k = min_tof_pos_num; k <= max_tof_pos_num; ++k )
+        {
+            Bin bin;
+            bin.timing_pos_num() = k;
+
+            float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
+            float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
+
+            tof_bin_boundaries_mm[k].low_lim = cur_low;
+            tof_bin_boundaries_mm[k].high_lim = cur_high;
+            tof_bin_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
+            tof_bin_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
+            // I could imagine a better printing.
+            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %k % tof_bin_boundaries_mm[k].low_lim % tof_bin_boundaries_mm[k].high_lim
+                 % tof_bin_boundaries_ps[k].low_lim % tof_bin_boundaries_ps[k].high_lim % get_sampling_in_k(bin));
+        }
+    }
+    else if ((scanner_ptr->is_tof_ready() && new_num <= 0)
+    		|| !scanner_ptr->is_tof_ready()) // Case new_num <=, will produce non-TOF data for a TOF compatible scanner
+    {
+        num_tof_bins = 1;
+        tof_mash_factor = 0;
+        min_tof_pos_num = 0;
+        max_tof_pos_num = 0;
+        // we assume TOF mashing factor = 0 means non-TOF and the projecter won't use any boundary conditions
+    }
 }
 
 std::vector<int>
@@ -189,25 +298,42 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   set_num_views(num_views_v);
   set_num_tangential_poss(num_tangential_poss_v);
   set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
+  // Initialise the TOF elements to non-used.
+  min_tof_pos_num = 0;
+  max_tof_pos_num = 0;
+  tof_increament_in_mm = 0.f;
+  tof_mash_factor = 0;
+  num_tof_bins = 1;
+}
+
+// TOF version.
+ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
+                           const VectorWithOffset<int>& num_axial_pos_per_segment_v,
+                           const int num_views_v,
+                           const int num_tangential_poss_v,
+                           const int tof_mash_factor_v)
+               :scanner_ptr(scanner_ptr_v)
+
+{
+  set_tof_mash_factor(tof_mash_factor_v);
+  set_num_views(num_views_v);
+  set_num_tangential_poss(num_tangential_poss_v);
+  set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
 }
 
 string
 ProjDataInfo::parameter_info()  const
 {
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
   s << scanner_ptr->parameter_info();
   s << "\n";
   s << "start vertical bed position (mm) := "
     << get_bed_position_vertical() << endl;
   s << "start horizontal bed position (mm) := "
     << get_bed_position_horizontal() << endl;
+  s << "\nTOF mashing factor in data:      " << get_tof_mash_factor() << '\n';
+  s << "Number of TOF positions in data: " << get_num_tof_poss() << '\n';
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
@@ -249,7 +375,8 @@ reduce_segment_range(const int min_segment_num, const int max_segment_num)
 Viewgram<float> 
 ProjDataInfo::get_empty_viewgram(const int view_num, 
 				 const int segment_num, 
-				 const bool make_num_tangential_poss_odd) const
+				 const bool make_num_tangential_poss_odd,
+				 const int timing_pos_num) const
 {  
   // we can't access the shared ptr, so we have to clone 'this'.
   shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
@@ -257,7 +384,7 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  Viewgram<float> v(proj_data_info_sptr, view_num, segment_num);
+  Viewgram<float> v(proj_data_info_sptr, view_num, segment_num, timing_pos_num);
    
   return v;
 }
@@ -274,7 +401,8 @@ ProjDataInfo::get_empty_viewgram(const ViewgramIndices& ind) const
 
 Sinogram<float>
 ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
-                                      const bool make_num_tangential_poss_odd) const
+                                      const bool make_num_tangential_poss_odd,
+									  const int timing_pos_num) const
 {
   // we can't access the shared ptr, so we have to clone 'this'.
   shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
@@ -282,7 +410,7 @@ ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num);
+  Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num, timing_pos_num);
    
   return s;
 }
@@ -298,7 +426,8 @@ ProjDataInfo::get_empty_sinogram(const SinogramIndices& ind) const
 
 SegmentBySinogram<float>
 ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num, 
-      const bool make_num_tangential_poss_odd) const
+      const bool make_num_tangential_poss_odd,
+	  const int timing_pos_num) const
 {
   assert(segment_num >= get_min_segment_num());
   assert(segment_num <= get_max_segment_num());
@@ -309,7 +438,7 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num);
+  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num, timing_pos_num);
 
   return s;
 }  
@@ -325,7 +454,8 @@ ProjDataInfo::get_empty_segment_by_sinogram(const SegmentIndices& ind) const
 
 SegmentByView<float>
 ProjDataInfo::get_empty_segment_by_view(const int segment_num, 
-				   const bool make_num_tangential_poss_odd) const
+				   const bool make_num_tangential_poss_odd,
+				   const int timing_pos_num) const
 {
   assert(segment_num >= get_min_segment_num());
   assert(segment_num <= get_max_segment_num());
@@ -336,7 +466,7 @@ ProjDataInfo::get_empty_segment_by_view(const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  SegmentByView<float> s(proj_data_info_sptr, segment_num);
+  SegmentByView<float> s(proj_data_info_sptr, segment_num, timing_pos_num);
 
   return s;
 }
@@ -353,7 +483,8 @@ ProjDataInfo::get_empty_segment_by_view(const SegmentIndices& ind) const
 RelatedViewgrams<float> 
 ProjDataInfo::get_empty_related_viewgrams(const ViewgramIndices& viewgram_indices,
 		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_tangential_poss_odd) const
+		   const bool make_num_tangential_poss_odd,
+		   const int timing_pos_num) const
 {
   if (make_num_tangential_poss_odd)
     error("make_num_tangential_poss_odd is no longer supported");
@@ -365,6 +496,8 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewgramIndices& viewgram_indice
 
   for (unsigned int i=0; i<pairs.size(); i++)
   {
+    // TODOTOF
+    pairs[i].timing_pos_num() = timing_pos_num;
     // TODO optimise to get shared proj_data_info_ptr
     viewgrams.push_back(get_empty_viewgram(pairs[i]));
   }
@@ -377,9 +510,10 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewgramIndices& viewgram_indice
 
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
-			      const int span, const int max_delta, 
-			      const int num_views, const int num_tangential_poss,
-                              const bool arc_corrected)
+                              const int span, const int max_delta,
+                              const int num_views, const int num_tangential_poss,
+                              const bool arc_corrected,
+                              const int tof_mash_factor)
 {
   const int num_ring = scanner->get_num_rings();
   if (max_delta > num_ring - 1)
@@ -486,32 +620,37 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference,
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
-                                   num_axial_pos_per_segment,
-                                   min_ring_difference,
-                                   max_ring_difference,
-                                   num_views,num_tangential_poss);
+                                       num_axial_pos_per_segment,
+                                       min_ring_difference, 
+                                       max_ring_difference,
+                                       num_views,num_tangential_poss,
+                                         tof_mash_factor);
 }
 
 unique_ptr<ProjDataInfo>
 ProjDataInfo::construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
 	const int span, const int max_delta,
 	const int num_views, const int num_tangential_poss,
-	const bool arc_corrected)
+	const bool arc_corrected,
+  const int tof_mash_factor)
 {
-  unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected));
+  unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected, tof_mash_factor));
   return pdi;
 }
 
 // KT 28/06/2001 added arc_corrected flag
+// NE 28/12/2016 added the tof_mash_factor
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
-			     const int max_delta,
-			     const int num_views, const int num_tangential_poss,
-                             const bool arc_corrected)
+                             const int max_delta,
+                             const int num_views, const int num_tangential_poss,
+                             const bool arc_corrected,
+                             const int tof_mash_factor)
 	       
 	       
 {
@@ -558,14 +697,16 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
 }
 
 
@@ -574,19 +715,15 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 
   shared_ptr<Scanner> scanner_ptr(Scanner::ask_parameters());
   
-  const bool is_Advance =
-    scanner_ptr->get_type() == Scanner::Advance ||
-    scanner_ptr->get_type() == Scanner::DiscoveryLS; 
-  const bool is_DiscoveryST =
-    scanner_ptr->get_type() == Scanner::DiscoveryST; 
-  const bool is_GE =
-    is_Advance || is_DiscoveryST;
-
    const int num_views = scanner_ptr->get_max_num_views()/
      ask_num("Mash factor for views",1, scanner_ptr->get_max_num_views(),1);
 
+   const int tof_mash_factor = scanner_ptr->is_tof_ready() ?
+           ask_num("Time-of-flight mash factor:", 0,
+                   scanner_ptr->get_max_num_timing_poss(), 1) : 0;
+
   const bool arc_corrected =
-    ask("Is the data arc-corrected?",true);
+    ask("Is the data arc-corrected?",false);
 
    const int num_tangential_poss=
      ask_num("Number of tangential positions",1,
@@ -594,22 +731,23 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 	     arc_corrected 
 	     ? scanner_ptr->get_default_num_arccorrected_bins()
 	     : scanner_ptr->get_max_num_non_arccorrected_bins());
-  
-   int span = is_GE ? 0 : 1;
+
+   const bool is_GE = scanner_ptr->get_name().substr(0,2) == "GE";
+   const bool is_Siemens = scanner_ptr->get_name().substr(0,6) == "Siemens";
+   int span = is_GE ? 2 : (is_Siemens ? 11 : 1);
    span = 
-     ask_num("Span value (use 0 for mixed-span case of the Advance) : ", 0,scanner_ptr->get_num_rings()-1,span);
+     ask_num("Span value : ", 0,scanner_ptr->get_num_rings()-1,span);
 
   
    const int max_delta = ask_num("Max. ring difference acquired : ",
     0,
     scanner_ptr->get_num_rings()-1,
-    is_Advance ? 11 : scanner_ptr->get_num_rings()-1);
- 
+    scanner_ptr->get_num_rings()-1);
 
-  ProjDataInfo * pdi_ptr =
+   ProjDataInfo * pdi_ptr =
     span==0
-    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected)
-    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected);
+     ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor)
+     : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
 
   cout << pdi_ptr->parameter_info() <<endl;
 
@@ -632,6 +770,9 @@ blindly_equals(const root_type * const that) const
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
+   (get_tof_mash_factor() == proj.get_tof_mash_factor()) &&
+   (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
+   (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) &&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
@@ -660,9 +801,9 @@ operator !=(const root_type& that) const
 /*!
   \return
      \c true only if the types are the same, they are equal, or the range for the
-     segments, axial and tangential positions is at least as large.
+     TOF, segments, axial and tangential positions is at least as large.
 
-  \warning Currently view ranges have to be identical.
+  \warning Currently view and TOF ranges have to be identical.
 */
 bool
 ProjDataInfo::
@@ -676,10 +817,15 @@ operator>=(const ProjDataInfo& proj_data_info) const
   if (larger_proj_data_info == proj_data_info)
     return true;
 
+  if (proj_data_info.get_tof_mash_factor() != larger_proj_data_info.get_tof_mash_factor())
+    return false;
+
   if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
       proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
       proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
-      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num())
+      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
+      proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
+      proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())         
     return false;
 
   for (int segment_num=proj_data_info.get_min_segment_num();
@@ -699,6 +845,8 @@ operator>=(const ProjDataInfo& proj_data_info) const
   smaller_proj_data_info_sptr->reduce_segment_range(proj_data_info.get_min_segment_num(), proj_data_info.get_max_segment_num());  
   smaller_proj_data_info_sptr->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num());
   smaller_proj_data_info_sptr->set_max_tangential_pos_num(proj_data_info.get_max_tangential_pos_num());
+  // smaller_proj_data_info_sptr->set_min_tof_pos_num(proj_data_info.get_min_tof_pos_num());
+  // smaller_proj_data_info_sptr->set_max_tof_pos_num(proj_data_info.get_max_tof_pos_num());
 
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();

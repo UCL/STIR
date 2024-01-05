@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
-  cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
+  cout << "Scanner: " << lm_data_ptr->get_scanner().get_name() << endl;
 
   unsigned long num_listed_events = 0;
   {      
@@ -174,6 +174,8 @@ int main(int argc, char *argv[])
                        << ",r:" << det_pos.pos2().axial_coord()
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")\t";
+                  cout << " TOF-bin: " << det_pos.timing_pos()
+                       << " delta time: " << event_ptr->get_delta_time();
                   listed = true; 
                 }
             }
@@ -185,7 +187,7 @@ int main(int argc, char *argv[])
                 {
                   LORAs2Points<float> lor;
                   lor=event_ptr->get_LOR();
-                  cout << "LOR "
+                  cout << " LOR "
                        << "(" << lor.p1().z()
                        << "," << lor.p1().y()
                        << "," << lor.p1().x()

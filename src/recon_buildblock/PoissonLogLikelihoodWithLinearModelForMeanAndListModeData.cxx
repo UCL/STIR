@@ -345,6 +345,8 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
                   (add_proj.get_max_view_num()==proj.get_max_view_num()) &&
                   (add_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
                   (add_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
+                  (add_proj.get_min_tof_pos_num() == proj.get_min_tof_pos_num())&&
+                  (add_proj.get_max_tof_pos_num() == proj.get_max_tof_pos_num()) &&
                   add_proj.get_min_segment_num() <= proj.get_min_segment_num()  &&
                   add_proj.get_max_segment_num() >= proj.get_max_segment_num();
 
@@ -370,14 +372,6 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     {
         warning("Invalid normalisation object");
         return Succeeded::no;
-    }
-
-  if (this->normalisation_sptr->set_up(
-                this->list_mode_data_sptr->get_exam_info_sptr(), proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
-    {
-      warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
-              "set-up of normalisation failed.");
-      return Succeeded::no;
     }
 
   return Succeeded::yes;

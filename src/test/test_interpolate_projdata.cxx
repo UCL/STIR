@@ -201,9 +201,9 @@ void InterpolationTests::scatter_interpolation_test_blocks()
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 192, 30, 150, 150, 127, 4.3, 4.0, 2.0, -0.38956 /* 0.0 */,
-                         5, 4, 6, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 4.0, 4.0, 24.0, 24.0);
+                         5, 4, 6, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "BlocksOnCylindrical", 4.0, 4.0, 24.0, 24.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 192, 6, 150, 150, 127, 4.3, 20.0, 2.0, -0.38956 /* 0.0 */,
-                                     1, 4, 6, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 20.0, 4.0, 120.0, 24.0);
+                                     1, 4, 6, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "BlocksOnCylindrical", 20.0, 4.0, 120.0, 24.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 96, 150, false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 96, 150, false)));
@@ -254,9 +254,9 @@ void InterpolationTests::scatter_interpolation_test_cyl()
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 192, 30, 150, 150, 127, 4.3, 4.0, 2.0, -0.38956 /* 0.0 */,
-                         5, 4, 6, 6, 1, 1, 1, 0.17, 511, "Cylindrical", 4.0, 4.0, 24.0, 24.0);
+                         5, 4, 6, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "Cylindrical", 4.0, 4.0, 24.0, 24.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 64, 6, int(150 * 64 / 192), int(150 * 64 / 192), 127, 4.3,
-                                     20.0, 133 * 3.14 / 64, -0.38956 /* 0.0 */, 1, 1, 6, 64, 1, 1, 1, 0.17, 511, "Cylindrical", 20.0, 12.0, 120.0, 72.0);
+                                     20.0, 133 * 3.14 / 64, -0.38956 /* 0.0 */, 1, 1, 6, 64, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "Cylindrical", 20.0, 12.0, 120.0, 72.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 96, 150, false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));
@@ -306,9 +306,9 @@ void InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 96, 30, 150, 150, 127, 4.3, 4.0, 8.0, -0.38956 /* 0.0 */,
-                         5, 1, 6, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 4.0, 16.0, 24.0, 96.0);
+                         5, 1, 6, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "BlocksOnCylindrical", 4.0, 16.0, 24.0, 96.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 96, 12, 150, 150, 127, 4.3, 10.0, 8.0, -0.38956 /* 0.0 */,
-                                     1, 1, 12, 6, 1, 1, 1, 0.17, 511, "BlocksOnCylindrical", 10.0, 16.0, 60.0, 96.0);
+                                     1, 1, 12, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "BlocksOnCylindrical", 10.0, 16.0, 60.0, 96.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, 75, false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 48, 75, false)));
@@ -374,9 +374,9 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 96, 30, 150, 150, 127, 4.3, 4.0, 8.0, -0.38956 /* 0.0 */,
-                         5, 1, 6, 6, 1, 1, 1, 0.17, 511, "Cylindrical", 4.0, 16.0, 24.0, 96.0);
-  auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 64, 12, 100, 100, 127, 4.3,
-                                     10.0, 12.0 /* 133 * 3.14 / 64 */, -0.38956 /* 0.0 */, 1, 1, 12, 64, 1, 1, 1, 0.17, 511, "Cylindrical", 10.0, 12.0, 60.0, 72.0);
+                         5, 1, 6, 6, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "Cylindrical", 4.0, 16.0, 24.0, 96.0);
+  auto downsampled_scanner = Scanner(Scanner::User_defined_scanner, "Some_symmetric_scanner", 64, 12, 150, 150, 127, 4.3,
+                                     10.0, 133 * 3.14 / 64, -0.38956 /* 0.0 */, 1, 1, 12, 64, 1, 1, 1, 0.17, 511, -1, 01.F, -1.F, "Cylindrical", 10.0, 12.0, 60.0, 72.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, int(150 * 96 / 192), false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));

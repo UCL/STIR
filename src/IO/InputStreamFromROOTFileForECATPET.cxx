@@ -62,6 +62,7 @@ get_next_record(CListRecordROOT& record)
 {
 
     int ring1, ring2, crystal1, crystal2;
+    double delta_timing_bin;
     bool return_no = false;
 
 #ifdef STIR_OPENMP
@@ -115,6 +116,7 @@ get_next_record(CListRecordROOT& record)
     crystal2 += offset_dets;
 #endif
 
+    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
     }
 
     if(return_no)
@@ -123,7 +125,7 @@ get_next_record(CListRecordROOT& record)
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
-                                  time1, time2,
+                                  time1, delta_timing_bin,
                                   eventID1, eventID2);
 }
 

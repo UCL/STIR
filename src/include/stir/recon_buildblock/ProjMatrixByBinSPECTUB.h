@@ -148,7 +148,11 @@ class ProjMatrixByBinSPECTUB :
   */
 
   void
-    set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope, const bool full_3D = true);
+    set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D = true);
+    
+    //Alex
+    //Fix to compile, missing function definition in header
+    ProjMatrixByBinSPECTUB * clone() const;
  private:
 
   // parameters that will be parsed

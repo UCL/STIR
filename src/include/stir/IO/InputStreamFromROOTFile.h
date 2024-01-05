@@ -121,9 +121,9 @@ public:
     inline int get_num_axial_crystals_per_block_v() const;
     //! Get the transaxial number of crystals per module
     inline int get_num_transaxial_crystals_per_block_v() const;
-
+    //! Get the number of axial crystals per singles unit
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
-
+    //! Get the number of transaxial crystals per singles unit
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! \name number of "fake" crystals per block, inserted by the scanner
     /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
@@ -278,6 +278,10 @@ public:
     //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
     //! > the readout depth depends upon how the electronic readout functions.
     int singles_readout_depth;
+
+    // This member will try to give to the continuous time register in GATE
+    // data, a finite least significant bit.
+    double least_significant_clock_bit;
 
     //! OpenGATE output ROOT energy information is given in MeV, these methods convert to keV
     float get_energy1_in_keV() const

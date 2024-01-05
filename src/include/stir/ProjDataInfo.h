@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016-17, University of Hull
     Copyright (C) 2017-2018, 2020, 2022, 2023 University College London
     This file is part of STIR.
 
@@ -16,8 +17,10 @@
 
   \brief Declaration of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author PARAPET project
 
 */
@@ -71,21 +74,26 @@ public:
 
   //! Construct a ProjDataInfo with span=3 for segment 0, but span=1 for others.
   /*! This function implements our old understanding of GE data. An alternative is to use
-      construct_proj_data_info() with \c span=2.*/
+      construct_proj_data_info() with \c span=2.
+	 \warning N.E: TOF mash factor = 1, means possible many TOF bins
+     \warning N.E: TOF mash factor = 0 will produce nonTOF data
+*/
   static ProjDataInfo*  
-  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
-		 const int max_delta,
-		 const int num_views, const int num_tangential_poss, 
-                 const bool arc_corrected = true);
+  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr,
+                 const int max_delta,
+                 const int num_views, const int num_tangential_poss,
+                 const bool arc_corrected = true,
+                 const int tof_mash_factor = 0);
 
   //! Old name for construct_proj_data_info()
   /*! \deprecated
      */
   static ProjDataInfo* 
-    ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
-		  const int span, const int max_delta,
-                  const int num_views, const int num_tangential_poss, 
-                  const bool arc_corrected = true);
+  ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+                  const int span, const int max_delta,
+                  const int num_views, const int num_tangential_poss,
+                  const bool arc_corrected = true,
+                  const int tof_mash_factor = 0);
 
   //! Construct a ProjDataInfo suitable with a given span
   /*! \c span is used to denote the amount of axial compression (see the STIR glossary).
@@ -93,12 +101,23 @@ public:
   Siemens/CTI currently uses odd span. GE scanners use a mixed case where segment 0
   has span 3, while other segments have span 2. We call this span 2.
   As a generalisation, this function supports any even span.
+
+	 \warning N.E: TOF mash factor = 1, means possible many TOF bins
+     \warning N.E: TOF mash factor = 0 will produce nonTOF data
   */
   static unique_ptr<ProjDataInfo>
 	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
-		  const int span, const int max_delta,
-		  const int num_views, const int num_tangential_poss,
-		  const bool arc_corrected = true);
+                             const int span, const int max_delta,
+                             const int num_views, const int num_tangential_poss,
+                             const bool arc_corrected = true,
+                             const int tof_mash_factor = 0);
+  //! \name Conversion functions between TOF delta_time and mm
+  //@{
+  inline static double
+    mm_to_tof_delta_time(const float dist);
+  inline static float
+    tof_delta_time_to_mm(const double delta_time);
+  //@}
 
   /************ constructors ***********/
   // TODO should probably be protected
@@ -116,12 +135,22 @@ public:
 		      const int num_views, 
 		      const int num_tangential_poss);
 
+  //! Overloaded Contructor with TOF initialisation
+  ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr,
+              const VectorWithOffset<int>& num_axial_pos_per_segment,
+              const int num_views,
+              const int num_tangential_poss,
+              const int tof_mash_factor);
+
 
   //! Standard trick for a 'virtual copy-constructor' 
   virtual ProjDataInfo* clone() const = 0;
 
   //! Like clone() but return a shared_ptr
   inline shared_ptr<ProjDataInfo> create_shared_clone() const;
+
+  //! Similar to create_shared_clone() but returns a non-tof version of ProjDataInfo setting tof mashing factor = 0
+  inline shared_ptr<ProjDataInfo> create_non_tof_clone() const;
 
   //! Destructor
   virtual ~ProjDataInfo() {}
@@ -189,6 +218,13 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of tof bin for a given time difference
+  inline int get_tof_bin(const double delta) const;
+#if 0
+// KT: code disabled as buggy but currently not needed
+  //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
+  inline int get_unmashed_tof_bin(const double delta) const;
+#endif
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -215,7 +251,16 @@ public:
   inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
   inline int get_max_tof_pos_num() const;
+  //! Get the coincide window in pico seconds
+  //! \warning Proposed convension: If the scanner is not TOF ready then
+  //! the coincidence windowis in the TOF bin size.
+  inline float get_coincidence_window_in_pico_sec() const;
+  //! Get the total width of the coincide window in mm
+  inline float get_coincidence_window_width() const;
   //! Get the total number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
   inline int get_num_sinograms() const;
   //! Get the number of non-tof sinograms
   /*! Note that this is the sum of the number of axial poss over all segments.
@@ -225,6 +270,9 @@ public:
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //@}
+
+  //! Determine if TOF data from tof_mash_factor and num_tof_bins
+  inline bool is_tof_data() const;
 
   //! Return a list of view numbers in the "original" data if subsets are used
   /*! ProjDataInfoSubsetByView can be used to construct a subset of data. It might
@@ -274,6 +322,13 @@ public:
       normal to the projection plane */
   virtual float get_s(const Bin&) const =0;
 
+  //! Get value of the TOF location along the LOR (in mm)
+  //! k is a line segment connecting the centers of the two detectors.
+  float get_k(const Bin&) const;
+
+  //! Get the value of the TOF timing difference (in ps)
+  double get_tof_delta_time(const Bin&) const;
+
   //! Get LOR corresponding to a given bin
   /*!
       \see get_bin()
@@ -313,6 +368,9 @@ public:
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
+
+  //! Get sampling distance in the k \c coordinate
+  float get_sampling_in_k(const Bin&) const;
   //@}
 
 
@@ -332,7 +390,7 @@ public:
   */
   virtual 
     Bin
-    get_bin(const LOR<float>&) const = 0;
+    get_bin(const LOR<float>&,const double delta_time = 0.0) const = 0;
 
   //! \name Equality of ProjDataInfo objects
   //@{
@@ -361,28 +419,32 @@ public:
   //! Get empty viewgram
   /*! \deprecated */
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
-    const bool make_num_tangential_poss_odd = false) const;
+    const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
   
   //! Get empty_sinogram
   /*! \deprecated */
   Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
-    const bool make_num_tangential_poss_odd = false) const;
+    const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
 
   //! Get empty segment sino
   /*! \deprecated */
   SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = false) const;
+		  	   const bool make_num_tangential_poss_odd = false,
+			   const int timing_pos_num = 0) const;
   //! Get empty segment view
   /*! \deprecated */
   SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = false) const;
+				   const bool make_num_tangential_poss_odd = false,
+				   const int timing_pos_num = 0) const;
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   /*! make_num_tangential_poss_odd has to be \c false */
+  //TODOTOF
   RelatedViewgrams<float> get_empty_related_viewgrams(const ViewgramIndices&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
-    const bool make_num_tangential_poss_odd = false) const;   
+    const bool make_num_tangential_poss_odd = false,
+	const int timing_pos_num = 0) const;
   //@}
 
 
@@ -394,7 +456,21 @@ public:
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
-  
+
+  //! Struct which holds two floating numbers
+  struct Float1Float2 { float low_lim; float high_lim; };
+
+  //! Vector which holds the lower and higher boundary for each TOF position in mm, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_ps;
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in mm, for faster access.
+#if 0
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_ps;
+#endif
+
   //! Set horizontal bed position
   void set_bed_position_horizontal(const float bed_position_horizontal_arg)
   { bed_position_horizontal = bed_position_horizontal_arg; }
@@ -423,6 +499,22 @@ private:
   int max_view_num;
   int min_tangential_pos_num;
   int max_tangential_pos_num;
+  //! Minimum TOF pos
+  int min_tof_pos_num;
+  //! Maximum TOF pos
+  int max_tof_pos_num;
+#if 0
+  //! Minimum TOF pos regardless of the mashing factor
+  int min_unmashed_tof_pos_num;
+  //! Maximum TOF pos regardless of the mashing factor
+  int max_unmashed_tof_pos_num;
+#endif
+  //! TOF mash factor.
+  int tof_mash_factor;
+  //! Finally (with any mashing factor) TOF bin increament.
+  float tof_increament_in_mm;
+  //! Number of tof bins (TOF mash factor applied)
+  int num_tof_bins;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
   float bed_position_horizontal;

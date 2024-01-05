@@ -29,7 +29,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
     : ProjDataInfo(full_proj_data_info_sptr->get_scanner_sptr(),
                    VectorWithOffset<int>(full_proj_data_info_sptr->get_min_segment_num(),
                                          full_proj_data_info_sptr->get_max_segment_num()), // filled in below
-                   views.size(), full_proj_data_info_sptr->get_num_tangential_poss()),
+                   views.size(), full_proj_data_info_sptr->get_num_tangential_poss(), full_proj_data_info_sptr->get_tof_mash_factor()),
       org_proj_data_info_sptr(full_proj_data_info_sptr->clone()), view_to_org_view_num(views),
       org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
@@ -222,9 +222,9 @@ ProjDataInfoSubsetByView::get_sampling_in_s(const Bin& bin) const
 }
 
 Bin
-ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor) const
+ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor, const double delta_time) const
 {
-  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor));
+  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor, delta_time));
 }
 
 bool

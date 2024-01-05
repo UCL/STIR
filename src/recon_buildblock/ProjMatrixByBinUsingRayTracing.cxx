@@ -1,6 +1,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013-2014, University College London
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2013-2014, 2018, 2019, 2021, 2023 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
@@ -16,6 +18,7 @@
 
   \brief non-inline implementations for stir::ProjMatrixByBinUsingRayTracing
 
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -265,18 +268,18 @@ static bool is_multiple(const float a, const float b)
 void
 ProjMatrixByBinUsingRayTracing::
 set_up(          
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr_v // TODO should be Info only
     )
 {
-  auto image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
+  auto image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_sptr_v.get());
 
   if (!image_info_ptr)
     error("ProjMatrixByBinUsingRayTracing initialised with wrong type of DiscretisedDensity.");
 
   if (this->already_setup)
     {
-      if (*this->proj_data_info_ptr == *proj_data_info_ptr_v &&
+      if (*this->proj_data_info_sptr == *proj_data_info_sptr_v &&
           this->voxel_size == image_info_ptr->get_voxel_size() &&
           this->origin == image_info_ptr->get_origin())
         {
@@ -292,26 +295,24 @@ set_up(
         }
     }
 
-  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+  ProjMatrixByBin::set_up(proj_data_info_sptr_v, density_info_sptr_v);
 
-  proj_data_info_ptr= proj_data_info_ptr_v; 
- 
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
   if (abs(origin.x())>.05F || abs(origin.y())>.05F)
     error("ProjMatrixByBinUsingRayTracing sadly doesn't support shifted x/y origin yet");
-  image_info_ptr->get_regular_range(min_index, max_index);
+  image_info_sptr->get_regular_range(min_index, max_index);
 
   symmetries_sptr.reset(
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
-                                                density_info_ptr,
+    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr,
+                                                density_info_sptr_v,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
                                                 do_symmetry_swap_segment,
                                                 do_symmetry_swap_s,
                                                 do_symmetry_shift_z));
   const float sampling_distance_of_adjacent_LORs_xy =
-    proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+    proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0));
   
   if(sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.x() + 1.E-3 ||
      sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.y() + 1.E-3)
@@ -323,10 +324,10 @@ set_up(
 
   if (use_actual_detector_boundaries)
     {
-  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
+  if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
     {
       const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
-        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
+        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_sptr.get());
       if (proj_data_info_cyl_ptr== 0)
         {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
@@ -352,10 +353,10 @@ set_up(
             }
         }
       }
-      else if(proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+      else if(proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
       {
       const ProjDataInfoBlocksOnCylindricalNoArcCorr * proj_data_info_blk_ptr =
-        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>(proj_data_info_ptr.get());
+        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>(proj_data_info_sptr.get());
 
       if (proj_data_info_blk_ptr== 0)
       {
@@ -385,7 +386,7 @@ set_up(
     else
     {
         const ProjDataInfoGenericNoArcCorr * proj_data_info_blk_ptr =
-          dynamic_cast<const ProjDataInfoGenericNoArcCorr *>(proj_data_info_ptr.get());
+          dynamic_cast<const ProjDataInfoGenericNoArcCorr *>(proj_data_info_sptr.get());
           
         if (proj_data_info_blk_ptr== 0)
         {
@@ -437,6 +438,12 @@ set_up(
   this->already_setup = true;
   this->clear_cache();
 };
+
+ProjMatrixByBinUsingRayTracing*
+ProjMatrixByBinUsingRayTracing::clone() const
+{
+	return new ProjMatrixByBinUsingRayTracing(*this);
+}
 
 /* this is used when 
    (tantheta==0 && sampling_distance_of_adjacent_LORs_z==2*voxel_size.z())
@@ -616,13 +623,13 @@ calculate_proj_matrix_elems_for_one_bin(
     }
 
   const Bin bin = lor.get_bin();
-  assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());    
-  assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
+  assert(bin.segment_num() >= proj_data_info_sptr->get_min_segment_num());    
+  assert(bin.segment_num() <= proj_data_info_sptr->get_max_segment_num());    
 
   assert(lor.size() == 0);
    
   float phi;
-  float s_in_mm = proj_data_info_ptr->get_s(bin);
+  float s_in_mm = proj_data_info_sptr->get_s(bin);
   /* Implementation note.
      KT initialised s_in_mm above instead of in the if because this meant
      that gcc 3.0.1 generated identical results to the previous version of this file.
@@ -636,21 +643,21 @@ calculate_proj_matrix_elems_for_one_bin(
   */
   if (!use_actual_detector_boundaries)
   {
-    phi = proj_data_info_ptr->get_phi(bin);
-    //s_in_mm = proj_data_info_ptr->get_s(bin);
+    phi = proj_data_info_sptr->get_phi(bin);
+    //s_in_mm = proj_data_info_sptr->get_s(bin);
   }
   else
   {
-    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
+    if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
     {
     // can be static_cast later on
     const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
     // TODO check on 180 degrees for views
     const int num_detectors =
-      proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+      proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
     const float ring_radius =
-      proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius();
+      proj_data_info_sptr->get_scanner_ptr()->get_effective_ring_radius();
 
     int det_num1=0, det_num2=0;
     proj_data_info_noarccor.
@@ -660,20 +667,20 @@ calculate_proj_matrix_elems_for_one_bin(
                                                  bin.tangential_pos_num());
     phi = static_cast<float>(
             (det_num1+det_num2)*_PI/num_detectors-_PI/2 + proj_data_info_noarccor.get_azimuthal_angle_offset() );
-    const float old_phi=proj_data_info_ptr->get_phi(bin);
+    const float old_phi=proj_data_info_sptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
     s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
-    const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
-    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
+    const float old_s_in_mm=proj_data_info_sptr->get_s(bin);
+    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_sptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
     }
-    else if(proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
+    else if(proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry()== "BlocksOnCylindrical")
     {
       // can be static_cast later on
       const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_noarccor =
-      dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data_info_ptr);
+      dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data_info_sptr);
 
       phi = proj_data_info_noarccor.get_phi(bin);
       s_in_mm = proj_data_info_noarccor.get_s(bin);
@@ -681,7 +688,7 @@ calculate_proj_matrix_elems_for_one_bin(
     else
     {
       const ProjDataInfoGenericNoArcCorr& proj_data_info_noarccor =
-      dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(*proj_data_info_ptr);
+      dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(*proj_data_info_sptr);
 
       phi = proj_data_info_noarccor.get_phi(bin);
       s_in_mm = proj_data_info_noarccor.get_s(bin);
@@ -692,12 +699,12 @@ calculate_proj_matrix_elems_for_one_bin(
   const float cphi = cos(phi);
   const float sphi = sin(phi);
   
-  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
+  const float tantheta = proj_data_info_sptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
-  const float t_in_mm = proj_data_info_ptr->get_t(bin);
+  const float t_in_mm = proj_data_info_sptr->get_t(bin);
    
   const float sampling_distance_of_adjacent_LORs_z =
-    proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
+    proj_data_info_sptr->get_sampling_in_t(bin)/costheta;
  
 
   // find number of LORs we have to take, such that we don't miss voxels
@@ -775,7 +782,7 @@ calculate_proj_matrix_elems_for_one_bin(
   float fovrad_in_mm = 
     min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
         (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
-        if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
+        if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
   {
     fovrad_in_mm =
         min((min(max_index.x(), -min_index.x()) - 5.f) * voxel_size.x(),
@@ -800,7 +807,7 @@ calculate_proj_matrix_elems_for_one_bin(
     // interleaved case has a sampling which is twice as high
     const float s_inc = 
        (!use_actual_detector_boundaries ? 1 : 2) *
-        proj_data_info_ptr->get_sampling_in_s(bin)/num_tangential_LORs;
+        proj_data_info_sptr->get_sampling_in_s(bin)/num_tangential_LORs;
     float current_s_in_mm =
         s_in_mm - s_inc*(num_tangential_LORs-1)/2.F;
     for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)

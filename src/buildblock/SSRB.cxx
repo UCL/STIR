@@ -165,6 +165,14 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 				out_segment_num);
       }
     }
+
+  if (num_tof_bins_to_combine!=1)
+    {
+      if (num_tof_bins_to_combine<1)
+        error("SSRB: num_tof_bins_to_combine needs to be at least 1");
+      const int new_tof_mash_factor = in_proj_data_info_sptr->get_tof_mash_factor() * num_tof_bins_to_combine;
+      out_proj_data_info_sptr->set_tof_mash_factor(new_tof_mash_factor);
+    }
   return out_proj_data_info_sptr;
 }
 
@@ -199,6 +207,9 @@ SSRB(ProjData& out_proj_data,
      const bool do_norm
      )
 {
+    if (in_proj_data.get_proj_data_info_sptr()->is_tof_data())
+		error("SSRB for TOF data is not currently implemented.\n");
+
   const shared_ptr<const ProjDataInfoCylindrical> in_proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>
     (in_proj_data.get_proj_data_info_sptr());

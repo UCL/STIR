@@ -62,6 +62,7 @@ ADD_REPR(stir::DetectionPosition, %arg(*$self))
 %attributeref(stir::SinogramIndices, int, axial_pos_num);
 %attributeref(stir::Bin, int, axial_pos_num);
 %attributeref(stir::Bin, int, tangential_pos_num);
+%attributeref(stir::Bin, int, timing_pos_num);
 %attributeref(stir::Bin, int, time_frame_num);
 %attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
 %include "stir/SegmentIndices.h"
@@ -184,11 +185,11 @@ namespace stir {
     }
 
 #ifdef SWIGPYTHON
-    %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
+    %feature("autodoc", "create a stir 4D Array from the projection data (internal)") to_array;
     %newobject to_array;
-    Array<3,float> to_array()
+    Array<4,float> to_array()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return array;
     }
 
@@ -198,7 +199,7 @@ namespace stir {
       if (PyIter_Check(arg))
       {
         // TODO avoid need for copy to Array
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
         fill_from(*$self, array.begin_all(), array.end_all());
       }
@@ -215,13 +216,13 @@ namespace stir {
     %newobject to_matlab;
     mxArray * to_matlab()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return swigstir::Array_to_matlab(array); 
     }
 
     void fill(const mxArray *pm)
     { 
-      Array<3,float> array;
+      Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
       fill_from(*$self, array.begin_all(), array.end_all());
     }
@@ -238,7 +239,7 @@ namespace stir {
     {
       if (PyIter_Check(arg))
       {
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
         fill_from(*$self, array.begin_all(), array.end_all());
       }
@@ -254,7 +255,7 @@ namespace stir {
 #elif defined(SWIGMATLAB)
     void fill(const mxArray *pm)
     { 
-      Array<3,float> array;
+      Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
       fill_from(*$self, array.begin_all(), array.end_all());
     }

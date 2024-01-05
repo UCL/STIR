@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2015, 2020, 2022, 2023 University College London
     Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
     Copyright (C) 2021, Rutherford Appleton Laboratory STFC
@@ -17,6 +18,7 @@
 
   \brief Implementations for non-inline functions of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Ashley Gillman
   \author Evgueni Ovtchinnikov
@@ -236,18 +238,18 @@ ProjData::get_subset(const std::vector<int>& views) const
     std::make_shared<ProjDataInfoSubsetByView>(proj_data_info_sptr, views);
   unique_ptr<ProjDataInMemory> subset_proj_data_uptr(new ProjDataInMemory(exam_info_sptr, subset_proj_data_info_sptr));
 
-  //TODOTOF loop here
-  for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
-    {
-      for (int subset_view_num=0; subset_view_num < static_cast<int>(views.size()); ++subset_view_num)
-        {
-          const Viewgram<float> viewgram = this->get_viewgram(views[subset_view_num], segment_num);
-          // construct new one with data from viewgram, but appropriate meta-data
-          const Viewgram<float> subset_viewgram(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num);
-          if (subset_proj_data_uptr->set_viewgram(subset_viewgram) != Succeeded::yes)
-            error("ProjData::get_subset failed to set a viewgram");
-        }
-    }
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
+      {
+        for (int subset_view_num=0; subset_view_num < static_cast<int>(views.size()); ++subset_view_num)
+          {
+            const auto viewgram = this->get_viewgram(views[subset_view_num], segment_num, false, timing_pos_num);
+            // construct new one with data from viewgram, but appropriate meta-data
+            const Viewgram<float> subset_viewgram(viewgram, subset_proj_data_info_sptr, subset_view_num, segment_num, timing_pos_num);
+            if (subset_proj_data_uptr->set_viewgram(subset_viewgram) != Succeeded::yes)
+              error("ProjData::get_subset failed to set a viewgram");
+          }
+      }
 
   return subset_proj_data_uptr;
 }
@@ -267,37 +269,40 @@ ProjData::get_empty_sinogram(const SinogramIndices& ind) const
 
 Viewgram<float>
 ProjData::get_empty_viewgram(const int view_num, const int segment_num, 
-			     const bool make_num_tangential_poss_odd) const
+			     const bool make_num_tangential_poss_odd,
+				 const int timing_pos) const
 {
   return
-    proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd, timing_pos);
 }
 
 Sinogram<float>
 ProjData::get_empty_sinogram(const int ax_pos_num, const int segment_num,
-			     const bool make_num_tangential_poss_odd) const
+			     const bool make_num_tangential_poss_odd,
+				 const int timing_pos) const
 {
   return
-    proj_data_info_sptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_sinogram(ax_pos_num, segment_num, make_num_tangential_poss_odd, timing_pos);
 }
 
 
 SegmentBySinogram<float>
 ProjData::get_empty_segment_by_sinogram(const int segment_num, 
-      const bool make_num_tangential_poss_odd) const
+      const bool make_num_tangential_poss_odd,
+	  const int timing_pos) const
 {
   return
-    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, make_num_tangential_poss_odd, timing_pos);
 }  
 
 
 SegmentByView<float>
 ProjData::get_empty_segment_by_view(const int segment_num, 
-				   const bool make_num_tangential_poss_odd) const
+				   const bool make_num_tangential_poss_odd,
+				   const int timing_pos) const
 {
   return
-    proj_data_info_sptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd);
-
+    proj_data_info_sptr->get_empty_segment_by_view(segment_num, make_num_tangential_poss_odd, timing_pos);
 }
 
 SegmentBySinogram<float>
@@ -314,18 +319,21 @@ ProjData::get_empty_segment_by_view(const SegmentIndices& ind) const
 
 RelatedViewgrams<float>
 ProjData::get_empty_related_viewgrams(const ViewgramIndices& view_segmnet_num,
-		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_tangential_poss_odd) const
+                                      const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
+                                      const bool make_num_tangential_poss_odd,
+                                      const int timing_pos) const
+
 {
   return
-    proj_data_info_sptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd);
+    proj_data_info_sptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_used, make_num_tangential_poss_odd, timing_pos);
 }
 
 
 RelatedViewgrams<float> 
 ProjData::get_related_viewgrams(const ViewgramIndices& viewgram_indices,
-		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_bins_odd) const
+                                const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
+                                const bool make_num_tangential_poss_odd,
+                                const int timing_pos) const
 {
   vector<ViewSegmentNumbers> pairs;
   symmetries_used->get_related_view_segment_numbers(
@@ -339,12 +347,29 @@ ProjData::get_related_viewgrams(const ViewgramIndices& viewgram_indices,
   for (unsigned int i=0; i<pairs.size(); i++)
   {
     // TODO optimise to get shared proj_data_info_ptr
-    viewgrams.push_back(get_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_bins_odd));
+    // TODOTOF
+    pairs[i].timing_pos_num() = timing_pos;
+    viewgrams.push_back(this->get_viewgram(pairs[i]));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);
 }
+
+//std::vector<float>
+//ProjData::get_related_bin_values(const std::vector<Bin>& r_bins) const
+//{
+
+//    std::vector<float> values;
+//    values.reserve(r_bins.size());
+
+//    for (std::vector <Bin>::const_iterator r_bins_iterator = r_bins.begin();
+//         r_bins_iterator != r_bins.end(); ++r_bins_iterator)
+//    {
+//        values.push_back(this->get_bin_value(*r_bins_iterator));
+//    }
+
+//    return values;
+//}
 
 
 Succeeded 
@@ -371,25 +396,23 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
 }
 #endif
 
-SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num) const
+SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num, const int timing_pos) const
 {
   SegmentBySinogram<float> segment =
-    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num,false);
+    proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num,false,timing_pos);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
-
+	  segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 
-SegmentByView<float> ProjData::get_segment_by_view(const int segment_num) const
+SegmentByView<float> ProjData::get_segment_by_view(const int segment_num, const int timing_pos) const
 {
   SegmentByView<float> segment =
-    proj_data_info_sptr->get_empty_segment_by_view(segment_num,false);
+    proj_data_info_sptr->get_empty_segment_by_view(segment_num,false,timing_pos);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
-
+	  segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 
@@ -421,12 +444,15 @@ ProjData::set_segment(const SegmentByView<float>& segment)
 void 
 ProjData::fill(const float value)
 {
-  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)  
   {
-    SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num));
-    segment.fill(value);
-    if(this->set_segment(segment) == Succeeded::no)
-      error("Error setting segment of projection data");
+	  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
+	  {
+		  SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num, false, timing_pos_num));
+		segment.fill(value);
+		if(this->set_segment(segment) == Succeeded::no)
+		  error("Error setting segment of projection data");
+	  }
   }
 }
 
@@ -441,9 +467,12 @@ ProjData::fill(const ProjData& proj_data)
 
   for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
   {
-    if(this->set_segment(proj_data.get_segment_by_view(segment_num))
-       == Succeeded::no)
-      error("Error setting segment of projection data");
+	  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+	  {
+		if(this->set_segment(proj_data.get_segment_by_view(segment_num, timing_pos_num))
+		   == Succeeded::no)
+		  error("Error setting segment of projection data");
+	  }
   }
 }
 
@@ -464,18 +493,9 @@ write_to_file(const string& output_filename) const
   ProjDataInterfile out_projdata(get_exam_info_sptr(),
                  this->proj_data_info_sptr, output_filename, ios::out);
 
-  Succeeded success=Succeeded::yes;
-  for (int segment_num = proj_data_info_sptr->get_min_segment_num();
-       segment_num <= proj_data_info_sptr->get_max_segment_num();
-       ++segment_num)
-  {
-    Succeeded success_this_segment =
-      out_projdata.set_segment(get_segment_by_view(segment_num));
-    if (success==Succeeded::yes)
-      success = success_this_segment;
-  }
-  return success;
-
+  out_projdata.fill(*this);
+  // will have thrown if it failed, so return it was ok
+  return Succeeded::yes;
 }
 
 void
@@ -491,21 +511,23 @@ ProjData::
 xapyb(const ProjData& x, const float a,
       const ProjData& y, const float b)
 {
-    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
-            *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
-        error("ProjData::xapyb: ProjDataInfo don't match");
+  if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+      *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
+    error("ProjData::xapyb: ProjDataInfo don't match");
 
-    const int n_min = get_min_segment_num();
-    const int n_max = get_max_segment_num();
+  const int s_min = get_min_segment_num();
+  const int s_max = get_max_segment_num();
 
-    for (int s=n_min; s<=n_max; ++s)
-    {
-        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s=s_min; s<=s_max; ++s)
+      {
+        auto seg = get_empty_segment_by_sinogram(s, false, timing_pos_num);
+        const auto sx = x.get_segment_by_sinogram(s, timing_pos_num);
+        const auto sy = y.get_segment_by_sinogram(s, timing_pos_num);
         seg.xapyb(sx, a, sy, b);
-        set_segment(seg);
-    }
+        if (set_segment(seg) == Succeeded::no)
+          error("ProjData::xapyb: set_segment failed. Write-only file?");
+      }
 }
 
 void
@@ -513,26 +535,28 @@ ProjData::
 xapyb(const ProjData& x, const ProjData& a,
       const ProjData& y, const ProjData& b)
 {
-    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
-        *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
-        error("ProjData::xapyb: ProjDataInfo don't match");
+  if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+      *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
+      *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
+      *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
+    error("ProjData::xapyb: ProjDataInfo don't match");
 
-    const int n_min = get_min_segment_num();
-    const int n_max = get_max_segment_num();
+  const int s_min = get_min_segment_num();
+  const int s_max = get_max_segment_num();
 
-    for (int s=n_min; s<=n_max; ++s)
-    {
-        SegmentBySinogram<float> seg = get_empty_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sx = x.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sy = y.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sa = a.get_segment_by_sinogram(s);
-        const SegmentBySinogram<float> sb = b.get_segment_by_sinogram(s);
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s=s_min; s<=s_max; ++s)
+      {
+        auto seg = get_empty_segment_by_sinogram(s, false, timing_pos_num);
+        const auto sx = x.get_segment_by_sinogram(s, timing_pos_num);
+        const auto sy = y.get_segment_by_sinogram(s, timing_pos_num);
+        const auto sa = a.get_segment_by_sinogram(s, timing_pos_num);
+        const auto sb = b.get_segment_by_sinogram(s, timing_pos_num);
 
         seg.xapyb(sx, sa, sy, sb);
-        set_segment(seg);
-    }
+        if (set_segment(seg) == Succeeded::no)
+          error("ProjData::xapyb: set_segment failed. Write-only file?");
+      }
 }
 
 void

@@ -6,11 +6,15 @@
   \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
     
+
+  \author Nikos Efthimiou
   \author Daniel Deidda
   \author Kris Thielemans
 
 */
 /*
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, University College of London
     This file is part of STIR.
@@ -53,11 +57,22 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
+    double get_delta_time() const { return delta_time; }
+protected:
+    //! The detection time difference, between the two photons.
+    double delta_time;
+
 }; /*-coincidence event*/
 
+//! Class for records in a PET list mode file
+/*! \ingroup listmode
+
+  Currently identical to ListRecord. Maybe this class will be removed.
+*/
 class CListRecord : public ListRecord
 {
 public:
+
 };
 
 class CListRecordWithGatingInput : public CListRecord

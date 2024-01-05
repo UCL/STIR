@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2014, 2016, 2018, 2022 University College London
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
 
@@ -51,6 +52,8 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -78,14 +81,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin()
 template <typename TargetT> 
 void  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_defaults() 
-{ 
+set_defaults()
+{
   base_type::set_defaults();
 #if STIR_VERSION < 060000
   this->max_ring_difference_num_to_process =-1;
 #endif
   this->PM_sptr.reset(new  ProjMatrixByBinUsingRayTracing());
 
+  this->use_tofsens = false;
   skip_balanced_subsets = false;
 } 
  
@@ -97,6 +101,7 @@ initialise_keymap()
   base_type::initialise_keymap(); 
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters");
+  this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
 #if STIR_VERSION < 060000
 this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
 #endif
@@ -176,7 +181,10 @@ bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
-    if (skip_balanced_subsets)
+  if (this->num_subsets == 1)
+    return true;
+
+  if (skip_balanced_subsets)
     {
         warning("We skip the check on balanced subsets and presume they are balanced!");
         return true;
@@ -209,17 +217,23 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
                             view_num <= this->proj_data_info_sptr->get_max_view_num();
                             view_num += this->num_subsets)
                         {
-                            const Bin tmp_bin(segment_num,
-                                              view_num,
-                                              axial_num,
-                                              tang_num, 1);
+                          for (int timing_pos_num = this->proj_data_info_sptr->get_min_tof_pos_num();
+                               timing_pos_num <= this->proj_data_info_sptr->get_max_tof_pos_num();
+                               ++timing_pos_num)
+                            {
+                              const Bin tmp_bin(segment_num,
+                                                view_num,
+                                                axial_num,
+                                                tang_num,
+                                                timing_pos_num,
+                                                1);
 
-                            if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
+                              if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
                                 continue;
 
-                            num_bins_in_subset[subset_num] +=
-                                    symmetries.num_related_bins(tmp_bin);
-
+                              num_bins_in_subset[subset_num] +=
+                                symmetries.num_related_bins(tmp_bin);
+                            }
                         }
                     }
                 }
@@ -261,29 +275,42 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
     
-#if 1
   if (is_null_ptr(this->PM_sptr)) 
-
     { error("You need to specify a projection matrix"); } 
-
-#else
-  if(is_null_ptr(this->projector_pair_sptr->get_forward_projector_sptr()))
-    {
-      error("No valid forward projector is defined");
-    }
-
-  if(is_null_ptr(this->projector_pair_sptr->get_back_projector_sptr()))
-    {
-      error("No valid back projector is defined");
-    }
-#endif
 
     // set projector to be used for the calculations
     this->PM_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
 
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+
     this->projector_pair_sptr.reset(
-                new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
+                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+
     this->projector_pair_sptr->set_up(this->proj_data_info_sptr->create_shared_clone(),target_sptr);
+
+    if (!this->use_tofsens && (this->proj_data_info_sptr->get_num_tof_poss()>1)) // TODO this check needs to cover the case if we reconstruct only TOF bin 0
+      {
+	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
+        this->sens_proj_data_info_sptr = this->proj_data_info_sptr->create_non_tof_clone();
+        // TODO disable caching of the matrix
+        this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
+        this->sens_backprojector_sptr->set_up(this->sens_proj_data_info_sptr, target_sptr);
+      }
+    else
+      {
+        // just use the normal backprojector
+        this->sens_proj_data_info_sptr = this->proj_data_info_sptr;
+        this->sens_backprojector_sptr = projector_pair_sptr->get_back_projector_sptr();
+      }
+    if (this->normalisation_sptr->set_up(this->list_mode_data_sptr->get_exam_info_sptr(),
+                                         this->sens_proj_data_info_sptr) == Succeeded::no)
+      {
+        warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
+                "set-up of normalisation failed.");
+        return Succeeded::no;
+      }
+
 
     if (this->current_frame_num<=0)
     {
@@ -317,14 +344,14 @@ set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr)
 template <typename TargetT>  
 bool  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::post_processing() 
-{ 
+{
 
-  if (base_type::post_processing() == true) 
-    return true; 
+  if (base_type::post_processing() == true)
+    return true;
  
-#if STIR_VERSION < 060000
    this->proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
+#if STIR_VERSION < 060000
    if (this->get_max_segment_num_to_process() < 0)
      this->set_max_ring_difference(this->max_ring_difference_num_to_process);
    else
@@ -506,10 +533,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                             ||  tmp.my_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
                             ||  tmp.my_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(tmp.my_bin.segment_num())
                             ||  tmp.my_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(tmp.my_bin.segment_num())
-        #ifdef STIR_TOF
-                            ||  tmp.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
-                            ||  tmp.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num()
-        #endif
+                            ||  tmp.my_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
+                            ||  tmp.my_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num()
                             )
                     {
                         continue;
@@ -544,11 +569,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             // add additive term to current cache
             if(this->has_add)
               {
-#ifdef STIR_TOF
-                // TODO
-                if (additive_proj_data_sptr->get_num_tof_poss() > 1)
-                    error("listmode processing with caching is not yet supported for TOF");
-#else
                 info( boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
 
 #ifdef STIR_OPENMP
@@ -562,13 +582,20 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #endif
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic) //collapse(2)
+#if _OPENMP <201107
+    #pragma omp parallel for schedule(dynamic)
+#else
+    #pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
 #endif
                 for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
-                seg <= this->additive_proj_data_sptr->get_max_segment_num();
-                ++seg)
+                     seg <= this->additive_proj_data_sptr->get_max_segment_num();
+                     ++seg)
+                  for (int timing_pos_num = this->additive_proj_data_sptr->get_min_tof_pos_num();
+                       timing_pos_num <= this->additive_proj_data_sptr->get_max_tof_pos_num();
+                       ++timing_pos_num)
                   {
-                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg));
+                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg, timing_pos_num));
 
                     for (BinAndCorr &cur_bin : record_cache)
                       {
@@ -585,7 +612,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                           }
                       }
                   }
-#endif // STIR_TOF
               } // end additive correction
 
             if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
@@ -615,14 +641,12 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
     info(boost::format("Calculating sensitivity for subset %1%") %subset_num);
 
-#ifdef STIR_TOF
     int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
     if (min_timing_pos_num<0 || max_timing_pos_num>0)
       error("TOF code for sensitivity needs work");
-#endif
 
-    this->projector_pair_sptr->get_back_projector_sptr()->
+    this->sens_backprojector_sptr->
       start_accumulating_in_new_target();
 
     // warning: has to be same as subset scheme used as in distributable_computation
@@ -635,21 +659,21 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #endif
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
-      for (int view = this->proj_data_info_sptr->get_min_view_num() + subset_num;
-          view <= this->proj_data_info_sptr->get_max_view_num();
+      for (int view = this->sens_proj_data_info_sptr->get_min_view_num() + subset_num;
+          view <= this->sens_proj_data_info_sptr->get_max_view_num();
           view += this->num_subsets)
       {
           const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-          if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
+          if (! this->sens_backprojector_sptr->get_symmetries_used()->is_basic(view_segment_num))
             continue;
           //for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
           {
               shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-              (this->projector_pair_sptr->get_symmetries_used()->clone());
+              (this->sens_backprojector_sptr->get_symmetries_used()->clone());
 
               RelatedViewgrams<float> viewgrams =
-                  this->proj_data_info_sptr->get_empty_related_viewgrams(
+                  this->sens_proj_data_info_sptr->get_empty_related_viewgrams(
                       view_segment_num, symmetries_used, false);//, timing_pos_num);
 
               viewgrams.fill(1.F);
@@ -664,14 +688,14 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                   const int max_ax_pos_num =
                       viewgrams.get_max_axial_pos_num();
 
-                  this->projector_pair_sptr->get_back_projector_sptr()->
+                  this->sens_backprojector_sptr->
                     back_project(viewgrams,
                                  min_ax_pos_num, max_ax_pos_num);
               }
           }
       }
     }
-    this->projector_pair_sptr->get_back_projector_sptr()->
+    this->sens_backprojector_sptr->
       get_output(sensitivity);
 }
 
@@ -806,7 +830,9 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                        || measured_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
                        || measured_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
                        || measured_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                       || measured_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
+                       || measured_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num())
+                       || measured_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
+                       || measured_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num())
                {
                    continue;
                }

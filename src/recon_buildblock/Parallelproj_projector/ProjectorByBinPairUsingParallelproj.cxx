@@ -67,6 +67,13 @@ ProjectorByBinPairUsingParallelproj()
   set_defaults();
 }
 
+BackProjectorByBinParallelproj*
+BackProjectorByBinParallelproj::
+clone() const
+{
+	return new BackProjectorByBinParallelproj(*this);
+}
+
 Succeeded
 ProjectorByBinPairUsingParallelproj::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,

@@ -76,7 +76,7 @@ get_ROI_value() {
 # warning: return 0 if they are different (which is non-standard I guess)
 compare_values() {
     if [ $# -ne 3 ]; then
-      echo "Something wrong with call to compare_values"
+      echo "Someting wrong with call to compare_values"
     exit 1
     fi
     error_bigger_than_x=`echo $1 $2 $3 | awk '{ print(($2/$1 - 1)*($2/$1 - 1)> ($3 * $3)) }'`
@@ -143,16 +143,16 @@ fi
 echo "===  make attenuation image"
 generate_image  generate_atten_cylinder.par
 
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
+echo "===  create template sinogram (DSTE in 3D with max ring diff 3 to save time)"
+template_sino=my_DSTE_3D_rd3_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
 
 1
 n
 
-0
-2
+
+3
 EOF
 create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 
@@ -180,7 +180,7 @@ new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then
-  echo "DIFFERENCE IN su  of prompts IS TOO LARGE."
+  echo "DIFFERENCE IN sum of prompts IS TOO LARGE."
   exit 1
 fi
 

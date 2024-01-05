@@ -117,6 +117,14 @@ Scanner* find_scanner_from_ECAT_system_type(const short system_type);
 std::vector<int>
 find_segment_sequence(const ProjDataInfo& pdi);
 
+//! Return the sequence of how Siemens stores TOF bins
+/*!
+  \ingroup ECAT
+   Siemens always stores segments as 0, -1, +1, ... (numbering is in STIR convention)
+ */
+std::vector<int>
+find_timing_poss_sequence(const ProjDataInfo& pdi);
+
 END_NAMESPACE_ECAT
 
 END_NAMESPACE_STIR

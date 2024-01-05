@@ -73,8 +73,7 @@ public:
   //BackProjectorByBin const *
   const shared_ptr<BackProjectorByBin>
     get_back_projector_sptr() const;
-  
-
+    
   //! Provide access to the (minimal) symmetries used by the projectors
   /*! It is expected that the forward and back projector can handle the same
       symmetries.

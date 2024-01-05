@@ -3,6 +3,7 @@
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2022 University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,6 +16,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInfoCylindrical
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Berta Marti Fuster
@@ -25,6 +27,7 @@
 
 
 #include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <utility>
 #include <vector>
 
@@ -87,8 +90,28 @@ public:
   virtual void
     get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 	    const Bin& bin) const;
+#if 0
+  // KT disabled these as untested (and unused)
 
- 
+  //! This function returns the two points connecting the two detectors of the LOR.
+  //!  \warning there is not a specific guarantee that these are going to be the two
+  //! central points. This might be in the future a source of error.
+  void
+  get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1,
+                        CartesianCoordinate3D<float>& coord_2,
+                        const Bin& bin) const;
+
+  //! This function is the same as get_LOR_as_two_points() but should faster.
+  //! \warning More testing needed.
+  void
+  get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
+                            CartesianCoordinate3D<float>& coord_2,
+                            const int det1,
+                            const int det2,
+                            const int ring1,
+                            const int ring2,
+                            const int timing_pos) const;
+#endif
   //! Set azimuthal angle offset (in radians)
   void set_azimuthal_angle_offset(const float angle);
   //! Set the azimuthal sampling (in radians)
@@ -107,6 +130,8 @@ public:
   */
   virtual void
     set_num_views(const int new_num_views);
+
+  virtual void set_tof_mash_factor(const int new_num);
 
   //! Get azimuthal angle offset (in radians)
   inline float get_azimuthal_angle_offset() const;

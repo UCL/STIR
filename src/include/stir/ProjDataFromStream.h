@@ -17,6 +17,9 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
+    Copyright (C) 2020, 2022 University College London
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -47,16 +50,19 @@ START_NAMESPACE_STIR
   owning the stream might not be deleted yet before we try to read the file again.
 
   \warning Data have to be contiguous.
-  \warning The parameter \c make_num_tangential_poss_odd (used in various 
-  \c get_ functions) is temporary and will be removed soon.
-
+  \warning The parameter make_num_tangential_poss_odd (used in various 
+  get_ functions) is temporary and will be removed soon.
+  \warning Changing the sequence of the timing bins is not supported.
 */
 class ProjDataFromStream : public ProjData
 {
 public:
 
   enum StorageOrder {
-    Segment_AxialPos_View_TangPos, Segment_View_AxialPos_TangPos, 
+    Segment_AxialPos_View_TangPos,
+    Timing_Segment_AxialPos_View_TangPos,
+    Segment_View_AxialPos_TangPos,
+    Timing_Segment_View_AxialPos_TangPos,
     Unsupported };
 #if 0    
   static  ProjDataFromStream* ask_parameters(const bool on_disk = true);
@@ -82,20 +88,21 @@ public:
 		      StorageOrder o = Segment_View_AxialPos_TangPos,
 		      NumericType data_type = NumericType::FLOAT,
 		      ByteOrder byte_order = ByteOrder::native,  
-		      float scale_factor = 1 );
+              float scale_factor = 1.f );
 
   //! as above, but with a default value for segment_sequence_in_stream
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
   ProjDataFromStream (shared_ptr<const ExamInfo> const& exam_info_sptr,
-		      shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
-		      shared_ptr<std::iostream> const& s, 
-		      const std::streamoff offs = 0, 
-		      StorageOrder o = Segment_View_AxialPos_TangPos,
-		      NumericType data_type = NumericType::FLOAT,
-		      ByteOrder byte_order = ByteOrder::native,  
-		      float scale_factor = 1 );
+              shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+              shared_ptr<std::iostream> const& s,
+              const std::streamoff offs = 0,
+              StorageOrder o = Segment_View_AxialPos_TangPos,
+              NumericType data_type = NumericType::FLOAT,
+              ByteOrder byte_order = ByteOrder::native,
+              float scale_factor = 1.f);
+
   //! Obtain the storage order
   inline StorageOrder get_storage_order() const;
     
@@ -111,19 +118,30 @@ public:
     
   //! Get the segment sequence
   inline std::vector<int> get_segment_sequence_in_stream() const;
-    
+  //! Get the timing bins sequence
+  inline std::vector<int> get_timing_poss_sequence_in_stream() const;
+  //! set the timing bins sequence
+  void set_timing_poss_sequence_in_stream(const std::vector<int>& seq);
+
   //! Get & set viewgram 
-  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false,
+                               const int timing_pos=0) const;
   Succeeded set_viewgram(const Viewgram<float>& v);
     
   //! Get & set sinogram 
-  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const; 
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false,
+                               const int timing_pos=0) const;
+
   Succeeded set_sinogram(const Sinogram<float>& s);
     
   //! Get all sinograms for the given segment
-  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num) const;
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num,
+                                                   const int timing_num = 0) const;
   //! Get all viewgrams for the given segment
-  SegmentByView<float> get_segment_by_view(const int segment_num) const;
+  SegmentByView<float> get_segment_by_view(const int segment_num,
+                                           const int timing_pos = 0) const;
     
     
   //! Set all sinograms for the given segment
@@ -144,16 +162,23 @@ protected:
   //! the stream with the data
   shared_ptr<std::iostream> sino_stream;
 
-  //! Calculate the offsets for specific bins.
-  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
+  //! Calculate the offset for a specific bin
+  /*! Throws if out-of-range or other error */
+  std::streamoff get_offset(const Bin&) const;
 
 private:
+
+  void activate_TOF();
   //! offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
-  
+  //! offset of a complete non-tof sinogram
+  std::streamoff offset_3d_data;
+
   
   //!the order in which the segments occur in the stream
   std::vector<int> segment_sequence;
+  //!the order in which the timing bins occur in the stream
+  std::vector<int> timing_poss_sequence;
   
   inline int find_segment_index_in_sequence(const int segment_num) const;
   
@@ -166,15 +191,7 @@ private:
   // scale_factor is only used when reading data from file. Data are stored in
   // memory as float, with the scale factor multiplied out
   float scale_factor;
-  
-  //! Calculate the offset for the given segmnet
-  std::streamoff get_offset_segment(const int segment_num) const;
-  
-  //! Calculate offsets for viewgram data  
-  std::vector<std::streamoff> get_offsets(const int view_num, const int segment_num) const;
-  //! Calculate offsets for sinogram data
-  std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
-    
+
 private:
 #if __cplusplus > 199711L
   ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;

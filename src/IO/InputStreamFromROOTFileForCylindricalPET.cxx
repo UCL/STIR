@@ -52,7 +52,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
-    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2  - 1;
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
     if (half_block < 0 )
         half_block = 0;
 }
@@ -63,6 +63,7 @@ InputStreamFromROOTFileForCylindricalPET::
 get_next_record(CListRecordROOT& record)
 {
     int ring1, ring2, crystal1, crystal2;
+    double delta_timing_bin;
     bool eof = false;
 
 #ifdef STIR_OPENMP
@@ -132,6 +133,8 @@ get_next_record(CListRecordROOT& record)
     crystal1 += offset_dets;
     crystal2 += offset_dets;
 #endif
+
+    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
     }
 
     if(eof)
@@ -140,7 +143,7 @@ get_next_record(CListRecordROOT& record)
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
-                                  time1, time2,
+                                  time1, delta_timing_bin,
                                   eventID1, eventID2);
 }
 

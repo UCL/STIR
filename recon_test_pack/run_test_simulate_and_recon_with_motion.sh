@@ -113,16 +113,16 @@ if [ $? -ne 0 ]; then
   echo "ERROR running warp_and_accumulate_gated_images"; exit 1;
 fi
 
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
+echo "===  create template sinogram (DSTE in 3D with max ring diff 3 to save time)"
+template_sino=my_DSTE_3D_rd3_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
 
 1
 n
 
-0
 2
+3
 EOF
 create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 

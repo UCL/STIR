@@ -70,6 +70,8 @@ public :
 		      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
+  virtual ProjMatrixByBinUsingInterpolation* clone() const;
+
 private:
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;

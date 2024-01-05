@@ -118,7 +118,8 @@ void ProjDataGEHDF5::initialise_ax_pos_offset()
 Viewgram<float>
 ProjDataGEHDF5::
 get_viewgram(const int view_num, const int segment_num,
-             const bool make_num_tangential_poss_odd) const
+             const bool make_num_tangential_poss_odd,
+             const int timing_pos) const
 {
     if (make_num_tangential_poss_odd)
         error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
@@ -187,7 +188,8 @@ Succeeded ProjDataGEHDF5::set_viewgram(const Viewgram<float>& v)
     return Succeeded::no;
 }
 
-Sinogram<float> ProjDataGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
+Sinogram<float> ProjDataGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd,
+                                             const int timing_pos) const
 {
     // TODO
     error("ProjDataGEHDF5::get_sinogram not implemented yet");

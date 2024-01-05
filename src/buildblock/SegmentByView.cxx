@@ -65,16 +65,16 @@ template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const Array<3,elemT>& v,
               const shared_ptr<const ProjDataInfo>& pdi_sptr,
-              const int segment_num)
+              const int segment_num, const int t_num)
   :
-  SegmentByView(v, pdi_sptr, SegmentIndices(segment_num))
+  SegmentByView(v, pdi_sptr, SegmentIndices(segment_num, t_num))
 {}
 
 template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const shared_ptr<const ProjDataInfo>& pdi_sptr,
-              const int segment_num)
-  : SegmentByView(pdi_sptr, SegmentIndices(segment_num))
+              const int segment_num, const int t_num)
+  : SegmentByView(pdi_sptr, SegmentIndices(segment_num, t_num))
 {}
 
 template <typename elemT>
@@ -112,7 +112,7 @@ SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
     pre_sino[v] = Array<3,elemT>::operator[](v)[axial_pos_num];
   
   return Sinogram<elemT>(pre_sino, this->proj_data_info_sptr, axial_pos_num,
-			 this->get_segment_num());
+			 this->get_segment_num(), this->get_timing_pos_num());
 }
 
 template <typename elemT>

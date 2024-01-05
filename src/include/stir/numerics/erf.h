@@ -19,6 +19,9 @@
 
 #include "stir/common.h"
 
+#ifndef __stir_numerics_erf__H__
+#define __stir_numerics_erf__H__
+
 START_NAMESPACE_STIR
 
 /*! \ingroup numerics
@@ -40,3 +43,4 @@ END_NAMESPACE_STIR
 
 #include "stir/numerics/erf.inl"
 
+#endif // __stir_numerics_erf__H__

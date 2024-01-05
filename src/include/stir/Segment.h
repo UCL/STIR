@@ -65,6 +65,8 @@ public:
   inline SegmentIndices get_segment_indices() const;
   //! Get the segment number
   inline int get_segment_num() const;
+  //! Get the timing position index
+  inline int get_timing_pos_num() const;
   virtual int get_min_axial_pos_num() const = 0;
   virtual int get_max_axial_pos_num() const = 0;
   virtual int get_min_view_num() const = 0;

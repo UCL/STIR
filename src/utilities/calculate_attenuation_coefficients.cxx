@@ -43,6 +43,10 @@
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
 
+  \par Note
+
+  Output is non-TOF, even if a TOF template is used.
+
   \warning attenuation image data are supposed to be in units cm^-1.
   Reference: water has mu .096 cm^-1.
 
@@ -156,11 +160,16 @@ main (int argc, char * argv[])
 
   cerr << "\n\nForward projector used:\n" << forw_projector_sptr->parameter_info();
 
+  if (template_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data())
+  {
+	  info("The scanner template provided contains TOF information. The calculation of the attenuation coefficients will be non-TOF anyway.");
+  }
+
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
 		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
-					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
+					    template_proj_data_ptr->get_proj_data_info_sptr()->create_non_tof_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
 
@@ -173,7 +182,7 @@ main (int argc, char * argv[])
 						  forw_projector_sptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(),template_proj_data_ptr->get_proj_data_info_sptr()->create_non_tof_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");

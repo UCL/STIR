@@ -690,6 +690,15 @@ set_up(
 	this->already_setup= true;
 }
 
+ProjMatrixByBinSPECTUB* 
+ProjMatrixByBinSPECTUB::clone() const
+{
+  // we deleted the copy constructor as it's not safe with all those bare pointers, so cannot do this
+  //return new ProjMatrixByBinSPECTUB(*this);
+  error("ProjMatrixByBinSPECTUB::clone not implemented yet");
+  return 0;
+}
+
 ProjMatrixByBinSPECTUB::
 ~ProjMatrixByBinSPECTUB()
 {

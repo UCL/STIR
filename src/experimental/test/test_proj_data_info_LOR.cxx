@@ -132,9 +132,8 @@ main(int argc,char *argv[])
        ring1_0 = bin0.axial_pos_num()/2;
        ring2_0 = bin0.axial_pos_num()/2;
        Bin bin_check_0;
-       proj_data_cyl_no_arc_ptr->get_bin_for_det_pair(bin_check_0,
-						      det1_0,ring1_0,
-						      det2_0,ring2_0);
+       const DetectionPositionPair<> det_pos_pair_0(DetectionPosition<>(det1_0, ring1_0), DetectionPosition<>(det2_0, ring2_0));
+       proj_data_cyl_no_arc_ptr->get_bin_for_det_pos_pair(bin_check_0, det_pos_pair_0);
        bin_check_0.set_bin_value(1);
        assert(bin0 == bin_check_0);
        proj_data_cyl_no_arc_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_90,det2_90,
@@ -144,9 +143,8 @@ main(int argc,char *argv[])
        ring2_90 = bin90.axial_pos_num()/2;
 
        Bin bin_check_90;
-       proj_data_cyl_no_arc_ptr->get_bin_for_det_pair(bin_check_90,
-						      det1_90,ring1_90,
-						      det2_90,ring2_90);
+       const DetectionPositionPair<> det_pos_pair_90(DetectionPosition<>(det1_90, ring1_90), DetectionPosition<>(det2_90, ring2_90));
+       proj_data_cyl_no_arc_ptr->get_bin_for_det_pos_pair(bin_check_90, det_pos_pair_90);
        bin_check_90.set_bin_value(1);
        assert(bin90 ==bin_check_90);
 #endif
@@ -163,7 +161,8 @@ main(int argc,char *argv[])
 
        proj_data_cyl_no_arc_ptr->find_cartesian_coordinates_given_scanner_coordinates (coord_1_90,coord_2_90,
 										       ring1_90,ring2_90, 
-										       det1_90, det2_90);
+										       det1_90, det2_90,
+                                                                                       0); // set timing_pos_num=0 as test-code is pre-TOF
 
 #if 0
        cout << coord_1_0<<endl;

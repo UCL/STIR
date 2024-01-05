@@ -26,12 +26,12 @@ START_NAMESPACE_STIR
 std::string find_STIR_config_file(const std::string& filename){
     
     std::string dir;
-    dir = get_STIR_config_dir(); //STIR_CONFIG_DIR;
+    dir = get_STIR_config_dir();
     // TODO this might be dangerous on Windows but seems to work
     const std::string name = (dir+"/"+filename);
     std::ifstream file(name);
     if (!file)
-       error("find_STIR_config_file could not open "+name);
+       error("find_STIR_config_file could not open " + name + "\nYou can set the STIR_CONFIG_DIR environment variable to help.");
     if (file.peek() == std::ifstream::traits_type::eof())
       error("find_STIR_config_file error opening file for reading (non-existent or empty file). Filename:\n'" + name + "'");
     return name;

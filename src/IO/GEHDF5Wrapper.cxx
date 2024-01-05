@@ -345,7 +345,6 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
     float ring_spacing = detector_axial_size/num_rings;
-
     //PW Bin Size, default num of arc corrected bins and inner ring radius not found in RDF header.
     // They will be set from the default STIR values
     shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(read_str_scanner));
@@ -390,7 +389,6 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
       }
 
     return scanner_sptr;
-
 }
 
 void GEHDF5Wrapper::initialise_proj_data_info_from_HDF5()

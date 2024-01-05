@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -14,6 +15,7 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -262,7 +264,6 @@ public:
   { auto exam_info_uptr=unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
       return exam_info_uptr;
   }
-
 
   //! Attempts to change the number of subsets. 
   /*! \return The number of subsets that will be used later, which is not

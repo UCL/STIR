@@ -11,6 +11,7 @@
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, 2020, 2021 UCL
     Copyright (C) 2018 University of Hull
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -37,6 +38,7 @@ InputStreamFromROOTFile()
 {
     set_defaults();
     reset();
+    least_significant_clock_bit = 1.0e+12; // TODO remove cst or rename
 }
 
 #if 0 // disabled as unused and incorrect

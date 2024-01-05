@@ -106,6 +106,10 @@ namespace RDF_HDF5 {
         return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
       } // TODO need to find out how to see if it's a coincidence event
 
+      inline int get_tof_bin() const
+         {
+             return static_cast<int>(deltaTime);
+         }
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
       TODO
@@ -196,8 +200,8 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
 
     get_time_in_millisecs() should therefore be zero at the first time stamp.
   */
- CListRecordGEHDF5(const shared_ptr<Scanner>& scanner_sptr, const unsigned long first_time_stamp) :
-  CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr),
+ CListRecordGEHDF5(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const unsigned long first_time_stamp) :
+   CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr),
     first_time_stamp(first_time_stamp)
     {}
 
@@ -214,7 +218,7 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
 
   bool is_event() const
   { return this->event_data.is_event(); }
-  virtual CListEvent&  event() 
+  virtual CListEvent&  event()
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
@@ -237,29 +241,30 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
       raw[0] == static_cast<CListRecordGEHDF5 const &>(e2).raw[0] &&
       (this->is_event() || (raw[1] == static_cast<CListRecordGEHDF5 const &>(e2).raw[1]));
 #endif
-  }	    
+  }
 
   // time 
   inline unsigned long get_time_in_millisecs() const 
     { return time_data.get_time_in_millisecs() - first_time_stamp; }
+
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
   inline unsigned int get_gating() const
     { return gating_data.get_gating(); }
-  inline Succeeded set_gating(unsigned int g) 
+  inline Succeeded set_gating(unsigned int g)
     { return gating_data.set_gating(g); }
 #endif
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
-  inline Succeeded set_prompt(const bool prompt = true) 
+  inline Succeeded set_prompt(const bool prompt = true)
   { return event_data.set_prompt(prompt); }
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
-    det_pos.pos1().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
+    det_pos.pos1().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
-    det_pos.pos2().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
   }
 
@@ -306,6 +311,12 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
         error("ClistRecordGEHDF5: byte-swapping not supported yet. sorry");
         //ByteOrder::swap_order(this->raw[0]);
       }
+
+      if (this->is_event())
+      {
+        // set TOF info in ps
+       this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_pos();
+      }
     return Succeeded::yes;
   }
 
@@ -313,7 +324,7 @@ private:
   unsigned long first_time_stamp;
   union {
     DataType  event_data;
-    TimeType   time_data; 
+    TimeType   time_data;
     //GatingType gating_data;
     boost::int32_t  raw[16/4];
   };

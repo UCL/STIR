@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, 2017, 2020 University College London
+    Copyright (C) 2017, 2018 University of Hull
+    Copyright (C) 2016, 2017, 2020, 2023, 2024 University College London
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
@@ -30,6 +31,10 @@
 
 START_NAMESPACE_STIR
 
+constexpr static char max_num_timing_bins_keyword[] = "Maximum number of (unmashed) TOF time bins";
+constexpr static char size_timing_bin_keyword[] = "Size of unmashed TOF time bins (ps)";
+constexpr static char timing_resolution_keyword[] = "Timing resolution (ps)";
+
 CListModeDataROOT::
 CListModeDataROOT(const std::string& hroot_filename)
     : hroot_filename(hroot_filename)
@@ -57,6 +62,27 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("Number of virtual axial crystals per block", &num_virtual_axial_crystals_per_block);
     this->parser.add_key("Number of virtual transaxial crystals per block", &num_virtual_transaxial_crystals_per_block);
     // end Scanner and physical dimensions.
+
+    this->parser.add_key("energy resolution", &this->energy_resolution);
+    this->parser.add_key("reference energy", &this->reference_energy);
+
+    this->parser.add_key(max_num_timing_bins_keyword,
+                         &max_num_timing_bins);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key(max_num_timing_bins_keyword, "Number of TOF time bins");
+#endif
+    this->parser.add_key(size_timing_bin_keyword,
+                         &size_timing_bin);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key(size_timing_bin_keyword, "Size of timing bin (ps)");
+#endif
+    this->parser.add_key(timing_resolution_keyword, &this->timing_resolution);
+
+    this->parser.add_key("TOF mashing factor", &this->tof_mash_factor);
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key("TOF mashing factor", "%TOF mashing factor");
+#endif
+    //
 
     // ROOT related
     this->parser.add_parsing_key("GATE scanner type", &this->root_file_sptr);
@@ -141,7 +167,15 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              this->root_file_sptr->get_num_axial_crystals_per_singles_unit(),
                                              /*num_transaxial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_trans_crystals_per_singles_unit(),
-                                             /*num_detector_layers_v*/ 1 ));
+                                             /*num_detector_layers_v*/ 1,
+                                            this->energy_resolution,
+                                            this->reference_energy,
+                                            /* maximum number of timing bins */
+                                             max_num_timing_bins,
+                                            /* size of basic TOF bin */
+                                             size_timing_bin,
+                                            /* Scanner's timing resolution */
+                                             timing_resolution));
     }
     // have to do this here currently as these variables cannot be set via the constructor
     if (num_virtual_axial_crystals_per_block>=0)
@@ -158,13 +192,15 @@ CListModeDataROOT(const std::string& hroot_filename)
         error(error_str.c_str());
     }
 
-    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+    proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                          1,
                                                                          this_scanner_sptr->get_num_rings()-1,
                                                                          this_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                          this_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                         /* arc_correction*/false));
-    this->set_proj_data_info_sptr(tmp);
+                                                                         /* arc_correction*/false,
+                                                                         tof_mash_factor)->create_shared_clone());
+    //this->set_proj_data_info_sptr(tmp);
+
 
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening ROOT file for filename '%s'",
@@ -182,7 +218,7 @@ shared_ptr <CListRecord>
 CListModeDataROOT::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
+    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->get_proj_data_info_sptr()));
     return sptr;
 }
 
@@ -244,6 +280,11 @@ set_defaults()
     ring_spacing = -.1f;
     bin_size = -1.f;
     view_offset = 0.f;
+    max_num_timing_bins = -1;
+    size_timing_bin = -1.F;
+    tof_mash_factor = 1;
+    reference_energy = 511.F;
+    energy_resolution = -1.F;
 }
 
 Succeeded
@@ -349,6 +390,10 @@ check_scanner_definition(std::string& ret)
 
        return Succeeded::no;
     }
+    if (max_num_timing_bins <= 0 || size_timing_bin <= 1.F || timing_resolution <= 0.F)
+      info(boost::format("CListModeDataROOT: TOF information is missing. Set relevant keywords if you need TOF:\n\t%s\n\t%s\n\t%s")
+           % max_num_timing_bins_keyword % size_timing_bin_keyword % timing_resolution_keyword);
+
 
     return Succeeded::yes;
 }

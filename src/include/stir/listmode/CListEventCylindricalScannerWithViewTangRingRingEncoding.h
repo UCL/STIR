@@ -63,8 +63,8 @@ class CListEventCylindricalScannerWithViewTangRingRingEncoding :
 public CListEventCylindricalScannerWithDiscreteDetectors
 {
  public:  
-  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<Scanner>& scanner_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<ProjDataInfo>& proj_data_info) :
+    CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
     {}
 
   //! This routine returns the corresponding detector pair   
@@ -84,8 +84,6 @@ public CListEventCylindricalScannerWithDiscreteDetectors
    *  this check avoids a crash when an unsupported template is used as input.
    */
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
-
-  inline void get_uncompressed_bin(Bin& bin) const;
 
 };
 

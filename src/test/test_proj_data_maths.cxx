@@ -40,6 +40,8 @@ class ProjDataInMemoryTests: public RunTests
 {
 public:
   void run_tests();
+private:
+  void run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr);
 };
 
 static
@@ -67,19 +69,8 @@ void check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y
 
 void
 ProjDataInMemoryTests::
-run_tests()
+run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
 {
-    // Create scanner and proj data info
-    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-    shared_ptr<ProjDataInfo>
-      proj_data_info_sptr(
-            ProjDataInfo::construct_proj_data_info
-            (scanner_sptr,
-             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
-      );
-
-    // Create pd1 and pd2
-    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
     ProjDataInMemory pd1(exam_info_sptr, proj_data_info_sptr);
     ProjDataInMemory pd2(pd1);
 
@@ -120,6 +111,50 @@ run_tests()
         *pd_iter++ = a*(*x_iter++) + b*(*y_iter++);
 
     check_proj_data_are_equal_and_non_zero(pd1,pd3);
+}
+
+void
+ProjDataInMemoryTests::
+run_tests()
+{
+  std::cerr << "tests on proj_data maths\n";
+
+  std::cerr << "------------------ non-TOF\n";
+  {
+    // Create scanner and proj data info
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+    shared_ptr<ProjDataInfo>
+      proj_data_info_sptr(
+            ProjDataInfo::construct_proj_data_info
+            (scanner_sptr,
+             /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
+      );
+
+    // Create pd1 and pd2
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+    run_tests(exam_info_sptr, proj_data_info_sptr);
+  }
+
+  std::cerr << "------------------ TOF\n";
+  {
+    // Create scanner and proj data info
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
+
+    shared_ptr<ProjDataInfo> proj_data_info_sptr
+      (ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                              /*span*/ 2, 5,/*views*/ scanner_sptr->get_num_detectors_per_ring()/4, /*tang_pos*/22, /*arc_corrected*/ false, /* Tof_mashing */ 11)
+       );
+
+    // Create pd1 and pd2
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+    run_tests(exam_info_sptr, proj_data_info_sptr);
+  }
+
+
 }
 
 END_NAMESPACE_STIR

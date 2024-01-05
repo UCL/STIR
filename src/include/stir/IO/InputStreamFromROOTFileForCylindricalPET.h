@@ -7,6 +7,7 @@
 \author Robert Twyman
 */
 /*
+ *  Copyright (C) 2016, University of Leeds
     Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.

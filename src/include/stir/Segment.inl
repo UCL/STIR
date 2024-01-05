@@ -43,6 +43,11 @@ Segment<elemT>:: get_segment_num() const
 { return _indices.segment_num(); }
 
 template <typename elemT>
+int
+Segment<elemT>:: get_timing_pos_num() const
+{ return _indices.timing_pos_num(); }
+
+template <typename elemT>
 shared_ptr<const ProjDataInfo>
 Segment<elemT>::get_proj_data_info_sptr() const
 {

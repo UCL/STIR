@@ -137,6 +137,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 	  const Viewgram<float>& viewgram = *r_viewgrams_iter;
 	  const int view_num = viewgram.get_view_num();
 	  const int segment_num = viewgram.get_segment_num();
+	  const int timing_num = viewgram.get_timing_pos_num();
     
 	  for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
 	    for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
@@ -144,7 +145,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 		// KT 21/02/2002 added check on 0
 		if (viewgram[ax_pos][tang_pos] == 0)
 		  continue;
-		Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
+		Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_num, viewgram[ax_pos][tang_pos]);
 		proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
 		proj_matrix_row.back_project(image, bin);
 	      }
@@ -173,7 +174,8 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 	    Bin basic_bin(viewgrams.get_basic_segment_num(),
 			  viewgrams.get_basic_view_num(),
 			  ax_pos,
-			  tang_pos);
+			  tang_pos,
+			  viewgrams.get_basic_timing_pos_num());
 	    symmetries->find_basic_bin(basic_bin);
     
 	    proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
@@ -214,6 +216,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 			    viewgram_iter->get_view_num(),
 			    axial_pos_tmp,
 			    tang_pos_tmp,
+				viewgram_iter->get_timing_pos_num(),
 			    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 	      
 		    unique_ptr<SymmetryOperation> symm_op_ptr = 
@@ -223,6 +226,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 		    assert(bin.view_num() == basic_bin.view_num());
 		    assert(bin.axial_pos_num() == basic_bin.axial_pos_num());
 		    assert(bin.tangential_pos_num() == basic_bin.tangential_pos_num());
+		    assert(bin.timing_pos_num() == basic_bin.timing_pos_num());
 	      
 		    symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
 		    proj_matrix_row_copy.back_project(image, bin);
@@ -237,5 +241,23 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 }
 
 
+void
+BackProjectorByBinUsingProjMatrixByBin::
+actual_back_project(DiscretisedDensity<3,float>& image,
+                    const Bin& bin)
+{
+  ProjMatrixElemsForOneBin proj_matrix_row;
+  proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
+  proj_matrix_row.back_project(image, bin);
+}
+
+BackProjectorByBinUsingProjMatrixByBin*
+BackProjectorByBinUsingProjMatrixByBin::
+clone() const
+{
+	BackProjectorByBinUsingProjMatrixByBin* sptr(new BackProjectorByBinUsingProjMatrixByBin(*this));
+	sptr->proj_matrix_ptr.reset(this->proj_matrix_ptr->clone());
+	return sptr;
+}
 
 END_NAMESPACE_STIR

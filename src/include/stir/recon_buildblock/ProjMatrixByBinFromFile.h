@@ -100,6 +100,8 @@ static Succeeded
 		      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
+  virtual ProjMatrixByBinFromFile* clone() const;
+
 private:
 
   std::string parsed_version;

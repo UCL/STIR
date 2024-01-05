@@ -66,22 +66,23 @@ template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const Array<3,elemT>& v,
 		  const shared_ptr<const ProjDataInfo>& pdi_sptr,
-		  int segment_num)
+		  int segment_num, int timing_pos_num)
   :
-  SegmentBySinogram(v, pdi_sptr, SegmentIndices(segment_num))
+  SegmentBySinogram(v, pdi_sptr, SegmentIndices(segment_num, timing_pos_num))
 {}
 
 template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
-		  const int segment_num)
+		  const int segment_num, const int t_num)
   :
-  SegmentBySinogram(pdi_sptr, SegmentIndices(segment_num))
+  SegmentBySinogram(pdi_sptr, SegmentIndices(segment_num, t_num))
 {}
 
 template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const SegmentByView<elemT>& s_v )
+
   : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(),
                    s_v.get_segment_indices()),
    Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
@@ -115,8 +116,8 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const
     pre_view[r] = Array<3,elemT>::operator[](r)[view_num];
   //KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num,
-			 this->get_segment_num());
+  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num, 
+			 this->get_segment_num(), this->get_timing_pos_num());
 }
 
 template <typename elemT>
@@ -126,8 +127,6 @@ SegmentBySinogram<elemT>::set_viewgram(const Viewgram<elemT>& viewgram)
   for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
     Array<3,elemT>::operator[](r)[viewgram.get_view_num()] = viewgram[r];
 }
-
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the

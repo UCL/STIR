@@ -7,6 +7,7 @@
 
   \brief Implementations of inline functions of class stir::Bin
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -15,6 +16,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2023, University College London
     This file is part of STIR.
 
@@ -26,15 +28,28 @@
 START_NAMESPACE_STIR
 
 Bin::Bin()
-  : time_frame(1)
+  : axial_pos(0),tangential_pos(0), bin_value(0.0f),time_frame(1)
 {}
 
-
-Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value)
-  : ViewgramIndices(view_num, segment_num),
-    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value),time_frame(1)
+Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, float bin_value)
+  : ViewgramIndices(view_num, segment_num, /*timing_pos_num*/0),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(bin_value),time_frame(1)
 {}
 
+Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num)
+  : ViewgramIndices(view_num, segment_num, /*timing_pos_num*/0),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(0.0f),time_frame(1)
+{}
+
+Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num, float bin_value)
+  : ViewgramIndices(view_num, segment_num, timing_pos_num),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(bin_value),time_frame(1)
+{}
+
+Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num, int  timing_pos_num)
+  : ViewgramIndices(view_num, segment_num, timing_pos_num),
+    axial_pos(axial_pos_num),tangential_pos(tangential_pos_num), bin_value(0.0f), time_frame(1)
+{}
      
 int
  Bin:: axial_pos_num()const
@@ -72,7 +87,7 @@ Bin
 Bin::get_empty_copy() const
 {
  
-  Bin copy(segment_num(),view_num(),axial_pos_num(),tangential_pos_num(),0);
+  Bin copy(segment_num(),view_num(),axial_pos_num(),tangential_pos_num(),timing_pos_num(), 0.f);
 
   return copy;
 }
@@ -97,6 +112,7 @@ Bin::operator==(const Bin& bin2) const
   return 
     base_type::operator==(bin2) &&
     axial_pos == bin2.axial_pos && tangential_pos == bin2.tangential_pos &&
+    time_frame == bin2.time_frame &&
     bin_value == bin2.bin_value;
 }
 

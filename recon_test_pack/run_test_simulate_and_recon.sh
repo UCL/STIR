@@ -3,7 +3,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright (C) 2014, University College London
+#  Copyright (C) 2014, 2022 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -19,7 +19,7 @@ if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
     set -e
 fi
 
-echo This script should work with STIR version 5.2. If you have
+echo This script should work with STIR version 6.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -28,7 +28,6 @@ echo
 # Options
 #
 MPIRUN=""
-
 #
 # Parse option arguments (--)
 # Note that the -- is required to suppress interpretation of $1 as options 
@@ -70,7 +69,6 @@ LC_ALL=C
 export LC_ALL
 
 ./simulate_PET_data_for_tests.sh
-
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
@@ -80,6 +78,13 @@ zero_view_suffix=_force_zero_view_offset
 ./simulate_PET_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
 if [ $? -ne 0 ]; then
   echo "Error running simulation with zero view offset"
+  exit 1
+fi
+## TOF data
+TOF_suffix=_TOF
+./simulate_PET_data_for_tests.sh --TOF --suffix "$TOF_suffix"
+if [ $? -ne 0 ]; then
+  echo "Error running simulation"
   exit 1
 fi
 
@@ -96,70 +101,86 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
 for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
-  echo "Using `command -v ${recon}`"
+  echo "========== Testing `command -v ${recon}`"
   for parfile in ${recon}_test_sim*.par; do
-    echo "============================================="
-    # test first if analytic reconstruction and if so, run pre-correction
-    isFBP=0
-    if expr ${recon} : FBP > /dev/null; then
-      isFBP=1
-      suffix=$zero_view_suffix
-      export suffix
-      echo "Running precorrection"
-      correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
-      if [ $? -ne 0 ]; then
-        echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
-        error_log_files="${error_log_files} my_correct_projdata_simulation.log"
-        break
+    for dataSuffix in "" "$TOF_suffix"; do
+      echo "===== data suffix: \"$dataSuffix\""
+      # test first if analytic reconstruction and if so, run pre-correction
+      isFBP=0
+      if expr "$recon" : FBP > /dev/null; then
+        if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+          echo "Skipping TOF as not yet supported for FBP"
+          break
+        fi
+        isFBP=1
+        suffix=$zero_view_suffix
+        export suffix
+        echo "Running precorrection"
+        correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+            error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+            break
+        fi
+      else
+          suffix="$dataSuffix"
+          export suffix
+          # we simulate 2 different scanners for non-TOF and TOF that sadly need different number of subsets
+          if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+              num_subsets=12
+          else
+              num_subsets=14
+          fi
+          export num_subsets
       fi
-    else
-      suffix=""
-      export suffix
-    fi
 
-    # run actual reconstruction
-    echo "Running ${recon} ${parfile}"
-    ${MPIRUN} ${recon} ${parfile} > my_${parfile}.log 2>&1
-    if [ $? -ne 0 ]; then
-       echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_${parfile}.log"
-       error_log_files="${error_log_files} my_${parfile}.log"
-       break
-    fi
+      # run actual reconstruction
+      echo "Running ${recon} ${parfile}"
+      logfile="my_${parfile}${suffix}.log"
+      ${MPIRUN} ${recon} ${parfile} > "$logfile" 2>&1
+      if [ $? -ne 0 ]; then
+          echo "Error running reconstruction. CHECK RECONSTRUCTION LOG \"$logfile\""
+          error_log_files="${error_log_files} "$logfile""
+          break
+      fi
 
-    # find filename of (last) image from ${parfile}
-    output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
-    if [ ${isFBP} -eq 0 ]; then
-      # iterative algorithm, so we need to append the num_subiterations
-      num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
-      output_filename=${output_filename}_${num_subiterations}
-    fi
-    output_image=${output_filename}.hv
+      # find filename of (last) image from ${parfile}
+      output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' "$parfile"`
+      # substitute env variables (e.g. to fill in suffix)
+      output_filename=`eval echo "${output_filename}"`
+      if [ ${isFBP} -eq 0 ]; then
+          # iterative algorithm, so we need to append the num_subiterations
+          num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
+          output_filename=${output_filename}_${num_subiterations}
+      fi
+      output_image=${output_filename}.hv
 
-    # compute ROI value
-    list_ROI_values ${output_image}.roistats ${output_image} ${ROI} 0  > ${output_image}.roistats.log 2>&1
-    if [ $? -ne 0 ]; then
-      echo "Error running list_ROI_values. CHECK LOG ${output_image}.roistats.log"
-      error_log_files="${error_log_files} ${output_image}.roistats.log"
-      break
-    fi
+      # compute ROI value
+      list_ROI_values ${output_image}.roistats ${output_image} ${ROI} 0  > ${output_image}.roistats.log 2>&1
+      if [ $? -ne 0 ]; then
+          echo "Error running list_ROI_values. CHECK LOG ${output_image}.roistats.log"
+          error_log_files="${error_log_files} ${output_image}.roistats.log"
+          break
+      fi
 
-    # compare ROI value
-    output_voxel_size_x=`stir_print_voxel_sizes.sh ${output_image}|awk '{print $3}'`
-    output_ROI_mean=`awk "NR>2 {print \\$2*${input_voxel_size_x}/${output_voxel_size_x}}" ${output_image}.roistats`
-    echo "Input ROI mean: $input_ROI_mean"
-    echo "Output ROI mean: $output_ROI_mean"
-    error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
-    if [ ${error_bigger_than_1percent} -eq 1 ]; then
-      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG my_${parfile}.log"
-      error_log_files="${error_log_files} my_${parfile}.log"
-    else
-      echo "This seems fine."
-    fi
+      # compare ROI value
+      output_voxel_size_x=`stir_print_voxel_sizes.sh ${output_image}|awk '{print $3}'`
+      output_ROI_mean=`awk "NR>2 {print \\$2*${input_voxel_size_x}/${output_voxel_size_x}}" ${output_image}.roistats`
+      echo "Input ROI mean: $input_ROI_mean"
+      echo "Output ROI mean: $output_ROI_mean"
+      error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
+      if [ ${error_bigger_than_1percent} -eq 1 ]; then
+          echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG "$logfile""
+          error_log_files="${error_log_files} ${logfile}"
+      else
+          echo "This seems fine."
+      fi
 
-    echo "============================================="
+    done
   done
 done
 
+echo "============================================="
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""

@@ -71,6 +71,14 @@ int RelatedViewgrams<elemT>::get_basic_segment_num() const
 }
 
 template <typename elemT>
+int RelatedViewgrams<elemT>::get_basic_timing_pos_num() const
+{
+  assert(viewgrams.size()>0);
+  check_state();
+  return viewgrams[0].get_timing_pos_num();
+}
+
+template <typename elemT>
 ViewgramIndices
 RelatedViewgrams<elemT>::
 get_basic_viewgram_indices() const

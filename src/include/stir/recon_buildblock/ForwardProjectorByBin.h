@@ -30,6 +30,8 @@
 #include "stir/TimedObject.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 
@@ -117,6 +119,12 @@ virtual void set_up(
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+    //! function mainly used in ListMode reconstruction.
+    /*! Calls actual_forward_project */
+    void forward_project(Bin&,
+                         const DiscretisedDensity<3,float>&);
+#endif
     virtual ~ForwardProjectorByBin();
 
     /// Set input
@@ -135,6 +143,12 @@ protected:
   virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+    //! This virtual function has to be implemented by the derived class.
+    virtual void actual_forward_project(Bin&,
+                                        const DiscretisedDensity<3,float>&) = 0;
+#endif
 
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.

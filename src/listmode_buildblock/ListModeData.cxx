@@ -33,20 +33,21 @@ ListModeData::
 ~ListModeData()
 {}
 
-const Scanner*
+const Scanner&
 ListModeData::
-get_scanner_ptr() const
+get_scanner() const
 {
-    if(is_null_ptr(proj_data_info_sptr))
-        error("ListModeData: ProjDataInfo has not been set.");
-  return proj_data_info_sptr->get_scanner_ptr();
+  auto pdi = get_proj_data_info_sptr();
+  if(is_null_ptr(pdi))
+    error("ListModeData: ProjDataInfo has not been set.");
+  return *pdi->get_scanner_ptr();
 }
 
 void
 ListModeData::
 set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr)
 {
-    proj_data_info_sptr = new_proj_data_info_sptr;
+    proj_data_info_sptr = new_proj_data_info_sptr->create_shared_clone();
 }
 
 shared_ptr<const ProjDataInfo>
