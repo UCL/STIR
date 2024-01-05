@@ -1367,74 +1367,74 @@ Scanner::parameter_info() const
 {
   // warning: these should match the parsing keywords in InterfilePDFSHeader
   std::ostringstream s;
-  s << "Scanner parameters:= "<<'\n';
+  s << "Scanner parameters:="<<'\n';
 
-  s << "Scanner type := " << get_name() <<'\n';
+  s << "  Scanner type := " << get_name() <<'\n';
 
-  s << "Number of rings                          := " << num_rings << '\n';
-  s << "Number of detectors per ring             := " << get_num_detectors_per_ring() << '\n';
+  s << "  Number of rings                          := " << num_rings << '\n';
+  s << "  Number of detectors per ring             := " << get_num_detectors_per_ring() << '\n';
 
-  s << "Inner ring diameter (cm)                 := " << get_inner_ring_radius()*2./10 << '\n'
-    << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
-    << "Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
-    << "Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
-    << "View offset (degrees)                    := " << get_intrinsic_azimuthal_tilt()*180/_PI << '\n';
-  s << "Maximum number of non-arc-corrected bins := "
+  s << "  Inner ring diameter (cm)                 := " << get_inner_ring_radius()*2./10 << '\n'
+    << "  Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
+    << "  Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
+    << "  Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
+    << "  View offset (degrees)                    := " << get_intrinsic_azimuthal_tilt()*180/_PI << '\n';
+  s << "  Maximum number of non-arc-corrected bins := "
     << get_max_num_non_arccorrected_bins() << '\n'
-    << "Default number of arc-corrected bins     := "
+    << "  Default number of arc-corrected bins     := "
     << get_default_num_arccorrected_bins() << '\n';
   if (get_energy_resolution() >= 0 && get_reference_energy() >= 0)
   {
-    s << "Energy resolution := " << get_energy_resolution() << '\n';
-    s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
+    s << "  Energy resolution         := " << get_energy_resolution() << '\n';
+    s << "  Reference energy (in keV) := " << get_reference_energy() << '\n';
   }
 
   if (is_tof_ready())
   {
-    s << "Maximum number of (unmashed) TOF time bins :=" << get_max_num_timing_poss() << "\n";
-    s << "Size of unmashed TOF time bins (ps) :=" << get_size_of_timing_pos() << "\n";
-    s << "TOF timing resolution (ps) :=" << get_timing_resolution() << "\n";
+    s << "  Maximum number of (unmashed) TOF time bins := " << get_max_num_timing_poss() << '\n';
+    s << "  Size of unmashed TOF time bins (ps)        := " << get_size_of_timing_pos() << '\n';
+    s << "  TOF timing resolution (ps)                 := " << get_timing_resolution() << '\n';
   }
 
   // block/bucket description
-  s << "Number of blocks per bucket in transaxial direction         := "
+  s << "  Number of blocks per bucket in transaxial direction         := "
     << get_num_transaxial_blocks_per_bucket() << '\n'
-    << "Number of blocks per bucket in axial direction              := "
+    << "  Number of blocks per bucket in axial direction              := "
     << get_num_axial_blocks_per_bucket() << '\n'
-    << "Number of crystals per block in axial direction             := "
+    << "  Number of crystals per block in axial direction             := "
     << get_num_axial_crystals_per_block() << '\n'
-    << "Number of crystals per block in transaxial direction        := "
+    << "  Number of crystals per block in transaxial direction        := "
     << get_num_transaxial_crystals_per_block() << '\n'
-    << "Number of detector layers                                   := "
+    << "  Number of detector layers                                   := "
     << get_num_detector_layers() << '\n'
-    << "Number of crystals per singles unit in axial direction      := "
+    << "  Number of crystals per singles unit in axial direction      := "
     << get_num_axial_crystals_per_singles_unit() << '\n'
-    << "Number of crystals per singles unit in transaxial direction := "
+    << "  Number of crystals per singles unit in transaxial direction := "
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
   
   //block and generic geometry description
   if (crystal_map_file_name != "")
-    s << "Name of crystal map                                         := "
+    s << "  Name of crystal map                                         := "
       << get_crystal_map_file_name() << '\n';
   if (get_scanner_geometry() != "")
   {
-    s << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
+    s << "  Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
       <<get_scanner_geometry() << '\n';
   }
   if (get_axial_crystal_spacing() >=0)
-    s << "Distance between crystals in axial direction (cm)           := "
+    s << "  Distance between crystals in axial direction (cm)           := "
       << get_axial_crystal_spacing()/10 << '\n';
   if (get_transaxial_crystal_spacing() >=0)
-    s << "Distance between crystals in transaxial direction (cm)      := "
+    s << "  Distance between crystals in transaxial direction (cm)      := "
       << get_transaxial_crystal_spacing()/10 << '\n';
   if (get_axial_block_spacing() >=0)
-    s << "Distance between blocks in axial direction (cm)             := "
+    s << "  Distance between blocks in axial direction (cm)             := "
       << get_axial_block_spacing()/10 << '\n';
   if (get_transaxial_block_spacing() >=0)
-    s << "Distance between blocks in transaxial direction (cm)        := "
+    s << "  Distance between blocks in transaxial direction (cm)        := "
       << get_transaxial_block_spacing()/10 << '\n';
 
-  s << "end scanner parameters:=\n";
+  s << "End scanner parameters:=\n";
 
   return s.str();
 }
