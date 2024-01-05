@@ -635,8 +635,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_alias_key("Size of unmashed TOF time bins (ps)", "Size of timing bin (ps)");
 #endif
   timing_resolution = -1.f;
-  add_key("Timing resolution (ps)",
+  add_key("TOF timing resolution (ps)",
           &timing_resolution);
+#if STIR_VERSION < 070000
+  add_alias_key("TOF timing resolution (ps)", "timing resolution (ps)");
+#endif
+
   // new keys for block geometry
   scanner_geometry = "Cylindrical";
   add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",

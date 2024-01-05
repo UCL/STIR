@@ -1393,7 +1393,7 @@ Scanner::parameter_info() const
   {
     s << "Maximum number of (unmashed) TOF time bins :=" << get_max_num_timing_poss() << "\n";
     s << "Size of unmashed TOF time bins (ps) :=" << get_size_of_timing_pos() << "\n";
-    s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
+    s << "TOF timing resolution (ps) :=" << get_timing_resolution() << "\n";
   }
 
   // block/bucket description
