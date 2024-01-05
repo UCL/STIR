@@ -107,8 +107,6 @@ private:
 
     shared_ptr<Scanner> test_scanner_sptr;
     shared_ptr<ProjDataInfo> test_proj_data_info_sptr;
-
-    shared_ptr<Scanner> test_nonTOF_scanner_sptr;
     shared_ptr<ProjDataInfo> test_nonTOF_proj_data_info_sptr;
 
     shared_ptr<DiscretisedDensity<3, float> > test_discretised_density_sptr;
@@ -121,7 +119,6 @@ TOF_Tests::run_tests()
 {
     // New Scanner
     test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
-    test_nonTOF_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa_nonTOF));
 
     // New Proj_Data_Info
     const int test_tof_mashing_factor = 39; // to have 9 TOF bins (381/39=9)
@@ -132,11 +129,12 @@ TOF_Tests::run_tests()
                                                                  /* arc_correction*/false));
     test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
 
-    test_nonTOF_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_nonTOF_scanner_sptr,
+    test_nonTOF_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
                                                                  1,test_scanner_sptr->get_num_rings() -1,
                                                                  test_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                  test_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                  /* arc_correction*/false));
+    test_nonTOF_proj_data_info_sptr->set_tof_mash_factor(0);
 
     test_tof_proj_data_info();
     //    test_tof_geometry_1();

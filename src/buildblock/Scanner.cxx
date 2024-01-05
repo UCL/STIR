@@ -394,20 +394,6 @@ Scanner::Scanner(Type scanner_type)
                (float)(0.F));
     break;
 
-  case ntest_TOF_50: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      set_params(ntest_TOF_50, string_list("ntest_TOF_50"),
-                 24, 320, 320,666,
-                 424.5F, 7.0F, 4.16F, 2.0F, 0.0F,
-                 1, 1, 24, 1, 24, 1, 1,
-                 0.0f, 511.f,
-                 (short int)(2999),
-                 (float)(1.0F),
-                 (float)(81.2) ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how di$
-      break;
-
  case DiscoveryRX:
 
     set_params(DiscoveryRX, string_list("GE Discovery RX", "Discovery RX"),
@@ -445,7 +431,7 @@ Scanner::Scanner(Type scanner_type)
                1, 1.F, 1.F);
     break;
 
-case PETMR_Signa:
+  case PETMR_Signa:
   set_params(PETMR_Signa, string_list("GE Signa PET/MR", "PET/MR Signa", "Signa PET/MR"),
 	       45, 
 	       357, 
@@ -462,31 +448,9 @@ case PETMR_Signa:
            0.105F, // energy resolution from Levin et al. TMI 2016 
 			511.F,
 		   (short int)(351),
-		   (float)(89.0F/13.0F), //TODO
+		   (float)(89.0F/13.0F),
 		   (float)(390.0F) );
     break;
-
-  case PETMR_Signa_nonTOF:
-
-      set_params(PETMR_Signa_nonTOF, string_list("GE PET/MR Signa nonTOF", "GE PET/MR Signa nonTOF"),
-             45,
-             357,
-             331, // TODO
-             2 * 224,
-             311.8F,
-             8.5F,
-             5.56F,
-             2.01565F, // TO CHECK
-             static_cast<float>(-5.23*_PI/180),//sign? TODO value
-             5,
-             4,
-             9, 4, 1, 1, 1,
-             0.105F, // energy resolution from Levin et al. TMI 2016 
-				511.F,
-             (short int)(0),
-             (float)(0), //TODO
-             (float)(0) );
-      break;
 
   case Discovery690:
     // same as 710
