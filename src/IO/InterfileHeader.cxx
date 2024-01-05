@@ -1367,23 +1367,23 @@ bool InterfilePDFSHeader::post_processing()
     if (guessed_scanner_ptr->is_tof_ready())
     {
         if (max_num_timing_poss != guessed_scanner_ptr->get_max_num_timing_poss())
-        {
-            warning("Interfile warning: 'Number of TOF time bins' (%d) is expected to be %d.",
-                    max_num_timing_poss, guessed_scanner_ptr->get_max_num_timing_poss());
+          {
+            warning(boost::format("Interfile warning: 'Maximum number of (unmashed) TOF time bins' (%d) is expected to be %d.") %
+                    max_num_timing_poss % guessed_scanner_ptr->get_max_num_timing_poss());
             mismatch_between_header_and_guess = true;
-        }
-        if (size_of_timing_pos != guessed_scanner_ptr->get_size_of_timing_pos())
-        {
-            warning("Interfile warning: 'Size of timing bin (ps)' (%f) is expected to be %f.",
-                    size_of_timing_pos, guessed_scanner_ptr->get_size_of_timing_pos());
+          }
+        if (abs(size_of_timing_pos - guessed_scanner_ptr->get_size_of_timing_pos()) > 0.001F)
+          {
+            warning(boost::format("Interfile warning: 'Size of unmashed TOF timing bin (ps)' (%f) is expected to be %f.") %
+                    size_of_timing_pos % guessed_scanner_ptr->get_size_of_timing_pos());
             mismatch_between_header_and_guess = true;
-        }
-        if (timing_resolution != guessed_scanner_ptr->get_timing_resolution())
-        {
-            warning("Interfile warning: 'Timing resolution (ps)' (%f) is expected to be %f.",
-                    timing_resolution, guessed_scanner_ptr->get_timing_resolution());
+          }
+        if (abs(timing_resolution - guessed_scanner_ptr->get_timing_resolution()) > 0.01F)
+          {
+            warning(boost::format("Interfile warning: 'TOF timing resolution (ps)' (%f) is expected to be %f.") %
+                    timing_resolution % guessed_scanner_ptr->get_timing_resolution());
             mismatch_between_header_and_guess = true;
-        }
+          }
     }
 
     // end of checks. If they failed, we ignore the guess
