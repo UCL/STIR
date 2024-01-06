@@ -41,23 +41,18 @@
 %attributeref(stir::DetectionPosition<unsigned int>, unsigned int, axial_coord);
 %attributeref(stir::DetectionPosition<unsigned int>, unsigned int, radial_coord);
 %include "stir/DetectionPosition.h"
-#ifdef STIR_TOF
 ADD_REPR(stir::DetectionPosition, %arg(*$self))
-#endif
 %template(DetectionPosition) stir::DetectionPosition<unsigned int>;
 
+%attributeref(stir::DetectionPositionPair<unsigned int>, int, timing_pos);
 %attributeref(stir::DetectionPositionPair<unsigned int>, stir::DetectionPosition<unsigned int>, pos1);
 %attributeref(stir::DetectionPositionPair<unsigned int>, stir::DetectionPosition<unsigned int>, pos2);
 %include "stir/DetectionPositionPair.h"
-#ifdef STIR_TOF
- //ADD_REPR(stir::DetectionPositionPair, %arg(*$self))
-#endif
+ADD_REPR(stir::DetectionPositionPair, %arg(*$self))
 %template(DetectionPositionPair) stir::DetectionPositionPair<unsigned int>;
 
 %attributeref(stir::SegmentIndices, int, segment_num);
-#ifdef STIR_TOF
 %attributeref(stir::SegmentIndices, int, timing_pos_num);
-#endif
 %attributeref(stir::ViewgramIndices, int, view_num);
 %attributeref(stir::SinogramIndices, int, axial_pos_num);
 %attributeref(stir::Bin, int, axial_pos_num);
@@ -69,9 +64,8 @@ ADD_REPR(stir::DetectionPosition, %arg(*$self))
 %include "stir/ViewgramIndices.h"
 %include "stir/SinogramIndices.h"
 %include "stir/Bin.h"
-#ifdef STIR_TOF
 ADD_REPR(stir::Bin, %arg(*$self))
-#endif
+
 
 %newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
