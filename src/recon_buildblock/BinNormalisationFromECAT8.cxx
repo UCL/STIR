@@ -570,8 +570,8 @@ get_uncalibrated_bin_efficiency(const Bin& bin) const {
 					      uncompressed_bin, detection_position_pair);
 
       
-      const DetectionPosition<>& pos1 = detection_position_pair.pos1();
-     const DetectionPosition<>& pos2 = detection_position_pair.pos2();
+      //const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+      //const DetectionPosition<>& pos2 = detection_position_pair.pos2();
       float lor_efficiency= 0.;   
       
       /*
