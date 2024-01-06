@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 
 constexpr static char max_num_timing_bins_keyword[] = "Maximum number of (unmashed) TOF time bins";
 constexpr static char size_timing_bin_keyword[] = "Size of unmashed TOF time bins (ps)";
-constexpr static char timing_resolution_keyword[] = "Timing resolution (ps)";
+constexpr static char timing_resolution_keyword[] = "TOF timing resolution (ps)";
 
 CListModeDataROOT::
 CListModeDataROOT(const std::string& hroot_filename)
@@ -77,7 +77,9 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_alias_key(size_timing_bin_keyword, "Size of timing bin (ps)");
 #endif
     this->parser.add_key(timing_resolution_keyword, &this->timing_resolution);
-
+#if STIR_VERSION < 070000
+    this->parser.add_alias_key(timing_resolution_keyword, "timing resolution (ps)");
+#endif
     this->parser.add_key("TOF mashing factor", &this->tof_mash_factor);
 #if STIR_VERSION < 070000
     this->parser.add_alias_key("TOF mashing factor", "%TOF mashing factor");
