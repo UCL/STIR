@@ -14,7 +14,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2023 University College London
+    Copyright (C) 2023, 2024 University College London
 
     This file is part of STIR.
 
@@ -29,6 +29,7 @@
 #include "stir/BasicCoordinate.h"
 #include "stir/Bin.h"
 #include "stir/DetectionPosition.h"
+#include "stir/DetectionPositionPair.h"
 #include <iostream>
 #include <vector>
 
@@ -86,6 +87,7 @@ operator<<(std::ostream& str, const std::vector<elemT>& v);
 
 /*!
   \brief Outputs a Bin to a stream.
+  \ingroup projdata
 
   Output is of the form
   \verbatim
@@ -103,17 +105,34 @@ inline std::ostream& operator<<(std::ostream& out, const Bin& bin)
 
 /*!
   \brief Outputs a DetectionPosition to a stream.
+  \ingroup projdata
 
   Output is of the form
   \verbatim
-  [radial=.., axial=..., tangential=...]
+  [tangential=..., axial=..., radial=...]
   \endverbatim
 */
 template <class T>
 inline std::ostream& operator<<(std::ostream& out, const DetectionPosition<T>& det_pos)
 {
-  return out << "[radial=" << det_pos.radial_coord() << ", axial=" << det_pos.axial_coord()
-             << ", tangential=" << det_pos.tangential_coord() << "]";
+  return out << "[tangential=" << det_pos.tangential_coord() << ", axial=" << det_pos.axial_coord()
+             << ", radial=" << det_pos.radial_coord() << "]";
+}
+
+/*!
+  \brief Outputs a DetectionPosition to a stream.
+  \ingroup projdata
+
+  Output is of the form
+  \verbatim
+  [pos1=..., pos2=..., timing_pos=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream& operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
+{
+  return out << "[pos1=" << det_pos.pos1() << ", pos2=" << det_pos.pos2()
+             << ", timing_pos=" << det_pos.timing_pos() << "]";
 }
 
 /*!
