@@ -1,5 +1,5 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
+<!DOCTYPE HTML>
+<html lang="en">
   <head>
     <title>Summary of changes in STIR release 6.0</title>
   </head>
@@ -14,7 +14,6 @@
     <h2>Overall summary</h2>
     <p>
       This release is a major upgrade adding Time of Flight (TOF) capabilities to STIR.
-      See also the (enormous) <a href="https://github.com/UCL/STIR/pull/304"</a>PR #304</a>.
     </p>
 
 
@@ -23,7 +22,7 @@
     </p>
 
     <p>Overall code management and assistance was Kris Thielemans (UCL and ASC). Other main contributors
-      include: Nikos Efthimious (UCL, University of Hull, UPenn, MGH) for the TOF framework and list-mode
+      include: Nikos Efthimiou (UCL, University of Hull, UPenn, MGH) for the TOF framework and list-mode
       reconstruction, Elise Emond (UCL) for adapting TOF framework for projection-data,
       Palak  Wadhwa (University of Leeds) for adaptations and testing on GE Signa PET/MR data,
       Robert Twyman for extending projector symmetries to TOF and formalising ROOT-based testing,
@@ -45,7 +44,7 @@
     <h2> Summary for end users (also to be read by developers)</h2>
 
     <h3>Changes breaking backwards compatibility from a user-perspective</h3>
-    <ul>
+   <ul>
       <li> </li>
     </ul>
 
@@ -59,12 +58,33 @@
     <h4>General</h4>
     <ul>
       <li>
-        TOF of course. This is mostly transparent, i.e. normally no changes are required
+        <p>
+        TOF of course! This is mostly transparent, i.e. normally no changes are required
         to the reconstruction code etc. When using Interfile or ROOT files, certain new keywords
         are required, see <a href="https://github.com/UCL/STIR/blob/master/examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs">examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs</a>
-        and <a href="https://github.com/UCL/STIR/blob/master/examples/samples/root_header.hroot">examples/samples/root_header.hroot</a>. See also the updated STIR_glossary.
-        <br /><br />
-        <b>Limitations</b><br />
+        and <a href="https://github.com/UCL/STIR/blob/master/examples/samples/root_header.hroot">examples/samples/root_header.hroot</a>.
+        See also the updated STIR_glossary.
+        <br>
+        Please cite the following papers:
+        </p>
+        <ul>
+          <li>
+            Efthimiou, N., Emond, E., Wadhwa, P., Cawthorne, C., Tsoumpas, C., Thielemans, K., 2019.
+        <cite>Implementation and validation of time-of-flight PET image reconstruction module for listmode and sinogram projection data in the STIR library.</cite>
+        Phys Med Biol 64, 035004. <a href="https://doi.org/10.1088/1361-6560/aaf9b9">DOI: 10.1088/1361-6560/aaf9b9</a>.
+          </li>
+          <li>
+            Wadhwa, P., Thielemans, K., Efthimiou, N., Wangerin, K., Keat, N., Emond, E., Deller, T., Bertolli, O., Deidda, D., Delso, G., Tohme, M., Jansen, F., Gunn, R.N., Hallett, W., Tsoumpas, C., 2021.
+            <cite>PET image reconstruction using physical and mathematical modelling for time of flight PET-MR scanners in the STIR library.</cite>
+            Methods, Methods on simulation in biomedicine 185, 110–119. <a href="https://doi.org/10.1016/j.ymeth.2020.01.005">DOI: 10.1016/j.ymeth.2020.01.005</a>
+          </li>
+        </ul>
+        <p>
+          See also the (enormous) <a href="https://github.com/UCL/STIR/pull/304">PR #304</a>.
+        </p>
+        <p>
+          <b>Limitations</b><br>
+        </p>
         <ul>
           <li>
             Currently on the <code>matrix</code> based projectors support TOF.
@@ -93,7 +113,7 @@
           <li>
             added <code>LORAs2Points</code>,<code>LORInCylinderCoordinates</code>,
             <code>LORInAxialAndSinogramCoordinates</code> and <code>PointOnCylinder</code>.
-            <br />
+            <br>
             <b>Warning</b>: renamed <code>FloatLOR</code> to <code>LOR</code>, and same for
             derived classes.
           </li>
@@ -112,7 +132,7 @@
           <li>The default for arc-correction has changed to <i>N</i>, i.e. <code>false</code>.</li>
           <li>Default value for span is now 11 for Siemens and 2 for GE scanners.</li>
           <li>The span=0 case (i.e. span-3 for segment 0, span=1 for oblique ones, erroneously
-            by STIR used for the GE Advance) is no deprecated. GE uses span=2.<br />
+            by STIR used for the GE Advance) is no deprecated. GE uses span=2.<br>
             (Reading a "span=0" case is still supported)</li>
         </ol>
       </li>
@@ -133,7 +153,7 @@
     <ul>
       <li>
         We now always check (in <code>ProjDataInfo*NoArcCorr</code>) if number of tangential positions in the projection data exceeds the maximum number
-        of non arc-corrected bins set for the scanner. If it is, an error is raised.
+        of non arc-corrected bins set for the scanner. If it is, an error is raised. You might therefore have to adapt your interfile header.
       </li>
       <li>
         Write <code>STIR6.0</code> as Interfile key version to denote TOF changes.
@@ -160,7 +180,7 @@
       </li>
     </ul>
 
-    <h3>test changes</h3>
+    <h3>Test changes</h3>
     <h4>recon_test_pack changes</h4>
     <ul>
       <li>
@@ -172,72 +192,71 @@
     </ul>
 
     <h4>C++ tests</h4>
-<ul>
-  <li>
-    additional tests for TOF, expansion of some existing tests for TOF
-  </li>
-</ul>
+    <ul>
+      <li>
+        additional tests for TOF, expansion of some existing tests for TOF
+      </li>
+    </ul>
 
-<H2>What's new for developers (aside from what should be obvious
-from the above):</H2>
+    <H2>What's new for developers (aside from what should be obvious
+      from the above):</H2>
 
-<h3>Major bugs fixed</h3>
-<ul>
-<li>see above</li>
-</ul>
+    <h3>Backward incompatibities</h3>
+    <ul>
+      <li>
+        <code>ListModeData</code> now has a <code>shared_ptr&lt;const ProjDataInfo&gt; proj_data_info_sptr</code>
+        <code>protected</code> member, and the <code>scanner_sptr</code> member has been removed.<br>
+        <b>Warning:</b> If your derived class had its own <code>proj_data_info_sptr</code>, it should be removed.
+      </li>
+      <li>
+        <code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
+      </li>
+      <li>
+        <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
+        Use <code>get_bin_for_det_pos_pair</code> instead.
+      </li>
+    </ul>
 
-<h3>Backward incompatibities</h3>
-<ul>
-  <li>
-    <code>ListModeData</code> now has a <code>shared_ptr<const ProjDataInfo> proj_data_info_sptr</code>
-    <code>protected</code> member, and the <code>scanner_sptr</code> member has been removed.<br />
-    <b>Warning:</b> If your derived class had its own <code>proj_data_info_sptr</code>, it should be removed.
-  </li>
-  <li>
-    <code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
-  </li>
-  <li>
-    <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
-    Use <code>get_bin_for_det_pos_pair</code> instead.
-  </li>
-</ul>
+    <h3>New functionality</h3>
 
-<h3>New functionality</h3>
-
-<h4>TOF related</h4>
-<ul>
-  <li><code>Scanner</code> now allows storing TOF information. This is currently not yet done for all
-    TOF-capable scanners though. Contributions welcome!
-  </li>
-  <li>
-    All projection-data related classes and their members now have a TOF bin index and related information.
-    At present, old-style accessors are in an awkward format such as
-    <pre>
-      auto sino = proj_data.get_sinogram(ax_pos_num, segment_num, false, timing_pos);
-    </pre>
-    These are deprecated since version 5.2 and should be replaced by
-    <pre>
-      const SinogramIndices sinogram_idxs{ax_pos_num, segment_num, timing_pos};
-      auto sino = proj_data.get_sinogram(sinogram_idxs);
-    </pre>
-  </li>
-  <li>
-    List-mode data for TOF-capable scanners need to pass this through appropriately of course.
-  </li>
-</ul>
+    <h4>TOF related</h4>
+    <ul>
+      <li><code>Scanner</code> now allows storing TOF information. This is currently not yet done for all
+        TOF-capable scanners though. Contributions welcome!
+      </li>
+      <li>
+        All projection-data related classes and their members now have a TOF bin index and related information.
+        At present, old-style accessors are in an awkward format such as
+        <pre>
+          auto sino = proj_data.get_sinogram(ax_pos_num, segment_num, false, timing_pos_num);
+        </pre>
+        These are deprecated since version 5.2 and should be replaced by
+        <pre>
+          const SinogramIndices sinogram_idxs{ax_pos_num, segment_num, timing_pos_num};
+          auto sino = proj_data.get_sinogram(sinogram_idxs);
+        </pre>
+      </li>
+      <li>
+        List-mode data for TOF-capable scanners need to pass the relevant information through appropriately of course.
+      </li>
+    </ul>
     
-<h4>Non-TOF related</h4>
-<ul>
-  <li>
-    projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes)
-  </li>
-  <li><code>Bin</code> can now be output to stream as text</li>
-  <li>added <code>RunTests::check_if_equal</code> for <code>Bin</code></li>
-  <li>
-    <code>KeyParser</code> has a new facility to add an alias to a keyword. This can be used to rename a keyword
-    for instance while remaining backwards compatible. By default, a warning will be written, but this can be disabled.
-  </li>
-</ul>
+    <h4>Non-TOF related</h4>
+    <ul>
+      <li>
+        Projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes).
+      </li>
+      <li>
+        <code>Bin</code> can now be output to stream as text.
+      </li>
+      <li>
+        Added <code>RunTests::check_if_equal</code> for <code>Bin</code>.
+      </li>
+      <li>
+        <code>KeyParser</code> has a new facility to add an alias to a keyword. This can be used to rename a keyword
+        for instance while remaining backwards compatible. By default, a warning will be written, but this can be disabled.
+      </li>
+    </ul>
 
 
 </body>
