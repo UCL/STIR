@@ -11,9 +11,9 @@ Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 501
 Default number of arc-corrected bins 	 := 501
 View offset (degrees)					 := 0
-Number of TOF time bins := 5
-Size of timing bin (ps) := 820.00
-Timing resolution (ps) := 400.0
+Maximum number of (unmashed) TOF time bins := 5
+Size of unmashed TOF time bins (ps)        := 820.0
+TOF timing resolution (ps)                 := 400.0
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
