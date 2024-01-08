@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018, 2020, 2023 University College London
+    Copyright (C) 2013, 2016, 2018, 2020, 2023, 2024 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -39,14 +39,12 @@
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include <boost/format.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::pair;
 using std::sort;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 const double
@@ -1063,13 +1061,7 @@ bool InterfilePDFSHeader::post_processing()
     cerr << sorted_num_rings_per_segment[i] << "  ";  cerr << endl;
 
   cerr << "Total number of planes :" 
-    << 
-#ifndef STIR_NO_NAMESPACES // stupid work-around for VC
-    std::accumulate
-#else
-    accumulate
-#endif
-       (num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
+    << std::accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
     << endl;
 #endif
   
@@ -1080,63 +1072,14 @@ bool InterfilePDFSHeader::post_processing()
     guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
   {
-    // feable attempt to guess the system by checking the num_views etc
-
-    char const * warning_msg = 0;
-    if (num_detectors_per_ring < 1)
-    {
-      num_detectors_per_ring = num_views*2;
-      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
-	"\tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n"
-	" and 'number of rings'\n";
-    }
-    else
-    {
-      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
-	"I guessed %s from 'number of detectors per ring' and 'number of rings'\n";
-    }
-    
-    
-    switch (num_detectors_per_ring)
-    {
-    case 192*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::E953));
-      warning(boost::format(warning_msg) % "ECAT 953");
-      break;
-    case 336*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::Advance));
-      warning(boost::format(warning_msg) % "Advance");
-      break;
-    case 288*2:
-      if(num_rings == 104) 
-      { //added by Dylan Togane
- 	guessed_scanner_ptr.reset(new Scanner( Scanner::HRRT));
-	warning(boost::format(warning_msg) % "HRRT");
-      }
-      else if (num_rings == 48)
-      {
-	guessed_scanner_ptr.reset(new Scanner( Scanner::E966));
-	warning(boost::format(warning_msg) % "ECAT 966");
-      }
-      else if (num_rings == 32)
-      {
-	guessed_scanner_ptr.reset(new Scanner( Scanner::E962));
-	warning(boost::format(warning_msg) % "ECAT 962");
-      }
-      break; // Dylan Togane [dtogane@camhpet.on.ca] 30/07/2002 bug fix: added break
-    case 256*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::E951));
-      warning(boost::format(warning_msg) % "ECAT 951");
-      break;
-    }
-
-    if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner)
-      warning(std::string("\nInterfile warning: I did not recognise the scanner neither from \n"
-	      "'originating_system' or 'number of detectors per ring' and 'number of rings'.\n"));    
+    warning("Interfile warning: I did not recognise the scanner from 'originating_system' ("
+            + get_exam_info().originating_system + ")");
   }
 
   bool mismatch_between_header_and_guess = false;
- 
+
+  // check if STIR info matches the one in the header, and fill in missing details
+
   if (guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner &&
       guessed_scanner_ptr->get_type() != Scanner::User_defined_scanner)
   {

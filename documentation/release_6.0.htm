@@ -45,7 +45,12 @@
 
     <h3>Changes breaking backwards compatibility from a user-perspective</h3>
    <ul>
-      <li> </li>
+     <li>
+       When parsing Interfile headers for projection data and the <tt>originating system</tt>
+       is not recognised, the previous version of STIR tried to guess the scanner based on the
+       number of views or rings. This was using very old scanners though, and could lead to
+       confusion. These guesses have now been removed.
+     </li>
     </ul>
 
     <h3>Bug fixes</h3>
