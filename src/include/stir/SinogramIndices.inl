@@ -31,6 +31,10 @@ SinogramIndices::SinogramIndices( const int axial_pos_num,const int segment_num,
   : SegmentIndices(segment_num, timing_pos_num),_axial_pos(axial_pos_num)
   {}
 
+SinogramIndices::SinogramIndices(const Bin& bin)
+  : SegmentIndices(bin),_axial_pos(bin.axial_pos_num())
+  {}
+
 int 
 SinogramIndices::axial_pos_num() const
 {
