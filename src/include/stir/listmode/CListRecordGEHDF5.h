@@ -266,6 +266,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
     det_pos.pos2().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
+    det_pos.timing_pos() =  event_data.deltaTime;
   }
 
   //! This routine sets in a coincidence event from detector "indices"
