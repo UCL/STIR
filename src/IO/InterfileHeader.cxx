@@ -167,8 +167,11 @@ InterfileHeader::InterfileHeader()
   data_offset = 0UL;
   calibration_factor=-1;
 
-
-
+  radionuclide_name.resize(1);
+  radionuclide_half_life.resize(1);
+  radionuclide_half_life[1] = -1.F;
+  radionuclide_branching_ratio.resize(1);
+  radionuclide_branching_ratio[0] = -1.F;
 
   add_key("name of data file", &data_file_name);
   add_key("originating system", &exam_info_sptr->originating_system);
@@ -176,7 +179,12 @@ InterfileHeader::InterfileHeader()
   ignore_key("GENERAL IMAGE DATA");
   
   add_key("calibration factor", &calibration_factor); 
-  add_key("isotope name", &isotope_name); 
+  // deprecated
+  add_key("isotope name", &isotope_name);
+  ignore_key("number of radionuclides"); // just always use 1. TODO should check really
+  add_vectorised_key("radionuclide name", &radionuclide_name);
+  add_vectorised_key("radionuclide halflife (sec)", &radionuclide_half_life);
+  add_vectorised_key("radionuclide branching factor", &radionuclide_branching_ratio);
   add_key("study date", &study_date_time.date);
   add_key("study_time", &study_date_time.time);
   add_key("type of data", 
@@ -268,12 +276,22 @@ bool InterfileHeader::post_processing()
         {}
     }
   
-//  if(this->calibration_factor>0)
-      this->exam_info_sptr->set_calibration_factor(calibration_factor);
-  
-      // here I need to cal the DB and set the Radionuclide member
+  this->exam_info_sptr->set_calibration_factor(calibration_factor);
+
+  const bool is_spect = this->exam_info_sptr->imaging_modality.get_modality() == ImagingModality::NM;
+
+  // radionuclide
+  {
      RadionuclideDB radionuclide_db;
-     this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
+     const std::string rn_name = !this->radionuclide_name.empty()?
+       this->radionuclide_name[0] : this->isotope_name;
+     auto radionuclide = radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality, rn_name);
+     if (radionuclide.get_half_life(false) < 0)
+       radionuclide = Radionuclide(rn_name,
+                                   is_spect ? -1.F : 511.F, // TODO handle energy for SPECT
+                                   radionuclide_branching_ratio[0], radionuclide_half_life[0], this->exam_info_sptr->imaging_modality);
+     this->exam_info_sptr->set_radionuclide(radionuclide);
+  }
   
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
