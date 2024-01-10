@@ -25,6 +25,8 @@
 
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/IndexRange3D.h"
+#include "stir/Radionuclide.h"
+#include "stir/RadionuclideDB.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
@@ -493,6 +495,22 @@ void GEHDF5Wrapper::initialise_exam_info()
 
     TimeFrameDefinitions tm(tf);
     exam_info_sptr->set_time_frame_definitions(tm);
+
+    // radionuclide
+    {
+      auto rn_name_ds = file.openDataSet("/HeaderData/ExamData/radionuclideName");
+      H5::StrType str_type(rn_name_ds);
+      std::string rn_name;
+      rn_name_ds.read(rn_name, str_type);
+      RadionuclideDB radionuclide_db;
+      Radionuclide radionuclide = radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,rn_name);
+
+     const float positron_fraction = read_float(file, "/HeaderData/ExamData/positronFraction");
+     const float half_life = read_float(file, "/HeaderData/ExamData/halfLife");
+     if (radionuclide.get_half_life(false) < 0)
+       radionuclide = Radionuclide(rn_name, 511.F, positron_fraction, half_life, exam_info_sptr->imaging_modality);
+     exam_info_sptr->set_radionuclide(radionuclide);
+    }
 }
 
 Succeeded GEHDF5Wrapper::initialise_listmode_data()
