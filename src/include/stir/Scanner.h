@@ -457,7 +457,7 @@ class Scanner
   /*! \sa get_reference_energy() */
   inline void set_reference_energy(const float new_num);
   //! Set the maximum number of TOF bins.
-  inline void set_num_max_of_timing_poss(int new_num);
+  inline void set_max_num_timing_poss(int new_num);
   //! Set the delta t which correspnds to the max number of TOF bins.
   inline void set_size_of_timing_poss(float new_num);
   //! Set timing resolution
