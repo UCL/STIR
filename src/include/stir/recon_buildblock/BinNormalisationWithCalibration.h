@@ -1,7 +1,7 @@
 //
 //
 /*
-    Copyright (C) 2020-2021, University College London
+    Copyright (C) 2020-2021, 2024, University College London
     Copyright (C) 2020, National Physical Laboratory
     This file is part of STIR.
 
@@ -34,11 +34,16 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup normalisation
-This class provides the facility to use a calibration factor and (isotope) branching ratio when normalising data.
+  This class provides the facility to use a calibration factor and (isotope) branching ratio when normalising data.
   Therefore, if they are set correctly, the reconstructed image will be calibrated as well.
   
   Note that it is the responsibility of the derived classes to set the calibration factor.
   The branching ratio is obtained from the radionuclide set in \c ExamInfo (passed by set_up()).
+
+  Efficiency is computed as
+  <pre>
+  calibration_factor * branching_ratio * uncalibrated_efficiency
+  </pre>
   */
 class BinNormalisationWithCalibration : 
         public  BinNormalisation
@@ -55,10 +60,8 @@ public:
   //! product of calibration factor etc
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
   float get_calibration_factor() const override;
-  float get_branching_ratio() const;
   
   void set_calibration_factor(const float);
-  void set_radionuclide(const Radionuclide&);
   
   // needs to be implemented by derived class
   virtual float get_uncalibrated_bin_efficiency(const Bin&) const  = 0;
@@ -81,7 +84,6 @@ private:
   //  need to be added to the parsing keywords
 //  bool use_calibration_factor; // default to true
   float calibration_factor;
-  Radionuclide radionuclide;
   //! product of various factors
   /*! computed by set_up() */
   float _calib_decay_branching_ratio;

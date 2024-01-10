@@ -22,6 +22,8 @@
 
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/Succeeded.h"
+#include "stir/ExamInfo.h"
+#include "stir/Radionuclide.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -39,9 +41,8 @@ void
 BinNormalisationWithCalibration::
 initialise_keymap()
 {
-  base_type::initialise_keymap();/*
-  this->parser.add_key("calibration_factor", &this->calibration_factor);
-  this->parser.add_key("branching_ratio", &this->branching_ratio);*/
+  base_type::initialise_keymap();
+  // this->parser.add_key("calibration_factor", &this->calibration_factor);
 }
 
 bool 
@@ -65,7 +66,15 @@ BinNormalisationWithCalibration::set_up(const shared_ptr<const ExamInfo>& exam_i
   if (this->calibration_factor == 1.F)
     warning("BinNormalisationWithCalibration:: calibration factor not set. I will use 1, but your data will not be calibrated.");
 
-  this->_calib_decay_branching_ratio = this->calibration_factor* this->get_branching_ratio(); //TODO: multiply by decay
+  
+  float branching_ratio = exam_info_sptr->get_radionuclide().get_branching_ratio(false); // get value without check
+  if (branching_ratio <= 0.F)
+    {
+      warning("BinNormalisationWithCalibration: radionuclide branching_ratio not known. I will use 1.");
+      branching_ratio = 1.F;
+    }
+ 
+  this->_calib_decay_branching_ratio = this->calibration_factor * branching_ratio; //TODO: multiply by decay
   return base_type::set_up(exam_info_sptr, proj_data_info_sptr);
 }
 
@@ -92,26 +101,5 @@ set_calibration_factor(const float calib)
   this->_already_set_up = false;
   this->calibration_factor=calib;
 }
-
-float
-BinNormalisationWithCalibration::
-get_branching_ratio() const
-{
-  float branching_ratio = this->radionuclide.get_branching_ratio(false); // get value without check
-  if (branching_ratio <=0)
-    {
-      warning("BinNormalisationWithCalibration: radionuclide branching_ratio not known. I will use 1.");
-      return 1.F;
-    }
-   return branching_ratio;
-}
-
-
-void
-BinNormalisationWithCalibration::
-set_radionuclide(const Radionuclide &rnuclide){
-    this->radionuclide=rnuclide;
-}
-
 
 END_NAMESPACE_STIR

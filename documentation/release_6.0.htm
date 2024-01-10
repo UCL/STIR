@@ -44,7 +44,16 @@
     <h2> Summary for end users (also to be read by developers)</h2>
 
     <h3>Changes breaking backwards compatibility from a user-perspective</h3>
-   <ul>
+    <ul>
+      <li>
+        When using ECAT7, ECAT8, GEHDF5 or SPECT normalisation, it will
+        now take the branching ratio of the radionuclide into account, if the radionuclide
+        for the data is known (you can check with <tt>list_projdata_info</tt> and <tt>list_lm_info</tt>.
+        For instance, for F-18 this will make reconstructed images 1/0.9686 larger, but
+        the factor is larger for other radionuclides, certainly in SPECT.
+        <br>
+        This was actually already supposed to be the case in previous version, but a bug disabled it.
+        </li>
      <li>
        When parsing Interfile headers for projection data and the <tt>originating system</tt>
        is not recognised, the previous version of STIR tried to guess the scanner based on the
@@ -241,8 +250,11 @@
         <code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
       </li>
       <li>
-        <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
+       <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
         Use <code>get_bin_for_det_pos_pair</code> instead.
+      </li>
+      <li><code>BinNormalisatoonWithCalibration::get/set_branching_ratio</code> members have
+        been removed, as they shouldn't really be part of the normalisation object.
       </li>
     </ul>
 
