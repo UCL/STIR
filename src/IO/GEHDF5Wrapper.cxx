@@ -53,6 +53,15 @@ GEHDF5Wrapper::read_dataset_int32(const std::string& dataset_name)
   return tmp;
 }
 
+  
+static float read_float(const H5::H5File& file, const std::string& dataset)
+{
+  float tmp = 0.F;
+  H5::DataSet ds = file.openDataSet(dataset.c_str());
+  ds.read(&tmp, H5::PredType::NATIVE_FLOAT);
+  return tmp;
+}
+
 bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 {
     try
@@ -253,21 +262,6 @@ GEHDF5Wrapper::open(const std::string& filename)
     return Succeeded::yes;
 }
 
-static float read_float(const H5::H5File& file, const std::string& dataset)
-{
-  float tmp = 0.F;
-  H5::DataSet ds = file.openDataSet(dataset.c_str());
-  ds.read(&tmp, H5::PredType::NATIVE_FLOAT);
-  return tmp;}
-
-static std::int32_t read_int32(const H5::H5File& file, const std::string& dataset)
-{
-  std::int32_t tmp = 0;
-  H5::DataSet ds = file.openDataSet(dataset.c_str());
-  ds.read(&tmp, H5::PredType::NATIVE_INT32);
-  return tmp;
-}
-
 shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
 {
     std::string read_str_scanner;
@@ -335,8 +329,8 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
 
     // TOF related
     const float timingResolutionInPico = read_float(file, "/HeaderData/SystemGeometry/timingResolutionInPico");
-    const int posCoincidenceWindow = read_int32(file, "/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
-    const int negCoincidenceWindow = read_int32(file, "/HeaderData/AcqParameters/EDCATParameters/negCoincidenceWindow");
+    const int posCoincidenceWindow = read_dataset_int32("/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
+    const int negCoincidenceWindow = read_dataset_int32("/HeaderData/AcqParameters/EDCATParameters/negCoincidenceWindow");
     const float coincTimingPrecisionInPico = read_float(file, "/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision") * 1000; // in nanoSecs in file
     const int num_tof_bins = posCoincidenceWindow + negCoincidenceWindow + 1;
 
