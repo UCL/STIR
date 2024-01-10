@@ -724,17 +724,6 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
     return Succeeded::yes;
 }
 
-float GEHDF5Wrapper::get_coincidence_time_window() const
-{
-    if(!is_list_file() && !is_sino_file())
-        error("The file provided is not list or sino data. Aborting");
-
-    const int posCoincidenceWindow = read_int32(file, "/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
-    const int negCoincidenceWindow = read_int32(file, "/HeaderData/AcqParameters/EDCATParameters/negCoincidenceWindow");
-    const float coincTimingPrecision = read_float(file, "/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision");
-    return (posCoincidenceWindow + negCoincidenceWindow + 1) *coincTimingPrecision*1e-9;
-}
-
 float GEHDF5Wrapper::get_halflife() const
 {
   if(!is_list_file() && !is_sino_file())

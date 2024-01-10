@@ -91,9 +91,6 @@ public:
 
     Succeeded initialise_efficiency_factors();
 
-    //! reads coincidence time window from file (in secs)
-    float get_coincidence_time_window() const;
-
     //! reads the isotope half-life from file (in secs)
     float get_halflife() const;
 
