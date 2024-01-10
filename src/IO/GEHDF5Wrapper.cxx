@@ -736,18 +736,6 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
     return Succeeded::yes;
 }
 
-float GEHDF5Wrapper::get_halflife() const
-{
-  if(!is_list_file() && !is_sino_file())
-    error("The file provided is not list or sino data. Aborting");
-
-  H5::DataSet ds_halflife = file.openDataSet("/HeaderData/ExamData/halfLife");
-  float halflife = 0;
-  ds_halflife.read(&halflife,H5::PredType::NATIVE_FLOAT);
-  return halflife;
-}
-
-
 // Developed for listmode access
 Succeeded GEHDF5Wrapper::read_list_data( char* output,
                                          const std::streampos offset, const hsize_t size) const

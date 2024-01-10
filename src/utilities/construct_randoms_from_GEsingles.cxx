@@ -84,9 +84,8 @@ int main(int argc, char **argv)
               output_file_name);
 
   GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles(input_filename);
-  const float coincidence_time_window = input_file.get_proj_data_info_sptr()->get_coincidence_window_in_pico_sec() / 1e12F;
-
-  const float isotope_halflife = input_file.get_halflife();
+  const float coincidence_time_window = proj_data_info_sptr->get_coincidence_window_in_pico_sec() / 1e12F;
+  const float isotope_halflife = exam_info_sptr->get_radionuclide().get_half_life();
 
   randoms_from_singles(proj_data, singles, coincidence_time_window, isotope_halflife);
   return EXIT_SUCCESS;
