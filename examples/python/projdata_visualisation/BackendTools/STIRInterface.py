@@ -1,4 +1,4 @@
-# Copyright 2022 University College London
+# Copyright 2022, 2024 University College London
 
 # Author Robert Twyman
 
@@ -23,7 +23,7 @@ class ProjDataDims(Enum):
     AXIAL_POS = auto()
     VIEW_NUMBER = auto()
     TANGENTIAL_POS = auto()
-
+    TIMING_POS = auto()
 
 class ProjDataVisualisationBackend:
     """Class used as STIR interface to the projection data for ProjDataVisualisation."""
@@ -84,13 +84,14 @@ class ProjDataVisualisationBackend:
             f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
         )
 
-    def refresh_segment_data(self, segment_number=0) -> stir.FloatSegmentByView:
+    def refresh_segment_data(self, segment_number=0, timing_pos=0) -> stir.FloatSegmentByView:
         """Loads a segment data, from the projection data, into memory allowing for faster access."""
         if self.projdata is None:
             self.load_projdata()
 
         if self.projdata is not None:
-            self.segment_data = self.projdata.get_segment_by_view(segment_number)
+            seg_idx = stir.SegmentIndices(segment_number, timing_pos)
+            self.segment_data = self.projdata.get_segment_by_view(seg_idx)
             return self.segment_data
 
     @staticmethod
@@ -120,21 +121,16 @@ class ProjDataVisualisationBackend:
         elif dimension == ProjDataDims.TANGENTIAL_POS:
             return self.projdata.get_min_tangential_pos_num(), \
                    self.projdata.get_max_tangential_pos_num()
+        elif dimension == ProjDataDims.TIMING_POS:
+            return self.projdata.get_min_tof_pos_num(), \
+                   self.projdata.get_max_tof_pos_num()
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
 
     def get_num_indices(self, dimension: ProjDataDims):
         """Returns the number of indices in the given dimension."""
-        if dimension == ProjDataDims.SEGMENT_NUM:
-            return self.projdata.get_num_segments()
-        elif dimension == ProjDataDims.AXIAL_POS:
-            return self.projdata.get_num_axial_poss(self.get_current_segment_num())
-        elif dimension == ProjDataDims.VIEW_NUMBER:
-            return self.projdata.get_num_views()
-        elif dimension == ProjDataDims.TANGENTIAL_POS:
-            return self.projdata.get_num_tangential_poss()
-        else:
-            raise ValueError("Unknown sinogram dimension: " + str(dimension))
+        l = self.get_limits(dimension)
+        return l[1] - l[0] + 1
 
     def get_current_segment_num(self) -> int:
         """Returns the segment number of the current segment data."""
