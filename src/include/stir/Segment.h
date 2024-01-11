@@ -23,6 +23,8 @@
 
 #include "stir/ProjDataInfo.h" 
 #include "stir/SegmentIndices.h"
+#include "stir/SinogramIndices.h"
+#include "stir/ViewgramIndices.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -82,6 +84,11 @@ public:
   virtual Sinogram<elemT> get_sinogram(int axial_pos_num) const = 0;
   //! return a new viewgram, with data set as in the segment
   virtual Viewgram<elemT> get_viewgram(int view_num) const = 0;
+
+  //! return a new sinogram, with data set as in the segment
+  inline Sinogram<elemT> get_sinogram(const SinogramIndices& s) const;
+  //! return a new viewgram, with data set as in the segment
+  inline Viewgram<elemT> get_viewgram(const ViewgramIndices&) const;
 
   //! set data in segment according to sinogram \c s
   virtual void set_sinogram(const Sinogram<elemT>& s) = 0;

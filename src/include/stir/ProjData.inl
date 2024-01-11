@@ -27,13 +27,13 @@ START_NAMESPACE_STIR
 SegmentBySinogram<float>
 ProjData::get_segment_by_sinogram(const SegmentIndices& si) const
 {
-  return this->get_segment_by_sinogram(si.segment_num());
+  return this->get_segment_by_sinogram(si.segment_num(), si.timing_pos_num());
 }
 
 SegmentByView<float>
 ProjData::get_segment_by_view(const SegmentIndices& si) const
 {
-  return this->get_segment_by_view(si.segment_num());
+  return this->get_segment_by_view(si.segment_num(), si.timing_pos_num());
 }
 
 Viewgram<float> 

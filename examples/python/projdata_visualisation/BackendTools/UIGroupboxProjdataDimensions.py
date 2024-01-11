@@ -1,4 +1,4 @@
-# Copyright 2022 University College London
+# Copyright 2022, 2024 University College London
 
 # Author Robert Twyman
 
@@ -42,6 +42,10 @@ class UIGroupboxProjDataDimensions:
             ProjDataDims.TANGENTIAL_POS: {
                 'label': 'Tangential position',
                 'connect_method': self.tangential_pos_refresh
+            },
+            ProjDataDims.TIMING_POS: {
+                'label': 'TOF bin',
+                'connect_method': self.timing_pos_refresh
             }
         }
 
@@ -54,6 +58,7 @@ class UIGroupboxProjDataDimensions:
         self.UI_slider_spinboxes[ProjDataDims.AXIAL_POS].add_item_to_layout(layout, row=2)
         self.UI_slider_spinboxes[ProjDataDims.VIEW_NUMBER].add_item_to_layout(layout, row=4)
         self.UI_slider_spinboxes[ProjDataDims.TANGENTIAL_POS].add_item_to_layout(layout, row=6)
+        self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].add_item_to_layout(layout, row=8)
 
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
@@ -83,7 +88,8 @@ class UIGroupboxProjDataDimensions:
         """ This function is called when the user changes the segment number value.
         Because of the way the STIR segment data is handled, the segment_data needs to change first."""
         new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
-        self.stir_interface.refresh_segment_data(new_segment_num)
+        new_timing_pos = self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].value()
+        self.stir_interface.refresh_segment_data(new_segment_num, new_timing_pos)
         self.UI_controller_UI_change_trigger()
 
     def axial_pos_refresh(self):
@@ -96,6 +102,13 @@ class UIGroupboxProjDataDimensions:
 
     def tangential_pos_refresh(self):
         """This function is called when the user changes the tangential position value."""
+        self.UI_controller_UI_change_trigger()
+
+    def timing_pos_refresh(self):
+        """This function is called when the user changes the TOF bin value."""
+        new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
+        new_timing_pos = self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].value()
+        self.stir_interface.refresh_segment_data(new_segment_num, new_timing_pos)
         self.UI_controller_UI_change_trigger()
 
     def refresh_sliders_and_spinboxes_ranges(self) -> None:

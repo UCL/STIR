@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, IRSL
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -52,6 +52,20 @@ shared_ptr<const ProjDataInfo>
 Segment<elemT>::get_proj_data_info_sptr() const
 {
   return proj_data_info_sptr;
+}
+
+template <typename elemT>
+Sinogram<elemT>
+Segment<elemT>::get_sinogram(const SinogramIndices& s) const
+{
+  return this->get_sinogram(s.axial_pos_num());
+}
+
+template <typename elemT>
+Viewgram<elemT>
+Segment<elemT>::get_viewgram(const ViewgramIndices& v) const
+{
+  return this->get_viewgram(v.view_num());
 }
 
 END_NAMESPACE_STIR
