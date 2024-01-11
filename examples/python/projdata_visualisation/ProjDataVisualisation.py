@@ -163,7 +163,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         It calls the updateDisplayImage function to update the display image.
         """
         self.UI_groupbox_projdata_dimensions.refresh_sliders_and_spinboxes_ranges()
-        self.UI_groupbox_projdata_dimensions.update_enable_disable(self.sinogram_radio_button.isChecked())
+        self.UI_groupbox_projdata_dimensions.configure_enable_disable_sliders(self.sinogram_radio_button.isChecked())
         self.update_display_image()
 
     def update_display_image(self):

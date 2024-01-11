@@ -85,8 +85,6 @@ class ProjDataVisualisationBackend:
             f"Number of non-tof sinograms:         {self.projdata.get_num_non_tof_sinograms():>10}\n\n"
         )
 
-
-
     def print_segment_data_configuration(self) -> None:
         """Prints the configuration of the segment data."""
         print(

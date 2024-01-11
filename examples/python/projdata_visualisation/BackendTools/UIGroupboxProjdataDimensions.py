@@ -120,7 +120,7 @@ class UIGroupboxProjDataDimensions:
             limits = self.stir_interface.get_limits(dimension, self.stir_interface.get_current_segment_num())
             self.UI_slider_spinboxes[dimension].update_limits(limits=limits)
 
-    def update_enable_disable(self, sinogram_radio_button_state: bool):
+    def configure_enable_disable_sliders(self, sinogram_radio_button_state: bool):
         # Segment slider and scroll box handling
         segment_limits = self.stir_interface.get_limits(ProjDataDims.SEGMENT_NUM,
                                                         self.stir_interface.get_current_segment_num())
@@ -143,10 +143,22 @@ class UIGroupboxProjDataDimensions:
 
         elif not sinogram_radio_button_state:
             self.disable(ProjDataDims.AXIAL_POS)
-            self.enable(ProjDataDims.VIEW_NUMBER)
+            view_num_limits = self.stir_interface.get_limits(ProjDataDims.VIEW_NUMBER,
+                                                             self.stir_interface.get_current_segment_num())
+            if (view_num_limits[0] - view_num_limits[1]) != 0:
+                self.enable(ProjDataDims.VIEW_NUMBER)
+            else:
+                self.disable(ProjDataDims.VIEW_NUMBER)
 
         if True:  # Until I work out what to do with tangential position
             self.disable(ProjDataDims.TANGENTIAL_POS)
+
+        tof_limits = self.stir_interface.get_limits(ProjDataDims.TIMING_POS,
+                                                    self.stir_interface.get_current_segment_num())
+        if (tof_limits[0] - tof_limits[1]) != 0:
+            self.enable(ProjDataDims.TIMING_POS)
+        else:
+            self.disable(ProjDataDims.TIMING_POS)
 
     def __construct_slider_spinboxes(self, slider_spinbox_configurations: dict) -> dict:
         """
