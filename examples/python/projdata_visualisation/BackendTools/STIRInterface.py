@@ -127,10 +127,10 @@ class ProjDataVisualisationBackend:
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
 
-    def get_num_indices(self, dimension: ProjDataDims):
+    def get_num_indices(self, dimension: ProjDataDims) -> int:
         """Returns the number of indices in the given dimension."""
-        l = self.get_limits(dimension)
-        return l[1] - l[0] + 1
+        limits = self.get_limits(dimension, self.get_current_segment_num())
+        return limits[1] - limits[0] + 1
 
     def get_current_segment_num(self) -> int:
         """Returns the segment number of the current segment data."""
