@@ -125,7 +125,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         mainLayout = QGridLayout()
         mainLayout.addLayout(topLayout, 0, 0, 1, 5)
         mainLayout.addWidget(self.FilenameControlGroupBox, 2, 0)
-        mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 1)
+        mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 0, 1, 2)
         # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
         mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1)
         # mainLayout.setRowStretch(1, 1)
