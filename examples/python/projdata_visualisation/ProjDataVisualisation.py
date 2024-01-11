@@ -240,7 +240,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         else:
             self.projdata_filename_box.setText(initial)
 
-    def load_projdata(self, filename=None):
+    def load_projdata(self, filename=None) -> None:
         """
         This function loads the projdata file and updates the UI.
         """
@@ -252,12 +252,13 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
         data_load_successful = self.stir_interface.load_projdata(self.projdata_filename_box.text())
 
-        if data_load_successful:
-            self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
-        else:
+        if not data_load_successful:
             self.load_projdata_status.setText("STATUS: Failed to load ProjData from file.")
-
+            return
+        
+        self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
         self.refresh_UI_configuration()
+            
 
     def set_projdata(self, projdata):
         self.stir_interface.set_projdata(projdata)
