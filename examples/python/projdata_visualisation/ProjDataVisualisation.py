@@ -64,25 +64,26 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         push_button_load_projdata = QPushButton("Load")
         push_button_load_projdata.clicked.connect(self.load_projdata)
         self.load_projdata_status = QLabel(f"")
+        # Configure Layout
+        FilenameControlGroupBoxLayout = QGridLayout()
+        FilenameControlGroupBoxLayout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
+        FilenameControlGroupBoxLayout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
+        FilenameControlGroupBoxLayout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
+        FilenameControlGroupBoxLayout.addWidget(self.load_projdata_status, 2, 0, 1 , 2)
+        self.FilenameControlGroupBox.setLayout(FilenameControlGroupBoxLayout)
 
-        # Sinogram and viewgram radio buttons
-        gramTypeLabel = QLabel(f"Type of 2D data:")
+        # Sinogram and viewgram radio buttons in a groupbox
         self.sinogram_radio_button = QRadioButton("Sinogram")
         self.viewgram_radio_button = QRadioButton("Viewgram")
         self.sinogram_radio_button.setChecked(True)  # Default to sinogram
         self.sinogram_radio_button.toggled.connect(self.refresh_UI_configuration)
         self.viewgram_radio_button.toggled.connect(self.refresh_UI_configuration)
-
         # Configure Layout
-        layout = QGridLayout()
-        layout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
-        layout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
-        layout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
-        layout.addWidget(self.load_projdata_status, 2, 0, 1, 2)
-        layout.addWidget(gramTypeLabel, 3, 0, 1, 2)
-        layout.addWidget(self.sinogram_radio_button, 4, 0, 1, 1)
-        layout.addWidget(self.viewgram_radio_button, 4, 1, 1, 1)
-        self.FilenameControlGroupBox.setLayout(layout)
+        ModeSelectionGroupBox = QGroupBox("Data Visualization Mode")
+        ModeSelectionGroupBoxLayout = QVBoxLayout()
+        ModeSelectionGroupBoxLayout.addWidget(self.sinogram_radio_button)
+        ModeSelectionGroupBoxLayout.addWidget(self.viewgram_radio_button)
+        ModeSelectionGroupBox.setLayout(ModeSelectionGroupBoxLayout)
 
 
         # #############################################
@@ -120,18 +121,13 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         # ### Configure Main Layout ###
         # #############################
         topLayout = QHBoxLayout()
-        # topLayout.addStretch(1)
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(topLayout, 0, 0, 1, 5)
         mainLayout.addWidget(self.FilenameControlGroupBox, 2, 0)
+        mainLayout.addWidget(ModeSelectionGroupBox, 3, 0)
         mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 0, 1, 2)
-        # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
-        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1)
-        # mainLayout.setRowStretch(1, 1)
-        # mainLayout.setRowStretch(2, 1)
-        # mainLayout.setColumnStretch(0, 1)
-        # mainLayout.setColumnStretch(1, 1)
+        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1, 2, 1)
         self.setLayout(mainLayout)
 
         self.change_UI_style('Fusion')
