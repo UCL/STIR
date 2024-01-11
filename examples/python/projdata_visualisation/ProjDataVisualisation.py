@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2022 University College London
+# Copyright 2022, 2024 University College London
 
 # Author Robert Twyman
 
@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
 from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjDataDimensions
 
+import stir
 
 class ProjDataVisualisationWidgetGallery(QDialog):
     def __init__(self, parent=None):
@@ -181,16 +182,20 @@ class ProjDataVisualisationWidgetGallery(QDialog):
             image = self.get_sinogram_numpy_array()
             ax.title.set_text(
                 f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)}, "
-                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)}")
+                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)}, "
+                f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Views/projection angle")
             ax.xaxis.set_label_text("Tangential positions")
+            ax.xaxis.set_label_text("TOF bins")
         elif self.viewgram_radio_button.isChecked():
             image = self.get_viewgram_numpy_array()
             ax.title.set_text(
                 f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)},"
-                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)}")
+                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)}, "
+                f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Axial positions")
             ax.xaxis.set_label_text("Tangential positions")
+            ax.xaxis.set_label_text("TOF bins")
         else:
             msg = f"Error: No radio button is checked... How did you get here?\n"
             raise Exception(msg)
@@ -201,6 +206,14 @@ class ProjDataVisualisationWidgetGallery(QDialog):
                   )
         self.display_image_matplotlib_canvas.draw()
 
+    def get_bin(self) -> stir.Bin:
+        view_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)
+        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)
+        segment_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)
+        tangential_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TANGENTIAL_POS)
+        timing_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)
+        return stir.Bin(segment_num, view_num, axial_pos, tangential_pos, timing_pos)
+
     def get_sinogram_numpy_array(self):
         """
         This function returns the sinogram numpy array based on the current UI configuration parameters for segment 
@@ -209,16 +222,14 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if self.stir_interface.projdata is None:
             return None
 
-        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)
         return self.stir_interface.as_numpy(
-            self.stir_interface.segment_data.get_sinogram(axial_pos))
+            self.stir_interface.segment_data.get_sinogram(self.get_bin().axial_pos_num))
 
     def get_viewgram_numpy_array(self):
         if self.stir_interface.projdata is None:
             return None
 
-        view_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)
-        return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(view_num))
+        return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(self.get_bin().view_num))
 
     def browse_file_system_for_projdata(self):
         initial = self.projdata_filename_box.text()
@@ -256,7 +267,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
 def OpenProjDataVisualisation(projdata=None):
     """
-    Function to open the ProjDataVisualisation GUI window. Will not exit pyton on window close.
+    Function to open the ProjDataVisualisation GUI window. Will not exit python on window close.
     projdata: Proj data to be visualised. Can be either a stir.ProjData object, a file path (str) or None. If None, an empty GUI will be opened.
     """
     app = QApplication([])

@@ -106,23 +106,25 @@ public:
   //! Get maximum tangetial position number
   inline int get_max_tangential_pos_num() const;
   
+  using Segment<elemT>::get_sinogram;
+  using Segment<elemT>::get_viewgram;
   //! Get sinogram
-  Sinogram<elemT> get_sinogram(int axial_pos_num) const;
+  Sinogram<elemT> get_sinogram(int axial_pos_num) const override;
   //! Get viewgram
-  inline Viewgram<elemT> get_viewgram(int view_num) const;
+  inline Viewgram<elemT> get_viewgram(int view_num) const override;
   //! Set sinogram
-  inline void set_sinogram(const Sinogram<elemT> &s);
+  inline void set_sinogram(const Sinogram<elemT> &s) override;
   //! Set sinogram
-  void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);
+  void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num) override;
   //! Set viewgram
-  inline void set_viewgram(const Viewgram<elemT> &v);
+  inline void set_viewgram(const Viewgram<elemT> &v) override;
 
   //! Overloading Array::grow
-  void grow(const IndexRange<3>& range);
+  void grow(const IndexRange<3>& range) override;
   //! Overloading Array::resize
-  void resize(const IndexRange<3>& range);
+  void resize(const IndexRange<3>& range) override;
 
-  virtual bool operator ==(const Segment<elemT>&) const;
+  virtual bool operator ==(const Segment<elemT>&) const override;
 };
 
 END_NAMESPACE_STIR
