@@ -113,8 +113,8 @@ class ProjDataVisualisationBackend:
             return self.projdata.get_min_segment_num(), \
                    self.projdata.get_max_segment_num()
         elif dimension == ProjDataDims.AXIAL_POS:
-            return self.projdata.get_min_axial_pos_num(self.get_current_segment_num()), \
-                   self.projdata.get_max_axial_pos_num(self.get_current_segment_num())
+            return self.projdata.get_min_axial_pos_num(segment_number), \
+                   self.projdata.get_max_axial_pos_num(segment_number)
         elif dimension == ProjDataDims.VIEW_NUMBER:
             return self.projdata.get_min_view_num(), \
                    self.projdata.get_max_view_num()

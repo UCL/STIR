@@ -117,8 +117,7 @@ class UIGroupboxProjDataDimensions:
             return
         # Update all slider and spinbox ranges, should start with segment number
         for dimension in ProjDataDims:
-            current_segment_num = self.stir_interface.get_current_segment_num()
-            limits = self.stir_interface.get_limits(dimension, current_segment_num)
+            limits = self.stir_interface.get_limits(dimension, self.stir_interface.get_current_segment_num())
             self.UI_slider_spinboxes[dimension].update_limits(limits=limits)
 
     def update_enable_disable(self, sinogram_radio_button_state: bool):
