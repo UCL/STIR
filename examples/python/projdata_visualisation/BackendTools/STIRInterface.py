@@ -76,25 +76,28 @@ class ProjDataVisualisationBackend:
         """Prints the configuration of the projection data."""
         print(
             f"\nProjection data configuration for:\n"
-            f"\t'{self.projdata_filename}'\n"
-            f"\tNumber of views:\t\t\t\t\t{self.projdata.get_num_views()}\n"
-            f"\tNumber of tangential positions:\t\t{self.projdata.get_num_tangential_poss()}\n"
-            f"\tNumber of segments:\t\t\t\t\t{self.projdata.get_num_segments()}\n"
-            f"\tNumber of axial positions:\t\t\t{self.projdata.get_num_axial_poss(0)}\n"
-            f"\tNumber of tof positions:\t\t\t{self.projdata.get_num_tof_poss()}\n"
-            f"\tNumber of non-tof sinograms:\t\t{self.projdata.get_num_non_tof_sinograms()}\n\n"
+            f"'{self.projdata_filename}'\n"
+            f"Number of views:                     {self.projdata.get_num_views():>10}\n"
+            f"Number of tangential positions:      {self.projdata.get_num_tangential_poss():>10}\n"
+            f"Number of segments:                  {self.projdata.get_num_segments():>10}\n"
+            f"Number of axial positions:           {self.projdata.get_num_axial_poss(0):>10}\n"
+            f"Number of tof positions:             {self.projdata.get_num_tof_poss():>10}\n"
+            f"Number of non-tof sinograms:         {self.projdata.get_num_non_tof_sinograms():>10}\n\n"
         )
+
+
 
     def print_segment_data_configuration(self) -> None:
         """Prints the configuration of the segment data."""
         print(
             f"\nSegment data configuration for:\n"
-            f"\t'{self.projdata_filename}':\n"
-            f"\tSegment Number: {self.get_current_segment_num()}\n"
-            f"\tNumber of views:\t\t\t\t\t{self.segment_data.get_num_views()}\n"
-            f"\tNumber of tangential positions:\t\t{self.segment_data.get_num_tangential_poss()}\n"
-            f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
+            f"'{self.projdata_filename}':\n"
+            f"Segment Number: {self.get_current_segment_num()}\n"
+            f"Number of views:                     {self.segment_data.get_num_views():>10}\n"
+            f"Number of tangential positions:      {self.segment_data.get_num_tangential_poss():>10}\n"
+            f"Number of axial positions:           {self.segment_data.get_num_axial_poss():>10}\n"
         )
+
 
     @staticmethod
     def as_numpy(data: stir.ProjData) -> numpy.array:
