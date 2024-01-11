@@ -36,28 +36,40 @@ class ProjDataVisualisationBackend:
         self.segment_data = None
 
     def load_projdata(self, filename=None) -> bool:
-        """Loads STIR projection data from a file."""
+        """
+        Loads STIR projection data from a file and updates the segment data in memory.
+        :param filename: The filename to load the projection data from.
+        :return: True if the data was loaded successfully, False otherwise.
+        """
         if filename is not None and filename != "":
             self.projdata_filename = filename
 
-        if self.projdata_filename != "":
-            print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
-            try:
-                self.projdata = stir.ProjData.read_from_file(self.projdata_filename)
-                self.segment_data = self.refresh_segment_data()
-                print("ProjDataVisualisationBackend.load_data: Data loaded.")
-                self.print_projdata_configuration()
-            except RuntimeError:
-                print("ProjDataVisualisationBackend.load_data: Error loading data from file: " + self.projdata_filename)
-                return False
-            return True
-        return False
+        if self.projdata_filename == "":
+            return False
+        
+        print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
+        try:
+            new_projdata = stir.ProjData.read_from_file(self.projdata_filename)
+            new_segment_data = new_projdata.get_segment_by_view(stir.SegmentIndices(0, 0))
+        except RuntimeError:
+            print("ProjDataVisualisationBackend.load_data: Error loading data from file: " + self.projdata_filename)
+            return False
+        
+        self.projdata = new_projdata
+        self.segment_data = new_segment_data
+        print("ProjDataVisualisationBackend.load_data: Data loaded.")
+        self.print_projdata_configuration() 
+        return True
+    
+    def get_segment_data(self, segment_number=0, timing_pos=0) -> stir.FloatSegmentByView:
+        """Returns the segment data."""
+        return self.projdata.get_segment_by_view(stir.SegmentIndices(segment_number, timing_pos))
         
     def set_projdata(self, projdata: stir.ProjData) -> None:
         """Sets the projection data stream."""
         self.projdata = projdata
         self.projdata_filename = "ProjData filename set externally, no filename"
-        self.segment_data = self.refresh_segment_data()
+        self.segment_data = self.projdata.get_segment_by_view(stir.SegmentIndices(segment_number, timing_pos))
         self.print_projdata_configuration()
 
     def print_projdata_configuration(self) -> None:
@@ -83,16 +95,6 @@ class ProjDataVisualisationBackend:
             f"\tNumber of tangential positions:\t\t{self.segment_data.get_num_tangential_poss()}\n"
             f"\tNumber of axial positions:\t\t\t{self.segment_data.get_num_axial_poss()}\n"
         )
-
-    def refresh_segment_data(self, segment_number=0, timing_pos=0) -> stir.FloatSegmentByView:
-        """Loads a segment data, from the projection data, into memory allowing for faster access."""
-        if self.projdata is None:
-            self.load_projdata()
-
-        if self.projdata is not None:
-            seg_idx = stir.SegmentIndices(segment_number, timing_pos)
-            self.segment_data = self.projdata.get_segment_by_view(seg_idx)
-            return self.segment_data
 
     @staticmethod
     def as_numpy(data: stir.ProjData) -> numpy.array:

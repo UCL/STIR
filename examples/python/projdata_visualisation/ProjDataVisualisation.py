@@ -141,7 +141,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
     def configure_backend(self):
         ### Backend ###
         self.stir_interface = ProjDataVisualisationBackend(sys.argv)
-        self.stir_interface.refresh_segment_data(0)
+        self.stir_interface.load_projdata()
 
     def change_UI_style(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))

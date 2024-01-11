@@ -89,7 +89,7 @@ class UIGroupboxProjDataDimensions:
         Because of the way the STIR segment data is handled, the segment_data needs to change first."""
         new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
         new_timing_pos = self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].value()
-        self.stir_interface.refresh_segment_data(new_segment_num, new_timing_pos)
+        self.stir_interface.get_segment_data(new_segment_num, new_timing_pos)
         self.UI_controller_UI_change_trigger()
 
     def axial_pos_refresh(self):
@@ -108,7 +108,7 @@ class UIGroupboxProjDataDimensions:
         """This function is called when the user changes the TOF bin value."""
         new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
         new_timing_pos = self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].value()
-        self.stir_interface.refresh_segment_data(new_segment_num, new_timing_pos)
+        self.stir_interface.segment_data = self.stir_interface.get_segment_data(new_segment_num, new_timing_pos)
         self.UI_controller_UI_change_trigger()
 
     def refresh_sliders_and_spinboxes_ranges(self) -> None:
