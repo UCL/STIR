@@ -164,14 +164,15 @@ void
 TOF_Tests::test_tof_proj_data_info_kernel()
 {
     const int correct_tof_mashing_factor = 39;
-    const int num_timing_positions = 9;
-    float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
+    const int num_timing_positions = test_scanner_sptr->get_max_num_timing_poss() / correct_tof_mashing_factor;
+    const float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
             test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f/2;
-    float correct_timing_locations[num_timing_positions] = {-360.201f/2 + correct_width_of_tof_bin/2, -280.156f/2 + correct_width_of_tof_bin/2,
-                                                            -200.111f/2 + correct_width_of_tof_bin/2, -120.067f/2 + correct_width_of_tof_bin/2,
-                                                            0.0f, 40.022f/2 + correct_width_of_tof_bin/2,
-                                                            120.067f/2 + correct_width_of_tof_bin/2, 200.111f/2 + correct_width_of_tof_bin/2,
-                                                            280.156f/2+ correct_width_of_tof_bin/2};
+    const float correct_timing_locations[num_timing_positions] =
+      {-4*correct_width_of_tof_bin, -3*correct_width_of_tof_bin,
+       -2*correct_width_of_tof_bin, -1*correct_width_of_tof_bin,
+       0*correct_width_of_tof_bin, 1*correct_width_of_tof_bin,
+       2*correct_width_of_tof_bin, 3*correct_width_of_tof_bin,
+       4*correct_width_of_tof_bin};
 
     check_if_equal(correct_tof_mashing_factor,
                    test_proj_data_info_sptr->get_tof_mash_factor(), "Different TOF mashing factor.");
@@ -179,10 +180,10 @@ TOF_Tests::test_tof_proj_data_info_kernel()
     check_if_equal(num_timing_positions,
                    test_proj_data_info_sptr->get_num_tof_poss(), "Different number of timing positions.");
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
-         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num, counter++)
+    for (int timing_pos_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
+         timing_pos_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_pos_num, counter++)
     {
-        Bin bin(0, 0, 0, 0, timing_num, 1.f);
+        Bin bin(0, 0, 0, 0, timing_pos_num, 1.f);
 
         check_if_equal(static_cast<double>(correct_width_of_tof_bin),
                        static_cast<double>(test_proj_data_info_sptr->get_sampling_in_k(bin)), "Error in get_sampling_in_k()");
@@ -343,11 +344,11 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
         export_lor(proj_matrix_row,
                    lor2.p1(), lor2.p2(), 500000000);
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num();
-         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num)
+    for (int timing_pos_num = test_proj_data_info_sptr->get_min_tof_pos_num();
+         timing_pos_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_pos_num)
     {
         ProjMatrixElemsForOneBin new_proj_matrix_row;
-        Bin bin(seg_num, view_num, axial_num, tang_num, timing_num, 1.f);
+        Bin bin(seg_num, view_num, axial_num, tang_num, timing_pos_num, 1.f);
 
         t.reset(); t.start();
         test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(new_proj_matrix_row,
@@ -357,7 +358,7 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
 
         if (print_to_file)
             export_lor(new_proj_matrix_row,
-                       lor2.p1(), lor2.p2(), timing_num,
+                       lor2.p1(), lor2.p2(), timing_pos_num,
                        proj_matrix_row);
 
 
