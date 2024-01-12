@@ -35,17 +35,16 @@ class ProjDataVisualisationBackend:
 
         self.segment_data = None
 
-    def load_projdata(self, filename=None) -> bool:
+    def load_projdata_from_file(self, filename: str | None = None) -> bool:
         """
         Loads STIR projection data from a file and updates the segment data in memory.
         :param filename: The filename to load the projection data from.
         :return: True if the data was loaded successfully, False otherwise.
         """
-        if filename is not None and filename != "":
-            self.projdata_filename = filename
-
-        if self.projdata_filename == "":
+        if filename is None or filename == "":
             return False
+
+        self.projdata_filename = filename
         
         print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
         try:
@@ -60,16 +59,12 @@ class ProjDataVisualisationBackend:
         print("ProjDataVisualisationBackend.load_data: Data loaded.")
         self.print_projdata_configuration() 
         return True
-    
-    def get_segment_data(self, segment_number=0, timing_pos=0) -> stir.FloatSegmentByView:
-        """Returns the segment data."""
-        return self.projdata.get_segment_by_view(stir.SegmentIndices(segment_number, timing_pos))
         
     def set_projdata(self, projdata: stir.ProjData) -> None:
         """Sets the projection data stream."""
         self.projdata = projdata
         self.projdata_filename = "ProjData filename set externally, no filename"
-        self.segment_data = self.projdata.get_segment_by_view(stir.SegmentIndices(segment_number, timing_pos))
+        self.segment_data = self.projdata.get_segment_by_view(stir.SegmentIndices(0, 0))
         self.print_projdata_configuration()
 
     def print_projdata_configuration(self) -> None:

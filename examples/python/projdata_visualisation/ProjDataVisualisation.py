@@ -137,7 +137,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
     def configure_backend(self):
         ### Backend ###
         self.stir_interface = ProjDataVisualisationBackend(sys.argv)
-        self.stir_interface.load_projdata()
+        self.stir_interface.load_projdata_from_file()
 
     def change_UI_style(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -246,7 +246,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if filename is not None and filename != "":
             self.projdata_filename_box.setText(filename)
 
-        data_load_successful = self.stir_interface.load_projdata(self.projdata_filename_box.text())
+        data_load_successful = self.stir_interface.load_projdata_from_file(self.projdata_filename_box.text())
 
         if not data_load_successful:
             self.load_projdata_status.setText("STATUS: Failed to load ProjData from file.")
