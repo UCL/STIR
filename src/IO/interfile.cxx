@@ -512,11 +512,11 @@ static void write_interfile_radionuclide_info(std::ostream& output_header, const
   output_header << "number of radionuclides := 1\n";
   if (!radionuclide.get_name().empty() && radionuclide.get_name()!="Unknown")
     output_header << "radionuclide name[1] := " << radionuclide.get_name()  << '\n';
-  if (radionuclide.get_half_life(false) >= 0)
+  if (radionuclide.get_half_life(false) > 0)
     {
       output_header << "radionuclide halflife (sec)[1] := " << radionuclide.get_half_life()  << '\n';
     }
-  if (radionuclide.get_branching_ratio(false) >= 0)
+  if (radionuclide.get_branching_ratio(false) > 0)
     {
       output_header << "radionuclide branching factor[1] := "
                     << radionuclide.get_branching_ratio()  << '\n';
