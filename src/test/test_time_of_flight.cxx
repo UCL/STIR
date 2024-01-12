@@ -167,12 +167,11 @@ TOF_Tests::test_tof_proj_data_info_kernel()
     const int num_timing_positions = test_scanner_sptr->get_max_num_timing_poss() / correct_tof_mashing_factor;
     const float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
             test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f/2;
-    const float correct_timing_locations[num_timing_positions] =
-      {-4*correct_width_of_tof_bin, -3*correct_width_of_tof_bin,
-       -2*correct_width_of_tof_bin, -1*correct_width_of_tof_bin,
-       0*correct_width_of_tof_bin, 1*correct_width_of_tof_bin,
-       2*correct_width_of_tof_bin, 3*correct_width_of_tof_bin,
-       4*correct_width_of_tof_bin};
+    std::vector<float> correct_timing_locations(num_timing_positions);
+    for (int i=0; i<num_timing_positions; ++i)
+      {
+        correct_timing_locations[i] = (i - (num_timing_positions - 1)/2.F)*correct_width_of_tof_bin;
+      }
 
     check_if_equal(correct_tof_mashing_factor,
                    test_proj_data_info_sptr->get_tof_mash_factor(), "Different TOF mashing factor.");
