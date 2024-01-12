@@ -121,6 +121,11 @@
         If the radionuclide name is recognised to the STIR database, its values for half-life etc
         are used, as opposed to what was recorded in the file (if anything).
       </li>
+      <li>
+        <tt>list_lm_events</tt> now has an additional option <tt>--event-bin</tt> which lists the bin
+        assigned for the event (according to the "native" projection data, i.e. without any mashing).<br>
+        In addition, the <tt>--event-LOR<tt> option now also works for SPECT (it was disabled by accident).
+        </li>
     </ul>
 
     <h4>Python (and MATLAB)</h4>

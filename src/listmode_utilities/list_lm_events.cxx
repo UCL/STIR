@@ -29,7 +29,7 @@
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_from_file.h"
-
+#include "stir/stream.h"
 #include "stir/Scanner.h"
 #include <iostream>
 #include <vector>
@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
   bool list_time=true;
   bool list_coincidence=false;
   bool list_event_LOR=false;
+  bool list_event_bin=false;
   bool list_gating=true;
   bool list_unknown=false;
   unsigned long num_events_to_list = 0;
@@ -80,6 +81,10 @@ int main(int argc, char *argv[])
         {
           list_event_LOR = atoi(argv[1])!=0;
         }
+      else if (strcmp(argv[0], "--event-bin")==0)
+        {
+          list_event_bin = atoi(argv[1])!=0;
+        }
       else if (strcmp(argv[0], "--unknown")==0)
         {
           list_unknown = atoi(argv[1])!=0;
@@ -99,11 +104,15 @@ int main(int argc, char *argv[])
            << "--time 0|1 : list time events or not (default: 1)\n"
            << "--gating 0|1 : list gating events or not (default: 1)\n"
            << "--coincidence 0|1  0|1): list coincidence event info or not (default: 0)\n"
-           << "--event-LOR 0|1 : ((identical to --SPECT-event) list LOR end-points if coincidence/gamma event or not (default: 0)\n"
+           << "--event-LOR 0|1 : (identical to --SPECT-event) list LOR end-points if coincidence/gamma event, or not (default: 0)\n"
+           << "--event-bin 0|1 : bin coordinates if coincidence/gamma event, or not (default: 0)\n"
            << "--unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
            << "--num-events-to-list <num> : limit number of events written to stdout\n"
+           << "\n--event-bin uses the \"native\" projection data info associated to the\n"
+           << "   list-mode file, i.e. without any mashing in views/TOF etc).\n"
            << "\nNote that for some PET scanners, coincidences are listed with crystal info.\n"
-           << "For others, you should list LOR coordinates (as well) as the 'coincidence' option will only list prompt/delayed info.\n";
+           << "   For others, you should list LOR coordinates or bins (as well) as the 'coincidence' option\n"
+           << "   will only list prompt/delayed info.\n";
       return EXIT_FAILURE;
     }
 
@@ -111,6 +120,7 @@ int main(int argc, char *argv[])
     cout << "LORs will be listed as 2 points (z1,y1,x1)-(z2,y2,x2).\n";
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
+  auto proj_data_info_sptr = lm_data_ptr->get_proj_data_info_sptr();
 
   cout << "Scanner: " << lm_data_ptr->get_scanner().get_name() << endl;
 
@@ -180,26 +190,27 @@ int main(int argc, char *argv[])
                 }
             }
           if (list_event_LOR)
-            { 
-              if (auto event_ptr = 
-                   dynamic_cast<CListEvent *>(&record.event())) // cast not necessary, but looks same as above
-              if (event_ptr!=0)
-                {
-                  LORAs2Points<float> lor;
-                  lor=event_ptr->get_LOR();
-                  cout << " LOR "
-                       << "(" << lor.p1().z()
-                       << "," << lor.p1().y()
-                       << "," << lor.p1().x()
-                       << ")-"
-                       << "(" << lor.p2().z()
-                       << "," << lor.p2().y()
-                       << "," << lor.p2().x()
-                       << ")";
-                  listed = true;
-                }
+            {
+              const auto lor = record.event().get_LOR();
+              cout << " LOR "
+                   << "(" << lor.p1().z()
+                   << "," << lor.p1().y()
+                   << "," << lor.p1().x()
+                   << ")-"
+                   << "(" << lor.p2().z()
+                   << "," << lor.p2().y()
+                   << "," << lor.p2().x()
+                   << ")";
+              listed = true;
             }
         }
+        if (list_event_bin)
+          {
+            Bin bin;
+            record.event().get_bin(bin, *proj_data_info_sptr);
+            cout << " bin " << bin;
+            listed = true;
+          }
         if (!recognised && list_unknown)
         {
           cout << "Unknown type";
