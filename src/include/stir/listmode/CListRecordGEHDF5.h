@@ -108,7 +108,7 @@ namespace RDF_HDF5 {
 
       inline int get_tof_bin() const
          {
-             return static_cast<int>(deltaTime);
+             return static_cast<int>(-deltaTime);
          }
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
