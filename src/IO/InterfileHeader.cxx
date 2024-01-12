@@ -169,7 +169,7 @@ InterfileHeader::InterfileHeader()
 
   radionuclide_name.resize(1);
   radionuclide_half_life.resize(1);
-  radionuclide_half_life[1] = -1.F;
+  radionuclide_half_life[0] = -1.F;
   radionuclide_branching_ratio.resize(1);
   radionuclide_branching_ratio[0] = -1.F;
 
@@ -287,7 +287,7 @@ bool InterfileHeader::post_processing()
        this->radionuclide_name[0] : this->isotope_name;
      auto radionuclide = radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality, rn_name);
      if (radionuclide.get_half_life(false) < 0)
-       radionuclide = Radionuclide(rn_name,
+       radionuclide = Radionuclide(rn_name.empty() ? "Unknown" : rn_name,
                                    is_spect ? -1.F : 511.F, // TODO handle energy for SPECT
                                    radionuclide_branching_ratio[0], radionuclide_half_life[0], this->exam_info_sptr->imaging_modality);
      this->exam_info_sptr->set_radionuclide(radionuclide);
