@@ -24,6 +24,7 @@
 #define __stir_SinogramIndices_h__
 
 #include "stir/SegmentIndices.h"
+#include "stir/Bin.h"
 
 START_NAMESPACE_STIR
 
@@ -40,6 +41,9 @@ public:
   inline  SinogramIndices();
   //! constructor specifying indices
   inline SinogramIndices( const int axial_pos_num,const int segment_num, const int timing_pos_num);
+
+  //! constructor from Bin
+  inline SinogramIndices(const Bin&);
 
   //! get view number for const objects
   inline int axial_pos_num() const;

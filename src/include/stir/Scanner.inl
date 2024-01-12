@@ -453,19 +453,22 @@ void Scanner::set_crystal_map_file_name(const std::string& new_crystal_map_file_
    _already_setup = false;
 }
 
-void Scanner::set_num_max_of_timing_poss(const int new_num)
+void Scanner::set_max_num_timing_poss(const int new_num)
 {
     max_num_of_timing_poss = new_num;
+    _already_setup = false;
 }
 
 void Scanner::set_size_of_timing_poss(const float new_num)
 {
     size_timing_pos = new_num;
+    _already_setup = false;
 }
 
 void Scanner::set_timing_resolution(const float new_num_in_ps)
 {
     timing_resolution = new_num_in_ps;
+    _already_setup = false;
 }
 
 /********    Calculate singles bin index from detection position    *********/

@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2018, 2023 University College London
+    Copyright (C) 2013, 2018, 2023, 2024 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -503,6 +503,26 @@ static void  write_interfile_modality(std::ostream& output_header, const ExamInf
     output_header << "!imaging modality := " << exam_info.imaging_modality.get_name() << '\n';
 }
 
+static void write_interfile_radionuclide_info(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  const auto radionuclide = exam_info.get_radionuclide();
+  //const bool is_spect = exam_info.imaging_modality.get_modality() == ImagingModality::NM;
+
+  // TODO we only support one
+  output_header << "number of radionuclides := 1\n";
+  if (!radionuclide.get_name().empty() && radionuclide.get_name()!="Unknown")
+    output_header << "radionuclide name[1] := " << radionuclide.get_name()  << '\n';
+  if (radionuclide.get_half_life(false) > 0)
+    {
+      output_header << "radionuclide halflife (sec)[1] := " << radionuclide.get_half_life()  << '\n';
+    }
+  if (radionuclide.get_branching_ratio(false) > 0)
+    {
+      output_header << "radionuclide branching factor[1] := "
+                    << radionuclide.get_branching_ratio()  << '\n';
+    }
+}
+
 static void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
 {
   data_name=filename;
@@ -594,10 +614,8 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (exam_info.get_calibration_factor()>0.F)
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
-  
-  if (!exam_info.get_radionuclide().get_name().empty() && exam_info.get_radionuclide().get_name()!="Unknown")
-  output_header << "isotope name := "  
-                <<exam_info.get_radionuclide().get_name()  << endl;
+
+  write_interfile_radionuclide_info(output_header, exam_info);
 
   if (is_spect)
     {
@@ -1226,7 +1244,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
      : "BIGENDIAN")
 		<< endl;
 
-  
+  write_interfile_radionuclide_info(output_header, pdfs.get_exam_info());
+
   if (is_spect)
     {
       // output_header << "number of energy windows :=1\n";

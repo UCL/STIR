@@ -570,7 +570,8 @@ ensure_norm_is_set_up(bool for_original_data) const
       if (!this->norm_already_setup || this->latest_setup_norm_was_with_orig_data)
         {
           if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), this->sens_proj_data_info_sptr) == Succeeded::no)
-            error("Set_up of norm with non-TOF data failed.");
+            error("Set_up of norm with non-TOF data failed.\n"
+                  "If your norm is TOF, set \"use time-of-flight sensitivities\" to true.");
         }
     }
   this->norm_already_setup = true;

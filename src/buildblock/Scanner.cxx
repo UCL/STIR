@@ -448,7 +448,7 @@ Scanner::Scanner(Type scanner_type)
            0.105F, // energy resolution from Levin et al. TMI 2016 
 			511.F,
 		   (short int)(351),
-		   (float)(89.0F/13.0F),
+             (float)(13.02),
 		   (float)(390.0F) );
     break;
 

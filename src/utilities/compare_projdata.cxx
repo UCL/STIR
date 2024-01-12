@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2006 Hammersmith Imanet Ltd
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -29,17 +29,16 @@ the data.
 
 #include "stir/ProjData.h"
 #include "stir/SegmentByView.h"
+#include "stir/SegmentIndices.h"
 #include "stir/shared_ptr.h"
 
 #include <iostream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::max;
-#endif
 
 
 
@@ -145,13 +144,17 @@ int main(int argc, char *argv[])
   }
 
   float max_pos_error=0.F, max_neg_error=0.F, amplitude=0.F;
-  for (int segment_num = -max_segment; segment_num <= max_segment ; segment_num++) 
-    {
-      SegmentByView<float> input1=first_operand->get_segment_by_view(segment_num);
-      const SegmentByView<float> input2=second_operand->get_segment_by_view(segment_num);
+  for (int timing_pos_num=first_operand->get_min_tof_pos_num();
+       timing_pos_num<=first_operand->get_max_tof_pos_num();
+       ++timing_pos_num)
+    for (int segment_num = -max_segment; segment_num <= max_segment ; segment_num++) 
+      {
+        SegmentIndices s_idx(segment_num, timing_pos_num);
+        auto  input1=first_operand->get_segment_by_view(s_idx);
+        const auto input2=second_operand->get_segment_by_view(s_idx);
 
-      update_comparison(input1,input2,max_pos_error,max_neg_error, amplitude);
-    }
+        update_comparison(input1,input2,max_pos_error,max_neg_error, amplitude);
+      }
 
   const float max_abs_error=max(max_pos_error, -max_neg_error);
   bool same=(max_abs_error/amplitude<=tolerance)?true:false;

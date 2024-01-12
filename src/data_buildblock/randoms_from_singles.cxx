@@ -9,7 +9,7 @@
 
 */
 /*
-  Copyright (C) 2020, 2021, University Copyright London
+  Copyright (C) 2020, 2021, 2024, University Copyright London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -87,8 +87,9 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
          % isotope_halflife % decay_corr_factor % duration % (1/corr_factor),
          2);
 
+    // Finally, if we have TOF data, we distribute randoms evenly over the TOF bins
     multiply_crystal_factors(proj_data, total_singles,
-                             static_cast<float>(coincidence_time_window*corr_factor));
+                             static_cast<float>(coincidence_time_window * corr_factor / proj_data.get_num_tof_poss()));
 
   }
 }

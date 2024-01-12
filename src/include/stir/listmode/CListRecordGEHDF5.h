@@ -108,7 +108,7 @@ namespace RDF_HDF5 {
 
       inline int get_tof_bin() const
          {
-             return static_cast<int>(deltaTime);
+             return static_cast<int>(-deltaTime);
          }
 #if STIRIsNativeByteOrderBigEndian
       // Do byteswapping first before using this bit field.
@@ -266,6 +266,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
     det_pos.pos2().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
+    det_pos.timing_pos() =  event_data.get_tof_bin();
   }
 
   //! This routine sets in a coincidence event from detector "indices"
@@ -284,9 +285,9 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     union
     {
       detail::CListAnyRecordDataGEHDF5 rec;
-      boost::uint16_t raw;
+      boost::uint16_t raw[4];
     };
-    std::copy(data_ptr, data_ptr+2, &raw);
+    std::copy(data_ptr, data_ptr+2, &raw[0]);
     switch(rec.eventLength)
       {
       case detail::LENGTH_6_EVT: return std::size_t(6);

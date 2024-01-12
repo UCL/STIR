@@ -45,7 +45,12 @@
 
     <h3>Changes breaking backwards compatibility from a user-perspective</h3>
    <ul>
-      <li> </li>
+     <li>
+       When parsing Interfile headers for projection data and the <tt>originating system</tt>
+       is not recognised, the previous version of STIR tried to guess the scanner based on the
+       number of views or rings. This was using very old scanners though, and could lead to
+       confusion. These guesses have now been removed.
+     </li>
     </ul>
 
     <h3>Bug fixes</h3>
@@ -99,6 +104,28 @@
           </li>
         </ul>
       </li>
+      <li>
+        <ul>Interfile headers now use use the following keywords:
+          <pre>
+            number of radionuclides := 1
+            radionuclide name[1] := ...
+            radionuclide halflife (sec)[1] := ...
+            radionuclide branching factor[1] := ...
+          </pre>
+          Previous versions of STIR used <tt>isotope name</tt>. This is still recognised
+          if <tt>radionuclide name[1]</tt> is not present. Note that
+          neither versions are confirming to the (very old) Interfile 4.0 proposal.
+      </li>
+      <li>
+        Radionuclide information is read from Interfile and GE HDF5 headers.
+        If the radionuclide name is recognised to the STIR database, its values for half-life etc
+        are used, as opposed to what was recorded in the file (if anything).
+      </li>
+      <li>
+        <tt>list_lm_events</tt> now has an additional option <tt>--event-bin</tt> which lists the bin
+        assigned for the event (according to the "native" projection data, i.e. without any mashing).<br>
+        In addition, the <tt>--event-LOR<tt> option now also works for SPECT (it was disabled by accident).
+        </li>
     </ul>
 
     <h4>Python (and MATLAB)</h4>

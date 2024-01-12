@@ -15,7 +15,7 @@
 /*
     Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2020, University College London
+    Copyright (C) 2018-2021, 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -25,6 +25,8 @@
 
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/IndexRange3D.h"
+#include "stir/Radionuclide.h"
+#include "stir/RadionuclideDB.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
@@ -50,6 +52,15 @@ GEHDF5Wrapper::read_dataset_int32(const std::string& dataset_name)
   std::int32_t tmp=0;
   H5::DataSet dataset = file.openDataSet(dataset_name);
   dataset.read(&tmp, H5::PredType::NATIVE_INT32);
+  return tmp;
+}
+
+  
+static float read_float(const H5::H5File& file, const std::string& dataset)
+{
+  float tmp = 0.F;
+  H5::DataSet ds = file.openDataSet(dataset.c_str());
+  ds.read(&tmp, H5::PredType::NATIVE_FLOAT);
   return tmp;
 }
 
@@ -89,34 +100,10 @@ bool GEHDF5Wrapper::check_GE_signature(H5::H5File& file)
     return false;
 }
 
-// // Checks if input file is listfile. 
-// AB: todo do we want this func? helps test from filename
-/*
-bool
-GEHDF5Wrapper::is_list_file(const std::string& filename)
-{
-
-    H5::H5File file;
-
-    if(!file.isHdf5(filename))
-        error("File is not HDF5. Aborting");
-
-    file.openFile( filename, H5F_ACC_RDONLY );
-    // All RDF files shoudl have this DataSet
-    H5::DataSet dataset = file.openDataSet("/HeaderData/RDFConfiguration/isListFile");
-    unsigned int is_list;
-    dataset.read(&is_list, H5::PredType::STD_U32LE);
-    return is_list;
-
-}
-*/
-
-
-// AB todo: only valid for RDF9 (until they tell us otherwise)
 bool
 GEHDF5Wrapper::is_list_file() const
 {
-    // have we already checked this?
+    // have we already checked this? (note: initially set to false in check_file())
     if(is_list)
         return true;
 
@@ -342,6 +329,13 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
     str_radial_crystals_per_block.read(&num_transaxial_crystals_per_block, H5::PredType::NATIVE_UINT32);
     str_axial_crystals_per_block.read(&num_axial_crystals_per_block, H5::PredType::NATIVE_UINT32);
 
+    // TOF related
+    const float timingResolutionInPico = read_float(file, "/HeaderData/SystemGeometry/timingResolutionInPico");
+    const int posCoincidenceWindow = read_dataset_int32("/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
+    const int negCoincidenceWindow = read_dataset_int32("/HeaderData/AcqParameters/EDCATParameters/negCoincidenceWindow");
+    const float coincTimingPrecisionInPico = read_float(file, "/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision") * 1000; // in nanoSecs in file
+    const int num_tof_bins = posCoincidenceWindow + negCoincidenceWindow + 1;
+
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
     float ring_spacing = detector_axial_size/num_rings;
@@ -375,6 +369,31 @@ shared_ptr<Scanner> GEHDF5Wrapper::get_scanner_from_HDF5()
         scanner_sptr->set_inner_ring_radius((effective_ring_diameter/2) - def_DOI);
         scanner_sptr->set_average_depth_of_interaction(def_DOI);
       }
+    if (timingResolutionInPico > 0 // Signa files seem to have zero in this field
+        && (fabs(scanner_sptr->get_timing_resolution() - timingResolutionInPico) > .1F))
+      {
+        warning("GEHDF5Wrapper: default STIR timing resolution is "
+                + std::to_string(scanner_sptr->get_timing_resolution())
+                + ", while RDF says " + std::to_string(timingResolutionInPico)
+                + "\nWill adjust scanner info to fit with the RDF file");
+        scanner_sptr->set_timing_resolution(timingResolutionInPico);
+      }
+    if (fabs(scanner_sptr->get_size_of_timing_pos() - coincTimingPrecisionInPico)> .1F)
+      {
+        warning("GEHDF5Wrapper: default STIR size of (unmashed) TOF bins is "
+                + std::to_string(scanner_sptr->get_size_of_timing_pos())
+                + ", while RDF says " + std::to_string(coincTimingPrecisionInPico)
+                + "\nWill adjust scanner info to fit with the RDF file");
+        scanner_sptr->set_size_of_timing_poss(coincTimingPrecisionInPico);
+      }
+    if (std::abs(scanner_sptr->get_max_num_timing_poss() - num_tof_bins) > 0)
+      {
+        warning("GEHDF5Wrapper: default STIR number of (unmashed) TOF bins is "
+                + std::to_string(scanner_sptr->get_max_num_timing_poss())
+                + ", while RDF says " + std::to_string(num_tof_bins)
+                + "\nWill adjust scanner info to fit with the RDF file");
+                scanner_sptr->set_max_num_timing_poss(num_tof_bins);
+      }
     if (scanner_sptr->get_default_bin_size() <= 0.F)
       {
         warning("GEHDF5Wrapper: default bin-size is not set. This will create trouble for FBP etc");
@@ -401,7 +420,8 @@ void GEHDF5Wrapper::initialise_proj_data_info_from_HDF5()
                                            /* max_delta*/ scanner_sptr->get_num_rings()-1,
                                            /* num_views */ scanner_sptr->get_num_detectors_per_ring()/2,
                                            /* num_tangential_poss */ scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                           /* arc_corrected */ false
+                                           /* arc_corrected */ false,
+                                           this->is_list_file() ? 1 : 0 // TODO change when reading sinos as TOF
                                            );
   this->proj_data_info_sptr->
     set_bed_position_horizontal(this->read_dataset_int32("/HeaderData/AcqParameters/LandmarkParameters/absTableLongitude")/10.F); /* units in RDF are 0.1 mm */
@@ -475,6 +495,22 @@ void GEHDF5Wrapper::initialise_exam_info()
 
     TimeFrameDefinitions tm(tf);
     exam_info_sptr->set_time_frame_definitions(tm);
+
+    // radionuclide
+    {
+      auto rn_name_ds = file.openDataSet("/HeaderData/ExamData/radionuclideName");
+      H5::StrType str_type(rn_name_ds);
+      std::string rn_name;
+      rn_name_ds.read(rn_name, str_type);
+      RadionuclideDB radionuclide_db;
+      Radionuclide radionuclide = radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,rn_name);
+
+     const float positron_fraction = read_float(file, "/HeaderData/ExamData/positronFraction");
+     const float half_life = read_float(file, "/HeaderData/ExamData/halfLife");
+     if (radionuclide.get_half_life(false) < 0)
+       radionuclide = Radionuclide(rn_name, 511.F, positron_fraction, half_life, exam_info_sptr->imaging_modality);
+     exam_info_sptr->set_radionuclide(radionuclide);
+    }
 }
 
 Succeeded GEHDF5Wrapper::initialise_listmode_data()
@@ -699,33 +735,6 @@ Succeeded GEHDF5Wrapper::initialise_efficiency_factors()
 
     return Succeeded::yes;
 }
-
-float GEHDF5Wrapper::get_coincidence_time_window() const
-{
-    if(!is_list_file() && !is_sino_file())
-        error("The file provided is not list or sino data. Aborting");
-
-    H5::DataSet ds_coincTimingPrecision = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/coincTimingPrecision");
-    H5::DataSet ds_posCoincidenceWindow = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/posCoincidenceWindow");
-    float coincTimingPrecision = 0;
-    int posCoincidenceWindow = 0;
-    ds_coincTimingPrecision.read(&coincTimingPrecision,H5::PredType::NATIVE_FLOAT);
-    ds_posCoincidenceWindow.read(&posCoincidenceWindow,H5::PredType::NATIVE_INT32);
-
-    return (2*posCoincidenceWindow+1) *coincTimingPrecision*1e-9;
-}
-
-float GEHDF5Wrapper::get_halflife() const
-{
-  if(!is_list_file() && !is_sino_file())
-    error("The file provided is not list or sino data. Aborting");
-
-  H5::DataSet ds_halflife = file.openDataSet("/HeaderData/ExamData/halfLife");
-  float halflife = 0;
-  ds_halflife.read(&halflife,H5::PredType::NATIVE_FLOAT);
-  return halflife;
-}
-
 
 // Developed for listmode access
 Succeeded GEHDF5Wrapper::read_list_data( char* output,
