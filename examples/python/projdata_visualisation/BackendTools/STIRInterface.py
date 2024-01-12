@@ -8,13 +8,12 @@
 #
 # See STIR/LICENSE.txt for details
 
-import time
+from enum import Enum, auto
 
 import numpy
+
 import stir
 import stirextra
-
-from enum import Enum, auto
 
 
 class ProjDataDims(Enum):
@@ -57,7 +56,7 @@ class ProjDataVisualisationBackend:
         self.projdata = new_projdata
         self.segment_data = new_segment_data
         print("ProjDataVisualisationBackend.load_data: Data loaded.")
-        self.print_projdata_configuration() 
+        self.print_projdata_configuration()
         return True
         
     def set_projdata(self, projdata: stir.ProjData) -> None:
