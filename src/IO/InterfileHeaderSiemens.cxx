@@ -158,7 +158,7 @@ void InterfileHeaderSiemens::set_type_of_data()
     }
   else
     {
-      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+      warning("Interfile parsing of Siemens header: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
     }
 }
 

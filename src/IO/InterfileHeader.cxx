@@ -179,7 +179,7 @@ InterfileHeader::InterfileHeader()
   ignore_key("GENERAL IMAGE DATA");
   
   add_key("calibration factor", &calibration_factor); 
-  // deprecated
+  // deprecated, but used by Siemens
   add_key("isotope name", &isotope_name);
   ignore_key("number of radionuclides"); // just always use 1. TODO should check really
   add_vectorised_key("radionuclide name", &radionuclide_name);
@@ -283,7 +283,7 @@ bool InterfileHeader::post_processing()
   // radionuclide
   {
      RadionuclideDB radionuclide_db;
-     const std::string rn_name = !this->radionuclide_name.empty()?
+     const std::string rn_name = !this->radionuclide_name[0].empty()?
        this->radionuclide_name[0] : this->isotope_name;
      auto radionuclide = radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality, rn_name);
      if (radionuclide.get_half_life(false) < 0)
