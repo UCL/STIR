@@ -65,19 +65,13 @@ RadionuclideTest::run_tests()
   {
     // PET
     {
-      const auto rnuclide = db.get_radionuclide(pt_mod, "");
+      const auto rnuclide = db.get_radionuclide(pt_mod, "default");
       check(rnuclide == F18_rnuclide, "check \"empty\" radionuclide for PET is F-18");
-
-      const auto def_rnuclide = db.get_radionuclide(pt_mod, "default");
-      check(rnuclide == def_rnuclide, "check equality of \"empty\" and \"default\" radionuclide for PET");
     }
     // NM
     {
-      const auto rnuclide = db.get_radionuclide(nm_mod, "");
+      const auto rnuclide = db.get_radionuclide(nm_mod, "default");
       check(rnuclide == Tc99m_rnuclide, "check \"empty\" radionuclide for NM is Tc-99m");
-
-      const auto def_rnuclide = db.get_radionuclide(nm_mod, "default");
-      check(rnuclide == def_rnuclide, "check equality of \"empty\" and \"default\" radionuclide for NM");
     }
   }
 

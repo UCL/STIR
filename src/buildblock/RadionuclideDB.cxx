@@ -68,7 +68,7 @@ std::string
 RadionuclideDB::get_radionuclide_name_from_lookup_table(const std::string& rname) const
 {
   if (rname.empty())
-    return "default";
+    return "unknown";
 
 #ifdef nlohmann_json_FOUND
   if (this->radionuclide_lookup_table_filename.empty())
@@ -227,8 +227,11 @@ RadionuclideDB::get_radionuclide_from_json(ImagingModality rmodality, const std:
 Radionuclide
 RadionuclideDB::get_radionuclide(ImagingModality rmodality, const std::string& rname)
 {
+  if (rname == "unknown" || rname == "Unknown" || rname.empty())
+    return Radionuclide();
+
   // handle default case
-  if (rname.empty() || rname == "default")
+  if (rname == "default")
     {
       if (rmodality.get_modality() == ImagingModality::PT)
         return get_radionuclide(rmodality, "^18^Fluorine");
