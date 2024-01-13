@@ -158,7 +158,7 @@ void InterfileHeaderSiemens::set_type_of_data()
     }
   else
     {
-      warning("Interfile parsing of Siemens listmode: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
+      warning("Interfile parsing of Siemens header: unexpected 'type of data:=" + type_of_data + "' (expected PET). Continuing");
     }
 }
 
@@ -544,7 +544,6 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   ignore_key("gantry crystal radius (cm)");
   ignore_key("bin size (cm)");
   ignore_key("septa state");
-  ignore_key("%tof mashing factor");
   ignore_key("%preset type");
   ignore_key("%preset value");
   ignore_key("%preset unit");
