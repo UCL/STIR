@@ -27,7 +27,16 @@ class SinglesRates;
 
 /*!
   \ingroup singles_buildblock
-  \brief Estimate randoms from singles
+  \brief Estimate randoms from singles (RFS)
+
+  \param[in,out] proj_data
+     Projection data to store output. It needs to be properly initialised with sizes etc.
+     If \a coincidence_time_window or
+     \a radionuclide_halflife are invalid, they will be determined from the \a proj_data.
+  \param[in] singles
+     Input value for RFS
+  \param[in] coincidence_time_window Scanner coincidence window (in secs). Deprecated.
+  \param[in] radionuclide_halflife half-life. Deprecated.
 
   This uses the formula \f$ R_{ij}= \tau S_i S_j \f$ (with \f$\tau\f$ the \c coincidence_time_window)
   for finding the randoms-rate in terms of the
@@ -59,6 +68,7 @@ class SinglesRates;
 
   \todo Dead-time is currently completely ignored.
 */
-void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, const float coincidence_time_window, float isotope_halflife=-1.F);
+void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
+                          float coincidence_time_window=-1.F, float radionuclide_halflife=-1.F);
 
 END_NAMESPACE_STIR

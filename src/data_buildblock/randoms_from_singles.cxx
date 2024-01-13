@@ -30,9 +30,14 @@
 START_NAMESPACE_STIR
 
 void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
-                          const float coincidence_time_window, float isotope_halflife)
+                          float coincidence_time_window, float isotope_halflife)
 {
-  if (isotope_halflife == -1.F)
+  if (coincidence_time_window <= 0.F)
+    {
+      coincidence_time_window =
+        proj_data.get_proj_data_info_sptr()->get_coincidence_window_in_pico_sec() / 1e12F;
+    }
+  if (isotope_halflife <= 0.F)
     isotope_halflife = proj_data.get_exam_info().get_radionuclide().get_half_life();
 
   const int num_rings =
