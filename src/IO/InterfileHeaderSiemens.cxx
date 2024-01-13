@@ -544,7 +544,6 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   ignore_key("gantry crystal radius (cm)");
   ignore_key("bin size (cm)");
   ignore_key("septa state");
-  ignore_key("%tof mashing factor");
   ignore_key("%preset type");
   ignore_key("%preset value");
   ignore_key("%preset unit");
