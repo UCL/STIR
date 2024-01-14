@@ -111,13 +111,6 @@ public:
                              const int num_views, const int num_tangential_poss,
                              const bool arc_corrected = true,
                              const int tof_mash_factor = 0);
-  //! \name Conversion functions between TOF delta_time and mm
-  //@{
-  inline static double
-    mm_to_tof_delta_time(const float dist);
-  inline static float
-    tof_delta_time_to_mm(const double delta_time);
-  //@}
 
   /************ constructors ***********/
   // TODO should probably be protected
@@ -251,12 +244,7 @@ public:
   inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
   inline int get_max_tof_pos_num() const;
-  //! Get the coincide window in pico seconds
-  //! \warning Proposed convension: If the scanner is not TOF ready then
-  //! the coincidence windowis in the TOF bin size.
-  inline float get_coincidence_window_in_pico_sec() const;
-  //! Get the total width of the coincide window in mm
-  inline float get_coincidence_window_width() const;
+
   //! Get the total number of sinograms
   /*! Note that this will count TOF sinograms as well.
       \see get_num_non_tof_sinograms()

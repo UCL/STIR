@@ -27,6 +27,7 @@
 
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/TOF_conversions.h"
 
 // define a local preprocessor symbol to keep code relatively clean
 #ifdef STIR_NO_MUTABLE
@@ -75,7 +76,7 @@ enable_tof(const shared_ptr<const ProjDataInfo>& _proj_data_info_sptr, const boo
     if (v)
     {
         tof_enabled = true;
-        gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
+        gauss_sigma_in_mm = tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
         r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
     }
 }

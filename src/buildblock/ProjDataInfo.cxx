@@ -41,6 +41,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Bin.h"
+#include "stir/TOF_conversions.h"
 // include for ask and ask_num
 #include "stir/utilities.h"
 #include "stir/warning.h"

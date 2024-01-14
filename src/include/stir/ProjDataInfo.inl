@@ -28,17 +28,6 @@
 #include "boost/format.hpp"
 #include "stir/warning.h"
 START_NAMESPACE_STIR
-double
-ProjDataInfo::mm_to_tof_delta_time(const float dist)
-{
-  return dist / _c_light_div2;
-}
-
-float
-ProjDataInfo::tof_delta_time_to_mm(const double delta_time)
-{
-  return static_cast<float>(delta_time * _c_light_div2);
-}
 
 shared_ptr<ProjDataInfo> 
 ProjDataInfo::
@@ -165,20 +154,6 @@ int
 ProjDataInfo::get_max_tof_pos_num() const
 {
     return max_tof_pos_num;
-}
-
-float
-ProjDataInfo::get_coincidence_window_in_pico_sec() const
-{
-    return scanner_ptr->is_tof_ready()? (scanner_ptr->get_max_num_timing_poss() *
-                                         scanner_ptr->get_size_of_timing_pos())
-                                      :(scanner_ptr->get_size_of_timing_pos());
-}
-
-float
-ProjDataInfo::get_coincidence_window_width() const
-{
-   return tof_delta_time_to_mm(get_coincidence_window_in_pico_sec());
 }
 
 bool
