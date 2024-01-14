@@ -292,6 +292,23 @@
       </li>
     </ul>
 
+    <h3>Changed functionality</h3>
+
+    <h4>TOF related</h4>
+    <ul>
+      <li>
+        <code>ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin</code> is in most places intended to return
+        the physical locations. However, a `DetectionPositionPair` also contains (unmashed) TOF bin information.
+        This will be further complicated once energy windows are supported. The
+        method therefore has an extra boolean argument <code>ignore_non_spatial_dimensions</code>, which defaults to
+        <code>true</code>.
+      </li>
+      <li>
+        <code>multiply_crystal_factors</code> is essentially a non-TOF calculation. When given TOF projection data,
+        it will  "spread" the non-TOF result equally over all TOF bins. This is also appropriate for
+        <code>randoms_from_singles</code>.
+      </li>
+    </ul>
 
 </body>
 
