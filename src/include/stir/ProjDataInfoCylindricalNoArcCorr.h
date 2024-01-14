@@ -208,11 +208,17 @@ public:
 	                 const Bin&) const;
 
   //! This routine returns the number of detector pairs that correspond to a bin
+  /*!
+    \see get_all_det_pos_pairs_for_bin(). This function return the size of its output.
+  */
   unsigned int
-    get_num_det_pos_pairs_for_bin(const Bin&) const;
+  get_num_det_pos_pairs_for_bin(const Bin&, bool ignore_non_spatial_dimensions = true) const;
 
   //! This routine fills a vector with all the detector pairs that correspond to a bin.
-  /*!     
+  /*!
+    \param[in] ignore_non_spatial_dimensions if \c true, only 1 \c timing_pos_num
+       will be set, i.e. only the detection positions are returned, not TOF (nor energy)
+
     \see ProjDataInfoCylindrical::get_all_ring_pairs_for_segment_axial_pos_num
     for restrictions. 
     \todo It might be possible to return some weight factors in case there is 
@@ -222,7 +228,8 @@ public:
   */
   void
     get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >&,
-				  const Bin&) const;
+				  const Bin&,
+                                  bool ignore_non_spatial_dimensions = true) const;
 
  private:
   // old function, now private. Use get_bin_for_det_pos_pair instead.

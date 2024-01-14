@@ -246,9 +246,9 @@ START_NAMESPACE_STIR
 #endif
 
 //! Define the speed of light in mm / ps
-const double _c_light = 0.299792458;
+constexpr double speed_of_light_in_mm_per_ps = 0.299792458;
 //! This ratio is used often.
-const double _c_light_div2 = _c_light * 0.5;
+constexpr double speed_of_light_in_mm_per_ps_div2 = speed_of_light_in_mm_per_ps * 0.5;
 
 //! returns the square of a number, templated.
 /*! \ingroup buildblock */

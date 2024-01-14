@@ -195,7 +195,7 @@ TOF_Tests::test_tof_proj_data_info_kernel()
             + test_proj_data_info_sptr->get_sampling_in_k(Bin(0,0,0,0,0,1.f));
 
     set_tolerance(static_cast<double>(0.005));
-    check_if_equal(static_cast<double>(total_width), static_cast<double>(test_proj_data_info_sptr->get_coincidence_window_width()),
+    check_if_equal(static_cast<double>(total_width), static_cast<double>(test_proj_data_info_sptr->get_scanner_ptr()->get_coincidence_window_width_in_mm()),
                    "Coincidence widths don't match.");
 
 
