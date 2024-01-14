@@ -24,6 +24,7 @@
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
 #include "stir/error.h"
+#include <memory>
 
 START_NAMESPACE_STIR
 
@@ -33,8 +34,9 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                                    const TProjDataInfo& proj_data_info,
                                    const Array<2,float>& efficiencies, const float global_factor)
 {
-    const auto non_tof_proj_data_info_sptr = proj_data_info.create_non_tof_clone();
-    Bin bin;
+  const auto non_tof_proj_data_info_sptr =
+    std::dynamic_pointer_cast<TProjDataInfo>(proj_data_info.create_non_tof_clone());
+  Bin bin;
 
     for (bin.segment_num() = proj_data.get_min_segment_num();
      bin.segment_num() <= proj_data.get_max_segment_num();
@@ -59,8 +61,8 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                  view_num <= proj_data.get_max_view_num();
                  ++ view_num)
               {
-                for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num();
-                     tangential_pos_num <= proj_data_info.get_max_tangential_pos_num();
+                for (int tangential_pos_num = proj_data.get_min_tangential_pos_num();
+                     tangential_pos_num <= proj_data.get_max_tangential_pos_num();
                      ++tangential_pos_num)
                   {
                     // Construct bin with appropriate values
@@ -70,7 +72,7 @@ void multiply_crystal_factors_help(ProjData& proj_data,
                     parallel_bin.tangential_pos_num() = tangential_pos_num;
 
                     std::vector<DetectionPositionPair<> > det_pos_pairs;
-                    proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, parallel_bin);
+                    non_tof_proj_data_info_sptr->get_all_det_pos_pairs_for_bin(det_pos_pairs, parallel_bin); // using the default argument to ignore TOF here
                     float result = 0.F;
                     for (unsigned int i=0; i<det_pos_pairs.size(); ++i)
                       {

@@ -1408,7 +1408,7 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                 bin.view_num() = view_num;
                 bin.tangential_pos_num() = tangential_pos_num;
                 std::vector<DetectionPositionPair<>> det_pos_pairs;
-                proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
+                proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin, false); // include TOF
                 Bin new_bin;
                 // set value for comparison with bin
                 new_bin.set_bin_value(0);

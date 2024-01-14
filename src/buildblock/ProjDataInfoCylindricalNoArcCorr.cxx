@@ -336,31 +336,42 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
 
 unsigned int
 ProjDataInfoCylindricalNoArcCorr::
-get_num_det_pos_pairs_for_bin(const Bin& bin) const
+get_num_det_pos_pairs_for_bin(const Bin& bin, bool ignore_non_spatial_dimensions) const
 {
   return
     get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 						 bin.axial_pos_num())*
     get_view_mashing_factor()*
-    std::max(1,get_tof_mash_factor());
+    (ignore_non_spatial_dimensions ? 1 : std::max(1,get_tof_mash_factor()));
 }
 
 void
 ProjDataInfoCylindricalNoArcCorr::
 get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
-			      const Bin& bin) const
+			      const Bin& bin,
+                              bool ignore_non_spatial_dimensions) const
 {
   this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
 
-  dps.resize(get_num_det_pos_pairs_for_bin(bin));
+  dps.resize(get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
 
   const ProjDataInfoCylindrical::RingNumPairs& ring_pairs =
     get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 						 bin.axial_pos_num());
   // not sure how to handle mashing with non-zero view offset...
   assert(get_min_view_num()==0);
-  // not sure how to handle even tof mashing
-  assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1));
+
+  int min_timing_pos_num = 0;
+  int max_timing_pos_num = 0;
+  if (!ignore_non_spatial_dimensions)
+    {
+      // not sure how to handle even tof mashing
+      assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1)); // TODOTOF
+      // we will need to add all (unmashed) timing_pos for the current bin
+      min_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
+      max_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+    }
+
   unsigned int current_dp_num=0;
   for (int uncompressed_view_num=bin.view_num()*get_view_mashing_factor();
        uncompressed_view_num<(bin.view_num()+1)*get_view_mashing_factor();
@@ -374,8 +385,8 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
         rings_iter != ring_pairs.end();
         ++rings_iter)
         {
-          for (int uncompressed_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
-               uncompressed_timing_pos_num <= bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+          for (int uncompressed_timing_pos_num = min_timing_pos_num;
+               uncompressed_timing_pos_num <= max_timing_pos_num;
                ++uncompressed_timing_pos_num)
             {
               assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
@@ -383,16 +394,7 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
               dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
               dps[current_dp_num].pos2().tangential_coord() = det2_num;
               dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-              // need to keep dp.timing_pos positive
-              if (uncompressed_timing_pos_num > 0)
-                {
-                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
-                }
-              else
-                {
-                  std::swap(dps[current_dp_num].pos1(), dps[current_dp_num].pos2());
-                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(-uncompressed_timing_pos_num);
-                }
+              dps[current_dp_num].timing_pos() = uncompressed_timing_pos_num;
               ++current_dp_num;
             }
         }
