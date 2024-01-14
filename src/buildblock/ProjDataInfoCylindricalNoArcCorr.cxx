@@ -381,15 +381,13 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
       const int det2_num = 
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-        rings_iter != ring_pairs.end();
-        ++rings_iter)
+      for (auto rings_iter = ring_pairs.begin(); rings_iter != ring_pairs.end(); ++rings_iter)
         {
           for (int uncompressed_timing_pos_num = min_timing_pos_num;
                uncompressed_timing_pos_num <= max_timing_pos_num;
                ++uncompressed_timing_pos_num)
             {
-              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
+              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
               dps[current_dp_num].pos1().tangential_coord() = det1_num;
               dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
               dps[current_dp_num].pos2().tangential_coord() = det2_num;
@@ -399,7 +397,7 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
             }
         }
     }
-  assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin));
+  assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
 }
 
 Succeeded
