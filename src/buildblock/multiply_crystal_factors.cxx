@@ -9,7 +9,7 @@
 
 */
 /*
-  Copyright (C) 2021, 2022 University Copyright London
+  Copyright (C) 2021, 2022, 2024 University Copyright London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -32,8 +32,12 @@ START_NAMESPACE_STIR
 template <class TProjDataInfo>
 void multiply_crystal_factors_help(ProjData& proj_data,
                                    const TProjDataInfo& proj_data_info,
-                                   const Array<2,float>& efficiencies, const float global_factor)
+                                   const Array<2,float>& efficiencies, float global_factor)
 {
+  // we will duplicate TOF sinograms, so need to divide with their number such that
+  // total remains preserved
+  global_factor /= proj_data.get_num_tof_poss();
+
   const auto non_tof_proj_data_info_sptr =
     std::dynamic_pointer_cast<TProjDataInfo>(proj_data_info.create_non_tof_clone());
   Bin bin;

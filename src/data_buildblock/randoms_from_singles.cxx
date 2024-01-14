@@ -84,13 +84,12 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
     info(boost::format("Isotope half-life: %1%\n"
                        "RFS: decay correction factor: %2%,\n"
                        "time frame duration: %3%.\n"
-                       "total correction factor from (singles_totals)^2 to randoms_totals: %4%.\n")
+                       "total correction factor from 2tau*(singles_totals)^2 to randoms_totals: %4%.\n")
          % isotope_halflife % decay_corr_factor % duration % (1/corr_factor),
          2);
 
-    // Finally, if we have TOF data, we distribute randoms evenly over the TOF bins
     multiply_crystal_factors(proj_data, total_singles,
-                             static_cast<float>(coincidence_time_window * corr_factor / proj_data.get_num_tof_poss()));
+                             static_cast<float>(coincidence_time_window * corr_factor));
 
   }
 }
