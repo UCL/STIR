@@ -57,11 +57,6 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
-    double get_delta_time() const { return delta_time; }
-protected:
-    //! The detection time difference, between the two photons.
-    double delta_time;
-
 }; /*-coincidence event*/
 
 //! Class for records in a PET list mode file

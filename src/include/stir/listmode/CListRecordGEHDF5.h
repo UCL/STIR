@@ -313,11 +313,6 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
         //ByteOrder::swap_order(this->raw[0]);
       }
 
-      if (this->is_event())
-      {
-        // set TOF info in ps
-       this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_pos();
-      }
     return Succeeded::yes;
   }
 
