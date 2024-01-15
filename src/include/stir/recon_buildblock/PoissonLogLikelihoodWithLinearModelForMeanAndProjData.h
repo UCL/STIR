@@ -179,7 +179,7 @@ public:
   const ProjData& get_proj_data() const;
   const shared_ptr<ProjData>& get_proj_data_sptr() const;
   const int get_max_segment_num_to_process() const;
-  const int get_max_timing_pos_num_to_process() const;
+  const int get_max_num_central_timing_poss_to_process() const;
   const bool get_zero_seg0_end_planes() const;
   const ProjData& get_additive_proj_data() const;
   const shared_ptr<ProjData>& get_additive_proj_data_sptr() const;
@@ -201,7 +201,7 @@ public:
   int set_num_subsets(const int num_subsets);
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
-  void set_max_timing_pos_num_to_process(const int);
+  void set_max_num_central_timing_poss_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
   //N.E. Changed to ExamData
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
@@ -311,7 +311,8 @@ protected:
 
   //! the maximum absolute time-of-flight bin number to use in the reconstruction
   /*! convention: if -1, use get_max_tof_pos_num()*/
-  int max_timing_pos_num_to_process;
+  int max_num_central_timing_poss_to_process;
+  int tof_bin_shift;
 
   /**********************/
    ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;

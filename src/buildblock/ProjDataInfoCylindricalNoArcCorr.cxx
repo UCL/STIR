@@ -404,16 +404,9 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
               dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
               dps[current_dp_num].pos2().tangential_coord() = det2_num;
               dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-              // need to keep dp.timing_pos-get_max_tof_pos_num()/2.F positive
-              if (uncompressed_timing_pos_num - get_tof_mash_factor()*get_max_tof_pos_num()/2>= 0)
-                {
-                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
-                }
-              else
-                {
-                  std::swap(dps[current_dp_num].pos1(), dps[current_dp_num].pos2());
-                  dps[current_dp_num].timing_pos() = get_tof_mash_factor()*get_num_tof_poss()-static_cast<unsigned>(uncompressed_timing_pos_num)-1;
-                }
+
+              dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
+
               ++current_dp_num;
             }
         }
@@ -524,21 +517,22 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   int d1, d2, r1, r2, tpos;
 
   this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
-  bool swap = det1det2_to_uncompressed_view_tangpos[det1][det2].swap_detectors;
-  if (swap)
-  {
-      d1 = det1;
-      d2 = det2;
-      r1 = Ring_A;
-      r2 = Ring_B;
-  }
-  else
+
+  if (!det1det2_to_uncompressed_view_tangpos[det1][det2].swap_detectors)
   {
       d1 = det2;
       d2 = det1;
       r1 = Ring_B;
       r2 = Ring_A;
       tpos=get_max_tof_pos_num()-timing_pos_num;
+  }
+  else
+  {
+      d1 = det1;
+      d2 = det2;
+      r1 = Ring_A;
+      r2 = Ring_B;
+      tpos=timing_pos_num;
   }
 
 #if 0
@@ -569,7 +563,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2 = lor.p2();
   
 #endif
-  if (tpos -get_max_tof_pos_num()/2.F < 0)//todo timing_pos_num can't be <0 anymore
+  if (tpos -get_max_tof_pos_num()/2.F < 0)
       std::swap(coord_1, coord_2);
 }
 

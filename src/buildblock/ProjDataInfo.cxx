@@ -73,7 +73,7 @@ START_NAMESPACE_STIR
 float
 ProjDataInfo::get_k(const Bin& bin) const
 {
-    return (bin.timing_pos_num() - (num_tof_bins-1)/2.f)* tof_increament_in_mm ;
+        return (bin.timing_pos_num() - (num_tof_bins-1)/2.f)* tof_increament_in_mm ;
 }
 
 double

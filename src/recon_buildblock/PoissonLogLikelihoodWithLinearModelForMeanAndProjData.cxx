@@ -97,7 +97,7 @@ set_defaults()
 
   this->input_filename="";
   this->max_segment_num_to_process=-1;
-  this->max_timing_pos_num_to_process=0;
+  this->max_num_central_timing_poss_to_process=0;
   // KT 20/06/2001 disabled
   //num_views_to_add=1;  
   this->proj_data_sptr.reset(); //MJ added
@@ -324,8 +324,8 @@ get_max_segment_num_to_process() const
 template <typename TargetT>
 const int
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_max_timing_pos_num_to_process() const
-{ return this->max_timing_pos_num_to_process; }
+get_max_num_central_timing_poss_to_process() const
+{ return this->max_num_central_timing_poss_to_process; }
 
 template <typename TargetT>
 const bool 
@@ -415,9 +415,9 @@ set_max_segment_num_to_process(const int arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_max_timing_pos_num_to_process(const int arg)
+set_max_num_central_timing_poss_to_process(const int arg)
 {
-  this->max_timing_pos_num_to_process = arg;
+  this->max_num_central_timing_poss_to_process = arg;
 }
 
 template<typename TargetT>
@@ -569,8 +569,11 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-    this->max_timing_pos_num_to_process =
+    this->max_num_central_timing_poss_to_process =
       this->proj_data_sptr->get_max_tof_pos_num();
+//  The following "shift"is used to estimate the maximum and minimum tof position number to process
+//  i.e. min_pos= num_tof_bins+shift   and   max_pos= num_tof_bins-shift   if we use all than shift =0
+  this->tof_bin_shift = (proj_data_sptr->get_num_tof_poss()-this->max_num_central_timing_poss_to_process)/2;
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
 
@@ -699,8 +702,8 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                  this->additive_proj_data_sptr,
                                  this->normalisation_sptr,
                                  caching_info_ptr,
-                                   0,
-                                   this->max_timing_pos_num_to_process,
+                                 proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift,
+                                 proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift,
                                  add_sensitivity);
 }
 
@@ -741,8 +744,8 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
                                          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                          this->caching_info_ptr,
-                                         0,
-										 this->max_timing_pos_num_to_process
+                                         proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift,
+                                         proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift
                                          );
                 
     
@@ -757,10 +760,11 @@ sum_projection_data() const
 {
   
   float counts=0.0F;
-  
+  int min_timing_poss_to_process = proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift;
+  int max_timing_poss_to_process = proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift;
   for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
   {
-	  for (int timing_pos_num = -max_timing_pos_num_to_process; timing_pos_num <= max_timing_pos_num_to_process; ++timing_pos_num)
+      for (int timing_pos_num = min_timing_poss_to_process; timing_pos_num <= max_timing_poss_to_process; ++timing_pos_num)
 	  {
 		for (int view_num = proj_data_sptr->get_min_view_num();
 			 view_num <= proj_data_sptr->get_max_view_num();
@@ -857,8 +861,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr,
-                                 use_tofsens ? 0 : 0,
-                                 use_tofsens ? this->max_timing_pos_num_to_process : 0);
+                                 use_tofsens ? proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift : 0,
+                                 use_tofsens ? proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift : 0);
 
   std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
                  sensitivity_this_subset_sptr->begin_all(), sensitivity.begin_all(), 
@@ -892,8 +896,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-    int min_timing_pos_num = use_tofsens ? 0 : 0;
-	int max_timing_pos_num = use_tofsens ? this->max_timing_pos_num_to_process : 0;
+    int min_timing_pos_num = use_tofsens ? proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift : 0;
+    int max_timing_pos_num = use_tofsens ? proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift : 0;
 	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
 	{
 		RelatedViewgrams<float> viewgrams =
