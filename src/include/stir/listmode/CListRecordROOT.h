@@ -51,7 +51,9 @@ public:
     inline bool is_prompt() const
     { return true; }
 
-private:
+    double get_delta_time() const { return delta_time; }
+
+ private:
     //! First ring, in order to detector tangestial index
     int ring1;
     //! Second ring, in order to detector tangestial index
@@ -60,6 +62,8 @@ private:
     int det1;
     //! Second detector, in order to detector tangestial index
     int det2;
+    //! The detection time difference, between the two photons.
+    double delta_time;
 #ifdef STIR_ROOT_ROTATION_AS_V4
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.

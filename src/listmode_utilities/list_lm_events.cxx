@@ -121,8 +121,10 @@ int main(int argc, char *argv[])
 
   shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
   auto proj_data_info_sptr = lm_data_ptr->get_proj_data_info_sptr();
+  auto scanner = lm_data_ptr->get_scanner();
+  const bool list_TOF_info = scanner.is_tof_ready();
 
-  cout << "Scanner: " << lm_data_ptr->get_scanner().get_name() << endl;
+  cout << "Scanner: " << scanner.get_name() << endl;
 
   unsigned long num_listed_events = 0;
   {      
@@ -164,8 +166,12 @@ int main(int argc, char *argv[])
         if (record.is_event())
         {
           recognised=true;
+          Bin bin;
+          record.event().get_bin(bin, *proj_data_info_sptr);
+
           if (list_coincidence)
             {
+ 
               if (auto event_ptr = 
                    dynamic_cast<CListEvent *>(&record.event()))
                 {
@@ -184,8 +190,8 @@ int main(int argc, char *argv[])
                        << ",r:" << det_pos.pos2().axial_coord()
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")\t";
-                  cout << " TOF-bin: " << det_pos.timing_pos()
-                       << " delta time: " << event_ptr->get_delta_time();
+                  if (list_TOF_info)
+                    cout << " TOF-bin: " << det_pos.timing_pos();
                   listed = true; 
                 }
             }
@@ -201,16 +207,16 @@ int main(int argc, char *argv[])
                    << "," << lor.p2().y()
                    << "," << lor.p2().x()
                    << ")";
+              if (list_TOF_info)
+                cout << " k: " << proj_data_info_sptr->get_k(bin);
+              listed = true;
+            }
+          if (list_event_bin)
+            {
+              cout << " bin " << bin;
               listed = true;
             }
         }
-        if (list_event_bin)
-          {
-            Bin bin;
-            record.event().get_bin(bin, *proj_data_info_sptr);
-            cout << " bin " << bin;
-            listed = true;
-          }
         if (!recognised && list_unknown)
         {
           cout << "Unknown type";
