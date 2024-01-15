@@ -32,8 +32,8 @@ class DataSymmetriesForDensels_PET_CartesianGrid;
   \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
   by using a Length of Intersection (LOI) model. 
 
-  Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
-  #defined during compilation time of ProjMatrixByDenselUsingRayTracing.cxx. 
+  Currently, the LOIs are divided by voxel_size.x(), unless \c NEWSCALE is
+  \c \#defined during compilation time of ProjMatrixByDenselUsingRayTracing.cxx.
 
   If the z voxel size is exactly twice the sampling in axial direction,
   multiple LORs are used, to avoid missing voxels. (TODOdoc describe how).

@@ -115,13 +115,13 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
                                                                         /* arc_correction*/false));
    this->set_proj_data_info_sptr( tmp );
 
-  if ((get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
-      (get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
+  if ((this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
+      (this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
     {
       error("Data in %s is from a %s scanner, but reading with wrong type of CListModeData", 
-            listmode_filename_prefix.c_str(), get_proj_data_info_sptr()->get_scanner_ptr()->get_name().c_str());
+            listmode_filename_prefix.c_str(), this->get_proj_data_info_sptr()->get_scanner_ptr()->get_name().c_str());
     }
-  else if (get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E966 && get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E962)
+  else if (this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E966 && this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E962)
     {
       error("CListModeDataECAT: Unsupported scanner in %s", listmode_filename_prefix.c_str());
     }
@@ -328,14 +328,6 @@ get_num_records() const
 
 #endif
 
-template <class CListRecordT>
-shared_ptr<ProjDataInfo>
-CListModeDataECAT<CListRecordT>::
-get_proj_data_info_sptr() const
-{
-    assert(!is_null_ptr(proj_data_info_sptr));
-    return proj_data_info_sptr;
-}
 
 // instantiations
 template class CListModeDataECAT<CListRecordECAT966>;

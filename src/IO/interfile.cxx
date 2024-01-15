@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2018, 2023 University College London
+    Copyright (C) 2013, 2018, 2023, 2024 University College London
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -56,9 +56,8 @@
 #include <algorithm>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 
-
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
@@ -70,7 +69,6 @@ using std::vector;
 using std::istream;
 using std::string;
 using std::ios;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -488,7 +486,7 @@ static void write_interfile_image_data_descriptions(std::ostream& output_header,
 
     output_header << "number of image data types := " << data_type_descriptions.size() << '\n';
     output_header << "index nesting level := {data type}\n";
-    for (int i=0; i<data_type_descriptions.size(); i++)
+    for (unsigned int i=0; i<data_type_descriptions.size(); i++)
         output_header << "image data type description[" << i+1 << "] := " << data_type_descriptions[i] << "\n";
 }
 
@@ -503,6 +501,26 @@ static void  write_interfile_modality(std::ostream& output_header, const ExamInf
   if (exam_info.
       imaging_modality.get_modality() != ImagingModality::Unknown)
     output_header << "!imaging modality := " << exam_info.imaging_modality.get_name() << '\n';
+}
+
+static void write_interfile_radionuclide_info(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  const auto radionuclide = exam_info.get_radionuclide();
+  //const bool is_spect = exam_info.imaging_modality.get_modality() == ImagingModality::NM;
+
+  // TODO we only support one
+  output_header << "number of radionuclides := 1\n";
+  if (!radionuclide.get_name().empty() && radionuclide.get_name()!="Unknown")
+    output_header << "radionuclide name[1] := " << radionuclide.get_name()  << '\n';
+  if (radionuclide.get_half_life(false) > 0)
+    {
+      output_header << "radionuclide halflife (sec)[1] := " << radionuclide.get_half_life()  << '\n';
+    }
+  if (radionuclide.get_branching_ratio(false) > 0)
+    {
+      output_header << "radionuclide branching factor[1] := "
+                    << radionuclide.get_branching_ratio()  << '\n';
+    }
 }
 
 static void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
@@ -570,9 +588,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR4.0\n";
+    output_header << "!version of keys := STIR6.0\n";
 #else
-  output_header << "!version of keys := STIR4.0\n";
+  output_header << "!version of keys := STIR6.0\n";
 #endif
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
@@ -596,10 +614,8 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (exam_info.get_calibration_factor()>0.F)
   output_header << "calibration factor := "  
                 <<exam_info.get_calibration_factor() << endl;
-  
-  if (!exam_info.get_radionuclide().get_name().empty() && exam_info.get_radionuclide().get_name()!="Unknown")
-  output_header << "isotope name := "  
-                <<exam_info.get_radionuclide().get_name()  << endl;
+
+  write_interfile_radionuclide_info(output_header, exam_info);
 
   if (is_spect)
     {
@@ -909,7 +925,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
     VectorWithOffset<float> scaling_factors(image.get_num_params());
-    for (int i=1; i<=image.get_num_params(); i++) {
+    for (int i=1; i<=static_cast<int>(image.get_num_params()); i++) {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();
         write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
@@ -958,7 +974,7 @@ write_basic_interfile(const string& filename,
 
     VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
     VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
-    for (int i=1; i<=image.get_num_time_frames(); i++)
+    for (int i=1; i<=static_cast<int>(image.get_num_time_frames()); i++)
 {
         float scale_to_use = scale;
         file_offsets[i-1] = output_data.tellp();
@@ -1211,7 +1227,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR4.0\n";
+    output_header << "!version of keys := STIR6.0\n";
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
@@ -1228,7 +1244,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
      : "BIGENDIAN")
 		<< endl;
 
-  
+  write_interfile_radionuclide_info(output_header, pdfs.get_exam_info());
+
   if (is_spect)
     {
       // output_header << "number of energy windows :=1\n";
@@ -1304,9 +1321,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   // it's PET data if we get here
   // N.E. Added timing locations
-  pdfs.get_proj_data_info_sptr()->get_num_tof_poss()>1 ?
-              output_header << "number of dimensions := 5\n" :
-                               output_header << "number of dimensions := 4\n";
+  const bool is_TOF = pdfs.get_proj_data_info_sptr()->get_num_tof_poss()>1;
+  output_header << "number of dimensions := " + std::to_string(is_TOF ? 5: 4) + "\n";
 
   // TODO support more ?
   {
@@ -1388,15 +1404,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!matrix size [" << order_of_bin << "] := "
           <<pdfs.get_proj_data_info_sptr()->get_num_tangential_poss() << "\n";
 
-    // If TOF is supported; add this in the header.
-    if (pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->is_tof_ready() &&
-            pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1)
+    if (is_TOF)
     {
-        // Moved in scanner section
-		//    output_header << "%number of TOF time bins :=" <<
-		//                     pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_max_of_timing_bins()  << "\n";
-    output_header << "%TOF mashing factor := " <<
-                     pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
+      output_header << "TOF mashing factor := " <<
+        pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
     }
   }
 
@@ -1535,8 +1546,14 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
               		     << proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 
             } // end generic scanner
-            
-          else error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: Cylindrical/BlocksOnCylindrical/Genreic");
+          else if (!dynamic_pointer_cast<const ProjDataInfoSubsetByView>(pdfs.get_proj_data_info_sptr()))
+            {
+              error("write_basic_interfile_PDFS_header: cannot write subset data yet. Sorry");
+            }
+          else
+            {
+              error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: Cylindrical/BlocksOnCylindrical/Generic");
+            }
         }  
     }
 

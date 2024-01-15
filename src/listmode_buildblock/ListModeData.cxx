@@ -33,13 +33,14 @@ ListModeData::
 ~ListModeData()
 {}
 
-shared_ptr<const Scanner>
+const Scanner&
 ListModeData::
-get_scanner_ptr() const
+get_scanner() const
 {
-    if(is_null_ptr(proj_data_info_sptr))
-        error("ListModeData: ProjDataInfo has not been set.");
-  return proj_data_info_sptr->get_scanner_sptr();
+  auto pdi = get_proj_data_info_sptr();
+  if(is_null_ptr(pdi))
+    error("ListModeData: ProjDataInfo has not been set.");
+  return *pdi->get_scanner_ptr();
 }
 
 void

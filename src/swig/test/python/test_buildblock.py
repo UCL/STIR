@@ -4,7 +4,7 @@
 #     py.test test_buildblock.py
 
 
-#    Copyright (C) 2013 University College London
+#    Copyright (C) 2013, 2023 University College London
 #    This file is part of STIR.
 #
 #    SPDX-License-Identifier: Apache-2.0
@@ -185,16 +185,45 @@ def test_zoom_image():
     assert abs(zoomed_image[ind]-1)<.001
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_projections))
     assert abs(zoomed_image[ind]-1./(zoom))<.001
-    
+
+def test_DetectionPositionPair():
+    d1=DetectionPosition(1,2,0)
+    d2=DetectionPosition(4,5,6)
+    dp=DetectionPositionPair(d1,d2,3)
+    assert d1==dp.pos1
+    assert d2==dp.pos2
+    assert dp.timing_pos == 3
+    dp.pos1.tangential_coord = 7
+    assert dp.pos1.tangential_coord == 7
+    assert d1.tangential_coord == 1
+
 def test_Scanner():
-    s=Scanner.get_scanner_from_name("ECAT 962")
-    assert s.get_num_rings()==32
-    assert s.get_num_detectors_per_ring()==576
-    #l=s.get_all_names()
-    #print s
+    scanner=Scanner.get_scanner_from_name("ECAT 962")
+    assert scanner.get_num_rings()==32
+    assert scanner.get_num_detectors_per_ring()==576
+    #l=scanner.get_all_names()
+    #print scanner
     # does not work
     #for a in l:
     #    print a
+    scanner=Scanner.get_scanner_from_name("SAFIRDualRingPrototype")
+    scanner.set_scanner_geometry("BlocksOnCylindrical")
+    scanner.set_up()
+    d=DetectionPosition(1,1,0)
+    c=scanner.get_coordinate_for_det_pos(d)
+    d2=DetectionPosition();
+    s=scanner.find_detection_position_given_cartesian_coordinate(d2, c)
+    assert s.succeeded()
+    assert d==d2
+
+def test_Radionuclide():
+    modality = ImagingModality(ImagingModality.PT)
+    db = RadionuclideDB()
+    r = db.get_radionuclide(modality, "^18^Fluorine")
+    assert abs(r.get_half_life() - 6584) < 1
+    modality = ImagingModality(ImagingModality.NM)
+    r = db.get_radionuclide(modality, "^99m^Technetium")
+    assert abs(r.get_half_life() - 6.0058*3600) < 10
 
 def test_Bin():
     segment_num=1;
@@ -214,6 +243,8 @@ def test_Bin():
     assert abs(bin.bin_value-bin_value)<.01;
     bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num, bin_value);
     assert abs(bin.bin_value-bin_value)<.01;
+    bin.time_frame_num=3;
+    assert bin.time_frame_num==3;
     
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")

@@ -18,6 +18,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -28,7 +29,7 @@
 #define __stir_Bin_H__
 
 
-#include "stir/common.h"
+#include "stir/ViewgramIndices.h"
 
 
 START_NAMESPACE_STIR
@@ -46,43 +47,37 @@ START_NAMESPACE_STIR
  changes to all the framework, when one set a float value, it has to be as 'x.f'
 */
 
-class Bin
+class Bin : public ViewgramIndices
 {
+  typedef ViewgramIndices base_type;
 public: 
-  //! default constructor
+  //! default constructor (leaves most members uninitialised)
   inline Bin();
 
-  //!  A constructor : constructs a bin with value (defaulting to 0)
+  //!  constructs a bin with value (timing_pos defaulting to 0)
   inline Bin(int segment_num,int view_num, int axial_pos_num,
     int tangential_pos_num,float bin_value);
 
+  //!  constructs a bin with value (timing_pos and value defaulting to 0)
   inline Bin(int segment_num, int view_num, int axial_pos_num,
              int tangential_pos_num);
 
   inline Bin(int segment_num, int view_num, int axial_pos_num,
              int tangential_pos_num, int timing_pos_num, float bin_value);
 
+  //!  constructs a bin with value (value defaulting to 0)
   inline Bin(int segment_num, int view_num, int axial_pos_num,
              int tangential_pos_num, int timing_pos_num);
   
   //!get axial position number
   inline int axial_pos_num()const;
-  //! get segmnet number
-  inline int segment_num()const; 
   //! get tangential position number
   inline int tangential_pos_num()  const; 
-  //! get view number
-  inline int view_num() const; 
-  //! get timing position number
-  inline int timing_pos_num() const;
   //! get time-frame number (1-based)
   inline int time_frame_num() const;
   
   inline int& axial_pos_num(); 
-  inline int& segment_num(); 
   inline int& tangential_pos_num(); 
-  inline int& view_num(); 
-  inline int& timing_pos_num();
   inline int& time_frame_num();
   
   //! get an empty copy
@@ -109,11 +104,8 @@ public:
 private :
   // shared_ptr<ProjDataInfo> proj_data_info_ptr; 
   
-  int  segment;
-  int  view; 
   int  axial_pos; 
   int  tangential_pos;
-  int  timing_pos;
   float bin_value;
   int time_frame;
   

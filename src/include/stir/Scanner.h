@@ -139,10 +139,10 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR,Siemens_mCT, Siemens_Vision_600, RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa, PETMR_Signa_nonTOF,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, PETMR_Signa,
 	     Discovery690, DiscoveryMI3ring, DiscoveryMI4ring, DiscoveryMI5ring,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, SAFIRDualRingPrototype,             UPENN_5rings, UPENN_5rings_no_gaps, UPENN_6rings, UPENN_6rings_no_gaps,
-             User_defined_scanner,ntest_TOF_50,
+             User_defined_scanner,
 	     Unknown_scanner};
 
   virtual ~Scanner() {}
@@ -319,12 +319,33 @@ class Scanner
   inline int get_num_transaxial_singles_units() const;
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
-  //! Get the maximum number of TOF bins.
+  //! Get the maximum number of TOF bins.     
+  /*! \return will be 0 or negative if not known */
   inline int get_max_num_timing_poss() const;
-  //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
+  //! Get the size for one (unmashed) TOF bin in picoseconds
+  /*!
+    \return will be 0 or negative if not known
+    \todo change name to \c get_size_of_timing_pos_in_ps
+  */
   inline float get_size_of_timing_pos() const;
-  //! Get the timing resolution of the scanner.
+  //! Get the timing resolution of the scanner in picoseconds
+  /*!
+    \return will be 0 or negative if not known
+    \todo change name to \c get_size_of_timing_pos_in_ps
+    */
   inline float get_timing_resolution() const;
+  //! Get the full width of the coincidence window in picoseconds
+  /*!
+    This is often written as \f$2\tau\f$ and is usually around 4000ps.
+    It is determined from \c get_max_num_timing_poss() and \c get_size_of_timing_pos().
+
+    \warning This is currently not known yet for many non-TOF scanners. The function will 
+    then throw an error.
+  */
+  float get_coincidence_window_width_in_ps() const;
+  //! Get the full width of the coincidence window in millimeter
+  /*! Calls get_coincidence_window_width_in_ps() */
+  float get_coincidence_window_width_in_mm() const;
 
   //! \name number of "fake" crystals per block, inserted by the scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
@@ -457,7 +478,7 @@ class Scanner
   /*! \sa get_reference_energy() */
   inline void set_reference_energy(const float new_num);
   //! Set the maximum number of TOF bins.
-  inline void set_num_max_of_timing_poss(int new_num);
+  inline void set_max_num_timing_poss(int new_num);
   //! Set the delta t which correspnds to the max number of TOF bins.
   inline void set_size_of_timing_poss(float new_num);
   //! Set timing resolution

@@ -45,41 +45,6 @@
 
 START_NAMESPACE_STIR
 
-//! A helper class to keep the combination of a view, a segment and
-//! a key tight.
-//! \author Nikos Efthimiou
-//!
-class cache_index{
-public:
-    cache_index():
-    key(0){
-        view_num = 0;
-        seg_num = 0;
-    }
-
-    inline bool operator==(const cache_index& Y) const
-    {
-        return view_num == Y.view_num &&
-                seg_num == Y.seg_num &&
-                key == Y.key;
-    }
-
-    inline bool operator!=(const cache_index& Y) const
-    {
-        return !(*this == Y);
-    }
-
-    inline bool operator< (const cache_index& Y) const
-    {
-        return view_num < Y.view_num &&
-                seg_num < Y.seg_num &&
-                key < Y.key;
-    }
-
-    int view_num;
-    int seg_num;
-    boost::uint32_t key;
-};
 
 // Helper class.
 class FloatFloat{
@@ -142,8 +107,6 @@ private:
 
     shared_ptr<Scanner> test_scanner_sptr;
     shared_ptr<ProjDataInfo> test_proj_data_info_sptr;
-
-    shared_ptr<Scanner> test_nonTOF_scanner_sptr;
     shared_ptr<ProjDataInfo> test_nonTOF_proj_data_info_sptr;
 
     shared_ptr<DiscretisedDensity<3, float> > test_discretised_density_sptr;
@@ -156,7 +119,6 @@ TOF_Tests::run_tests()
 {
     // New Scanner
     test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
-    test_nonTOF_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa_nonTOF));
 
     // New Proj_Data_Info
     const int test_tof_mashing_factor = 39; // to have 9 TOF bins (381/39=9)
@@ -167,11 +129,12 @@ TOF_Tests::run_tests()
                                                                  /* arc_correction*/false));
     test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
 
-    test_nonTOF_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_nonTOF_scanner_sptr,
+    test_nonTOF_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
                                                                  1,test_scanner_sptr->get_num_rings() -1,
                                                                  test_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                  test_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                  /* arc_correction*/false));
+    test_nonTOF_proj_data_info_sptr->set_tof_mash_factor(0);
 
     test_tof_proj_data_info();
     //    test_tof_geometry_1();
@@ -201,14 +164,14 @@ void
 TOF_Tests::test_tof_proj_data_info_kernel()
 {
     const int correct_tof_mashing_factor = 39;
-    const int num_timing_positions = 9;
-    float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
+    const int num_timing_positions = test_scanner_sptr->get_max_num_timing_poss() / correct_tof_mashing_factor;
+    const float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
             test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f/2;
-    float correct_timing_locations[num_timing_positions] = {-360.201f/2 + correct_width_of_tof_bin/2, -280.156f/2 + correct_width_of_tof_bin/2,
-                                                            -200.111f/2 + correct_width_of_tof_bin/2, -120.067f/2 + correct_width_of_tof_bin/2,
-                                                            0.0f, 40.022f/2 + correct_width_of_tof_bin/2,
-                                                            120.067f/2 + correct_width_of_tof_bin/2, 200.111f/2 + correct_width_of_tof_bin/2,
-                                                            280.156f/2+ correct_width_of_tof_bin/2};
+    std::vector<float> correct_timing_locations(num_timing_positions);
+    for (int i=0; i<num_timing_positions; ++i)
+      {
+        correct_timing_locations[i] = (i - (num_timing_positions - 1)/2.F)*correct_width_of_tof_bin;
+      }
 
     check_if_equal(correct_tof_mashing_factor,
                    test_proj_data_info_sptr->get_tof_mash_factor(), "Different TOF mashing factor.");
@@ -216,10 +179,10 @@ TOF_Tests::test_tof_proj_data_info_kernel()
     check_if_equal(num_timing_positions,
                    test_proj_data_info_sptr->get_num_tof_poss(), "Different number of timing positions.");
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
-         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num, counter++)
+    for (int timing_pos_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
+         timing_pos_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_pos_num, counter++)
     {
-        Bin bin(0, 0, 0, 0, timing_num, 1.f);
+        Bin bin(0, 0, 0, 0, timing_pos_num, 1.f);
 
         check_if_equal(static_cast<double>(correct_width_of_tof_bin),
                        static_cast<double>(test_proj_data_info_sptr->get_sampling_in_k(bin)), "Error in get_sampling_in_k()");
@@ -232,7 +195,7 @@ TOF_Tests::test_tof_proj_data_info_kernel()
             + test_proj_data_info_sptr->get_sampling_in_k(Bin(0,0,0,0,0,1.f));
 
     set_tolerance(static_cast<double>(0.005));
-    check_if_equal(static_cast<double>(total_width), static_cast<double>(test_proj_data_info_sptr->get_coincidence_window_width()),
+    check_if_equal(static_cast<double>(total_width), static_cast<double>(test_proj_data_info_sptr->get_scanner_ptr()->get_coincidence_window_width_in_mm()),
                    "Coincidence widths don't match.");
 
 
@@ -381,11 +344,11 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
         export_lor(proj_matrix_row,
                    lor2.p1(), lor2.p2(), 500000000);
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num();
-         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num)
+    for (int timing_pos_num = test_proj_data_info_sptr->get_min_tof_pos_num();
+         timing_pos_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_pos_num)
     {
         ProjMatrixElemsForOneBin new_proj_matrix_row;
-        Bin bin(seg_num, view_num, axial_num, tang_num, timing_num, 1.f);
+        Bin bin(seg_num, view_num, axial_num, tang_num, timing_pos_num, 1.f);
 
         t.reset(); t.start();
         test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(new_proj_matrix_row,
@@ -395,7 +358,7 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
 
         if (print_to_file)
             export_lor(new_proj_matrix_row,
-                       lor2.p1(), lor2.p2(), timing_num,
+                       lor2.p1(), lor2.p2(), timing_pos_num,
                        proj_matrix_row);
 
 

@@ -27,7 +27,7 @@
 #ifndef __stir_listmode_CListRecord_H__
 #define __stir_listmode_CListRecord_H__
 
-#include "ListRecord.h"
+#include "stir/listmode/ListRecord.h"
 
 START_NAMESPACE_STIR
 class Bin;
@@ -57,22 +57,17 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
-    double get_delta_time() const { return delta_time; }
-protected:
-    //! The detection time difference, between the two photons.
-    double delta_time;
-
 }; /*-coincidence event*/
 
+//! Class for records in a PET list mode file
+/*! \ingroup listmode
+
+  Currently identical to ListRecord. Maybe this class will be removed.
+*/
 class CListRecord : public ListRecord
 {
 public:
-  
-  //! Used in TOF reconstruction to get both the geometric and the timing
-  //!  component of the event
-  virtual void full_event(Bin&, const ProjDataInfo&) const
-  {error("CListRecord::full_event() is implemented only for records which "
-         "hold timing and spatial information.");}
+
 };
 
 class CListRecordWithGatingInput : public CListRecord

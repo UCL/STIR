@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2020, 2021 University College London
+    Copyright (C) 2013, 2020, 2021, 2023, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -25,9 +25,10 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
+#include "stir/warning.h"
 #include "boost/any.hpp"
 
-//#include <map>
+#include <map>
 #include <list>
 #include <utility>
 #include <string>
@@ -110,7 +111,9 @@ public :
   \brief A class to parse Interfile headers
 
   Currently, Interfile 3.3 parsing rules are hard-coded, with
-  some extensions.
+  some extensions. Note that some functions such as `get_keyword()` are `virtual`
+  such that a derived class could use non-Interfile parsing (but this might need
+  more work).
 
   KeyParser reads input line by line and parses each line separately.
   It allows for '\\r' at the end of the line (as in files
@@ -154,11 +157,13 @@ public:
   virtual ~KeyParser();
 
   //! parse() returns false if there is some error, true otherwise
-  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnings about undefined keywords will be supressed.*/
   bool parse(std::istream& f, const bool write_warnings=true);
   //! parse() returns false if there is some error, true otherwise
-  /*! if \a write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  /*! if \a write_warnings is \c false, warnings about undefined keywords will be supressed.*/
   bool parse(const char * const filename, const bool write_warnings=true);
+  /*! if \a write_warnings is \c false, warnings about undefined keywords will be supressed.*/
+  bool parse(const std::string&, const bool write_warnings=true);
 
   ////// functions to add keys and their actions 
 
@@ -304,6 +309,16 @@ public:
 		    );
   }
 
+  //! Removes a key from the kep map
+  /*! \return \c true if it was found, \c false otherwise */
+  bool remove_key(const std::string& keyword);
+
+  //! Add an alias for keyword
+  /*! If \c deprecated_key if \c true, a warning will be written when the alias is encountered.
+
+    \c parameter_info() will use the \c keyword, not the \c alias.
+   */
+  void add_alias_key(const std::string& keyword, const std::string& alias, bool deprecated_key = true);
   //! Prints all keywords (in random order) to the stream
   void print_keywords_to_stream(std::ostream&) const;
 
@@ -349,16 +364,14 @@ protected :
 
   
   //! convert 'rough' keyword into a standardised form
-  /*! \todo Implementation note: this function is non-static such that it can
-      be overloaded. Probably a template with a function object would be 
-      better. */
+  /*! Calls standardise_interfile_keyword().
+. */
   virtual std::string 
     standardise_keyword(const std::string& keyword) const;
 
 
   //! gets a keyword from a string
-  /*! Implementation note: this function is non-static as it uses 
-      standardise_keyword().
+  /*! Find `:=` or `[`. Note that the returned keyword is not standardised yet.
   */ 
   virtual std::string 
     get_keyword(const std::string&) const;
@@ -395,11 +408,6 @@ protected :
   void add_key(const std::string& keyword, KeyArgument::type t, 
                void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = 0);
 
-  //! Removes a key from the kep map
-  /*! \return \c true if it was found, \c false otherwise */
-  bool remove_key(const std::string& keyword);
-  
-
 public:
   ////// predefined call_back functions
   //! callback function to start parsing, has to be set by first keyword
@@ -433,9 +441,19 @@ private :
   typedef std::list<std::pair<std::string, map_element> > Keymap;
 
   Keymap kmap;
+
+  //! typedef for a map of keyword aliases. Key is alias, value is the "real" keyword
+  typedef std::map<std::string, std::string> AliasMap;
+
+  AliasMap alias_map;
+  AliasMap deprecated_alias_map;
+  
   // KT 01/05/2001 new functions to allow a list type
   map_element* find_in_keymap(const std::string& keyword);
   void add_in_keymap(const std::string& keyword, const map_element& new_element);
+
+  //! check if keyword is in either alias_map or deprecated_alias_map, and return new value
+  std::string resolve_alias(const std::string& keyword) const;
 
   std::istream * input;
   map_element* current;

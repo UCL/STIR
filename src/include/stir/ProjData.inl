@@ -11,7 +11,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2013, 2015, 2023 University College London
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
@@ -23,6 +23,30 @@
 #include "stir/ProjDataInfo.h"
 
 START_NAMESPACE_STIR
+
+SegmentBySinogram<float>
+ProjData::get_segment_by_sinogram(const SegmentIndices& si) const
+{
+  return this->get_segment_by_sinogram(si.segment_num(), si.timing_pos_num());
+}
+
+SegmentByView<float>
+ProjData::get_segment_by_view(const SegmentIndices& si) const
+{
+  return this->get_segment_by_view(si.segment_num(), si.timing_pos_num());
+}
+
+Viewgram<float> 
+ProjData::get_viewgram(const ViewgramIndices& vi) const
+{
+  return this->get_viewgram(vi.view_num(), vi.segment_num(), false, vi.timing_pos_num());
+}
+
+Sinogram<float> 
+ProjData::get_sinogram(const SinogramIndices& vi) const
+{
+  return this->get_sinogram(vi.axial_pos_num(), vi.segment_num(), false, vi.timing_pos_num());
+}
 
 shared_ptr<const ProjDataInfo>
 ProjData::get_proj_data_info_sptr() const

@@ -164,7 +164,7 @@ private:
   //! The number of nonTOF LORs that failed the closest approach test.
   int num_failed_nonTOF_lor_events = 0;
   //! The threshold distance for the closest approach test.
-  double nonTOF_distance_threshold;
+  double nonTOF_distance_threshold = 0.f;
 
   /// TOF VARIABLES
   //! A vector to store the coordinates of the maximum voxels for each LOR.
@@ -226,7 +226,7 @@ setup()
   num_events_tested = 0;
 
   // Find threshold for failure
-  nonTOF_distance_threshold = 1.5 * norm(grid_spacing); // Using norm(grid_spacing) as a nonTOF_distance_threshold
+  nonTOF_distance_threshold = 1.5 * norm(grid_spacing);
   {
     // With the default files, we found that 3.3*norm(grid_spacing) is a reasonable limit.
     // We try to generalise this to other data (although it will likely need further

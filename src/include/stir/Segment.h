@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2012 Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -21,6 +22,9 @@
 
 
 #include "stir/ProjDataInfo.h" 
+#include "stir/SegmentIndices.h"
+#include "stir/SinogramIndices.h"
+#include "stir/ViewgramIndices.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -33,7 +37,7 @@ template <typename elemT> class Viewgram;
   \ingroup projdata
 
   This stores a subset of the data accessible via a ProjData object,
-  where the segment_num is fixed.
+  where the SegmentIndices are fixed.
 
   At the moment, 2 'storage modes' are supported (and implemented as
   derived classes).
@@ -60,6 +64,7 @@ public:
     get_proj_data_info_sptr() const;
 
   virtual StorageOrder get_storage_order() const = 0;
+  inline SegmentIndices get_segment_indices() const;
   //! Get the segment number
   inline int get_segment_num() const;
   //! Get the timing position index
@@ -79,6 +84,11 @@ public:
   virtual Sinogram<elemT> get_sinogram(int axial_pos_num) const = 0;
   //! return a new viewgram, with data set as in the segment
   virtual Viewgram<elemT> get_viewgram(int view_num) const = 0;
+
+  //! return a new sinogram, with data set as in the segment
+  inline Sinogram<elemT> get_sinogram(const SinogramIndices& s) const;
+  //! return a new viewgram, with data set as in the segment
+  inline Viewgram<elemT> get_viewgram(const ViewgramIndices&) const;
 
   //! set data in segment according to sinogram \c s
   virtual void set_sinogram(const Sinogram<elemT>& s) = 0;
@@ -116,11 +126,9 @@ public:
 
 protected:
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
-  int segment_num;
-  int timing_pos_num;
+  SegmentIndices _indices;
   
-  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,const int s_num, const int t_num = 0);
-
+  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,const SegmentIndices&);
 };
 
 END_NAMESPACE_STIR

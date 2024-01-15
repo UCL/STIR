@@ -87,15 +87,15 @@ def point_cloud_3D(data_handler):
     ax = fig.add_subplot(projection='3d')
 
     # Plot all the points (intensity increases for multiple points)
-    ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2])
+    ax.scatter(data_handler.voxel_coords[:, 0], data_handler.voxel_coords[:, 1], data_handler.voxel_coords[:, 2], label='Most Likely Positions')
 
     # Plot the original point and tolerance
     ox = data_handler.original_coord[0]
     oy = data_handler.original_coord[1]
     oz = data_handler.original_coord[2]
     tol = data_handler.tolerance
-    ax.plot(ox, oy, oz, c='r', marker='o')
-    # plot tolerence around original point
+    ax.plot(ox, oy, oz, c='r', marker='o', label='Origin and Tolerance')
+    # plot tolerance around original point
     ax.plot([ox + tol, ox - tol], [oy, oy], [oz, oz], c='r', marker="_", label='_nolegend_')
     ax.plot([ox, ox], [oy + tol, oy - tol], [oz, oz], c='r', marker="_", label='_nolegend_')
     ax.plot([ox, ox], [oy, oy], [oz + tol, oz - tol], c='r', marker="_", label='_nolegend_')
@@ -107,7 +107,7 @@ def point_cloud_3D(data_handler):
     xerror = np.std(data_handler.voxel_coords[:, 0])
     yerror = np.std(data_handler.voxel_coords[:, 1])
     zerror = np.std(data_handler.voxel_coords[:, 2])
-    ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g')
+    ax.plot(fx, fy, fz, linestyle="None", marker="o", c='g', label='Mean coords and stddev')
     ax.plot([fx + xerror, fx - xerror], [fy, fy], [fz, fz], marker="_", c='g', label='_nolegend_')
     ax.plot([fx, fx], [fy + yerror, fy - yerror], [fz, fz], marker="_", c='g', label='_nolegend_')
     ax.plot([fx, fx], [fy, fy], [fz + zerror, fz - zerror], marker="_", c='g', label='_nolegend_')
@@ -115,7 +115,7 @@ def point_cloud_3D(data_handler):
     ax.set_xlabel('x (mm)')
     ax.set_ylabel('y (mm)')
     ax.set_zlabel('z (mm)')
-    ax.legend(['Voxel Positions', 'Origin and Tolerance', 'Mean coords and stddev'])
+    ax.legend()
 
     plt.show()
 
@@ -124,7 +124,7 @@ def point_cloud_3D_all(dict_of_data_handlers):
     """
     generates a single plot with pointclouds of generated LOR-positions, original source-positions and tolerance-whiskers for all sources
     Args:
-        dict_of_data_handlers (dictionary containing objects of type ROOTConsistencyDataHandler): dictionary of objects containing all relevant data for the plot
+        dict_of_data_handlers (dict[int, ROOTConsistencyDataHandler]): dictionary of objects containing all relevant data for the plot
     """
 
     fig = plt.figure(figsize=(10, 10))
@@ -173,7 +173,7 @@ def point_cloud_3D_all(dict_of_data_handlers):
     plt.show()
 
 
-def __extract_data_from_csv_file(filename):
+def extract_data_from_csv_file(filename):
     """
     Loads data from a csv file and returns a numpy array containing the data.
     Assumes first column is the row's key.
@@ -222,7 +222,7 @@ class ROOTConsistencyDataHandler:
         print(f"Loading data: {self.filename}")
 
         # Extract the original coordinate and voxel coordinates as 2D numpy arrays
-        self.original_coord, self.voxel_coords, self.tolerance = __extract_data_from_csv_file(filename)
+        self.original_coord, self.voxel_coords, self.tolerance = extract_data_from_csv_file(filename)
 
         if self.tolerance is None:
             raise Exception("No tolerance information found in file")
@@ -387,8 +387,8 @@ def TOF_evaluation(filename_prefix, file_extension=".csv"):
 # Main Script
 # =====================================================================================================
 def main():
-    print("\nUSAGE: After `make test` or `test_view_offset_GATE` has been run,\n"
-          "run `debug_view_offset_consistency` from `ROOT_STIR_consistency` directory or input that directory as an "
+    print("\nUSAGE: After `make test` or `test_consistency_with_GATE` has been run,\n"
+          "run `debug_consistency_with_root.py` from `ROOT_STIR_consistency` directory or input that directory as an "
           "argument.\n")
 
     # Optional argument to set the directory of the output of the test_consistency_with_root CTest.

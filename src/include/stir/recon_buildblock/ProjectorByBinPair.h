@@ -25,7 +25,6 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
-#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 

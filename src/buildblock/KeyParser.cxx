@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012-01-29, Kris Thielemans
-    Copyright (C) 2020, 2021 University College London
+    Copyright (C) 2020, 2021, 2023, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -30,20 +30,13 @@
 #include "stir/error.h"
 #include <typeinfo>
 #include <fstream>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include "stir/warning.h"
-# ifdef BOOST_NO_STDC_NAMESPACE
- namespace std { using ::getenv; }
-# endif
-
 #include <strstream>
-
-#ifndef BOOST_NO_STRINGSTREAM
 #include <sstream>
-#endif
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::cerr;
 using std::cout;
@@ -58,7 +51,6 @@ using std::list;
 using std::pair;
 using std::istream;
 using std::ostream;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -276,6 +268,12 @@ bool KeyParser::parse(const char * const filename, const bool write_warning)
    return parse(hdr_stream, write_warning);
 }
 
+bool KeyParser::parse(const std::string& s, const bool write_warning)
+{
+  std::stringstream hdr_stream(s);
+  return parse(hdr_stream, write_warning);
+}
+
 bool KeyParser::parse(istream& f, const bool write_warning)
 {
   // print_keywords_to_stream(cerr);
@@ -309,8 +307,12 @@ string
 KeyParser::get_keyword(const string& line) const
 {
   // keyword stops at either := or an index []	
-  // TODO should check that = follows : to allow keywords with colons in there
-  const string::size_type eok = line.find_first_of(":[",0);
+  auto eok = line.find_first_of(":[",0);
+  // check that = follows : to allow keywords containing colons
+  while (eok != string::npos && line[eok] == ':' && eok+1 < line.size() && line[eok+1] != '=')
+    {
+      eok = line.find_first_of(":[", eok+1);
+    }
   return line.substr(0,eok);
 }
 
@@ -560,6 +562,15 @@ void KeyParser::add_key(const string& keyword,
   add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, vectorised_key_level, list_of_values));
 }
 
+void KeyParser::add_alias_key(const std::string& keyword, const std::string& alias, bool deprecated_key)
+{
+  const auto std_alias = standardise_keyword(alias);
+  const auto std_kw = standardise_keyword(keyword);
+  if (deprecated_key)
+    this->deprecated_alias_map[std_alias] = std_kw;
+  else
+    this->alias_map[std_alias] = std_kw;
+}
 
 void
 KeyParser::print_keywords_to_stream(ostream& out) const
@@ -619,6 +630,30 @@ Succeeded KeyParser::parse_header(const bool write_warning)
   
 }	
 
+std::string KeyParser::resolve_alias(const std::string& kw) const
+{
+  // search in alias_map
+  {
+    auto iter = alias_map.find(kw);
+    if (iter != alias_map.end())
+      {
+        return iter->second;
+      }
+  }
+  // search in deprecated_alias_map
+  {
+    auto iter = deprecated_alias_map.find(kw);
+    if (iter != deprecated_alias_map.end())
+      {
+        warning("KeyParser: found deprecated keyword '" + kw + "'. Replace with '" + iter->second
+                + "' to disable this warning and for future compatibility.");
+        return iter->second;
+      }
+  }
+  // not found: return original
+  return kw;
+}
+
 Succeeded KeyParser::read_and_parse_line(const bool write_warning)
 {
   string line;  
@@ -643,7 +678,7 @@ Succeeded KeyParser::read_and_parse_line(const bool write_warning)
     }
 
   // gets keyword
-  keyword=standardise_keyword(get_keyword(line));
+  keyword=resolve_alias(standardise_keyword(get_keyword(line)));
   return parse_value_in_line(line, write_warning);
 }
 

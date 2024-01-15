@@ -121,8 +121,13 @@ protected:
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
   int bytes_per_pixel;
-  
+
+  //! \deprecated
   std::string isotope_name;
+  std::vector<std::string> radionuclide_name;
+  std::vector<float> radionuclide_half_life;
+  std::vector<float> radionuclide_branching_ratio;
+
   float calibration_factor;
 private:
 

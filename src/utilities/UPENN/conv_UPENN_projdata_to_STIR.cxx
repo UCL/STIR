@@ -275,8 +275,8 @@ int main(int argc, const char *argv[])
                 }
 
                 Bin tmp_bin;
-
-                out_projdata_info_sptr->get_bin_for_det_pair(tmp_bin, d1, dr1, d2, dr2);
+                const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(d1, dr1), DetectionPosition<>(d2, dr2));
+                out_projdata_info_sptr->get_bin_for_det_pos_pair(tmp_bin, det_pos_pair);
 
                 const int index = i_phi * mh_isino.numray + i_tang;
                 float val = tmp_slice[index];

@@ -176,7 +176,7 @@ void distributable_computation(
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
                                DistributedCachingInformation* caching_info_ptr,
-							   int min_timing_pos_num = 0, int max_timing_pos_num = 0);
+                               int min_timing_pos_num, int max_timing_pos_num);
 
 /*!
   \brief This function essentially implements a loop over a cached listmode file

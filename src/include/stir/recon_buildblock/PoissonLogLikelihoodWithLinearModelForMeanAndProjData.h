@@ -335,7 +335,7 @@ protected:
   shared_ptr<ProjData> additive_proj_data_sptr;
 
   shared_ptr<BinNormalisation> normalisation_sptr;
-
+  
  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
@@ -391,6 +391,18 @@ protected:
   //! return if we are using a different projector or not for the sensitivity calculation
   /*! will always be \c true in the non-TOF case (or SPECT) */
   bool sensitivity_uses_same_projector() const;
+  //! ProjDataInfo to be used for the sensitivity calculation
+  /*! Will be a non-TOF clone for TOF data when \c use_tofsens = \c false */
+  shared_ptr<const ProjDataInfo> sens_proj_data_info_sptr;
+  //! flag to check if we set-up normalisation with the original data or not
+  mutable bool latest_setup_norm_was_with_orig_data;
+  //! flag to check if normalisation has been set_up already or not
+  mutable bool norm_already_setup = false;
+
+  //!  helper function to makre sure we set-up normalisation_sptr correctly
+  void ensure_norm_is_set_up(bool for_original_data = true) const;
+  //! convenience for ensure_norm_is_set_up(false)
+  void ensure_norm_is_set_up_for_sensitivity() const;
   //!@}
 #if 0
   void

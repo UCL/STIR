@@ -32,22 +32,15 @@
 #include "stir/round.h"
 #include <algorithm>
 #include "stir/error.h"
-
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include <boost/static_assert.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 using std::string;
 using std::pair;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 ProjDataInfoCylindricalNoArcCorr:: 
@@ -55,26 +48,28 @@ ProjDataInfoCylindricalNoArcCorr()
 {}
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
                                  const float ring_radius_v, const float angular_increment_v,
 				 const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v, 
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views,const int num_tangential_poss,
                                  const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
+: ProjDataInfoCylindrical(scanner_sptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss),
   ring_radius(ring_radius_v),
   angular_increment(angular_increment_v)
 {
-  if (num_tangential_poss > scanner_ptr->get_max_num_non_arccorrected_bins())
-    error("Configured tangential positions exceed the maximum number of non arc-corrected bins set for the scanner.");
-    
+  if (!scanner_sptr)
+    error("ProjDataInfoCylindricalNoArcCorr: first argument (scanner_ptr) is zero");
+  if (num_tangential_poss > scanner_sptr->get_max_num_non_arccorrected_bins())
+    error("ProjDataInfoCylindricalNoArcCorr: number of tangential positions exceeds the maximum number of non arc-corrected bins set for the scanner.");
+
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  if(scanner_ptr->is_tof_ready())
+  if(scanner_sptr->is_tof_ready())
     set_tof_mash_factor(tof_mash_factor);
 #ifdef STIR_OPENMP_SAFE_BUT_SLOW
   this->initialise_uncompressed_view_tangpos_to_det1det2();
@@ -83,30 +78,20 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 }
 
 ProjDataInfoCylindricalNoArcCorr:: 
-ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
                                  const int num_views, const int num_tangential_poss,
                                  const int tof_mash_factor)
-: ProjDataInfoCylindrical(scanner_ptr,
+  : ProjDataInfoCylindricalNoArcCorr(scanner_sptr,
+                                     scanner_sptr ? scanner_sptr->get_effective_ring_radius() : 0.F, // avoid segfault if scanner_sptr==0
+                                     scanner_sptr ? static_cast<float>(_PI/scanner_sptr->get_num_detectors_per_ring()) : 0.F,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
-                          num_views, num_tangential_poss)
-{
-  assert(!is_null_ptr(scanner_ptr));
-  ring_radius = scanner_ptr->get_effective_ring_radius();
-  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
-  uncompressed_view_tangpos_to_det1det2_initialised = false;
-  det1det2_to_uncompressed_view_tangpos_initialised = false;
-
-  if(scanner_ptr->is_tof_ready())
-    set_tof_mash_factor(tof_mash_factor);
-#ifdef STIR_OPENMP_SAFE_BUT_SLOW
-  this->initialise_uncompressed_view_tangpos_to_det1det2();
-  this->initialise_det1det2_to_uncompressed_view_tangpos();
-#endif
-}
+                                     num_views, num_tangential_poss,
+                                     tof_mash_factor)
+{}
 
 
 
@@ -351,31 +336,43 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
 
 unsigned int
 ProjDataInfoCylindricalNoArcCorr::
-get_num_det_pos_pairs_for_bin(const Bin& bin) const
+get_num_det_pos_pairs_for_bin(const Bin& bin, bool ignore_non_spatial_dimensions) const
 {
   return
     get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
                          bin.axial_pos_num())*
     get_view_mashing_factor()*
-    std::max(1,get_tof_mash_factor());
+    (ignore_non_spatial_dimensions ? 1 : std::max(1,get_tof_mash_factor()));
 }
 
 void
 ProjDataInfoCylindricalNoArcCorr::
 get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
-			      const Bin& bin) const
+			      const Bin& bin,
+                              bool ignore_non_spatial_dimensions) const
 {
   this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
 
-  dps.resize(get_num_det_pos_pairs_for_bin(bin));
+  dps.resize(get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
 
   const ProjDataInfoCylindrical::RingNumPairs& ring_pairs =
     get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 						 bin.axial_pos_num());
   // not sure how to handle mashing with non-zero view offset...
   assert(get_min_view_num()==0);
-  // not sure how to handle even tof mashing
-  assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1));
+
+  int min_timing_pos_num = 0;
+  int max_timing_pos_num = 0;
+  if (!ignore_non_spatial_dimensions)
+    {
+      // not sure how to handle even tof mashing
+      assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1)); // TODOTOF
+      // we will need to add all (unmashed) timing_pos for the current bin
+      min_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor();//bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
+      max_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor());//bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+
+    }
+
   unsigned int current_dp_num=0;
   for (int uncompressed_view_num=bin.view_num()*get_view_mashing_factor();
        uncompressed_view_num<(bin.view_num()+1)*get_view_mashing_factor();
@@ -385,33 +382,24 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
       const int det2_num = 
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-        rings_iter != ring_pairs.end();
-        ++rings_iter)
+      for (auto rings_iter = ring_pairs.begin(); rings_iter != ring_pairs.end(); ++rings_iter)
         {
-          int max_utpos = 0;
-          if (get_tof_mash_factor()==0)
-              max_utpos = 1;
-          else
-              max_utpos = bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor());
-
-          for (int uncompressed_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() ;
-               uncompressed_timing_pos_num < max_utpos;
-               uncompressed_timing_pos_num++)
+          for (int uncompressed_timing_pos_num = min_timing_pos_num;
+               uncompressed_timing_pos_num <= max_timing_pos_num;
+               ++uncompressed_timing_pos_num)
             {
-              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
+              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
               dps[current_dp_num].pos1().tangential_coord() = det1_num;
               dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
               dps[current_dp_num].pos2().tangential_coord() = det2_num;
               dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-
-              dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
+              dps[current_dp_num].timing_pos() = uncompressed_timing_pos_num;
 
               ++current_dp_num;
             }
         }
     }
-  assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin));
+  assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
 }
 
 Succeeded
@@ -514,6 +502,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   const int num_detectors_per_ring = 
     get_scanner_ptr()->get_num_detectors_per_ring();
 
+
   int d1, d2, r1, r2, tpos;
 
   this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
@@ -563,6 +552,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2 = lor.p2();
   
 #endif
+
   if (tpos -get_max_tof_pos_num()/2.F < 0)
       std::swap(coord_1, coord_2);
 }

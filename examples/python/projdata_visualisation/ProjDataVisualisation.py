@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2022 University College London
+# Copyright 2022, 2024 University College London
 
 # Author Robert Twyman
 
@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
 from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjDataDimensions
 
+import stir
 
 class ProjDataVisualisationWidgetGallery(QDialog):
     def __init__(self, parent=None):
@@ -63,25 +64,26 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         push_button_load_projdata = QPushButton("Load")
         push_button_load_projdata.clicked.connect(self.load_projdata)
         self.load_projdata_status = QLabel(f"")
+        # Configure Layout
+        FilenameControlGroupBoxLayout = QGridLayout()
+        FilenameControlGroupBoxLayout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
+        FilenameControlGroupBoxLayout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
+        FilenameControlGroupBoxLayout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
+        FilenameControlGroupBoxLayout.addWidget(self.load_projdata_status, 2, 0, 1 , 2)
+        self.FilenameControlGroupBox.setLayout(FilenameControlGroupBoxLayout)
 
-        # Sinogram and viewgram radio buttons
-        gramTypeLabel = QLabel(f"Type of 2D data:")
+        # Sinogram and viewgram radio buttons in a groupbox
         self.sinogram_radio_button = QRadioButton("Sinogram")
         self.viewgram_radio_button = QRadioButton("Viewgram")
         self.sinogram_radio_button.setChecked(True)  # Default to sinogram
         self.sinogram_radio_button.toggled.connect(self.refresh_UI_configuration)
         self.viewgram_radio_button.toggled.connect(self.refresh_UI_configuration)
-
         # Configure Layout
-        layout = QGridLayout()
-        layout.addWidget(self.projdata_filename_box, 0, 0, 1, 2)
-        layout.addWidget(push_button_browse_projdata, 1, 0, 1, 1)
-        layout.addWidget(push_button_load_projdata, 1, 1, 1, 1)
-        layout.addWidget(self.load_projdata_status, 2, 0, 1, 2)
-        layout.addWidget(gramTypeLabel, 3, 0, 1, 2)
-        layout.addWidget(self.sinogram_radio_button, 4, 0, 1, 1)
-        layout.addWidget(self.viewgram_radio_button, 4, 1, 1, 1)
-        self.FilenameControlGroupBox.setLayout(layout)
+        ModeSelectionGroupBox = QGroupBox("Data Visualization Mode")
+        ModeSelectionGroupBoxLayout = QVBoxLayout()
+        ModeSelectionGroupBoxLayout.addWidget(self.sinogram_radio_button)
+        ModeSelectionGroupBoxLayout.addWidget(self.viewgram_radio_button)
+        ModeSelectionGroupBox.setLayout(ModeSelectionGroupBoxLayout)
 
 
         # #############################################
@@ -119,18 +121,13 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         # ### Configure Main Layout ###
         # #############################
         topLayout = QHBoxLayout()
-        # topLayout.addStretch(1)
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(topLayout, 0, 0, 1, 5)
         mainLayout.addWidget(self.FilenameControlGroupBox, 2, 0)
-        mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 1)
-        # mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
-        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1)
-        # mainLayout.setRowStretch(1, 1)
-        # mainLayout.setRowStretch(2, 1)
-        # mainLayout.setColumnStretch(0, 1)
-        # mainLayout.setColumnStretch(1, 1)
+        mainLayout.addWidget(ModeSelectionGroupBox, 3, 0)
+        mainLayout.addWidget(self.ProjDataVisualisationGroupBox, 1, 0, 1, 2)
+        mainLayout.addWidget(self.UI_groupbox_projdata_dimensions.groupbox, 2, 1, 2, 1)
         self.setLayout(mainLayout)
 
         self.change_UI_style('Fusion')
@@ -140,7 +137,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
     def configure_backend(self):
         ### Backend ###
         self.stir_interface = ProjDataVisualisationBackend(sys.argv)
-        self.stir_interface.refresh_segment_data(0)
+        self.stir_interface.load_projdata_from_file()
 
     def change_UI_style(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -162,7 +159,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         It calls the updateDisplayImage function to update the display image.
         """
         self.UI_groupbox_projdata_dimensions.refresh_sliders_and_spinboxes_ranges()
-        self.UI_groupbox_projdata_dimensions.update_enable_disable(self.sinogram_radio_button.isChecked())
+        self.UI_groupbox_projdata_dimensions.configure_enable_disable_sliders(self.sinogram_radio_button.isChecked())
         self.update_display_image()
 
     def update_display_image(self):
@@ -181,16 +178,20 @@ class ProjDataVisualisationWidgetGallery(QDialog):
             image = self.get_sinogram_numpy_array()
             ax.title.set_text(
                 f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)}, "
-                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)}")
+                f"Axial Position: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)}, "
+                f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Views/projection angle")
             ax.xaxis.set_label_text("Tangential positions")
+            ax.xaxis.set_label_text("TOF bins")
         elif self.viewgram_radio_button.isChecked():
             image = self.get_viewgram_numpy_array()
             ax.title.set_text(
                 f"Sinogram - Segment: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)},"
-                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)}")
+                f"View Number: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)}, "
+                f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Axial positions")
             ax.xaxis.set_label_text("Tangential positions")
+            ax.xaxis.set_label_text("TOF bins")
         else:
             msg = f"Error: No radio button is checked... How did you get here?\n"
             raise Exception(msg)
@@ -201,6 +202,14 @@ class ProjDataVisualisationWidgetGallery(QDialog):
                   )
         self.display_image_matplotlib_canvas.draw()
 
+    def get_bin(self) -> stir.Bin:
+        view_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)
+        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)
+        segment_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.SEGMENT_NUM)
+        tangential_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TANGENTIAL_POS)
+        timing_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)
+        return stir.Bin(segment_num, view_num, axial_pos, tangential_pos, timing_pos)
+
     def get_sinogram_numpy_array(self):
         """
         This function returns the sinogram numpy array based on the current UI configuration parameters for segment 
@@ -209,16 +218,14 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if self.stir_interface.projdata is None:
             return None
 
-        axial_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.AXIAL_POS)
         return self.stir_interface.as_numpy(
-            self.stir_interface.segment_data.get_sinogram(axial_pos))
+            self.stir_interface.segment_data.get_sinogram(self.get_bin().axial_pos_num))
 
     def get_viewgram_numpy_array(self):
         if self.stir_interface.projdata is None:
             return None
 
-        view_num = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VIEW_NUMBER)
-        return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(view_num))
+        return self.stir_interface.as_numpy(self.stir_interface.segment_data.get_viewgram(self.get_bin().view_num))
 
     def browse_file_system_for_projdata(self):
         initial = self.projdata_filename_box.text()
@@ -229,7 +236,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         else:
             self.projdata_filename_box.setText(initial)
 
-    def load_projdata(self, filename=None):
+    def load_projdata(self, filename=None) -> None:
         """
         This function loads the projdata file and updates the UI.
         """
@@ -239,14 +246,15 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         if filename is not None and filename != "":
             self.projdata_filename_box.setText(filename)
 
-        data_load_successful = self.stir_interface.load_projdata(self.projdata_filename_box.text())
+        data_load_successful = self.stir_interface.load_projdata_from_file(self.projdata_filename_box.text())
 
-        if data_load_successful:
-            self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
-        else:
+        if not data_load_successful:
             self.load_projdata_status.setText("STATUS: Failed to load ProjData from file.")
-
+            return
+        
+        self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
         self.refresh_UI_configuration()
+            
 
     def set_projdata(self, projdata):
         self.stir_interface.set_projdata(projdata)
@@ -256,7 +264,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
 def OpenProjDataVisualisation(projdata=None):
     """
-    Function to open the ProjDataVisualisation GUI window. Will not exit pyton on window close.
+    Function to open the ProjDataVisualisation GUI window. Will not exit python on window close.
     projdata: Proj data to be visualised. Can be either a stir.ProjData object, a file path (str) or None. If None, an empty GUI will be opened.
     """
     app = QApplication([])

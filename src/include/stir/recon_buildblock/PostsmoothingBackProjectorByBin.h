@@ -79,10 +79,6 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  void update_filtered_density_image(DiscretisedDensity<3, float>&);
-
-  void init_filtered_density_image(DiscretisedDensity<3, float> &);
-
   BackProjectorByBin* get_original_back_projector_ptr() const;
 
   PostsmoothingBackProjectorByBin* clone() const;

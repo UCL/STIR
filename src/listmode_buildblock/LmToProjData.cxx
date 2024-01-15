@@ -636,15 +636,15 @@ process_data()
     Scanner const * const scanner_ptr = 
       template_proj_data_info_ptr->get_scanner_ptr();
 
-    if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
+    if (*scanner_ptr != lm_data_ptr->get_scanner())
       {
         error("LmToProjData:\nScanner from list mode data (%s) is different from\n"
                 "scanner from template projdata (%s).\n"
                 "Full definition of scanner from list mode data:\n%s\n"
                 "Full definition of scanner from template:\n%s\n",
-                lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
+                lm_data_ptr->get_scanner().get_name().c_str(),
                 scanner_ptr->get_name().c_str(),
-                lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
+                lm_data_ptr->get_scanner().parameter_info().c_str(),
                 scanner_ptr->parameter_info().c_str());
       }
 
@@ -914,6 +914,7 @@ process_data()
     cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
 }
 
+#if 0
 void
 LmToProjData::run_tof_test_function()
 {
@@ -996,6 +997,7 @@ LmToProjData::run_tof_test_function()
 #endif
 }
 
+#endif
 
 
 /************************* Local helper routines *************************/

@@ -5,7 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016-17, University of Hull
-    Copyright (C) 2017-2018, 2020, 2022, University College London
+    Copyright (C) 2017-2018, 2020, 2022, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -27,6 +27,9 @@
 #ifndef __stir_ProjDataInfo_H__
 #define __stir_ProjDataInfo_H__
 
+#include "stir/SegmentIndices.h"
+#include "stir/ViewgramIndices.h"
+#include "stir/SinogramIndices.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
@@ -108,13 +111,6 @@ public:
                              const int num_views, const int num_tangential_poss,
                              const bool arc_corrected = true,
                              const int tof_mash_factor = 0);
-  //! \name Conversion functions between TOF delta_time and mm
-  //@{
-  inline static double
-    mm_to_tof_delta_time(const float dist);
-  inline static float
-    tof_delta_time_to_mm(const double delta_time);
-  //@}
 
   /************ constructors ***********/
   // TODO should probably be protected
@@ -248,12 +244,7 @@ public:
   inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
   inline int get_max_tof_pos_num() const;
-  //! Get the coincide window in pico seconds
-  //! \warning Proposed convension: If the scanner is not TOF ready then
-  //! the coincidence windowis in the TOF bin size.
-  inline float get_coincidence_window_in_pico_sec() const;
-  //! Get the total width of the coincide window in mm
-  inline float get_coincidence_window_width() const;
+
   //! Get the total number of sinograms
   /*! Note that this will count TOF sinograms as well.
       \see get_num_non_tof_sinograms()
@@ -405,25 +396,40 @@ public:
   //@{
 
   //! Get empty viewgram
+  Viewgram<float> get_empty_viewgram(const ViewgramIndices&) const;
+  //! Get empty_sinogram
+  Sinogram<float> get_empty_sinogram(const SinogramIndices&) const;
+  //! Get empty segment sino
+  SegmentByView<float> get_empty_segment_by_view(const SegmentIndices&) const;
+  //! Get empty segment view
+  SegmentBySinogram<float> get_empty_segment_by_sinogram(const SegmentIndices&) const;
+
+  //! Get empty viewgram
+  /*! \deprecated */
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
     const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
   
   //! Get empty_sinogram
+  /*! \deprecated */
   Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
     const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
 
   //! Get empty segment sino
+  /*! \deprecated */
   SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
 		  	   const bool make_num_tangential_poss_odd = false,
 			   const int timing_pos_num = 0) const;
   //! Get empty segment view
+  /*! \deprecated */
   SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
 				   const bool make_num_tangential_poss_odd = false,
 				   const int timing_pos_num = 0) const;
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
-  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
+  /*! make_num_tangential_poss_odd has to be \c false */
+  //TODOTOF
+  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewgramIndices&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false,
 	const int timing_pos_num = 0) const;

@@ -221,12 +221,14 @@ public:
   //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
   virtual void process_data();
 
+#if 0
   //! A test function for time-of-flight data. At this moment we lack a lot of infrastructure in
   //! order to be able to develope a viable test function of class anywhere else. At a future point
   //! I should develope a proper test function. This function is going to fill the proj_data with
   //! the index number of the respective TOF position, for every TOF position.
   void run_tof_test_function();
-  
+#endif
+
 protected:
   
   //! will be called when a new time frame starts

@@ -334,13 +334,14 @@ read_norm_data(const string& filename)
   //
   if(this->use_geometric_factors())
   {
-    // Construct a proper ProjDataInfo to initialize geometry factors array and use it to know the boudns of the iteratios to load it.
+    // Construct a proper ProjDataInfo to initialize geometry factors array and use it to know the bounds of the iteratios to load it.
     shared_ptr<ProjDataInfo> projInfo = ProjDataInfo::construct_proj_data_info(scanner_ptr,
                                             /*span*/ 2,  
                                             /* max_delta*/ scanner_ptr->get_num_rings()-1,
                                             /* num_views */ scanner_ptr->get_num_detectors_per_ring()/2,
                                             /* num_tangential_poss */ scanner_ptr->get_max_num_non_arccorrected_bins(),
-                                            /* arc_corrected */ false
+                                            /* arc_corrected */ false,
+                                            /* tof_mash_factor */ 0
                                              );
     geo_eff_factors_sptr.reset(new ProjDataInMemory(m_input_hdf5_sptr->get_exam_info_sptr(),
                                                  projInfo,

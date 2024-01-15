@@ -16,6 +16,7 @@
 %shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ImagingModality);
 %shared_ptr(stir::PatientPosition);
+%shared_ptr(stir::RadionuclideDB);
 %shared_ptr(stir::Radionuclide);
 %shared_ptr(stir::ExamInfo);
 %shared_ptr(stir::ExamData);
@@ -24,6 +25,7 @@
 %include "stir/ImagingModality.h"
 %include "stir/PatientPosition.h"
 %include "stir/Radionuclide.h"
+%include "stir/RadionuclideDB.h"
 %include "stir/ExamInfo.h"
 %include "stir/ExamData.h"
 

@@ -28,7 +28,11 @@ START_NAMESPACE_STIR
   \brief
  A class for storing 2 coordinates-sets of a detection, together with a timing-position index (for TOF),
  as suitable for PET.
- 
+
+ Note: all parameters are w.r.t. to the original scanner object. In particular, the \c timing_pos is an
+ index in "unmashed" TOF bins (normally determined by the ADC of the scanner), which could have much higher
+ resolution than what is used in the projection data from the scanner.
+
  \see DetectionPosition for details on what we mean with a Detector Position
 */
 

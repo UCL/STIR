@@ -131,27 +131,27 @@ include(stir_lib_target)
 
 
 if (STIR_MPI)
-  target_link_libraries(recon_buildblock ${MPI_CXX_LIBRARIES})
+  target_link_libraries(recon_buildblock PUBLIC ${MPI_CXX_LIBRARIES})
 endif()
 
 if (STIR_OPENMP)
-  target_link_libraries(recon_buildblock ${OpenMP_EXE_LINKER_FLAGS})
+  target_link_libraries(recon_buildblock PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
 # TODO what to do with IO?
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
-target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
-	target_link_libraries(recon_buildblock NiftyPET::petprj)
-	target_link_libraries(recon_buildblock NiftyPET::mmr_auxe)
-	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
-	target_link_libraries(recon_buildblock CUDA::cudart)
+	target_link_libraries(recon_buildblock PUBLIC NiftyPET::petprj)
+	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_auxe)
+	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_lmproc)
+	target_link_libraries(recon_buildblock PUBLIC CUDA::cudart)
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
-  target_link_libraries(recon_buildblock parallelproj::parallelproj_c)
+  target_link_libraries(recon_buildblock PUBLIC parallelproj::parallelproj_c)
   if (parallelproj_built_with_CUDA)
-    target_link_libraries(recon_buildblock parallelproj::parallelproj_cuda)
+    target_link_libraries(recon_buildblock PUBLIC parallelproj::parallelproj_cuda)
   endif()
 endif()
