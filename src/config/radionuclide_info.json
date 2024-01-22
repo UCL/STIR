@@ -62,6 +62,16 @@
             ]
         },
         {
+            "name": "^68^Germanium",
+            "decays": [
+                {  "modality": "PET",
+                   "keV": 511,
+                   "branching_ratio": 1,
+                   "half_life": 23410080
+                }
+            ]
+        },
+        {
             "name": "^99m^Technetium",
             "decays": [
                 {  "modality": "nucmed",
@@ -91,7 +101,7 @@
                    "half_life": 281776.32
                 }
             ]
-            
+
         },
         {
             "name": "^177^Lutetium",
