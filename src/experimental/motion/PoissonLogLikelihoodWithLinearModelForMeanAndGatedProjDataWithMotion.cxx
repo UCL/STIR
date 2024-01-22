@@ -285,6 +285,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
 {
+  this->already_set_up = false;
   this->_gated_proj_data_sptr = arg;
 }
 
@@ -293,8 +294,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_max_segment_num_to_process(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->max_timing_pos_num_to_process == arg);
   this->max_segment_num_to_process = arg;
-
 }
 
 template<typename TargetT>
@@ -302,6 +303,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_zero_seg0_end_planes(const bool arg)
 {
+  this->already_set_up = this->already_set_up && (this->zero_seg0_end_planes == arg);
   this->zero_seg0_end_planes = arg;
 }
 
@@ -310,7 +312,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<GatedProjData>& arg)
 {
-
+  this->already_set_up = false;
   this->_gated_additive_proj_data_sptr = arg;
 }
 
@@ -319,6 +321,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg) 
 {
+  this->already_set_up = false;  
   this->projector_pair_ptr = arg;
 
 }
@@ -328,6 +331,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_frame_num(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->frame_num == arg);
   this->frame_num = arg;
 }
 
@@ -336,6 +340,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_frame_definitions(const TimeFrameDefinitions& arg)
 {
+  this->already_set_up = this->already_set_up && (this->frame_defs == arg);
   this->frame_defs = arg;
 }
 

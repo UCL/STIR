@@ -95,6 +95,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 set_sensitivity_filename(const std::string& filename)
 {
+  this->already_set_up = false;
   this->sensitivity_filename = filename;
 }
 
@@ -103,6 +104,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 set_subsensitivity_filenames(const std::string& filenames)
 {
+  this->already_set_up = false;
   this->subsensitivity_filenames = filenames;
   try
     {
@@ -171,6 +173,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 set_use_subset_sensitivities(const bool arg)
 {
+  this->already_set_up = this->already_set_up && (this->use_subset_sensitivities == arg);
   this->use_subset_sensitivities = arg;
 }
 
@@ -179,6 +182,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 set_subset_sensitivity_sptr(const shared_ptr<TargetT>& arg, const int subset_num)
 {
+  this->already_set_up = false;
   this->subsensitivity_sptrs[subset_num] = arg;
 }
 
@@ -348,7 +352,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
           return Succeeded::no;
         }
     }
-      
+  this->already_set_up = true;
   return Succeeded::yes;
 }
 
@@ -359,6 +363,8 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
                                      const TargetT &current_estimate, 
                                      const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   this->actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, false);
 }
 
@@ -369,6 +375,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                                       const TargetT &current_estimate,
                                                       const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, true);
 }
 

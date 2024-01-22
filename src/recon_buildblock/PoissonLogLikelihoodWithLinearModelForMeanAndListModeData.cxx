@@ -100,10 +100,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   if (this->list_mode_filename.length() == 0 && !this->skip_lm_input_file)
   { warning("You need to specify an input file\n"); return true; }
   if (!this->skip_lm_input_file)
-  {
+    {
       this->list_mode_data_sptr=
           read_from_file<ListModeData>(this->list_mode_filename);
-  }
+    }
 
   if (this->additive_projection_data_filename != "0")
     {
@@ -123,6 +123,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
     } 
   target_parameter_parser.check_values();
 
+  this->already_set_up = false;
   return false;
 } 
 
@@ -131,6 +132,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
+  this->already_set_up = false;
   try
     {
       this->list_mode_data_sptr = dynamic_pointer_cast<ListModeData>(arg);
@@ -146,6 +148,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_max_segment_num_to_process(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->max_segment_num_to_process == arg);
   this->max_segment_num_to_process = arg;
 }
 
@@ -258,6 +261,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
+  this->already_set_up = false;
   try
     {
       this->additive_proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
@@ -281,6 +285,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
+  this->already_set_up = false;
   this->normalisation_sptr = arg;
 }
 

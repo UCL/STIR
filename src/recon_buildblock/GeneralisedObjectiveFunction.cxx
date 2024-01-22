@@ -142,6 +142,8 @@ compute_sub_gradient(TargetT& gradient,
 		     const TargetT &current_estimate, 
 		     const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   assert(gradient.get_index_range() == current_estimate.get_index_range());
 
   if (subset_num<0 || subset_num>=this->get_num_subsets())
@@ -194,6 +196,8 @@ GeneralisedObjectiveFunction<TargetT>::
 compute_objective_function_without_penalty(const TargetT& current_estimate,
 					   const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("compute_objective_function_without_penalty subset_num out-of-range error");
 
@@ -231,6 +235,8 @@ add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								const TargetT& input,
 								const int subset_num) const
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("add_multiplication_with_approximate_sub_Hessian_without_penalty subset_num out-of-range error");
 
@@ -259,6 +265,8 @@ add_multiplication_with_approximate_sub_Hessian(TargetT& output,
 						const TargetT& input,
 						const int subset_num) const
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output, input, subset_num) ==
       Succeeded::no)
     return Succeeded::no;
@@ -406,6 +414,8 @@ accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
                                                    const TargetT& input,
                                                    const int subset_num) const
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   if (subset_num<0 || subset_num>=this->get_num_subsets())
     error("accumulate_sub_Hessian_times_input_without_penalty subset_num out-of-range error");
 
@@ -487,6 +497,12 @@ bool
 GeneralisedObjectiveFunction<TargetT>::
 subsets_are_approximately_balanced(std::string& warning_message) const
 {
+#if 0
+  // TODO cannot do this yet, as this function is called in
+  // `PoissonLogLikelihoodWithLinearModelForMean::compute_sensitivities` during set_up()
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
+#endif
   return this->actual_subsets_are_approximately_balanced(warning_message);
 }
 

@@ -252,6 +252,11 @@
         <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
         Use <code>get_bin_for_det_pos_pair</code> instead.
       </li>
+      <li>
+        The <code>GeneralisedObjectiveFunction</code> hierarchy now has a <code>already_set_up</code>
+        member variable that needs to be set to <code>false</code> by <code>set_*</code>
+        functions and checked by callers.
+      </li>
     </ul>
 
     <h3>New functionality</h3>
