@@ -130,16 +130,8 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 	{
 	  // SYM const Bin bin=*bin_iter;
 
-      cerr << "\nCurrent bin: \tsegment = " << bin.segment_num()
-           << ", \taxial pos " << bin.axial_pos_num()
-           << ", \tview = " << bin.view_num()
-           << ", \ttangential_pos_num = " << bin.tangential_pos_num()
-           << ", timing position index = " << bin.timing_pos_num()
-           << "\nSymm bin: \t\tsegment = " << elems_with_sym.get_bin().segment_num()
-           << ", \taxial pos " << elems_with_sym.get_bin().axial_pos_num()
-           << ", \tview = " << elems_with_sym.get_bin().view_num()
-           << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num()
-           << ", timing position index = " << bin.timing_pos_num() << "\n";
+      cerr << "\nCurrent bin: " << elems_no_sym.get_bin()
+           << "\nSymm bin:    " << elems_with_sym.get_bin()<< "\n";
 
         if (elems_no_sym != elems_with_sym)
         {
