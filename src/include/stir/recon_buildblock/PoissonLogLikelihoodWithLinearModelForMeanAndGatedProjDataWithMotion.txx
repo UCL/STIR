@@ -175,7 +175,7 @@ template <typename TargetT>
 TargetT *
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 construct_target_ptr() const
-{  
+{
   return 
     this->target_parameter_parser.create(this->get_input_data());
 }
@@ -280,15 +280,16 @@ get_projector_pair_sptr() const
 template<typename TargetT>
 int
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_num_subsets(const int num_subsets)
+set_num_subsets(const int new_num_subsets)
 {
+  this->already_set_up = this->already_set_up && (this->num_subsets == new_num_subsets);
   for(unsigned int gate_num=1;gate_num<=this->get_time_gate_definitions().get_num_gates();++gate_num)
     {
       if(this->_single_gate_obj_funcs.size() != 0)
-		if(this->_single_gate_obj_funcs[gate_num].set_num_subsets(num_subsets) != num_subsets)
+		if(this->_single_gate_obj_funcs[gate_num].set_num_subsets(new_num_subsets) != new_num_subsets)
 			error("set_num_subsets didn't work");
     }
-  this->num_subsets=num_subsets;
+  this->num_subsets=new_num_subsets;
   return this->num_subsets;
 }
 
@@ -296,13 +297,17 @@ template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions)
-{ this->_time_gate_definitions=time_gate_definitions; }
+{
+  this->already_set_up = false;
+  this->_time_gate_definitions=time_gate_definitions;
+}
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
+  this->already_set_up = false;
     this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
@@ -319,6 +324,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
+  this->already_set_up = false;
     this->_additive_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
@@ -327,6 +333,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
+  this->already_set_up = false;
 //  this->normalisation_sptr = arg;
     error("Not implemeted yet");
 }

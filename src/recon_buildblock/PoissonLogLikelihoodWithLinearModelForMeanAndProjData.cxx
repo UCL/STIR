@@ -391,6 +391,7 @@ int
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_num_subsets(const int new_num_subsets)
 {
+  this->already_set_up = this->already_set_up && (this->num_subsets == new_num_subsets);
   this->num_subsets = std::max(new_num_subsets,1);
   return this->num_subsets;
 
@@ -401,6 +402,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_proj_data_sptr(const shared_ptr<ProjData>& arg)
 {
+  this->already_set_up = false;
   this->proj_data_sptr = arg;
 }
 
@@ -409,6 +411,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_max_segment_num_to_process(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->max_segment_num_to_process == arg);
   this->max_segment_num_to_process = arg;
 }
 
@@ -417,6 +420,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_max_timing_pos_num_to_process(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->max_timing_pos_num_to_process == arg);
   this->max_timing_pos_num_to_process = arg;
 }
 
@@ -425,6 +429,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_zero_seg0_end_planes(const bool arg)
 {
+  this->already_set_up = this->already_set_up && (this->zero_seg0_end_planes == arg);
   this->zero_seg0_end_planes = arg;
 }
 
@@ -433,7 +438,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->additive_proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
+  this->already_set_up = false;
+  this->additive_proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
 }
 
 template<typename TargetT>
@@ -441,6 +447,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg) 
 {
+  this->already_set_up = false;
   this->projector_pair_ptr = arg;
 }
 
@@ -449,6 +456,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_frame_num(const int arg)
 {
+  this->already_set_up = this->already_set_up && (this->frame_num == arg);
   this->frame_num = arg;
 }
 
@@ -457,6 +465,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_frame_definitions(const TimeFrameDefinitions& arg)
 {
+  this->already_set_up = this->already_set_up && (this->frame_defs == arg);
   this->frame_defs = arg;
 }
 
@@ -465,6 +474,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
+  this->already_set_up = false;
   this->normalisation_sptr = arg;
 }
 
@@ -473,7 +483,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
+  this->already_set_up = false;
+  this->proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
 }
 
 template<typename TargetT>
