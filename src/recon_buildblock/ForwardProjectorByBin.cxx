@@ -216,9 +216,9 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
         {
           const ViewSegmentNumbers vs=vs_nums_to_process[i];
           if (proj_data.get_proj_data_info_sptr()->is_tof_data())
-            info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k);
+            info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
     	  else
-            info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+            info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 3);
           RelatedViewgrams<float> viewgrams =
             proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false, k);
           forward_project(viewgrams);

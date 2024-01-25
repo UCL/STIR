@@ -66,7 +66,9 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
     error("ProjDataInfoGenericNoArcCorr: first argument (scanner_ptr) is zero");
   if (num_tangential_poss > scanner_sptr->get_max_num_non_arccorrected_bins())
     error("ProjDataInfoGenericNoArcCorr: number of tangential positions exceeds the maximum number of non arc-corrected bins set for the scanner.");
-
+  if (scanner_sptr->get_max_num_views() != num_views)
+    error("ProjDataInfoGenericNoArcCorr: view mashing is not supported");
+  
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 #ifdef STIR_OPENMP_SAFE_BUT_SLOW
