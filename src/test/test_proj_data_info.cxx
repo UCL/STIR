@@ -147,7 +147,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
         "check on min/max_tangential_pos_num being (almost) centred");
   check_if_equal(proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num() + 1,
                  proj_data_info.get_num_tof_poss(), "basic check on min/max/num_tof_pos_num");
-  check_if_equal(proj_data_info.get_max_tof_pos_num() + proj_data_info.get_min_tof_pos_num(), proj_data_info.get_max_tof_pos_num(),
+  check_if_equal(proj_data_info.get_min_tof_pos_num() , 0,
                  "check on min/max_tof_pos_num being (almost) centred");
   check_if_equal(proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num() + 1, proj_data_info.get_num_views(),
                  "basic check on min/max/num_view_num");
@@ -204,16 +204,17 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 
                       {
                         const Bin new_bin = proj_data_info.get_bin(lor, delta_time);
+                        const bool views_are_close = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num());
 #if 1
                         // the differences need to also consider wrap-around in views, which would flip tangential pos and segment and TOF bin
-                        const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                        const int diff_segment_num = views_are_close ?
                           intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
                         const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
                         const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                        const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                        const int diff_tangential_pos_num = views_are_close ?
                           intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
-                        const int diff_timing_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                          intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
+                        const int diff_timing_pos_num = views_are_close ?
+                          intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() - (proj_data_info.get_max_tof_pos_num()  - new_bin.timing_pos_num()));
                         if (new_bin.get_bin_value() > 0)
                           {
                             if (diff_segment_num > max_diff_segment_num)
@@ -236,7 +237,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                             || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin: view")
                             || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin: axial_pos")
                             || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin: tangential_pos")
-                            || !check(diff_timing_pos_num == 0 || diff_timing_pos_num ==  proj_data_info.get_max_tof_pos_num() , "round-trip get_LOR then get_bin: timing_pos"))
+                            || !check(diff_timing_pos_num == 0  , "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
@@ -263,17 +264,18 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                                   << ", y2=" << lor_as_points.p2().y() << ", x2=" << lor_as_points.p2().x() << std::endl;
 #endif
                         const Bin new_bin = proj_data_info.get_bin(lor_as_points, proj_data_info.get_tof_delta_time(org_bin));
+                        const bool views_are_close = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num());
 #if 1
 
                     // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
-                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                    const int diff_segment_num = views_are_close ?
                       intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
                     const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
                     const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
+                    const int diff_tangential_pos_num = views_are_close ?
                       intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
-                    const int diff_timing_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                      intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
+                    const int diff_timing_pos_num = views_are_close ?
+                      intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num()) : intabs(org_bin.timing_pos_num() - (proj_data_info.get_max_tof_pos_num()  - new_bin.timing_pos_num()));
                     if (new_bin.get_bin_value() > 0)
                       {
                         if (diff_segment_num > max_diff_segment_num)
@@ -293,7 +295,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                         || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
                         || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
                         || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos")
-                        || !check(diff_timing_pos_num == 0 || diff_timing_pos_num ==  proj_data_info.get_max_tof_pos_num(), "round-trip get_LOR then get_bin: timing_pos"))
+                        || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))

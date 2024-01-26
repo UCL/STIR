@@ -97,7 +97,7 @@ set_defaults()
 
   this->input_filename="";
   this->max_segment_num_to_process=-1;
-  this->max_num_central_timing_poss_to_process=0;
+  this->max_num_central_timing_poss_to_process=-1;
   // KT 20/06/2001 disabled
   //num_views_to_add=1;  
   this->proj_data_sptr.reset(); //MJ added
@@ -732,7 +732,7 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                  this->proj_data_sptr, 
                                  subset_num, 
                                  this->num_subsets, 
-                                 0,
+                                 -this->max_segment_num_to_process,
                                  this->max_segment_num_to_process,
                                  this->zero_seg0_end_planes!=0,
                                  NULL,

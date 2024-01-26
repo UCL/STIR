@@ -156,7 +156,7 @@ get_bin_for_det_pos_pair(Bin& bin,
                          dp.pos2().axial_coord(),
                          this->get_tof_mash_factor()==0
                            ? 0 // use timing_pos==0 in the nonTOF case
-                           : (int)((float)dp.timing_pos()/this->get_tof_mash_factor()));
+                           : (int)(dp.timing_pos()/this->get_tof_mash_factor()));
 }
 void
 ProjDataInfoCylindricalNoArcCorr::

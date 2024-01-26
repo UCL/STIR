@@ -369,7 +369,10 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
       assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1)); // TODOTOF
       // we will need to add all (unmashed) timing_pos for the current bin
       min_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor();//bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
-      max_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor());//bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+      if (get_tof_mash_factor()==0)
+          max_timing_pos_num = bin.timing_pos_num();//bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+      else
+          max_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor())-1;
 
     }
 
