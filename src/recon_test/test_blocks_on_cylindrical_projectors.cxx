@@ -480,6 +480,9 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
 
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
+  scannerBlocks_sptr->set_num_axial_crystals_per_block(scannerBlocks_sptr->get_num_axial_crystals_per_block() / 4);
+  scannerBlocks_sptr->set_axial_block_spacing(scannerBlocks_sptr->get_axial_block_spacing() * 4);
+  scannerBlocks_sptr->set_num_rings(scannerBlocks_sptr->get_num_rings() / 4);
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
