@@ -5,11 +5,7 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-if (CMAKE_HOST_WIN32)
-  cmake_minimum_required(VERSION 3.12.0)
-else()
-  cmake_minimum_required(VERSION 3.1.0)
-endif()
+cmake_minimum_required(VERSION 3.14.0)
 
 # enable ccache https://ccache.samba.org/
 find_program(CCACHE_PROGRAM ccache)
@@ -35,7 +31,9 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX(11)
+# minimum C++ version required (you can still ask for a more recent one
+# by setting CMAKE_CXX_STANDARD)
+UseCXX(14)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -249,12 +247,7 @@ set (STIR_INCLUDE_DIRS "include")
 # the sources and tell the user to explicitly use STIR_REGISTRIES.
 # This will be set to either a list of source files, or a list of object files.
 # See STIRConfig.cmake.in on how we cope with this
-if (CMAKE_VERSION VERSION_LESS 3.12)
-  message(WARNING "Your CMake version is older than 3.12. The STIR_REGISTRIES
-    will be exported as source files only. Please upgrade CMake!")
-else()
-  install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
-endif()
+install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
 
 # install the registry sources for older CMake versions
 install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
