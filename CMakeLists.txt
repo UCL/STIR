@@ -31,7 +31,9 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX(11)
+# minimum C++ version required (you can still ask for a more recent one
+# by setting CMAKE_CXX_STANDARD)
+UseCXX(14)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
