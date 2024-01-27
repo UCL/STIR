@@ -69,11 +69,9 @@ public:
 
 private:
   template <class TProjDataInfo>
-  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction = 1,
-                                                     int bin_fraction = 1);
+  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1);
   template <class TProjDataInfo>
-  shared_ptr<TProjDataInfo> set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction = 4,
-                                                     int bin_fraction = 4);
+  shared_ptr<TProjDataInfo> set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 4);
 
   void run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
@@ -87,7 +85,7 @@ private:
 /*! The following is a function to allow a projdata_info BlocksOnCylindrical to be created from the scanner. */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
-BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction, int bin_fraction)
+BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction)
 {
   auto segments = scanner_sptr->get_num_rings() - 1;
   VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
@@ -102,7 +100,7 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view
 
   auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(
       scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
-      scanner_sptr->get_max_num_views() / view_fraction, scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
+      scanner_sptr->get_max_num_views(), scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
 
   return proj_data_info_blocks_sptr;
 }
@@ -110,7 +108,7 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int view
 /*! Function to generate projection data containing only segment 0. Also allows reducing no. of views and tangential bins. */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
-BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view_fraction, int bin_fraction)
+BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction)
 {
   // VectorWithOffset<int> num_axial_pos_per_segment(0, 0);
   // VectorWithOffset<int> min_ring_diff_v(0, 0);
@@ -130,7 +128,7 @@ BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int view
 
   auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(
       scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
-      scanner_sptr->get_max_num_views() / view_fraction, scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
+      scanner_sptr->get_max_num_views(), scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
 
   return proj_data_info_blocks_sptr;
 }
@@ -217,7 +215,7 @@ BlocksTests::run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardPr
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
   //    now forward-project images
 
   // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
@@ -328,7 +326,7 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 1);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
 
   //    now forward-project image
 
@@ -482,11 +480,14 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
 
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
+  scannerBlocks_sptr->set_num_axial_crystals_per_block(scannerBlocks_sptr->get_num_axial_crystals_per_block() / 4);
+  scannerBlocks_sptr->set_axial_block_spacing(scannerBlocks_sptr->get_axial_block_spacing() * 4);
+  scannerBlocks_sptr->set_num_rings(scannerBlocks_sptr->get_num_rings() / 4);
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
   proj_data_info_blocks_sptr
-      = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 4); //    now forward-project image
+      = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr); //    now forward-project image
 
   shared_ptr<DiscretisedDensity<3, float>> image_sptr(image.clone());
   shared_ptr<DiscretisedDensity<3, float>> bck_proj_image_sptr(image.clone());
@@ -582,7 +583,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   scannerBlocks_sptr->set_up();
 
   auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 1, 4);
+  proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 4);
   Bin bin, bin1, bin2, binR1;
   CartesianCoordinate3D<float> b1, b2, rb1, rb2;
   DetectionPosition<> det_pos, det_pos_ord;
@@ -618,7 +619,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   scannerBlocks_reord_sptr->set_up();
 
   auto proj_data_info_blocks_reord_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
-  proj_data_info_blocks_reord_sptr = set_direct_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerBlocks_reord_sptr, 1, 4);
+  proj_data_info_blocks_reord_sptr = set_direct_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerBlocks_reord_sptr, 4);
 
   //    now forward-project images
   // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
@@ -906,6 +907,7 @@ BlocksTests::run_tests()
   run_projection_test(forw_projector1, forw_projector1_parallelproj);
   print_time("projection cpu vs. gpu comparison test took: ");
 #endif
+  timer.stop();
 }
 END_NAMESPACE_STIR
 

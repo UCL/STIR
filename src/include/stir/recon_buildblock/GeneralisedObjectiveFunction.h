@@ -86,12 +86,19 @@ class GeneralisedObjectiveFunction:
 {
 public:
   
-  //GeneralisedObjectiveFunction(); 
+  GeneralisedObjectiveFunction()
+    : already_set_up(false)
+  {}
+
 
   virtual ~GeneralisedObjectiveFunction(); 
 
 
   //! Creates a suitable target as determined by the parameters
+  /*!
+    \warning This should <b>not</b> check \c already_set_up (unfortunately),
+    as it is currently called in Reconstruction::reconstruct() before calling set_up().
+  */
   virtual TargetT *
     construct_target_ptr() const = 0; 
 
@@ -331,6 +338,7 @@ public:
 
 protected:
   int num_subsets;
+  bool already_set_up;
 
   shared_ptr<GeneralisedPrior<TargetT> > prior_sptr;
 

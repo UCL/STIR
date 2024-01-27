@@ -5,6 +5,7 @@
      [ "^15^Oxygen", "15O", "O-15" ],
      [ "^64^Copper", "64Cu", "Cu-64" ],
      [ "^68^Gallium", "68Ga", "Ga-68" ],
+     [ "^68^Germanium", "68Ge", "Ge-68" ],
      [ "^99m^Technetium", "99mTc", "Tc-99m" ],
      [ "^131^Iodine", "131I", "I-131" ],
      [ "^67^Gallium", "67Ga", "Ga-67" ],

@@ -66,7 +66,9 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
     error("ProjDataInfoGenericNoArcCorr: first argument (scanner_ptr) is zero");
   if (num_tangential_poss > scanner_sptr->get_max_num_non_arccorrected_bins())
     error("ProjDataInfoGenericNoArcCorr: number of tangential positions exceeds the maximum number of non arc-corrected bins set for the scanner.");
-
+  if (scanner_sptr->get_max_num_views() != num_views)
+    error("ProjDataInfoGenericNoArcCorr: view mashing is not supported");
+  
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 #ifdef STIR_OPENMP_SAFE_BUT_SLOW
@@ -74,18 +76,8 @@ ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_sptr,
   this->initialise_det1det2_to_uncompressed_view_tangpos();
 #endif
 
-  CartesianCoordinate3D< float> b1,b2;
-  Bin bin;
-  bin.segment_num() = 0;
-  bin.axial_pos_num() = 0;
-  bin.view_num() = 0;
-  bin.tangential_pos_num() = 0;
-// setting shift_z to 0 before it is actually estimated. Otherwise the next function will use it
-  this->z_shift.z()=0;
-  find_cartesian_coordinates_of_detection(b1,b2,bin);
-  float shift=b2.z();
-
-  this->z_shift.z()=shift;
+  // find shift between "new" centre-of-scanner and "old" centre-of-first-ring coordinate system
+  this->z_shift.z()=this->get_scanner_ptr()->get_coordinate_for_det_pos(DetectionPosition<>(0,0,0)).z();
   this->z_shift.y()=0;
   this->z_shift.x()=0;
 }

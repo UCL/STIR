@@ -314,7 +314,7 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection|test_blocks_on_cylindrical_projectors"
+              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection"
           fi
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
