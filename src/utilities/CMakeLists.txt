@@ -80,10 +80,6 @@ if (HAVE_ITK)
   list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
 endif()
 
-if (AVW_FOUND)
-  list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
-endif()
-
 if (HAVE_HDF5)
  list(APPEND ${dir_EXE_SOURCES}
    construct_randoms_from_GEsingles.cxx

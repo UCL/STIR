@@ -1968,7 +1968,7 @@ PREDEFINED             = __GNUC__=4 \
                          __GNUC_MINOR__=6 \
                          DOXYGEN_SKIP \
                          HAVE_LLN_MATRIX \
-                         HAVE_AVW \
+                         HAVE_HDF5 \
                          USE_PMRT \
                          HAVE_CERN_ROOT \
                          "USING_NAMESPACE_STIR=using namespace stir;" \

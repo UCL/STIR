@@ -49,23 +49,6 @@ else()
 	message(STATUS "UPENN libs support disabled.")
 endif()
 
-if (AVW_FOUND)
-  set(HAVE_AVW ON)
-  message(STATUS "AVW library IO added.")
-  include_directories(${AVW_INCLUDE_DIRS})
-else()
-  message(STATUS "AVW IO library not used.")
-endif()
-
-if (RDF_FOUND)
-  set(HAVE_RDF ON)
-  message(STATUS "GE RDF support enabled.")
-  include_directories(${RDF_INCLUDE_DIRS})
-
-else()
-  message(STATUS "RDF support disabled.")
-endif()
-
 if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
