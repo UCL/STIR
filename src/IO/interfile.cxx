@@ -787,11 +787,7 @@ write_basic_interfile_image_header(const string& header_file_name,
 
 
 
-#if !defined(_MSC_VER) || (_MSC_VER > 1300)
 template <class elemT>
-#else
-#define elemT float
-#endif
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
@@ -810,9 +806,6 @@ write_basic_interfile(const string& filename,
 			  scale,
 			  byte_order);
 }
-#if defined(_MSC_VER) && (_MSC_VER <= 1300)
-#undef elemT 
-#endif
 
 template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename,
@@ -1653,8 +1646,6 @@ write_basic_interfile<>(const string&  filename,
 			const float scale,
 			const ByteOrder byte_order);
 
-#if !defined(_MSC_VER) || (_MSC_VER > 1300)
-
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
@@ -1678,6 +1669,5 @@ write_basic_interfile<>(const string& filename,
 		      const NumericType output_type,
 			const float scale,
 			const ByteOrder byte_order);
-#endif
 
 END_NAMESPACE_STIR

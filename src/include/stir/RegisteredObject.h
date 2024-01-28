@@ -87,11 +87,6 @@ START_NAMESPACE_STIR
   for the default key (with a 0 factory). This is inappropriate 
   in some cases.
 
-  \warning old versions of Visual C++ cannot inline the registry() function. As a result,
-  all possible instantiations of the RegisteredObject template have to be
-  defined in RegisteredObject.cxx file(s). You will have link errors if
-  you forgot to do this.
-
   \par Limitation: 
 
   In the previous (including STIR 4.x) version of this hierarchy, ParsingObject wasn't at the
@@ -132,19 +127,12 @@ protected:
   //! The type of the registry
   typedef FactoryRegistry<std::string, RootFactory, interfile_less> RegistryType;
 
-#if defined(_MSC_VER) && _MSC_VER<=1300
-#  define __STIR_REGISTRY_NOT_INLINE
-#endif
-
   //! Static function returning the registry
   /*! \warning This function is non inline when using Visual C++ 6.0 because of
       a compiler limitation. This means that when using this compiler,
       RegisteredObject will need explicit instantiations for all derived classes.
   */
-#ifndef __STIR_REGISTRY_NOT_INLINE
-  inline
-#endif
-    static RegistryType& registry();
+  inline static RegistryType& registry();
 
 };
 

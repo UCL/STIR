@@ -534,8 +534,6 @@ namespace detail
 	(c1[2]==c2[2] && c1[3]<c2[3])));
   }
 
-#if !defined(_MSC_VER) || _MSC_VER>1200
-  // generic code
   template <int num_dimensions, class coordT>
   inline 
   bool 
@@ -547,28 +545,8 @@ namespace detail
       c1[1]<c2[1] || 
       (c1[1]==c2[1] && cut_first_dimension(c1)<cut_first_dimension(c2));
   }
-#else
-  // VC 6.0 gets confused with the overloading, so we do 4 dimensions explicitly here
-  template <class coordT>
-  inline 
-  bool 
-  coordinate_less_than_help(is_not_1d,
-			    const BasicCoordinate<4, coordT>& c1,
-			    const BasicCoordinate<4, coordT>& c2)
-  {
-    return 
-      c1[1]<c2[1] || 
-      (c1[1]==c2[1] && 
-       (c1[2]<c2[2] ||
-	c1[2]==c2[2] && 
-        (c1[3]<c2[3] ||
-         c1[3]==c2[3] && c1[4]<c2[4])));
-  }
-#endif
 
 } // end namespace detail
-
-#if !defined(_MSC_VER) || _MSC_VER>1200
 
 // generic definition
 template <int num_dimensions, class coordT>
@@ -579,33 +557,6 @@ operator<(const BasicCoordinate<num_dimensions, coordT>& c) const
   return detail::coordinate_less_than_help(detail::test_if_1d<num_dimensions>(),
 					   *this, c);
 }
-
-#else
-
-// VC 6.0 cannot compile the above. So we list them one by one (sigh!)
-
-template <class coordT>
-bool
-inline operator<(const BasicCoordinate<1, coordT>& c1, const BasicCoordinate<1, coordT>& c) 
-{
-  return detail::coordinate_less_than_help(detail::is_1d(),
-					   c1, c);
-}
-#define DEFINE_OPERATOR_LESS(num_dimensions) \
-template <class coordT> \
-inline bool \
-operator<(const BasicCoordinate<num_dimensions, coordT>& c1,const BasicCoordinate<num_dimensions, coordT>& c)\
-{ \
-  return detail::coordinate_less_than_help(detail::is_not_1d(), \
-					   c1, c); \
-}
-
-DEFINE_OPERATOR_LESS(2)
-DEFINE_OPERATOR_LESS(3)
-DEFINE_OPERATOR_LESS(4)
-#undef DEFINE_OPERATOR_LESS
-
-#endif
 
 END_NAMESPACE_STIR
 

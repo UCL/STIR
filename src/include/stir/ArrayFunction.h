@@ -212,13 +212,6 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
 #define ActualFunctionObjectPtrIter shared_ptr<ArrayFunctionObject<1,elemT> > const* 
 #endif
 
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-// silly business for deficient compilers (including VC 6.0)
-#define elemT float
-#define FunctionObjectPtrIter ActualFunctionObjectPtrIter
-#endif
-
-
 //! Apply a sequence of 1d array-function objects on every dimension of the input array
 /*! \ingroup Array 
   The sequence of function object pointers is specified by iterators. There must be

@@ -203,17 +203,6 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 				          const VoxelsOnCartesianGrid<float> & image,
  				          const int min_axial_pos_num, const int max_axial_pos_num,
 				          const int min_tangential_pos_num, const int max_tangential_pos_num) const;
-#if defined(_MSC_VER) && _MSC_VER<1310
-/* VC 6.0 (and 7.0 ?) cannot use the normal syntax unfortunately
-   See also http://www.boost.org/more/microsoft_vcpp.html
-
-   So, we forget about the template in this case.
-   Sigh
-*/
-#define STIR_SIDDON_NO_TEMPLATE
-#endif
-
-#ifndef STIR_SIDDON_NO_TEMPLATE
   //! The actual implementation of Siddon's algorithm 
   /*! \return true if the LOR intersected the image, i.e. of Projptr (potentially) changed */ 
   template <int symmetry_type> 
@@ -227,19 +216,6 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 			  const float axial_pos_to_z_offset,
 			  const float norm_factor,
 			  const bool restrict_to_cylindrical_FOV);
-#else
-  static bool
-    proj_Siddon(int symmetry_type,
-                Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-			  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_ptr,
-			  const float cphi, const float sphi, const float delta, 
-			  const float s_in_mm, 
-			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
-			  const int num_planes_per_axial_pos,
-			  const float axial_pos_to_z_offset,
-			  const float norm_factor,
-			  const bool restrict_to_cylindrical_FOV);
-#endif
 
   virtual void set_defaults();
   virtual void initialise_keymap();

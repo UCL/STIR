@@ -571,13 +571,11 @@ ArrayTests::run_tests()
       check_if_zero( test3.sum() - 2*tmp2.sum() - tmp.sum(), "test operator-(float)");
     }
 
-#if !defined(_MSC_VER) || _MSC_VER>1300
-    // VC 6.0 cannot compile this
     in_place_apply_function(test3ter, bind(plus<float>(), std::placeholders::_1, 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat  , test3ter, 
                   "test in_place_apply_function and operator+=(NUMBER)");
-#endif
+
     // size_all with irregular range
     {
       const IndexRange<3> range(Coordinate3D<int>(-1,1,4),Coordinate3D<int>(1,2,6));

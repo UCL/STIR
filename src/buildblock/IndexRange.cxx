@@ -76,23 +76,9 @@ IndexRange<num_dimensions>::get_regular_range(
     is_regular_range = regular_true;
   }
 
-#if defined(_MSC_VER) && _MSC_VER<1200
-  // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
-#elif defined( __GNUC__) && (__GNUC__ == 2 && __GNUC_MINOR__ < 9)
-  // work around gcc 2.8.1 bug. 
-  // It cannot call 'join' (it generates a bad mangled name for the function)
-  // So, we explicitly insert the code here
-  *min.begin() = base_type::get_min_index();
-   copy(lower_dim_min.begin(), lower_dim_min.end(), min.begin()+1);
-  *max.begin() = base_type::get_max_index();
-   copy(lower_dim_max.begin(), lower_dim_max.end(), max.begin()+1);
-#else
-   // lines for good compilers...
   min = join(base_type::get_min_index(), lower_dim_min);
   max = join(base_type::get_max_index(), lower_dim_max);  
-#endif
+
   return true;
 }
 
@@ -147,14 +133,9 @@ IndexRange<num_dimensions>::get_regular_range(
     //is_regular_range = regular_true;
   }
 
-#if defined(_MSC_VER) && _MSC_VER<1200
-  // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
-#else
   min = join(base_type::get_min_index(), lower_dim_min);
   max = join(base_type::get_max_index(), lower_dim_max);
-#endif
+
   return true;
 }
 
@@ -207,14 +188,9 @@ IndexRange<num_dimensions>::get_regular_range(
     is_regular_range = regular_true;
   }
 
-#if defined(_MSC_VER) && _MSC_VER<1200
-  // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
-#else
   min = join(base_type::get_min_index(), lower_dim_min);
   max = join(base_type::get_max_index(), lower_dim_max);
-#endif
+
   return true;
 }
 
