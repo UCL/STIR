@@ -30,7 +30,6 @@ set(${dir_LIB_SOURCES}
   Sinogram.cxx
   RelatedViewgrams.cxx
   scale_sinograms.cxx
-  interpolate_axial_position.cxx
   interpolate_projdata.cxx
   extend_projdata.cxx
   multiply_crystal_factors.cxx
