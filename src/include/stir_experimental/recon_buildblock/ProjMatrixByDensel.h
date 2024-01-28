@@ -148,11 +148,7 @@ private:
   
   typedef unsigned int CacheKey;
 
-#ifndef STIR_NO_NAMESPACES
   typedef std::map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
-#else
-  typedef map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
- #endif
   typedef MapProjMatrixElemsForOneDensel::iterator MapProjMatrixElemsForOneDenselIterator;
   typedef MapProjMatrixElemsForOneDensel::const_iterator const_MapProjMatrixElemsForOneDenselIterator;
  

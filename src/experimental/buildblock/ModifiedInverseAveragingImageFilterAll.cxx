@@ -34,14 +34,12 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::find;
 using std::iostream;
 using std::fstream;
 using std::cerr;
 using std::endl;
-#endif
 
 #include "stir_experimental/local_helping_functions.h"
 #include "stir_experimental/fwd_and_bck_manipulation_for_SAF.h"

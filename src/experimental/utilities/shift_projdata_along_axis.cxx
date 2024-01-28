@@ -24,12 +24,10 @@
 #include <string>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
 using std::min;
 using std::max;
-#endif
 
 USING_NAMESPACE_STIR
 

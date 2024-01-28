@@ -39,10 +39,8 @@
 #include <sstream>
 #endif
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
-#endif
 
 START_NAMESPACE_STIR
 ProjDataInfoBlocksOnCylindricalNoArcCorr::

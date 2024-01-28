@@ -28,12 +28,10 @@
 #include <fstream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::string;
-#endif
 
 USING_NAMESPACE_STIR
 

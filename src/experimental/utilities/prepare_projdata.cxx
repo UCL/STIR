@@ -33,14 +33,12 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
 using std::ifstream;
 using std::cout;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 

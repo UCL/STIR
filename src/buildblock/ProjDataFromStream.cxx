@@ -43,7 +43,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::find;
 using std::ios;
 using std::iostream;
@@ -53,7 +52,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::vector;
-#endif
 
 #ifdef _MSC_VER
 // work-around for compiler bug: VC messes up std namespace

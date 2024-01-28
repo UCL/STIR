@@ -30,14 +30,12 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::pair;
 using std::sort;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 

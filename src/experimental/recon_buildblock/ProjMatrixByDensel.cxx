@@ -20,12 +20,6 @@
 #include "stir_experimental/recon_buildblock/ProjMatrixByDensel.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/Succeeded.h"
-//#include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-//using std::cout;
-//using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR

@@ -27,10 +27,8 @@
 #include "stir/numerics/BSplinesRegularGrid.h"
 #include <iostream>
 #include "stir/shared_ptr.h"
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 START_NAMESPACE_STIR
 
 namespace BSpline {

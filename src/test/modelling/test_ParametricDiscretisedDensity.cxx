@@ -43,13 +43,11 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
 using std::setw;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

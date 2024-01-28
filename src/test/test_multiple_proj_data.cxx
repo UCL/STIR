@@ -35,14 +35,12 @@
 #include <fstream>
 #include <iomanip>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;
 using std::endl;
 using std::min;
 using std::max;
 using std::size_t;
-#endif
 
 START_NAMESPACE_STIR
 

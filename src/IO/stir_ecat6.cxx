@@ -52,13 +52,11 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
 using std::min;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

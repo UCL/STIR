@@ -48,11 +48,9 @@
 #include <fstream>
 #include <cctype>
 #include <boost/format.hpp>
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
 using std::ios;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

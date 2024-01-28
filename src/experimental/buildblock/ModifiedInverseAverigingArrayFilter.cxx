@@ -15,13 +15,11 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::fstream;
 using std::iostream;
 using std::cerr;
 using std::endl;
-#endif
 
 
 

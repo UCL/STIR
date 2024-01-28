@@ -1032,10 +1032,7 @@ bool InterfilePDFSHeader::post_processing()
   {
     is_arccorrected = false;
     for (
-#ifndef STIR_NO_NAMESPACES
-      std::
-#endif
-      vector<string>::const_iterator iter = applied_corrections.begin();
+         auto iter = applied_corrections.begin();
          iter != applied_corrections.end();
          ++iter)
     {

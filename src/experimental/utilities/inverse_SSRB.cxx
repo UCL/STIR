@@ -31,11 +31,9 @@ This is a utility program which uses the stir::inverse_SSRB function , in order 
 #include "stir/error.h"
 #include <iostream>
 #include <string>
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cout;
 using std::cerr;
-#endif
 USING_NAMESPACE_STIR
 using namespace std;
 /***********************************************************/     

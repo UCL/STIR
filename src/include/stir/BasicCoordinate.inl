@@ -405,11 +405,7 @@ coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-#ifdef STIR_NO_NAMESPACES
-  return inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
-#else
   return std::inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
-#endif
 }
 // TODO specialise for complex coordTs if you need them
 template <int num_dimensions, class coordT>

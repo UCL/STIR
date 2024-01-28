@@ -144,11 +144,7 @@ NumericVectorWithOffset<T, NUMBER>::operator+= (const NumericVectorWithOffset &v
   {
     return *this = v;
   }
-#ifndef STIR_NO_NAMESPACES
   this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
-#else
-  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
-#endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] += v.num[i];
   this->check_state();
@@ -167,11 +163,7 @@ NumericVectorWithOffset<T, NUMBER>::operator-= (const NumericVectorWithOffset &v
     *this = v;
     return *this *= -1;
   }
-#ifndef STIR_NO_NAMESPACES
   this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
-#else
-  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
-#endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] -= v.num[i];
   this->check_state();
@@ -191,11 +183,7 @@ NumericVectorWithOffset<T, NUMBER>::operator*= (const NumericVectorWithOffset &v
     *this =v;
     return *this *= 0;
   }
-#ifndef STIR_NO_NAMESPACES
   this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
-#else
-  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
-#endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] *= v.num[i];
   this->check_state();
@@ -215,11 +203,7 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NumericVectorWithOffset &v
     *this =v;
     return *this *= 0;
   }
-#ifndef STIR_NO_NAMESPACES
   this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
-#else
-  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
-#endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] /= v.num[i];
   this->check_state();

@@ -33,11 +33,9 @@
 #include <vector>
 #include <list>
 
-#ifndef STIR_NO_NAMESPACE
 using std::find;
 using std::vector;
 using std::list;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -180,10 +178,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                                                 min_tangential_pos_num, max_tangential_pos_num);
         
         for (
-#ifndef STIR_NO_NAMESPACES
-          std::
-#endif
-            vector<AxTangPosNumbers>::iterator r_ax_poss_iter = r_ax_poss.begin();
+             auto r_ax_poss_iter = r_ax_poss.begin();
           r_ax_poss_iter != r_ax_poss.end();
           ++r_ax_poss_iter)
         {

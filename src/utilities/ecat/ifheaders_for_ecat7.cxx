@@ -55,14 +55,12 @@ only work on systems where this library works properly.
 
 #include <stdarg.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::ios;
 using std::iostream;
 using std::fstream;
 using std::cerr;
 using std::endl;
-#endif
 
 
 USING_NAMESPACE_STIR

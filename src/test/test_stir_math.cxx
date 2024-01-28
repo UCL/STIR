@@ -39,11 +39,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef STIR_NO_NAMESPACE
 using std::generate;
 using std::string;
 using std::cerr;
-#endif
 
 START_NAMESPACE_STIR
 

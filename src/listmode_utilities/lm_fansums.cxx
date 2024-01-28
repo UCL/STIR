@@ -40,7 +40,6 @@
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
@@ -51,7 +50,6 @@ using std::endl;
 using std::min;
 using std::max;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 

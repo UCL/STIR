@@ -24,9 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 

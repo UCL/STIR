@@ -52,10 +52,8 @@
 #include "stir/round.h"
 #include <math.h>
 #include <algorithm>
-#ifndef STIR_NO_NAMESPACE
 using std::min;
 using std::max;
-#endif
 
 START_NAMESPACE_STIR
 template <typename T>

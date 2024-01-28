@@ -47,12 +47,10 @@
 #include "boost/lambda/lambda.hpp"
 #include "stir/unique_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using boost::lambda::_1;
 using boost::lambda::_2;
-#endif
 
 
 START_NAMESPACE_STIR

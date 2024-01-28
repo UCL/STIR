@@ -72,10 +72,8 @@
 #include <list>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cerr;
-#endif
 
 
 START_NAMESPACE_STIR

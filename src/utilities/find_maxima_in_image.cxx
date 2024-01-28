@@ -42,12 +42,10 @@
 #include <algorithm>
 
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cout;
 using std::cerr;
 using std::setw;
-#endif
 
 USING_NAMESPACE_STIR
  

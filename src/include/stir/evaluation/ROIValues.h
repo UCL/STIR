@@ -61,13 +61,8 @@ public:
       integral_of_square += iv.integral_of_square;
 
 
-#ifndef STIR_NO_NAMESPACES
       min_value = std::min(min_value, iv.min_value);
       max_value = std::max(max_value, iv.max_value);
-#else
-      min_value = min(min_value, iv.min_value);
-      max_value = max(max_value, iv.max_value);
-#endif
 
       update();
       return *this;

@@ -151,7 +151,6 @@ This parameter will be removed.
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
@@ -159,7 +158,6 @@ using std::ifstream;
 using std::cout;
 using std::string;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 

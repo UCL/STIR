@@ -27,7 +27,6 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::string;
 using std::cerr;
@@ -36,7 +35,6 @@ using std::sort;
 using std::unique;
 using std::min;
 using std::max;
-#endif
 START_NAMESPACE_STIR
 
 

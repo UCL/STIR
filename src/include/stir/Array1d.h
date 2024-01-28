@@ -318,11 +318,7 @@ Array<1, elemT>::find_max() const
   this->check_state();
   if (this->size() > 0)
   {
-#ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
-#else
-    return *max_element(this->begin(), this->end());
-#endif
   }
   else 
   { 
@@ -338,11 +334,7 @@ Array<1, elemT>::find_min() const
   this->check_state();
   if (this->size() > 0)
   {
-#ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
-#else
-    return *min_element(this->begin(), this->end());
-#endif
   } 
   else 
   {

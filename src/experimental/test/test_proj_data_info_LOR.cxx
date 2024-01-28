@@ -31,10 +31,8 @@
 #include "stir/stream.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
-#endif
 
 #include "stir/LORCoordinates.h"
 #include "stir/geometry/line_distances.h"

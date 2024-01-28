@@ -36,13 +36,8 @@ ProjDataFromStream::get_storage_order() const
 int 
 ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 {
-#ifndef STIR_NO_NAMESPACES
   std::vector<int>::const_iterator iter =
     std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
-#else
-  vector<int>::const_iterator iter =
-    find(segment_sequence.begin(), segment_sequence.end(), segment_num);
-#endif
   // TODO do some proper error handling here
   assert(iter !=  segment_sequence.end());
   return static_cast<int>(iter - segment_sequence.begin());

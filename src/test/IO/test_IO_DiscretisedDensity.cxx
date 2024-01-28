@@ -35,12 +35,10 @@
 
 #include "stir/IO/test/test_IO.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::istream;
-#endif
 
 START_NAMESPACE_STIR
 

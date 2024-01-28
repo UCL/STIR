@@ -36,14 +36,8 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (base_type::begin() == base_type::end())
   {
-#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
-#else
-    // gcc 2.8.1 needs ::fill, otherwise it gets confused with VectorWithOffset::fill
-    ::fill(min.begin(), min.end(), 0);
-    ::fill(max.begin(), max.end(),-1);
-#endif
     return true;
   }
 
@@ -71,13 +65,8 @@ IndexRange<num_dimensions>::get_regular_range(
 	is_regular_range = regular_false;
 	return false;
       }
-#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#else
-	if (!equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
-            !equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#endif
       {
 	is_regular_range = regular_false;
 	return false;
@@ -118,13 +107,8 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (base_type::begin() == base_type::end())
   {
-#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
-#else
-    fill(min,base_type::begin(), min.end(), 0);
-    fill(max,base_type::begin(), max.end(),-1);
-#endif
     return true;
   }
 
@@ -152,13 +136,8 @@ IndexRange<num_dimensions>::get_regular_range(
 	//is_regular_range = regular_false;
 	return false;
       }
-#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#else
-	if (!equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
-            !equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#endif
       {
 	//is_regular_range = regular_false;
 	return false;
@@ -188,13 +167,8 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (base_type::begin() == base_type::end())
   {
-#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
-#else
-    fill(min.begin(), min.end(), 0);
-    fill(max.begin(), max.end(),-1);
-#endif
     return true;
   }
 
@@ -222,13 +196,8 @@ IndexRange<num_dimensions>::get_regular_range(
 	is_regular_range = regular_false;
 	return false;
       }
-#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#else
-	if (!equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
-            !equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
-#endif
       {
 	is_regular_range = regular_false;
 	return false;

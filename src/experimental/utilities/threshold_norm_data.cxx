@@ -28,10 +28,8 @@
 #include <numeric>
 #include <iostream> 
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 
 

@@ -43,7 +43,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::min_element;
 using std::max_element;
 using std::min;
@@ -53,7 +52,6 @@ using std::endl;
 using std::string;
 using std::pair;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 

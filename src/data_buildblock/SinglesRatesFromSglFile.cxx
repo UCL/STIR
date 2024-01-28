@@ -30,11 +30,9 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::streampos;
 using std::ios;
-#endif
 
 
 

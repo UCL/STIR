@@ -23,9 +23,7 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACE
 using std::ifstream;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -40,14 +40,12 @@
 #include "stir/error.h"
 #include <math.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::min_element;
 using std::max_element;
 using std::min;
 using std::max;
 using std::swap;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -37,11 +37,9 @@
 #include <algorithm>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::ostringstream;
 using std::fstream;
-#endif
 
 START_NAMESPACE_STIR
 

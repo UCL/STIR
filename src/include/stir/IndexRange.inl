@@ -79,12 +79,7 @@ IndexRange<num_dimensions>::
   return 
     this->get_min_index() == range2.get_min_index() &&
     this->get_length() == range2.get_length() &&
-#ifndef STIR_NO_NAMESPACES  
-    // "using std::equal" didn't work for VC 6...
     std::equal(this->begin(), this->end(), range2.begin());
-#else
-    equal(this->begin(), this->end(), range2.begin());
-#endif
 }
 
 

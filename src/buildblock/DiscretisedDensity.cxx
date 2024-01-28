@@ -42,25 +42,15 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
-#if 0
-// sadly, gcc 2.95.* does not support local namespaces as used below
-// This is slightly funny as it does work in ProjData.cxx. 
-// Maybe because here it's in a template?
-#   if __GNUC__ == 2 
 #ifdef HAVE_LLN_MATRIX
 USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 USING_NAMESPACE_ECAT6
-#endif
-#endif
-
 #endif
 
 /*! 

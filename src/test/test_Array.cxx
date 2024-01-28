@@ -52,14 +52,12 @@
 #include <fstream>
 #include <sstream>
 #include <boost/format.hpp>
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::ifstream;
 using std::plus;
 using std::bind;
 using std::cerr;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -33,19 +33,9 @@
 //#define STIR_ORIGINAL_ECAT6
 
 #ifndef STIR_ORIGINAL_ECAT6
-#ifdef STIR_NO_NAMESPACES
-// terrible trick to avoid conflict between stir::Sinogram and Sinogram defined in matrix.h
-// when we do have namespaces, the conflict can be resolved by using ::Sinogram
-#define Sinogram CTISinogram
-#else
 #define CTISinogram ::Sinogram
-#endif
 
 #include "matrix.h"
-
-#ifdef STIR_NO_NAMESPACES
-#undef Sinogram
-#endif
 
 #endif // STIR_ORIGINAL_ECAT6
 

@@ -67,7 +67,6 @@
 #include <memory>
 #include <boost/cstdint.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::string;
 using std::ios;
@@ -77,7 +76,6 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using std::copy;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
@@ -275,11 +273,7 @@ static long offset_in_ECAT_file (MatrixFile *mptr, int frame, int plane, int gat
   
   switch (mptr->mhptr->file_type)
   {
-#ifndef STIR_NO_NAMESPACES
   case ::Sinogram:
-#else
-  case CTISinogram:
-#endif
 
     {
       // KT 14/05/2002 added error check. 
@@ -1993,13 +1987,7 @@ update_ECAT7_subheader(MatrixFile *mptr, Scan_subheader& shead,
 		       const MatDir& matdir)
 {
   const int ERROR=-1;
-  if (mptr->mhptr->file_type !=
-#ifndef STIR_NO_NAMESPACES
-      ::Sinogram
-#else
-      CTISinogram
-#endif
-      )
+  if (mptr->mhptr->file_type != ::Sinogram)
     return Succeeded::no;
   return
     mat_write_scan_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,

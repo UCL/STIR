@@ -37,11 +37,9 @@
 #include <sstream>
 #endif
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 using std::string;
-#endif
 
 
 START_NAMESPACE_STIR

@@ -49,11 +49,9 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
 using std::ios;
-#endif
 
 START_NAMESPACE_STIR
 namespace GE {

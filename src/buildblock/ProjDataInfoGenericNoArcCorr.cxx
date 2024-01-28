@@ -41,10 +41,8 @@
 
 #include <boost/static_assert.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
-#endif
 
 START_NAMESPACE_STIR
 ProjDataInfoGenericNoArcCorr::

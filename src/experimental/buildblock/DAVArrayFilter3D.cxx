@@ -24,7 +24,6 @@
 #include <fstream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
@@ -33,7 +32,6 @@ using std::cerr;
 using std::endl;
 using std::sort;
 using std::min_element;
-#endif
 
 
 START_NAMESPACE_STIR

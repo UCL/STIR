@@ -10,8 +10,6 @@
 #ifndef __stir_STIR_MATH_H__
 #define __stir_STIR_MATH_H__
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
 using std::cout;
 using std::endl;
 using std::fstream;
@@ -20,7 +18,6 @@ using std::max;
 using std::min;
 using std::string;
 using std::vector;
-#endif
 
 USING_NAMESPACE_STIR
 

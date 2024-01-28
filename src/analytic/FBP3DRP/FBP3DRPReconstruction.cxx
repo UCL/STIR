@@ -105,12 +105,10 @@
 #include <algorithm>
 using std::min;
 using std::max;
-#ifndef STIR_NO_NAMESPACE
 using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::ios;
-#endif
 
 START_NAMESPACE_STIR
 

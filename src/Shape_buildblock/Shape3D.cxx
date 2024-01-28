@@ -23,10 +23,8 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/info.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 
 // Check the sampled elements of the voxel

@@ -36,7 +36,6 @@
 #include "stir/error.h"
 #include "stir/info.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::pair;
 using std::vector;
@@ -44,7 +43,6 @@ using std::make_pair;
 using std::cerr;
 using std::endl;
 using std::ifstream;
-#endif
 
 START_NAMESPACE_STIR
 

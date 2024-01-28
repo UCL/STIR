@@ -49,14 +49,12 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::cin;
 using std::string;
 using std::list;
-#endif
 
 START_NAMESPACE_STIR
 

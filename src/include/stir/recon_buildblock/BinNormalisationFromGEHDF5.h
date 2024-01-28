@@ -35,9 +35,7 @@
 #include "stir/IO/GEHDF5Wrapper.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 

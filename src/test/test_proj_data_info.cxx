@@ -45,14 +45,12 @@
 #include <math.h>
 #include "stir/CPUTimer.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;
 using std::endl;
 using std::min;
 using std::max;
 using std::size_t;
-#endif
 
 //#define STIR_TOF_DEBUG 1
 

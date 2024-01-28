@@ -29,9 +29,7 @@
 
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::nth_element;
-#endif
 
 START_NAMESPACE_STIR
 

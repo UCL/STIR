@@ -29,14 +29,12 @@
 #error Need HAVE_LLN_MATRIX
 #endif
 #include "boost/static_assert.hpp"
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
 using std::istream;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

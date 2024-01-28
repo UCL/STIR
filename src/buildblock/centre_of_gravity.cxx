@@ -25,10 +25,8 @@
 #include "stir/error.h"
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::min;
 using std::max;
-#endif
 
 
 START_NAMESPACE_STIR

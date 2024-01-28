@@ -44,10 +44,8 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
-#endif
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR

@@ -22,11 +22,9 @@
 #include <iostream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::cout;
-#endif
 
 USING_NAMESPACE_STIR
 

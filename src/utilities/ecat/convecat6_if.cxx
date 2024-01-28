@@ -66,13 +66,11 @@
 #include <algorithm>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::min;
 using std::max;
-#endif
 
 
 

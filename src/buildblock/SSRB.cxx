@@ -30,12 +30,10 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::min;
 using std::max;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
