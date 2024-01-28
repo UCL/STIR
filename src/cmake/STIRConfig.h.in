@@ -63,8 +63,6 @@ namespace stir {
 
 #cmakedefine HAVE_AVW
 
-#cmakedefine HAVE_RDF
-
 #cmakedefine HAVE_HDF5
 
 #cmakedefine HAVE_ITK

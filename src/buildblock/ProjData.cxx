@@ -32,7 +32,6 @@
 #include "stir/Viewgram.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
-#include "stir/utilities.h" // TODO remove (temporary for test GEAdvance)
 // for read_from_file
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/interfile.h"
@@ -43,18 +42,6 @@
 #include "stir/Viewgram.h"
 
 
-#ifndef STIR_USE_GE_IO
-#include "stir/ProjDataGEAdvance.h"
-#else
-#include "stir_experimental/IO/GE/ProjDataVOLPET.h"
-#ifdef HAVE_RDF
-#include "stir_experimental/IO/GE/stir_RDF.h"
-#include "stir_experimental/IO/GE/ProjDataRDF.h"
-#endif
-#endif // STIR_USE_GE_IO
-#ifdef HAVE_IE
-#include "stir_experimental/IO/GE/ProjDataIE.h"
-#endif
 #ifdef HAVE_HDF5
 #include "stir/ProjDataGEHDF5.h"
 #include "stir/IO/GEHDF5Wrapper.h"
@@ -90,9 +77,9 @@ START_NAMESPACE_STIR
 
    Currently supported:
    <ul>
-   <li> GE VOLPET data (via class ProjDataVOLPET)
    <li> Interfile (using  read_interfile_PDFS())
-   <li> ECAT 7 3D sinograms and attenuation files 
+   <li> ECAT 7 3D sinograms and attenuation files
+   >li> GE RDF9 (in HDF5)
    </ul>
 
    Developer's note: ideally the return value would be an stir::unique_ptr.
@@ -118,44 +105,7 @@ read_from_file(const string& filename,
     error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
   const FileSignature file_signature(actual_filename);
-  const char * signature = file_signature.get_signature();
-
-  // GE Advance
-  if (strncmp(signature, "2D3D", 4) == 0)
-  {
-//    if (ask("Read with old code (Y) or new (N)?",false))
-#ifndef STIR_USE_GE_IO 
-      {
-#ifndef NDEBUG
-	info("ProjData::read_from_file trying to read " + filename + " as GE Advance file", 3);
-#endif
-	return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
-      }
-      //else
-#else // use VOLPET
-      {
-#ifndef NDEBUG
-	info("ProjData::read_from_file trying to read " + filename + " as GE VOLPET file", 3);
-#endif
-	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
-	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename, openmode) );
-      }
-#endif // STIR_USE_GE_IO to differentiate between Advance and VOLPET code
-  }
-
-  delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
-
-#ifdef HAVE_IE
-  // GE IE file format 
-  if (GE_IO::is_IE_signature(signature))
-    {
-#ifndef NDEBUG
-      info("ProjData::read_from_file trying to read " + filename + " as GE IE file", 3);
-#endif
-      return shared_ptr<ProjData>( new GE_IO::ProjDataIE(filename) );
-    }
-#endif // HAVE_IE
-      
+  const char * signature = file_signature.get_signature();      
 
 #ifdef HAVE_LLN_MATRIX
   // ECAT 7
@@ -191,19 +141,6 @@ read_from_file(const string& filename,
     if (!is_null_ptr(ptr))
       return ptr;
   }
-
-
-#if defined(STIR_USE_GE_IO) && defined(HAVE_RDF)
-  if (GE_IO::is_RDF_file(actual_filename))
-    {
-#ifndef NDEBUG
-      info("ProjData::read_from_file trying to read " + filename + " as RDF", 3);
-#endif
-      shared_ptr<ProjData> ptr(new GE_IO::ProjDataRDF(filename));
-      if (!is_null_ptr(ptr))
-	return ptr;
-  }
-#endif // RDF
       
 #ifdef HAVE_HDF5
   if (GE::RDF_HDF5::GEHDF5Wrapper::check_GE_signature(actual_filename))

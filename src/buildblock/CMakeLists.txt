@@ -19,7 +19,6 @@ set(${dir_LIB_SOURCES}
   ProjDataInfoSubsetByView.cxx
   ArcCorrection.cxx
   ProjDataFromStream.cxx
-  ProjDataGEAdvance.cxx
   ProjDataInMemory.cxx
   ProjDataInterfile.cxx
   Scanner.cxx

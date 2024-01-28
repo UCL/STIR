@@ -718,13 +718,6 @@ Siemens PET/CT and PET/MR scanners use a file format that is based on the mentio
 proposed Interfile standard but with some variations. We read this since STIR 4.0,
 but do not write it.
 
-\subsubsection{VOLPET sinograms}
-
-The GE VOLPET sinogram format for the GE Advance was supported for reading, but 
-only for data files with a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views.
-This has not been tested in a long time so will be removed in a future version.
-
 \subsubsection{RDF9 data}
 See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
 that use the GE RDF format. We currently support uncompressed listmode,
