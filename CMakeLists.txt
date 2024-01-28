@@ -91,7 +91,6 @@ find_package( Boost 1.36.0 REQUIRED )
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
 option(DISABLE_ITK "disable use of ITK library" OFF)
-option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_HDF5 "disable use of HDF5 libraries" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
@@ -124,10 +123,6 @@ if(NOT DISABLE_CERN_ROOT)
         UseCXX(14)
     endif()
   endif()
-endif()
-
-if(NOT DISABLE_AVW)
-  find_package(AVW)
 endif()
 
 if(NOT DISABLE_HDF5)

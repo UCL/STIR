@@ -262,12 +262,6 @@ STIR can use \url{http://www.itk.org}{ITK}, a large open source library.  Specif
  enables NRRD, MetaIO and Nifti IO, and DICOM reading.
  Use your package manager, including conda or pip, or check the \url{https://itk.org/download/}{installation instructions for ITK}.
 
-\subsubsection{
-Enabling AVW support\label{sec:installAVW}}
-AVW was the library used by the commercial program \url{https://analyzedirect.com/}{Analyze}.
-\textit{AVW support has not been tested since about 2010 and we have no idea of STIR still builds with it.} AVW support will be dropped in STIR 6.0.
-See \ref{sec:convAVW} for usage.
-
 \subsection{
 Building}
 Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
@@ -377,8 +371,6 @@ capabilities of STIR.
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
 See section \ref{sec:ECAT67support}.
-\item AVW\texttrademark{} [deprecated] (a commercial library, probably no longer available)
-via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:installAVW}.
 \item ITK\_DIR, use IO from ITK, see section \ref{sec:installITK}.
 \item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
   If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
@@ -740,11 +732,6 @@ is currently ignored.
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 
 \textbf{Warning} ECAT7 support is no longer tested.
-
-\subsubsection{Image IO using the AVW library}
-\textit{AVW support has not been tested since about 2010.}
-
-See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
@@ -3398,27 +3385,6 @@ wrong thing.
 }
 Allows copying header info between ECAT7 files. Check doxygen, or run without 
 parameters for usage info.
-
-{ \subsubsubsection{conv\_AVW}
-}
-\label{sec:convAVW}
-\textit{AVW support has not been tested since about 2010.}
-
-If you have the \textit{AVW}\texttrademark  library
-\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.
-} installed on your system, the build process should have built \texttt{utilities/conv\_AVW},
-see also \ref{sec:UsingCMake}.
-This utility allows to use the \textit{AVW} library to read an image, and then write it out
-using \textit{STIR} as Interfile.\\
-\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
-on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
-to \textit{STIR}.
-
-It normally should be run as follows:
-\cmdline{conv\_AVW [ --flip\_z ] imagefile}
-
-It will require access to a run-time license for \textit{AVW}.
 
 { \subsubsubsection{conv\_GATE\_projdata\_to\_interfile}
 }
