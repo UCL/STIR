@@ -23,7 +23,7 @@ START_NAMESPACE_STIR
 void ProjMatrixByDensel::
 get_proj_matrix_elems_for_one_densel(
 				     ProjMatrixElemsForOneDensel& probabilities,
-				     const Densel& densel) STIR_MUTABLE_CONST
+				     const Densel& densel) const
 {  
   // set to empty
   probabilities.erase();
@@ -85,7 +85,7 @@ ProjMatrixByDensel::cache_key(const Densel& densel)
 void  
 ProjMatrixByDensel::
 cache_proj_matrix_elems_for_one_densel(
-                                    const ProjMatrixElemsForOneDensel& probabilities) STIR_MUTABLE_CONST
+                                    const ProjMatrixElemsForOneDensel& probabilities) const
 { 
   if ( cache_disabled ) return;
   

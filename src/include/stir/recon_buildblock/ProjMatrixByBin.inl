@@ -47,7 +47,7 @@ ProjMatrixByBin:: get_symmetries_sptr() const
 inline void 
 ProjMatrixByBin::
 get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& probabilities,
-                                  const Bin& bin) STIR_MUTABLE_CONST
+                                  const Bin& bin) const
 {  
   // start_timers(); TODO, can't do this in a const member
   
@@ -115,7 +115,7 @@ get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& probabilities,
 }
 
 void
-ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
+ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
 {
 
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;

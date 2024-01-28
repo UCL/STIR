@@ -116,33 +116,6 @@ IndexRange<num_dimensions>::
   return true;
 }
 
-#ifdef STIR_NO_MUTABLE
-
-template <int num_dimensions>
-bool
-IndexRange<num_dimensions>::
-  is_regular() 
-{
-  switch (is_regular_range)
-  {
-    case regular_true: 
-       return true;       
-    case regular_false:
-       return false;
-    case regular_to_do:
-       {
-	 BasicCoordinate<num_dimensions, int> min;
-	 BasicCoordinate<num_dimensions, int> max;
-	 return
-	   get_regular_range(min,max);
-       }
-  }
-  // although we never get here, VC insists on a return value...
-  // we check anyway
-  assert(false);
-  return true;
-}
-#endif // STIR_NO_MUTABLE
 /***************************************
  1D version
  ***************************************/

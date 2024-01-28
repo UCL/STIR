@@ -278,21 +278,13 @@ public:
   inline T* get_data_ptr();
 
   //! member function for access to the data via a const T*
-#ifndef STIR_NO_MUTABLE
   inline const T * get_const_data_ptr() const;
-#else
-  inline const T * get_const_data_ptr();
-#endif
 
   //! signal end of access to T*
   inline void release_data_ptr();
 
   //! signal end of access to const T*
-#ifndef STIR_NO_MUTABLE
   inline void release_const_data_ptr() const;
-#else
-  inline void release_const_data_ptr();
-#endif
   //@}
 
   //!\name basic iterator support
@@ -397,10 +389,7 @@ private:
   
   //! boolean to test if get_data_ptr is called
   // This variable is declared mutable such that get_const_data_ptr() can change it.
-#ifndef STIR_NO_MUTABLE
-  mutable
-#endif
-  bool pointer_access;
+  mutable bool pointer_access;
   bool _owns_memory_for_data;
 };
 
