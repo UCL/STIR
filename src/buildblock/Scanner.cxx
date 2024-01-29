@@ -41,22 +41,16 @@
 #include "stir/GeometryBlocksOnCylindrical.h"
 #include <iostream>
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::cin;
 using std::string;
 using std::list;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -1477,19 +1471,9 @@ Scanner::parameter_info() const
 
 string Scanner::list_names() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[3000];
-  ostrstream s(str, 3000);
-#else
   std::ostringstream s;
-#endif
 
-#ifdef _MSC_VER
-  // work-around VC bug
-  std::
-#endif
-  list<string>::const_iterator iterator = list_of_names.begin();
+  auto iterator = list_of_names.begin();
   s << *iterator;
   ++iterator;
   while(iterator!=list_of_names.end())
@@ -1687,13 +1671,7 @@ Scanner::get_scanner_from_name(const string& name)
 
 string Scanner:: list_all_names()
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
 
   Type type= E931;
   while (type != Unknown_scanner)

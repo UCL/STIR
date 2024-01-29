@@ -90,28 +90,15 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
 {
   if (!is_null_ptr(binwise_correction)) 
     {
-#if !defined(_MSC_VER) || _MSC_VER>1300
       additive_binwise_correction_viewgrams.reset(
         new RelatedViewgrams<float>
         (binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
-#else
-      RelatedViewgrams<float> tmp(binwise_correction->
-                                  get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num));
-      additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(tmp);
-#endif      
     }
                         
   if (read_from_proj_dat)
     {
-#if !defined(_MSC_VER) || _MSC_VER>1300
       y.reset(new RelatedViewgrams<float>
         (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
-#else
-      // workaround VC++ 6.0 bug
-      RelatedViewgrams<float> tmp(proj_dat_ptr->
-                                  get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num));
-      y = new RelatedViewgrams<float>(tmp);
-#endif        
     }
   else
     {

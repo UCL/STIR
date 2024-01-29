@@ -622,10 +622,7 @@ construct_proj_data(shared_ptr<iostream>& output,
 {
   vector<int> segment_sequence_in_stream(proj_data_info_ptr->get_num_segments());
   { 
-#ifndef STIR_NO_NAMESPACES
-    std:: // explcitly needed by VC
-#endif
-    vector<int>::iterator current_segment_iter =
+    auto current_segment_iter =
       segment_sequence_in_stream.begin();
     for (int segment_num=proj_data_info_ptr->get_min_segment_num();
          segment_num<=proj_data_info_ptr->get_max_segment_num();

@@ -49,7 +49,6 @@
 #include <iostream> 
 #include <iomanip> 
 #include <fstream>
-#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::ofstream;
 using std::ifstream;
@@ -58,7 +57,6 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using std::setw;
-#endif
 
 int main(int argc, char *argv[])
 { 

@@ -27,10 +27,7 @@
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
-
-#if !defined(_MSC_VER) || _MSC_VER>1200
-// VC 6.0 needs ugly work-arounds. We'll put these in the .inl file
-
+ 
 /* \ingroup Array
    \name Functions for writing generic code with indexing of multi-dimensional arrays
    */
@@ -83,8 +80,6 @@ next(BasicCoordinate<num_dimensions, int>& indices,
      const Array<num_dimensions2, T>& a);
 
 //@}
-#endif // end of VC 6.0 conditional
-
 
 END_NAMESPACE_STIR
 

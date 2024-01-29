@@ -50,11 +50,9 @@ This utility programme processes (interfile) sinogram data
 #include <fstream> 
 #include <iostream> 
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
-#endif
 
 
 

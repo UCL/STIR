@@ -50,10 +50,8 @@
 #define NEGATIVE_Z_SHIFT 1
 #define CHANGE_Z_SHIFT 2
 
-#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::ofstream;
-#endif
 
 
 START_NAMESPACE_STIR

@@ -30,10 +30,8 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
-#ifndef STIR_NO_NAMESPACES
 using std::stringstream;
 using std::cerr;
-#endif
 
 START_NAMESPACE_STIR
 

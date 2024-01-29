@@ -60,13 +60,8 @@ post_processing()
   // copy filter_coefficients_for_parsing to filter_coefficients 
   // todo drop any 0s at the start or end
 
-  typename VectorWithOffset< VectorWithOffset<elemT> >::iterator 
-    coefficients_iter = filter_coefficients.begin();
-#ifndef STIR_NO_NAMESPACES
-      std::
-#endif
-  vector< vector<double> >::const_iterator 
-    parsing_iter = filter_coefficients_for_parsing.begin();
+  auto coefficients_iter = filter_coefficients.begin();
+  auto parsing_iter = filter_coefficients_for_parsing.begin();
   for (;
        parsing_iter != filter_coefficients_for_parsing.end();
        ++parsing_iter, ++coefficients_iter)
@@ -82,13 +77,8 @@ post_processing()
       *coefficients_iter = VectorWithOffset<elemT>(min_index, min_index + size - 1);
 
       // can't use std::copy because of cast. sigh.
-      typename VectorWithOffset<elemT>::iterator 
-	coefficients_elem_iter = coefficients_iter->begin();
-#ifndef STIR_NO_NAMESPACES
-      std::
-#endif
-	vector<double>::const_iterator 
-	parsing_elem_iter = parsing_iter->begin();
+      auto coefficients_elem_iter = coefficients_iter->begin();
+      auto parsing_elem_iter = parsing_iter->begin();
       for (;
 	   parsing_elem_iter != parsing_iter->end();
 	   ++parsing_elem_iter, ++coefficients_elem_iter)
@@ -121,13 +111,8 @@ SeparableConvolutionImageFilter(
   // copy filter_coefficients to filter_coefficients_for_parsing such 
   // that get_parameters() works properly
 
-  typename VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
-    coefficients_iter = filter_coefficients.begin();
-#ifndef STIR_NO_NAMESPACES
-      std::
-#endif
-  vector< vector<double> >::iterator 
-    parsing_iter = filter_coefficients_for_parsing.begin();
+  auto coefficients_iter = filter_coefficients.begin();
+  auto parsing_iter = filter_coefficients_for_parsing.begin();
   for (;
        parsing_iter != filter_coefficients_for_parsing.end();
        ++parsing_iter, ++coefficients_iter)

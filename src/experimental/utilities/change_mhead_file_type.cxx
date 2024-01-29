@@ -19,10 +19,8 @@
 
 #include <iostream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 USING_NAMESPACE_STIR
 

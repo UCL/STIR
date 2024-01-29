@@ -42,12 +42,10 @@ limitations under the License.
 #include "stir/error.h"
 #include "stir/Succeeded.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::vector;
-#endif
 
 USING_NAMESPACE_STIR
 

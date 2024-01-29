@@ -50,7 +50,6 @@
 #include <algorithm>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::cout;
 using std::setw;
@@ -59,7 +58,6 @@ using std::endl;
 using std::min;
 using std::max;
 using std::string;
-#endif
 
 int
 main(int argc, char *argv[])

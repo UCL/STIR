@@ -26,14 +26,6 @@ class NumericType;
 template <class T> class NumericInfo;
 template <int num_dimensions, class elemT> class Array;
 
-#if defined(_MSC_VER) && _MSC_VER==1200
-// VC 6.0 cannot compile this when the templates are declared first, 
-// and defined in the .inl
-#  define __STIR_WORKAROUND_TEMPLATES 1
-#endif
-
-#ifndef __STIR_WORKAROUND_TEMPLATES
-
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file.
 
@@ -86,7 +78,6 @@ read_data(IStreamT& s,
 	   Array<num_dimensions,elemT>& data, 
 	   NumericType type, ScaleT& scale,
 	   const ByteOrder byte_order=ByteOrder::native);
-#endif
 
 END_NAMESPACE_STIR
 

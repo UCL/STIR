@@ -25,11 +25,9 @@
 #include "stir/error.h"
 #include <stdio.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::streamsize;
 using std::streampos;
-#endif
 
 START_NAMESPACE_STIR
 

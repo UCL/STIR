@@ -51,13 +51,8 @@ public:
   typedef std::size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
-#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Densel>::iterator iterator;
   typedef std::vector<Densel>::const_iterator const_iterator;
-#else
-  typedef vector<Densel>::iterator iterator;
-  typedef vector<Densel>::const_iterator const_iterator;
-#endif
    //!Default constructor: creates no densels, no symmetries  
   inline  RelatedDensels();
 

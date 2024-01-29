@@ -28,7 +28,7 @@
 #include <vector>
 
 //*************** namespace macros
-#if !defined(STIR_NO_NAMESPACE)
+
 # define START_NAMESPACE_ECAT namespace ecat {
 # define END_NAMESPACE_ECAT }
 # define USING_NAMESPACE_ECAT using namespace ecat;
@@ -40,21 +40,6 @@
 # define START_NAMESPACE_ECAT7 namespace ecat7 {
 # define END_NAMESPACE_ECAT7 }
 # define USING_NAMESPACE_ECAT7 using namespace ecat7;
-
-#else
-
-# define START_NAMESPACE_ECAT 
-# define END_NAMESPACE_ECAT 
-# define USING_NAMESPACE_ECAT 
-
-# define START_NAMESPACE_ECAT6 
-# define END_NAMESPACE_ECAT6 
-# define USING_NAMESPACE_ECAT6 
-
-# define START_NAMESPACE_ECAT7
-# define END_NAMESPACE_ECAT7
-# define USING_NAMESPACE_ECAT7 
-#endif
 
 START_NAMESPACE_STIR
 

@@ -67,10 +67,8 @@
 #include <string.h>
 #include "stir/ProjDataInterfile.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 

@@ -27,10 +27,8 @@
 #include "stir/utilities.h"
 #include "stir/stream.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
-#endif
 
 USING_NAMESPACE_STIR
 

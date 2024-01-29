@@ -103,12 +103,8 @@ public:
   //! comparison
   inline bool operator==(const BasicCoordinate& c) const;
   
-#if !defined(_MSC_VER) || _MSC_VER>1200
   //! less-than (using lexical ordering)
   inline bool operator<(const BasicCoordinate& c) const;
-#else
-  // needs to be a global function to have the overloading to work. sigh.
-#endif
 
   // access to elements
   //! Return value at index \c t (which is 1-based)

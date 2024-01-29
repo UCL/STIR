@@ -28,13 +28,11 @@
 #include <iostream>
 #include <iomanip>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::ifstream;
 using std::istream;
 using std::setw;
-#endif
 
 int main(int argc, char *argv[])
 { 

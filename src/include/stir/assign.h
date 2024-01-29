@@ -43,20 +43,6 @@ START_NAMESPACE_STIR
   lead to surprising conversions.
 */
 //@{
-// TODO hopefully next ifdef is not necessary. Otherwise we need to have more for ints etc
-#if defined(_MSC_VER) && _MSC_VER<=1300
-inline 
-void assign(double& x, const double y)
-{
-  x=y;
-}
-
-static inline 
-void assign(float& x, const float y)
-{
-  x=y;
-}
-#else
 
 template <class T, class T2>
   inline 
@@ -64,7 +50,6 @@ template <class T, class T2>
 {
   x=y;
 }
-#endif
 
 template <class T, class T2>
 inline 

@@ -31,13 +31,7 @@ DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 DiscretisedDensityOnCartesianGrid()
 : DiscretisedDensity<num_dimensions, elemT>(),grid_spacing()
 {
-#ifndef STIR_NO_NAMESPACES
   std::fill(grid_spacing.begin(), grid_spacing.end(), 0.F);
-#else
-  // hopefully your compiler understands this.
-  // It attempts to avoid conflicts with Array::fill
-  ::fill(grid_spacing.begin(), grid_spacing.end(), 0.F);
-#endif
 }
 
 template<int num_dimensions, typename elemT>

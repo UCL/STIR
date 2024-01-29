@@ -26,20 +26,12 @@ namespace BSpline {
   {
     template <class IterT, class constantsT>
     inline 
-#if defined(_MSC_VER) && _MSC_VER<=1300
-    float
-#else
     typename  std::iterator_traits<IterT>::value_type
-#endif
     cplus0(const IterT input_begin_iterator,
            const IterT input_end_iterator,                 
            const constantsT z1, const constantsT precision, const bool periodicity)
     {
-#if defined(_MSC_VER) && _MSC_VER<=1300
-      typedef float out_elemT;
-#else
       typedef typename std::iterator_traits<IterT>::value_type out_elemT;
-#endif
         
       const int input_size = static_cast<int>(input_end_iterator - input_begin_iterator); 
       //        assert(input_size>BSplines_coef_vector.size());
@@ -68,15 +60,7 @@ namespace BSpline {
                 const constantsT z1, const constantsT z2, const constantsT lamda)
   {
 
-#if defined(_MSC_VER) && _MSC_VER<=1300
-    typedef float out_elemT;
-    // typedef float in_elemT;
-    //typedef typename _Val_Type(c_begin_iterator) out_elemT;
-    //typedef typename _Val_Type(c_begin_iterator) in_elemT;
-#else
     typedef typename std::iterator_traits<RandIterOut>::value_type out_elemT;
-    // typedef typename std::iterator_traits<RandIterOut>::value_type in_elemT;
-#endif
                 
     /*          
         cplus(c_end_iterator-c_begin_iterator, 0)

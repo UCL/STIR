@@ -31,12 +31,10 @@
 using std::max;
 using std::min;
 
-#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::fstream;
 using std::cerr;
 using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR

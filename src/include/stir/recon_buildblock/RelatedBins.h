@@ -50,13 +50,8 @@ public:
   typedef std::size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
-#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Bin>::iterator iterator;
   typedef std::vector<Bin>::const_iterator const_iterator;
-#else
-  typedef vector<Bin>::iterator iterator;
-  typedef vector<Bin>::const_iterator const_iterator;
-#endif
    //!Default constructor: creates no bins, no symmetries  
   inline  RelatedBins();
 

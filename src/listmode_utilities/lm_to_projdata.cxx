@@ -24,10 +24,8 @@
 #include "stir/listmode/LmToProjData.h"
 #include "stir/IO/InputFileFormatRegistry.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 USING_NAMESPACE_STIR
 

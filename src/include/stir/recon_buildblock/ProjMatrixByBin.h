@@ -42,13 +42,6 @@
 #include <omp.h>
 #endif
 
-// define a local preprocessor symbol to keep code relatively clean
-#ifdef STIR_NO_MUTABLE
-#define STIR_MUTABLE_CONST
-#else
-#define STIR_MUTABLE_CONST const
-#endif
-
 START_NAMESPACE_STIR
 
 /* TODO 
@@ -120,7 +113,7 @@ public:
   inline void 
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
-       const Bin&) STIR_MUTABLE_CONST;
+       const Bin&) const;
 
 #if 0
   // TODO
@@ -150,7 +143,7 @@ public:
 
   // void reserve_num_elements_in_cache(const std::size_t);
   //! Remove all elements from the cache
-  void clear_cache() STIR_MUTABLE_CONST;
+  void clear_cache() const;
   
 protected:
   shared_ptr<DataSymmetriesForBins> symmetries_sptr;
@@ -211,7 +204,7 @@ protected:
 
   //! The method to store data in the cache.
   void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
-    STIR_MUTABLE_CONST;
+    const;
 
 private:
   
@@ -229,15 +222,11 @@ private:
   typedef MapProjMatrixElemsForOneBin::const_iterator const_MapProjMatrixElemsForOneBinIterator;
  
   //! collection of  ProjMatrixElemsForOneBin (internal cache )   
-#ifndef STIR_NO_MUTABLE
   mutable
-#endif
     VectorWithOffset<VectorWithOffset<MapProjMatrixElemsForOneBin> > cache_collection;
 #ifdef STIR_OPENMP
-#ifndef STIR_NO_MUTABLE
   mutable
-#endif
-  VectorWithOffset<VectorWithOffset<omp_lock_t> > cache_locks;
+    VectorWithOffset<VectorWithOffset<omp_lock_t> > cache_locks;
 #endif
 
   //! create the key for caching
@@ -255,7 +244,7 @@ private:
   float r_sqrt2_gauss_sigma;
 
   //! The function which actually applies the TOF kernel on the LOR.
-  inline void apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST;
+  inline void apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const;
 
 
 
@@ -272,8 +261,6 @@ private:
 END_NAMESPACE_STIR
 
 #include "stir/recon_buildblock/ProjMatrixByBin.inl"
-
-#undef STIR_MUTABLE_CONST
 
 #endif // __ProjMatrixByBin_H__
 

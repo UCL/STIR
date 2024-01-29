@@ -41,11 +41,9 @@ if the files are identical or not.
 #include <numeric>
 #include <stdlib.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
-#endif
 
 
 

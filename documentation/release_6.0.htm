@@ -249,6 +249,14 @@
       </li>
     </ul>
 
+    <h2>New deprecations for future versions</h2>
+    <ul>
+      <li>
+        CMake option <code>STIR_USE_BOOST_SHARED_PTR</code> will be removed. It probably no longer
+        works anyway. Therefore <code>stir::shared_ptr</code> will always be <code>std::shared_ptr</code>.
+      </li>
+    </ul>
+
     <H2>What's new for developers (aside from what should be obvious
       from the above):</H2>
 
@@ -345,6 +353,15 @@
       </li>
     </ul>
 
+    <h3>Code clean-up</h3>
+
+    <ul>
+      <li>
+        Clean-up of various work-arounds such as
+        <code>STIR_NO_NAMESPACES</code>, <code>STIR_NO_MUTABLE</code>, <code>BOOST_NO_TEMPLATE_SPECIALIZATION</code>,
+        <code>BOOST_NO_STRINGSTREAM</code> and various items specifically for VC 6.0.
+      </li>
+    </ul>
 </body>
 
 </html>

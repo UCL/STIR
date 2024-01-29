@@ -28,11 +28,7 @@
 #include <math.h>
 #include "stir/error.h"
 #include <iostream>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 #include <algorithm>
 
 /* Note: #ifdef NRFFT, then the Numerical Recipes version is used (if you have it...) */
@@ -169,13 +165,7 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
 
 std::string RampFilter:: parameter_info() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[1000];
-  ostrstream s(str, 1000);
-#else
   std::ostringstream s;
-#endif  
     s << "RampFilter :="
       << "\nFilter length := "
 #ifdef NRFFT

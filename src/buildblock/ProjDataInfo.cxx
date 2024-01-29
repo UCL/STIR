@@ -51,23 +51,17 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 #include "stir/info.h"
 #include "boost/foreach.hpp"
 #include "boost/format.hpp"
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::vector;
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::equal;
-#endif
 
 START_NAMESPACE_STIR
 

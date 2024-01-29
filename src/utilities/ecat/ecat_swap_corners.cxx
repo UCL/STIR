@@ -102,13 +102,11 @@
 #include "stir/error.h"
 #include <iostream>
 #include <algorithm>
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::min;
 using std::max;
 using std::swap;
-#endif
 
 USING_NAMESPACE_STIR
 

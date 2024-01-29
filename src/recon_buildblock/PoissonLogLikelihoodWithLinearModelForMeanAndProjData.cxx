@@ -70,12 +70,10 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::pair;
 using std::ends;
 using std::max;
-#endif
 
 
 START_NAMESPACE_STIR

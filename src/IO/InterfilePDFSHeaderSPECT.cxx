@@ -23,12 +23,10 @@
 #include <functional>
 #include "stir/warning.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::pair;
 using std::sort;
 using std::cerr;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -29,29 +29,12 @@
 START_NAMESPACE_STIR
 
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename T>
 struct NormSquared<std::complex<T> >
 {
   double operator()(const std::complex<T>& x) const
   { return square(x.real())+ square(x.imag()); }
 };
-
-#else //  BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
-// handle float and double separately. (sigh)
-#define INSTANTIATE_NormSquared(T)                              \
-  template <>                                                    \
-  struct NormSquared<std::complex<T> >                          \
-{                                                                \
-  double operator()(const std::complex<T>& x) const              \
-  { return square(x.real())+ square(x.imag()); }                 \
-};
-INSTANTIATE_NormSquared(float)
-INSTANTIATE_NormSquared(double)
-#undef INSTANTIATE_NormSquared
-#endif
-
 
 template <class Iter>
 double norm_squared (Iter begin, Iter end)

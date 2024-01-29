@@ -38,21 +38,15 @@
 #include <memory>
 #include <iostream>
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 #include <algorithm>
 #include "boost/lambda/lambda.hpp"
 #include "stir/unique_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using boost::lambda::_1;
 using boost::lambda::_2;
-#endif
 
 
 START_NAMESPACE_STIR
@@ -188,12 +182,7 @@ method_info() const
   
   // TODO add prior name?
   
-#ifdef BOOST_NO_STRINGSTREAM
-  char str[10000];
-  ostrstream s(str, 10000);
-#else
   std::ostringstream s;
-#endif
   
   // if(inter_update_filter_interval>0) s<<"IUF-";
   if (!this->objective_function_sptr->prior_is_zero())

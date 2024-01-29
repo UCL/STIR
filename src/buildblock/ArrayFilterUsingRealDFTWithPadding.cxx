@@ -43,7 +43,6 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filt
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
 }
 
-#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, 
@@ -52,7 +51,6 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions,
   if (set_kernel_in_frequency_space(kernel_in_frequency_space) == Succeeded::no) 
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
 }
-#endif
 
 template <int num_dimensions, typename elemT>
 Succeeded

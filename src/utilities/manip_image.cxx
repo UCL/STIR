@@ -39,14 +39,12 @@
 #include <numeric>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::ofstream;
 using std::ios;
 using std::cerr;
 using std::endl;
 using std::swap;
-#endif
 
 USING_NAMESPACE_STIR
 

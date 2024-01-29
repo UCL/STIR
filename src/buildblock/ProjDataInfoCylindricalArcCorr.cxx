@@ -31,17 +31,11 @@
 #include "stir/Bin.h"
 #include "stir/round.h"
 #include "stir/LORCoordinates.h"
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 using std::string;
-#endif
 
 
 START_NAMESPACE_STIR
@@ -102,13 +96,8 @@ string
 ProjDataInfoCylindricalArcCorr::parameter_info()  const
 {
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[50000];
-  ostrstream s(str, 50000);
-#else
   std::ostringstream s;
-#endif  
+
   s << "ProjDataInfoCylindricalArcCorr := \n";
   s << ProjDataInfoCylindrical::parameter_info();
   s << "tangential sampling := " << get_tangential_sampling() << endl;

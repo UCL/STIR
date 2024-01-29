@@ -30,10 +30,8 @@
 #include <iostream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>

@@ -40,13 +40,11 @@
 #include <list>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
 using std::iostream;
 using std::list;
 using std::find;
-#endif
 
 
 START_NAMESPACE_STIR

@@ -131,7 +131,6 @@
 #include <functional>
 #include <algorithm>
 #include <memory>
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -141,7 +140,6 @@ using std::max;
 using std::min;
 using std::string;
 using std::vector;
-#endif
 
 
 USING_NAMESPACE_STIR

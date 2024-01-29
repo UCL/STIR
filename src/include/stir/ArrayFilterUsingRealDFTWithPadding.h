@@ -23,14 +23,6 @@
 #include "stir/IndexRange.h"
 #include <complex>
 
-#if defined(_MSC_VER) && _MSC_VER<=1200
-/* VC 6.0 cannot overload the real and complex constructors
-   I just disable the complex version.
-   */
-#define __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
-
-#endif
-
 START_NAMESPACE_STIR
 class Succeeded;
 template <int num_dimensions, typename elemT> class Array;
@@ -64,14 +56,12 @@ public:
   */      
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filter_kernel);
 
-#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
   //! Construct the filter given the complex kernel coefficients
   /*! \see set_kernel(const Array<num_dimensions, std::complex<elemT> >&)
     \warning Will call error() when sizes are not appropriate.
     \warning This function is disabled for VC 6.0 because of compiler limitations
   */
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, std::complex<elemT> >& kernel_in_frequency_space);
-#endif
 
   //! set the real kernel coefficients
   /*

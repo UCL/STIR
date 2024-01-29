@@ -27,14 +27,11 @@
  This include file defines a few macros and en/disables pragmas
  specific to Microsoft Visual C++.
 
- It is included by sitr/common.h. You should never include it directly.
+ It is included by stir/common.h. You should never include it directly.
 */
 
 #if defined(_MSC_VER) && _MSC_VER<=1300
-// do this only up to VC 7.0
-#define STIR_NO_COVARIANT_RETURN_TYPES
-#define STIR_SPEED_UP_STD_COPY
-#define STIR_ENABLE_FOR_SCOPE_WORKAROUND
+#error Compiler no longer supported
 #endif
 
 #if defined(_MSC_VER)
