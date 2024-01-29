@@ -51,11 +51,7 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 #include "stir/info.h"
 #include "boost/foreach.hpp"
 #include "boost/format.hpp"

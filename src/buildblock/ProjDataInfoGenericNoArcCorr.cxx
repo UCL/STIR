@@ -33,11 +33,7 @@
 #include <iostream>
 #include <fstream>
 
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include <boost/static_assert.hpp>
 
@@ -111,13 +107,8 @@ std::string
 ProjDataInfoGenericNoArcCorr::parameter_info()  const
 {
 
- #ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[50000];
-  ostrstream s(str, 50000);
- #else
   std::ostringstream s;
- #endif
+
   s << "ProjDataInfoGenericNoArcCorr := \n";
   s << ProjDataInfoGeneric::parameter_info();
   s << "End :=\n";

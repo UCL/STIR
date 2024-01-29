@@ -960,24 +960,12 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
         memory = (char *)read_stream_in_memory(input, file_size);
       }
 
-#ifdef BOOST_NO_STRINGSTREAM
-      // This is the old implementation of the strstream class.
-      // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
-      //strstream in_stream(memory, file_size, ios::in | ios::binary);
-      // Reason: in_stream contains an internal strstreambuf which is
-      // initialised as buffer(memory, file_size, memory), which prevents
-      // reading from it.
-
-      strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
-      p_in_stream.reset(new iostream(buffer));
-#else
       // TODO this does allocate and copy 2 times
           // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
       p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)),
                                            open_mode | ios::binary));
 
       delete[] memory;
-#endif
 
     } // else 'on_disk'
 

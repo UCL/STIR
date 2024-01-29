@@ -19,24 +19,15 @@
 #include "stir/date_time_functions.h"
 #include <iomanip>
 
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 START_NAMESPACE_STIR
 
 std::string
 ExamInfo::parameter_info() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
+
   s << "Modality: " << this->imaging_modality.get_name() << '\n';
   s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
   s << "Radionuclide Parameters:\n" << this->radionuclide.parameter_info() << '\n';

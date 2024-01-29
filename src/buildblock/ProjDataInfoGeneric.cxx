@@ -30,11 +30,7 @@
 #include "stir/ProjDataInfoGeneric.h"
 #include "stir/LORCoordinates.h"
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include "stir/round.h"
 #include "stir/error.h"
@@ -121,13 +117,7 @@ std::string
 ProjDataInfoGeneric::parameter_info()  const
 {
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif
   s << ProjDataInfo::parameter_info();
   // TODOBLOCK Cylindrical has the following which doesn't make sense for Generic, so repeat code
   //s << "Azimuthal angle increment (deg):   " << get_azimuthal_angle_sampling()*180/_PI << '\n';

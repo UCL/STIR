@@ -39,23 +39,14 @@
 #endif
 
 #include <math.h>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 START_NAMESPACE_STIR
 
 std::string ColsherFilter::parameter_info() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[2000];
-  ostrstream s(str, 2000);
-#else
   std::ostringstream s;
-#endif  
+
     s << "\nColsherFilter Parameters :="
 #ifdef NRFFT
       << "\nFilter height := "<< height

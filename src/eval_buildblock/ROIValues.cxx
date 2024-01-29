@@ -23,12 +23,7 @@
 #include "stir/evaluation/ROIValues.h"
 #include "stir/NumericInfo.h"
 #include <math.h>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
-
 
 using std::endl;
 using std::ends;
@@ -74,13 +69,7 @@ void ROIValues::update()
 
 std::string ROIValues::report() const
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[3000];
-  ostrstream s(str, 3000);
-#else
   std::ostringstream s;
-#endif
   s << " Volume of ROI              = " << roi_volume << endl;
   s << " Integral of density        = " << integral << endl;
   s << " Integral of square density = " << integral_of_square << endl;

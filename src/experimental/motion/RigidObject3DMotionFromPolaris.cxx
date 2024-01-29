@@ -32,11 +32,7 @@
 #include <fstream>
 #include <ctime>
 
-#ifndef BOOST_NO_STRINGSTREAM
 #include <sstream>
-#else
-#include <strstream>
-#endif
 
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; using ::tm; using ::localtime; }
@@ -894,13 +890,8 @@ bool RigidObject3DMotionFromPolaris::post_processing()
 	}
       if (std::fabs(norm(move_from_scanner_coords.get_quaternion())-1)>.01)
       {
-#ifdef BOOST_NO_STRINGSTREAM
-	// dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-	char str[100000];
-	ostrstream s(str, 100000);
-#else
 	std::ostringstream s;
-#endif
+
 	s << move_from_scanner_coords;
 	warning("Error reading transformation_from_scanner_coordinates_filename:\n'%s'"
 		"\nvalue for 'transformation' keyword is invalid:"

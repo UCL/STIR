@@ -17,11 +17,7 @@
 */
 #include <iostream>
 #include "stir/error.h"
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 START_NAMESPACE_STIR
 /*!
@@ -47,11 +43,7 @@ ask_num (const std::string& str,
          << "[" << minimum_value << "," << maximum_value 
 	 << " D:" << default_value << "]: ";
     std::getline(std::cin, input);
-#ifdef BOOST_NO_STRINGSTREAM
-    istrstream ss(input.c_str());
-#else
     std::istringstream ss(input.c_str());
-#endif
     
     NUMBER value = default_value;
     ss >> value;

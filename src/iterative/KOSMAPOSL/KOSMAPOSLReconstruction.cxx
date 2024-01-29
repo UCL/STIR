@@ -59,11 +59,7 @@
 #endif
 #include "stir/num_threads.h"
 
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include "stir/unique_ptr.h"
 #include <algorithm>
