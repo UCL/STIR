@@ -31,10 +31,8 @@
 #include <iostream>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR
@@ -117,19 +115,11 @@ coordinateTests::run_tests()
 
     // basic iterator tests
     { 
-#ifndef STIR_NO_NAMESPACES
       float *p=std::find(b.begin(), b.end(), -3);
-#else
-      float *p=find(b.begin(), b.end(), -3);
-#endif
       check_if_zero(p - b.begin() - 1, "iterator test");
       BasicCoordinate<3, float> b_sorted;
       b_sorted[1]=-3;b_sorted[2]=-1;b_sorted[3]=5;
-#ifndef STIR_NO_NAMESPACES
       std::sort(b.begin(), b.end()); 
-#else
-      sort(b.begin(), b.end()); 
-#endif
       check_if_zero(norm(b-b_sorted), "testing iterators via STL sort");
     }
   }

@@ -33,9 +33,7 @@
 #include "stir/IO/stir_ecat_common.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

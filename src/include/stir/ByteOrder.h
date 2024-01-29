@@ -78,11 +78,7 @@ class revert_region
 public:
   inline static void revert(unsigned char* ptr)
   {
-#ifndef STIR_NO_NAMESPACES
     std::swap(ptr[0], ptr[size - 1]);
-#else
-    swap(ptr[0], ptr[size - 1]);
-#endif
     revert_region<size - 2>::revert(ptr + 1);
   }
 };

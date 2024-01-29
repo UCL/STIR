@@ -44,13 +44,11 @@ To copy a subheader (but keeping essential info)
 #include <stdio.h>
 #include <errno.h>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::cout;
 using std::string;
 using std::ostream;
-#endif
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT

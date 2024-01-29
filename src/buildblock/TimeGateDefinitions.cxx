@@ -22,7 +22,6 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::make_pair;
 using std::cerr;
 using std::endl;
@@ -30,7 +29,6 @@ using std::ifstream;
 using std::string;
 using std::pair;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 

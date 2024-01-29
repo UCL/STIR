@@ -69,11 +69,9 @@
 #include <fstream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
-#endif
 
 
 START_NAMESPACE_STIR

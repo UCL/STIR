@@ -24,13 +24,11 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
 using std::cerr;
 using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR

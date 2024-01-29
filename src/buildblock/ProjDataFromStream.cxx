@@ -43,8 +43,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::find;
 using std::ios;
 using std::iostream;
 using std::streamoff;
@@ -53,14 +51,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::vector;
-#endif
 
-#ifdef _MSC_VER
-// work-around for compiler bug: VC messes up std namespace
-#define FIND std::find
-#else
-#define FIND find
-#endif
 
 START_NAMESPACE_STIR
 //---------------------------------------------------------
@@ -433,7 +424,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
       error("ProjDataFromStream::get_offset: timing_num out of range : %d", this_bin.timing_pos_num());
 
     const int index =
-            static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
+            static_cast<int>(std::find(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
                              segment_sequence.begin());
 
     streamoff num_axial_pos_offset = 0;
@@ -455,7 +446,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
         if (proj_data_info_sptr->get_num_tof_poss() > 1)
           {
             // The timing offset will be added to the segment offset to minimise the changes
-            const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
+            const int timing_index = static_cast<int>(std::find(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
                                                       timing_poss_sequence.begin());
 
             assert(offset_3d_data > 0);
@@ -487,7 +478,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
         if (proj_data_info_sptr->get_num_tof_poss() > 1)
           {
             // The timing offset will be added to the segment offset. This approach we minimise the changes
-            const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
+            const int timing_index = static_cast<int>(std::find(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
                                                       timing_poss_sequence.begin());
 
             assert(offset_3d_data > 0);
@@ -962,24 +953,12 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
         memory = (char *)read_stream_in_memory(input, file_size);
       }
 
-#ifdef BOOST_NO_STRINGSTREAM
-      // This is the old implementation of the strstream class.
-      // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
-      //strstream in_stream(memory, file_size, ios::in | ios::binary);
-      // Reason: in_stream contains an internal strstreambuf which is
-      // initialised as buffer(memory, file_size, memory), which prevents
-      // reading from it.
-
-      strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
-      p_in_stream.reset(new iostream(buffer));
-#else
       // TODO this does allocate and copy 2 times
           // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
       p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)),
                                            open_mode | ios::binary));
 
       delete[] memory;
-#endif
 
     } // else 'on_disk'
 

@@ -260,12 +260,7 @@ namespace BSpline {
     }
   };
 
-#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-#define T float
-  template <>
-#else
   template <typename T,int num_dimensions2>
-#endif
   struct 
   compute_BSplines_value<1, num_dimensions2,T>
   {
@@ -281,9 +276,6 @@ namespace BSpline {
                            );
     }
   };
-#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-#undef T
-#endif                  
 
   template <int num_dimensions, int num_dimensions2, typename T>
   struct 
@@ -310,12 +302,7 @@ namespace BSpline {
     }
   };
 
-#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-#define T float
-  template <>
-#else
   template <int num_dimensions2,typename T>
-#endif
   struct 
   compute_BSplines_gradient<1,num_dimensions2,T>
   {
@@ -335,10 +322,6 @@ namespace BSpline {
       return result;
     }
   };
-#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-#undef T
-#endif                  
-
 
 
 } // end of namespace detail    

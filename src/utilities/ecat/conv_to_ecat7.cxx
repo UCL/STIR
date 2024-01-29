@@ -50,12 +50,10 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 #include <string>
 #include <boost/format.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::vector;
 using std::string;
-#endif
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT

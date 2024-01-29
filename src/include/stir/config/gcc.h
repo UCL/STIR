@@ -31,10 +31,6 @@
 */
 
 #if defined __GNUC__
-# if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define STIR_NO_NAMESPACES
-#  define STIR_NO_AUTO_PTR
-# endif
 #endif
 
 #endif 

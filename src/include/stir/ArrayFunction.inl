@@ -38,7 +38,6 @@ START_NAMESPACE_STIR
 // element wise and in place numeric functions
 //----------------------------------------------------------------------
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>&
 in_place_log(Array<1,elemT>& v)  
@@ -47,17 +46,6 @@ in_place_log(Array<1,elemT>& v)
     v[i] = std::log(v[i]); 
   return v; 
 }
-
-#else
-inline Array<1,float>& 
-in_place_log(Array<1,float>& v)  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    v[i] = std::log(v[i]); 
-  return v; 
-}
-#endif
-
 
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
@@ -68,7 +56,6 @@ in_place_log(Array<num_dimensions, elemT>& v)
   return v; 
 }
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
 in_place_exp(Array<1,elemT>& v)  
@@ -77,15 +64,6 @@ in_place_exp(Array<1,elemT>& v)
     v[i] = std::exp(v[i]); 
   return v; 
 }
-#else
-inline Array<1,float>& 
-in_place_exp(Array<1,float>& v)  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    v[i] = std::exp(v[i]); 
-  return v; 
-}
-#endif
 
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
@@ -96,7 +74,6 @@ in_place_exp(Array<num_dimensions, elemT>& v)
   return v; 
 }
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
 in_place_abs(Array<1,elemT>& v)  
@@ -106,17 +83,6 @@ in_place_abs(Array<1,elemT>& v)
       v[i] = -v[i];
   return v; 
 }
-#else
-inline Array<1,float>& 
-in_place_abs(Array<1,float>& v)  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    if (v[i] < 0)
-      v[i] = -v[i];
-  return v; 
-}
-#endif
-
 
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
@@ -231,17 +197,7 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
     
 }
 
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-// silly business for deficient compilers (including VC 6.0)
-#define elemT float
-#define FunctionObjectPtrIter ActualFunctionObjectPtrIter
-#endif
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <int num_dim>
-#else
 template <int num_dim, typename elemT, typename FunctionObjectPtrIter> 
-#endif
 inline void 
 in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array, 
                                              FunctionObjectPtrIter start, 
@@ -256,9 +212,7 @@ in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array,
     in_place_apply_array_functions_on_each_index(*restiter, start, stop);
 }
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename elemT, typename FunctionObjectPtrIter> 
-#endif
 inline void 
 in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObjectPtrIter start, FunctionObjectPtrIter stop)
 {
@@ -267,7 +221,6 @@ in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObj
 }
 
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <int num_dim, typename elemT, typename FunctionObjectPtrIter> 
 inline void 
 apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array, 
@@ -291,14 +244,9 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
   apply_array_function_on_1st_index(out_array, tmp_out_array, *start);
 
 }
-#endif
 
 // specialisation that uses ArrayFunctionObject::is_trivial etc
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <int num_dim>
-#else
 template <int num_dim, typename elemT> 
-#endif
 inline void 
 apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array, 
                                     const Array<num_dim, elemT>& in_array, 
@@ -350,10 +298,8 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
 
 }
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 // has to be here to get general 1D specialisation to compile
 template <typename elemT>
-#endif
 inline void 
 apply_array_functions_on_each_index(Array<1, elemT>& out_array, 
                                     const Array<1, elemT>& in_array, 
@@ -365,7 +311,6 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 }
 
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename elemT, typename FunctionObjectPtrIter> 
 inline void 
 apply_array_functions_on_each_index(Array<1, elemT>& out_array, 
@@ -375,13 +320,6 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
   assert(start+1 == stop);
   (**start)(out_array, in_array);
 }
-#endif
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT
-#undef FunctionObjectPtrIter
-#endif
-
 
 
 /******************* functions that copy arrays using transformed indices *****/

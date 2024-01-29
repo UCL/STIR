@@ -26,12 +26,10 @@
 #include "stir/IO/interfile.h"
 #include "stir/IO/OutputFileFormat.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::cerr;
 using std::istringstream;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 

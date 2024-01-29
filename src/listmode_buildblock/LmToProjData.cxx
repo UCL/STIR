@@ -84,7 +84,6 @@ FRAME_BASED_DT_CORR:
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::fstream;
 using std::ifstream;
@@ -99,7 +98,6 @@ using std::min;
 using std::max;
 using std::vector;
 using std::pair;
-#endif
 
 START_NAMESPACE_STIR
 

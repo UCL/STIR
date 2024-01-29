@@ -23,7 +23,6 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::iostream;
@@ -35,7 +34,6 @@ using std::cerr;
 using std::endl;
 using std::ios;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -461,11 +459,7 @@ void * read_stream_in_memory(istream& input, streamsize& file_size)
     while( to_read != 0)
       {
 	const streamsize this_read_size = 
-#ifndef STIR_NO_NAMESPACES
 	  std::min(to_read, chunk_size);
-#else
-	  min(to_read, chunk_size);
-#endif
 	input.read(current_location, this_read_size);
 	if (!input)
 	{ error("Error after reading from stream");  }

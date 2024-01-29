@@ -227,11 +227,7 @@ Array<num_dimensions, elemT>::find_min() const
     elemT minval= this->num[this->get_min_index()].find_min();
     for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
     {
-#ifndef STIR_NO_NAMESPACES
       minval = std::min(this->num[i].find_min(), minval);
-#else
-      minval = min(this->num[i].find_min(), minval);
-#endif
     }
     return minval;
   } 
@@ -579,11 +575,7 @@ Array<1, elemT>::find_max() const
   this->check_state();
   if (this->size() > 0)
   {
-#ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
-#else
-    return *max_element(this->begin(), this->end());
-#endif
   }
   else 
   { 
@@ -601,11 +593,7 @@ Array<1, elemT>::find_min() const
   this->check_state();
   if (this->size() > 0)
   {
-#ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
-#else
-    return *min_element(this->begin(), this->end());
-#endif
   } 
   else 
   {

@@ -186,10 +186,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 						    min_tangential_pos_num, max_tangential_pos_num);
     
 	    for (
-#ifndef STIR_NO_NAMESPACES
-		 std::
-#endif
-		   vector<AxTangPosNumbers>::const_iterator r_ax_tang_poss_iter = related_ax_tang_poss.begin();
+                 auto r_ax_tang_poss_iter = related_ax_tang_poss.begin();
 		 r_ax_tang_poss_iter != related_ax_tang_poss.end();
 		 ++r_ax_tang_poss_iter)
 	      {

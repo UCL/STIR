@@ -37,9 +37,7 @@
 //#include <iostream>
 //#include "stir/stream.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::copy;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -143,12 +141,7 @@ Succeeded ProjMatrixElemsForOneBin::check_state() const
 
 void ProjMatrixElemsForOneBin::sort()
 {
-  // need explicit std:: here to resolve possible name conflict
-  // this might give you trouble if your compiler does not support namespaces
-#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
-  std::
-#endif                                           
-  sort(begin(), end(), value_type::coordinates_less);
+  std::sort(begin(), end(), value_type::coordinates_less);
 }
 
 

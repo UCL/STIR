@@ -34,12 +34,10 @@
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::vector;
-#endif
 
 
 

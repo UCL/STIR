@@ -38,9 +38,7 @@ limitations under the License.
 #include "stir/ProjDataInfo.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 

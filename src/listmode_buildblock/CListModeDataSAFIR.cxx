@@ -42,12 +42,10 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/listmode/CListModeDataSAFIR.h"
 #include "stir/listmode/CListRecordSAFIR.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::fstream;
 using std::ifstream;
 using std::istream;
-#endif
 
 START_NAMESPACE_STIR;
 

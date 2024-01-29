@@ -74,12 +74,6 @@ if (HAVE_HDF5)
  )
 endif()
 
-if(AVW_FOUND)
-  list(APPEND ${dir_LIB_SOURCES}
-    stir_AVW.cxx
-  )
-endif()
-
 include(stir_lib_target)
 
 if (LLN_FOUND)
@@ -97,10 +91,6 @@ endif()
 
 if (HAVE_HDF5)
   target_link_libraries(IO PUBLIC ${HDF5_CXX_LIBRARIES})
-endif()
-
-if (AVW_FOUND)
-  target_link_libraries(IO PUBLIC ${AVW_LIBRARIES})
 endif()
 
 if (HAVE_ITK)

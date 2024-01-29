@@ -176,7 +176,6 @@ void
       }
 }
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 // specialisation for equal Iterator types
 // In fact, we could do better and test for boost::iterator_value<InIteratorT>::type
 // etc, but that requires some template trickery
@@ -189,7 +188,6 @@ void
   scale_factor = scaleT(1);
   std::copy(in_begin, in_end, out_begin);
 }
-#endif
 
 
 END_NAMESPACE_STIR

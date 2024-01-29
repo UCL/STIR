@@ -16,9 +16,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 

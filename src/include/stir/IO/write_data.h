@@ -25,25 +25,7 @@ class NumericType;
 template <class T> class NumericInfo;
 template <int num_dimensions, class elemT> class Array;
 
-#if defined(_MSC_VER) && _MSC_VER==1200
-// VC 6.0 cannot compile this when the templates are declared first, 
-// and defined in the .inl
-#  define __STIR_WORKAROUND_TEMPLATES 1
-#endif
 
-
-/*
-   If your still compiler cannot handle this code, you can try to put
-
-#  define __STIR_WORKAROUND_TEMPLATES 2
-
-   This enables a horrible work-around where the functions are 
-   not templated in terms of num_dimensions. Instead, some 
-   preprocessor trickery is used.
-   See the end of this file and write_data.inl for more info.
-*/
-
-#ifndef __STIR_WORKAROUND_TEMPLATES
 /*! \ingroup Array_IO
   \brief Write the data of an Array to file.
 
@@ -143,36 +125,11 @@ write_data(OStreamT& s,
 	   const ByteOrder byte_order=ByteOrder::native,
 	   const bool can_corrupt_data=false);
 
-#endif //__STIR_WORKAROUND_TEMPLATES
-
 
 
 END_NAMESPACE_STIR
 
 
-#if !defined(__STIR_WORKAROUND_TEMPLATES) || __STIR_WORKAROUND_TEMPLATES<2
-
 #include "stir/IO/write_data.inl"
-
-#else
-
-#define num_dimensions 1
-#include "stir/IO/write_data.inl"
-#undef num_dimensions
-#define num_dimensions 2
-#include "stir/IO/write_data.inl"
-#undef num_dimensions
-#define num_dimensions 3
-#include "stir/IO/write_data.inl"
-#undef num_dimensions
-//#define num_dimensions 4
-//#include "stir/IO/write_data.inl"
-//#undef num_dimensions
-
-#endif
-
-#ifdef __STIR_WORKAROUND_TEMPLATES
-#  undef __STIR_WORKAROUND_TEMPLATES
-#endif
 
 #endif

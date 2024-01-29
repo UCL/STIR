@@ -49,9 +49,7 @@
 #include <list>
 #include <algorithm>  
 #include <string>
-#ifndef STIR_NO_NAMESPACES
 using std::setw;
-#endif
 
 /***********************************************************/     
 int main(int argc, char *argv[])                                  

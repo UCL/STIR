@@ -31,10 +31,8 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #endif
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 //#define DO_XY_SWAP
 

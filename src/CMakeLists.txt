@@ -49,23 +49,6 @@ else()
 	message(STATUS "UPENN libs support disabled.")
 endif()
 
-if (AVW_FOUND)
-  set(HAVE_AVW ON)
-  message(STATUS "AVW library IO added.")
-  include_directories(${AVW_INCLUDE_DIRS})
-else()
-  message(STATUS "AVW IO library not used.")
-endif()
-
-if (RDF_FOUND)
-  set(HAVE_RDF ON)
-  message(STATUS "GE RDF support enabled.")
-  include_directories(${RDF_INCLUDE_DIRS})
-
-else()
-  message(STATUS "RDF support disabled.")
-endif()
-
 if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
@@ -153,14 +136,7 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.9.0") 
-    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
-  else()
-    message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
-    # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
-    # See https://gitlab.kitware.com/cmake/cmake/issues/15392
-    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
-  endif()
+  set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
 endif()
 
 #### Flags for compatibility between different systems
@@ -179,15 +155,9 @@ check_function_exists(getopt HAVE_SYSTEM_GETOPT)
 # we have to do this ourselves.
 # Finally, we need to cope with the case where a user passes -std=cxx11 by hand to CMAKE_CXX_FLAGS.
 set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
-if (CMAKE_VERSION VERSION_LESS 3.8)
-  if (CMAKE_CXX_STANDARD)
-    set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_REQUIRED_DEFINITIONS})
-  endif()
-else()
-  # set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
-  # Note: need to set this before including CheckCXXSymbolExists
-  cmake_policy(SET CMP0067 NEW)
-endif()
+# set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
+# Note: need to set this before including CheckCXXSymbolExists
+cmake_policy(SET CMP0067 NEW)
 #set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
 #set(CMAKE_REQUIRED_QUIET FALSE)
 # Finally, do the checks!

@@ -26,11 +26,9 @@
 #define Main  master_main
 #endif
 
-#ifndef STIR_NO_NAMESPACE
 using std::endl;
 using std::cerr;
 
-#endif                                                                                                                                                                                                                                                               
 USING_NAMESPACE_STIR
     
 int Main(int argc, char **argv)

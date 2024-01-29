@@ -34,12 +34,10 @@
 #include <fstream>
 #include <iostream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

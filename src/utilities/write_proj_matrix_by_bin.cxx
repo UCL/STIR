@@ -31,11 +31,9 @@
 #include "stir/Coordinate3D.h"
 #include "stir/IO/read_from_file.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cerr;
 using std::endl;
-#endif
 
 
 int

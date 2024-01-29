@@ -466,12 +466,8 @@ std::string
 GeneralisedObjectiveFunction<TargetT>::
 get_objective_function_values_report(const TargetT& current_estimate)
 {
-#ifdef BOOST_NO_STRINGSTREAM
-  char str[10000];
-  ostrstream s(str, 10000);
-#else
   std::ostringstream s;
-#endif
+
   const double no_penalty = 
     this->compute_objective_function_without_penalty(current_estimate);
   const double penalty =

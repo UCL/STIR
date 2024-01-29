@@ -61,14 +61,12 @@ Note that to store projection data in ECAT6, a 3D sinogram cannot be axially com
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
 using std::size_t;
-#endif
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT

@@ -622,10 +622,7 @@ VectorWithOffset<T>::get_data_ptr()
 */
 template <class T>
 const T *  
-VectorWithOffset<T>::get_const_data_ptr()
-#ifndef STIR_NO_MUTABLE
-const
-#endif
+VectorWithOffset<T>::get_const_data_ptr() const
 {
   assert(!pointer_access);
   
@@ -663,10 +660,7 @@ VectorWithOffset<T>::release_data_ptr()
 
 template <class T>
 void
-VectorWithOffset<T>::release_const_data_ptr()
-#ifndef STIR_NO_MUTABLE
-const
-#endif
+VectorWithOffset<T>::release_const_data_ptr() const
 {
   assert(pointer_access);
   

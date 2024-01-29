@@ -55,17 +55,9 @@ find_unweighted_centre_of_gravity(const Array<num_dimensions,T>& );
   Conceptually the same as the n-dimensional version, but returns a \c T, not a
   BasicCoordinate\<1,T\>.
 */   
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class T>
-#else
-#define T float
-#endif
 T 
 find_unweighted_centre_of_gravity(const Array<1,T>& );
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef T
-#endif
 
 //! Compute centre of gravity of an Array
 /*! \ingroup Array

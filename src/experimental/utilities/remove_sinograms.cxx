@@ -22,13 +22,11 @@
 #include <string>
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
 using std::min;
 using std::max;
 using std::endl;
-#endif
 
 USING_NAMESPACE_STIR
 

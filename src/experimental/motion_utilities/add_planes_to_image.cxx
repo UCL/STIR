@@ -6,14 +6,12 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
 using std::min;
 using std::max;
 using std::endl;
 using std::vector;
-#endif
 
 USING_NAMESPACE_STIR
 

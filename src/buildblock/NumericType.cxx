@@ -24,10 +24,8 @@
 #include "stir/NumericType.h"
 #include "stir/NumericInfo.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -1223,13 +1223,8 @@ namespace detail
   {
     // we will first write everything to a temporary stringstream
     // and then read it back, inserting the backslash
-#ifdef BOOST_NO_STRINGSTREAM
-    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-    char str[100000];
-    strstream stemp(str, 100000);
-#else
     std::stringstream stemp;
-#endif
+
     // write to stemp
     stemp << var;
     
@@ -1421,13 +1416,7 @@ void KeyParser::vectorised_value_to_stream(std::ostream& s, const std::string& k
 
 string KeyParser::parameter_info() const
 {  
-#ifdef BOOST_NO_STRINGSTREAM
-    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-    char str[100000];
-    ostrstream s(str, 100000);
-#else
     std::ostringstream s;
-#endif
 
     // first find start key
     for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)

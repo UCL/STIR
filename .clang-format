@@ -25,13 +25,12 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
-  # non-standard GNU
-  SplitEmptyFunction: false
 ColumnLimit:     130
 IndentPPDirectives: AfterHash
 PointerAlignment: Left
 SortIncludes:    false
 SortUsingDeclarations: false
 SpaceBeforeParens: ControlStatements
+PackConstructorInitializers: Never
 Standard:        Cpp11
 ...

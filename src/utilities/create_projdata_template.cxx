@@ -31,9 +31,7 @@
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
-#endif
 
 
 USING_NAMESPACE_STIR

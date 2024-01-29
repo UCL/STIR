@@ -114,25 +114,12 @@ public:
 			 BasicCoordinate<num_dimensions, int>& min,
 			 BasicCoordinate<num_dimensions, int>& max) const;
 
-#ifdef STIR_NO_MUTABLE
-  //! checks if the range is 'regular'
-  inline bool is_regular();
-
-  //! find regular range
-  bool get_regular_range(
-			 BasicCoordinate<num_dimensions, int>& min,
-			 BasicCoordinate<num_dimensions, int>& max);
-#endif
-
 private:
   //! enum to encode the current knowledge about regularity
   enum is_regular_type {regular_true, regular_false, regular_to_do};
 
   //! variable storing the current knowledge about regularity
-#ifndef STIR_NO_MUTABLE
-  mutable 
-#endif
-    is_regular_type is_regular_range;
+  mutable is_regular_type is_regular_range;
 };
 
 

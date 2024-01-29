@@ -68,14 +68,9 @@ START_NAMESPACE_STIR
 
 //! Replace elements by their logarithm, 1D version
 /*! \ingroup Array */
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>&
 in_place_log(Array<1,elemT>& v);
-#else
-inline Array<1,float>& 
-in_place_log(Array<1,float>& v);
-#endif
 
 
 //! apply log to each element of the multi-dimensional array
@@ -86,14 +81,9 @@ in_place_log(Array<num_dimensions, elemT>& v);
 
 //! Replace elements by their exponentiation, 1D version
 /*! \ingroup Array */
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
 in_place_exp(Array<1,elemT>& v);
-#else
-inline Array<1,float>& 
-in_place_exp(Array<1,float>& v);
-#endif
 
 //! apply exp to each element of the multi-dimensional array
 /*! \ingroup Array */
@@ -105,14 +95,9 @@ in_place_exp(Array<num_dimensions, elemT>& v);
 /*! \ingroup Array 
   \warning The implementation does not work with complex numbers.
 */
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
 in_place_abs(Array<1,elemT>& v);
-#else
-inline Array<1,float>& 
-in_place_abs(Array<1,float>& v);
-#endif
 
 //! store absolute value of each element of the multi-dimensional array
 /*! \ingroup Array 
@@ -212,13 +197,6 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
 #define ActualFunctionObjectPtrIter shared_ptr<ArrayFunctionObject<1,elemT> > const* 
 #endif
 
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-// silly business for deficient compilers (including VC 6.0)
-#define elemT float
-#define FunctionObjectPtrIter ActualFunctionObjectPtrIter
-#endif
-
-
 //! Apply a sequence of 1d array-function objects on every dimension of the input array
 /*! \ingroup Array 
   The sequence of function object pointers is specified by iterators. There must be
@@ -234,20 +212,14 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
   objects and (smart) pointers to function objects. At the moment, it's only the latter.
 */
 // TODO add specialisation that uses ArrayFunctionObject::is_trivial
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <int num_dim>
-#else
 template <int num_dim, typename elemT, typename FunctionObjectPtrIter> 
-#endif
 inline void 
 in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array, 
                                              FunctionObjectPtrIter start, 
                                              FunctionObjectPtrIter stop);
 
 //! 1d specialisation of the above. 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename elemT, typename FunctionObjectPtrIter> 
-#endif
 inline void 
 in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, 
                                              FunctionObjectPtrIter start, 
@@ -255,7 +227,6 @@ in_place_apply_array_functions_on_each_index(Array<1, elemT>& array,
 
 
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 //! Apply a sequence of 1d array-function objects on every dimension of the input array, store in output array
 /*! \ingroup Array 
 
@@ -277,7 +248,6 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
                                     const Array<num_dim, elemT>& in_array, 
                                     FunctionObjectPtrIter start, 
                                     FunctionObjectPtrIter stop);
-#endif
 
 //! Apply a sequence of 1d array-function objects of a specific type on every dimension of the input array, store in output array
 /*! \ingroup Array 
@@ -287,31 +257,24 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
   \todo Modify such that this function would handle function 
   objects and (smart) pointers to ArrayFunctionObject objects. At the moment, it's only the latter.
 */
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <int num_dim>
-#else
 template <int num_dim, typename elemT> 
-#endif
 inline void 
 apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array, 
                                     const Array<num_dim, elemT>& in_array, 
                                     ActualFunctionObjectPtrIter start, 
                                     ActualFunctionObjectPtrIter stop);
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 //! 1d specialisation of above
 /*! \ingroup Array 
 */
 // has to be here to get general 1D specialisation to compile
 template <typename elemT>
-#endif
 inline void 
 apply_array_functions_on_each_index(Array<1, elemT>& out_array, 
                                     const Array<1, elemT>& in_array, 
                                     ActualFunctionObjectPtrIter start, 
                                     ActualFunctionObjectPtrIter stop);
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename elemT, typename FunctionObjectPtrIter> 
 //! 1d specialisation for general function objects
 /*! \ingroup Array 
@@ -320,12 +283,6 @@ inline void
 apply_array_functions_on_each_index(Array<1, elemT>& out_array, 
                                     const Array<1, elemT>& in_array, 
                                     FunctionObjectPtrIter start, FunctionObjectPtrIter stop);
-#endif
-                                    
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT
-#undef FunctionObjectPtrIter
-#endif
 
 
 template <int num_dim, typename elemT> 

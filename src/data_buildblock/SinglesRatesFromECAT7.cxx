@@ -29,10 +29,8 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::streampos;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

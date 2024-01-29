@@ -29,7 +29,6 @@ RegisteredObject<Root>::RegisteredObject()
 {}
 
 
-#ifndef __STIR_REGISTRY_NOT_INLINE
 template <class Root>
 typename RegisteredObject<Root>::RegistryType& 
 RegisteredObject<Root>::registry ()
@@ -37,7 +36,6 @@ RegisteredObject<Root>::registry ()
   static RegistryType the_registry("None", 0);
   return the_registry;
 }
-#endif
 
 template <class Root>
 Root*

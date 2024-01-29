@@ -29,13 +29,6 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/TOF_conversions.h"
 
-// define a local preprocessor symbol to keep code relatively clean
-#ifdef STIR_NO_MUTABLE
-#define STIR_MUTABLE_CONST
-#else
-#define STIR_MUTABLE_CONST const
-#endif
-
 START_NAMESPACE_STIR
 
 void ProjMatrixByBin::set_defaults()
@@ -98,7 +91,7 @@ does_cache_store_only_basic_bins() const
 
 void 
 ProjMatrixByBin::
-clear_cache() STIR_MUTABLE_CONST
+clear_cache() const
 {
 #ifdef STIR_OPENMP
 #pragma omp critical(PROJMATRIXBYBINCLEARCACHE)
@@ -213,7 +206,7 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
 void  
 ProjMatrixByBin::
 cache_proj_matrix_elems_for_one_bin(
-                                    const ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
+                                    const ProjMatrixElemsForOneBin& probabilities) const
 { 
   if ( cache_disabled ) return;
   

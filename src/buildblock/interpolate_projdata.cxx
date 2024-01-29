@@ -31,7 +31,6 @@
 #include "stir/numerics/BSplines.h"
 #include "stir/numerics/BSplinesRegularGrid.h"
 #include "stir/interpolate_projdata.h"
-#include "stir/interpolate_axial_position.h"
 #include "stir/extend_projdata.h"
 #include "stir/numerics/sampling_functions.h"
 #include "stir/error.h"

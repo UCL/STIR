@@ -43,11 +43,9 @@ namespace stir { // for doxygen
 #include "stir/error.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 

@@ -59,20 +59,14 @@
 #endif
 #include "stir/num_threads.h"
 
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include "stir/unique_ptr.h"
 #include <algorithm>
 using std::min;
 using std::max;
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 #include "stir/IndexRange3D.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"

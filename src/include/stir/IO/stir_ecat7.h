@@ -28,23 +28,13 @@
 #include "stir/NumericType.h"
 
 #ifdef HAVE_LLN_MATRIX
-#ifdef STIR_NO_NAMESPACES
-// terrible trick to avoid conflict between stir::Sinogram and Sinogram defined in matrix.h
-// when we do have namespaces, the conflict can be resolved by using ::Sinogram
-#define Sinogram CTISinogram
-#else
 #define CTISinogram ::Sinogram
-#endif
 
 #include "matrix.h"
 extern "C" {
   int map_main_header(char *bufr, Main_header *header);
   int mh_update(MatrixFile*);
 }
-
-#ifdef STIR_NO_NAMESPACES
-#undef Sinogram
-#endif
 
 #include <string>
 #include <iostream>

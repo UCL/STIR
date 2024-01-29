@@ -26,9 +26,7 @@
 #include <algorithm>
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
-#endif
 
 START_NAMESPACE_STIR
 

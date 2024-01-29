@@ -201,20 +201,13 @@ write_basic_interfile(const std::string&filename,
   compiler bug. (Otherwise, the float version is not instantiated for some reason).
 */
 
-#if !defined(_MSC_VER) || (_MSC_VER > 1300)
 template <class elemT>
-#else
-#define elemT float
-#endif
 Succeeded 
 write_basic_interfile(const std::string& filename, 
 		      const Array<3,elemT>& image,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
-#if defined(_MSC_VER) && (_MSC_VER <= 1300)
-#undef elemT 
-#endif
 
 //! This outputs an Interfile header and data for a VoxelsOnCartesianGrid<float> object
 /*!

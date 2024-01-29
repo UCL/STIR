@@ -28,11 +28,7 @@
 #include "stir/LORCoordinates.h"
 #include "stir/Array.h"
 #include <algorithm>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include "stir/round.h"
 #include "stir/numerics/norm.h"
@@ -43,7 +39,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::min_element;
 using std::max_element;
 using std::min;
@@ -53,7 +48,6 @@ using std::endl;
 using std::string;
 using std::pair;
 using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -676,13 +670,8 @@ string
 ProjDataInfoCylindrical::parameter_info()  const
 {
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[30000];
-  ostrstream s(str, 30000);
-#else
   std::ostringstream s;
-#endif  
+
   s << ProjDataInfo::parameter_info();
   s << "Azimuthal angle increment (deg):   " << get_azimuthal_angle_sampling()*180/_PI << '\n';
   s << "Azimuthal angle extent (deg):      " << fabs(get_azimuthal_angle_sampling())*get_num_views()*180/_PI << '\n';

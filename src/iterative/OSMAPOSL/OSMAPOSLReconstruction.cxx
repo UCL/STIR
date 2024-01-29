@@ -51,20 +51,14 @@
 #include <boost/format.hpp>
 #include <memory>
 #include <iostream>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
 #include <sstream>
-#endif
 
 #include "stir/unique_ptr.h"
 #include <algorithm>
 using std::min;
 using std::max;
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR
@@ -287,13 +281,7 @@ method_info() const
 
   // TODO add prior name?
 
-#ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[10000];
-  ostrstream s(str, 10000);
-#else
   std::ostringstream s;
-#endif
 
   if(this->inter_update_filter_interval>0) s<<"IUF-";
   if(this->num_subsets>1) s<<"OS";

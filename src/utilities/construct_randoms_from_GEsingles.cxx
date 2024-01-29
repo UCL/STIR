@@ -33,11 +33,9 @@
 #include "stir/data/randoms_from_singles.h"
 #include <boost/format.hpp>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::string;
-#endif
 
 USING_NAMESPACE_STIR
 

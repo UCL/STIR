@@ -28,13 +28,6 @@
 #include <map>
 #include "stir/shared_ptr.h"
 
-// define a local preprocessor symbol to keep code relatively clean
-#ifdef STIR_NO_MUTABLE
-#define STIR_MUTABLE_CONST
-#else
-#define STIR_MUTABLE_CONST const
-#endif
-
 START_NAMESPACE_STIR
 	    
 //template <typename elemT> class RelatedViewgrams;	    
@@ -83,7 +76,7 @@ public:
   inline void 
     get_proj_matrix_elems_for_one_densel(
        ProjMatrixElemsForOneDensel&,
-       const Densel&) STIR_MUTABLE_CONST;
+       const Densel&) const;
   
 #if 0
   // TODO
@@ -142,24 +135,18 @@ protected:
   
   //! The method to store data in the cache.
   inline void  cache_proj_matrix_elems_for_one_densel( const ProjMatrixElemsForOneDensel&)
-    STIR_MUTABLE_CONST;
+    const;
 
 private:
   
   typedef unsigned int CacheKey;
 
-#ifndef STIR_NO_NAMESPACES
   typedef std::map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
-#else
-  typedef map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
- #endif
   typedef MapProjMatrixElemsForOneDensel::iterator MapProjMatrixElemsForOneDenselIterator;
   typedef MapProjMatrixElemsForOneDensel::const_iterator const_MapProjMatrixElemsForOneDenselIterator;
  
   //! collection of  ProjMatrixElemsForOneDensel (internal cache )   
-#ifndef STIR_NO_MUTABLE
   mutable
-#endif
     MapProjMatrixElemsForOneDensel cache_collection;
          
   //! create the key for caching
@@ -173,8 +160,6 @@ private:
 END_NAMESPACE_STIR
 
 #include "stir_experimental/recon_buildblock/ProjMatrixByDensel.inl"
-
-#undef STIR_MUTABLE_CONST
 
 #endif // __ProjMatrixByDensel_H__
 

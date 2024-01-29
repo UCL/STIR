@@ -23,13 +23,11 @@
 #include <fstream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
-#endif
 
 USING_NAMESPACE_STIR
 

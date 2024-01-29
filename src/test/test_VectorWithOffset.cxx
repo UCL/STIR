@@ -34,14 +34,12 @@
 #include <functional>
 #include <iostream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::sort;
 using std::find;
 using std::greater;
 using std::size_t;
-#endif
 
 START_NAMESPACE_STIR
 

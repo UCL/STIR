@@ -25,10 +25,8 @@
 #include "stir/warning.h"
 #include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ofstream;
-#endif
 
 USING_NAMESPACE_STIR
 

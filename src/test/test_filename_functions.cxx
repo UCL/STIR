@@ -23,11 +23,9 @@
 #include "stir/RunTests.h"
 #include "stir/FilePath.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
