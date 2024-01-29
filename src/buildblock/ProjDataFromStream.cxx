@@ -43,7 +43,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-using std::find;
 using std::ios;
 using std::iostream;
 using std::streamoff;
@@ -53,12 +52,6 @@ using std::cerr;
 using std::endl;
 using std::vector;
 
-#ifdef _MSC_VER
-// work-around for compiler bug: VC messes up std namespace
-#define FIND std::find
-#else
-#define FIND find
-#endif
 
 START_NAMESPACE_STIR
 //---------------------------------------------------------
@@ -431,7 +424,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
       error("ProjDataFromStream::get_offset: timing_num out of range : %d", this_bin.timing_pos_num());
 
     const int index =
-            static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
+            static_cast<int>(std::find(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
                              segment_sequence.begin());
 
     streamoff num_axial_pos_offset = 0;
@@ -453,7 +446,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
         if (proj_data_info_sptr->get_num_tof_poss() > 1)
           {
             // The timing offset will be added to the segment offset to minimise the changes
-            const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
+            const int timing_index = static_cast<int>(std::find(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
                                                       timing_poss_sequence.begin());
 
             assert(offset_3d_data > 0);
@@ -485,7 +478,7 @@ ProjDataFromStream::get_offset(const Bin& this_bin) const
         if (proj_data_info_sptr->get_num_tof_poss() > 1)
           {
             // The timing offset will be added to the segment offset. This approach we minimise the changes
-            const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
+            const int timing_index = static_cast<int>(std::find(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
                                                       timing_poss_sequence.begin());
 
             assert(offset_3d_data > 0);

@@ -1473,11 +1473,7 @@ string Scanner::list_names() const
 {
   std::ostringstream s;
 
-#ifdef _MSC_VER
-  // work-around VC bug
-  std::
-#endif
-  list<string>::const_iterator iterator = list_of_names.begin();
+  auto iterator = list_of_names.begin();
   s << *iterator;
   ++iterator;
   while(iterator!=list_of_names.end())
