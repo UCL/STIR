@@ -7,27 +7,28 @@
   \verbatim
   create_empty_interfile_binary header_filename [fill_value]
   \endverbatim
-  Given a valid Interfile format header, this utility will create a binary file
-  with the same size as the data in the header. The optional fill_value argument
-  However, the binary file will not contain any data.
 
-  This utility is mainly useful to an empty interfile binary file that can then
-  be used for collaborative development. If one user experiences issues with STIR,
-  the only the header file needs to be transferred to the other user for debugging issues.
-
+  Given a valid Interfile format header, this utility will create a binary file for the header.
   This utility will not overwrite existing binary files.
+
+  The optional `fill_value` argument will fill the binary file with the specified value.
+  If no `fill_value` is specified, the binary file will be filled with zeros.
 
   Currently, requires header file to have a valid extension (.hs or .hv) to determine the type of data.
 
+  This utility is used when a header file, with no corresponding binary is provided.
+  This utility is to assist with collaborative development.
+  For example, if a user experiences an issues with STIR, the only the header file needs to be transferred
+  to others for debugging.
+
   \author Robert Twyman
-*/
-/*
-    Copyright (C) 2024, Prescient Imaging # TODO: CONFIRM?
-    This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+  Copyright (C) 2024, Prescient Imaging # TODO: CONFIRM?
+  This file is part of STIR.
 
-    See STIR/LICENSE.txt for details
+  SPDX-License-Identifier: Apache-2.0
+
+  See STIR/LICENSE.txt for details
 */
 
 #include <iostream>
