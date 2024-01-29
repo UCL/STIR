@@ -31,5 +31,6 @@ PointerAlignment: Left
 SortIncludes:    false
 SortUsingDeclarations: false
 SpaceBeforeParens: ControlStatements
+PackConstructorInitializers: Never
 Standard:        Cpp11
 ...
