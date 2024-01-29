@@ -6,7 +6,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2024 University College London
     This file is part of STIR.
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
@@ -22,6 +22,7 @@
   \author Sanida Mustafovic
   \author PARAPET project
   \author Richard Brown
+  \author Robert Twyman
 
 */
 
@@ -31,6 +32,7 @@
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include "stir/IO/InterfileHeader.h"
 #include <iostream>
 #include <string>
 
@@ -81,6 +83,8 @@ bool is_interfile_signature(const char * const signature);
  */
 VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input, 
 						   const std::string& directory_for_data = "");
+
+VoxelsOnCartesianGrid<float> create_image_from_header(InterfileImageHeader& hdr);
 
 //! This reads the first 3d image in an Interfile header file, given as a filename.
 /*!

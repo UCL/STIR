@@ -74,7 +74,7 @@ set(${dir_EXE_SOURCES}
         find_sum_projection_of_viewgram_and_sinogram.cxx
         separate_true_from_random_scatter_for_necr.cxx
         stir_timings.cxx
-		create_empty_interfile_binary.cxx
+        create_empty_interfile_binary.cxx
 )
 
 if (HAVE_ITK)

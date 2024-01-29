@@ -20,6 +20,7 @@
   \author PARAPET project
   \author Richard Brown
   \author Parisa Khateri
+  \author Robert Twyman
 */
 //   Pretty horrible implementations at the moment...
 
@@ -87,53 +88,58 @@ is_interfile_signature(const char * const signature)
 
 
 // help function
+
+
+VoxelsOnCartesianGrid<float>
+create_image_from_header(stir::InterfileImageHeader& hdr)
+{
+  CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]),
+                                          static_cast<float>(hdr.pixel_sizes[1]),
+                                          static_cast<float>(hdr.pixel_sizes[0]));
+
+  const int z_size =  hdr.matrix_size[2][0];
+  const int y_size =  hdr.matrix_size[1][0];
+  const int x_size =  hdr.matrix_size[0][0];
+  const BasicCoordinate<3,int> min_indices = make_coordinate(0, -y_size/2, -x_size/2);
+  const BasicCoordinate<3,int> max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+
+  CartesianCoordinate3D<float> origin(0,0,0);
+  if (hdr.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
+  {
+    // make sure that origin is such that
+    // first_pixel_offsets =  min_indices*voxel_size + origin
+    origin =
+        make_coordinate(float(hdr.first_pixel_offsets[2]),
+                        float(hdr.first_pixel_offsets[1]),
+                        float(hdr.first_pixel_offsets[0]))
+        - voxel_size * BasicCoordinate<3,float>(min_indices);
+  }
+
+  return VoxelsOnCartesianGrid<float>
+          (hdr.get_exam_info_sptr(),
+           IndexRange<3>(min_indices, max_indices),
+           origin,
+           voxel_size);
+}
+
+// help function
 static
 VoxelsOnCartesianGrid<float> *
 create_image_and_header_from(InterfileImageHeader& hdr,
                              char * full_data_file_name, // preallocated
-                             istream& input, 
+                             istream& input,
                              const string&  directory_for_data)
 {
   if (!hdr.parse(input))
-  {
-      return 0; //KT 10/12/2001 do not call ask_parameters anymore 
+    {
+      return 0; // KT 10/12/2001 do not call ask_parameters anymore
     }
-  
+
   // prepend directory_for_data to the data_file_name from the header
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
-  prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
-  
-    
-  CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]), 
-					  static_cast<float>(hdr.pixel_sizes[1]), 
-					  static_cast<float>(hdr.pixel_sizes[0]));
-  
-  const int z_size =  hdr.matrix_size[2][0];
-  const int y_size =  hdr.matrix_size[1][0];
-  const int x_size =  hdr.matrix_size[0][0];
-  const BasicCoordinate<3,int> min_indices = 
-    make_coordinate(0, -y_size/2, -x_size/2);
-  const BasicCoordinate<3,int> max_indices = 
-    min_indices + make_coordinate(z_size, y_size, x_size) - 1;
-
-  CartesianCoordinate3D<float> origin(0,0,0);
-  if (hdr.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
-    {
-      // make sure that origin is such that 
-      // first_pixel_offsets =  min_indices*voxel_size + origin
-      origin =
-	make_coordinate(float(hdr.first_pixel_offsets[2]),
-			float(hdr.first_pixel_offsets[1]),
-			float(hdr.first_pixel_offsets[0]))
-	- voxel_size * BasicCoordinate<3,float>(min_indices);
-    }
-
-  return
-    new VoxelsOnCartesianGrid<float>
-    (hdr.get_exam_info_sptr(),
-     IndexRange<3>(min_indices, max_indices),
-     origin,
-     voxel_size);
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());
+//  return create_image_from_header(hdr);
+  return new VoxelsOnCartesianGrid<float>(create_image_from_header(hdr));
 }
 
 VoxelsOnCartesianGrid<float> *
