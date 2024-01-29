@@ -42,11 +42,7 @@ find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row)
   return CoG;
 }
 
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#define T float
-#else
 template <class T>
-#endif
 T
 find_unweighted_centre_of_gravity(const Array<1,T>& row)
 {
