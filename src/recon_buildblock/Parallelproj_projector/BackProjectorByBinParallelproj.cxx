@@ -45,6 +45,17 @@
 
 START_NAMESPACE_STIR
 
+template <class containerT>
+void write_binary(const std::string& filename, const containerT& data)
+{
+  std::fstream s;
+  open_write_binary(s, filename);
+  const auto num_to_write =
+    static_cast<std::streamsize>(data.size())* sizeof(typename containerT::value_type);
+    s.write(reinterpret_cast<const char *>(data.data()), num_to_write);
+  }
+
+
 //////////////////////////////////////////////////////////
 const char * const
 BackProjectorByBinParallelproj::registered_name =
@@ -167,13 +178,23 @@ get_output(DiscretisedDensity<3,float> &density) const
         Bin bin(0,0,0,0,0);
         const float tofbin_width = p.get_proj_data_info_sptr()->get_sampling_in_k(bin);
         const auto num_tof_bins = p.get_proj_data_info_sptr()->get_num_tof_poss();
+        info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
+        
 
+        std::vector<float> mem_for_PP_back(num_lors_per_chunk * num_tof_bins);
+        // info("created object mem_for_PP_img", 2);
         joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3*offset,
                                _helper->xstart.data() + 3*offset,
                                image_on_cuda_devices,
                                _helper->origin.data(),
                                _helper->voxsize.data(),
-                               p.get_const_data_ptr() + offset* num_tof_bins,
+                               /* *  @param p           array of length nlors*n_tofbins with the values to be back projected
+ *                     the order of the array is 
+ *                     [LOR0-TOFBIN-0, LOR0-TOFBIN-1, ... LOR0_TOFBIN-(n-1), 
+ *                      LOR1-TOFBIN-0, LOR1-TOFBIN-1, ... LOR1_TOFBIN-(n-1), 
+ *                      ...
+ *                      LOR(N-1)-TOFBIN-0, LOR(N-1)-TOFBIN-1, ... LOR(N-1)_TOFBIN-(n-1)] */
+                               mem_for_PP_back.data(), // p.get_const_data_ptr() + offset* num_tof_bins,
                                num_lors_per_chunk,
                                _helper->imgdim.data(),
                                tofbin_width,
