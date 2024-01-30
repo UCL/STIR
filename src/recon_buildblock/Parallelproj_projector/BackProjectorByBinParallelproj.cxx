@@ -25,6 +25,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/TOF_conversions.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
@@ -159,7 +160,36 @@ get_output(DiscretisedDensity<3,float> &density) const
       else{
         num_lors_per_chunk = num_lors_per_chunk_floor;
       }
+        if (p.get_proj_data_info_sptr()->is_tof_data()==1)
+      {
+        const float sigma_tof = tof_delta_time_to_mm(p.get_proj_data_info_sptr()->get_scanner_sptr()->get_timing_resolution())/2.355;
+        const float tofcenter_offset = 0.F;
+        Bin bin(0,0,0,0,0);
+        const float tofbin_width = p.get_proj_data_info_sptr()->get_sampling_in_k(bin);
+        const auto num_tof_bins = p.get_proj_data_info_sptr()->get_num_tof_poss();
 
+        joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3*offset,
+                               _helper->xstart.data() + 3*offset,
+                               image_on_cuda_devices,
+                               _helper->origin.data(),
+                               _helper->voxsize.data(),
+                               p.get_const_data_ptr() + offset* num_tof_bins,
+                               num_lors_per_chunk,
+                               _helper->imgdim.data(),
+                               tofbin_width,
+                               &sigma_tof,
+                               &tofcenter_offset,
+                               4, // float n_sigmas
+                               num_tof_bins,
+                               0, // unsigned char lor_dependent_sigma_tof
+                               0, // unsigned char lor_dependent_tofcenter_offset  
+                               64 // threadsperblock
+                               );
+        if (chunk_num != _num_gpu_chunks-1)
+         p.release_const_data_ptr();
+      }
+      else
+      {
       joseph3d_back_cuda(_helper->xstart.data() + 3*offset,
                          _helper->xend.data() + 3*offset,
                          image_on_cuda_devices,
@@ -168,8 +198,9 @@ get_output(DiscretisedDensity<3,float> &density) const
                          p.get_const_data_ptr() + offset,
                          num_lors_per_chunk,
                          _helper->imgdim.data(),
-                         /*threadsperblock*/ 64);
-
+                         /*threadsperblock*/ 64
+                         );
+      }
       offset += num_lors_per_chunk;
     }
 
@@ -183,6 +214,33 @@ get_output(DiscretisedDensity<3,float> &density) const
     free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
+    if (this->_proj_data_info_sptr->is_tof_data()==1)
+    {
+      const float sigma_tof = tof_delta_time_to_mm(_projected_data_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_timing_resolution())/2.355;
+      const float tofcenter_offset = 0.F;
+      Bin bin(0,0,0,0,0);
+      const float tofbin_width = _projected_data_sptr->get_proj_data_info_sptr()->get_sampling_in_k(bin);
+      long long nlors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all())/_projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss();
+
+
+      joseph3d_back_tof_sino(_helper->xend.data(),
+                       _helper->xstart.data(),
+                       image_vec.data(),
+                       _helper->origin.data(),
+                       _helper->voxsize.data(),
+                       p.get_const_data_ptr()
+                      nlors,
+                       _helper->imgdim.data(),
+                      tofbin_width,
+                      &sigma_tof,
+                      &tofcenter_offset,
+                      4, // float n_sigmas,
+                      _projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss(),
+                      0, //  unsigned char lor_dependent_sigma_tof
+                      0 // unsigned char lor_dependent_tofcenter_offset                       
+                       ); 
+    }
+    else{
     joseph3d_back(_helper->xstart.data(),
                   _helper->xend.data(),
                   image_vec.data(),
@@ -191,6 +249,7 @@ get_output(DiscretisedDensity<3,float> &density) const
                   p.get_const_data_ptr(),
                   static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
                   _helper->imgdim.data());
+    }
 #endif
     info("done", 2);
 
