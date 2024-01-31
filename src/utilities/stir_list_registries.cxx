@@ -44,7 +44,7 @@ main(int argc, char *argv[])
   std::cout << "------------ BinNormalisation --------------\n";
   BinNormalisation::list_registered_names(std::cout);
 
-  std::cout < "--------------------------------------------------------------------------\n";  
+  std::cout << "--------------------------------------------------------------------------\n";  
   
   std::cout << "------------ DataProcessor<DiscretisedDensity<3,float>> --------------\n";
   DataProcessor<DiscretisedDensity<3,float> >::list_registered_names(std::cout);
@@ -55,7 +55,7 @@ main(int argc, char *argv[])
   std::cout << "------------   Reconstruction<DiscretisedDensity<3,float>> --------------\n";
   Reconstruction<DiscretisedDensity<3,float>>::list_registered_names(std::cout);
 
-  std::cout < "--------------------------------------------------------------------------\n";  
+  std::cout << "--------------------------------------------------------------------------\n";  
 
   std::cout << "------------ DataProcessor<ParametricVoxelsOnCartesianGrid> --------------\n";
   DataProcessor<ParametricVoxelsOnCartesianGrid >::list_registered_names(std::cout);
