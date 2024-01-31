@@ -49,6 +49,14 @@ namespace detail
     std::array<float,3> origin;
     std::vector<float> xstart;
     std::vector<float> xend;
+
+    long long num_image_voxel;
+    long long num_lors;
+
+    float sigma_tof;
+    float tofcenter_offset;
+    float tofbin_width;
+    short num_tof_bins;
   };
 
 }

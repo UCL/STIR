@@ -137,6 +137,16 @@ back_project(const ProjData& proj_data, int subset_num, int num_subsets)
 }
 #endif
 
+static void TOF_transpose(std::vector<float>& mem_for_PP_back, const float *STIR_mem, const shared_ptr<const detail::ParallelprojHelper> _helper, const long long offset)
+{
+  const auto num_tof_bins = static_cast<unsigned>(_helper->num_tof_bins);
+  for (unsigned tof_idx = 0; tof_idx < num_tof_bins; ++tof_idx)
+    for (long long lor_idx = 0; lor_idx < _helper->num_lors; ++lor_idx)
+      {
+        mem_for_PP_back[lor_idx * num_tof_bins + tof_idx] = STIR_mem[offset + tof_idx * _helper->num_lors + lor_idx];
+      }
+}
+
 void
 BackProjectorByBinParallelproj::
 get_output(DiscretisedDensity<3,float> &density) const
@@ -150,18 +160,14 @@ get_output(DiscretisedDensity<3,float> &density) const
 
 #ifdef parallelproj_built_with_CUDA
 
-    long long num_image_voxel = static_cast<long long>(image_vec.size());
-    long long num_lors = static_cast<long long>(p.get_proj_data_info_sptr()->size_all());
-
-    long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
-    long long remainder = num_lors % _num_gpu_chunks;
+    long long num_lors_per_chunk_floor = _helper->num_lors / _num_gpu_chunks;
+    long long remainder = _helper->num_lors % _num_gpu_chunks;
 
     long long num_lors_per_chunk;
     long long offset = 0;
 
     // send image to all visible CUDA devices
-    float** image_on_cuda_devices;
-    image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+    float** image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), _helper->num_image_voxel);
 
     // do (chuck-wise) back projection on the CUDA devices 
     for(int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++){
@@ -173,35 +179,28 @@ get_output(DiscretisedDensity<3,float> &density) const
       }
         if (p.get_proj_data_info_sptr()->is_tof_data()==1)
       {
-        const float sigma_tof = tof_delta_time_to_mm(p.get_proj_data_info_sptr()->get_scanner_sptr()->get_timing_resolution())/2.355;
-        const float tofcenter_offset = 0.F;
-        Bin bin(0,0,0,0,0);
-        const float tofbin_width = p.get_proj_data_info_sptr()->get_sampling_in_k(bin);
-        const auto num_tof_bins = p.get_proj_data_info_sptr()->get_num_tof_poss();
         info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
         
 
-        std::vector<float> mem_for_PP_back(num_lors_per_chunk * num_tof_bins);
+        std::vector<float> mem_for_PP_back(num_lors_per_chunk * _helper->num_tof_bins);
+        const float *STIR_mem = p.get_const_data_ptr();
+
+        TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
+
         // info("created object mem_for_PP_img", 2);
         joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3*offset,
                                _helper->xstart.data() + 3*offset,
                                image_on_cuda_devices,
                                _helper->origin.data(),
                                _helper->voxsize.data(),
-                               /* *  @param p           array of length nlors*n_tofbins with the values to be back projected
- *                     the order of the array is 
- *                     [LOR0-TOFBIN-0, LOR0-TOFBIN-1, ... LOR0_TOFBIN-(n-1), 
- *                      LOR1-TOFBIN-0, LOR1-TOFBIN-1, ... LOR1_TOFBIN-(n-1), 
- *                      ...
- *                      LOR(N-1)-TOFBIN-0, LOR(N-1)-TOFBIN-1, ... LOR(N-1)_TOFBIN-(n-1)] */
                                mem_for_PP_back.data(), // p.get_const_data_ptr() + offset* num_tof_bins,
                                num_lors_per_chunk,
                                _helper->imgdim.data(),
-                               tofbin_width,
-                               &sigma_tof,
-                               &tofcenter_offset,
+                               _helper->tofbin_width,
+                               &_helper->sigma_tof,
+                               &_helper->tofcenter_offset,
                                4, // float n_sigmas
-                               num_tof_bins,
+                               _helper->num_tof_bins,
                                0, // unsigned char lor_dependent_sigma_tof
                                0, // unsigned char lor_dependent_tofcenter_offset  
                                64 // threadsperblock
@@ -226,10 +225,10 @@ get_output(DiscretisedDensity<3,float> &density) const
     }
 
     // sum backprojected images on the first CUDA device
-    sum_float_arrays_on_first_device(image_on_cuda_devices, num_image_voxel);
+    sum_float_arrays_on_first_device(image_on_cuda_devices, _helper->num_image_voxel);
 
     // copy summed image back to host
-    get_float_array_from_device(image_on_cuda_devices, num_image_voxel, 0, image_vec.data());
+    get_float_array_from_device(image_on_cuda_devices, _helper->num_image_voxel, 0, image_vec.data());
 
     // free image array from CUDA devices
     free_float_array_on_all_devices(image_on_cuda_devices);
@@ -237,20 +236,18 @@ get_output(DiscretisedDensity<3,float> &density) const
 #else
     if (this->_proj_data_info_sptr->is_tof_data()==1)
     {
-      const float sigma_tof = tof_delta_time_to_mm(_projected_data_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_timing_resolution())/2.355;
-      const float tofcenter_offset = 0.F;
-      Bin bin(0,0,0,0,0);
-      const float tofbin_width = _projected_data_sptr->get_proj_data_info_sptr()->get_sampling_in_k(bin);
-      long long nlors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all())/_projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss();
+      std::vector<float> mem_for_PP_back(_helper->num_lors * _helper->num_tof_bins);
+      const float *STIR_mem = p.get_const_data_ptr();
 
+      TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
 
       joseph3d_back_tof_sino(_helper->xend.data(),
                        _helper->xstart.data(),
                        image_vec.data(),
                        _helper->origin.data(),
                        _helper->voxsize.data(),
-                       p.get_const_data_ptr()
-                      nlors,
+                       mem_for_PP_back,
+                      num_lors,
                        _helper->imgdim.data(),
                       tofbin_width,
                       &sigma_tof,
