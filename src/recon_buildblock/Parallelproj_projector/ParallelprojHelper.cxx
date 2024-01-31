@@ -7,7 +7,7 @@
   \brief non-inline implementations for stir::ParallelprojHelper
 
   \author Kris Thielemans
-  \author Nicole Jurjew  
+  \author Nicole Jurjew
 */
 /*
     Copyright (C) 2021, 2023, 2024 University College London
@@ -60,14 +60,14 @@ detail::ParallelprojHelper::ParallelprojHelper(const ProjDataInfo& p_info, const
   const float rescale = 1.F;
 #endif
 
-    num_image_voxel = static_cast<long long>(stir_image.size_all());
-    num_lors = static_cast<long long>(p_info.size_all())/p_info.get_num_tof_poss();
+  num_image_voxel = static_cast<long long>(stir_image.size_all());
+  num_lors = static_cast<long long>(p_info.size_all()) / p_info.get_num_tof_poss();
 
-    sigma_tof = tof_delta_time_to_mm(p_info.get_scanner_sptr()->get_timing_resolution())/2.355*rescale;
-    tofcenter_offset = 0.F*rescale;
-    Bin bin(0,0,0,0,0);
-    tofbin_width = p_info.get_sampling_in_k(bin)*rescale;
-    num_tof_bins = p_info.get_num_tof_poss();
+  sigma_tof = tof_delta_time_to_mm(p_info.get_scanner_sptr()->get_timing_resolution()) / 2.355 * rescale;
+  tofcenter_offset = 0.F * rescale;
+  Bin bin(0, 0, 0, 0, 0);
+  tofbin_width = p_info.get_sampling_in_k(bin) * rescale;
+  num_tof_bins = p_info.get_num_tof_poss();
 
   copy_to_array(stir_voxel_size*rescale, voxsize);
   copy_to_array(stir_image.get_lengths(), imgdim);

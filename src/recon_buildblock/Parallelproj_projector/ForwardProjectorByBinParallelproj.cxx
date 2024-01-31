@@ -9,9 +9,10 @@
 
   \author Richard Brown
   \author Kris Thielemans
+  \author Nicole Jurjew
 */
 /*
-    Copyright (C) 2019, 2021 University College London
+    Copyright (C) 2019, 2021, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -38,16 +39,6 @@
 #endif
 
 START_NAMESPACE_STIR
-
-template <class containerT>
-void write_binary(const std::string& filename, const containerT& data)
-{
-  std::fstream s;
-  open_write_binary(s, filename);
-  const auto num_to_write =
-    static_cast<std::streamsize>(data.size())* sizeof(typename containerT::value_type);
-    s.write(reinterpret_cast<const char *>(data.data()), num_to_write);
-  }
 
 //////////////////////////////////////////////////////////
 const char * const

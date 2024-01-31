@@ -8,10 +8,11 @@
 
   \author Richard Brown
   \author Kris Thielemans
+  \author Nicole Jurjew
   
 */
 /*
-    Copyright (C) 2019, 2021 University College London
+    Copyright (C) 2019, 2021, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -44,17 +45,6 @@
 
 
 START_NAMESPACE_STIR
-
-template <class containerT>
-void write_binary(const std::string& filename, const containerT& data)
-{
-  std::fstream s;
-  open_write_binary(s, filename);
-  const auto num_to_write =
-    static_cast<std::streamsize>(data.size())* sizeof(typename containerT::value_type);
-    s.write(reinterpret_cast<const char *>(data.data()), num_to_write);
-  }
-
 
 //////////////////////////////////////////////////////////
 const char * const
@@ -177,37 +167,30 @@ get_output(DiscretisedDensity<3,float> &density) const
       else{
         num_lors_per_chunk = num_lors_per_chunk_floor;
       }
-        if (p.get_proj_data_info_sptr()->is_tof_data()==1)
-      {
-        info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
-        
+      if (p.get_proj_data_info_sptr()->is_tof_data() == 1)
+        {
+          info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
 
-        std::vector<float> mem_for_PP_back(num_lors_per_chunk * _helper->num_tof_bins);
-        const float *STIR_mem = p.get_const_data_ptr();
+          std::vector<float> mem_for_PP_back(num_lors_per_chunk * _helper->num_tof_bins);
+          const float* STIR_mem = p.get_const_data_ptr();
 
-        TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
+          TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
 
-        // info("created object mem_for_PP_img", 2);
-        joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3*offset,
-                               _helper->xstart.data() + 3*offset,
-                               image_on_cuda_devices,
-                               _helper->origin.data(),
-                               _helper->voxsize.data(),
-                               mem_for_PP_back.data(), // p.get_const_data_ptr() + offset* num_tof_bins,
-                               num_lors_per_chunk,
-                               _helper->imgdim.data(),
-                               _helper->tofbin_width,
-                               &_helper->sigma_tof,
-                               &_helper->tofcenter_offset,
-                               4, // float n_sigmas
-                               _helper->num_tof_bins,
-                               0, // unsigned char lor_dependent_sigma_tof
-                               0, // unsigned char lor_dependent_tofcenter_offset  
-                               64 // threadsperblock
-                               );
-        if (chunk_num != _num_gpu_chunks-1)
-         p.release_const_data_ptr();
-      }
+          // info("created object mem_for_PP_img", 2);
+          joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3 * offset, _helper->xstart.data() + 3 * offset,
+                                      image_on_cuda_devices, _helper->origin.data(), _helper->voxsize.data(),
+                                      mem_for_PP_back.data(), // p.get_const_data_ptr() + offset* num_tof_bins,
+                                      num_lors_per_chunk, _helper->imgdim.data(), _helper->tofbin_width, &_helper->sigma_tof,
+                                      &_helper->tofcenter_offset,
+                                      4, // float n_sigmas
+                                      _helper->num_tof_bins,
+                                      0, // unsigned char lor_dependent_sigma_tof
+                                      0, // unsigned char lor_dependent_tofcenter_offset
+                                      64 // threadsperblock
+          );
+          if (chunk_num != _num_gpu_chunks - 1)
+            p.release_const_data_ptr();
+        }
       else
       {
       joseph3d_back_cuda(_helper->xstart.data() + 3*offset,
@@ -234,30 +217,22 @@ get_output(DiscretisedDensity<3,float> &density) const
     free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
-    if (this->_proj_data_info_sptr->is_tof_data()==1)
-    {
-      std::vector<float> mem_for_PP_back(_helper->num_lors * _helper->num_tof_bins);
-      const float *STIR_mem = p.get_const_data_ptr();
+    if (this->_proj_data_info_sptr->is_tof_data() == 1)
+      {
+        std::vector<float> mem_for_PP_back(_helper->num_lors * _helper->num_tof_bins);
+        const float* STIR_mem = p.get_const_data_ptr();
 
-      TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
+        TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
 
-      joseph3d_back_tof_sino(_helper->xend.data(),
-                       _helper->xstart.data(),
-                       image_vec.data(),
-                       _helper->origin.data(),
-                       _helper->voxsize.data(),
-                       mem_for_PP_back,
-                      num_lors,
-                       _helper->imgdim.data(),
-                      tofbin_width,
-                      &sigma_tof,
-                      &tofcenter_offset,
-                      4, // float n_sigmas,
-                      _projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss(),
-                      0, //  unsigned char lor_dependent_sigma_tof
-                      0 // unsigned char lor_dependent_tofcenter_offset                       
-                       ); 
-    }
+        joseph3d_back_tof_sino(_helper->xend.data(), _helper->xstart.data(), image_vec.data(), _helper->origin.data(),
+                               _helper->voxsize.data(), mem_for_PP_back, num_lors, _helper->imgdim.data(), tofbin_width,
+                               &sigma_tof, &tofcenter_offset,
+                               4, // float n_sigmas,
+                               _projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss(),
+                               0, //  unsigned char lor_dependent_sigma_tof
+                               0  // unsigned char lor_dependent_tofcenter_offset
+        );
+      }
     else{
     joseph3d_back(_helper->xstart.data(),
                   _helper->xend.data(),
