@@ -405,8 +405,12 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
-  forward_projector_ptr->set_input(*input_image_ptr);
-  if (output_image_ptr != NULL)
+  // the RPC function might not need to do a forward projection, e.g. for sensitivity
+  // so test if it exists before doing anything with it
+  if (input_image_ptr && forward_projector_ptr)
+      forward_projector_ptr->set_input(*input_image_ptr);
+  // same for backprojector
+  if (output_image_ptr && back_projector_ptr)
     back_projector_ptr->start_accumulating_in_new_target();
 
 #ifdef STIR_OPENMP
@@ -518,7 +522,7 @@ void distributable_computation(
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
   }
 #endif
-  if (output_image_ptr != NULL)
+  if (output_image_ptr && back_projector_ptr)
     back_projector_ptr->get_output(*output_image_ptr);
 #ifdef STIR_MPI
   //end of iteration processing
