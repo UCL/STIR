@@ -16,7 +16,7 @@
 add_library(${dir} ${${dir_LIB_SOURCES}}    )
 target_include_directories(${dir} PUBLIC 
   $<BUILD_INTERFACE:${STIR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:${STIR_INCLUDE_INSTALL_DIR}>)
 
 # make sure that if you use STIR, the compiler will be set to at least C++11
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.8.0")

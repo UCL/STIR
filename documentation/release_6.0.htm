@@ -9,7 +9,8 @@
 
     <p>This version is 99% backwards compatible with STIR 5.x for the user (see below).
       Developers might need to make code changes as 
-      detailed below.
+      detailed below. Note though that the location of installed files have changed.
+      Developers of other software that uses STIR via CMake will need to adapt (see below).
     </p>
     <h2>Overall summary</h2>
     <p>
@@ -57,6 +58,14 @@
      </li>
      <li>
        (deprecated) support for the AVW format via the (very old) AnalyzeAVW commercial library has been removed.
+     </li>
+     <li>Most installed files are now in versioned directories. The following shows the new and old locations
+       relative to <code>CMAKE_INSTALL_PREFIX</code>, where <tt>V.v</tt> indicates the major.minor version number, e.g. <tt>6.0</tt>:
+       <ul>
+         <li>documentation (including <tt>examples</tt> as subfolder): <tt>share/doc/STIR-V.v</tt> (was <tt>share/doc/stir-V.v</tt>)</li>
+         <li>JSON files with radionuclide database: <tt>share/STIR-V.v/config</tt> (was <tt>share/stir/config</tt>)</li>
+       </ul>
+       Developers also need to check the new location to use for <code>STIR_DIR</code> documented below.
      </li>
     </ul>
 
@@ -131,7 +140,7 @@
       <li>
         <tt>list_lm_events</tt> now has an additional option <tt>--event-bin</tt> which lists the bin
         assigned for the event (according to the "native" projection data, i.e. without any mashing).<br>
-        In addition, the <tt>--event-LOR<tt> option now also works for SPECT (it was disabled by accident).
+        In addition, the <tt>--event-LOR</tt> option now also works for SPECT (it was disabled by accident).
         </li>
     </ul>
 
@@ -213,6 +222,11 @@
         In fact, it is possible that C++-11 still works. If you really need it,
         you can try to modify the main <tt>CMakeLists.txt</tt> accordingly.
       </li>
+      <li><code>STIR_CONFIG_DIR</code> is no longer a CMake cached variable, such that
+        it automatically moves along with <code>CMAKE_INSTALL_PREFIX</code>.
+        However, if you are upgrading an existing STIR build, you might have
+        to delete the cached variable, or it will point to the old location.
+      </li>
     </ul>
 
     <h3>Known problems</h3>
@@ -292,6 +306,19 @@
          </li>
        </ul>
      </li>
+      <li>As mentioned above, installation locations are now versioned. New locations that
+        could affect developers that use STIR as an external project:
+        <ul>
+          <li>include files: <tt>include/STIR-V.v</tt> (was <tt>include</tt>). This should be transparant
+          if you use <code>find_package(STIR)</code>.</li>
+          <li>CMake exported <tt>STIRConfig.cmake</tt> etc: <tt>lib/cmake/STIR-V.v</tt> (was <tt>share/lib</tt>).<br>
+            <strong>The CMake variable <tt>STIR_DIR</tt> should now be set to  <tt>&lt;STIR_CMAKE_INSTALL_PREFIX&gt;/lib/cmake/STIR-V.v</tt></strong>.
+            However, this new location increases chances that <code>find_package</code> finds STIR as it follows conventions better.
+            For instance, STIR can now by found by <code>find_package</code>
+            when setting <code>CMAKE_PREFIX_PATH</code> to what was used for <code>CMAKE_INSTALL_PREFIX</code> when
+            installing STIR (indicated as <tt>STIR_CMAKE_INSTALL_PREFIX</tt> above). Moreover, if you use the same
+            <code>CMAKE_INSTALL_PREFIX</code> for your project as for STIR, you shouldn't need to set <code>STIR_DIR</code> nor <code>CMAKE_PREFIX_PATH</code>.
+         </li>
     </ul>
 
     <h3>New functionality</h3>
