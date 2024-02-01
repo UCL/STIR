@@ -381,6 +381,15 @@ jobs:
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
+          # build and run C++/using_installed_STIR
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake --build build/ --config Release  --target install
+          # run demo
+          demo_create_image
+          # just check if its output makes sense
+          list_image_info test.hv
+
     - name: Python
       shell: bash
       run: |
