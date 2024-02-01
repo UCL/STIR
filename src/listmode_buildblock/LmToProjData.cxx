@@ -11,7 +11,7 @@
 /*
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
     Copyright (C) 2017, University of Hull
-    Copyright (C) 2013, 2021 University College London
+    Copyright (C) 2013, 2021, 2023 University College London
     Copright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
@@ -145,7 +145,10 @@ construct_proj_data(shared_ptr<iostream>& output,
 void LmToProjData::set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo> t_sptr)
 {
   this->_already_setup = false;
-  template_proj_data_info_ptr = t_sptr->create_shared_clone();
+  if (t_sptr)
+    template_proj_data_info_ptr = t_sptr->create_shared_clone();
+  else
+    template_proj_data_info_ptr.reset();
 }
 
 shared_ptr<ProjDataInfo> LmToProjData::get_template_proj_data_info_sptr()
@@ -155,6 +158,11 @@ shared_ptr<ProjDataInfo> LmToProjData::get_template_proj_data_info_sptr()
 
 void LmToProjData::set_input_data(const shared_ptr<ExamData>& v)
 {
+  if (this->_already_setup && !is_null_ptr(this->template_proj_data_info_ptr))
+    {
+      warning("LmToProjData: set_input_data called after set_up(). I will use the existing template.\n"
+              "You might want to set it (e.g. to 0) before processing.");
+    }
   this->_already_setup = false;
   this->lm_data_ptr = dynamic_pointer_cast<ListModeData>(v);
   if (is_null_ptr(this->lm_data_ptr))
@@ -306,16 +314,13 @@ post_processing()
 
   set_input_data(input_filename);
 
-  if (template_proj_data_name.size()==0)
+  if (template_proj_data_name.size()>0)
     {
-      warning("You have to specify template_projdata\n");
-      return true;
+      shared_ptr<ProjData> template_proj_data_sptr =
+        ProjData::read_from_file(template_proj_data_name);
+
+      set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
     }
-  shared_ptr<ProjData> template_proj_data_sptr =
-    ProjData::read_from_file(template_proj_data_name);
-
-  set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
-
   if (set_up() == Succeeded::no)
     return true;
 
@@ -330,7 +335,10 @@ post_processing()
 
 Succeeded LmToProjData::set_up()
 {
-  _already_setup = true;
+  if (!this->lm_data_ptr)
+    {
+      error("You have to specify input list-mode data");
+    }
 
   if (!interactive && output_filename_prefix.size()==0)
     {
@@ -339,7 +347,8 @@ Succeeded LmToProjData::set_up()
 
   if (is_null_ptr(template_proj_data_info_ptr))
     {
-      error("LmToProjData::set_up(): template projection data not set");
+      info("LmToProjData: template not specified. Will use list-mode to construct it.");
+      this->set_template_proj_data_info_sptr(this->lm_data_ptr->get_proj_data_info_sptr());
     }
 
   // set up normalisation objects
@@ -450,6 +459,7 @@ Succeeded LmToProjData::set_up()
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
+  _already_setup = true;
   return Succeeded::yes;
 }
 
