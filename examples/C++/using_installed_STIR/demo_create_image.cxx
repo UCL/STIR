@@ -1,3 +1,20 @@
+/*!
+  \file
+  \ingroup examples
+  \brief A simple program that creates an image and fills it with a shape
+
+  Code is loosely based on GenerateImage.cxx
+  \author Kris Thielemans
+*/
+/*
+    Copyright (C) 2018-2022, 2024 University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/PatientPosition.h"
 #include "stir/ImagingModality.h"
@@ -23,8 +40,6 @@ int main()
 
   auto exam_info_sptr = std::make_shared<stir::ExamInfo>(stir::ImagingModality::PT);
   {
-    std::vector<double> start_times(1, rel_start_time);
-    std::vector<double> durations(1, image_duration);
     stir::TimeFrameDefinitions frame_defs;
     frame_defs.set_num_time_frames(1);
     frame_defs.set_time_frame(1, rel_start_time, image_duration);
@@ -42,11 +57,15 @@ int main()
                                                      output_voxel_size_y,
                                                      output_voxel_size_x));
 
-  const auto centre =
-    image.get_physical_coordinates_for_indices(stir::make_coordinate(output_image_size_z/2,0,0));
-  stir::EllipsoidalCylinder shape(40.F, 30.F, 20.F, centre);
-  shape.construct_volume(image, stir::make_coordinate(2,2,2));
+  // add shape to image
+  {
+    const auto centre =
+      image.get_physical_coordinates_for_indices(stir::make_coordinate(output_image_size_z/2,0,0));
+    stir::EllipsoidalCylinder shape(40.F, 30.F, 20.F, centre);
+    shape.construct_volume(image, stir::make_coordinate(2,2,2));
+  }
 
+  // write output for checking
   try
     {
       stir::write_to_file(output_filename, image);
