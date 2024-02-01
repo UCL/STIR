@@ -129,6 +129,9 @@ static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603
 static KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummyK ;
 static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
 
+static OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >::RegisterIt dummyOSMAPOSLPVC;
+static OSSPSReconstruction<ParametricVoxelsOnCartesianGrid >::RegisterIt dummyOSSPSPVC;
+
 #ifdef STIR_WITH_NiftyPET_PROJECTOR
 static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;
 static BackProjectorByBinNiftyPET::RegisterIt gpu_bck;

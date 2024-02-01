@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016-2023 University College London
+    Copyright (C) 2014, 2016-2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -884,7 +884,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
      this->ensure_norm_is_set_up_for_sensitivity();
 
-     distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
+     distributable_sensitivity_computation(
                                  this->sens_backprojector_sptr,
                                  this->sens_symmetries_sptr,
                                  *sensitivity_this_subset_sptr, 
@@ -1288,7 +1288,6 @@ void distributable_accumulate_loglikelihood(
 }
 
 void distributable_sensitivity_computation(
-                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
                                             const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
                                             DiscretisedDensity<3,float>& sensitivity,
@@ -1307,7 +1306,7 @@ void distributable_sensitivity_computation(
                                             )
 
 {
-          distributable_computation(forward_projector_sptr,
+          distributable_computation(0,
                                     back_projector_sptr,
                                     symmetries_sptr,
                                     &sensitivity, &input_image,
