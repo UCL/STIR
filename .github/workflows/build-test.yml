@@ -369,7 +369,7 @@ jobs:
           ./run_simulation.sh 1> /dev/null
 
           # Run the Demo executables
-          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
           cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
 
           generate_image generate_image.par
