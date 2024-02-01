@@ -282,7 +282,7 @@ jobs:
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
-          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
@@ -369,8 +369,8 @@ jobs:
           ./run_simulation.sh 1> /dev/null
 
           # Run the Demo executables
-          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
-          cd ${GITHUB_WORKSPACE}/examples/C++/src
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
 
           generate_image generate_image.par
           forward_project sino.hs image.hv  small.hs
@@ -380,6 +380,15 @@ jobs:
           ${EXE_LOC}/demo3 demoPM.par --display_off
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
+
+          # build and run C++/using_installed_STIR
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake --build build/ --config Release  --target install
+          # run demo
+          demo_create_image
+          # just check if its output makes sense
+          list_image_info test.hv
 
     - name: Python
       shell: bash
