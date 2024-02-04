@@ -102,10 +102,23 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
 }
 
 template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data)
+{
+  if (copy_data)
+    {
+      this->_allocated_full_data_ptr = new elemT[range.size_all()];
+      std::copy(data_ptr, data_ptr + range.size_all(), this->_allocated_full_data_ptr);
+    }
+  else
+    this->_allocated_full_data_ptr = data_ptr;
+  this->init(range, this->_allocated_full_data_ptr, false);
+}
+
+template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const self& t)
 :  base_type(t), _allocated_full_data_ptr(0)
 {
-  // info("constructor copy of size " + std::to_string(this->size_all()));
+  // info("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
 
 #ifndef SWIG
@@ -114,7 +127,7 @@ template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const base_type& t)
 :  base_type(t), _allocated_full_data_ptr(0)
 {
-  // info("constructor basetype of size " + std::to_string(this->size_all()));
+  // info("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
 }
 #endif
 
@@ -133,6 +146,7 @@ Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexce
   : Array()
 {
   swap(*this, other);
+  // info("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
 
 template <int num_dimensions, typename elemT>
@@ -141,6 +155,7 @@ Array<num_dimensions, elemT>::
 operator=(Array<num_dimensions, elemT> other)
 {
   swap(*this, other);
+  // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
   return *this;
 }
 
@@ -599,6 +614,12 @@ Array<1, elemT>::Array(const int min_index, const int max_index)
     : base_type()
 {
   grow(min_index, max_index);
+}
+
+template <class elemT>
+Array<1, elemT>::Array(const IndexRange<1>& range,  elemT * const data_ptr, bool copy_data)
+{
+  this->init(range, data_ptr, copy_data);
 }
 
 template <class elemT>

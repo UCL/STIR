@@ -351,8 +351,7 @@ ArrayTests::run_tests()
       {
         std::vector<float> mem(test.get_index_range().size_all());
         std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1,float> preallocated;
-        preallocated.init(test.get_index_range(), &mem[0], false);
+        Array<1,float> preallocated(test.get_index_range(), &mem[0], false);
         check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
         check_if_equal(test, preallocated, "test preallocated: equality");
         std::copy(test.begin_all_const(), test.end_all_const(), preallocated.begin_all());
@@ -386,8 +385,7 @@ ArrayTests::run_tests()
       {
         std::vector<float> mem(test.get_index_range().size_all());
         std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1,float> test_from_mem;
-        test_from_mem.init(test.get_index_range(), &mem[0], true);
+        Array<1,float> test_from_mem(test.get_index_range(), &mem[0], true);
         check(test_from_mem.owns_memory_for_data(), "test preallocated with copy: should own memory");
         check_if_equal(test, test_from_mem, "test construct from mem: equality");
         std::copy(test.begin_all_const(), test.end_all_const(), test_from_mem.begin_all());
@@ -505,7 +503,8 @@ ArrayTests::run_tests()
       {
         // copy constructor;
         Array<2, float> t21(t2);
-        check_if_equal(t21, t2, "test Array2D copy constructor");
+        check_if_equal( t21[3][2] , 6.F, "test Array2D copy consructor element");
+        check_if_equal(t21  , t2, "test Array2D copy constructor all elements" );
         // 'assignment constructor' (this simply calls copy constructor)
         Array<2, float> t22 = t2;
         check_if_equal(t22, t2, "test Array2D copy constructor");
@@ -523,8 +522,7 @@ ArrayTests::run_tests()
                              2 - t2[first_min_idx].get_min_index()],
                          "check row-major order in 2D");
         }
-        Array<2,float> preallocated;
-        preallocated.init(t2.get_index_range(), &mem[0], false);
+        Array<2,float> preallocated(t2.get_index_range(), &mem[0], false);
         //check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
         check_if_equal(t2, preallocated, "test preallocated: equality");
         std::copy(t2.begin_all_const(), t2.end_all_const(), preallocated.begin_all());
@@ -1013,8 +1011,7 @@ ArrayTests::run_tests()
       t.stop();
       std::cerr << "vector creation " << t.value()*1000 << "ms\n";
       t.start();
-      Array<4,int> a1;
-      a1.init(range, v.data(), false);
+      Array<4,int> a1(range, v.data(), false);
       t.stop();
       //check(!a1.owns_memory_for_data(), "test preallocated without copy: should not own memory");
       create_duration = t.value();
