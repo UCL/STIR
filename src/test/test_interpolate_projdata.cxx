@@ -2,6 +2,7 @@
 //
 /*
   Copyright 2023, Positrigo AG, Zurich
+  Copyright 2024, University College London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -188,6 +189,16 @@ void InterpolationTests::compare_segment_shape(const SegmentBySinogram<float>& s
   check_if_equal(sumVoxelsOutsideMask, 0U, "there were non-zero voxels outside the masked area");
 }
 
+static void make_symmetric_object(VoxelsOnCartesianGrid<float>& emission_map)
+{
+  const float z_voxel_size = emission_map.get_grid_spacing()[1];
+  const float z_centre = (emission_map.get_min_z() + emission_map.get_max_z())/2.F * z_voxel_size;
+  // choose a length that isn't exactly equal to a number of planes (or half), as that
+  // is sensitive to rounding error
+  auto cylinder = EllipsoidalCylinder(z_voxel_size*4.5, 80, 80, CartesianCoordinate3D<float>(z_centre, 0, 0));
+  cylinder.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+}
+
 void InterpolationTests::scatter_interpolation_test_blocks()
 {
   info("Performing symmetric interpolation test for BlocksOnCylindrical scanner");
@@ -213,8 +224,7 @@ void InterpolationTests::scatter_interpolation_test_blocks()
 
   // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
   auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  auto cylinder = EllipsoidalCylinder(41, 80, 80, CartesianCoordinate3D<float>(emission_map.get_max_z()/2 * emission_map.get_grid_spacing()[1], 0, 0));
-  cylinder.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+  make_symmetric_object(emission_map);
   write_to_file("downsampled_cylinder_map", emission_map);
 
   // project the cylinder onto the downsampled scanner proj data
@@ -266,8 +276,8 @@ void InterpolationTests::scatter_interpolation_test_cyl()
 
   // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
   auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  auto cylinder = EllipsoidalCylinder(40, 80, 80, CartesianCoordinate3D<float>(emission_map.get_max_z()/2 * emission_map.get_grid_spacing()[1], 0, 0));
-  cylinder.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+  make_symmetric_object(emission_map);
+  write_to_file("downsampled_cylinder_map_cyl", emission_map);
 
   // project the cylinder onto the downsampled scanner proj data
   auto pm = ProjMatrixByBinUsingRayTracing();
@@ -384,7 +394,7 @@ void InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
   auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
 
-  // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
+  // define asymetric object
   auto emission_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
   auto cyl_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
   auto cylinder = EllipsoidalCylinder(40, 40, 20, CartesianCoordinate3D<float>(90, 100, 0));
