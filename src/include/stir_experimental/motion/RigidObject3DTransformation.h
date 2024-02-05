@@ -132,12 +132,12 @@ public:
 
   //! Transform point 
   // can't return CartesianCoordinate3D<float> anymore because virtual function
-  virtual
+  
     BasicCoordinate<3,float>
-    transform_point(const BasicCoordinate<3,float>& point) const;
+    transform_point(const BasicCoordinate<3,float>& point) const override;
 
   //! Computes the jacobian for the transformation (which is always 1)
-  float jacobian(const BasicCoordinate<3,float>& point) const
+  float jacobian(const BasicCoordinate<3,float>& point) const override
     { return 1; }
 
   //! Transform bin from some projection data

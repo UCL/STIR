@@ -149,7 +149,7 @@ class ParametricQuadraticPrior:  public
   void set_kappa_sptr(const shared_ptr<TargetT >&);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const TargetT> const& target_sptr);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -159,7 +159,7 @@ protected:
      gradient is computed. The filename will be constructed by concatenating 
      gradient_filename_prefix and the counter.
   */
-  string gradient_filename_prefix;
+  std::string gradient_filename_prefix;
 
   //! penalty weights
   /*! 
@@ -171,7 +171,7 @@ protected:
   std::string kappa_filename; 	  //CHECK IF THERE IS A CONFILCT WHEN GIVING A KAPPA FILE...// THINK IF IT IS BETTER TO ESTIMATE KAPPA FILE IN THE CODE...
 
   //! Check that the prior is ready to be used
-  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+  virtual void check(TargetT const& current_image_estimate) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

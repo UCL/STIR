@@ -48,10 +48,10 @@ public:
     ForwardProjectorByBinParallelproj();
 
     /// Constructor
-    virtual ~ForwardProjectorByBinParallelproj();
+    ~ForwardProjectorByBinParallelproj() override;
 
     /// Keymap
-    virtual void initialise_keymap();
+    void initialise_keymap() override;
 
   //! Stores all necessary geometric info
  /*! 
@@ -63,19 +63,19 @@ public:
   \warning there is currently no check on this.
   \warning Derived classes have to call set_up from the base class.
   */
-virtual void set_up(
+void set_up(
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+    ) override;
 
   //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
-  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
 
     /// Set input
-    virtual void set_input(const DiscretisedDensity<3,float>&);
+    void set_input(const DiscretisedDensity<3,float>&) override;
 
     /// set defaults
-    void set_defaults();
+    void set_defaults() override;
 
     /// Set verbosity
     void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
@@ -90,7 +90,7 @@ virtual void set_up(
 
 protected:
 
-  virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
+  void actual_forward_project(RelatedViewgrams<float>& viewgrams,
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 

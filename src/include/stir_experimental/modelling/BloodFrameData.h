@@ -22,7 +22,6 @@
 #define __stir_modelling_BloodFrameData_H__
 
 #include "stir_experimental/modelling/BloodFrame.h"
-#include "stir_experimental/decay_correct.h"
 #include <vector>
 
 START_NAMESPACE_STIR

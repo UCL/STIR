@@ -20,7 +20,7 @@
 #ifndef __stir_modelling_OneParamModel_H__
 #define __stir_modelling_OneParamModel_H__
 
-#include "stir_experimental/modelling/ModelMatrix.h"
+#include "stir/modelling/ModelMatrix.h"
 
 START_NAMESPACE_STIR
 

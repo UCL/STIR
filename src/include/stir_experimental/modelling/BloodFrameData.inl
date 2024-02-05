@@ -18,7 +18,7 @@
 */
 #include "stir/warning.h"
 #include "stir/error.h"
-
+#include "stir/decay_correction_factor.h"
 START_NAMESPACE_STIR
 
 //! default constructor

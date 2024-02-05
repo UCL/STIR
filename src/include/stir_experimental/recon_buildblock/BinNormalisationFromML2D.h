@@ -77,19 +77,19 @@ public:
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
 
 private:
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   std::string normalisation_filename_prefix;
   bool do_block;

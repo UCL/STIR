@@ -3,8 +3,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir_experimental/Shape/EllipsoidalCylinder.h"
-#include "stir_experimental/Shape/CombinedShape3D.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/CombinedShape3D.h"
 
   
 

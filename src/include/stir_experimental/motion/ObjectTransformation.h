@@ -34,7 +34,7 @@ public:
   //! typedef used by read_from_file
   typedef ObjectTransformation hierarchy_base_type;
 
-  virtual ~ObjectTransformation() {}
+  ~ObjectTransformation() override {}
   //! Transform point 
   /* \todo should be CartesianCoordinate<num_dimensions,elemT>, but we don't have that class yet*/
   virtual BasicCoordinate<num_dimensions,elemT> 

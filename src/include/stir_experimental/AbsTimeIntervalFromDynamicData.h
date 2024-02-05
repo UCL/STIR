@@ -53,7 +53,7 @@ public:
   //! Name which will be used when parsing a AbsTimeInterval object 
   static const char * const registered_name; 
 
-  virtual ~AbsTimeIntervalFromDynamicData() {}
+  ~AbsTimeIntervalFromDynamicData() override {}
   //! default constructor gives ill-defined values
   AbsTimeIntervalFromDynamicData();
   //! read info from file
@@ -69,9 +69,9 @@ public:
   unsigned int _start_time_frame_num;
   unsigned int _end_time_frame_num;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 
   Succeeded set_times();
