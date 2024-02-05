@@ -41,6 +41,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 9
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -49,6 +50,7 @@ jobs:
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -58,6 +60,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
@@ -66,14 +69,25 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 12
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
           BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          cuda_version: "12.1.0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -92,7 +106,7 @@ jobs:
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
 
-    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
     - name: disk space
@@ -168,6 +182,13 @@ jobs:
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
 
+    - if: matrix.cuda_version != '0'
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+          cuda: ${{ matrix.cuda_version }}
+          linux-local-args: '["--toolkit"]'
+
     - name: install_dependencies
       shell: bash
       run: |
@@ -228,7 +249,10 @@ jobs:
              git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
-             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
+             if test "${{matrix.cuda_version}}" == "0"; then
+               extra_args="-DSKIP_CUDA_LIB:BOOL=ON"
+             fi
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
           fi
@@ -259,7 +283,7 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
-        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        key: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
         max-size: "2G"
 
     - name: configure
@@ -311,11 +335,23 @@ jobs:
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
+          set -vx
           cd ${GITHUB_WORKSPACE}/build
+          # find test exclusions. Complicated due to need of single -E argument and | pattern
+          if test ${{matrix.cuda_version}} != "0"; then
+              # No CUDA drivers on GitHub Actions
+              EXCLUDE="parallelproj|test_blocks_on_cylindrical_projectors"
+          fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
+          # prepend -E
+          if [ ! -z "${EXCLUDE}" ]; then
+              EXCLUDE="-E ${EXCLUDE}"
+          fi
+          # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
     - name: recon_test_pack
@@ -346,9 +382,8 @@ jobs:
       uses: actions/upload-artifact@v3
       if: failure()
       with:
-        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: |
-          ${{ github.workspace }}/recon_test_pack/**/*.log
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
