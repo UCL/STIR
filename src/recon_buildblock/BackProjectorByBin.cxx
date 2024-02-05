@@ -96,13 +96,20 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
 
 void
 BackProjectorByBin::
-check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
+check(const ProjDataInfo& proj_data_info) const
 {
   if (!this->_already_set_up)
     error("BackProjectorByBin method called without calling set_up first.");
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
     error(boost::format("BackProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+}
+
+void
+BackProjectorByBin::
+check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
+{
+  this->check(proj_data_info);
   if (! this->_density_sptr->has_same_characteristics(density_info))
     error("BackProjectorByBin set-up with different geometry for density or volume data.");
 }
@@ -266,7 +273,7 @@ back_project(const RelatedViewgrams<float>& viewgrams,
   if (!_density_sptr)
     error("You need to call start_accumulating_in_new_target() before back_project()");
 
-  check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
+  check(*viewgrams.get_proj_data_info_sptr());
 
 #ifdef STIR_OPENMP
   const int thread_num=omp_get_thread_num();

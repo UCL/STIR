@@ -55,7 +55,6 @@
 using std::ofstream;
 using std::ifstream;
 using std::plus;
-using std::bind;
 using std::cerr;
 using std::endl;
 
@@ -571,7 +570,7 @@ ArrayTests::run_tests()
       check_if_zero( test3.sum() - 2*tmp2.sum() - tmp.sum(), "test operator-(float)");
     }
 
-    in_place_apply_function(test3ter, bind(plus<float>(), std::placeholders::_1, 4.F));
+    in_place_apply_function(test3ter, std::bind(plus<float>(), std::placeholders::_1, 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat  , test3ter, 
                   "test in_place_apply_function and operator+=(NUMBER)");
