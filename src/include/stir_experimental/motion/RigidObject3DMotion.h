@@ -47,7 +47,7 @@ class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>
 {
 
 public:
-  virtual ~RigidObject3DMotion() {}
+  ~RigidObject3DMotion() override {}
 
   //! get motion in tracker coordinates  
   virtual
@@ -119,9 +119,9 @@ public:
     set_transformation_from_scanner_coords(const RigidObject3DTransformation&) = 0;
 
 protected:
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 };
 

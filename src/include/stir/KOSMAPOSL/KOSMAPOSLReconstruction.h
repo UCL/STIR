@@ -191,7 +191,7 @@ public:
   //@}
 
   //! prompts the user to enter parameter values manually
-  virtual void ask_parameters();
+  void ask_parameters() override;
  protected:
   //! Filename with input projection data
   std::string input_filename,kernelised_output_filename_prefix;
@@ -214,9 +214,9 @@ public:
   BasicCoordinate<3,int> min_ind, max_ind;
   shared_ptr<TargetT> iterative_kernel_image_frozen_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 
   //! Function that applies the kernel to the image_to_kernelise
@@ -228,10 +228,10 @@ private:
   friend void do_sensitivity(const char * const par_filename);
 
   //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_sptr);
+  Succeeded set_up(shared_ptr <TargetT > const& target_image_sptr) override;
  
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_estimate (TargetT& current_image_estimate);
+  void update_estimate (TargetT& current_image_estimate) override;
   
   //!  check whether the iterative kernel still needs to be updated
   bool still_updating_iterative_kernel();

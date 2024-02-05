@@ -23,6 +23,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
 #include "stir_experimental/motion/RigidObject3DMotion.h"
+#include <string>
 
 START_NAMESPACE_STIR
 /*! \ingroup motion
@@ -104,7 +105,7 @@ public:
   double get_frame_end_time(unsigned frame_num) const
   { return frame_defs.get_end_time(frame_num) + scan_start_time; }
 
-  const string& get_image_filename_prefix() const
+  const std::string& get_image_filename_prefix() const
   { return _image_filename_prefix; }
   
   const RigidObject3DMotion& get_motion() const
@@ -123,16 +124,16 @@ protected:
   double _current_frame_start_time;
   
   //! parsing functions
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   //! parsing variables
-  string frame_definition_filename;
+  std::string frame_definition_filename;
 
   double scan_start_time;
 
-  string _image_filename_prefix;
+  std::string _image_filename_prefix;
 
   float relative_threshold;
 private:

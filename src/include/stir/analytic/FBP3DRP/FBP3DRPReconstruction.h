@@ -118,13 +118,13 @@ public:
   // the shared_ptr<DiscretisedDensity<3,float> > destructor with gcc.
   // Otherwise, gcc will complain if you didn't include DiscretisedDensity.h
   // because it doesn't know ~DiscretisedDensity.
-  ~FBP3DRPReconstruction();
+  ~FBP3DRPReconstruction() override;
 
 //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
-  virtual std::string method_info() const;
+  std::string method_info() const override;
 
   Succeeded
-    set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr);
+    set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_sptr) override;
 
 protected:
 /*!
@@ -135,7 +135,7 @@ protected:
   and returns the output reconstructed image
 */
 
-   virtual Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&);
+   Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&) override;
     
 //! Best fit of forward projected sinograms
     void do_best_fit(const Sinogram<float> &sino_measured, const Sinogram<float> &sino_calculated);
@@ -243,8 +243,8 @@ protected:
   int fit_projections; 
 private:
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
 
   //! access to input proj_data_info cast to cylindrical type

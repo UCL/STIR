@@ -72,12 +72,12 @@ private:
   int mask_radius_z;
 
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
-  Succeeded virtual_set_up (const DiscretisedDensity< 3,elemT>& density);
-  void virtual_apply(DiscretisedDensity<3,elemT>& density, const DiscretisedDensity<3,elemT>& in_density) const; 
-  void virtual_apply(DiscretisedDensity<3,elemT>& density) const; 
+  Succeeded virtual_set_up (const DiscretisedDensity< 3,elemT>& density) override;
+  void virtual_apply(DiscretisedDensity<3,elemT>& density, const DiscretisedDensity<3,elemT>& in_density) const override; 
+  void virtual_apply(DiscretisedDensity<3,elemT>& density) const override; 
 };
 
 

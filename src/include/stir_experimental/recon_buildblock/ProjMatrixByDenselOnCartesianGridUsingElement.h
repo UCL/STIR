@@ -65,10 +65,10 @@ public :
 
       Currently, the proj_data_info_ptr argument is not used.
   */
-  virtual void set_up(		 
+  void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
   //! this member computes a single element of the projection matrix
   /*! \param bin The bin-coordinates specifying the row of the projection matrix
@@ -103,7 +103,7 @@ protected:
       few assumptions.
       TODO more doc.
   */
-  void calculate_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel &) const;
+  void calculate_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel &) const override;
   
   
 };

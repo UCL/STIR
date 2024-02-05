@@ -45,9 +45,9 @@ public:
  SinglesRatesForTimeSlices();
 
  // implementation of pure virtual in SinglesRates
- virtual float
+ float
    get_singles(const int singles_bin_index,
-               const double start_time, const double end_time) const;
+               const double start_time, const double end_time) const override;
 
 
  //! Generate a FramesSinglesRate - containing the average rates

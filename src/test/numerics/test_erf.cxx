@@ -32,7 +32,7 @@ class erfTests : public RunTests
 public:
   erfTests() 
   {}
-  void run_tests();
+  void run_tests() override;
 
   /*!\brief Tests STIR's erf(x) function against known values */
   void test_stir_erf();

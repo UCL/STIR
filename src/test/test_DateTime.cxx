@@ -35,7 +35,7 @@ class DateTimeTest : public RunTests
 {
   void check_round_trip(const double secs, const double tz_offset, const std::string& str);
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 

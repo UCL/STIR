@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
 class ML_normTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 protected:  
   template <class TProjDataInfo>
   void test_proj_data_info(shared_ptr<TProjDataInfo> proj_data_info_sptr);

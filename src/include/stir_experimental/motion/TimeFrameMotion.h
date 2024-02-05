@@ -103,9 +103,9 @@ protected:
 
   
   //! parsing functions
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 
 private:

@@ -32,7 +32,7 @@ class AbsTimeInterval: public RegisteredObject<AbsTimeInterval>
 {
 
 public:
-  virtual ~AbsTimeInterval() {}
+  ~AbsTimeInterval() override {}
   AbsTimeInterval()
     :
     _start_time_in_secs_since_1970(0),

@@ -51,7 +51,7 @@ public:
   BinNormalisationWithCalibration();
   //! initialises the object and checks if it can handle such projection data
   /*! Computes internal numbers related to calibration etc. */
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,const shared_ptr<const ProjDataInfo>&) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,const shared_ptr<const ProjDataInfo>&) override;
   //! product of calibration factor etc
   float get_calib_decay_branching_ratio_factor(const Bin&) const; // TODO find a better name
   float get_calibration_factor() const override;
@@ -66,14 +66,14 @@ public:
   //! return efficiency for 1 bin
   /*! returns get_uncalibrated_bin_efficiency(bin)/get_calib_decay_branching_ratio_factor(bin)
    */
-  virtual float get_bin_efficiency(const Bin& bin) const final
+  float get_bin_efficiency(const Bin& bin) const final
    { return this->get_uncalibrated_bin_efficiency(bin)/this->_calib_decay_branching_ratio; }
   
  protected:
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 
 private:

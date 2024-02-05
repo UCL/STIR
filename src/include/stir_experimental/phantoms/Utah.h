@@ -21,8 +21,8 @@
 
 */
 
-#include "stir/EllipsoidalCylinder.h"
-#include "stir/CombinedShape3D.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/CombinedShape3D.h"
 
 START_NAMESPACE_STIR
   

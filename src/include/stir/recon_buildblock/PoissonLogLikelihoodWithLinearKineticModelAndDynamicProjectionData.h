@@ -68,34 +68,34 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /*! Dimensions etc are set from the \a dyn_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
+  TargetT *
+    construct_target_ptr() const override; 
 
-  virtual std::unique_ptr<ExamInfo>
-  get_exam_info_uptr_for_target()  const;
+  std::unique_ptr<ExamInfo>
+  get_exam_info_uptr_for_target()  const override;
  protected:
-  virtual double
+  double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num);
+                                                      const int subset_num) override;
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr);
+  Succeeded set_up_before_sensitivity(shared_ptr <const TargetT> const& target_sptr) override;
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
    */
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
-  virtual Succeeded 
+  Succeeded 
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                              const TargetT& input,
-                                                                             const int subset_num) const;
+                                                                             const int subset_num) const override;
 
-  virtual Succeeded
+  Succeeded
     actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT &output,
                                                               const TargetT &current_image_estimate,
                                                               const TargetT &input,
-                                                              const int subset_num) const;
+                                                              const int subset_num) const override;
 
  public:
   /*! \name Functions to get parameters
@@ -124,13 +124,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   //@{
   void set_recompute_sensitivity(const bool);
   void set_sensitivity_sptr(const shared_ptr<TargetT>&);
-  virtual int set_num_subsets(const int num_subsets);
+  int set_num_subsets(const int num_subsets) override;
 
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
-  virtual const DynamicProjData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData> &) override;
+  const DynamicProjData& get_input_data() const override;
   //@}
  protected:
   //! Filename with input projection data
@@ -164,22 +164,22 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   //! dynamic image template
   DynamicDiscretisedDensity _dyn_image_template;
 
-  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
 
-  virtual void
+  void
   actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                                  const TargetT &current_estimate,
                                                  const int subset_num,
-                                                 const bool add_sensitivity);
+                                                 const bool add_sensitivity) override;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
      \c recompute_sensitivity to \c false.
   */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 };
 

@@ -61,13 +61,13 @@ public:
   /*! 
     This means \c multiply with the data in the scale factors file.
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in th scale factors file.
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
 
 private:
   // the proj data info used for obtaining axial position num, segment num
@@ -76,9 +76,9 @@ private:
   Array<3,float> rescaling_factors;
 
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   std::string sinogram_rescaling_factors_filename;
 };

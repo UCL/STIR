@@ -113,7 +113,7 @@ public:
     OSSPSReconstruction(const std::string& parameter_filename);
 
   //! prompts the user to enter parameter values manually
-  virtual void ask_parameters();
+  void ask_parameters() override;
   //! accessor for the external parameters
   OSSPSReconstruction& get_parameters(){return *this;}
 
@@ -122,7 +122,7 @@ public:
     {return *this;}
 
   //! gives method information
-  virtual std::string method_info() const;
+  std::string method_info() const override;
 
   //! Precompute the data-dependent part of the denominator for the preconditioner
 /*!
@@ -143,10 +143,10 @@ public:
 
 
   //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+  Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr) override;
 
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_estimate(TargetT &current_image_estimate);
+  void update_estimate(TargetT &current_image_estimate) override;
  
 
  protected: // could be private, but this way the doxygen comments are always listed
@@ -172,10 +172,10 @@ public:
   //! parameter determining how fast relaxation goes down  (see class documentation)
   float relaxation_gamma;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();
+  bool post_processing() override;
 
 private:
 

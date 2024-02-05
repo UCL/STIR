@@ -39,8 +39,8 @@ public:
   LmToProjDataWithMC(const char * const par_filename);
 
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
-  virtual void process_new_time_event(const ListTime& time_event);
-  virtual Succeeded set_up();
+  void process_new_time_event(const ListTime& time_event) override;
+  Succeeded set_up() override;
   
 protected: 
   //! motion information
@@ -50,12 +50,12 @@ protected:
   //! constant reference position (if used)
   shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;  
 
-  virtual void start_new_time_frame(const unsigned int new_frame_num);
+  void start_new_time_frame(const unsigned int new_frame_num) override;
 
    
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 private:
 

@@ -68,35 +68,35 @@ public:
   // only need this to enable LmToProjDataWithMC(const char * const par_filename) function
   RigidObject3DMotionFromPolaris();
 
-  virtual RigidObject3DTransformation 
-    compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time) const;
+  RigidObject3DTransformation 
+    compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time) const override;
 
-  virtual 
+  
     RigidObject3DTransformation
-    get_motion_in_tracker_coords_rel_time(const double time) const;
+    get_motion_in_tracker_coords_rel_time(const double time) const override;
 
-  virtual std::vector<double>
-    get_rel_time_of_samples(const double start_time, const double end_time) const;
+  std::vector<double>
+    get_rel_time_of_samples(const double start_time, const double end_time) const override;
 
   //! set mask to be able to ignore one or more channels in the listmode gating data
   void set_mask_for_tags(const unsigned int mask_for_tags);
 
   //! Synchronise motion tracking file and listmode file
-  virtual Succeeded synchronise();
-  virtual double secs_since_1970_to_rel_time(std::time_t) const;
+  Succeeded synchronise() override;
+  double secs_since_1970_to_rel_time(std::time_t) const override;
 
-  virtual const RigidObject3DTransformation& 
-    get_transformation_to_scanner_coords() const;
-  virtual const RigidObject3DTransformation& 
-    get_transformation_from_scanner_coords() const;
-  virtual void  
-    set_transformation_from_scanner_coords(const RigidObject3DTransformation&);
+  const RigidObject3DTransformation& 
+    get_transformation_to_scanner_coords() const override;
+  const RigidObject3DTransformation& 
+    get_transformation_from_scanner_coords() const override;
+  void  
+    set_transformation_from_scanner_coords(const RigidObject3DTransformation&) override;
   Succeeded set_mt_file(const std::string& mt_filename);
   Succeeded set_list_mode_data_file(const std::string& lm_filename);
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   //! Gets boundaries to determine when the time offset is out of bounds
   //*! Currently, the time offset is compared to the start of the listmode scan.*/
@@ -116,7 +116,7 @@ public:
 private: 
 
   void do_synchronisation(CListModeData& listmode_data);
-  virtual bool is_synchronised() const;
+  bool is_synchronised() const override;
 
   double rel_time_to_polaris_time(const double time) const;
   double polaris_time_to_rel_time(const double time) const;

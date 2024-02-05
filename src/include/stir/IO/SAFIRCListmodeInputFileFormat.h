@@ -78,19 +78,19 @@ class SAFIRCListmodeInputFileFormat : public InputFileFormat<ListModeData>, publ
 {
 public:
 	SAFIRCListmodeInputFileFormat() {}
-	virtual const std::string get_name() const
+	const std::string get_name() const override
 	{
 		return "SAFIR Coincidence Listmode File Format";
 	}
 	
 	//! Checks in binary data file for correct signature.
-	virtual bool can_read(const FileSignature& signature, std::istream& input ) const
+	bool can_read(const FileSignature& signature, std::istream& input ) const override
 	{
 		return false; // cannot read from istream
 	}
 
 	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData", "NeuroLF CListModeData" or "MUPET CListModeData").
-	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
+	bool can_read( const FileSignature& signature, const std::string& filename) const override
 	{
 		// Looking for the right key in the parameter file
 		std::ifstream par_file(filename.c_str());
@@ -124,15 +124,15 @@ public:
 		return cr;
 	}
 	
-	virtual std::unique_ptr<data_type>
-	read_from_file(std::istream& input) const
+	std::unique_ptr<data_type>
+	read_from_file(std::istream& input) const override
 	{
 		error("read_from_file for SAFIRCListmodeData with istream not implemented %s:%d. Sorry",__FILE__, __LINE__);
 		return unique_ptr<data_type>();
 	}
 
-	virtual std::unique_ptr<data_type> 
-	read_from_file(const std::string& filename) const
+	std::unique_ptr<data_type> 
+	read_from_file(const std::string& filename) const override
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
@@ -146,11 +146,11 @@ protected:
 	mutable std::string template_proj_data_filename;
 	mutable double lor_randomization_sigma;
 
-	virtual bool actual_can_read(const FileSignature &signature, std::istream &input) const {
+	bool actual_can_read(const FileSignature &signature, std::istream &input) const override {
 		return false; // cannot read from istream
 	}
 
-	void initialise_keymap() {
+	void initialise_keymap() override {
 		base_type::initialise_keymap();
 		this->parser.add_start_key("CListModeDataSAFIR Parameters");
 		this->parser.add_key("listmode data filename", &listmode_filename);
@@ -160,7 +160,7 @@ protected:
 		this->parser.add_stop_key("END CListModeDataSAFIR Parameters");
 	}
 
-	void set_defaults() {
+	void set_defaults() override {
 		base_type::set_defaults();
 		crystal_map_filename = "";
 		template_proj_data_filename = "";
@@ -176,7 +176,7 @@ protected:
 		else return false;
 	}
 
-	bool post_processing() {
+	bool post_processing() override {
 		if( !file_exists(listmode_filename) ) return true;
 		else if( !file_exists(template_proj_data_filename) ) return true;
 		else {

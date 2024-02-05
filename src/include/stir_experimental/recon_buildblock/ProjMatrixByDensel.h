@@ -50,7 +50,7 @@ class ProjMatrixByDensel :  public RegisteredObject<ProjMatrixByDensel>
 {
 public:
   
-  virtual ~ProjMatrixByDensel() {}
+  ~ProjMatrixByDensel() override {}
 
   //! To be called before any calculation is performed
   /*! Note that get_proj_matrix_elems_for_one_Densel() will expect objects of

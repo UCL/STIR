@@ -52,7 +52,7 @@ public:
   /*! Overrides the default implementation to use get_detection_position()
     which should be faster.
   */
-  inline virtual LORAs2Points<float> get_LOR() const;
+  inline LORAs2Points<float> get_LOR() const override;
 
   //! find bin for this event
   /*! Overrides the default implementation to use get_detection_position()
@@ -62,14 +62,14 @@ public:
     type ProjDataInfoT. However, because of efficiency reasons
     this is only checked in debug mode (NDEBUG not defined).
   */
-  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+  inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
-  inline virtual bool is_valid_template(const ProjDataInfo&) const;
+  inline bool is_valid_template(const ProjDataInfo&) const override;
 
  protected:
    shared_ptr<const ProjDataInfoT>

@@ -153,7 +153,7 @@ num_related_densels(const Densel& b) const
 
 void
 DataSymmetriesForDensels_PET_CartesianGrid::
-get_related_densels(vector<Densel>& v, const Densel& d) const
+get_related_densels(std::vector<Densel>& v, const Densel& d) const
 {
 #ifndef NDEBUG
   {

@@ -94,7 +94,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
 #endif // ChT::ToDo
  protected:
   //! Filename with input dynamic projection data
-  string _input_filename;
+  std::string _input_filename;
 
   //! points to the object for the total input dynamic projection data
   shared_ptr<DynamicProjData> _dyn_proj_data_sptr;
@@ -133,7 +133,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
   
   /********************************/
   //! name of file in which additive projection data are stored
-  string _additive_dyn_proj_data_filename;
+  std::string _additive_dyn_proj_data_filename;
  //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
@@ -144,7 +144,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
   //! signals whether to zero the data in the end planes of the projection data
   bool _zero_seg0_end_planes;
 
-  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   //! Sets defaults for parsing 
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and

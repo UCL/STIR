@@ -81,7 +81,7 @@ public:
     float find_max() const;
     float find_min() const;
     int get_num_detectors() const;
-    void grow(const IndexRange<2>&);
+    void grow(const IndexRange<2>&) override;
     
 private:
     typedef Array<2,float> base_type;
@@ -144,7 +144,7 @@ class GeoData3D : public Array<4,float>
 public:
     GeoData3D();
     GeoData3D(const int num_axial_crystals_per_block, const int half_num_transaxial_crystals_per_block, const int num_rings, const int num_detectors_per_ring);
-    virtual  ~GeoData3D();
+     ~GeoData3D() override;
     GeoData3D& operator=(const GeoData3D&);
 
     
@@ -187,7 +187,7 @@ public:
     
     FanProjData();
     FanProjData(const int num_rings, const int num_detectors_per_ring, const int max_ring_diff, const int fan_size);
-    virtual ~FanProjData();
+    ~FanProjData() override;
     FanProjData& operator=(const FanProjData&);
     
     float& operator()(const int ra, const int a, const int rb, const int b);

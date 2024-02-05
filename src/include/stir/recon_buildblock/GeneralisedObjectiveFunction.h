@@ -91,7 +91,7 @@ public:
   {}
 
 
-  virtual ~GeneralisedObjectiveFunction(); 
+  ~GeneralisedObjectiveFunction() override; 
 
 
   //! Creates a suitable target as determined by the parameters
@@ -344,10 +344,10 @@ protected:
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets parsing keys
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap();
+  void initialise_keymap() override;
 
   //virtual bool post_processing();
 

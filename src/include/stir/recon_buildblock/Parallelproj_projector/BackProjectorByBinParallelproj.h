@@ -46,37 +46,37 @@ public:
   //! Default constructor calls reset_timers()
   BackProjectorByBinParallelproj();
 
-  virtual ~BackProjectorByBinParallelproj();
+  ~BackProjectorByBinParallelproj() override;
 
   /// Keymap
-  virtual void initialise_keymap();
+  void initialise_keymap() override;
 
   //! Stores all necessary geometric info
  /*!
   If necessary, set_up() can be called more than once.
   */
- virtual void set_up(		 
+ void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+    ) override;
 
   //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
- virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+ const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
 
 #if 0
  /// Back project
   void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 #endif
  /// Get output
- virtual void get_output(DiscretisedDensity<3,float> &) const;
+ void get_output(DiscretisedDensity<3,float> &) const override;
 
 
   /*! \brief tell the back projector to start accumulating into a new target.
     This function has to be called before any back-projection is initiated.*/
-  virtual void start_accumulating_in_new_target();
+  void start_accumulating_in_new_target() override;
 
   /// set defaults
-  void set_defaults();
+  void set_defaults() override;
 
   /// Set verbosity
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
@@ -89,9 +89,9 @@ public:
 
 protected:
 
- virtual void actual_back_project(const RelatedViewgrams<float>&,
+ void actual_back_project(const RelatedViewgrams<float>&,
                           const int min_axial_pos_num, const int max_axial_pos_num,
-                          const int min_tangential_pos_num, const int max_tangential_pos_num);
+                          const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;

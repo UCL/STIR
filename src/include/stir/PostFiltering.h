@@ -36,7 +36,7 @@ public:
     //! Default constructor
     PostFiltering();
 
-    virtual ~PostFiltering(){}
+    ~PostFiltering() override{}
 
     void set_filter_sptr(shared_ptr<DataProcessor< DataT > > filter_sptr);
     Succeeded process_data(DataT& arg);
@@ -45,9 +45,9 @@ public:
     bool is_filter_null();
 
 protected:
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
 private:
     shared_ptr<DataProcessor< DataT > > filter_sptr;

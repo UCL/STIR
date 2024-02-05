@@ -55,7 +55,7 @@ START_NAMESPACE_STIR
 class DetectionPosMapTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
   float calculate_angle_within_half_bucket(const shared_ptr<Scanner> scanner_ptr,
                                            const shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr);
 private:

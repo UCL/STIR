@@ -189,7 +189,7 @@ class LORInCylinderCoordinates : public LOR<coordT>
   /*! In this class, this currently always return \c false. You can swap the points if
       you want to swap the direction of the LOR.
   */
-  bool is_swapped() const
+  bool is_swapped() const override
     {
       return false;
     }
@@ -247,22 +247,22 @@ class LORInCylinderCoordinates : public LOR<coordT>
   self_type* clone() const override
   { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   PointOnCylinder<coordT> _p1;
@@ -309,7 +309,7 @@ class LORAs2Points : public LOR<coordT>
   /*! In this class, this currently always return \c false. You can swap the points if
   you want to swap the direction of the LOR.
   */
-  bool is_swapped() const
+  bool is_swapped() const override
     {
       return false;
     }
@@ -317,22 +317,22 @@ class LORAs2Points : public LOR<coordT>
   self_type* clone() const override
   { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
  
  //! Calculate intersections with block. Used in: ProjDataInfoBlocksOnCylindrical::get_LOR
   Succeeded
@@ -381,7 +381,7 @@ class LORInAxialAndSinogramCoordinates
   coordT& s()           { check_state(); return _s; }
 
   coordT beta() const   { check_state(); return asin(_s/private_base_type::_radius); }
-  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() const override { check_state(); return _swapped; }
   bool is_swapped() { check_state(); return _swapped; }
   inline explicit
   LORInAxialAndSinogramCoordinates(const coordT radius = 1);
@@ -434,22 +434,22 @@ class LORInAxialAndSinogramCoordinates
     }
     
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   coordT _phi;
@@ -492,7 +492,7 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   coordT& phi()         { check_state(); return _phi; }
   coordT beta() const   { check_state(); return _beta; }
   coordT& beta()        { check_state(); return _beta; }
-  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() const override { check_state(); return _swapped; }
   bool is_swapped() { check_state(); return _swapped; }
 
   coordT s() const      { check_state(); return private_base_type::_radius*sin(_beta); }
@@ -547,22 +547,22 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   self_type* clone() const override
   { return new self_type(*this); }
 
-  virtual
+  
     Succeeded
     change_representation(LORInCylinderCoordinates<coordT>&,
-			     const double radius) const;
-  virtual
+			     const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
-						   const double radius) const;
-  virtual
+						   const double radius) const override;
+  
     Succeeded
     change_representation(LORInAxialAndSinogramCoordinates<coordT>&,
-				       const double radius) const;
-  virtual
+				       const double radius) const override;
+  
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
-				    const double radius) const;
+				    const double radius) const override;
 
  private:
   coordT _phi;

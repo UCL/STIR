@@ -62,7 +62,7 @@ public:
                                , const int timing_pos=0
 #endif
                                ) const override;
-  Succeeded set_viewgram(const Viewgram<float>& v);
+  Succeeded set_viewgram(const Viewgram<float>& v) override;
 
   Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,
                                const bool make_num_tangential_poss_odd=false
@@ -93,17 +93,17 @@ public:
 
   //! set all bins to the same value
   /*! will call error() if setting failed */
-  virtual void fill(const float value);
+  void fill(const float value) override;
 
   //! set all bins from another ProjData object
   /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
     The current check requires at least the same segment numbers (but the source can have more),
     all other geometric parameters have to be the same.
  */
-  virtual void fill(const ProjData&);
+  void fill(const ProjData&) override;
 
   //! destructor deallocates all memory the object owns
-  virtual ~ProjDataInMemory();
+  ~ProjDataInMemory() override;
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
@@ -111,30 +111,30 @@ public:
   void set_bin_value(const Bin &bin);
     
   //! \deprecated a*x+b*y (use xapyb)
-  STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x,
-                                     const float b, const ProjData& y);
+  STIR_DEPRECATED void axpby(const float a, const ProjData& x,
+                                     const float b, const ProjData& y) override;
 
   //! set values of the array to x*a+y*b, where a and b are scalar, and x and y are ProjData.
   /// This implementation requires that x and y are ProjDataInMemory
   /// (else falls back on general method)
-  virtual void xapyb(const ProjData& x, const float a,
-                     const ProjData& y, const float b);
+  void xapyb(const ProjData& x, const float a,
+                     const ProjData& y, const float b) override;
 
   //! set values of the array to x*a+y*b, where a, b, x and y are ProjData.
   /// This implementation requires that a, b, x and y are ProjDataInMemory
   /// (else falls back on general method)
-  virtual void xapyb(const ProjData& x, const ProjData& a,
-                     const ProjData& y, const ProjData& b);
+  void xapyb(const ProjData& x, const ProjData& a,
+                     const ProjData& y, const ProjData& b) override;
 
   //! set values of the array to self*a+y*b where a and b are scalar, y is ProjData
   /// This implementation requires that a, b and y are ProjDataInMemory
   /// (else falls back on general method)  
-  virtual void sapyb(const float a, const ProjData& y, const float b);
+  void sapyb(const float a, const ProjData& y, const float b) override;
 
   //! set values of the array to self*a+y*b where a, b and y are ProjData
    /// This implementation requires that a, b and y are ProjDataInMemory
   /// (else falls back on general method)   
-  virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
+  void sapyb(const ProjData& a, const ProjData& y, const ProjData& b) override;
 
   /** @name iterator typedefs
    *  iterator typedefs

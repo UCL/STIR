@@ -75,16 +75,16 @@ public:
 
   //! Compare shapes
   /*! \todo currently not implemented (will call error() */
-  virtual bool
-    operator==(const Shape3D&) const
+  bool
+    operator==(const Shape3D&) const override
   { error("DiscretisedShape3D::operator== not implemented. Sorry"); return false;}
 
   //! set origin of the shape
-  virtual void set_origin(const CartesianCoordinate3D<float>&);
+  void set_origin(const CartesianCoordinate3D<float>&) override;
 
   //! Scale shape
   /*! \todo Not implemented (will call error()) */
-  virtual void scale(const CartesianCoordinate3D<float>& scale3D) 
+  void scale(const CartesianCoordinate3D<float>& scale3D) override 
   { error ("TODO: DiscretisedShape3D::scale not implemented. Sorry.");}
 
   //! determine if a point is inside a non-zero voxel or not
@@ -97,7 +97,7 @@ public:
     cannot be used to find the voxel_weight. So, we have to redefine 
     get_voxel_weight() in the present class.
     */
-  bool is_inside_shape(const CartesianCoordinate3D<float>& index) const;
+  bool is_inside_shape(const CartesianCoordinate3D<float>& index) const override;
 
   //! get weight for a voxel centred around \a coord
   /*! 
@@ -109,10 +109,10 @@ public:
     If get_label_index() >= 0, the weight will be 1 for those voxels whose value is equal to the label_index and zero otherwise.
     If get_label_index() < 0 (default), the weight will be the actual voxel value.
   */
- virtual float get_voxel_weight(
+ float get_voxel_weight(
    const CartesianCoordinate3D<float>& coord,
    const CartesianCoordinate3D<float>& voxel_size, 
-   const CartesianCoordinate3D<int>& num_samples) const;
+   const CartesianCoordinate3D<int>& num_samples) const override;
 
  //! Construct a new image from the underlying density
  /*! 
@@ -122,11 +122,11 @@ public:
 
    The argument \a num_samples is ignored.
   */
-  void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const;
+  void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const override;
  //void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
  
  
- virtual Shape3D* clone() const;
+ Shape3D* clone() const override;
 
  //! provide access to the underlying density
  DiscretisedDensity<3,float>& get_discretised_density();
@@ -149,14 +149,14 @@ private:
   //! \name Parsing functions
   //@{
   //! Sets defaults i.e. label index=-1 and reset density_sptr
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
+  void set_defaults() override;  
+  void initialise_keymap() override;
   //! Checks validity of parameters
   /*! As currently there are 2 origin parameters (in Shape3D and
       DiscretisedDensity), this function checks for consistency.
       However, the origin in Shape3D will be ignored.
   */
-  virtual bool post_processing();
+  bool post_processing() override;
   //@}
   std::string filename;
 };

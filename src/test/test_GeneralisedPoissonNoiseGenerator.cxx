@@ -41,7 +41,7 @@ private:
   run_one_test(const int size, const float mu, const float scaling_factor, const bool preserve_mean);
     
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void

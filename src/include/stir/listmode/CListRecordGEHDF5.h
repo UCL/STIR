@@ -205,7 +205,7 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
     first_time_stamp(first_time_stamp)
     {}
 
-  bool is_time() const
+  bool is_time() const override
   { 
     return this->time_data.is_time();
   }
@@ -216,15 +216,15 @@ class CListRecordGEHDF5 : public CListRecord, public ListTime, // public CListGa
   }
 #endif
 
-  bool is_event() const
+  bool is_event() const override
   { return this->event_data.is_event(); }
-  virtual CListEvent&  event()
+  CListEvent&  event() override
     { return *this; }
-  virtual const CListEvent&  event() const
+  const CListEvent&  event() const override
     { return *this; }
-  virtual ListTime&   time()
+  ListTime&   time() override
     { return *this; }
-  virtual const ListTime&   time() const
+  const ListTime&   time() const override
     { return *this; }
 #if 0
   virtual CListGatingInput&  gating_input()
@@ -244,10 +244,10 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   }
 
   // time 
-  inline unsigned long get_time_in_millisecs() const 
+  inline unsigned long get_time_in_millisecs() const override 
     { return time_data.get_time_in_millisecs() - first_time_stamp; }
 
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
   inline unsigned int get_gating() const
@@ -256,11 +256,11 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     { return gating_data.set_gating(g); }
 #endif
   // event
-  inline bool is_prompt() const { return event_data.is_prompt(); }
-  inline Succeeded set_prompt(const bool prompt = true)
+  inline bool is_prompt() const override { return event_data.is_prompt(); }
+  inline Succeeded set_prompt(const bool prompt = true) override
   { return event_data.set_prompt(prompt); }
 
-  virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
+  void get_detection_position(DetectionPositionPair<>& det_pos) const override
   {
     det_pos.pos1().tangential_coord() = this->get_uncompressed_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
@@ -270,7 +270,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   }
 
   //! This routine sets in a coincidence event from detector "indices"
-  virtual void set_detection_position(const DetectionPositionPair<>&)
+  void set_detection_position(const DetectionPositionPair<>&) override
   {
     error("TODO");
   }

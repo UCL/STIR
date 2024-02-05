@@ -77,21 +77,21 @@ public:
 	inline CListEventSAFIR( ) {}
 
 	//! Returns LOR corresponding to the given event.
-	inline virtual LORAs2Points<float> get_LOR() const;
+	inline LORAs2Points<float> get_LOR() const override;
 	
   //! Override the default implementation
-  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+  inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
   
   //! This method checks if the template is valid for LmToProjData
   /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
-	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
+	inline bool is_valid_template(const ProjDataInfo&) const override {return true;}
 
 	//! Returns 0 if event is prompt and 1 if delayed
 	inline bool is_prompt()
-		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
+		const override { return !(static_cast<const Derived*>(this)->is_prompt()); }
 	//! Function to set map for detector indices to coordinates.
 	/*! Use a null pointer to disable the mapping functionality */
 	inline void set_map_sptr( shared_ptr<const DetectorCoordinateMap> new_map_sptr ) { map_sptr = new_map_sptr; }
@@ -243,18 +243,18 @@ public:
 
 	CListRecordSAFIR() : CListEventSAFIR<CListRecordSAFIR<DataType>>() {}
 
-	virtual ~CListRecordSAFIR() {}
+	~CListRecordSAFIR() override {}
 
-	virtual bool is_time() const
+	bool is_time() const override
 	{ return time_data.is_time(); }
 
-	virtual bool is_event() const
+	bool is_event() const override
 	{ return !time_data.is_time(); }
 
-	virtual CListEvent&  event()
+	CListEvent&  event() override
 	{ return *this; }
 
-	virtual const CListEvent&  event() const
+	const CListEvent&  event() const override
 	{ return *this; }
 
 	virtual CListEventSAFIR<CListRecordSAFIR<DataType>>&  event_SAFIR()
@@ -263,10 +263,10 @@ public:
 	virtual const CListEventSAFIR<CListRecordSAFIR<DataType>>&  event_SAFIR() const
 	{ return *this; }
 
-    virtual ListTime&   time()
+    ListTime&   time() override
 	{ return *this; }
 
-    virtual const ListTime&   time() const
+    const ListTime&   time() const override
 	{ return *this; }
 
 	virtual bool operator==(const CListRecord& e2) const
@@ -275,13 +275,13 @@ public:
 				raw == static_cast<CListRecordSAFIR<DataType> const &>(e2).raw;
 	}
 
-	inline unsigned long get_time_in_millisecs() const
+	inline unsigned long get_time_in_millisecs() const override
 	{ return time_data.get_time_in_millisecs(); }
 
-	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
 	{ return time_data.set_time_in_millisecs(time_in_millisecs); }
 
-	inline bool is_prompt() const { return event_data.is_prompt(); }
+	inline bool is_prompt() const override { return event_data.is_prompt(); }
 
 	Succeeded
 	init_from_data_ptr(const char * const data_ptr,

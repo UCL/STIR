@@ -92,28 +92,28 @@ public:
                                       int offset_dets);
 #endif
 
-    virtual ~InputStreamFromROOTFileForECATPET() {}
+    ~InputStreamFromROOTFileForECATPET() override {}
 
-    virtual
-    Succeeded get_next_record(CListRecordROOT& record);
+    
+    Succeeded get_next_record(CListRecordROOT& record) override;
 
     //! gives method information
     virtual std::string method_info() const;
     //! Must be called before calling for the first event.
-    virtual Succeeded set_up(const std::string & header_path);
+    Succeeded set_up(const std::string & header_path) override;
 
     //! Calculate the number of rings based on the crystals and blocks
-    inline virtual int get_num_rings() const;
+    inline int get_num_rings() const override;
     //! Calculate the number of detectors per ring based on the crystals blocks
-    inline virtual int get_num_dets_per_ring() const;
+    inline int get_num_dets_per_ring() const override;
     //! Get the number of axial blocks
-    inline virtual int get_num_axial_blocks_per_bucket_v() const;
+    inline int get_num_axial_blocks_per_bucket_v() const override;
     //! Get the number of transaxial blocks
-    inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
+    inline int get_num_transaxial_blocks_per_bucket_v() const override;
     //! Get the number of crystals per block
-    inline virtual int get_num_axial_crystals_per_singles_unit() const;
+    inline int get_num_axial_crystals_per_singles_unit() const override;
     //! Get the number of crystals per block
-    inline virtual int get_num_trans_crystals_per_singles_unit() const;
+    inline int get_num_trans_crystals_per_singles_unit() const override;
 
     inline void set_block_repeater_y(int);
     inline void set_block_repeater_z(int);
@@ -121,9 +121,9 @@ public:
 
 protected:
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
     //! \name TBranches for ECAT PET
     //@{

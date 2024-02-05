@@ -38,16 +38,16 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
-  virtual inline void apply(RelatedViewgrams<float>&) const override {}
-  virtual inline void undo(RelatedViewgrams<float>&) const override {}
+  inline void apply(RelatedViewgrams<float>&) const override {}
+  inline void undo(RelatedViewgrams<float>&) const override {}
   
-  virtual inline float get_bin_efficiency(const Bin& bin) const override { return 1.F;}
+  inline float get_bin_efficiency(const Bin& bin) const override { return 1.F;}
 
-  virtual inline bool is_trivial() const override { return true;}  
+  inline bool is_trivial() const override { return true;}  
 
 private:
-  virtual inline void set_defaults() override {}
-  virtual inline void initialise_keymap() override {}
+  inline void set_defaults() override {}
+  inline void initialise_keymap() override {}
   
 };
 

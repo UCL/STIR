@@ -47,7 +47,7 @@ START_NAMESPACE_STIR
   public:
     DynamicDiscretisedDensityTests() 
     {}
-    void run_tests();
+    void run_tests() override;
     //private:
   };
 

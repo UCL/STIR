@@ -206,9 +206,9 @@ public:
 
  protected:
     //! All recomputes_** will default true
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
     //! Recompute or load the mask image.
     bool recompute_mask_image;

@@ -129,8 +129,8 @@ public:
   //! Default constructor
   ListModeData();
 
-  virtual
-    ~ListModeData();
+  
+    ~ListModeData() override;
 
   //! Returns the name of the list mode data
   /*! This name is not necessarily unique, and might be empty. However, it is expected

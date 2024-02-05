@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 class ArrayFilterTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
 
 

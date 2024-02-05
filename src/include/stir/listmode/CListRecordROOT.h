@@ -38,17 +38,17 @@ public:
     CListEventROOT(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
     //! This routine returns the corresponding detector pair
-    virtual void get_detection_position(DetectionPositionPair<>&) const;
+    void get_detection_position(DetectionPositionPair<>&) const override;
 
     //! This routine sets in a coincidence event from detector "indices"
-    virtual void set_detection_position(const DetectionPositionPair<>&);
+    void set_detection_position(const DetectionPositionPair<>&) override;
 
     //! \details This is the main function which transform GATE coordinates to STIR
     void init_from_data(const int &_ring1, const int &_ring2,
                              const int &crystal1, const int &crystal2,
                         const double& _delta_time);
 
-    inline bool is_prompt() const
+    inline bool is_prompt() const override
     { return true; }
 
     double get_delta_time() const { return delta_time; }
@@ -87,9 +87,9 @@ public:
     { return true; }
     //! Returns the detection time of the first photon
     //! in milliseconds.
-    inline unsigned long  get_time_in_millisecs() const
+    inline unsigned long  get_time_in_millisecs() const override
     { return static_cast<unsigned long> (timeA * 1e3); }
-    inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+    inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
     {
         warning("set_time_in_millisecs: Not implemented for ROOT files. Aborting.");
         return Succeeded::no;
@@ -108,26 +108,26 @@ class CListRecordROOT : public CListRecord // currently no gating yet
 {
 public:
     //! Returns always true
-    bool inline is_time() const;
+    bool inline is_time() const override;
     //! Returns always true
-    bool inline is_event() const;
+    bool inline is_event() const override;
 
-    virtual CListEventROOT&  event()
+    CListEventROOT&  event() override
     {
         return this->event_data;
     }
 
-    virtual const CListEventROOT& event() const
+    const CListEventROOT& event() const override
     {
         return this->event_data;
     }
 
-    virtual CListTimeROOT& time()
+    CListTimeROOT& time() override
     {
         return this->time_data;
     }
 
-    virtual const CListTimeROOT& time() const
+    const CListTimeROOT& time() const override
     {
         return this->time_data;
     }

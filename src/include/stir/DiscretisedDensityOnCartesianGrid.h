@@ -70,9 +70,9 @@ public:
 
 
 protected:
-  virtual inline bool
+  inline bool
     actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&, 
-				    std::string& explanation) const;
+				    std::string& explanation) const override;
 
   //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices. 
   /*! The return value is relative to the origin. 
@@ -83,9 +83,9 @@ protected:
 
       \todo cope with non-standard orientations
   */
-  virtual inline
+  inline
     CartesianCoordinate3D<float> 
-    actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
+    actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const override;
  
   //! Return the indices of the basis-function closest to the given point. 
   /*! The input argument should be relative to the origin. 
@@ -96,9 +96,9 @@ protected:
 
       \todo cope with non-standard orientations
   */  
-  virtual inline
+  inline
     BasicCoordinate<num_dimensions,float> 
-    actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const; 
+    actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const override; 
 
 private:
   BasicCoordinate<num_dimensions,float> grid_spacing;

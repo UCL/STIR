@@ -146,10 +146,10 @@ public:
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
-  virtual void set_up(		 
+  void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
   /*! \brief Gets the symmetries used by this backprojector
 
@@ -158,7 +158,7 @@ public:
   to the current member. Using another DataSymmetriesForViewSegmentNumbers 
   object will likely crash the program.
   */
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
   /*! 
   \brief Use this to switch between the exact Jacobian and 
    an approximate Jacobian (valid for s << R).
@@ -172,7 +172,7 @@ public:
   */
   void use_piecewise_linear_interpolation(const bool use_piecewise_linear_interpolation);
 
-  BackProjectorByBinUsingInterpolation* clone() const;
+  BackProjectorByBinUsingInterpolation* clone() const override;
 
 private:
  
@@ -220,7 +220,7 @@ struct ProjDataForIntBP
  void actual_back_project(DiscretisedDensity<3,float>&,
                           const RelatedViewgrams<float>&,
 		          const int min_axial_pos_num, const int max_axial_pos_num,
-		          const int min_tangential_pos_num, const int max_tangential_pos_num);
+		          const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
  void actual_back_project(DiscretisedDensity<3,float>&,
                                   const Bin&);
@@ -314,8 +314,8 @@ static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
                                     const double cphi, const double sphi, int s);
 
 */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
 };
 

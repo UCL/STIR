@@ -29,6 +29,7 @@
 //#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Densel.h"
 #include "stir/shared_ptr.h"
+#include <vector>
 
 START_NAMESPACE_STIR
 
@@ -54,13 +55,13 @@ public:
 					     const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr);
 
 
-  virtual 
+  
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForDensels_PET_CartesianGrid *
 #else
     DataSymmetriesForDensels *
 #endif
-     clone() const;
+     clone() const override;
 
   bool
     operator ==(const DataSymmetriesForDensels_PET_CartesianGrid&) const;
@@ -73,16 +74,16 @@ public:
 #endif
 
   inline void
-    get_related_densels(vector<Densel>&, const Densel& b) const;
+    get_related_densels(std::vector<Densel>&, const Densel& b) const override;
 
   inline int
-    num_related_densels(const Densel& b) const;
+    num_related_densels(const Densel& b) const override;
 
   inline unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_densel(Densel&) const;
+    find_symmetry_operation_from_basic_densel(Densel&) const override;
 
   inline bool
-    find_basic_densel(Densel& b) const;
+    find_basic_densel(Densel& b) const override;
   
 
   //! find out how many image planes there are for every scanner ring
@@ -121,7 +122,7 @@ private:
     cartesian_grid_info_ptr() const;
 #endif
 
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type * const) const override;
   
   inline SymmetryOperation* 
     find_sym_op_general_densel( const int z, const int y, const int x) const;  

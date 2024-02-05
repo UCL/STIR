@@ -122,11 +122,11 @@ public:
 		      const int num_segments_to_combine=-1
 		      );
   
-  virtual std::string method_info() const;
+  std::string method_info() const override;
 
   virtual void ask_parameters();
 
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_sptr);
+  Succeeded set_up(shared_ptr <TargetT > const& target_data_sptr) override;
 
  protected: // make parameters protected such that doc shows always up in doxygen
   // parameters used for parsing
@@ -150,13 +150,13 @@ public:
    */
   int display_level;
  private:
-  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
+  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr) override;
 
   shared_ptr<BackProjectorByBin> back_projector_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing(); 
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override; 
 };
 
 

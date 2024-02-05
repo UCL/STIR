@@ -62,11 +62,11 @@ public:
   /*! 
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const;
+  bool is_trivial() const override;
 
 private:
   VectorWithOffset< elemT> filter_coefficients;
-  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
+  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const override;
 
 };
 

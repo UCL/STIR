@@ -91,20 +91,20 @@ public:
   /*! 
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const;
+  bool is_trivial() const override;
 
-  virtual Succeeded 
+  Succeeded 
     get_influencing_indices(IndexRange<1>& influencing_indices, 
-                            const IndexRange<1>& output_indices) const;
+                            const IndexRange<1>& output_indices) const override;
 
-  virtual Succeeded 
+  Succeeded 
     get_influenced_indices(IndexRange<1>& influenced_indices, 
-                           const IndexRange<1>& input_indices) const;
+                           const IndexRange<1>& input_indices) const override;
 
 private:
   VectorWithOffset< elemT> filter_coefficients;
   BoundaryConditions::BC _bc;
-  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
+  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const override;
 
 };
 

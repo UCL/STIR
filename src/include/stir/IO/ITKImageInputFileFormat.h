@@ -48,31 +48,31 @@ public InputFileFormat<STIRImageType>
  public:
 
   //! This function always returns \c false as ITK cannot read from istream
-  virtual bool
+  bool
     can_read(const FileSignature& signature,
-	std::istream& input) const;
+	std::istream& input) const override;
   //! Use ITK reader to check if it can read the file (by seeing if it throws an exception or not)
-  virtual bool 
+  bool 
     can_read(const FileSignature& signature,
-	     const std::string& filename) const;
+	     const std::string& filename) const override;
  
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "ITK"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream& input) const;
+		    std::istream& input) const override;
 
   //! This function always calls error() as ITK cannot read from istream
-  virtual unique_ptr<STIRImageType>
-    read_from_file(std::istream& input) const;
+  unique_ptr<STIRImageType>
+    read_from_file(std::istream& input) const override;
 
   //! This function uses ITK for reading and does the translation to STIR
-  virtual unique_ptr<STIRImageType>
-    read_from_file(const std::string& filename) const;
+  unique_ptr<STIRImageType>
+    read_from_file(const std::string& filename) const override;
 
 };
 END_NAMESPACE_STIR

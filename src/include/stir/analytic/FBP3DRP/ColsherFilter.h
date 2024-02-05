@@ -93,7 +93,7 @@ public:
 
   virtual std::string parameter_info() const;
   
-  ~ColsherFilter() {}
+  ~ColsherFilter() override {}
 
 
   private:

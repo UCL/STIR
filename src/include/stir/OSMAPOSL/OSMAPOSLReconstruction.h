@@ -109,7 +109,7 @@ public:
     {return *this;}
 
   //! gives method information
-  virtual std::string method_info() const;
+  std::string method_info() const override;
 
   //! Return current objective function
   /* Overloading IterativeReconstruction::get_objective_function()
@@ -146,13 +146,13 @@ public:
   //@}
 
   //! prompts the user to enter parameter values manually
-  virtual void ask_parameters();
+  void ask_parameters() override;
 
   //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+  Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr) override;
 
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_estimate (TargetT& current_image_estimate);
+  void update_estimate (TargetT& current_image_estimate) override;
 
  protected:
 
@@ -188,11 +188,11 @@ public:
   //! should be either additive or multiplicative
   std::string MAP_model; 
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();
+  bool post_processing() override;
 
   virtual void compute_sub_gradient_without_penalty_plus_sensitivity(
     TargetT& gradient, const TargetT &current_estimate, const int subset_num);

@@ -70,8 +70,8 @@ private:
   std::string input_filename;
   std::string output_filename;
 
-  void initialise_keymap();
-  void set_defaults();
+  void initialise_keymap() override;
+  void set_defaults() override;
 };
 
 void FindRecoveryCoefficient::

@@ -110,10 +110,10 @@ protected:
   float penalisation_factor;
   //! sets value for penalisation factor
   /*! Has to be called by set_defaults in the leaf-class */
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets key for penalisation factor
   /*! Has to be called by initialise_keymap in the leaf-class */
-  virtual void initialise_keymap();
+  void initialise_keymap() override;
 
   //! Check that the prior is ready to be used
   virtual void check(DataT const& current_estimate) const;

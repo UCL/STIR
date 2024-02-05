@@ -95,12 +95,12 @@ static Succeeded
   ProjMatrixByBinFromFile();
 
   //! Checks all necessary geometric info
-  virtual void set_up(		 
+  void set_up(		 
 		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
 		      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
-  virtual ProjMatrixByBinFromFile* clone() const;
+  ProjMatrixByBinFromFile* clone() const override;
 
 private:
 
@@ -127,13 +127,13 @@ private:
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
 
-  virtual void 
+  void 
     calculate_proj_matrix_elems_for_one_bin(
-                                            ProjMatrixElemsForOneBin&) const;
+                                            ProjMatrixElemsForOneBin&) const override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   Succeeded read_data();
     

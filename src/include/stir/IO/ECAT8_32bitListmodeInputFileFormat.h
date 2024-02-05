@@ -36,15 +36,15 @@ class ECAT8_32bitListmodeInputFileFormat :
 public InputFileFormat<ListModeData >
 {
  public:
-  virtual const std::string
-    get_name() const
+  const std::string
+    get_name() const override
   {  return "ECAT8_32bit"; }
 
  protected:
-  virtual 
+  
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+		    std::istream& input) const override
   {
         if(!is_interfile_signature(signature.get_signature()))
                 return false;
@@ -56,16 +56,16 @@ public InputFileFormat<ListModeData >
     }
 
  public:
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+  unique_ptr<data_type>
+    read_from_file(std::istream& input) const override
   {
     error("read_from_file for ECAT8_32bit listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
       unique_ptr<data_type>();
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
   {	
     return unique_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
   }

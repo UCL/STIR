@@ -89,7 +89,7 @@ public:
     //! Default constructor
     ScatterSimulation();
 
-    virtual ~ScatterSimulation();
+    ~ScatterSimulation() override;
 
     virtual Succeeded process_data();
     //! gives method information
@@ -274,12 +274,12 @@ protected:
 
 
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
+    void set_defaults() override;
+    void initialise_keymap() override;
     //! \warning post_processing will set everything that has a file name in
     //! the par file. The corresponding set functions should be used either
     //! for files that are not stored in the drive.
-    virtual bool post_processing();
+    bool post_processing() override;
 
     enum image_type{act_image_type, att_image_type};
     struct ScatterPoint

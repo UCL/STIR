@@ -122,16 +122,16 @@ protected:
   //! sets default values
   /*! Sets \c manufacturer_name to "GENERIC", \c kilovoltage_peak to 120.F, \c target_photon_energy to 511.F
    */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   //! just checks if all variables are set
   /*! \todo could get manufacturer name, kVp from the image later on, when these become available */
-  Succeeded virtual_set_up(const TargetT& image);
+  Succeeded virtual_set_up(const TargetT& image) override;
 
-  void  virtual_apply(TargetT& out_density, const TargetT& in_density) const;
-  void  virtual_apply(TargetT& density) const ;
+  void  virtual_apply(TargetT& out_density, const TargetT& in_density) const override;
+  void  virtual_apply(TargetT& density) const override ;
 
 private:
   std::string filename;
