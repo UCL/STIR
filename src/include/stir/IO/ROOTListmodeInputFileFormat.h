@@ -29,16 +29,16 @@ class ROOTListmodeInputFileFormat :
         public InputFileFormat<ListModeData >
 {
 public:
-    virtual const std::string
-    get_name() const
+    const std::string
+    get_name() const override
     {  return "ROOT"; }
 
 protected:
 
-    virtual
+    
     bool
     actual_can_read(const FileSignature& signature,
-                    std::istream& input) const
+                    std::istream& input) const override
     {
         return this->is_root_signature(signature.get_signature());
     }
@@ -56,16 +56,16 @@ protected:
     }
 
 public:
-    virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+    unique_ptr<data_type>
+    read_from_file(std::istream& input) const override
     {
         error("read_from_file for ROOT listmode data with istream not implemented %s:%s. Sorry",
                 __FILE__, __LINE__);
         return unique_ptr<data_type>();
     }
 
-    virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+    unique_ptr<data_type>
+    read_from_file(const std::string& filename) const override
     {
         return unique_ptr<data_type>(new CListModeDataROOT(filename));
     }

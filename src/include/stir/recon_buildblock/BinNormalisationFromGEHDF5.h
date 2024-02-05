@@ -90,7 +90,7 @@ public:
   BinNormalisationFromGEHDF5(const string& filename);
 
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
   float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
@@ -127,9 +127,9 @@ private:
   float get_geometric_efficiency_factors  (const DetectionPositionPair<>& detection_position_pair) const;
   float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   string normalisation_GEHDF5_filename;
   shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;

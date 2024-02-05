@@ -81,7 +81,7 @@ public:
                             int offset_dets);
 #endif
 
-    virtual ~InputStreamFromROOTFile() {}
+    ~InputStreamFromROOTFile() override {}
     //!  \details Returns the next record in the ROOT file.
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
     //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">here</a>
@@ -173,9 +173,9 @@ public:
 
  protected:
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
     //! Input data file name
     std::string filename;

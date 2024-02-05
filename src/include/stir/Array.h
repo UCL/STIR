@@ -136,7 +136,7 @@ public:
 #endif
   
   //! virtual destructor, frees up any allocated memory
-  inline virtual ~Array();
+  inline ~Array() override;
 
   /*! @name functions returning full_iterators*/
   //@{
@@ -322,7 +322,7 @@ public:
   inline Array(const NumericVectorWithOffset<elemT,elemT> &il);
   
   //! virtual destructor
-  inline virtual ~Array();
+  inline ~Array() override;
 
   /*! @name functions returning full_iterators*/
   //@{
@@ -350,13 +350,13 @@ public:
   inline virtual void grow(const IndexRange<1>& range);
   
   // Array::grow initialises new elements to 0
-  inline virtual void grow(const int min_index, const int max_index);
+  inline void grow(const int min_index, const int max_index) override;
   
   //! Array::resize initialises new elements to 0
   inline virtual void resize(const IndexRange<1>& range);
   
   // Array::resize initialises new elements to 0
-  inline virtual void resize(const int min_index, const int max_index);
+  inline void resize(const int min_index, const int max_index) override;
   
   //! return sum of all elements
   inline elemT sum() const;

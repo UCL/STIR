@@ -87,31 +87,31 @@ public:
   FilterRootPrior(shared_ptr<DataProcessor<DataT> >const&, 
 		  const float penalization_factor);
 
-  bool is_convex() const;
+  bool is_convex() const override;
 
  //! compute the value of the function
   /*! \warning Generally there is no function associated to this prior,
     so we just return 0 and write a warning the first time it's called.
    */
-  virtual double
-    compute_value(const DataT &current_estimate);
+  double
+    compute_value(const DataT &current_estimate) override;
   
   //! compute gradient by applying the filter
   void compute_gradient(DataT& prior_gradient, 
-			const DataT &current_estimate);
+			const DataT &current_estimate) override;
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<const DataT> const& target_sptr);
+  Succeeded set_up(shared_ptr<const DataT> const& target_sptr) override;
   
 protected:
 
   //! Check that the prior is ready to be used
-  virtual void check(DataT const& current_image_estimate) const;
+  void check(DataT const& current_image_estimate) const override;
   
 private:  
    shared_ptr<DataProcessor<DataT> > filter_ptr;   
-   virtual void set_defaults();
-   virtual void initialise_keymap();
+   void set_defaults() override;
+   void initialise_keymap() override;
 
 };
 

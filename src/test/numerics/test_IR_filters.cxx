@@ -38,7 +38,7 @@ class IR_filterTests : public RunTests
 public:
   IR_filterTests() 
   {}
-  void run_tests();
+  void run_tests() override;
 private:
   //istream& in;
 };

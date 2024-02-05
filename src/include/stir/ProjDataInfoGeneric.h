@@ -73,27 +73,27 @@ public:
     const VectorWithOffset<int>& max_ring_diff,
     const int num_views,const int num_tangential_poss);
 
-  inline virtual float get_tantheta(const Bin&) const;
+  inline float get_tantheta(const Bin&) const override;
 
-  inline float get_phi(const Bin&) const;
+  inline float get_phi(const Bin&) const override;
 
-  inline float get_t(const Bin&) const;
+  inline float get_t(const Bin&) const override;
 
   //! Return z-coordinate of the middle of the LOR
   /*!
   The 0 of the z-axis is chosen in the middle of the scanner.
   */
-  inline float get_m(const Bin&) const;
+  inline float get_m(const Bin&) const override;
 
-  virtual void
-    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const;
+  void
+    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const override;
 
   void set_azimuthal_angle_offset(const float angle) = delete;
   void set_azimuthal_angle_sampling(const float angle) = delete;
 
   //! set new number of views (currently calls error() unless nothing changes)
-  virtual void
-    set_num_views(const int new_num_views);
+  void
+    set_num_views(const int new_num_views) override;
 
   float get_azimuthal_angle_sampling() const = delete;
   float get_azimuthal_angle_offset() const = delete;
@@ -105,13 +105,13 @@ public:
   //TODOBLOCK what does this mean in a generic case?
   inline float get_ring_spacing() const;
 
-  virtual inline float get_sampling_in_t(const Bin&) const;
-  virtual inline float get_sampling_in_m(const Bin&) const;
+  inline float get_sampling_in_t(const Bin&) const override;
+  inline float get_sampling_in_m(const Bin&) const override;
 
   inline float get_axial_sampling(int segment_num) const override;
   inline bool axial_sampling_is_uniform() const override;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
 
 private:
   //! to be used in get LOR

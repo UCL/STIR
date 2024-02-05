@@ -99,7 +99,7 @@ public:
   /*! 
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const;
+  bool is_trivial() const override;
 
 protected:
 
@@ -111,7 +111,7 @@ protected:
       using wrap-around to/from
       an array with the same dimensions as the 'real' kernel.
   */
-  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const;
+  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const override;
 private:
   IndexRange<num_dimensions> padding_range;
   BasicCoordinate<num_dimensions,int> padded_sizes;

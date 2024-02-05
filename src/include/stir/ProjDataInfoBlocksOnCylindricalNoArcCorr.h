@@ -92,11 +92,11 @@ public:
     const  VectorWithOffset<int>& max_ring_diff_v,
     const int num_views,const int num_tangential_poss);
 
-  ProjDataInfo* clone() const;
+  ProjDataInfo* clone() const override;
 
   bool operator==(const self_type&) const;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
@@ -111,7 +111,7 @@ public:
 
 private:
 
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type * const) const override;
 
 };
 

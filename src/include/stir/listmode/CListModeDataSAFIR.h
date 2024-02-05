@@ -65,26 +65,26 @@ public:
 	CListModeDataSAFIR( const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename, const double lor_randomization_sigma = 0.0);
 	CListModeDataSAFIR(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 	
-	virtual std::string get_name() const;
-	virtual shared_ptr <CListRecord> get_empty_record_sptr() const;
-	virtual Succeeded get_next_record(CListRecord& record_of_general_type) const;
-	virtual Succeeded reset();
+	std::string get_name() const override;
+	shared_ptr <CListRecord> get_empty_record_sptr() const override;
+	Succeeded get_next_record(CListRecord& record_of_general_type) const override;
+	Succeeded reset() override;
 	
 	/*!
 	This function should save the position in input file. This is not implemented but disabled.
 	Returns 0 in the moement.
 	\todo Maybe provide real implementation?
 	*/
-	virtual SavedPosition save_get_position()
+	SavedPosition save_get_position() override
 	{ return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position()); }
-	virtual Succeeded set_get_position(const SavedPosition& pos)
+	Succeeded set_get_position(const SavedPosition& pos) override
 	{ return current_lm_data_ptr->set_get_position(pos); }
 
 	/*! 
 	Returns just false in the moment.
 	\todo Implement this properly to check for delayed events in LM files.
 	*/
-	virtual bool has_delayeds() const { return false; }
+	bool has_delayeds() const override { return false; }
 	
 private:
 	std::string listmode_filename;

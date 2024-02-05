@@ -132,10 +132,10 @@ public  GeneralisedObjectiveFunction<TargetT>
       (see the class general documentation).
       The sum will however be restricted to a subset.
     */
-  virtual void 
+  void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
                                          const TargetT &current_estimate, 
-                                         const int subset_num); 
+                                         const int subset_num) override; 
 
     //! This should compute the subset gradient of the (unregularised) objective function plus the subset sensitivity
     /*!
@@ -167,7 +167,7 @@ public  GeneralisedObjectiveFunction<TargetT>
 
       Calls set_up_before_sensitivity().
   */
-  virtual Succeeded set_up(shared_ptr <TargetT> const& target_sptr);
+  Succeeded set_up(shared_ptr <TargetT> const& target_sptr) override;
 
   //! Get a const reference to the total sensitivity
   const TargetT& get_sensitivity() const;
@@ -228,7 +228,7 @@ public  GeneralisedObjectiveFunction<TargetT>
    it will the target voxel will be assigned the desired value.
   */
   void 
-    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
+    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const override;
 
  private:
 
@@ -290,9 +290,9 @@ protected:
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,
      \c recompute_sensitivity to \c false, and \c use_subset_sensitivities to false.
   */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 };
 

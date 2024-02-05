@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 class RegisteredObjectBase : public ParsingObject
 {
 public:
-  virtual ~RegisteredObjectBase() {}
+  ~RegisteredObjectBase() override {}
 
   /*! \brief Returns the name of the type of the object.
 

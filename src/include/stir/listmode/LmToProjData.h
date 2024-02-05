@@ -214,12 +214,12 @@ public:
 
   //! Perform various checks
   /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
-  virtual Succeeded set_up();
+  Succeeded set_up() override;
 
   //! This function does the actual work
   //! N.E: In order to keep the ToF functions separate from the non-TOF
   //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
-  virtual void process_data();
+  void process_data() override;
 
 #if 0
   //! A test function for time-of-flight data. At this moment we lack a lot of infrastructure in
@@ -260,9 +260,9 @@ protected:
 
   //! \name parsing functions
   //@{
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   //@}
 
   //! \name parsing variables

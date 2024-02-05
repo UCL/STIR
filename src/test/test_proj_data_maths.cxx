@@ -39,7 +39,7 @@ START_NAMESPACE_STIR
 class ProjDataInMemoryTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   void run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr);
 };

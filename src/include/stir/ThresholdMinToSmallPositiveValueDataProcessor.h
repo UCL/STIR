@@ -78,13 +78,13 @@ private:
   
   int rim_truncation_image;
   
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   
-  Succeeded virtual_set_up(const DataT&);
+  Succeeded virtual_set_up(const DataT&) override;
 
-  void  virtual_apply(DataT& out_data, const DataT& in_data) const;
-  void  virtual_apply(DataT& data) const ;
+  void  virtual_apply(DataT& out_data, const DataT& in_data) const override;
+  void  virtual_apply(DataT& data) const override ;
   
 };
 

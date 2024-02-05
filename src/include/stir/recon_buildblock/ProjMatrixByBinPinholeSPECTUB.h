@@ -131,13 +131,13 @@ class ProjMatrixByBinPinholeSPECTUB :
     ProjMatrixByBinPinholeSPECTUB(const ProjMatrixByBinPinholeSPECTUB&) = delete;
 
     //! Destructor (deallocates UB SPECT memory)
-    ~ProjMatrixByBinPinholeSPECTUB();
+    ~ProjMatrixByBinPinholeSPECTUB() override;
 
     //! Checks all necessary geometric info
-    virtual void set_up(		 
+    void set_up(		 
         const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
         const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-        );
+        ) override;
 
     //******************** get/set functions *************
 
@@ -207,7 +207,7 @@ class ProjMatrixByBinPinholeSPECTUB :
     bool get_keep_all_views_in_cache() const;
     void set_keep_all_views_in_cache(bool value = false);
 
-    ProjMatrixByBinPinholeSPECTUB * clone() const;
+    ProjMatrixByBinPinholeSPECTUB * clone() const override;
 
   private:
 
@@ -242,12 +242,12 @@ class ProjMatrixByBinPinholeSPECTUB :
     mutable SPECTUB_mph::wm_da_type wm;          // double array weight matrix structure.
     mutable SPECTUB_mph::pcf_type pcf;           // pre-calculated functions
 
-    virtual void 
-        calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const;
+    void 
+        calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+    void set_defaults() override;
+    void initialise_keymap() override;
+    bool post_processing() override;
 
     shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
     shared_ptr<const DiscretisedDensity<3,float> > mask_image_sptr;

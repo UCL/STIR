@@ -51,42 +51,42 @@ public:
         this->proj_data_info_sptr = proj_data_info;
     }
 
-    virtual std::string get_name() const
+    std::string get_name() const override
     {
         return std::string("ListModeData_dummy");
     }
 
-    virtual Succeeded reset()
+    Succeeded reset() override
     {
         error("ListModeData_dummy does not have reset()");
         return Succeeded::no;
     }
 
-    virtual SavedPosition save_get_position()
+    SavedPosition save_get_position() override
     {
         error("ListModeData_dummy does not have save_get_position()");
         return 0;
     }
 
-    virtual Succeeded set_get_position(const SavedPosition&)
+    Succeeded set_get_position(const SavedPosition&) override
     {
         error("ListModeData_dummy does not have set_get_position()");
         return Succeeded::no;
     }
 
-    virtual bool has_delayeds() const
+    bool has_delayeds() const override
     {
         error("ListModeData_dummy does not have has_delayeds()");
         return false;
     }
 
 protected:
-    virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const
+    shared_ptr <ListRecord> get_empty_record_helper_sptr() const override
     {
         error("ListModeData_dummy does not have get_empty_record_helper_sptr()");
         return nullptr;
     }
-    virtual Succeeded get_next(ListRecord& event) const
+    Succeeded get_next(ListRecord& event) const override
     {
         error("ListModeData_dummy does not have get_next()");
         return Succeeded::no;

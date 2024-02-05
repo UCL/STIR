@@ -80,10 +80,10 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
  //! This routine returns the corresponding detector pair   
-  virtual void get_detection_position(DetectionPositionPair<>&) const;
+  void get_detection_position(DetectionPositionPair<>&) const override;
 
   //! This routine sets in a coincidence event from detector "indices"
-  virtual void set_detection_position(const DetectionPositionPair<>&);
+  void set_detection_position(const DetectionPositionPair<>&) override;
 
   Succeeded init_from_data_ptr(const void * const ptr)
     {
@@ -91,8 +91,8 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
       std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
       return Succeeded::yes;
     }
-  inline bool is_prompt() const { return this->data.delayed == 1; }
-  inline Succeeded set_prompt(const bool prompt = true) 
+  inline bool is_prompt() const override { return this->data.delayed == 1; }
+  inline Succeeded set_prompt(const bool prompt = true) override 
   { if (prompt) this->data.delayed=1; else this->data.delayed=0; return Succeeded::yes; }
 
  private:
@@ -168,9 +168,9 @@ class CListTimeECAT8_32bit : public ListTime
     }
   bool is_time() const
   { return this->data.type == 1U && this->data.deadtimeetc == 0U; }
-  inline unsigned long get_time_in_millisecs() const
+  inline unsigned long get_time_in_millisecs() const override
   { return static_cast<unsigned long>(this->data.time);  }
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
   { 
     this->data.time = ((1U<<30)-1) & static_cast<unsigned>(time_in_millisecs); 
     // TODO return more useful value
@@ -200,21 +200,21 @@ class CListTimeECAT8_32bit : public ListTime
 
   //public:
 
-  bool is_time() const
+  bool is_time() const override
   { return this->any_data.is_time(); }
   /*
   bool is_gating_input() const
   { return this->is_time(); }
   */
-  bool is_event() const
+  bool is_event() const override
   { return this->any_data.is_event(); }
-  virtual CListEventECAT8_32bit&  event() 
+  CListEventECAT8_32bit&  event() override 
     { return this->event_data; }
-  virtual const CListEventECAT8_32bit&  event() const
+  const CListEventECAT8_32bit&  event() const override
     { return this->event_data; }
-  virtual CListTimeECAT8_32bit&   time()
+  CListTimeECAT8_32bit&   time() override
     { return this->time_data; }
-  virtual const CListTimeECAT8_32bit&   time() const
+  const CListTimeECAT8_32bit&   time() const override
     { return this->time_data; }
 
   bool operator==(const CListRecord& e2) const

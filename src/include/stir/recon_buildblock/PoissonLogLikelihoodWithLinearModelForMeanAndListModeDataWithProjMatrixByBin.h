@@ -81,21 +81,21 @@ public:
    \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
    because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
    */
-    virtual
+    
     void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                                         const TargetT &current_estimate,
                                                         const int subset_num,
-                                                        const bool add_sensitivity);
+                                                        const bool add_sensitivity) override;
 
-  virtual TargetT * construct_target_ptr() const;
+  TargetT * construct_target_ptr() const override;
 
-  int set_num_subsets(const int new_num_subsets);
+  int set_num_subsets(const int new_num_subsets) override;
 
   const shared_ptr<BinNormalisation> &
   get_normalisation_sptr() const
   { return this->normalisation_sptr; }
 
-  virtual unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const;
+  unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const override;
 
   void set_proj_matrix(const shared_ptr<ProjMatrixByBin>&);
 
@@ -108,19 +108,19 @@ public:
 
 protected:
   /*! \todo this function is not implemented yet and currently calls error() */
-  virtual double
+  double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num)
+                                                      const int subset_num) override
   { // TODO
     error("compute_objective_function_without_penalty Not implemented yet");
     return 0;
   }
 
-  virtual Succeeded
-    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr);
+  Succeeded
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) override;
 
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
 #if STIR_VERSION < 060000  
   //! Maximum ring difference to take into account
@@ -144,12 +144,12 @@ protected:
   shared_ptr<ProjDataInfo> sens_proj_data_info_sptr;
 
   //! sets any default values
-  virtual void set_defaults();
+  void set_defaults() override;
   //! sets keys for parsing
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void initialise_keymap() override;
+  bool post_processing() override;
 
-  virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
   //! If you know, or have previously checked that the number of subsets is balanced for your
   //! Scanner geometry, you can skip future checks.

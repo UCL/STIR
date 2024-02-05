@@ -74,7 +74,7 @@ public:
 class TOF_Tests : public RunTests
 {
 public:
-    void run_tests();
+    void run_tests() override;
 
 private:
 

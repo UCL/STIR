@@ -63,7 +63,7 @@ class KeyParserTests : public RunTests
 {
 public:
   template <typename elemT> void run_tests_one_type();
-  void run_tests();
+  void run_tests() override;
 };
 
 void

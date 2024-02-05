@@ -87,13 +87,13 @@ private:
   bool _strictly_less_than_radius;
   int _truncate_rim;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   
-  Succeeded virtual_set_up(const DiscretisedDensity<3,elemT>& image);
+  Succeeded virtual_set_up(const DiscretisedDensity<3,elemT>& image) override;
   // new
-  void  virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity<3,elemT>& in_density) const;
-  void  virtual_apply(DiscretisedDensity<3,elemT>& density) const ;
+  void  virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity<3,elemT>& in_density) const override;
+  void  virtual_apply(DiscretisedDensity<3,elemT>& density) const override ;
   
 };
 

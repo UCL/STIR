@@ -110,32 +110,32 @@ public:
     CListModeDataROOT(const std::string& hroot_filename_prefix);
 
     //! returns the header filename
-    virtual std::string
-    get_name() const;
+    std::string
+    get_name() const override;
     //! Set private members default values;
     void set_defaults();
 
-    virtual
-    shared_ptr <CListRecord> get_empty_record_sptr() const;
+    
+    shared_ptr <CListRecord> get_empty_record_sptr() const override;
 
-    virtual
-    Succeeded get_next_record(CListRecord& record) const;
+    
+    Succeeded get_next_record(CListRecord& record) const override;
 
-    virtual
-    Succeeded reset();
+    
+    Succeeded reset() override;
 
-    virtual
-    SavedPosition save_get_position();
+    
+    SavedPosition save_get_position() override;
 
-    virtual
-    Succeeded set_get_position(const SavedPosition&);
+    
+    Succeeded set_get_position(const SavedPosition&) override;
 
-    virtual
-    bool has_delayeds() const { return true; }
+    
+    bool has_delayeds() const override { return true; }
 
-    virtual inline
+    inline
     unsigned long int
-    get_total_number_of_events() const ;
+    get_total_number_of_events() const override ;
 
 private:
     //! Check if the hroot contains a full scanner description

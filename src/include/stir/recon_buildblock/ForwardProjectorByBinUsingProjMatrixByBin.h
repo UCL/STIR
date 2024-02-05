@@ -63,13 +63,13 @@ public:
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
-  virtual void set_up(		 
+  void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+    ) override;
 
   
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const override;
 
 private:
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
@@ -78,15 +78,15 @@ private:
   void actual_forward_project(RelatedViewgrams<float>&, 
 			      const DiscretisedDensity<3,float>& image,
 			      const int min_axial_pos_num, const int max_axial_pos_num,
-			      const int min_tangential_pos_num, const int max_tangential_pos_num);
+			      const int min_tangential_pos_num, const int max_tangential_pos_num) override;
 
 #if 0 // disabled as currently not used. needs to be written in the new style anyway
   void actual_forward_project(Bin&, const DiscretisedDensity<3,float>&);
 #endif
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
   
 };
 

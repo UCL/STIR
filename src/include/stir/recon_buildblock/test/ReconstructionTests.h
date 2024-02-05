@@ -39,7 +39,7 @@ public:
     ReconstructionTests(const std::string &proj_data_filename = "",
                         const std::string & density_filename = "");
 
-  virtual ~ReconstructionTests() {}
+  ~ReconstructionTests() override {}
 
   //! default proj_data_info
   virtual inline std::unique_ptr<ProjDataInfo>

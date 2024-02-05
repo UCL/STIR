@@ -54,7 +54,7 @@ class MinimalInterfileHeader : public KeyParser
     static const double double_value_not_set;
     MinimalInterfileHeader();
 
-    virtual ~MinimalInterfileHeader() {}
+    ~MinimalInterfileHeader() override {}
   protected:
     shared_ptr<ExamInfo> exam_info_sptr;
 
@@ -97,7 +97,7 @@ class InterfileHeader : public MinimalInterfileHeader
 public:
   InterfileHeader();
   // Returns false if OK, true if not.
-  virtual bool post_processing();
+  bool post_processing() override;
 
 private:
 
@@ -137,7 +137,7 @@ private:
   
  protected:
   //! Overload with specifics for STIR3.0 for backwards compatibility
-  virtual void set_version_specific_keys();
+  void set_version_specific_keys() override;
   virtual void read_matrix_info();
   virtual void read_num_energy_windows();
   void read_frames_info();
@@ -216,16 +216,16 @@ public:
   std::vector<std::string> image_data_type_description;
 
 protected:
-  virtual void read_matrix_info();
+  void read_matrix_info() override;
   //! Returns false if OK, true if not.
-  virtual bool post_processing();
+  bool post_processing() override;
   /// Read image data types
   void read_image_data_types();
   //!
   //! \brief Get the number of datasets
   //! \details no. time frames * no. data types (kinetic params) * no. gates
   //! Currently, this is only implemented for either multiple time frames OR multiple data types (gates not considered).
-  virtual int get_num_datasets() const { return num_time_frames*num_image_data_types; }
+  int get_num_datasets() const override { return num_time_frames*num_image_data_types; }
 
 };
 
@@ -242,7 +242,7 @@ public:
 protected:
 
   //! Returns false if OK, true if not.
-  virtual bool post_processing();
+  bool post_processing() override;
 
 public:
  

@@ -96,7 +96,7 @@ START_NAMESPACE_STIR
 class CPUTimer : public Timer
 {
 private:
-  virtual inline double get_current_value() const;
+  inline double get_current_value() const override;
 };
 
 

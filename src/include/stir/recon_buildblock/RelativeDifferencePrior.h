@@ -112,24 +112,24 @@ class RelativeDifferencePrior:  public
 
   //! compute the value of the function
   double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
   //! compute gradient 
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
+                        const DiscretisedDensity<3,elemT> &current_image_estimate) override;
 
-  virtual void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
+  void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
                                     const BasicCoordinate<3,int>& coords,
-                                    const DiscretisedDensity<3,elemT> &current_image_estimate) const;
+                                    const DiscretisedDensity<3,elemT> &current_image_estimate) const override;
 
-  virtual void
+  void
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
-                                                const DiscretisedDensity<3,elemT>& input) const;
+                                                const DiscretisedDensity<3,elemT>& input) const override;
 
     //! Compute the multiplication of the hessian of the prior multiplied by the input.
-  virtual void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
+  void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
                                                    const DiscretisedDensity<3,elemT>& current_estimate,
-                                                   const DiscretisedDensity<3,elemT>& input) const;
+                                                   const DiscretisedDensity<3,elemT>& input) const override;
 
   //! get the gamma value used in RDP
   float get_gamma() const;
@@ -161,7 +161,7 @@ class RelativeDifferencePrior:  public
   //! Has to be called before using this object
   virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
   
-  bool is_convex() const;
+  bool is_convex() const override;
   
 protected:
   //! Create variable gamma for Relative Difference Penalty
@@ -189,11 +189,11 @@ protected:
   std::string kappa_filename;
 
   //! Check that the prior is ready to be used
-  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+  void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
  private:
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 

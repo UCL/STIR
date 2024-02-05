@@ -60,16 +60,16 @@ public:
     Succeeded get_next_record(CListRecord& event) const = 0;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
-  virtual bool has_delayeds() const = 0;
+  bool has_delayeds() const override = 0;
 
 protected:
-  virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const
+  shared_ptr<ListRecord> get_empty_record_helper_sptr() const override
   {
         shared_ptr<CListRecord> sptr(this->get_empty_record_sptr());
         shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
         return sptr1;}
 
-  virtual Succeeded get_next(ListRecord& event) const
+  Succeeded get_next(ListRecord& event) const override
   {return this->get_next_record((CListRecord&)(event));}
 };
 

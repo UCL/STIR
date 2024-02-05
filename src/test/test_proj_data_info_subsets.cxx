@@ -63,9 +63,9 @@ public:
   //! Constructor that can take some input data to run the test with
   TestProjDataInfoSubsets(const std::string& sinogram_filename);
 
-  virtual ~TestProjDataInfoSubsets() {}
+  ~TestProjDataInfoSubsets() override {}
 
-  void run_tests();
+  void run_tests() override;
   void run_tests(
                  const std::shared_ptr<ProjData>& proj_data_sptr, const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr);
 

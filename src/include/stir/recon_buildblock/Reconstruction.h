@@ -76,7 +76,7 @@ public:
   Reconstruction();
 
   //! virtual destructor
-  virtual ~Reconstruction() {};
+  ~Reconstruction() override {};
   
   //! gives method information
   virtual std::string method_info() const = 0;
@@ -190,8 +190,8 @@ protected:
   */
   void initialise(const std::string& parameter_filename);
   
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   //! used to check acceptable parameters after parsing
   /*!
     The function should be used to set members that have 
@@ -205,7 +205,7 @@ protected:
     set parameters by calling various \c set_ functions (such as
     \c set_post_processor_sptr() ).
   */
-  virtual bool post_processing();
+  bool post_processing() override;
 
   //!
   //! \brief target_data_sptr

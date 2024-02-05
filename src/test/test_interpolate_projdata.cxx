@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
 class InterpolationTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 
 private:
   void scatter_interpolation_test_blocks();

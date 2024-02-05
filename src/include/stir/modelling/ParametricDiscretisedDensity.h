@@ -148,10 +148,10 @@ public DiscDensT
     { return this->end_all_densel_const(); }
 
   //! Allocate a new object with same characteristics as the current one.
-  virtual ParametricDiscretisedDensity* get_empty_copy() const;
+  ParametricDiscretisedDensity* get_empty_copy() const override;
 
   //! Allocate a new object which is a copy of the current one.
-  virtual ParametricDiscretisedDensity* clone() const;
+  ParametricDiscretisedDensity* clone() const override;
 
   //! construct a single image by applying a function object on each KineticParameter 
   template <class KPFunctionObject>

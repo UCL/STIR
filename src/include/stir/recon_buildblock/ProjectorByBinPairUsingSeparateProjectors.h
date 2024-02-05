@@ -55,9 +55,9 @@ public:
 
 private:
 
-  void set_defaults();
-  void initialise_keymap();
-  bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR

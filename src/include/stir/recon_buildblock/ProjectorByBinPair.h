@@ -49,7 +49,7 @@ public:
   //! Default constructor 
   ProjectorByBinPair();
 
-  virtual ~ProjectorByBinPair() {}
+  ~ProjectorByBinPair() override {}
 
   //! Stores all necessary geometric info
   /*! 

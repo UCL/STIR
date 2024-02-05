@@ -44,14 +44,14 @@ class ArrayFunctionObject_2ArgumentImplementation :
 {
 public:
   //! in-place modification of array, implemented inline
-  virtual inline void operator() (Array<num_dimensions,elemT>& array) const
+  inline void operator() (Array<num_dimensions,elemT>& array) const override
   {
    Array<num_dimensions,elemT> copy_array( array);
    (*this)(array, copy_array);
   }
 
-  virtual void operator() (Array<num_dimensions,elemT>& out_array, 
-                           const Array<num_dimensions,elemT>& in_array) const
+  void operator() (Array<num_dimensions,elemT>& out_array, 
+                           const Array<num_dimensions,elemT>& in_array) const override
   {
     do_it(out_array, in_array);
   }

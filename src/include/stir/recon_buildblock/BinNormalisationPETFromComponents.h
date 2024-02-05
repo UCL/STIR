@@ -92,27 +92,27 @@ public:
   //! check if we would be multiplying with 1 (i.e. do nothing)
   /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it checks if all components are 1.
    */
-  virtual bool is_trivial() const override;
+  bool is_trivial() const override;
 
   //! Checks if we can handle certain projection data.
   /*! Compares the stored ProjDataInfo  with the ProjDataInfo supplied. */
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
   //! Normalise some data
   /*!
     This means \c divide with the efficiency model. 0/0 is set to 0.
   */
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   using base_type::apply;
   //! Undo the normalisation of some data
   /*!
     This means \c multiply with the efficiency model.
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
   using base_type::undo;
-  virtual float get_bin_efficiency(const Bin& bin) const override;
+  float get_bin_efficiency(const Bin& bin) const override;
 
 #if 0
   //! Get a shared_ptr to the normalisation proj_data.

@@ -74,12 +74,12 @@ public:
     will never occur in "real life", so we save ourselves some time/complications
     by returning \c false
   */
-  virtual bool is_trivial() const override;
+  bool is_trivial() const override;
 
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors 
       with the ProjDataInfo supplied. */
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& ) override;
 
   //! Normalise some data
   /*! 
@@ -87,7 +87,7 @@ public:
     passed in the constructor. 
   */
   
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
   /*! 
@@ -95,17 +95,17 @@ public:
     passed in the constructor. 
   */
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
-  virtual float get_bin_efficiency(const Bin& bin) const override;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
+  float get_bin_efficiency(const Bin& bin) const override;
   
     //! Get a shared_ptr to the normalisation proj_data.
   virtual shared_ptr<ProjData> get_norm_proj_data_sptr() const;
  
 private:
   shared_ptr<ProjData> norm_proj_data_ptr;
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   std::string normalisation_projdata_filename;
 };

@@ -97,13 +97,13 @@ private:
   
   SeparableMetzArrayFilter<num_dimensions,elemT> metz_filter;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   
-  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image) override;
   // new
-  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
-  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const override;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const override ;
   
 };
 

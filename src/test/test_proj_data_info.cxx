@@ -943,7 +943,7 @@ ProjDataInfoTests::run_lor_get_s_test()
 class ProjDataInfoCylindricalArcCorrTests : public ProjDataInfoCylindricalTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void
@@ -1115,7 +1115,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 class ProjDataInfoCylindricalNoArcCorrTests : public ProjDataInfoCylindricalTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 
 private:
   void test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info);

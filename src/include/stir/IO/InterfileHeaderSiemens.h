@@ -47,11 +47,11 @@ public:
 
   InterfileHeaderSiemens();
 
-  virtual ~InterfileHeaderSiemens() {}
+  ~InterfileHeaderSiemens() override {}
 
 protected:
   // Returns false if OK, true if not.
-  virtual bool post_processing();
+  bool post_processing() override;
   //! ignore multiple GMT times
   /*!
   Siemens uses keywords like
@@ -126,7 +126,7 @@ class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
   protected:
 
     //! Returns false if OK, true if not.
-    virtual bool post_processing();
+    bool post_processing() override;
     // need this to be false for the listmode data
     bool is_arccorrected;
   public:
@@ -171,7 +171,7 @@ class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
   protected:
 
     //! Returns false if OK, true if not.
-    virtual bool post_processing();
+    bool post_processing() override;
 
   public:
 
@@ -208,7 +208,7 @@ class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
   protected:
 
     //! Returns false if OK, true if not.
-    virtual bool post_processing();
+    bool post_processing() override;
 
   public:
     //! Get axial compression
@@ -241,7 +241,7 @@ class InterfileNormHeaderSiemens : public InterfileRawDataHeaderSiemens
   protected:
 
     //! Returns false if OK, true if not.
-    virtual bool post_processing() override;
+    bool post_processing() override;
 
   public:
     float calib_factor;

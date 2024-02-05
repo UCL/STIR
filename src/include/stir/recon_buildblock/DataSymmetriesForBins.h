@@ -75,10 +75,10 @@ private:
 public:
   DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
-  virtual ~DataSymmetriesForBins();
+  ~DataSymmetriesForBins() override;
 
-  virtual 
-    DataSymmetriesForBins * clone() const = 0;
+  
+    DataSymmetriesForBins * clone() const override = 0;
 
 #if 0
   TODO!
@@ -169,7 +169,7 @@ protected:
   const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
-  virtual bool blindly_equals(const root_type * const) const = 0;
+  bool blindly_equals(const root_type * const) const override = 0;
 };
 
 END_NAMESPACE_STIR

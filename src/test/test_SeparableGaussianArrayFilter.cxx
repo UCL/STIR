@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 class SeparableGaussianArrayFilterTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   //! test one case (overwrites contents of \c test)
   void test_one(Array<num_dimensions, float>&,

@@ -56,7 +56,7 @@ class ParametricDiscretisedDensityTests : public RunTests
 public:
   ParametricDiscretisedDensityTests() 
   {}
-  void run_tests();
+  void run_tests() override;
   //private:
 };
 

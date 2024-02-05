@@ -67,9 +67,9 @@ public:
 
 protected:
 
-    void create_image();
-    void read_image();
-    void check_result();
+    void create_image() override;
+    void read_image() override;
+    void check_result() override;
 };
 
 void IOTests_DiscretisedDensity::create_image()

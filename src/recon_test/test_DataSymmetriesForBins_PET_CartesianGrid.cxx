@@ -63,7 +63,7 @@ class DataSymmetriesForBins_PET_CartesianGridTests : public RunTests
 public:
   DataSymmetriesForBins_PET_CartesianGridTests(char const * template_proj_data_filename = 0);
 
-  void run_tests();
+  void run_tests() override;
 private:
   char const * template_proj_data_filename;
 

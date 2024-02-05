@@ -41,7 +41,7 @@ public:
   KineticModel();
 
   //! default destructor
-  virtual ~KineticModel();
+  ~KineticModel() override;
 
   //  virtual float get_compartmental_activity_at_time(const int param_num, const int sample_num) const;
   //  virtual float get_total_activity_at_time(const int sample_num) const;

@@ -54,9 +54,9 @@ public:
 
   BinNormalisation();
 
-  virtual ~BinNormalisation();
+  ~BinNormalisation() override;
   /*! sets \c _already_setup to \c false */
-  virtual void set_defaults() override;
+  void set_defaults() override;
   virtual float get_calibration_factor() const {return -1;}
 
   //! check if we would be multiplying with 1 (i.e. do nothing)

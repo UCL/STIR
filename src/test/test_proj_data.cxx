@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 class ProjDataTests: public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 private:
   void run_tests_on_proj_data(ProjData&);
   void run_tests_in_memory_only(ProjDataInMemory&);

@@ -77,7 +77,7 @@ class ProjDataRebinning :
 {
 public:
   //! virtual destructor
-  virtual ~ProjDataRebinning();
+  ~ProjDataRebinning() override;
   
   //! gives method information
   virtual std::string method_info() const = 0;
@@ -145,9 +145,9 @@ protected:
 #endif
 
   //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();  
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  bool post_processing() override;  
+  void set_defaults() override;
+  void initialise_keymap() override;
 
  protected: // members
 
