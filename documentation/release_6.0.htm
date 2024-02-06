@@ -9,7 +9,7 @@
 
     <p>This version is 99% backwards compatible with STIR 5.x for the user (see below).
       Developers might need to make code changes as 
-      detailed below. Note though that the location of installed files have changed.
+      detailed below. Note though that the <strong>locations of installed files have changed</strong>.
       Developers of other software that uses STIR via CMake will need to adapt (see below).
     </p>
     <h2>Overall summary</h2>
@@ -284,6 +284,18 @@
 
     <H2>What's new for developers (aside from what should be obvious
       from the above):</H2>
+
+    <h3>White-space and style enforcement</h3>
+    <ul>
+      <li>We now use <tt>clang-format</tt> to enforce C++-style, including white-space settings, line-breaks
+        etc. This uses the <tt>.clang-format</tt> file in the root directory of STIR. Developers should
+        configure their editor encordingly, and ideally use <tt>pre-commit</tt>. It also has
+        consequences for existing branches as you might experience more conflicts than usual
+        during a merge. More detail is in
+        <a href="https://github.com/UCL/STIR/blob/master/documentation/devel/README.md">documentation/devel/README.md</a>.<br>
+        <a href="https://github.com/UCL/STIR/pull/1368">PR #1368</a>.
+      </li>
+    </ul>
 
     <h3>Backward incompatibities</h3>
     <ul>
