@@ -3,6 +3,7 @@
 
         {
             "name":  "^18^Fluorine",
+            "data_source":  "http://www.lnhb.fr/nuclides/F-18_tables.pdf",
             "decays": [                
                 {  "modality": "PET",
                    "keV": 511,
@@ -13,6 +14,7 @@
         },
         {
             "name": "^11^Carbon",
+            "data_source":  "http://www.lnhb.fr/nuclides/N-13_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    "keV": 511,
@@ -23,6 +25,7 @@
         },
         {
             "name": "^13^Nitrogen",
+            "data_source":  "http://www.lnhb.fr/nuclides/N-13_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    "keV": 511,
@@ -33,6 +36,7 @@
         },
         {
             "name": "^15^Oxygen",
+            "data_source":  "http://www.lnhb.fr/nuclides/O-15_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    "keV": 511,
@@ -43,6 +47,7 @@
         },
         {
             "name": "^64^Copper",
+            "data_source":  "http://www.lnhb.fr/nuclides/Cu-64_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    
@@ -53,6 +58,7 @@
         },
         {
             "name": "^68^Gallium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Ga-68_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    "keV": 511,
@@ -63,6 +69,7 @@
         },
         {
             "name": "^68^Germanium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Ge-68_tables.pdf",
             "decays": [
                 {  "modality": "PET",
                    "keV": 511,
@@ -73,6 +80,7 @@
         },
         {
             "name": "^99m^Technetium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Tc-99m_tables.pdf",
             "decays": [
                 {  "modality": "nucmed",
                    "keV": 140.511,
@@ -83,6 +91,7 @@
         },
         {
             "name": "^131^Iodine",
+            "data_source":  "http://www.lnhb.fr/nuclides/I-131_tables.pdf",
             "decays": [
                 {  "modality": "nucmed",
                    "kev": 364.489,
@@ -94,6 +103,7 @@
         },
         {
             "name": "^67^Gallium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Ga-67_tables.pdf",
             "decays": [
                 {  "modality": "nucmed",
                    "keV": 184.577,
@@ -105,6 +115,7 @@
         },
         {
             "name": "^177^Lutetium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Lu-177_tables.pdf",
             "decays": [
                 {  "modality": "nucmed",
                    "keV": 208.3662,
@@ -115,6 +126,7 @@
         },
         {
             "name": "^90^Yttrium",
+            "data_source":  "http://www.lnhb.fr/nuclides/Y-90_tables.pdf",
             "decays": [
                 {  "modality": "nucmed",
                    "keV": 150,
