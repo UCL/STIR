@@ -11,7 +11,7 @@
     \file
     \ingroup projection
 
-    \brief stir::ProjMatrixByBinPinholeSPECTUB's definition 
+    \brief stir::ProjMatrixByBinPinholeSPECTUB's definition
 
     \author Matthew Strugari
     \author Carles Falcon
@@ -21,10 +21,10 @@
 #ifndef __stir_recon_buildblock_ProjMatrixByBinPinholeSPECTUB__
 #define __stir_recon_buildblock_ProjMatrixByBinPinholeSPECTUB__
 
-//system libraries
+// system libraries
 #include <iostream>
 
-//user defined libraries
+// user defined libraries
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/ProjDataInfo.h"
@@ -35,13 +35,14 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class Bin;
 /*!
   \ingroup projection
   \brief Generates projection matrix for pinhole SPECT studies
 
-  \warning this class currently only works with VoxelsOnCartesianGrid. 
+  \warning this class currently only works with VoxelsOnCartesianGrid.
 
   \par Sample parameter file
 
@@ -64,7 +65,7 @@ class Bin;
         attenuation map :=
 
         object radius (cm) := 2.3
-        mask file := 
+        mask file :=
         ; If no mask file is set, we can either compute it from attenuation map or object radius
         mask from attenuation map := 0
 
@@ -74,7 +75,7 @@ class Bin;
 \endverbatim
 
   \par Sample detector file
-  
+
 \verbatim
     Information of detector
     Comments are allowed here or anywhere in lines not containing parameters.
@@ -85,7 +86,7 @@ class Bin;
     #intrinsic PSF#
     Sigma (cm): 0.0361
     Crystal thickness (cm): 0.3
-    Crystal attenuation coefficient (cm -1): 4.407   
+    Crystal attenuation coefficient (cm -1): 4.407
     \#……repeat for each ring …………\#
     Nangles: 4
     ang0 (deg): 180.
@@ -113,166 +114,158 @@ class Bin;
 \endverbatim
 */
 
-class ProjMatrixByBinPinholeSPECTUB : 
-    public RegisteredParsingObject<
-        ProjMatrixByBinPinholeSPECTUB,
-        ProjMatrixByBin,
-        ProjMatrixByBin
-        >
+class ProjMatrixByBinPinholeSPECTUB
+    : public RegisteredParsingObject<ProjMatrixByBinPinholeSPECTUB, ProjMatrixByBin, ProjMatrixByBin>
 {
-  public :
-    //! Name which will be used when parsing a ProjMatrixByBin object
-    static const char * const registered_name; 
+public:
+  //! Name which will be used when parsing a ProjMatrixByBin object
+  static const char* const registered_name;
 
-    //! Default constructor (calls set_defaults())
-    ProjMatrixByBinPinholeSPECTUB();
+  //! Default constructor (calls set_defaults())
+  ProjMatrixByBinPinholeSPECTUB();
 
-    // disable copy-constructor as currently unsafe to copy due to bare pointers
-    ProjMatrixByBinPinholeSPECTUB(const ProjMatrixByBinPinholeSPECTUB&) = delete;
+  // disable copy-constructor as currently unsafe to copy due to bare pointers
+  ProjMatrixByBinPinholeSPECTUB(const ProjMatrixByBinPinholeSPECTUB&) = delete;
 
-    //! Destructor (deallocates UB SPECT memory)
-    ~ProjMatrixByBinPinholeSPECTUB() override;
+  //! Destructor (deallocates UB SPECT memory)
+  ~ProjMatrixByBinPinholeSPECTUB() override;
 
-    //! Checks all necessary geometric info
-    void set_up(		 
-        const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-        const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-        ) override;
+  //! Checks all necessary geometric info
+  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+              ) override;
 
-    //******************** get/set functions *************
+  //******************** get/set functions *************
 
-    //! Minimum weight
-    // no longer set minimum weight, always use 0.
-    // float get_minimum_weight() const;
-    // void set_minimum_weight( const float value );
+  //! Minimum weight
+  // no longer set minimum weight, always use 0.
+  // float get_minimum_weight() const;
+  // void set_minimum_weight( const float value );
 
-    //! Maximum number of sigmas
-    float get_maximum_number_of_sigmas() const;
-    void set_maximum_number_of_sigmas( const float value );
-        
-    //! Spatial resolution PSF
-    float get_spatial_resolution_PSF() const;
-    void set_spatial_resolution_PSF( const float value );
+  //! Maximum number of sigmas
+  float get_maximum_number_of_sigmas() const;
+  void set_maximum_number_of_sigmas(const float value);
 
-    //! Subsampling factor PSF
-    int get_subsampling_factor_PSF() const;
-    void set_subsampling_factor_PSF( const int value );
-    
-    //! Detector file
-    //std::string get_detector_file() const;
-    void set_detector_file( const std::string& value );
+  //! Spatial resolution PSF
+  float get_spatial_resolution_PSF() const;
+  void set_spatial_resolution_PSF(const float value);
 
-    //! Collimator file
-    //std::string get_collimator_file() const;
-    void set_collimator_file( const std::string& value );
-                
-    //! PSF correction
-    std::string get_psf_correction() const;
-    void set_psf_correction( const std::string& value );
+  //! Subsampling factor PSF
+  int get_subsampling_factor_PSF() const;
+  void set_subsampling_factor_PSF(const int value);
 
-    //! Set DOI correction
-    std::string get_doi_correction() const;
-    void set_doi_correction( const std::string& value );
+  //! Detector file
+  // std::string get_detector_file() const;
+  void set_detector_file(const std::string& value);
 
-    //! Object radius (cm)
-    float get_object_radius() const;
-    void set_object_radius( const float value );
-    
-    //! Type of attenuation modelling    
-    std::string get_attenuation_type() const;
-    void set_attenuation_type(const std::string& value);
-    shared_ptr<const DiscretisedDensity<3,float> >
-        get_attenuation_image_sptr() const;
-  
-    //! Attenuation image
-    void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
-    void set_attenuation_image_sptr(const std::string& value);
+  //! Collimator file
+  // std::string get_collimator_file() const;
+  void set_collimator_file(const std::string& value);
 
-    //! Type of masking
-    // no longer use mask type
-    //std::string get_mask_type() const;
-    //void set_mask_type(const std::string& value);
-        
-    //! Mask from mask file
-    shared_ptr<const DiscretisedDensity<3,float> >
-        get_mask_image_sptr() const;
-    void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
-    void set_mask_image_sptr(const std::string& value);
-    
-    //! Mask from attenuation map
-    bool get_mask_from_attenuation_map() const;
-    void set_mask_from_attenuation_map(bool value = false);
-  
-    //! Enable keeping the matrix in memory
-    bool get_keep_all_views_in_cache() const;
-    void set_keep_all_views_in_cache(bool value = false);
+  //! PSF correction
+  std::string get_psf_correction() const;
+  void set_psf_correction(const std::string& value);
 
-    ProjMatrixByBinPinholeSPECTUB * clone() const override;
+  //! Set DOI correction
+  std::string get_doi_correction() const;
+  void set_doi_correction(const std::string& value);
 
-  private:
+  //! Object radius (cm)
+  float get_object_radius() const;
+  void set_object_radius(const float value);
 
-    // parameters that will be parsed
+  //! Type of attenuation modelling
+  std::string get_attenuation_type() const;
+  void set_attenuation_type(const std::string& value);
+  shared_ptr<const DiscretisedDensity<3, float>> get_attenuation_image_sptr() const;
 
-    float minimum_weight;
-    float maximum_number_of_sigmas;
-    float spatial_resolution_PSF;
-    int subsampling_factor_PSF;
-    std::string detector_file;
-    std::string collimator_file;
-    std::string psf_correction;
-    std::string doi_correction;
-    std::string attenuation_type;
-    std::string attenuation_map;
-    //std::string mask_type;
-    float object_radius;
-    std::string mask_file;
-    bool mask_from_attenuation_map;
-    bool keep_all_views_in_cache; //!< if set to false, only a single view is kept in memory
+  //! Attenuation image
+  void set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>> value);
+  void set_attenuation_image_sptr(const std::string& value);
 
-    // explicitly list necessary members for image details (should use an Info object instead)
-    CartesianCoordinate3D<float> voxel_size;
-    CartesianCoordinate3D<float> origin;  
-    IndexRange<3> densel_range;
+  //! Type of masking
+  // no longer use mask type
+  // std::string get_mask_type() const;
+  // void set_mask_type(const std::string& value);
 
-    shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  //! Mask from mask file
+  shared_ptr<const DiscretisedDensity<3, float>> get_mask_image_sptr() const;
+  void set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>> value);
+  void set_mask_image_sptr(const std::string& value);
 
-    bool already_setup;
+  //! Mask from attenuation map
+  bool get_mask_from_attenuation_map() const;
+  void set_mask_from_attenuation_map(bool value = false);
 
-    mutable SPECTUB_mph::wmh_mph_type wmh;       // weight matrix header.
-    mutable SPECTUB_mph::wm_da_type wm;          // double array weight matrix structure.
-    mutable SPECTUB_mph::pcf_type pcf;           // pre-calculated functions
+  //! Enable keeping the matrix in memory
+  bool get_keep_all_views_in_cache() const;
+  void set_keep_all_views_in_cache(bool value = false);
 
-    void 
-        calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
+  ProjMatrixByBinPinholeSPECTUB* clone() const override;
 
-    void set_defaults() override;
-    void initialise_keymap() override;
-    bool post_processing() override;
+private:
+  // parameters that will be parsed
 
-    shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
-    shared_ptr<const DiscretisedDensity<3,float> > mask_image_sptr;
+  float minimum_weight;
+  float maximum_number_of_sigmas;
+  float spatial_resolution_PSF;
+  int subsampling_factor_PSF;
+  std::string detector_file;
+  std::string collimator_file;
+  std::string psf_correction;
+  std::string doi_correction;
+  std::string attenuation_type;
+  std::string attenuation_map;
+  // std::string mask_type;
+  float object_radius;
+  std::string mask_file;
+  bool mask_from_attenuation_map;
+  bool keep_all_views_in_cache; //!< if set to false, only a single view is kept in memory
 
-    // wm_SPECT starts here ---------------------------------------------------------------------------------------------
-    bool  *msk_3d;        // voxels to be included in matrix (no weight calculated outside the mask)
-    float *attmap;        // attenuation map
+  // explicitly list necessary members for image details (should use an Info object instead)
+  CartesianCoordinate3D<float> voxel_size;
+  CartesianCoordinate3D<float> origin;
+  IndexRange<3> densel_range;
 
-    //... variables for estimated sizes of arrays to allocate ................................
-    int **Nitems;         //!< number of non-zero elements for each weight matrix row
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
-    //... user defined structures (types defined in PinholeSPECTUB_Tools.h) .....................................
+  bool already_setup;
 
-    SPECTUB_mph::volume_type vol;       //!< structure with volume (image) information
-    SPECTUB_mph::prj_mph_type prj;      //!< structure with projection information
-    SPECTUB_mph::bin_type bin;          //!< structure with bin information
+  mutable SPECTUB_mph::wmh_mph_type wmh; // weight matrix header.
+  mutable SPECTUB_mph::wm_da_type wm;    // double array weight matrix structure.
+  mutable SPECTUB_mph::pcf_type pcf;     // pre-calculated functions
 
-    // mutable to allow compute_one_subset() const function to change the fields
-    mutable SPECTUB_mph::psf2d_type psf_bin;   // structure for total psf distribution in bins (bidimensional)
-    mutable SPECTUB_mph::psf2d_type psf_subs;  // structure for total psf distribution: mid resolution (bidimensional)
-    mutable SPECTUB_mph::psf2d_type psf_aux;   // structure for total psf distribution: mid resolution auxiliar for convolution (bidimensional)
-    mutable SPECTUB_mph::psf2d_type kern;      // structure for intrinsic psf distribution: mid resolution (bidimensional)
+  void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
 
-    void compute_one_subset(const int kOS) const;
-    void delete_PinholeSPECTUB_arrays();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
+
+  shared_ptr<const DiscretisedDensity<3, float>> attenuation_image_sptr;
+  shared_ptr<const DiscretisedDensity<3, float>> mask_image_sptr;
+
+  // wm_SPECT starts here ---------------------------------------------------------------------------------------------
+  bool* msk_3d;  // voxels to be included in matrix (no weight calculated outside the mask)
+  float* attmap; // attenuation map
+
+  //... variables for estimated sizes of arrays to allocate ................................
+  int** Nitems; //!< number of non-zero elements for each weight matrix row
+
+  //... user defined structures (types defined in PinholeSPECTUB_Tools.h) .....................................
+
+  SPECTUB_mph::volume_type vol;  //!< structure with volume (image) information
+  SPECTUB_mph::prj_mph_type prj; //!< structure with projection information
+  SPECTUB_mph::bin_type bin;     //!< structure with bin information
+
+  // mutable to allow compute_one_subset() const function to change the fields
+  mutable SPECTUB_mph::psf2d_type psf_bin;  // structure for total psf distribution in bins (bidimensional)
+  mutable SPECTUB_mph::psf2d_type psf_subs; // structure for total psf distribution: mid resolution (bidimensional)
+  mutable SPECTUB_mph::psf2d_type
+      psf_aux; // structure for total psf distribution: mid resolution auxiliar for convolution (bidimensional)
+  mutable SPECTUB_mph::psf2d_type kern; // structure for intrinsic psf distribution: mid resolution (bidimensional)
+
+  void compute_one_subset(const int kOS) const;
+  void delete_PinholeSPECTUB_arrays();
 };
 
 END_NAMESPACE_STIR

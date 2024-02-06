@@ -7,7 +7,7 @@
   \ingroup listmode
   \ingroup GE
   \brief Declaration of class stir::GE::RDF_HDF5::CListModeDataGEHDF5
-    
+
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Palak Wadhwa
@@ -24,10 +24,11 @@
 #include <iostream>
 #include <string>
 
-
 START_NAMESPACE_STIR
-namespace GE {
-namespace RDF_HDF5 {
+namespace GE
+{
+namespace RDF_HDF5
+{
 
 //! A class that reads the listmode data for GE scanners using the RDF9 format
 /*!  \ingroup listmode
@@ -41,46 +42,38 @@ public:
   //! Constructor taking a filename
   CListModeDataGEHDF5(const std::string& listmode_filename);
 
-  std::string
-    get_name() const override;
+  std::string get_name() const override;
 
-  virtual
-    std::time_t get_scan_start_time_in_secs_since_1970() const;
+  virtual std::time_t get_scan_start_time_in_secs_since_1970() const;
 
-  
-    shared_ptr <CListRecord> get_empty_record_sptr() const override;
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  
-    Succeeded get_next_record(CListRecord& record) const override;
+  Succeeded get_next_record(CListRecord& record) const override;
 
-  
-    Succeeded reset() override;
+  Succeeded reset() override;
 
-  
-    SavedPosition save_get_position() override;
+  SavedPosition save_get_position() override;
 
-  
-    Succeeded set_get_position(const SavedPosition&) override;
+  Succeeded set_get_position(const SavedPosition&) override;
 
   //! returns \c false, as GEHDF5 listmode data does not store delayed events (and prompts)
   /*! \todo this depends on the acquisition parameters */
   bool has_delayeds() const override { return false; }
 
 private:
-
-//  shared_ptr<GEHDF5Wrapper> input_sptr;
+  //  shared_ptr<GEHDF5Wrapper> input_sptr;
 
   typedef CListRecordGEHDF5 CListRecordT;
   std::string listmode_filename;
-  shared_ptr<InputStreamWithRecordsFromHDF5<CListRecordT> > current_lm_data_ptr;
+  shared_ptr<InputStreamWithRecordsFromHDF5<CListRecordT>> current_lm_data_ptr;
   unsigned long first_time_stamp;
   unsigned long lm_duration_in_millisecs;
-  
-  Succeeded open_lm_file(); 
+
+  Succeeded open_lm_file();
 };
 
-} // namespace
-}
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR
 
 #endif

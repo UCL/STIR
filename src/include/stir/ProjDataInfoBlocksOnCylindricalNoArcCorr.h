@@ -23,7 +23,6 @@
 #ifndef __stir_ProjDataInfoBlocksOnCylindricalNoArcCorr_H__
 #define __stir_ProjDataInfoBlocksOnCylindricalNoArcCorr_H__
 
-
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/ProjDataInfoBlocksOnCylindrical.h"
 #include "stir/GeometryBlocksOnCylindrical.h"
@@ -50,7 +49,7 @@ class Succeeded;
          a10     a11     ...
      a20     a21     a22 ...      view 1: a20 a30 a21 a31 ...
          a30     a31     ...
-	 \endverbatim
+         \endverbatim
   This (standard) interleaving is done because for 'odd' LOR_angles there
   is no LOR which goes through the origin.
 
@@ -87,10 +86,11 @@ public:
 
   //! Constructor which gets geometry from the scanner
   ProjDataInfoBlocksOnCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v,
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+                                           const VectorWithOffset<int>& num_axial_pos_per_segment,
+                                           const VectorWithOffset<int>& min_ring_diff_v,
+                                           const VectorWithOffset<int>& max_ring_diff_v,
+                                           const int num_views,
+                                           const int num_tangential_poss);
 
   ProjDataInfo* clone() const override;
 
@@ -100,19 +100,20 @@ public:
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
-  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
-					             const CartesianCoordinate3D<float>& c1,
-						     const CartesianCoordinate3D<float>& c2) const;
+  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
+                                                                 int& det2,
+                                                                 int& ring1,
+                                                                 int& ring2,
+                                                                 const CartesianCoordinate3D<float>& c1,
+                                                                 const CartesianCoordinate3D<float>& c2) const;
 
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
-						  const CartesianCoordinate3D<float>& coord_1,
-						  const CartesianCoordinate3D<float>& coord_2) const;
+                                                         const CartesianCoordinate3D<float>& coord_1,
+                                                         const CartesianCoordinate3D<float>& coord_2) const;
   //@}
 
 private:
-
-  bool blindly_equals(const root_type * const) const override;
-
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR

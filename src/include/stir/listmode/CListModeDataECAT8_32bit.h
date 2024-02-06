@@ -10,7 +10,7 @@
   \file
   \ingroup listmode
   \brief Declaration of class stir::ecat::CListModeDataECAT8_32bit
-    
+
   \author Kris Thielemans
 */
 
@@ -26,11 +26,12 @@
 #include <vector>
 
 START_NAMESPACE_STIR
-namespace ecat {
+namespace ecat
+{
 
 //! A class that reads the listmode data for Siemens scanners
 /*!  \ingroup listmode
-    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners. 
+    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners.
     There's an Interfile-like header and a binary file with the actual list mode data.
     The name of the binary file is given by the value of the "name of data file" keyword
     in the header.
@@ -44,23 +45,17 @@ public:
   //! Construct fron the filename of the Interfile header
   CListModeDataECAT8_32bit(const std::string& listmode_filename_prefix);
 
-  std::string
-    get_name() const override;
+  std::string get_name() const override;
 
-  
-    shared_ptr <CListRecord> get_empty_record_sptr() const override;
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  
-    Succeeded get_next_record(CListRecord& record) const override;
+  Succeeded get_next_record(CListRecord& record) const override;
 
-  
-    Succeeded reset() override;
+  Succeeded reset() override;
 
-  
-    SavedPosition save_get_position() override;
+  SavedPosition save_get_position() override;
 
-  
-    Succeeded set_get_position(const SavedPosition&) override;
+  Succeeded set_get_position(const SavedPosition&) override;
 
   //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
   /*! \todo this might depend on the acquisition parameters */
@@ -69,15 +64,13 @@ public:
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
-  shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
+  shared_ptr<InputStreamWithRecords<CListRecordT, bool>> current_lm_data_ptr;
 
   InterfileListmodeHeaderSiemens interfile_parser;
 
   // std::vector<int> segment_table;
 
   Succeeded open_lm_file();
-
-
 };
 
 } // namespace ecat

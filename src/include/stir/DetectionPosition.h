@@ -23,63 +23,62 @@
 START_NAMESPACE_STIR
 /*!   \ingroup projdata
  \brief
- A class for storing coordinates of a detection. 
- 
+ A class for storing coordinates of a detection.
+
  This encodes where
  a gamma photon was detected on a detector array. For example, in a
  cylindrical PET scanner, this class stores the crystal where a gamma
  was detected.
- 
+
  The scanner might have more
- than 1 detector array (for example a dual-headed system), but this info is 
+ than 1 detector array (for example a dual-headed system), but this info is
  (currently) not in this class. Also, the detector array might be rotating
  during acquisition. The corresponding angle is also not in the class.
- 
- This is essentially a collection of 3 numbers: 
+
+ This is essentially a collection of 3 numbers:
  <ol>
- <li>\c tangential_coord: a coordinate running tangentially to the 
+ <li>\c tangential_coord: a coordinate running tangentially to the
  scanner cylinder, and orthogonal to the scanner axis. For a
  cylindrical PET scanner, this would be the Detection number in a ring.
  <li>\c axial_coord: a coordinate running along the scanner axis.
  For a cylindrical PET scanner, it would correspond to the ring number.
  <li>\c radial_coord: a coordinate 'orthogonal' to the 2 previous ones. This
- is only used for scanners with multiple layers of detectors (which would 
+ is only used for scanners with multiple layers of detectors (which would
  give Depth Of Interaction information). radial_coord==0 corresponds to
  the layer closest to the centre of the scanner.
  </ol>
  All 3 coordinates are normally positive, and start with 0.
  \todo document directions
- 
+
  For scanners that do not need 3 coordinates, there is a space overhead
  but no performance overhead, except in the comparison functions.
  The class is templated to allow for systems with continuous detection.
 */
 template <typename coordT = unsigned int>
-  class DetectionPosition:
-  boost::partially_ordered<DetectionPosition<coordT>,  // have operator>, <= etc for free
-  boost::equality_comparable<DetectionPosition<coordT> > > // have operator!= for free
+class DetectionPosition
+    : boost::partially_ordered<DetectionPosition<coordT>,                             // have operator>, <= etc for free
+                               boost::equality_comparable<DetectionPosition<coordT>>> // have operator!= for free
 {
-public: 
-  inline explicit
-    DetectionPosition(const coordT tangential_coord=0,
-  	                   const coordT axial_coord=0, 
-			   const coordT radial_coord=0);
-  
-  inline coordT tangential_coord()  const;   
-  inline coordT axial_coord()const;
-  inline coordT radial_coord()const; 
-  inline coordT& tangential_coord(); 
-  inline coordT& axial_coord(); 
-  inline coordT& radial_coord(); 
+public:
+  inline explicit DetectionPosition(const coordT tangential_coord = 0,
+                                    const coordT axial_coord = 0,
+                                    const coordT radial_coord = 0);
+
+  inline coordT tangential_coord() const;
+  inline coordT axial_coord() const;
+  inline coordT radial_coord() const;
+  inline coordT& tangential_coord();
+  inline coordT& axial_coord();
+  inline coordT& radial_coord();
   //! \name comparison operators
   //@{
   inline bool operator==(const DetectionPosition&) const;
   inline bool operator<(const DetectionPosition&) const;
   //@}
-private :
-  coordT  tangential;  
-  coordT  axial; 
-  coordT  radial;
+private:
+  coordT tangential;
+  coordT axial;
+  coordT radial;
 };
 
 END_NAMESPACE_STIR

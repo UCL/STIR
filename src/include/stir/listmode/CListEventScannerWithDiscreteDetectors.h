@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Declarations of class stir::CListEventScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -36,13 +36,11 @@ template <class ProjDataInfoT>
 class CListEventScannerWithDiscreteDetectors : public CListEvent
 {
 public:
-
   explicit CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
-  const Scanner * get_scanner_ptr() const
-    { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
+  const Scanner* get_scanner_ptr() const { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
 
-  //! This routine returns the corresponding detector pair   
+  //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
 
   //! This routine sets in a coincidence event from detector "indices"
@@ -58,7 +56,7 @@ public:
   /*! Overrides the default implementation to use get_detection_position()
     which should be faster.
 
-    \warning This implementation is only valid for \c proj_data_info of 
+    \warning This implementation is only valid for \c proj_data_info of
     type ProjDataInfoT. However, because of efficiency reasons
     this is only checked in debug mode (NDEBUG not defined).
   */
@@ -71,19 +69,13 @@ public:
    */
   inline bool is_valid_template(const ProjDataInfo&) const override;
 
- protected:
-   shared_ptr<const ProjDataInfoT>
-    get_uncompressed_proj_data_info_sptr() const
-     {
-       return uncompressed_proj_data_info_sptr;
-     }
+protected:
+  shared_ptr<const ProjDataInfoT> get_uncompressed_proj_data_info_sptr() const { return uncompressed_proj_data_info_sptr; }
 
-   //shared_ptr<Scanner> scanner_sptr;
+  // shared_ptr<Scanner> scanner_sptr;
 
- private:
-   shared_ptr<const ProjDataInfoT>
-     uncompressed_proj_data_info_sptr;
-
+private:
+  shared_ptr<const ProjDataInfoT> uncompressed_proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -14,14 +14,13 @@
   \ingroup projdata
 
   \brief Declaration of class stir::ProjDataInfoGenericNoArcCorr
-  
+
   \author Kris Thielemans
   \author Parisa Khateri
   \author Michael Roethlisberger
 */
 #ifndef __stir_ProjDataInfoGenericNoArcCorr_H__
 #define __stir_ProjDataInfoGenericNoArcCorr_H__
-
 
 #include "stir/ProjDataInfoGeneric.h"
 #include "stir/GeometryBlocksOnCylindrical.h"
@@ -48,7 +47,7 @@ class Succeeded;
          a10     a11     ...
      a20     a21     a22 ...      view 1: a20 a30 a21 a31 ...
          a30     a31     ...
-	 \endverbatim
+         \endverbatim
   This (standard) interleaving is done because for 'odd' LOR_angles there
   is no LOR which goes through the origin.
 
@@ -83,11 +82,12 @@ public:
   ProjDataInfoGenericNoArcCorr();
 
   //! Constructor which gets geometry from the scanner
-   ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v,
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+  ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+                               const VectorWithOffset<int>& num_axial_pos_per_segment,
+                               const VectorWithOffset<int>& min_ring_diff_v,
+                               const VectorWithOffset<int>& max_ring_diff_v,
+                               const int num_views,
+                               const int num_tangential_poss);
 
   ProjDataInfo* clone() const override;
 
@@ -128,10 +128,7 @@ public:
       \see get_det_num_pair_for_view_tangential_pos_num()
   */
   inline bool
-     get_view_tangential_pos_num_for_det_num_pair(int& view_num,
-						 int& tang_pos_num,
-						 const int det1_num,
-						 const int det2_num) const;
+  get_view_tangential_pos_num_for_det_num_pair(int& view_num, int& tang_pos_num, const int det1_num, const int det2_num) const;
   //! This routine gets \a det_num1 and \a det_num2
   /*!
       It sets the detectors in a particular order (i.e. it fixes the
@@ -147,11 +144,7 @@ public:
       \warning Will call error() if certain conditions are not met.
    */
   inline void
-    get_det_num_pair_for_view_tangential_pos_num(
-						 int& det1_num,
-						 int& det2_num,
-						 const int view_num,
-						 const int tang_pos_num) const;
+  get_det_num_pair_for_view_tangential_pos_num(int& det1_num, int& det2_num, const int view_num, const int tang_pos_num) const;
 
   //! This gets Bin coordinates for a particular detector pair
   /*!
@@ -163,10 +156,7 @@ public:
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \todo use member template for the coordT type to support continuous detectors.
   */
-  inline Succeeded
-    get_bin_for_det_pos_pair(Bin&,
-			 const DetectionPositionPair<>&) const;
-
+  inline Succeeded get_bin_for_det_pos_pair(Bin&, const DetectionPositionPair<>&) const;
 
   //! This routine gets the detector pair corresponding to a bin.
   /*!
@@ -176,13 +166,10 @@ public:
     \todo use member template for the coordT type to support continuous detectors.
     \warning Will call error() if certain conditions are not met.
   */
-  inline void
-    get_det_pos_pair_for_bin(DetectionPositionPair<>&,
-	                 const Bin&) const;
+  inline void get_det_pos_pair_for_bin(DetectionPositionPair<>&, const Bin&) const;
 
   //! This routine returns the number of detector pairs that correspond to a bin
-  unsigned int
-    get_num_det_pos_pairs_for_bin(const Bin&) const;
+  unsigned int get_num_det_pos_pairs_for_bin(const Bin&) const;
 
   //! This routine fills a vector with all the detector pairs that correspond to a bin.
   /*!
@@ -193,11 +180,9 @@ public:
     (for instance for continuous detectors, or rotating scanners, or
     arc-corrected data).
   */
-  void
-    get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >&,
-				  const Bin&) const;
+  void get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<>>&, const Bin&) const;
 
- private:
+private:
   // old function, now private. Use get_bin_for_det_pos_pair instead.
   //! This gets Bin coordinates for a particular detector pair
   /*!
@@ -206,11 +191,9 @@ public:
     \obsolete
   */
   inline Succeeded
-    get_bin_for_det_pair(Bin&,
-			 const int det1_num, const int ring1_num,
-			 const int det2_num, const int ring2_num) const;
+  get_bin_for_det_pair(Bin&, const int det1_num, const int ring1_num, const int det2_num, const int ring2_num) const;
 
- public:
+public:
   //! This routine gets the detector pair corresponding to a bin.
   /*!
     \see get_det_pair_for_view_tangential_pos_num() for
@@ -218,18 +201,11 @@ public:
     i.e. no axial compression.
     \obsolete
   */
-  inline void
-    get_det_pair_for_bin(
-			 int& det1_num, int& ring1_num,
-			 int& det2_num, int& ring2_num,
-			 const Bin&) const;
+  inline void get_det_pair_for_bin(int& det1_num, int& ring1_num, int& det2_num, int& ring2_num, const Bin&) const;
 
   //@}
 
-  
-    Bin
-    get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
-
+  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
@@ -240,27 +216,37 @@ public:
   */
 
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
-					       CartesianCoordinate3D<float>& coord_2,
-					       const Bin& bin) const override;
+                                               CartesianCoordinate3D<float>& coord_2,
+                                               const Bin& bin) const override;
 
-  virtual void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-							     CartesianCoordinate3D<float>& coord_2,
-							     const int Ring_A,const int Ring_B,
-							     const int det1, const int det2) const;
+  virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
+                                                                    CartesianCoordinate3D<float>& coord_2,
+                                                                    const int Ring_A,
+                                                                    const int Ring_B,
+                                                                    const int det1,
+                                                                    const int det2) const;
 
 private:
-
   // used in get_view_tangential_pos_num_for_det_num_pair()
-  struct Det1Det2 { int det1_num; int det2_num; };
-  mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;
+  struct Det1Det2
+  {
+    int det1_num;
+    int det2_num;
+  };
+  mutable VectorWithOffset<VectorWithOffset<Det1Det2>> uncompressed_view_tangpos_to_det1det2;
   mutable bool uncompressed_view_tangpos_to_det1det2_initialised;
   //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_uncompressed_view_tangpos_to_det1det2() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   // we prestore a lookup-table in terms for unmashed view/tangpos
-  struct ViewTangPosSwap { int view_num; int tang_pos_num; bool swap_detectors; };
-  mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_uncompressed_view_tangpos;
+  struct ViewTangPosSwap
+  {
+    int view_num;
+    int tang_pos_num;
+    bool swap_detectors;
+  };
+  mutable VectorWithOffset<VectorWithOffset<ViewTangPosSwap>> det1det2_to_uncompressed_view_tangpos;
   mutable bool det1det2_to_uncompressed_view_tangpos_initialised;
   //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_det1det2_to_uncompressed_view_tangpos() const;
@@ -269,8 +255,9 @@ private:
   inline void initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet() const;
   //! build look-up table unless already done before
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
- protected:
-  bool blindly_equals(const root_type * const) const override;
+
+protected:
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR

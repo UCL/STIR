@@ -7,7 +7,7 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
   \author Richard Brown
-  
+
 */
 /*
     Copyright (C) 2005 - 2011-01-12, Hammersmith Imanet Ltd
@@ -42,75 +42,74 @@ class Succeeded;
 
   \todo template in \c elemT and numDimensions?
  */
-class DynamicDiscretisedDensity: public ExamData
+class DynamicDiscretisedDensity : public ExamData
 {
- public:
+public:
   //! A typedef that can be used what the base of the hierarchy is
   /*! This typedef is used in write_to_file().
-  */
+   */
   typedef DynamicDiscretisedDensity hierarchy_base_type;
 
-  typedef DiscretisedDensity<3,float> singleDiscDensT;
- private:
-  //! typedef for the private member that stores the densities (one for each time frame)
-  typedef std::vector<shared_ptr<singleDiscDensT > > DensitiesT;
- public:
-  //! typedef for iterator that runs over all densels in all frames
-  typedef NestedIterator<DensitiesT::iterator, PtrBeginEndAllFunction<DensitiesT::iterator> > full_iterator;
-  //! typedef for const iterator that runs over all densels in all frames
-  typedef NestedIterator<DensitiesT::const_iterator, ConstPtrBeginEndAllFunction<DensitiesT::const_iterator> > const_full_iterator;
+  typedef DiscretisedDensity<3, float> singleDiscDensT;
 
-  static
-    DynamicDiscretisedDensity*
-    read_from_file(const std::string& filename);
+private:
+  //! typedef for the private member that stores the densities (one for each time frame)
+  typedef std::vector<shared_ptr<singleDiscDensT>> DensitiesT;
+
+public:
+  //! typedef for iterator that runs over all densels in all frames
+  typedef NestedIterator<DensitiesT::iterator, PtrBeginEndAllFunction<DensitiesT::iterator>> full_iterator;
+  //! typedef for const iterator that runs over all densels in all frames
+  typedef NestedIterator<DensitiesT::const_iterator, ConstPtrBeginEndAllFunction<DensitiesT::const_iterator>> const_full_iterator;
+
+  static DynamicDiscretisedDensity* read_from_file(const std::string& filename);
 
   DynamicDiscretisedDensity() {}
 
-  DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);
+  DynamicDiscretisedDensity(const DynamicDiscretisedDensity& argument);
 
-  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions, 
+  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
                             const double scan_start_time_in_secs_since_1970,
                             const shared_ptr<Scanner>& scanner_sptr)
-    {
-      _densities.resize(time_frame_definitions.get_num_frames());
-      shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
-      _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
-      _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
-      this->exam_info_sptr=_exam_info_sptr;
-      _scanner_sptr=scanner_sptr;
-    }
+  {
+    _densities.resize(time_frame_definitions.get_num_frames());
+    shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+    _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+    _exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+    this->exam_info_sptr = _exam_info_sptr;
+    _scanner_sptr = scanner_sptr;
+  }
   //!  Construct an empty DynamicDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
   DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
                             const double scan_start_time_in_secs_since_1970,
                             const shared_ptr<Scanner>& scanner_sptr,
-                            const shared_ptr<singleDiscDensT >& density_sptr)
-    {  
-      _densities.resize(time_frame_definitions.get_num_frames());
-      shared_ptr<ExamInfo> _exam_info_sptr;
-      if (is_null_ptr(density_sptr->get_exam_info_sptr()))
-        _exam_info_sptr.reset(new ExamInfo);
-      else
-        _exam_info_sptr = density_sptr->get_exam_info_sptr()->create_shared_clone();
-      _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
-      _exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
-      this->exam_info_sptr = _exam_info_sptr;
+                            const shared_ptr<singleDiscDensT>& density_sptr)
+  {
+    _densities.resize(time_frame_definitions.get_num_frames());
+    shared_ptr<ExamInfo> _exam_info_sptr;
+    if (is_null_ptr(density_sptr->get_exam_info_sptr()))
+      _exam_info_sptr.reset(new ExamInfo);
+    else
+      _exam_info_sptr = density_sptr->get_exam_info_sptr()->create_shared_clone();
+    _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+    _exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+    this->exam_info_sptr = _exam_info_sptr;
 
-      _scanner_sptr=scanner_sptr;
-    
-      for (unsigned int frame_num=1; frame_num<=time_frame_definitions.get_num_frames(); ++frame_num)
-        {
-          shared_ptr<singleDiscDensT> density_frame_sptr(density_sptr->get_empty_copy());
-          ExamInfo this_exam_info(*exam_info_sptr);
-          this_exam_info.set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions, frame_num));
-          density_frame_sptr->set_exam_info(this_exam_info);
-          this->_densities[frame_num-1] = density_frame_sptr;
+    _scanner_sptr = scanner_sptr;
+
+    for (unsigned int frame_num = 1; frame_num <= time_frame_definitions.get_num_frames(); ++frame_num)
+      {
+        shared_ptr<singleDiscDensT> density_frame_sptr(density_sptr->get_empty_copy());
+        ExamInfo this_exam_info(*exam_info_sptr);
+        this_exam_info.set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions, frame_num));
+        density_frame_sptr->set_exam_info(this_exam_info);
+        this->_densities[frame_num - 1] = density_frame_sptr;
       }
-    }  
+  }
 
-  DynamicDiscretisedDensity&
-    operator=(const DynamicDiscretisedDensity& argument);
+  DynamicDiscretisedDensity& operator=(const DynamicDiscretisedDensity& argument);
 
-  /*! @name functions returning full_iterators 
+  /*! @name functions returning full_iterators
     These return iterators that run through all elements in all time frames.
   */
   //@{
@@ -129,51 +128,40 @@ class DynamicDiscretisedDensity: public ExamData
   /*!
     \warning This method replaced the set_density_sptr as it was unsafe
   */
-  void 
-    set_density(const singleDiscDensT& density,
-                     const unsigned int frame_num);
+  void set_density(const singleDiscDensT& density, const unsigned int frame_num);
   /*
     DynamicDiscretisedDensity(  TimeFrameDefinitions time_frame_defintions,shared_ptr<Scanner>,
     std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
   */
 
-  const std::vector<shared_ptr<singleDiscDensT> > &
-    get_densities() const ;
+  const std::vector<shared_ptr<singleDiscDensT>>& get_densities() const;
 
-  const singleDiscDensT & 
-    get_density(const unsigned int frame_num) const ;
+  const singleDiscDensT& get_density(const unsigned int frame_num) const;
 
-  const singleDiscDensT & 
-    operator[](const unsigned int frame_num) const 
-    { return this->get_density(frame_num); }
+  const singleDiscDensT& operator[](const unsigned int frame_num) const { return this->get_density(frame_num); }
 
   //! Avoid using this as it's unsafe
-  singleDiscDensT & 
-    get_density(const unsigned int frame_num);
+  singleDiscDensT& get_density(const unsigned int frame_num);
 
-  singleDiscDensT & 
-    operator[](const unsigned int frame_num)  
-    { return this->get_density(frame_num); }
+  singleDiscDensT& operator[](const unsigned int frame_num) { return this->get_density(frame_num); }
   //@}
 
   const float get_isotope_halflife() const;
 
-   float get_calibration_factor() const;
+  float get_calibration_factor() const;
 
   //! at method
-  const singleDiscDensT & at(const unsigned int frame_num) const
-  { return this->get_density(frame_num); }
+  const singleDiscDensT& at(const unsigned int frame_num) const { return this->get_density(frame_num); }
 
   //! at method
-  singleDiscDensT & at(const unsigned int frame_num)
-  { return this->get_density(frame_num); }
+  singleDiscDensT& at(const unsigned int frame_num) { return this->get_density(frame_num); }
 
   //! Return time of start of scan
   /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
     of your local time zone.
 
     Note that the return type is a \c double. This allows for enough accuracy
-    for a long time to come. It also means that the start time can have fractional 
+    for a long time to come. It also means that the start time can have fractional
     seconds.
 
     The time frame definitions should be relative to this time.
@@ -182,47 +170,42 @@ class DynamicDiscretisedDensity: public ExamData
 
   const float get_scanner_default_bin_size() const;
 
-  void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
+  void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions)
   {
     shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
     sptr->set_time_frame_definitions(time_frame_definitions);
     this->exam_info_sptr = sptr;
   }
 
-  void set_scanner(const Scanner& scanner)
-  { this->_scanner_sptr.reset(new Scanner(scanner)); }
+  void set_scanner(const Scanner& scanner) { this->_scanner_sptr.reset(new Scanner(scanner)); }
 
-  const TimeFrameDefinitions & 
-    get_time_frame_definitions() const ;
+  const TimeFrameDefinitions& get_time_frame_definitions() const;
 
-  unsigned get_num_time_frames() const
-  {
-    return this->get_time_frame_definitions().get_num_time_frames();
-  }
+  unsigned get_num_time_frames() const { return this->get_time_frame_definitions().get_num_time_frames(); }
 
   /*! \brief write data to file
     Currently only in ECAT7 format.
     \warning write_time_frame_definitions() is not yet implemented, so time information is missing.
   */
-  Succeeded   
-    write_to_ecat7(const std::string& filename) const;
+  Succeeded write_to_ecat7(const std::string& filename) const;
 
-  void calibrate_frames() const ;
+  void calibrate_frames() const;
   /*!
-    \warning This function should be used only if the _decay_corrected is false. Time of a frame is taken as the mean time for each frame which is an accurate approximation only if frame_duration <<< isotope_halflife.
+    \warning This function should be used only if the _decay_corrected is false. Time of a frame is taken as the mean time for
+    each frame which is an accurate approximation only if frame_duration <<< isotope_halflife.
   */
-  void decay_correct_frames()  ;
-  void set_if_decay_corrected(const bool is_decay_corrected)  ;
-  void set_calibration_factor(const float calibration_factor) ;
-  void set_num_densities(const int num_densities)
-  { _densities.resize(num_densities); }
- private:
+  void decay_correct_frames();
+  void set_if_decay_corrected(const bool is_decay_corrected);
+  void set_calibration_factor(const float calibration_factor);
+  void set_num_densities(const int num_densities) { _densities.resize(num_densities); }
+
+private:
   // warning: if adding any new members, you have to change the copy constructor as well.
-  //TimeFrameDefinitions _time_frame_definitions;
+  // TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
-  bool _is_decay_corrected; 
-  //double _start_time_in_secs_since_1970;
+  bool _is_decay_corrected;
+  // double _start_time_in_secs_since_1970;
 };
 
 END_NAMESPACE_STIR

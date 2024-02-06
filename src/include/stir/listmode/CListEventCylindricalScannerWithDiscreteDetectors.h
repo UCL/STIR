@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Declarations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2023, University College London
@@ -28,10 +28,12 @@ START_NAMESPACE_STIR
 /*! \ingroup listmode
    At present, could just as well be a `typedef`.
 */
-class CListEventCylindricalScannerWithDiscreteDetectors : public CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr>
+class CListEventCylindricalScannerWithDiscreteDetectors
+    : public CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr>
 {
- private:
+private:
   typedef CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr> base_type;
+
 public:
   using base_type::base_type;
 };

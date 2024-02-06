@@ -26,12 +26,13 @@
 
 START_NAMESPACE_STIR
 
-//template <int num_dimensions, typename elemT> class ParametricDiscretisedDensity;
-template <typename DiscDensityT> class ParametricDiscretisedDensity;
+// template <int num_dimensions, typename elemT> class ParametricDiscretisedDensity;
+template <typename DiscDensityT>
+class ParametricDiscretisedDensity;
 
 /*!
   \ingroup InterfileIO
-  \brief 
+  \brief
   Implementation of OutputFileFormat paradigm for the Interfile format.
  */
 #if 0
@@ -43,51 +44,43 @@ class InterfileParametricDiscretisedDensityOutputFileFormat :
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> > >
 #else
 template <typename DiscDensityT>
-class InterfileParametricDiscretisedDensityOutputFileFormat : 
-  public RegisteredParsingObject<
-        InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
+class InterfileParametricDiscretisedDensityOutputFileFormat
+    : public RegisteredParsingObject<InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
+                                     OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>,
+                                     OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>>
 #endif
 {
- private:
-  typedef 
+private:
+  typedef
 #if 0
      RegisteredParsingObject<
         InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions, elemT>,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> >,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> > >
 #else
-     RegisteredParsingObject<
-        InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
+      RegisteredParsingObject<InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
+                              OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>,
+                              OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>>
 #endif
-    base_type;
-public :
-    //! Name which will be used when parsing an OutputFileFormat object
-  static const char * const registered_name;
+      base_type;
+public:
+  //! Name which will be used when parsing an OutputFileFormat object
+  static const char* const registered_name;
 
-  InterfileParametricDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, 
-                   const ByteOrder& = ByteOrder::native);
-
+  InterfileParametricDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT,
+                                                        const ByteOrder& = ByteOrder::native);
 
   ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
- protected:
-  Succeeded  
-    actual_write_to_file(std::string& output_filename,
-		  const ParametricDiscretisedDensity<DiscDensityT>& density) const override;
 
+protected:
+  Succeeded actual_write_to_file(std::string & output_filename, const ParametricDiscretisedDensity<DiscDensityT>& density)
+      const override;
 
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #endif

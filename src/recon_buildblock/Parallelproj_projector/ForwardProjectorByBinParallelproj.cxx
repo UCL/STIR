@@ -29,32 +29,30 @@
 #include "stir/error.h"
 #include "stir/recon_array_functions.h"
 #ifdef parallelproj_built_with_CUDA
-#include "parallelproj_cuda.h"
+#  include "parallelproj_cuda.h"
 #else
-#include "parallelproj_c.h"
+#  include "parallelproj_c.h"
 #endif
 
 START_NAMESPACE_STIR
 
 //////////////////////////////////////////////////////////
-const char * const
-ForwardProjectorByBinParallelproj::registered_name =
-  "Parallelproj";
+const char* const ForwardProjectorByBinParallelproj::registered_name = "Parallelproj";
 
-ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj() :
-    _cuda_verbosity(true), _use_truncation(true), _num_gpu_chunks(1)
+ForwardProjectorByBinParallelproj::ForwardProjectorByBinParallelproj()
+    : _cuda_verbosity(true),
+      _use_truncation(true),
+      _num_gpu_chunks(1)
 {
-    this->_already_set_up = false;
-    this->_do_not_setup_helper = false;
+  this->_already_set_up = false;
+  this->_do_not_setup_helper = false;
 }
 
 ForwardProjectorByBinParallelproj::~ForwardProjectorByBinParallelproj()
-{
-}
+{}
 
 void
-ForwardProjectorByBinParallelproj::
-initialise_keymap()
+ForwardProjectorByBinParallelproj::initialise_keymap()
 {
   parser.add_start_key("Forward Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Forward Projector Using Parallelproj Parameters");
@@ -63,14 +61,12 @@ initialise_keymap()
 }
 
 void
-ForwardProjectorByBinParallelproj::
-set_defaults()
+ForwardProjectorByBinParallelproj::set_defaults()
 {
   _cuda_verbosity = true;
   _use_truncation = true;
   _num_gpu_chunks = 1;
 }
-
 
 void
 ForwardProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
@@ -80,13 +76,12 @@ ForwardProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHel
 }
 
 void
-ForwardProjectorByBinParallelproj::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
+ForwardProjectorByBinParallelproj::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                          const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr)
 {
-    ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
-    check(*proj_data_info_sptr, *_density_sptr);
-    _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
+  ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
+  check(*proj_data_info_sptr, *_density_sptr);
+  _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
 #if 0
     shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
@@ -95,18 +90,15 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
                     proj_data_info_sptr));
     if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
         error("ForwardProjectorByBinParallelproj: Failed casting to ProjDataInfoCylindricalNoArcCorr");
-#endif  
-    // Initialise projected_data_sptr from this->_proj_data_info_sptr
-    _projected_data_sptr.reset(
-                new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
-    if (!this->_do_not_setup_helper)
-      _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
-
+#endif
+  // Initialise projected_data_sptr from this->_proj_data_info_sptr
+  _projected_data_sptr.reset(new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
+  if (!this->_do_not_setup_helper)
+    _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
 }
 
-const DataSymmetriesForViewSegmentNumbers *
-ForwardProjectorByBinParallelproj::
-get_symmetries_used() const
+const DataSymmetriesForViewSegmentNumbers*
+ForwardProjectorByBinParallelproj::get_symmetries_used() const
 {
   if (!this->_already_set_up)
     error("ForwardProjectorByBin method called without calling set_up first.");
@@ -114,72 +106,74 @@ get_symmetries_used() const
 }
 
 void
-ForwardProjectorByBinParallelproj::
-actual_forward_project(RelatedViewgrams<float>& viewgrams,
-                       const int min_axial_pos_num, const int max_axial_pos_num,
-                       const int min_tangential_pos_num, const int max_tangential_pos_num)
+ForwardProjectorByBinParallelproj::actual_forward_project(RelatedViewgrams<float>& viewgrams,
+                                                          const int min_axial_pos_num,
+                                                          const int max_axial_pos_num,
+                                                          const int min_tangential_pos_num,
+                                                          const int max_tangential_pos_num)
 {
-  if ((min_axial_pos_num != this->_proj_data_info_sptr->get_min_axial_pos_num(viewgrams.get_basic_segment_num())) ||
-      (max_axial_pos_num != this->_proj_data_info_sptr->get_max_axial_pos_num(viewgrams.get_basic_segment_num())) ||
-      (min_tangential_pos_num != this->_proj_data_info_sptr->get_min_tangential_pos_num()) ||
-      (max_tangential_pos_num != this->_proj_data_info_sptr->get_max_tangential_pos_num()))
+  if ((min_axial_pos_num != this->_proj_data_info_sptr->get_min_axial_pos_num(viewgrams.get_basic_segment_num()))
+      || (max_axial_pos_num != this->_proj_data_info_sptr->get_max_axial_pos_num(viewgrams.get_basic_segment_num()))
+      || (min_tangential_pos_num != this->_proj_data_info_sptr->get_min_tangential_pos_num())
+      || (max_tangential_pos_num != this->_proj_data_info_sptr->get_max_tangential_pos_num()))
     error("STIR wrapping of Parallelproj projectors current only handles projecting all data");
 
-    viewgrams = _projected_data_sptr->get_related_viewgrams(
-        viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
+  viewgrams = _projected_data_sptr->get_related_viewgrams(viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
 }
 
 void
-ForwardProjectorByBinParallelproj::
-set_input(const DiscretisedDensity<3,float> & density)
+ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>& density)
 {
-    ForwardProjectorByBin::set_input(density);
+  ForwardProjectorByBin::set_input(density);
 
-    // Before forward projection, we enforce a truncation outside of the FOV.
-    // This is because the parallelproj projector seems to have some trouble at the edges and this
-    // could cause some voxel values to spiral out of control.
-    //if (_use_truncation)
-      {
-        const float radius = this->_proj_data_info_sptr->get_scanner_sptr()->get_inner_ring_radius();
-        const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;
-        truncate_rim(*_density_sptr, static_cast<int>(std::max((image_radius-radius) / _helper->voxsize[2],0.F)));
-      }
+  // Before forward projection, we enforce a truncation outside of the FOV.
+  // This is because the parallelproj projector seems to have some trouble at the edges and this
+  // could cause some voxel values to spiral out of control.
+  // if (_use_truncation)
+  {
+    const float radius = this->_proj_data_info_sptr->get_scanner_sptr()->get_inner_ring_radius();
+    const float image_radius = _helper->voxsize[2] * _helper->imgdim[2] / 2;
+    truncate_rim(*_density_sptr, static_cast<int>(std::max((image_radius - radius) / _helper->voxsize[2], 0.F)));
+  }
 
-    std::vector<float> image_vec(density.size_all());
-    std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
+  std::vector<float> image_vec(density.size_all());
+  std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
 
 #if 0
     // needed to set output to zero as parallelproj accumulates but is no longer the case
     _projected_data_sptr->fill(0.F);
 #endif
 
-    info("Calling parallelproj forward",2);
+  info("Calling parallelproj forward", 2);
 #ifdef parallelproj_built_with_CUDA
 
-    long long num_image_voxel = static_cast<long long>(image_vec.size());
-    long long num_lors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all());
+  long long num_image_voxel = static_cast<long long>(image_vec.size());
+  long long num_lors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all());
 
-    long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
-    long long remainder = num_lors % _num_gpu_chunks;
+  long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
+  long long remainder = num_lors % _num_gpu_chunks;
 
-    long long num_lors_per_chunk;
-    long long offset = 0;
+  long long num_lors_per_chunk;
+  long long offset = 0;
 
-    // send image to all visible CUDA devices
-    float** image_on_cuda_devices;
-    image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+  // send image to all visible CUDA devices
+  float** image_on_cuda_devices;
+  image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
 
-    // do (chuck-wise) projection on the CUDA devices 
-    for(int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++){
-      if(chunk_num < remainder){
-        num_lors_per_chunk = num_lors_per_chunk_floor + 1;
-      }
-      else{
-        num_lors_per_chunk = num_lors_per_chunk_floor;
-      }
+  // do (chuck-wise) projection on the CUDA devices
+  for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
+    {
+      if (chunk_num < remainder)
+        {
+          num_lors_per_chunk = num_lors_per_chunk_floor + 1;
+        }
+      else
+        {
+          num_lors_per_chunk = num_lors_per_chunk_floor;
+        }
 
-      joseph3d_fwd_cuda(_helper->xstart.data() + 3*offset,
-                        _helper->xend.data() + 3*offset,
+      joseph3d_fwd_cuda(_helper->xstart.data() + 3 * offset,
+                        _helper->xend.data() + 3 * offset,
                         image_on_cuda_devices,
                         _helper->origin.data(),
                         _helper->voxsize.data(),
@@ -191,22 +185,22 @@ set_input(const DiscretisedDensity<3,float> & density)
       offset += num_lors_per_chunk;
     }
 
-    // free image array from CUDA devices
-    free_float_array_on_all_devices(image_on_cuda_devices);
+  // free image array from CUDA devices
+  free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
-    joseph3d_fwd(_helper->xstart.data(),
-                  _helper->xend.data(),
-                  image_vec.data(),
-                  _helper->origin.data(),
-                  _helper->voxsize.data(),
-                  _projected_data_sptr->get_data_ptr(),
-                  static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
-                  _helper->imgdim.data());
+  joseph3d_fwd(_helper->xstart.data(),
+               _helper->xend.data(),
+               image_vec.data(),
+               _helper->origin.data(),
+               _helper->voxsize.data(),
+               _projected_data_sptr->get_data_ptr(),
+               static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
+               _helper->imgdim.data());
 #endif
-    info("done", 2);
+  info("done", 2);
 
-    _projected_data_sptr->release_data_ptr();
+  _projected_data_sptr->release_data_ptr();
 }
 
 END_NAMESPACE_STIR

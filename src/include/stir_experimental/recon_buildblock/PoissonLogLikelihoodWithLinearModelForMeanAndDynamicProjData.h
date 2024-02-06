@@ -27,11 +27,11 @@
 #include "stir/DynamicDiscretisedDensity.h"
 
 START_NAMESPACE_STIR
-// ChT::ToDo: If this class appears to be useful I have to define some of the functions that are not specifically defined, yet. 
+// ChT::ToDo: If this class appears to be useful I have to define some of the functions that are not specifically defined, yet.
 
 /*!
   \ingroup GeneralisedObjectiveFunction
-  \brief a base class for LogLikelihood of independent Poisson variables 
+  \brief a base class for LogLikelihood of independent Poisson variables
   where the mean values are linear combinations of the frames.
 
   \par Parameters for parsing
@@ -39,22 +39,23 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData: 
-public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
+class PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>,
+                                     PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
 {
- private:
-  typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
-  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleFrameObjFunc ;
+private:
+  typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<TargetT>,
+                                  GeneralisedObjectiveFunction<TargetT>,
+                                  PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
+      base_type;
+  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>> SingleFrameObjFunc;
   VectorWithOffset<SingleFrameObjFunc> _single_frame_obj_funcs;
- public:
-  
+
+public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name; 
-#if 0 // ChT::ToDo
+  static const char* const registered_name;
+#if 0  // ChT::ToDo
   PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData();
 
   //! Returns a pointer to a newly allocated target object (with 0 data).
@@ -92,7 +93,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
   virtual int set_num_subsets(const int num_subsets);
   //@}
 #endif // ChT::ToDo
- protected:
+protected:
   //! Filename with input dynamic projection data
   std::string _input_filename;
 
@@ -108,12 +109,12 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
   // TODO to be replaced with single class or so (TargetT obviously)
   //! the output image size in x and y direction
   /*! convention: if -1, use a size such that the whole FOV is covered
-  */
+   */
   int _output_image_size_xy; // KT 10122001 appended _xy
 
   //! the output image size in z direction
   /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
+   */
   int _output_image_size_z; // KT 10122001 new
 
   //! the zoom factor
@@ -130,11 +131,11 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
   double _Zoffset;
 
   TimeFrameDefinitions _frame_defs;
-  
+
   /********************************/
   //! name of file in which additive projection data are stored
   std::string _additive_dyn_proj_data_filename;
- //! points to the additive projection data
+  //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
@@ -146,14 +147,13 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndDyn
 
   bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
-  //! Sets defaults for parsing 
+  //! Sets defaults for parsing
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
      \c recompute_sensitivity to \c false.
   */
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
 };
 
 END_NAMESPACE_STIR

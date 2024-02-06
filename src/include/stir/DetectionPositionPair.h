@@ -36,31 +36,29 @@ START_NAMESPACE_STIR
  \see DetectionPosition for details on what we mean with a Detector Position
 */
 
-template <typename coordT =  unsigned int>
+template <typename coordT = unsigned int>
 class DetectionPositionPair
 {
-public: 
+public:
   //! default constructor
   /*! sets TOF bin to 0, but leaves others coordinates undefined*/
   inline DetectionPositionPair();
-  
-  inline DetectionPositionPair(const DetectionPosition<coordT>&, 
-                               const DetectionPosition<coordT>&,
-                               const int timing_pos = 0);
-  
-  inline const DetectionPosition<coordT>& pos1() const;   
+
+  inline DetectionPositionPair(const DetectionPosition<coordT>&, const DetectionPosition<coordT>&, const int timing_pos = 0);
+
+  inline const DetectionPosition<coordT>& pos1() const;
   inline const DetectionPosition<coordT>& pos2() const;
   inline int timing_pos() const;
-  inline DetectionPosition<coordT>& pos1();   
+  inline DetectionPosition<coordT>& pos1();
   inline DetectionPosition<coordT>& pos2();
   inline int& timing_pos();
   //! comparison operators
   inline bool operator==(const DetectionPositionPair&) const;
   inline bool operator!=(const DetectionPositionPair&) const;
-  
-private :
-  DetectionPosition<coordT>  p1;
-  DetectionPosition<coordT>  p2;   
+
+private:
+  DetectionPosition<coordT> p1;
+  DetectionPosition<coordT> p2;
   int _timing_pos;
 };
 

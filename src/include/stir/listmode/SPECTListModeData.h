@@ -22,8 +22,11 @@
 #include "stir/listmode/ListModeData.h"
 #include "stir/listmode/SPECTListRecord.h"
 
-# ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::time_t; }
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std
+{
+using ::time_t;
+}
 #endif
 
 START_NAMESPACE_STIR
@@ -44,31 +47,27 @@ class ExamInfo;
 class SPECTListModeData : virtual public ListModeData
 {
 public:
-
   //! Get a pointer to an empty record
   /*! This is mainly/only useful to get a record of the correct type, that can then be
       passed to get_next_record().
   */
-  virtual
-    shared_ptr <SPECTListRecord> get_empty_record_sptr() const = 0;
+  virtual shared_ptr<SPECTListRecord> get_empty_record_sptr() const = 0;
 
   //! Gets the next record in the listmode sequence
-  virtual
-    Succeeded get_next_record(SPECTListRecord& event) const = 0;
+  virtual Succeeded get_next_record(SPECTListRecord& event) const = 0;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
-  virtual bool has_delayeds() const {return false;}
+  virtual bool has_delayeds() const { return false; }
 
 protected:
-
   virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const
   {
-        shared_ptr<SPECTListRecord> sptr(this->get_empty_record_sptr());
-        shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
-        return sptr1;}
+    shared_ptr<SPECTListRecord> sptr(this->get_empty_record_sptr());
+    shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
+    return sptr1;
+  }
 
-  virtual Succeeded get_next(ListRecord& event) const
-  {return this->get_next_record(reinterpret_cast<SPECTListRecord&>(event));}
+  virtual Succeeded get_next(ListRecord& event) const { return this->get_next_record(reinterpret_cast<SPECTListRecord&>(event)); }
 };
 
 END_NAMESPACE_STIR

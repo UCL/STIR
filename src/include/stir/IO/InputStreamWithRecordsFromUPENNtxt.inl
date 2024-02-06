@@ -2,7 +2,7 @@
   \file
   \ingroup IO
   \brief Implementation of class stir::InputStreamWithRecordsFromUPENNtxt
-    
+
   \author Nikos Efthimiou
 */
 /*
@@ -19,11 +19,9 @@
 START_NAMESPACE_STIR
 
 Succeeded
-InputStreamWithRecordsFromUPENNtxt::
-create_output_file(std::string ofilename)
+InputStreamWithRecordsFromUPENNtxt::create_output_file(std::string ofilename)
 {
-    error("InputStreamWithRecordsFromUPENNtxt: We do not support this here!");
+  error("InputStreamWithRecordsFromUPENNtxt: We do not support this here!");
 }
-
 
 END_NAMESPACE_STIR

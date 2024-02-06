@@ -7,7 +7,7 @@
 
     See STIR/LICENSE.txt for details
 */
-/*! 
+/*!
   \file
   \ingroup InterfileIO
   \ingroup ECAT
@@ -18,7 +18,6 @@
   \author Kris Thielemans
   \author Edoardo Pasca
 */
-
 
 #ifndef __stir_InterfileHeaderSiemens_H__
 #define __stir_InterfileHeaderSiemens_H__
@@ -34,7 +33,7 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a class for Interfile keywords (and parsing) common to 
+  \brief a class for Interfile keywords (and parsing) common to
   all types of data
   \ingroup InterfileIO
   \ingroup ECAT
@@ -67,25 +66,22 @@ protected:
   void ignore_Siemens_date_and_time_keys(const std::string& keyword);
 
 private:
-
   // TODO the next few ones should be made static members
   // Lists of possible values for some keywords
-  //ASCIIlist_type number_format_values;	
+  // ASCIIlist_type number_format_values;
   ASCIIlist_type byte_order_values;
   ASCIIlist_type patient_position_values;
-  
+
   // Corresponding variables here
 
-  //int number_format_index;
+  // int number_format_index;
   int byte_order_index;
   int patient_position_index;
 
   void set_type_of_data();
 
- protected:
+protected:
   void read_scan_data_types();
-
-
 };
 
 #if 0 // probably not necessary
@@ -119,43 +115,40 @@ Siemens PET projection, list mode data or norm data
 \ingroup ECAT
 */
 class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
-  {
-  public:
-    InterfileRawDataHeaderSiemens();
+{
+public:
+  InterfileRawDataHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  bool post_processing() override;
+  // need this to be false for the listmode data
+  bool is_arccorrected;
 
-    //! Returns false if OK, true if not.
-    bool post_processing() override;
-    // need this to be false for the listmode data
-    bool is_arccorrected;
-  public:
+public:
+  ProjDataFromStream::StorageOrder storage_order;
+  std::vector<int> segment_sequence;
+  std::vector<int> timing_poss_sequence;
+  shared_ptr<ProjDataInfo> data_info_ptr;
 
-    ProjDataFromStream::StorageOrder storage_order;
-    std::vector<int> segment_sequence;
-    std::vector<int> timing_poss_sequence;
-    shared_ptr<ProjDataInfo> data_info_ptr;
+private:
+  void resize_segments_and_set();
+  // void read_frames_info();
 
-  private:
-    void resize_segments_and_set();
-    //void read_frames_info();
+  // int find_storage_order();
 
-    //int find_storage_order();
+protected:
+  int axial_compression;
+  int maximum_ring_difference;
+  int tof_mash_factor;
 
-  protected:
-
-    int axial_compression;
-    int maximum_ring_difference;
-    int tof_mash_factor;
-
-    std::vector<int> segment_table;
-    int num_segments;
-    int num_rings;
-    int num_views;
-    int num_bins;
-    int num_tof_bins;
-  };
-
+  std::vector<int> segment_table;
+  int num_segments;
+  int num_rings;
+  int num_views;
+  int num_bins;
+  int num_tof_bins;
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
@@ -164,35 +157,33 @@ projection data (i.e. ProjDataFromStream) for Siemens PET scanners
 \ingroup ECAT
 */
 class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
-  {
-  public:
-    InterfilePDFSHeaderSiemens();
+{
+public:
+  InterfilePDFSHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  bool post_processing() override;
 
-    //! Returns false if OK, true if not.
-    bool post_processing() override;
+public:
+  std::vector<std::string> applied_corrections;
+  bool compression;
 
-  public:
+private:
+  void resize_segments_and_set();
 
-    std::vector<std::string> applied_corrections;
-    bool compression;
+  int find_storage_order();
 
-  private:
-    void resize_segments_and_set();
+  int num_scan_data_types;
+  std::vector<std::string> scan_data_types;
+  void read_scan_data_types();
+  int total_num_sinograms;
+  std::string compression_as_string;
 
-    int find_storage_order();
-
-    int num_scan_data_types;
-    std::vector<std::string> scan_data_types;
-    void read_scan_data_types();
-    int total_num_sinograms;
-    std::string compression_as_string;
-
-    int num_buckets;
-    std::vector<int> bucket_singles_rates;
-    void read_bucket_singles_rates();
-  };
+  int num_buckets;
+  std::vector<int> bucket_singles_rates;
+  void read_bucket_singles_rates();
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
@@ -201,31 +192,27 @@ Siemens listmode data (in PETLINK format)
 \ingroup ECAT
 */
 class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
-  {
-  public:
-    InterfileListmodeHeaderSiemens();
+{
+public:
+  InterfileListmodeHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  bool post_processing() override;
 
-    //! Returns false if OK, true if not.
-    bool post_processing() override;
+public:
+  //! Get axial compression
+  int get_axial_compression() const;
+  //! Get the maximum ring difference
+  int get_maximum_ring_difference() const;
+  //! Get the num of views
+  int get_num_views() const;
+  //! Gat the num of projections
+  int get_num_projections() const;
 
-  public:
-    //! Get axial compression
-    int get_axial_compression() const ;
-    //! Get the maximum ring difference
-    int get_maximum_ring_difference() const;
-    //! Get the num of views
-    int get_num_views() const;
-    //! Gat the num of projections
-    int get_num_projections() const;
-
- 
-  private:
-
-    int find_storage_order();
-
-  };
+private:
+  int find_storage_order();
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) specific to
@@ -234,26 +221,24 @@ Siemens (component-based) normalisation data
 \ingroup ECAT
 */
 class InterfileNormHeaderSiemens : public InterfileRawDataHeaderSiemens
-  {
-  public:
-    InterfileNormHeaderSiemens();
+{
+public:
+  InterfileNormHeaderSiemens();
 
-  protected:
+protected:
+  //! Returns false if OK, true if not.
+  bool post_processing() override;
 
-    //! Returns false if OK, true if not.
-    bool post_processing() override;
+public:
+  float calib_factor;
+  float cross_calib_factor;
+  int num_buckets;
 
-  public:
-    float calib_factor;
-    float cross_calib_factor;
-    int num_buckets;
-
-  private:
-    int num_components;
-    std::vector<std::vector<int>> number_of_dimensions;
-    void read_num_components();
-
-  };
+private:
+  int num_components;
+  std::vector<std::vector<int>> number_of_dimensions;
+  void read_num_components();
+};
 
 END_NAMESPACE_STIR
 

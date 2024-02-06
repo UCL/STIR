@@ -30,7 +30,6 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-
 /*!
   \brief Test class for ByteOrder and the preprocessor defines from
   ByteOrderDefine.h
@@ -51,28 +50,27 @@ ByteOrderTests::run_tests()
 
 #if STIRIsNativeByteOrderBigEndian
   check(ByteOrder::get_native_order() == ByteOrder::big_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #else
   check(ByteOrder::get_native_order() == ByteOrder::little_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #endif
 
 #if STIRIsNativeByteOrderLittleEndian
   check(ByteOrder::get_native_order() == ByteOrder::little_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #else
   check(ByteOrder::get_native_order() == ByteOrder::big_endian,
-	"STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
+        "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #endif
-
 }
-
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
+int
+main()
 {
   ByteOrderTests tests;
   tests.run_tests();

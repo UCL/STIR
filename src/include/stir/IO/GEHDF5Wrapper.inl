@@ -24,13 +24,15 @@
 */
 
 START_NAMESPACE_STIR
-namespace GE {
-namespace RDF_HDF5 {
+namespace GE
+{
+namespace RDF_HDF5
+{
 
 shared_ptr<Scanner>
 GEHDF5Wrapper::get_scanner_sptr() const
 {
-    return this->proj_data_info_sptr->get_scanner_sptr();
+  return this->proj_data_info_sptr->get_scanner_sptr();
 }
 
 shared_ptr<const ProjDataInfo>
@@ -42,27 +44,33 @@ GEHDF5Wrapper::get_proj_data_info_sptr() const
 shared_ptr<ExamInfo>
 GEHDF5Wrapper::get_exam_info_sptr() const
 {
-    return this->exam_info_sptr;
+  return this->exam_info_sptr;
 }
 
-H5::DataSet* GEHDF5Wrapper::get_dataset_ptr() const
+H5::DataSet*
+GEHDF5Wrapper::get_dataset_ptr() const
 {
-    return m_dataset_sptr.get();
+  return m_dataset_sptr.get();
 }
 
-hsize_t GEHDF5Wrapper::get_dataset_size() const
+hsize_t
+GEHDF5Wrapper::get_dataset_size() const
 {
-    return m_list_size;
+  return m_list_size;
 }
 
-unsigned int GEHDF5Wrapper::get_geo_dims() const
+unsigned int
+GEHDF5Wrapper::get_geo_dims() const
 {
-    return geo_dims;
+  return geo_dims;
 }
 
-const H5::H5File& GEHDF5Wrapper::get_file() const
-{ return file; }
-
-} // namespace
+const H5::H5File&
+GEHDF5Wrapper::get_file() const
+{
+  return file;
 }
+
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR
