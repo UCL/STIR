@@ -49,10 +49,10 @@ START_NAMESPACE_STIR
   <br />
   Niknejad, T., Tavernier, S., Varela, J. and Thielemans, K.
   <i>Validation of 3D model-based maximum-likelihood estimation of normalisation factors for partial ring positron emission
-  tomography</i>. 
+  tomography</i>.
   in 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector
   Workshop (NSS/MIC/RTSD) 1-5 (2016). doi:10.1109/NSSMIC.2016.8069577.
-  <br /> 
+  <br />
   Note however that this describes rotational/translational symmetry per block, while the default is now to use
   symmetries per bucket ( see the \c do_symmetry_per_block argument of allocate()).
   (The block factors still work per block, not bucket).
@@ -121,12 +121,21 @@ public:
 
   //! Allocate the relevant factors
   /*! They are currently probably set to 0, but do not rely on this. */
-  void allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false,
-                bool do_symmetry_per_block = false);
+  void
+  allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false, bool do_symmetry_per_block = false);
 
-  DetectorEfficiencies& crystal_efficiencies() { return efficiencies; }
-  GeoData3D& geometric_factors() { return geo_data; }
-  BlockData3D& block_factors() { return block_data; }
+  DetectorEfficiencies& crystal_efficiencies()
+  {
+    return efficiencies;
+  }
+  GeoData3D& geometric_factors()
+  {
+    return geo_data;
+  }
+  BlockData3D& block_factors()
+  {
+    return block_data;
+  }
 
   //! Sets all factors to empty and flags that allocations need to be done
   /*! Also calls base_type::set_defaults() */

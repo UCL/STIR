@@ -19,7 +19,6 @@
 #ifndef __stir_Shape_Ellipsoid_h__
 #define __stir_Shape_Ellipsoid_h__
 
-
 #include "stir/RegisteredParsingObject.h"
 #include "stir/Shape/Shape3DWithOrientation.h"
 
@@ -28,7 +27,7 @@ START_NAMESPACE_STIR
 /*!
   \ingroup Shape
   \brief Three-dimensional ellipsoid
-  
+
 
   \par Description
   A point with coordinates \a coord is inside the shape if for
@@ -49,17 +48,16 @@ START_NAMESPACE_STIR
      End:=
   \endverbatim
 */
-class Ellipsoid: 
-   public RegisteredParsingObject<Ellipsoid, Shape3D, Shape3DWithOrientation>
+class Ellipsoid : public RegisteredParsingObject<Ellipsoid, Shape3D, Shape3DWithOrientation>
 {
 public:
   //! Name which will be used when parsing a Shape3D object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
- Ellipsoid();
- Ellipsoid(  const CartesianCoordinate3D<float>& radii, 
-	     const CartesianCoordinate3D<float>& centre,
-	     const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
+  Ellipsoid();
+  Ellipsoid(const CartesianCoordinate3D<float>& radii,
+            const CartesianCoordinate3D<float>& centre,
+            const Array<2, float>& direction_vectors = diagonal_matrix(3, 1.F));
   //! get volume
   float get_geometric_volume() const override;
 #if 0
@@ -73,22 +71,27 @@ public:
 
   //! Compare cylinders
   /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
-  bool
-    operator==(const Ellipsoid&) const;
+  bool operator==(const Ellipsoid&) const;
 
-  bool
-    operator==(const Shape3D& shape) const override;
+  bool operator==(const Shape3D& shape) const override;
 
   inline float get_radius_x() const
-    { return radii.x(); }
+  {
+    return radii.x();
+  }
   inline float get_radius_y() const
-    { return radii.y(); }
+  {
+    return radii.y();
+  }
   inline float get_radius_z() const
-    { return radii.z(); }
+  {
+    return radii.z();
+  }
   inline CartesianCoordinate3D<float> get_radii() const
-    { return radii; }
+  {
+    return radii;
+  }
   void set_radii(const CartesianCoordinate3D<float>& new_radii);
-
 
 protected:
   //! Radii in 3 directions (before using the direction vectors)
@@ -96,12 +99,10 @@ protected:
 
   //! set defaults before parsing
   /*! sets radii to 0 and calls Shape3DWithOrientation::set_defaults() */
-  void set_defaults() override;  
+  void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-  
 };
-
 
 END_NAMESPACE_STIR
 

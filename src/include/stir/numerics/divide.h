@@ -19,34 +19,30 @@
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
-  
+
 */
 
 START_NAMESPACE_STIR
 
 //! division of two ranges, 0/0 = 0
-/*! 
+/*!
   \ingroup numerics
 
   This function sets 0/0 to 0 (not the usual NaN). It is for instance useful in
   Poisson log-likelihood computation.
 
-  Because of potential numerical rounding problems, we test if a number is 
+  Because of potential numerical rounding problems, we test if a number is
   0 by comparing its absolute value with a small value, which is determined
   by multiplying the maximum in the \c numerator range with \a small_num.
 
-  \warning This function does not test for non-zero numbers by 0. Results in 
+  \warning This function does not test for non-zero numbers by 0. Results in
   that case will likely depend on your processor and/or compiler settings.
 */
-template <class NumeratorIterT,
-	  class DenominatorIterT,
-	  class small_numT>
-inline
-void 
-divide(const NumeratorIterT& numerator_begin,
-       const NumeratorIterT& numerator_end,
-       const DenominatorIterT& denominator_begin,
-       const small_numT small_num);
+template <class NumeratorIterT, class DenominatorIterT, class small_numT>
+inline void divide(const NumeratorIterT& numerator_begin,
+                   const NumeratorIterT& numerator_end,
+                   const DenominatorIterT& denominator_begin,
+                   const small_numT small_num);
 
 END_NAMESPACE_STIR
 

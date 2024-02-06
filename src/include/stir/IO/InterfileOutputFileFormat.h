@@ -26,50 +26,40 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 
 /*!
   \ingroup InterfileIO
-  \brief 
+  \brief
   Implementation of OutputFileFormat paradigm for the Interfile format.
  */
-class InterfileOutputFileFormat : 
-  public RegisteredParsingObject<
-        InterfileOutputFileFormat,
-        OutputFileFormat<DiscretisedDensity<3,float> >,
-        OutputFileFormat<DiscretisedDensity<3,float> > >
+class InterfileOutputFileFormat : public RegisteredParsingObject<InterfileOutputFileFormat,
+                                                                 OutputFileFormat<DiscretisedDensity<3, float>>,
+                                                                 OutputFileFormat<DiscretisedDensity<3, float>>>
 {
- private:
-  typedef 
-     RegisteredParsingObject<
-        InterfileOutputFileFormat,
-        OutputFileFormat<DiscretisedDensity<3,float> >,
-        OutputFileFormat<DiscretisedDensity<3,float> > >
-    base_type;
-public :
-    //! Name which will be used when parsing an OutputFileFormat object
-  static const char * const registered_name;
+private:
+  typedef RegisteredParsingObject<InterfileOutputFileFormat,
+                                  OutputFileFormat<DiscretisedDensity<3, float>>,
+                                  OutputFileFormat<DiscretisedDensity<3, float>>>
+      base_type;
 
-  InterfileOutputFileFormat(const NumericType& = NumericType::FLOAT, 
-                   const ByteOrder& = ByteOrder::native);
+public:
+  //! Name which will be used when parsing an OutputFileFormat object
+  static const char* const registered_name;
 
+  InterfileOutputFileFormat(const NumericType& = NumericType::FLOAT, const ByteOrder& = ByteOrder::native);
 
   ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
- protected:
-  Succeeded  
-    actual_write_to_file(std::string& output_filename,
-		  const DiscretisedDensity<3,float>& density) const override;
 
+protected:
+  Succeeded actual_write_to_file(std::string& output_filename, const DiscretisedDensity<3, float>& density) const override;
 
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #endif

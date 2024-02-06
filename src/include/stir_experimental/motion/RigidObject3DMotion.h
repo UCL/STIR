@@ -29,51 +29,43 @@ class AbsTimeInterval;
 
   \brief Base class for 3D rigid motion
 
-  This is really a class for encoding motion of an object in a scanner. So, there is 
+  This is really a class for encoding motion of an object in a scanner. So, there is
   some stuff in here to go from tracker coordinates to scanner coordinates etc.
 
   Preliminary. Things that need to be worked out:
 
-  - time issues. Relative time is supposed to be relative to the scan start, but 
-    this is really dependent on the derived class. It would be far 
-    better to stick to secs_since_1970 in the class hierarchy, and use have a "set_reference_time" 
+  - time issues. Relative time is supposed to be relative to the scan start, but
+    this is really dependent on the derived class. It would be far
+    better to stick to secs_since_1970 in the class hierarchy, and use have a "set_reference_time"
     member here or so.
 
-  - synchronisation: this is supposed to synchornise the tracker clock to a master clock. Again, that behaviour 
+  - synchronisation: this is supposed to synchornise the tracker clock to a master clock. Again, that behaviour
     is completely dependent on what the derived class does.
-    
+
 */
-class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>
+class RigidObject3DMotion : public RegisteredObject<RigidObject3DMotion>
 {
 
 public:
   ~RigidObject3DMotion() override {}
 
-  //! get motion in tracker coordinates  
-  virtual
-    RigidObject3DTransformation 
-    get_motion_in_tracker_coords_rel_time(const double time) const =0;
+  //! get motion in tracker coordinates
+  virtual RigidObject3DTransformation get_motion_in_tracker_coords_rel_time(const double time) const = 0;
 
   //! get motion in scanner coordinates
-  virtual 
-    RigidObject3DTransformation 
-    get_motion_in_scanner_coords_rel_time(const double time) const;
+  virtual RigidObject3DTransformation get_motion_in_scanner_coords_rel_time(const double time) const;
 
   //! \name Average motion for a time interval
   //@{
-  virtual 
-  RigidObject3DTransformation
-  compute_average_motion_in_tracker_coords(const AbsTimeInterval&) const;
+  virtual RigidObject3DTransformation compute_average_motion_in_tracker_coords(const AbsTimeInterval&) const;
 
-  virtual 
-  RigidObject3DTransformation
-  compute_average_motion_in_scanner_coords(const AbsTimeInterval&) const;
+  virtual RigidObject3DTransformation compute_average_motion_in_scanner_coords(const AbsTimeInterval&) const;
 
-  virtual RigidObject3DTransformation 
-    compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time)const = 0;
+  virtual RigidObject3DTransformation compute_average_motion_in_tracker_coords_rel_time(const double start_time,
+                                                                                        const double end_time) const = 0;
 
-  virtual RigidObject3DTransformation 
-    compute_average_motion_in_scanner_coords_rel_time(const double start_time, const double end_time)const;
+  virtual RigidObject3DTransformation compute_average_motion_in_scanner_coords_rel_time(const double start_time,
+                                                                                        const double end_time) const;
 
   //@}
 
@@ -86,19 +78,16 @@ public:
       a lot of sense. So, it probably should be moved to a derived class
       \c SampledRigidObject3DMotion or so.
   */
-  virtual std::vector<double>
-    get_rel_time_of_samples(const double start_time, const double end_time)const = 0;
+  virtual std::vector<double> get_rel_time_of_samples(const double start_time, const double end_time) const = 0;
 
   //! Has to be called and will be used to synchronise the target-system time and motion tracking time
   /*! In practice, this should make sure that a 'rel_time' of 0 corresponds to the start of the scan
    */
-  virtual Succeeded synchronise() =0;
-
+  virtual Succeeded synchronise() = 0;
 
   virtual double secs_since_1970_to_rel_time(std::time_t) const = 0;
 
-
- protected:
+protected:
 #if 0
   //!  Option to set  time offset manually in case synchronisation cannot be performed
   void
@@ -108,21 +97,17 @@ public:
 #endif
   //! Temporary (?) function to allow base class to see if synchronised was called or not
   virtual bool is_synchronised() const = 0;
- public:
 
-  virtual const RigidObject3DTransformation& 
-    get_transformation_to_scanner_coords() const = 0;
-  virtual const RigidObject3DTransformation& 
-    get_transformation_from_scanner_coords() const = 0;
+public:
+  virtual const RigidObject3DTransformation& get_transformation_to_scanner_coords() const = 0;
+  virtual const RigidObject3DTransformation& get_transformation_from_scanner_coords() const = 0;
 
-  virtual void  
-    set_transformation_from_scanner_coords(const RigidObject3DTransformation&) = 0;
+  virtual void set_transformation_from_scanner_coords(const RigidObject3DTransformation&) = 0;
 
 protected:
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-
 };
 
 END_NAMESPACE_STIR

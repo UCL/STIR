@@ -14,7 +14,7 @@
   \ingroup data_buildblock
   \brief Declaration of class stir::MultipleDataSetHeader
   \author Richard Brown
-  
+
   Give a txt file with the names of the individual filenames, e.g.,:
 
   Multi :=
@@ -31,39 +31,36 @@ START_NAMESPACE_STIR
 class MultipleDataSetHeader : public KeyParser
 {
 public:
+  //! Default constructor
+  MultipleDataSetHeader();
 
-    //! Default constructor
-    MultipleDataSetHeader();
+  //! Name which will be used when parsing a GeneralisedObjectiveFunction object
+  static const char* const registered_name;
 
-    //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-    static const char * const registered_name;
+  //! Get number of data sets
+  std::size_t get_num_data_sets() const { return _num_data_sets; }
 
-    //! Get number of data sets
-    std::size_t get_num_data_sets() const { return _num_data_sets; }
+  //! Get ith filename
+  /*! \warning Indexing here starts from 0*/
+  std::string get_filename(std::size_t i) const { return _filenames.at(i); }
 
-    //! Get ith filename
-    /*! \warning Indexing here starts from 0*/
-    std::string get_filename(std::size_t i) const { return _filenames.at(i); }
-
-    //! Create a Multi header pointing to a set of filenames
-    template <class VectorOfStringsT>
-      inline static void write_header(const std::string& filename, const VectorOfStringsT& individual_filenames);
+  //! Create a Multi header pointing to a set of filenames
+  template <class VectorOfStringsT>
+  inline static void write_header(const std::string& filename, const VectorOfStringsT& individual_filenames);
 
 protected:
+  //! Read number of data sets
+  void read_num_data_sets();
 
-//! Read number of data sets
-void read_num_data_sets();
+  //! Sets defaults before parsing
+  virtual void set_defaults();
+  //! Initialise keymap
+  virtual void initialise_keymap();
+  //! Post process
+  bool post_processing() override;
 
-//! Sets defaults before parsing
-virtual void set_defaults();
-//! Initialise keymap
-virtual void initialise_keymap();
-//! Post process
-bool post_processing() override;
-
-int _num_data_sets;
-std::vector<std::string> _filenames;
-
+  int _num_data_sets;
+  std::vector<std::string> _filenames;
 };
 
 END_NAMESPACE_STIR

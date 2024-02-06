@@ -23,7 +23,6 @@
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin_H__
 #define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin_H__
 
-
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
@@ -56,23 +55,22 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin:
-public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
+class PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>,
+                                     PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>>
 
 {
 
 private:
-typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
-        base_type;
+  typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
+                                  GeneralisedObjectiveFunction<TargetT>,
+                                  PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>>
+      base_type;
 
 public:
-
- //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name;
+  //! Name which will be used when parsing a GeneralisedObjectiveFunction object
+  static const char* const registered_name;
 
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>();
 
@@ -81,19 +79,17 @@ public:
    \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
    because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
    */
-    
-    void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
-                                                        const TargetT &current_estimate,
-                                                        const int subset_num,
-                                                        const bool add_sensitivity) override;
 
-  TargetT * construct_target_ptr() const override;
+  void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                      const TargetT& current_estimate,
+                                                      const int subset_num,
+                                                      const bool add_sensitivity) override;
+
+  TargetT* construct_target_ptr() const override;
 
   int set_num_subsets(const int new_num_subsets) override;
 
-  const shared_ptr<BinNormalisation> &
-  get_normalisation_sptr() const
-  { return this->normalisation_sptr; }
+  const shared_ptr<BinNormalisation>& get_normalisation_sptr() const { return this->normalisation_sptr; }
 
   unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const override;
 
@@ -108,26 +104,22 @@ public:
 
 protected:
   /*! \todo this function is not implemented yet and currently calls error() */
-  double
-    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num) override
+  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override
   { // TODO
     error("compute_objective_function_without_penalty Not implemented yet");
     return 0;
   }
 
-  Succeeded
-    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) override;
+  Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
 
-  void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
+  void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
-#if STIR_VERSION < 060000  
+#if STIR_VERSION < 060000
   //! Maximum ring difference to take into account
   /*! @deprecated */
-  int  max_ring_difference_num_to_process;  
+  int max_ring_difference_num_to_process;
 #endif
-    
+
   //! Triggers calculation of sensitivity using time-of-flight
   bool use_tofsens;
 
@@ -155,14 +147,13 @@ protected:
   //! Scanner geometry, you can skip future checks.
   bool skip_balanced_subsets;
 
- private:
-
+private:
   //! Cache of the listmode file
   /*! \todo Move this higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
-  std::vector<BinAndCorr>  record_cache;
+  std::vector<BinAndCorr> record_cache;
 
-    //! This function caches the listmode file, or reads it. It is run during set_up()
+  //! This function caches the listmode file, or reads it. It is run during set_up()
   /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   Succeeded cache_listmode_file();
@@ -171,8 +162,6 @@ protected:
   Succeeded write_listmode_cache_file(unsigned int file_id) const;
 
   unsigned int num_cache_files;
-
-
 };
 
 END_NAMESPACE_STIR

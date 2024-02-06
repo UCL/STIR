@@ -30,8 +30,8 @@ START_NAMESPACE_STIR
   \details The ECAT system is a simplified version of CylindricalPET.
 Such scanners are based on the block detector principle.
  The blocks are organized along an annular geometry to yield multi-ring detectors.
-From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ) a ECAT PET scanner has
-  two levels
+From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ) a ECAT PET scanner
+has two levels
     * block
     * crystal
 
@@ -64,23 +64,18 @@ From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defin
 
   \author Nikos Efthimiou
 */
-class InputStreamFromROOTFileForECATPET : public
-        RegisteredParsingObject < InputStreamFromROOTFileForECATPET,
-        InputStreamFromROOTFile,
-        InputStreamFromROOTFile >
+class InputStreamFromROOTFileForECATPET
+    : public RegisteredParsingObject<InputStreamFromROOTFileForECATPET, InputStreamFromROOTFile, InputStreamFromROOTFile>
 {
 private:
-    typedef RegisteredParsingObject< InputStreamFromROOTFileForECATPET ,
-    InputStreamFromROOTFile,
-    InputStreamFromROOTFile > base_type;
+  typedef RegisteredParsingObject<InputStreamFromROOTFileForECATPET, InputStreamFromROOTFile, InputStreamFromROOTFile> base_type;
 
 public:
+  //! Name which will be used when parsing a OSMAPOSLReconstruction object
+  static const char* const registered_name;
 
-    //! Name which will be used when parsing a OSMAPOSLReconstruction object
-    static const char * const registered_name;
-
-    //! Default constructor
-    InputStreamFromROOTFileForECATPET();
+  //! Default constructor
+  InputStreamFromROOTFileForECATPET();
 
 #if 0 // not used, so commented out
     InputStreamFromROOTFileForECATPET(std::string filename,
@@ -92,64 +87,61 @@ public:
                                       int offset_dets);
 #endif
 
-    ~InputStreamFromROOTFileForECATPET() override {}
+  ~InputStreamFromROOTFileForECATPET() override
+  {}
 
-    
-    Succeeded get_next_record(CListRecordROOT& record) override;
+  Succeeded get_next_record(CListRecordROOT& record) override;
 
-    //! gives method information
-    virtual std::string method_info() const;
-    //! Must be called before calling for the first event.
-    Succeeded set_up(const std::string & header_path) override;
+  //! gives method information
+  virtual std::string method_info() const;
+  //! Must be called before calling for the first event.
+  Succeeded set_up(const std::string& header_path) override;
 
-    //! Calculate the number of rings based on the crystals and blocks
-    inline int get_num_rings() const override;
-    //! Calculate the number of detectors per ring based on the crystals blocks
-    inline int get_num_dets_per_ring() const override;
-    //! Get the number of axial blocks
-    inline int get_num_axial_blocks_per_bucket_v() const override;
-    //! Get the number of transaxial blocks
-    inline int get_num_transaxial_blocks_per_bucket_v() const override;
-    //! Get the number of crystals per block
-    inline int get_num_axial_crystals_per_singles_unit() const override;
-    //! Get the number of crystals per block
-    inline int get_num_trans_crystals_per_singles_unit() const override;
+  //! Calculate the number of rings based on the crystals and blocks
+  inline int get_num_rings() const override;
+  //! Calculate the number of detectors per ring based on the crystals blocks
+  inline int get_num_dets_per_ring() const override;
+  //! Get the number of axial blocks
+  inline int get_num_axial_blocks_per_bucket_v() const override;
+  //! Get the number of transaxial blocks
+  inline int get_num_transaxial_blocks_per_bucket_v() const override;
+  //! Get the number of crystals per block
+  inline int get_num_axial_crystals_per_singles_unit() const override;
+  //! Get the number of crystals per block
+  inline int get_num_trans_crystals_per_singles_unit() const override;
 
-    inline void set_block_repeater_y(int);
-    inline void set_block_repeater_z(int);
-
+  inline void set_block_repeater_y(int);
+  inline void set_block_repeater_z(int);
 
 protected:
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
-    void set_defaults() override;
-    void initialise_keymap() override;
-    bool post_processing() override;
+  //! \name TBranches for ECAT PET
+  //@{
+  TBranch* br_crystalID1 = nullptr;
+  TBranch* br_crystalID2 = nullptr;
+  TBranch* br_blockID1 = nullptr;
+  TBranch* br_blockID2 = nullptr;
+  //@}
 
-    //! \name TBranches for ECAT PET
-    //@{
-    TBranch *br_crystalID1 = nullptr;
-    TBranch *br_crystalID2 = nullptr;
-    TBranch *br_blockID1 = nullptr;
-    TBranch *br_blockID2 = nullptr;
-    //@}
+  //! \name ROOT Variables, i.e. to hold data from each entry.
+  //@{
+  std::int32_t blockID1, blockID2;
+  std::int32_t crystalID1, crystalID2;
+  //@}
 
-    //! \name ROOT Variables, i.e. to hold data from each entry.
-    //@{
-    std::int32_t blockID1, blockID2;
-    std::int32_t crystalID1, crystalID2;
-    //@}
+  int block_repeater_y;
+  int block_repeater_z;
 
-    int block_repeater_y;
-    int block_repeater_z;
-
-    //! In GATE, inside a block, the indeces start from the lower
-    //! unit counting upwards. Therefore in order to align the
-    //! crystals, between STIR and GATE we have to move half block more.
-    int half_block;
+  //! In GATE, inside a block, the indeces start from the lower
+  //! unit counting upwards. Therefore in order to align the
+  //! crystals, between STIR and GATE we have to move half block more.
+  int half_block;
 
 private:
-    bool check_all_required_keywords_are_set(std::string& ret) const;
-
+  bool check_all_required_keywords_are_set(std::string& ret) const;
 };
 END_NAMESPACE_STIR
 #include "stir/IO/InputStreamFromROOTFileForECATPET.inl"

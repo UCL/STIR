@@ -21,10 +21,8 @@
  \author Zeljko Kereta
  */
 
-
 #ifndef __stir_recon_buildblock_LogcoshPrior_H__
 #define __stir_recon_buildblock_LogcoshPrior_H__
-
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
@@ -34,7 +32,6 @@
 #include <string>
 
 START_NAMESPACE_STIR
-
 
 /*!
  \ingroup priors
@@ -81,165 +78,163 @@ START_NAMESPACE_STIR
 
  */
 template <typename elemT>
-class LogcoshPrior:  public
-                     RegisteredParsingObject<
-                        LogcoshPrior<elemT>,
-                        GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                        PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
-                     >
+class LogcoshPrior : public RegisteredParsingObject<LogcoshPrior<elemT>,
+                                                    GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                    PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>>
 {
 private:
-    typedef
-    RegisteredParsingObject< LogcoshPrior<elemT>,
-            GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-            PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
-            base_type;
+  typedef RegisteredParsingObject<LogcoshPrior<elemT>,
+                                  GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                  PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>>
+      base_type;
 
 public:
-    //! Name which will be used when parsing a GeneralisedPrior object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a GeneralisedPrior object
+  static const char* const registered_name;
 
-    //! Default constructor
-    LogcoshPrior();
+  //! Default constructor
+  LogcoshPrior();
 
-    //! Constructs it explicitly
-    LogcoshPrior(const bool only_2D, float penalization_factor);
+  //! Constructs it explicitly
+  LogcoshPrior(const bool only_2D, float penalization_factor);
 
-    //! Constructs it explicitly with scalar
-    LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
+  //! Constructs it explicitly with scalar
+  LogcoshPrior(const bool only_2D, float penalization_factor, const float scalar);
 
-    bool
-    parabolic_surrogate_curvature_depends_on_argument() const override
-    { return false; }
+  bool parabolic_surrogate_curvature_depends_on_argument() const override { return false; }
 
-    bool is_convex() const override;
+  bool is_convex() const override;
 
-    //! compute the value of the function
-    double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate) override;
+  //! compute the value of the function
+  double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-    //! compute gradient
-    void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                          const DiscretisedDensity<3,elemT> &current_image_estimate) override;
+  //! compute gradient
+  void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
+                        const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-    //! compute the parabolic surrogate for the prior
-    void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature,
-                                       const DiscretisedDensity<3,elemT> &current_image_estimate) override;
+  //! compute the parabolic surrogate for the prior
+  void parabolic_surrogate_curvature(DiscretisedDensity<3, elemT>& parabolic_surrogate_curvature,
+                                     const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-    void
-    compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
-                    const BasicCoordinate<3,int>& coords,
-                    const DiscretisedDensity<3,elemT> &current_image_estimate) const override;
+  void compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
+                       const BasicCoordinate<3, int>& coords,
+                       const DiscretisedDensity<3, elemT>& current_image_estimate) const override;
 
-    //! Compute the multiplication of the hessian of the prior (at \c current_estimate) and the \c input.
-    void accumulate_Hessian_times_input(DiscretisedDensity<3,elemT>& output,
-                                                     const DiscretisedDensity<3,elemT>& current_estimate,
-                                                     const DiscretisedDensity<3,elemT>& input) const override;
+  //! Compute the multiplication of the hessian of the prior (at \c current_estimate) and the \c input.
+  void accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
+                                      const DiscretisedDensity<3, elemT>& current_estimate,
+                                      const DiscretisedDensity<3, elemT>& input) const override;
 
-    //! get penalty weights for the neigbourhood
-    Array<3,float> get_weights() const;
+  //! get penalty weights for the neigbourhood
+  Array<3, float> get_weights() const;
 
-    //! set penalty weights for the neigbourhood
-    void set_weights(const Array<3,float>&);
+  //! set penalty weights for the neigbourhood
+  void set_weights(const Array<3, float>&);
 
-    //! get current kappa image
-    /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
-     modify the image by manipulating the image referred to by this pointer.
-     Unpredictable results will occur.
-     */
-    shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+  //! get current kappa image
+  /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
+   modify the image by manipulating the image referred to by this pointer.
+   Unpredictable results will occur.
+   */
+  shared_ptr<DiscretisedDensity<3, elemT>> get_kappa_sptr() const;
 
-    //! set kappa image
-    void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  //! set kappa image
+  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3, elemT>>&);
 
-    //! Get the scalar value
-    float get_scalar() const;
+  //! Get the scalar value
+  float get_scalar() const;
 
-    //! Set the scalar value
-    void set_scalar(float scalar_v);
+  //! Set the scalar value
+  void set_scalar(float scalar_v);
 
 protected:
-    //! can be set during parsing to restrict the weights to the 2D case
-    bool only_2D;
+  //! can be set during parsing to restrict the weights to the 2D case
+  bool only_2D;
 
-    //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
-    float scalar;
+  //! controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior
+  float scalar;
 
-    //! filename prefix for outputting the gradient whenever compute_gradient() is called.
-    /*! An internal counter is used to keep track of the number of times the
-     gradient is computed. The filename will be constructed by concatenating
-     gradient_filename_prefix and the counter.
-     */
-    std::string gradient_filename_prefix;
+  //! filename prefix for outputting the gradient whenever compute_gradient() is called.
+  /*! An internal counter is used to keep track of the number of times the
+   gradient is computed. The filename will be constructed by concatenating
+   gradient_filename_prefix and the counter.
+   */
+  std::string gradient_filename_prefix;
 
-    //! penalty weights
-    /*!
-     \todo This member is mutable at present because some const functions initialise it.
-     That initialisation should be moved to a new set_up() function.
-     */
-    mutable Array<3,float> weights;
+  //! penalty weights
+  /*!
+   \todo This member is mutable at present because some const functions initialise it.
+   That initialisation should be moved to a new set_up() function.
+   */
+  mutable Array<3, float> weights;
 
-    //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
-    std::string kappa_filename;
+  //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
+  std::string kappa_filename;
 
-    void set_defaults() override;
-    void initialise_keymap() override;
-    bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 private:
-    //! Spatially variant penalty penalty image ptr
-    shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+  //! Spatially variant penalty penalty image ptr
+  shared_ptr<DiscretisedDensity<3, elemT>> kappa_ptr;
 
-    //! The Log(cosh()) function and its approximation
-    /*!
-     Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
-     Make the approximation:
-     log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
-    */
-    static inline float logcosh(const float d)
-    {
-      const float x = fabs(d);
-      if ( x < 30.f ){
+  //! The Log(cosh()) function and its approximation
+  /*!
+   Cosh(x) = 0.5(e^x + e^-x) is an exponential function and hence cannot be evaluated for large x.
+   Make the approximation:
+   log(Cosh(x)) = log(0.5) + |x| + log(1 + e^(-2|x|)) = log(0.5) + |x| + O(10^(-27)), for |x|>30
+  */
+  static inline float logcosh(const float d)
+  {
+    const float x = fabs(d);
+    if (x < 30.f)
+      {
         return log(cosh(x));
-      } else {
+      }
+    else
+      {
         return x + log(0.5f);
       }
-    }
+  }
 
-    //! The surrogate of the logcosh function is tanh(x)/x
-    /*!
-     * @param d should be the difference between the ith and jth voxel.
-     However, it will use the taylor expansion if the x is too small (to prevent division by 0).
-     * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
-     * @return the surrogate of the log-cosh function
-    */
-    static inline float surrogate(const float d, const float scalar)
-    {
-      const float eps = 0.01;
-      const float x = d * scalar;
-      // If abs(x) is less than eps,
-      // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
-      // Prevents divide by zeros
-      if (fabs(x)<eps)
-      { return 1- square(x)/3; }
-      else
-      { return tanh(x)/x; }
-    }
+  //! The surrogate of the logcosh function is tanh(x)/x
+  /*!
+   * @param d should be the difference between the ith and jth voxel.
+   However, it will use the taylor expansion if the x is too small (to prevent division by 0).
+   * @param scalar is the logcosh scalar value controlling the priors transition between the quadratic and linear behaviour
+   * @return the surrogate of the log-cosh function
+  */
+  static inline float surrogate(const float d, const float scalar)
+  {
+    const float eps = 0.01;
+    const float x = d * scalar;
+    // If abs(x) is less than eps,
+    // use Taylor approximatation of tanh: tanh(x)/x ~= (x - x^3/3)/x = 1- x^2/3.
+    // Prevents divide by zeros
+    if (fabs(x) < eps)
+      {
+        return 1 - square(x) / 3;
+      }
+    else
+      {
+        return tanh(x) / x;
+      }
+  }
 
-    //! The second partial derivatives of the LogCosh Prior
-    /*!
-     derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
-     derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
-     * @param x_j is the target voxel.
-     * @param x_k is the voxel in the neighbourhood.
-     * @return the second order partial derivatives of the LogCosh Prior
-     */
-    //@{
-    elemT derivative_20(const elemT x_j, const elemT x_k) const;
-    elemT derivative_11(const elemT x_j, const elemT x_k) const;
-    //@}
+  //! The second partial derivatives of the LogCosh Prior
+  /*!
+   derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
+   derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
+   * @param x_j is the target voxel.
+   * @param x_k is the voxel in the neighbourhood.
+   * @return the second order partial derivatives of the LogCosh Prior
+   */
+  //@{
+  elemT derivative_20(const elemT x_j, const elemT x_k) const;
+  elemT derivative_11(const elemT x_j, const elemT x_k) const;
+  //@}
 };
-
 
 END_NAMESPACE_STIR
 

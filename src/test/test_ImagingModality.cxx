@@ -28,7 +28,6 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-
 /*!
   \brief Test class for ImagingModality
   \ingroup buildblock
@@ -62,12 +61,12 @@ ImagingModalityTests::run_tests()
   }
 }
 
-
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
+int
+main()
 {
   ImagingModalityTests tests;
   tests.run_tests();

@@ -60,8 +60,8 @@ main(int argc, char** argv)
   const std::string in_filename_prefix = argv[2];
   const std::string output_file_name = argv[1];
   // const std::string program_name = argv[0];
-  ProjDataInterfile out_proj_data(measured_data->get_exam_info_sptr(), measured_data->get_proj_data_info_sptr(),
-                                  output_file_name);
+  ProjDataInterfile out_proj_data(
+      measured_data->get_exam_info_sptr(), measured_data->get_proj_data_info_sptr(), output_file_name);
 
   BinNormalisationPETFromComponents norm;
   norm.allocate(measured_data->get_proj_data_info_sptr(), do_eff, do_geo, do_block, do_symmetry_per_block);

@@ -37,9 +37,7 @@ START_NAMESPACE_STIR
 class TrivialDataSymmetriesForViewSegmentNumbers : public DataSymmetriesForViewSegmentNumbers
 {
 public:
-
-  inline DataSymmetriesForViewSegmentNumbers * clone() const override;
-
+  inline DataSymmetriesForViewSegmentNumbers* clone() const override;
 
 #if 0
   // TODO
@@ -48,23 +46,19 @@ public:
     get_basic_view_segment_index_range() const;
 #endif
 
-  inline void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const override;
+  inline void get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const override;
 
-  inline int
-    num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const override;
+  inline int num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const override;
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
-  
+
   in this class, \a v_s is unchanged, and the return value is always false.
   'v_s' is changed (i.e. it was NOT a basic view/segment).
-  */  
-  inline bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const override;
+  */
+  inline bool find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const override;
 
 private:
-  bool blindly_equals(const root_type * const) const override;
-
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR
@@ -72,4 +66,3 @@ END_NAMESPACE_STIR
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.inl"
 
 #endif
-

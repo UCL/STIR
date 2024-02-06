@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
   \brief A BinNormalisation class that gets the normalisation factors from
   the files output by find_ML_normfactors.
 
-  \warning the ProjData object has to be 2D, no mashing, no span, no arc-correction. 
+  \warning the ProjData object has to be 2D, no mashing, no span, no arc-correction.
   I'm not sure if this is properly checked at run-time.
 
   \par Parsing details
@@ -54,16 +54,15 @@ START_NAMESPACE_STIR
 
 
 */
-class BinNormalisationFromML2D :
-   public RegisteredParsingObject<BinNormalisationFromML2D, BinNormalisation>
+class BinNormalisationFromML2D : public RegisteredParsingObject<BinNormalisationFromML2D, BinNormalisation>
 {
 public:
   //! Name which will be used when parsing a BinNormalisation object
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Default constructor
-  /*! 
-    \warning You should not call any member functions for any object just 
+  /*!
+    \warning You should not call any member functions for any object just
     constructed with this constructor. Initialise the object properly first
     by parsing.
   */
@@ -73,16 +72,16 @@ public:
   virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
 
   //! Normalise some data
-  /*! 
-    This means \c multiply with the data in the projdata object 
-    passed in the constructor. 
+  /*!
+    This means \c multiply with the data in the projdata object
+    passed in the constructor.
   */
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
-  /*! 
-    This means \c divide with the data in the projdata object 
-    passed in the constructor. 
+  /*!
+    This means \c divide with the data in the projdata object
+    passed in the constructor.
   */
   void undo(RelatedViewgrams<float>& viewgrams) const override;
 
@@ -100,7 +99,6 @@ private:
   // use shared pointer to avoid calling default constructor
   shared_ptr<ProjDataInMemory> norm_factors_ptr;
 };
-
 
 END_NAMESPACE_STIR
 

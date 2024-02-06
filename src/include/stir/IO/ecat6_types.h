@@ -1,15 +1,15 @@
 //
 //
 
-/*! 
+/*!
   \file
   \ingroup ECAT
   \brief ECAT 6 CTI matrix parameters
   \author Larry Byars
   \author PARAPET project
-  
+
   Enumerations of the data type and format.
-  
+
   Structures: <BR>
   - scanner parameters <BR>
   - matrix blocks and parameters <BR>
@@ -33,9 +33,9 @@
 //#define STIR_ORIGINAL_ECAT6
 
 #ifndef STIR_ORIGINAL_ECAT6
-#define CTISinogram ::Sinogram
+#  define CTISinogram ::Sinogram
 
-#include "matrix.h"
+#  include "matrix.h"
 
 #endif // STIR_ORIGINAL_ECAT6
 
@@ -45,23 +45,22 @@ START_NAMESPACE_ECAT6
 
 // matrix.h defines MatBLKSIZE and MatFirstDirBlk. we undefine them here to avoid conflicts
 #ifdef MatBLKSIZE
-#undef MatBLKSIZE
+#  undef MatBLKSIZE
 #endif
 #ifdef MatFirstDirBlk
-#undef MatFirstDirBlk
+#  undef MatFirstDirBlk
 #endif
-const int MatBLKSIZE =          512;
-const int MatFirstDirBlk =       2;
+const int MatBLKSIZE = 512;
+const int MatFirstDirBlk = 2;
 
 // MatFileType
-typedef enum {
-    matScanFile = 1,   // sinogram data
-    matImageFile = 2,  // image file   
-    matAttenFile = 3,  // attenuation correction file
-    matNormFile = 4    // normalization file
+typedef enum
+{
+  matScanFile = 1,  // sinogram data
+  matImageFile = 2, // image file
+  matAttenFile = 3, // attenuation correction file
+  matNormFile = 4   // normalization file
 } MatFileType;
-  
-
 
 //#define matScanData   matI2Data
 //#define matImageData  matI2Data
@@ -79,12 +78,10 @@ typedef unsigned char byte;
   \param strtblk     first block
   \param data_type   type of data (float, short, ...)
 */
-typedef struct ScanInfoRec {
-    int nprojs,
-        nviews,
-        nblks,
-        strtblk;
-    word data_type;
+typedef struct ScanInfoRec
+{
+  int nprojs, nviews, nblks, strtblk;
+  word data_type;
 } ScanInfoRec;
 
 #ifndef STIR_ORIGINAL_ECAT6
@@ -93,11 +90,11 @@ typedef struct Matval Matval;
 
 #else // STIR_ORIGINAL_ECAT6
 
-#error STIR_ORIGINAL_ECAT6 no longer supported
+#  error STIR_ORIGINAL_ECAT6 no longer supported
 
 #endif // STIR_ORIGINAL_ECAT6
-  
+
 END_NAMESPACE_ECAT
 END_NAMESPACE_ECAT6
 END_NAMESPACE_STIR
-#endif 
+#endif

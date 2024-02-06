@@ -11,7 +11,7 @@
 /*!
   \file
   \ingroup symmetries
-  \brief non-inline implementations for class 
+  \brief non-inline implementations for class
          stir::TrivialDataSymmetriesForBins
 
   \author Kris Thielemans
@@ -24,22 +24,16 @@
 using std::vector;
 
 START_NAMESPACE_STIR
-TrivialDataSymmetriesForBins::
-TrivialDataSymmetriesForBins
-(
- const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
-  : DataSymmetriesForBins(proj_data_info_ptr)
-{
-}
-
+TrivialDataSymmetriesForBins::TrivialDataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
+    : DataSymmetriesForBins(proj_data_info_ptr)
+{}
 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    TrivialDataSymmetriesForBins *
+TrivialDataSymmetriesForBins*
 #else
-    DataSymmetriesForViewSegmentNumbers *
+DataSymmetriesForViewSegmentNumbers*
 #endif
-TrivialDataSymmetriesForBins::
-clone() const
+TrivialDataSymmetriesForBins::clone() const
 {
   return new TrivialDataSymmetriesForBins(*this);
 }
@@ -50,35 +44,31 @@ TrivialDataSymmetriesForBins::num_related_bins(const Bin& b) const
   return 1;
 }
 
-bool TrivialDataSymmetriesForBins::find_basic_bin(Bin& b) const
+bool
+TrivialDataSymmetriesForBins::find_basic_bin(Bin& b) const
 {
   return false;
 }
 
-
 bool
-TrivialDataSymmetriesForBins::
-is_basic(const Bin& b) const
+TrivialDataSymmetriesForBins::is_basic(const Bin& b) const
 {
   return true;
 }
 
-
 void
-TrivialDataSymmetriesForBins::
-get_related_bins_factorised(vector<AxTangPosNumbers>& axtan_pos_nums, const Bin& b,
-                 const int min_axial_pos_num, const int max_axial_pos_num,
-                 const int min_tangential_pos_num, const int max_tangential_pos_num) const
+TrivialDataSymmetriesForBins::get_related_bins_factorised(vector<AxTangPosNumbers>& axtan_pos_nums,
+                                                          const Bin& b,
+                                                          const int min_axial_pos_num,
+                                                          const int max_axial_pos_num,
+                                                          const int min_tangential_pos_num,
+                                                          const int max_tangential_pos_num) const
 {
-  if (b.axial_pos_num() >= min_axial_pos_num &&
-      b.axial_pos_num() <= max_axial_pos_num &&
-      b.tangential_pos_num() >= min_tangential_pos_num &&
-      b.tangential_pos_num() <= max_tangential_pos_num)
+  if (b.axial_pos_num() >= min_axial_pos_num && b.axial_pos_num() <= max_axial_pos_num
+      && b.tangential_pos_num() >= min_tangential_pos_num && b.tangential_pos_num() <= max_tangential_pos_num)
     {
       axtan_pos_nums.resize(1);
-      axtan_pos_nums[0] = 
-	AxTangPosNumbers(b.axial_pos_num(),
-			 b.tangential_pos_num());
+      axtan_pos_nums[0] = AxTangPosNumbers(b.axial_pos_num(), b.tangential_pos_num());
     }
   else
     {
@@ -87,18 +77,18 @@ get_related_bins_factorised(vector<AxTangPosNumbers>& axtan_pos_nums, const Bin&
 }
 
 void
-TrivialDataSymmetriesForBins::
-get_related_bins(vector<Bin>& rel_b, const Bin& b,
-                 const int min_axial_pos_num, const int max_axial_pos_num,
-                 const int min_tangential_pos_num, const int max_tangential_pos_num,
-				 const int min_timing_pos_num, const int max_timing_pos_num) const
+TrivialDataSymmetriesForBins::get_related_bins(vector<Bin>& rel_b,
+                                               const Bin& b,
+                                               const int min_axial_pos_num,
+                                               const int max_axial_pos_num,
+                                               const int min_tangential_pos_num,
+                                               const int max_tangential_pos_num,
+                                               const int min_timing_pos_num,
+                                               const int max_timing_pos_num) const
 {
-  if (b.axial_pos_num() >= min_axial_pos_num &&
-      b.axial_pos_num() <= max_axial_pos_num &&
-      b.tangential_pos_num() >= min_tangential_pos_num &&
-      b.tangential_pos_num() <= max_tangential_pos_num &&
-	  b.timing_pos_num() >= min_timing_pos_num &&
-	  b.timing_pos_num() <= max_timing_pos_num)
+  if (b.axial_pos_num() >= min_axial_pos_num && b.axial_pos_num() <= max_axial_pos_num
+      && b.tangential_pos_num() >= min_tangential_pos_num && b.tangential_pos_num() <= max_tangential_pos_num
+      && b.timing_pos_num() >= min_timing_pos_num && b.timing_pos_num() <= max_timing_pos_num)
     {
       rel_b.resize(1);
       rel_b[0] = b;
@@ -110,45 +100,39 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
 }
 
 unique_ptr<SymmetryOperation>
-TrivialDataSymmetriesForBins::
-find_symmetry_operation_from_basic_bin(Bin&) const
+TrivialDataSymmetriesForBins::find_symmetry_operation_from_basic_bin(Bin&) const
 {
   return unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
 unique_ptr<SymmetryOperation>
-TrivialDataSymmetriesForBins::
-find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
+TrivialDataSymmetriesForBins::find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
 {
   return unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
 void
-TrivialDataSymmetriesForBins::
-get_related_view_segment_numbers(vector<ViewSegmentNumbers>& all, const ViewSegmentNumbers& v_s) const
+TrivialDataSymmetriesForBins::get_related_view_segment_numbers(vector<ViewSegmentNumbers>& all,
+                                                               const ViewSegmentNumbers& v_s) const
 {
   all.resize(1);
   all[0] = v_s;
 }
 
-
 int
-TrivialDataSymmetriesForBins::
-num_related_view_segment_numbers(const ViewSegmentNumbers&) const
+TrivialDataSymmetriesForBins::num_related_view_segment_numbers(const ViewSegmentNumbers&) const
 {
   return 1;
 }
 
 bool
-TrivialDataSymmetriesForBins::
-find_basic_view_segment_numbers(ViewSegmentNumbers&) const
+TrivialDataSymmetriesForBins::find_basic_view_segment_numbers(ViewSegmentNumbers&) const
 {
   return false;
 }
 
-bool 
-TrivialDataSymmetriesForBins::
-blindly_equals(const root_type * const) const
+bool
+TrivialDataSymmetriesForBins::blindly_equals(const root_type* const) const
 {
   return true;
 }

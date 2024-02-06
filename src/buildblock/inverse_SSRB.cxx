@@ -68,19 +68,22 @@ inverse_SSRB(ProjData& proj_data_4D, const ProjData& proj_data_3D)
        ++out_segment_num)
     {
       for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num);
-           out_ax_pos_num <= proj_data_4D.get_max_axial_pos_num(out_segment_num); ++out_ax_pos_num)
+           out_ax_pos_num <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
+           ++out_ax_pos_num)
         {
-          for (int k=proj_data_4D.get_proj_data_info_sptr()->get_min_tof_pos_num();
-            k<=proj_data_4D.get_proj_data_info_sptr()->get_max_tof_pos_num(); ++k)
-          {
-            sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num, false, k);
-            const float out_m = proj_data_4D_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
+          for (int k = proj_data_4D.get_proj_data_info_sptr()->get_min_tof_pos_num();
+               k <= proj_data_4D.get_proj_data_info_sptr()->get_max_tof_pos_num();
+               ++k)
+            {
+              sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num, false, k);
+              const float out_m = proj_data_4D_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
 
-            // Go through all direct sinograms to check which pair are closest.
-            bool sinogram_set = false;
-            for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
-                ++in_ax_pos_num)
-              {
+              // Go through all direct sinograms to check which pair are closest.
+              bool sinogram_set = false;
+              for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0);
+                   in_ax_pos_num <= proj_data_3D.get_max_axial_pos_num(0);
+                   ++in_ax_pos_num)
+                {
                   // for the first slice there is no previous
                   const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0)
                                                         ? std::numeric_limits<float>::max()
@@ -94,7 +97,7 @@ inverse_SSRB(ProjData& proj_data_4D, const ProjData& proj_data_3D)
                     {
                       if (distance_to_current <= 1E-4)
                         {
-                          sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num, 0,false, k);
+                          sino_3D_1 = proj_data_3D.get_sinogram(in_ax_pos_num, 0, false, k);
                           sino_4D += sino_3D_1;
                         }
                       else if (distance_to_previous < distance_to_next)
@@ -124,7 +127,7 @@ inverse_SSRB(ProjData& proj_data_4D, const ProjData& proj_data_3D)
                 { // it is logically not possible to get here
                   error("no matching sinogram found for segment %d and axial pos %d", out_segment_num, out_ax_pos_num);
                 }
-          }  
+            }
         }
     }
   return Succeeded::yes;

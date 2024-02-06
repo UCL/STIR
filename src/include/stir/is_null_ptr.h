@@ -26,38 +26,38 @@
 START_NAMESPACE_STIR
 /*! \ingroup buildblock
   \name testing of (smart) pointers
-  
+
   A utility function that checks if an ordinary or smart pointer is null
   with identical syntax for all types.
 */
 //@{
 template <typename T>
-inline 
-bool 
-is_null_ptr(T const * const ptr)
+inline bool
+is_null_ptr(T const* const ptr)
 {
 #ifdef BOOST_NO_CXX11_NULLPTR
-  return ptr==0;
+  return ptr == 0;
 #else
-  return ptr==nullptr;
+  return ptr == nullptr;
 #endif
 }
 
 template <typename T>
-inline 
-bool 
+inline bool
 is_null_ptr(shared_ptr<T> const& sptr)
-{ return is_null_ptr(sptr.get()); }
+{
+  return is_null_ptr(sptr.get());
+}
 
 template <typename T>
-inline 
-bool 
+inline bool
 is_null_ptr(unique_ptr<T> const& aptr)
-{ return is_null_ptr(aptr.get()); }
+{
+  return is_null_ptr(aptr.get());
+}
 
 #ifndef BOOST_NO_CXX11_NULLPTR
-inline 
-bool 
+inline bool
 is_null_ptr(const std::nullptr_t)
 {
   return true;

@@ -85,379 +85,334 @@ START_NAMESPACE_STIR
 class ScatterSimulation : public RegisteredObject<ScatterSimulation>
 {
 public:
+  //! Default constructor
+  ScatterSimulation();
 
-    //! Default constructor
-    ScatterSimulation();
+  ~ScatterSimulation() override;
 
-    ~ScatterSimulation() override;
+  virtual Succeeded process_data();
+  //! gives method information
+  virtual std::string method_info() const = 0;
+  //! prompts the user to enter parameter values manually
+  virtual void ask_parameters();
+  //! \name check functions
+  //@{
+  inline bool has_template_proj_data_info() const { return !stir::is_null_ptr(proj_data_info_sptr); }
+  //! Returns true if template_exam_info_sptr has been set.
+  inline bool has_exam_info() const { return !stir::is_null_ptr(template_exam_info_sptr); }
+  //@}
 
-    virtual Succeeded process_data();
-    //! gives method information
-    virtual std::string method_info() const = 0;
-    //! prompts the user to enter parameter values manually
-    virtual void ask_parameters();
-    //! \name check functions
-    //@{
-    inline bool has_template_proj_data_info() const
-    { return !stir::is_null_ptr(proj_data_info_sptr); }
-    //! Returns true if template_exam_info_sptr has been set.
-    inline bool has_exam_info() const
-    { return !stir::is_null_ptr(template_exam_info_sptr);}
-    //@}
+  //! \name get functions
+  //@{
+  shared_ptr<ProjData> get_output_proj_data_sptr() const;
 
-    //! \name get functions
-    //@{
-    shared_ptr<ProjData>
-    get_output_proj_data_sptr() const;
+  inline int get_num_scatter_points() const { return static_cast<int>(this->scatt_points_vector.size()); }
+  //! Get the template ProjDataInfo
+  shared_ptr<const ProjDataInfo> get_template_proj_data_info_sptr() const;
+  //! Get the ExamInfo
+  shared_ptr<const ExamInfo> get_exam_info_sptr() const;
 
-    inline int get_num_scatter_points() const
-    { return static_cast<int>(this->scatt_points_vector.size());}
-    //! Get the template ProjDataInfo
-    shared_ptr<const ProjDataInfo> get_template_proj_data_info_sptr() const;
-    //! Get the ExamInfo
-    shared_ptr<const ExamInfo> get_exam_info_sptr() const;
+  const DiscretisedDensity<3, float>& get_activity_image() const;
+  const DiscretisedDensity<3, float>& get_attenuation_image() const;
+  const DiscretisedDensity<3, float>& get_attenuation_image_for_scatter_points() const;
+  //! \deprecated
+  shared_ptr<const DiscretisedDensity<3, float>> get_density_image_for_scatter_points_sptr() const;
+  //@}
 
-    const DiscretisedDensity<3,float>& get_activity_image() const;
-    const DiscretisedDensity<3,float>& get_attenuation_image() const;
-    const DiscretisedDensity<3,float>& get_attenuation_image_for_scatter_points() const;
-    //! \deprecated
-    shared_ptr<const DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
-    //@}
+  //! \name set functions
+  //@{
 
-    //! \name set functions
-    //@{
+  void set_template_proj_data_info(const std::string&);
 
-    void set_template_proj_data_info(const std::string&);
+  void set_template_proj_data_info(const ProjDataInfo&);
 
-    void set_template_proj_data_info(const ProjDataInfo&);
+  void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>>);
 
-    void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
+  void set_activity_image(const std::string& filename);
+  //! \details Since July 2016, the information for the energy window and energy
+  //! resolution are stored in ExamInfo.
+  void set_exam_info(const ExamInfo&);
+  void set_exam_info_sptr(const shared_ptr<const ExamInfo>);
 
-    void set_activity_image(const std::string& filename);
-    //! \details Since July 2016, the information for the energy window and energy
-    //! resolution are stored in ExamInfo.
-    void set_exam_info(const ExamInfo&);
-    void set_exam_info_sptr(const shared_ptr<const ExamInfo>);
+  void set_output_proj_data_sptr(shared_ptr<ProjData>);
 
-    void set_output_proj_data_sptr(shared_ptr<ProjData>);
+  void set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>>);
 
-    void set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
+  void set_density_image(const std::string&);
+  //! This function depends on the ProjDataInfo of the scanner.
+  //! You first have to set that.
+  void set_output_proj_data(const std::string&);
 
-    void set_density_image(const std::string&);
-    //! This function depends on the ProjDataInfo of the scanner.
-    //! You first have to set that.
-    void set_output_proj_data(const std::string&);
+  void set_output_proj_data_sptr(const shared_ptr<const ExamInfo>, const shared_ptr<const ProjDataInfo>, const std::string&);
 
-    void
-    set_output_proj_data_sptr(const shared_ptr<const ExamInfo>,
-                              const shared_ptr<const ProjDataInfo>,
-                              const std::string &);
+  void set_density_image_for_scatter_points_sptr(shared_ptr<const DiscretisedDensity<3, float>>);
 
-    void set_density_image_for_scatter_points_sptr(shared_ptr<const DiscretisedDensity<3,float> >);
+  void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f, int _size_zoom_xy = -1, int _size_zoom_z = -1);
+  //! set_density_image_for_scatter_points
+  void set_density_image_for_scatter_points(const std::string&);
+  //! set the attenuation threshold
+  void set_attenuation_threshold(const float);
+  //! The scattering point in the voxel will be chosen randomly, instead of choosing the centre.
+  /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
+     discretisation errors are more obvious.
 
-    void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f,
-                                      int _size_zoom_xy = -1, int _size_zoom_z = -1);
-        //! set_density_image_for_scatter_points
-    void set_density_image_for_scatter_points(const std::string&);
-    //! set the attenuation threshold
-    void set_attenuation_threshold(const float);
-    //! The scattering point in the voxel will be chosen randomly, instead of choosing the centre.
-    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
-       discretisation errors are more obvious.
+     Note that the random generator is seeded via date/time, so re-running the scatter
+     simulation will give a slightly different result if this boolean is on.
+  */
+  void set_randomly_place_scatter_points(const bool);
 
-       Note that the random generator is seeded via date/time, so re-running the scatter
-       simulation will give a slightly different result if this boolean is on.
-    */
-    void set_randomly_place_scatter_points(const bool);
+  void set_cache_enabled(const bool);
 
-    void set_cache_enabled(const bool);
+  //@}
 
-    //@}
+  //! This function is a less powerfull tool than directly zooming the image.
+  //! However it will check that the downsampling is done in manner compatible with the
+  //! ScatterSimulation.
+  void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z, int _size_xy = -1, int _size_z = -1);
 
-    //! This function is a less powerfull tool than directly zooming the image.
-    //! However it will check that the downsampling is done in manner compatible with the
-    //! ScatterSimulation.
-    void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
-                          int _size_xy = -1, int _size_z = -1);
+  //! Get and set methods for the downsample_scanner_bool
+  //@{
+  void set_downsample_scanner_bool(const bool arg);
+  bool get_downsample_scanner_bool() const;
+  //@}
 
+  //! Get and set methods for downsample_scanner_rings
+  //@{
+  int get_num_downsample_scanner_rings() const;
+  void set_num_downsample_scanner_rings(const int arg);
+  //@}
 
-    //! Get and set methods for the downsample_scanner_bool
-    //@{
-    void set_downsample_scanner_bool(const bool arg);
-    bool get_downsample_scanner_bool() const;
-    //@}
+  //! Get and set methods for downsample_scanner_dets
+  //@{
+  int get_num_downsample_scanner_dets() const;
+  void set_num_downsample_scanner_dets(const int arg);
+  //@}
 
-    //! Get and set methods for downsample_scanner_rings
-    //@{
-    int get_num_downsample_scanner_rings() const;
-    void set_num_downsample_scanner_rings(const int arg);
-    //@}
+  //! Downsample the scanner keeping the total axial length the same.
+  /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
+      If \c new_num_dets <=0, use the default set (currently set in set_defaults())
+  */
+  Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
+  //! Downsamples activity and attenuation images to voxel sizes appropriate for the (downsampled) scanner.
+  /*! This step is not necessary but could result in a speed-up in computing the line integrals.
+      It also avoids problems with too high resolution images compared to the downsampled scanner.
 
-    //! Get and set methods for downsample_scanner_dets
-    //@{
-    int get_num_downsample_scanner_dets() const;
-    void set_num_downsample_scanner_dets(const int arg);
-    //@}
+      Another way to resolve that is to smooth the images before the scatter simulation.
+      This is currently not implemented in this class.
+      \warning This function should be called after having set all data.
+  */
+  Succeeded downsample_images_to_scanner_size();
 
-    //! Downsample the scanner keeping the total axial length the same.
-    /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
-        If \c new_num_dets <=0, use the default set (currently set in set_defaults())
-    */
-    Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
-    //! Downsamples activity and attenuation images to voxel sizes appropriate for the (downsampled) scanner.
-    /*! This step is not necessary but could result in a speed-up in computing the line integrals.
-        It also avoids problems with too high resolution images compared to the downsampled scanner.
+  //! gamma-energy-part of the detection efficiency
+  /*!
+    Formula used is based on a Gaussian pdf for the efficiency, with
+    \f[ FWHM_E = \alpha  \sqrt(E) \f]
+    where the proportionality constant \f$\alpha\f$ is determined by the
+    energy FWHM of the Scanner at the reference energy.
 
-	Another way to resolve that is to smooth the images before the scatter simulation.
-	This is currently not implemented in this class.
-	\warning This function should be called after having set all data.
-    */
-    Succeeded downsample_images_to_scanner_size();
+    This pdf is then integrated from the lower to the upper energy window limits.
 
-    //! gamma-energy-part of the detection efficiency
-    /*!
-      Formula used is based on a Gaussian pdf for the efficiency, with
-      \f[ FWHM_E = \alpha  \sqrt(E) \f]
-      where the proportionality constant \f$\alpha\f$ is determined by the
-      energy FWHM of the Scanner at the reference energy.
+    \sa Scanner::get_energy_resolution
+    \sa Scanner::get_reference_energy
+  */
+  float detection_efficiency(const float energy) const;
 
-      This pdf is then integrated from the lower to the upper energy window limits.
+  //! \name Compton scatter cross sections
+  //@{
+  static inline float dif_Compton_cross_section(const float cos_theta, float energy);
 
-      \sa Scanner::get_energy_resolution
-      \sa Scanner::get_reference_energy
-    */
-    float detection_efficiency(const float energy) const;
+  static inline float total_Compton_cross_section(float energy);
 
-    //! \name Compton scatter cross sections
-    //@{
-    static
-    inline float
-    dif_Compton_cross_section(const float cos_theta, float energy);
+  static inline float photon_energy_after_Compton_scatter(const float cos_theta, const float energy);
 
-    static
-    inline float
-    total_Compton_cross_section(float energy);
+  static inline float photon_energy_after_Compton_scatter_511keV(const float cos_theta);
 
-    static
-    inline float
-    photon_energy_after_Compton_scatter(const float cos_theta, const float energy);
+  static inline float total_Compton_cross_section_relative_to_511keV(const float energy);
+  //@}
 
-    static
-    inline float
-    photon_energy_after_Compton_scatter_511keV(const float cos_theta);
+  virtual Succeeded set_up();
 
-    static
-    inline float
-    total_Compton_cross_section_relative_to_511keV(const float energy);
-    //@}
+  //! Output the log of the process.
+  virtual void write_log(const double simulation_time, const float total_scatter);
 
-    virtual Succeeded set_up();
-
-    //! Output the log of the process.
-    virtual void write_log(const double simulation_time, const float total_scatter);
-
-    //! Enable/disable caching of line integrals
-    void set_use_cache(const bool);
-    //! Return if line integrals are cached or not
-    bool get_use_cache() const;
+  //! Enable/disable caching of line integrals
+  void set_use_cache(const bool);
+  //! Return if line integrals are cached or not
+  bool get_use_cache() const;
 
 protected:
+  //! computes scatter for one viewgram
+  /*! \return total scatter estimated for this viewgram */
+  virtual double process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num);
 
-    //! computes scatter for one viewgram
-    /*! \return total scatter estimated for this viewgram */
-    virtual double
-    process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num);
+  float compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
+                                                      const CartesianCoordinate3D<float>& detector_coord);
 
-    float
-    compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
-                                                  const CartesianCoordinate3D<float>& detector_coord);
+  void set_defaults() override;
+  void initialise_keymap() override;
+  //! \warning post_processing will set everything that has a file name in
+  //! the par file. The corresponding set functions should be used either
+  //! for files that are not stored in the drive.
+  bool post_processing() override;
 
+  enum image_type
+  {
+    act_image_type,
+    att_image_type
+  };
+  struct ScatterPoint
+  {
+    CartesianCoordinate3D<float> coord;
+    float mu_value;
+  };
 
+  std::vector<ScatterPoint> scatt_points_vector;
 
-    void set_defaults() override;
-    void initialise_keymap() override;
-    //! \warning post_processing will set everything that has a file name in
-    //! the par file. The corresponding set functions should be used either
-    //! for files that are not stored in the drive.
-    bool post_processing() override;
+  float scatter_volume;
 
-    enum image_type{act_image_type, att_image_type};
-    struct ScatterPoint
-    {
-        CartesianCoordinate3D<float> coord;
-        float mu_value;
-    };
+  //! find scatter points
+  /*! This function sets scatt_points_vector and scatter_volume. It will also
+      remove any cached integrals as they would be incorrect otherwise.
+  */
+  void sample_scatter_points();
 
-    std::vector< ScatterPoint> scatt_points_vector;
+  //! remove cached attenuation integrals
+  /*! should be used before recalculating scatter for a new attenuation image or
+    when changing the sampling of the detector etc */
+  virtual void remove_cache_for_integrals_over_attenuation();
 
-    float scatter_volume;
+  //! reset cached activity integrals
+  /*! should be used before recalculating scatter for a new activity image or
+    when changing the sampling of the detector etc */
+  virtual void remove_cache_for_integrals_over_activity();
 
-    //! find scatter points
-    /*! This function sets scatt_points_vector and scatter_volume. It will also
-        remove any cached integrals as they would be incorrect otherwise.
-    */
-    void
-    sample_scatter_points();
+  /** \name detection related functions
+   *
+   * @{
+   */
 
-    //! remove cached attenuation integrals
-    /*! should be used before recalculating scatter for a new attenuation image or
-      when changing the sampling of the detector etc */
-    virtual void remove_cache_for_integrals_over_attenuation();
+  //! maximum angle to consider above which detection after Compton scatter is considered too small
+  static float max_cos_angle(const float low, const float approx, const float resolution_at_511keV);
 
-    //! reset cached activity integrals
-    /*! should be used before recalculating scatter for a new activity image or
-      when changing the sampling of the detector etc */
-    virtual void remove_cache_for_integrals_over_activity();
+  //! mimumum energy to consider above which detection after Compton scatter is considered too small
+  static float energy_lower_limit(const float low, const float approx, const float resolution_at_511keV);
 
-    /** \name detection related functions
-     *
-     * @{
-     */
+  virtual void find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const;
 
-    //! maximum angle to consider above which detection after Compton scatter is considered too small
-    static
-    float
-    max_cos_angle(const float low, const float approx, const float resolution_at_511keV);
+  unsigned find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
 
-    //! mimumum energy to consider above which detection after Compton scatter is considered too small
-    static
-    float
-    energy_lower_limit(const float low, const float approx, const float resolution_at_511keV);
+  CartesianCoordinate3D<float> shift_detector_coordinates_to_origin;
 
-    virtual
-    void
-    find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const;
+  //! average detection efficiency of unscattered counts
+  double detection_efficiency_no_scatter(const unsigned det_num_A, const unsigned det_num_B) const;
 
-    unsigned
-    find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
+  // next needs to be mutable because find_in_detection_points_vector is const
+  mutable std::vector<CartesianCoordinate3D<float>> detection_points_vector;
 
-    CartesianCoordinate3D<float>  shift_detector_coordinates_to_origin;
+  //!@}
 
-    //! average detection efficiency of unscattered counts
-    double
-    detection_efficiency_no_scatter(const unsigned det_num_A,
-                                    const unsigned det_num_B) const;
+  //! virtual function that computes the scatter for one (downsampled) bin
+  virtual double scatter_estimate(const Bin& bin) = 0;
 
-    // next needs to be mutable because find_in_detection_points_vector is const
-    mutable std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+  //! \name integrating functions
+  //@{
+  static float integral_between_2_points(const DiscretisedDensity<3, float>& density,
+                                         const CartesianCoordinate3D<float>& point1,
+                                         const CartesianCoordinate3D<float>& point2);
 
-    //!@}
+  float exp_integral_over_attenuation_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point,
+                                                                   const CartesianCoordinate3D<float>& detector_coord);
 
-    //! virtual function that computes the scatter for one (downsampled) bin
-    virtual double
-      scatter_estimate(const Bin& bin) = 0;
+  float integral_over_activity_image_between_scattpoint_det(const CartesianCoordinate3D<float>& scatter_point,
+                                                            const CartesianCoordinate3D<float>& detector_coord);
 
-    //! \name integrating functions
-    //@{
-    static
-    float
-    integral_between_2_points(const DiscretisedDensity<3,float>& density,
-                              const CartesianCoordinate3D<float>& point1,
-                              const CartesianCoordinate3D<float>& point2);
+  float cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, const unsigned det_num);
 
-    float
-    exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point,
-                                                                const CartesianCoordinate3D<float>& detector_coord);
+  float cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num,
+                                                                          const unsigned det_num);
+  //@}
 
+  std::string template_proj_data_filename;
 
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  //! \details Exam info extracted from the scanner template
+  shared_ptr<ExamInfo> template_exam_info_sptr;
 
-    float
-    integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point,
-                                                         const CartesianCoordinate3D<float>& detector_coord);
+  std::string density_image_filename;
 
+  std::string density_image_for_scatter_points_filename;
 
+  std::string density_image_for_scatter_points_output_filename;
 
-    float
-    cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num,
-                                                               const unsigned det_num);
+  shared_ptr<const DiscretisedDensity<3, float>> density_image_sptr;
 
-    float
-    cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num,
-                                                                      const unsigned det_num);
-    //@}
+  //! Pointer to hold the current activity estimation
+  shared_ptr<const DiscretisedDensity<3, float>> activity_image_sptr;
 
-    std::string template_proj_data_filename;
+  //! set-up cache for attenuation integrals
+  /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
+      call remove_cache_for_scattpoint_det_integrals_over_attenuation() first.
+  */
+  void initialise_cache_for_scattpoint_det_integrals_over_attenuation();
+  //! set-up cache for activity integrals
+  /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
+      call remove_cache_for_scattpoint_det_integrals_over_activity() first.
+  */
+  void initialise_cache_for_scattpoint_det_integrals_over_activity();
 
-    shared_ptr<ProjDataInfo> proj_data_info_sptr;
-    //! \details Exam info extracted from the scanner template
-    shared_ptr<ExamInfo> template_exam_info_sptr;
+  //! Output proj_data fileanme prefix
+  std::string output_proj_data_filename;
+  //! Shared ptr to hold the simulated data.
+  shared_ptr<ProjData> output_proj_data_sptr;
 
-    std::string density_image_filename;
+  //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
+  float attenuation_threshold;
 
-    std::string density_image_for_scatter_points_filename;
+  //! boolean to see if we need to move the scatter point randomly within in its voxel
+  bool randomly_place_scatter_points;
+  //! boolean to see if we need to cache the integrals
+  /*! By default, we cache the integrals over the emission and attenuation image. If you run out
+      of memory, you can switch this off, but performance will suffer dramatically.
+  */
+  bool use_cache;
+  //! Filename for the initial activity estimate.
+  std::string activity_image_filename;
+  //! Zoom factor on plane XY. Defaults on 1.f.
+  float zoom_xy;
+  //! Zoom factor on Z axis. Defaults on 1.f.
+  float zoom_z;
+  //! Zoomed image size on plane XY. Defaults on -1.
+  int zoom_size_xy;
+  //! Zoomed image size on Z axis. Defaults on -1.
+  int zoom_size_z;
+  //! Number of rings of downsampled scanner
+  int downsample_scanner_rings;
+  //! Number of detectors per ring of downsampled scanner
+  int downsample_scanner_dets;
 
-    std::string density_image_for_scatter_points_output_filename;
+  bool downsample_scanner_bool;
+  bool _already_set_up;
 
-    shared_ptr< const DiscretisedDensity<3, float> > density_image_sptr;
+private:
+  int total_detectors;
 
-    //! Pointer to hold the current activity estimation
-    shared_ptr<const DiscretisedDensity<3,float> > activity_image_sptr;
+  Array<2, float> cached_activity_integral_scattpoint_det;
+  Array<2, float> cached_attenuation_integral_scattpoint_det;
+  shared_ptr<DiscretisedDensity<3, float>> density_image_for_scatter_points_sptr;
 
-    //! set-up cache for attenuation integrals
-    /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
-        call remove_cache_for_scattpoint_det_integrals_over_attenuation() first.
-    */
-    void initialise_cache_for_scattpoint_det_integrals_over_attenuation();
-    //! set-up cache for activity integrals
-    /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
-        call remove_cache_for_scattpoint_det_integrals_over_activity() first.
-    */
-    void initialise_cache_for_scattpoint_det_integrals_over_activity();
+  // numbers that we don't want to recompute all the time
+  mutable float detector_efficiency_no_scatter;
 
-    //! Output proj_data fileanme prefix
-    std::string output_proj_data_filename;
-    //! Shared ptr to hold the simulated data.
-    shared_ptr<ProjData> output_proj_data_sptr;
+  //! a function that checks if image sizes are ok
+  /*! It will call \c error() if not.
 
-    //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
-    float attenuation_threshold;
+    Currently, STIR shifts the middle of the image to the middle of the scanner. This
+    is dangerous when using image zooming.
+    This function currently checks if \a _image is consistent with the \c activity_image_sptr.
 
-    //! boolean to see if we need to move the scatter point randomly within in its voxel
-    bool randomly_place_scatter_points;
-    //! boolean to see if we need to cache the integrals
-    /*! By default, we cache the integrals over the emission and attenuation image. If you run out
-        of memory, you can switch this off, but performance will suffer dramatically.
-    */
-    bool use_cache;
-    //! Filename for the initial activity estimate.
-    std::string activity_image_filename;
-    //! Zoom factor on plane XY. Defaults on 1.f.
-    float zoom_xy;
-    //! Zoom factor on Z axis. Defaults on 1.f.
-    float zoom_z;
-    //! Zoomed image size on plane XY. Defaults on -1.
-    int zoom_size_xy;
-    //! Zoomed image size on Z axis. Defaults on -1.
-    int zoom_size_z;
-    //! Number of rings of downsampled scanner
-    int downsample_scanner_rings;
-    //! Number of detectors per ring of downsampled scanner
-    int downsample_scanner_dets;
-
-    bool downsample_scanner_bool;
-    bool _already_set_up;
-
- private:
-    int total_detectors;
-
-    Array<2,float> cached_activity_integral_scattpoint_det;
-    Array<2,float> cached_attenuation_integral_scattpoint_det;
-    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
-
-    // numbers that we don't want to recompute all the time
-    mutable float detector_efficiency_no_scatter;
-
-
-    //! a function that checks if image sizes are ok
-    /*! It will call \c error() if not.
-
-      Currently, STIR shifts the middle of the image to the middle of the scanner. This
-      is dangerous when using image zooming.
-      This function currently checks if \a _image is consistent with the \c activity_image_sptr.
-
-      See https://github.com/UCL/STIR/issues/495 for more information.
-     */
-    void check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const std::string& name) const;
+    See https://github.com/UCL/STIR/issues/495 for more information.
+   */
+  void check_z_to_middle_consistent(const DiscretisedDensity<3, float>& _image, const std::string& name) const;
 };
 
 END_NAMESPACE_STIR
@@ -465,5 +420,3 @@ END_NAMESPACE_STIR
 #include "stir/scatter/ScatterSimulation.inl"
 
 #endif
-
-

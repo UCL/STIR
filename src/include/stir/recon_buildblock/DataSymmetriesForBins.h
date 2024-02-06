@@ -39,12 +39,11 @@ class Bin;
 class SymmetryOperation;
 class ProjDataInfo;
 
-
 #if 0
 class BinIndexRange;
 #endif
 
-/*! 
+/*!
   \brief AxTangPosNumbers as a class that provides the 2 remaining
   coordinates for a Bin, aside from ViewSegmentNumbers.
 
@@ -52,18 +51,17 @@ class BinIndexRange;
 */
 typedef Coordinate2D<int> AxTangPosNumbers;
 
-
 /*!
   \ingroup symmetries
   \brief A class for encoding/finding symmetries common to the geometry
-  of the projection data and the discretised density. 
+  of the projection data and the discretised density.
 
   This class is mainly (only?) useful for ProjMatrixByBin classes and their
-  'users'. Together with SymmetryOperation, it provides the basic 
-  way to be able to write generic code without knowing which 
+  'users'. Together with SymmetryOperation, it provides the basic
+  way to be able to write generic code without knowing which
   particular symmetries the data have.
 
-  \todo I have used Bin here to have the 4 coordinates, but Bin has data as well 
+  \todo I have used Bin here to have the 4 coordinates, but Bin has data as well
   which is not really necessary here.
 */
 class DataSymmetriesForBins : public DataSymmetriesForViewSegmentNumbers
@@ -77,8 +75,7 @@ public:
 
   ~DataSymmetriesForBins() override;
 
-  
-    DataSymmetriesForBins * clone() const override = 0;
+  DataSymmetriesForBins* clone() const override = 0;
 
 #if 0
   TODO!
@@ -88,94 +85,89 @@ public:
 #endif
 
   //! fills in a vector with all the bins that are related to 'b' (including itself)
-  /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object 
-      passed in the constructor 
+  /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object
+      passed in the constructor
       \warning \c b has to be a 'basic' bin
   */
   // next return value could be a RelatedBins ???
   // however, both Bin and RelatedBins have data in there (which is not needed here)
-  inline void
-    get_related_bins(std::vector<Bin>&, const Bin& b) const;
+  inline void get_related_bins(std::vector<Bin>&, const Bin& b) const;
 
   //! fills in a vector with all the bins (within the range) that are related to 'b'
   /*! \warning \c b has to be a 'basic' bin
-  */
-  virtual void
-    get_related_bins(std::vector<Bin>&, const Bin& b,
-                      const int min_axial_pos_num, const int max_axial_pos_num,
-                      const int min_tangential_pos_num, const int max_tangential_pos_num,
-                     const int min_timing_pos_num, const int max_timing_pos_num) const;
+   */
+  virtual void get_related_bins(std::vector<Bin>&,
+                                const Bin& b,
+                                const int min_axial_pos_num,
+                                const int max_axial_pos_num,
+                                const int min_tangential_pos_num,
+                                const int max_tangential_pos_num,
+                                const int min_timing_pos_num,
+                                const int max_timing_pos_num) const;
 
   //! fills in a vector with the axial and tangential position numbers related to this bin
-  /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object 
-      passed in the constructor 
+  /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object
+      passed in the constructor
       \warning \c b has to be a 'basic' bin
       \see 6 argument version of get_related_bins_factorised()
   */
-  inline void
-    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b) const;
+  inline void get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b) const;
 
- //! fills in a vector with the axial and tangential position numbers related to this bin
+  //! fills in a vector with the axial and tangential position numbers related to this bin
   /*!
      It is guaranteed (or at least, it should be by the implementation of the derived class)
      that these AxTangPosNumbers are related for all related ViewSegmentNumbers
      for this bin.
 
      So, you can find all related bins by calling get_related_ViewSegmentNumbers()
-     and get_related_bins_factorised(), which is what the default implementation 
+     and get_related_bins_factorised(), which is what the default implementation
      does. (A derived class might do this in a more optimal way.)
 
      \warning \c b has to be a 'basic' bin
   */
-  virtual void
-    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
-                                const int min_axial_pos_num, const int max_axial_pos_num,
-                                const int min_tangential_pos_num, const int max_tangential_pos_num) const = 0;
+  virtual void get_related_bins_factorised(std::vector<AxTangPosNumbers>&,
+                                           const Bin& b,
+                                           const int min_axial_pos_num,
+                                           const int max_axial_pos_num,
+                                           const int min_tangential_pos_num,
+                                           const int max_tangential_pos_num) const = 0;
 
   //! returns the number of bins related to 'b'
-  virtual int
-    num_related_bins(const Bin& b) const;
+  virtual int num_related_bins(const Bin& b) const;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin and the corresponding symmetry operation
-  
-  sets 'b' to the corresponding 'basic' bin and returns the symmetry 
+
+  sets 'b' to the corresponding 'basic' bin and returns the symmetry
   transformation from 'basic' to 'b'.
   */
-  virtual unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_bin(Bin&) const = 0;
+  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_bin(Bin&) const = 0;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin
-  
+
   sets 'b' to the corresponding 'basic' bin and returns true if
   'b' is changed (i.e. it was NOT a basic bin).
   */
-  virtual bool
-    find_basic_bin(Bin& b) const;
+  virtual bool find_basic_bin(Bin& b) const;
 
-  /*! \brief test if a bin is 'basic' 
+  /*! \brief test if a bin is 'basic'
 
   The default implementation uses find_basic_bin
   */
-  virtual bool
-    is_basic(const Bin& v_s) const;
+  virtual bool is_basic(const Bin& v_s) const;
 
   //! default implementation in terms of find_symmetry_operation_from_basic_bin
-  virtual unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
-
+  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
 protected:
   //! Member storing the info needed by get_related_bins() et al
   const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
-  bool blindly_equals(const root_type * const) const override = 0;
+  bool blindly_equals(const root_type* const) const override = 0;
 };
 
 END_NAMESPACE_STIR
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.inl"
 
-
 #endif
-

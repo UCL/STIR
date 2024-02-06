@@ -26,7 +26,8 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 
 /*!
   \ingroup IO
@@ -36,11 +37,11 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   provides an interface to that code. We translate the STIR data to ITK and then use its
   writing code. This translation is currently incomplete however.
 
-  ITK chooses the file format based on the extension of the filename. This is currently 
+  ITK chooses the file format based on the extension of the filename. This is currently
   different from STIR. Therefore, this class can be used to write Nifti (.nii), Teem (.nhdr),
   MetaIO (.mhdr), etc.
 
-  In this class, we provide a default extension that will be 
+  In this class, we provide a default extension that will be
   appended if a filename without extension is used.
 
   \par Parameters
@@ -51,47 +52,36 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   \endverbatim
 
  */
-class ITKOutputFileFormat : 
-  public RegisteredParsingObject<
-        ITKOutputFileFormat,
-        OutputFileFormat<DiscretisedDensity<3,float> >,
-        OutputFileFormat<DiscretisedDensity<3,float> > >
+class ITKOutputFileFormat : public RegisteredParsingObject<ITKOutputFileFormat,
+                                                           OutputFileFormat<DiscretisedDensity<3, float>>,
+                                                           OutputFileFormat<DiscretisedDensity<3, float>>>
 {
- private:
-  typedef 
-     RegisteredParsingObject<
-        ITKOutputFileFormat,
-        OutputFileFormat<DiscretisedDensity<3,float> >,
-        OutputFileFormat<DiscretisedDensity<3,float> > >
-    base_type;
-public :
-    //! Name which will be used when parsing an OutputFileFormat object
-  static const char * const registered_name;
+private:
+  typedef RegisteredParsingObject<ITKOutputFileFormat,
+                                  OutputFileFormat<DiscretisedDensity<3, float>>,
+                                  OutputFileFormat<DiscretisedDensity<3, float>>>
+      base_type;
+
+public:
+  //! Name which will be used when parsing an OutputFileFormat object
+  static const char* const registered_name;
 
   //! default extension to use if none present
   /*! This will determine the file format used if passing a filename without extension. */
   std::string default_extension;
 
-  ITKOutputFileFormat(const NumericType& = NumericType::FLOAT, 
-                   const ByteOrder& = ByteOrder::native);
-
+  ITKOutputFileFormat(const NumericType& = NumericType::FLOAT, const ByteOrder& = ByteOrder::native);
 
   ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
- protected:
-  Succeeded  
-    actual_write_to_file(std::string& output_filename,
-		  const DiscretisedDensity<3,float>& density) const override;
 
+protected:
+  Succeeded actual_write_to_file(std::string& output_filename, const DiscretisedDensity<3, float>& density) const override;
 
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #endif

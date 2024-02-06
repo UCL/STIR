@@ -19,7 +19,6 @@
   \author Kris Thielemans
 */
 
-
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/Succeeded.h"
 #include "stir/warning.h"
@@ -27,33 +26,29 @@
 
 START_NAMESPACE_STIR
 
-void 
+void
 BinNormalisationWithCalibration::set_defaults()
 {
   base_type::set_defaults();
-  
+
   this->calibration_factor = 1;
 }
 
-void 
-BinNormalisationWithCalibration::
-initialise_keymap()
+void
+BinNormalisationWithCalibration::initialise_keymap()
 {
-  base_type::initialise_keymap();/*
-  this->parser.add_key("calibration_factor", &this->calibration_factor);
-  this->parser.add_key("branching_ratio", &this->branching_ratio);*/
+  base_type::initialise_keymap(); /*
+   this->parser.add_key("calibration_factor", &this->calibration_factor);
+   this->parser.add_key("branching_ratio", &this->branching_ratio);*/
 }
 
-bool 
-BinNormalisationWithCalibration::
-post_processing()
+bool
+BinNormalisationWithCalibration::post_processing()
 {
   return base_type::post_processing();
 }
 
-
-BinNormalisationWithCalibration::
-BinNormalisationWithCalibration()
+BinNormalisationWithCalibration::BinNormalisationWithCalibration()
 {
   set_defaults();
 }
@@ -65,14 +60,12 @@ BinNormalisationWithCalibration::set_up(const shared_ptr<const ExamInfo>& exam_i
   if (this->calibration_factor == 1.F)
     warning("BinNormalisationWithCalibration:: calibration factor not set. I will use 1, but your data will not be calibrated.");
 
-  this->_calib_decay_branching_ratio = this->calibration_factor* this->get_branching_ratio(); //TODO: multiply by decay
+  this->_calib_decay_branching_ratio = this->calibration_factor * this->get_branching_ratio(); // TODO: multiply by decay
   return base_type::set_up(exam_info_sptr, proj_data_info_sptr);
 }
 
-
-float 
-BinNormalisationWithCalibration::
-get_calib_decay_branching_ratio_factor(const Bin&) const
+float
+BinNormalisationWithCalibration::get_calib_decay_branching_ratio_factor(const Bin&) const
 {
   if (!this->_already_set_up)
     error("BinNormalisationWithCalibration needs to be set-up first");
@@ -80,38 +73,34 @@ get_calib_decay_branching_ratio_factor(const Bin&) const
 }
 
 float
-BinNormalisationWithCalibration::
-get_calibration_factor() const {
-   return this->calibration_factor;
+BinNormalisationWithCalibration::get_calibration_factor() const
+{
+  return this->calibration_factor;
 }
 
 void
-BinNormalisationWithCalibration::
-set_calibration_factor(const float calib)
+BinNormalisationWithCalibration::set_calibration_factor(const float calib)
 {
   this->_already_set_up = false;
-  this->calibration_factor=calib;
+  this->calibration_factor = calib;
 }
 
 float
-BinNormalisationWithCalibration::
-get_branching_ratio() const
+BinNormalisationWithCalibration::get_branching_ratio() const
 {
   float branching_ratio = this->radionuclide.get_branching_ratio(false); // get value without check
-  if (branching_ratio <=0)
+  if (branching_ratio <= 0)
     {
       warning("BinNormalisationWithCalibration: radionuclide branching_ratio not known. I will use 1.");
       return 1.F;
     }
-   return branching_ratio;
+  return branching_ratio;
 }
-
 
 void
-BinNormalisationWithCalibration::
-set_radionuclide(const Radionuclide &rnuclide){
-    this->radionuclide=rnuclide;
+BinNormalisationWithCalibration::set_radionuclide(const Radionuclide& rnuclide)
+{
+  this->radionuclide = rnuclide;
 }
-
 
 END_NAMESPACE_STIR

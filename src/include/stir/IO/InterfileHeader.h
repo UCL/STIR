@@ -8,11 +8,11 @@
 
     See STIR/LICENSE.txt for details
 */
-/*! 
+/*!
   \file
   \ingroup InterfileIO
   \brief  This file declares the classes stir::InterfileHeader,
-          stir::InterfileImageHeader, stir::InterfilePDFSHeader  
+          stir::InterfileImageHeader, stir::InterfilePDFSHeader
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -23,7 +23,6 @@
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
 */
-
 
 #ifndef __stir_INTERFILEHEADER_H__
 #define __stir_INTERFILEHEADER_H__
@@ -40,7 +39,7 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a minimal class for Interfile keywords (and parsing) common to 
+  \brief a minimal class for Interfile keywords (and parsing) common to
   all types of data
 
   This class is only used to select which version of Interfile to use.
@@ -48,43 +47,43 @@ class ProjDataInfo;
   \ingroup InterfileIO
   */
 class MinimalInterfileHeader : public KeyParser
-  {
-  public:
-    //! A value that can be used to signify that a variable has not been set during parsing.
-    static const double double_value_not_set;
-    MinimalInterfileHeader();
+{
+public:
+  //! A value that can be used to signify that a variable has not been set during parsing.
+  static const double double_value_not_set;
+  MinimalInterfileHeader();
 
-    ~MinimalInterfileHeader() override {}
-  protected:
-    shared_ptr<ExamInfo> exam_info_sptr;
+  ~MinimalInterfileHeader() override {}
 
-  private:
-    std::string imaging_modality_as_string;
-    void set_imaging_modality();
-  
-  public:
-    //! Get a shared pointer to the exam information
-    shared_ptr<const ExamInfo>
-      get_exam_info_sptr() const;
-    //! Get the exam information
-    const ExamInfo&
-      get_exam_info() const;
+protected:
+  shared_ptr<ExamInfo> exam_info_sptr;
 
-    std::string version_of_keys;
+private:
+  std::string imaging_modality_as_string;
+  void set_imaging_modality();
 
-    std::string siemens_mi_version;
-  protected:
-    //! will be called when the version keyword is found
-    /*! This callback function provides an opportunity to change the keymap depending on the version
-        (which can be obtained from \c version_of_keys).
+public:
+  //! Get a shared pointer to the exam information
+  shared_ptr<const ExamInfo> get_exam_info_sptr() const;
+  //! Get the exam information
+  const ExamInfo& get_exam_info() const;
 
-        Just calls \c set_variable().
+  std::string version_of_keys;
 
-        It is expected that if this is function is re-implemented in a derived class, it calls the
-        base-class version.
-    */
-    virtual void set_version_specific_keys();
-  };
+  std::string siemens_mi_version;
+
+protected:
+  //! will be called when the version keyword is found
+  /*! This callback function provides an opportunity to change the keymap depending on the version
+      (which can be obtained from \c version_of_keys).
+
+      Just calls \c set_variable().
+
+      It is expected that if this is function is re-implemented in a derived class, it calls the
+      base-class version.
+  */
+  virtual void set_version_specific_keys();
+};
 
 /*!
 \brief a class for Interfile keywords (and parsing) common to
@@ -100,10 +99,9 @@ public:
   bool post_processing() override;
 
 private:
-
   // TODO the next few ones should be made static members
   // Lists of possible values for some keywords
-  ASCIIlist_type number_format_values;	
+  ASCIIlist_type number_format_values;
   ASCIIlist_type byte_order_values;
   ASCIIlist_type patient_orientation_values;
   ASCIIlist_type patient_rotation_values;
@@ -116,8 +114,9 @@ private:
   int patient_rotation_index;
 
   void set_type_of_data();
+
 protected:
-  int			num_time_frames;
+  int num_time_frames;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
   int bytes_per_pixel;
@@ -129,13 +128,12 @@ protected:
   std::vector<float> radionuclide_branching_ratio;
 
   float calibration_factor;
-private:
 
+private:
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;
 
-  
- protected:
+protected:
   //! Overload with specifics for STIR3.0 for backwards compatibility
   void set_version_specific_keys() override;
   virtual void read_matrix_info();
@@ -147,12 +145,11 @@ private:
   */
   virtual int get_num_datasets() const { return num_time_frames; }
 
-public :
-
+public:
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
 
-  ASCIIlist_type PET_data_type_values;	
+  ASCIIlist_type PET_data_type_values;
   int PET_data_type_index;
 
   ASCIIlist_type process_status_values;
@@ -165,16 +162,16 @@ public :
   DateTimeStrings study_date_time;
 
   //! This will be determined from number_format_index and bytes_per_pixel
-  NumericType		type_of_numbers;
+  NumericType type_of_numbers;
   //! This will be determined from byte_order_index, or just keep its default value;
   ByteOrder file_byte_order;
-	
-  int			num_dimensions;
-  int			num_energy_windows;
-  std::vector<std::string>	matrix_labels;
-  std::vector<std::vector<int> > matrix_size; 
-  std::vector<float>	pixel_sizes;
-  std::vector<std::vector<double> > image_scaling_factors;
+
+  int num_dimensions;
+  int num_energy_windows;
+  std::vector<std::string> matrix_labels;
+  std::vector<std::vector<int>> matrix_size;
+  std::vector<float> pixel_sizes;
+  std::vector<std::vector<double>> image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
 
   // Acquisition parameters
@@ -188,8 +185,8 @@ public :
   //! \details High energy window limit
   std::vector<float> upper_en_window_thresholds;
   // end acquisition parameters
-  
- protected:
+
+protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
 
@@ -197,20 +194,18 @@ public :
   float bed_position_vertical;
 };
 
-
 /*!
   \brief a class for Interfile keywords (and parsing) specific to images
   \ingroup InterfileIO
   */
 class InterfileImageHeader : public InterfileHeader
 {
- private:
+private:
   typedef InterfileHeader base_type;
-    
 
 public:
   InterfileImageHeader();
-  std::vector<double>	first_pixel_offsets;
+  std::vector<double> first_pixel_offsets;
   int num_image_data_types;
   std::vector<std::string> index_nesting_level;
   std::vector<std::string> image_data_type_description;
@@ -225,12 +220,11 @@ protected:
   //! \brief Get the number of datasets
   //! \details no. time frames * no. data types (kinetic params) * no. gates
   //! Currently, this is only implemented for either multiple time frames OR multiple data types (gates not considered).
-  int get_num_datasets() const override { return num_time_frames*num_image_data_types; }
-
+  int get_num_datasets() const override { return num_time_frames * num_image_data_types; }
 };
 
 /*!
-  \brief a class for Interfile keywords (and parsing) specific to 
+  \brief a class for Interfile keywords (and parsing) specific to
   projection data (i.e. ProjDataFromStream)
   \ingroup InterfileIO
   */
@@ -240,20 +234,18 @@ public:
   InterfilePDFSHeader();
 
 protected:
-
   //! Returns false if OK, true if not.
   bool post_processing() override;
 
 public:
- 
   std::vector<int> segment_sequence;
-  std::vector<int> min_ring_difference; 
-  std::vector<int> max_ring_difference; 
+  std::vector<int> min_ring_difference;
+  std::vector<int> max_ring_difference;
   std::vector<int> num_rings_per_segment;
   std::vector<int> timing_poss_sequence;
 
   std::vector<std::string> applied_corrections;
- 
+
   // derived values
   int num_timing_poss;
   int num_segments;
@@ -270,7 +262,7 @@ private:
   // TODO parsing should be moved to Scanner
   int num_rings;
   int num_detectors_per_ring;
-  
+
   double transaxial_FOV_diameter_in_cm;
   double inner_ring_diameter_in_cm;
   double average_depth_of_interaction_in_cm;
@@ -280,7 +272,6 @@ private:
   double view_offset_in_degrees;
   int max_num_non_arccorrected_bins;
   int default_num_arccorrected_bins;
-
 
   int num_axial_blocks_per_bucket;
   int num_transaxial_blocks_per_bucket;
@@ -300,7 +291,7 @@ private:
   float timing_resolution;
 
   int tof_mash_factor;
-  
+
   //! \name new variables for block geometry
   //@{
   std::string scanner_geometry;
@@ -309,7 +300,7 @@ private:
   float axial_distance_between_blocks_in_cm;
   float transaxial_distance_between_blocks_in_cm;
   //@}
-  
+
   //! \name new variables for generic geometry
   //@{
   std::string crystal_map;

@@ -22,12 +22,12 @@
 #ifndef __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
 #define __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
 
-
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class VectorWithOffset;
+template <typename elemT>
+class VectorWithOffset;
 
 /*!
   \ingroup Array
@@ -35,46 +35,38 @@ template <typename elemT> class VectorWithOffset;
 
   Convolution is non-periodic:
 
-  \f[ out_i = \sum_j kernel_j in_{i+j} \f] 
+  \f[ out_i = \sum_j kernel_j in_{i+j} \f]
 
   Elements of the input array that are outside its
-  index range are considered to be 0.   
+  index range are considered to be 0.
 
-  \warning 2 argument operator() currently requires that out_array and in_array 
+  \warning 2 argument operator() currently requires that out_array and in_array
   have the same index range
   */
 template <typename elemT>
-class ArrayFilter1DUsingConvolutionSymmetricKernel : 
-  public ArrayFunctionObject_2ArgumentImplementation<1,elemT>
+class ArrayFilter1DUsingConvolutionSymmetricKernel : public ArrayFunctionObject_2ArgumentImplementation<1, elemT>
 {
 public:
-
   //! Construct the filter given the kernel coefficients
-  /*! 
+  /*!
     Only one half of the kernel coefficients has to be passed. The implementation
-    uses a kernel whose coefficients are given by 
+    uses a kernel whose coefficients are given by
     \code kernel[i] == filter_kernel[abs(i)] \endcode
 
-    \warning filter_kernel's indices must start from 0 
+    \warning filter_kernel's indices must start from 0
   */
-  ArrayFilter1DUsingConvolutionSymmetricKernel(const VectorWithOffset< elemT>& filter_kernel);
+  ArrayFilter1DUsingConvolutionSymmetricKernel(const VectorWithOffset<elemT>& filter_kernel);
   //! checks if the kernel corresponds to a trivial filter operation
-  /*! 
+  /*!
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
   bool is_trivial() const override;
 
 private:
-  VectorWithOffset< elemT> filter_coefficients;
-  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const override;
-
+  VectorWithOffset<elemT> filter_coefficients;
+  void do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const override;
 };
-
-
 
 END_NAMESPACE_STIR
 
-
-#endif //ArrayFilter1DUsingConvolutionSymmetricKernel
-
-
+#endif // ArrayFilter1DUsingConvolutionSymmetricKernel

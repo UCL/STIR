@@ -6,20 +6,20 @@
   \brief A simple program that backprojects some projection data.
 
   It illustrates
-	- basic interaction with the user,
-	- reading of images and projection data
-	- construction of a specified type of back-projector,
-	- how to use back-project all projection data
-	- output of images
+        - basic interaction with the user,
+        - reading of images and projection data
+        - construction of a specified type of back-projector,
+        - how to use back-project all projection data
+        - output of images
 
   See README.txt in the directory where this file is located.
 
-  \author Kris Thielemans      
+  \author Kris Thielemans
 */
 /*
     Copyright (C) 2004- 2011, Hammersmith Imanet Ltd
 
-    This software is distributed under the terms 
+    This software is distributed under the terms
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
@@ -35,25 +35,21 @@
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 
-int main()
+int
+main()
 {
   using namespace stir;
- 
-  /////////////// input sinogram
-  const std::string input_filename =
-    ask_filename_with_extension("Input file",".hs");
 
-  shared_ptr<ProjData> 
-    proj_data_sptr(ProjData::read_from_file(input_filename));
-  shared_ptr<ProjDataInfo> 
-    proj_data_info_sptr(proj_data_sptr->get_proj_data_info_sptr()->clone());
+  /////////////// input sinogram
+  const std::string input_filename = ask_filename_with_extension("Input file", ".hs");
+
+  shared_ptr<ProjData> proj_data_sptr(ProjData::read_from_file(input_filename));
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(proj_data_sptr->get_proj_data_info_sptr()->clone());
 
   /////////////// template image (for sizes etc)
-  const std::string template_filename =
-    ask_filename_with_extension("Template image file",".hv");
+  const std::string template_filename = ask_filename_with_extension("Template image file", ".hv");
 
-  shared_ptr<DiscretisedDensity<3,float> > 
-    density_sptr(read_from_file<DiscretisedDensity<3,float> >(template_filename));
+  shared_ptr<DiscretisedDensity<3, float>> density_sptr(read_from_file<DiscretisedDensity<3, float>>(template_filename));
 
   density_sptr->fill(0);
 

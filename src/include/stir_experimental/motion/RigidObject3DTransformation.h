@@ -16,7 +16,6 @@
 #ifndef __stir_motion_RigidObject3DTransformation_H__
 #define __stir_motion_RigidObject3DTransformation_H__
 
-
 #include "stir_experimental/motion/ObjectTransformation.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir_experimental/Quaternion.h"
@@ -35,11 +34,11 @@ class Succeeded;
 
   Supported transformations include rotations and translations. Rotations are
   encoded using quaternions. The convention used is described in<br>
-  B.K. Horn, <i>Closed-form solution of absolute orientation using 
+  B.K. Horn, <i>Closed-form solution of absolute orientation using
   unit quaternions</i>,
   J. Opt. Soc. Am. A Vol.4 No. 6, (1987) p.629.
 
-  \warning STIR uses a left-handed coordinate-system. 
+  \warning STIR uses a left-handed coordinate-system.
 
   The transformation that is applied is as follows
   \f[ r' = \mathrm{conj}(q)(r-t)q \f]
@@ -63,15 +62,11 @@ class Succeeded;
   \todo define Euler angles (the code is derived from the Polaris manual)
 */
 class RigidObject3DTransformation
-  : 
-  public
-  RegisteredParsingObject<RigidObject3DTransformation,
-                          ObjectTransformation<3,float>,
-                          ObjectTransformation<3,float> >
+    : public RegisteredParsingObject<RigidObject3DTransformation, ObjectTransformation<3, float>, ObjectTransformation<3, float>>
 {
 public:
-  static const char * const registered_name;
-  /*! 
+  static const char* const registered_name;
+  /*!
      \brief Find the rigid transformation that gives the closest match between 2 sets of points.
 
      Minimises the Mean Square Error, i.e. the sum of
@@ -80,7 +75,7 @@ public:
      \endcode
 
      The implementation uses Horn's algorithm.
- 
+
      Horn's method needs to compute the maximum eigenvector of a matrix,
      which is done here using the Power method
      (see max_eigenvector_using_power_method()).
@@ -90,35 +85,32 @@ public:
      choice would correspond to another eigenvector of the matrix (giving a very bad match).
   */
   template <class Iter1T, class Iter2T>
-    static
-    Succeeded
-    find_closest_transformation(RigidObject3DTransformation& result,
-				Iter1T start_orig_points,
-				Iter1T end_orig_points,
-				Iter2T start_transformed_points,
-				const Quaternion<float>& initial_rotation = Quaternion<float>(1.F,0.F,0.F,0.F));
+  static Succeeded find_closest_transformation(RigidObject3DTransformation& result,
+                                               Iter1T start_orig_points,
+                                               Iter1T end_orig_points,
+                                               Iter2T start_transformed_points,
+                                               const Quaternion<float>& initial_rotation = Quaternion<float>(1.F, 0.F, 0.F, 0.F));
 
   /*!
     \brief Compute Root Mean Square Error for 2 sets of points
   */
   template <class Iter1T, class Iter2T>
-    static  double
-    RMSE(const RigidObject3DTransformation& transformation,
-	 Iter1T start_orig_points,
-	 Iter1T end_orig_points,
-	 Iter2T start_transformed_points);
+  static double RMSE(const RigidObject3DTransformation& transformation,
+                     Iter1T start_orig_points,
+                     Iter1T end_orig_points,
+                     Iter2T start_transformed_points);
 
-  RigidObject3DTransformation ();
+  RigidObject3DTransformation();
 
   //! Constructor taking quaternion and translation info
   /*! \see RigidObject3DTransformation class documentation for conventions */
-  RigidObject3DTransformation (const Quaternion<float>& quat, const CartesianCoordinate3D<float>& translation);
-  
+  RigidObject3DTransformation(const Quaternion<float>& quat, const CartesianCoordinate3D<float>& translation);
+
   //! Compute the inverse transformation
   RigidObject3DTransformation inverse() const;
   //! Get quaternion
   Quaternion<float> get_quaternion() const;
-  
+
   //! Get translation
   CartesianCoordinate3D<float> get_translation() const;
 
@@ -130,25 +122,25 @@ public:
   Succeeded set_euler_angles();
 #endif
 
-  //! Transform point 
+  //! Transform point
   // can't return CartesianCoordinate3D<float> anymore because virtual function
-  
-    BasicCoordinate<3,float>
-    transform_point(const BasicCoordinate<3,float>& point) const override;
+
+  BasicCoordinate<3, float> transform_point(const BasicCoordinate<3, float>& point) const override;
 
   //! Computes the jacobian for the transformation (which is always 1)
-  float jacobian(const BasicCoordinate<3,float>& point) const override
-    { return 1; }
+  float jacobian(const BasicCoordinate<3, float>& point) const override
+  {
+    return 1;
+  }
 
   //! Transform bin from some projection data
   /*!  Finds 'closest' (in some sense) bin to the transformed LOR.
 
-     if \c NEW_ROT is not \c \#defined at compilation time, 
+     if \c NEW_ROT is not \c \#defined at compilation time,
     it will throw an exception when arc-corrected data is used.*/
-  void transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
-	             const ProjDataInfo& in_proj_data_info) const;
+  void transform_bin(Bin& bin, const ProjDataInfo& out_proj_data_info, const ProjDataInfo& in_proj_data_info) const;
   //! Get relative transformation (not implemented at present)
-  void get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference);   
+  void get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference);
 #if 0  
   //! \name conversion to other conventions for rotations
   /*! \warning Currently disabled Code probably only works when FIRSTROT is defined.
@@ -166,24 +158,20 @@ public:
 private:
   Quaternion<float> quat;
   CartesianCoordinate3D<float> translation;
-  friend RigidObject3DTransformation compose ( const RigidObject3DTransformation& apply_last,
-					       const RigidObject3DTransformation& apply_first);
+  friend RigidObject3DTransformation compose(const RigidObject3DTransformation& apply_last,
+                                             const RigidObject3DTransformation& apply_first);
 };
 
 //! Output to (text) stream
 /*! \ingroup motion
     Will be written as \verbatim { quaternion, translation } \endverbatim
 */
-std::ostream&
-operator<<(std::ostream& out,
-	   const RigidObject3DTransformation& rigid_object_transformation);
+std::ostream& operator<<(std::ostream& out, const RigidObject3DTransformation& rigid_object_transformation);
 //! Input from (text) stream
 /*! \ingroup motion
     Should have format \verbatim { quaternion, translation } \endverbatim
 */
-std::istream&
-operator>>(std::istream& ,
-	   RigidObject3DTransformation& rigid_object_transformation);
+std::istream& operator>>(std::istream&, RigidObject3DTransformation& rigid_object_transformation);
 
 //! Composition of 2 transformations
 /*! \ingroup motion
@@ -199,9 +187,8 @@ operator>>(std::istream& ,
    \endcode
 */
 
-RigidObject3DTransformation 
-compose (const RigidObject3DTransformation& apply_last,
-	 const RigidObject3DTransformation& apply_first);
+RigidObject3DTransformation compose(const RigidObject3DTransformation& apply_last,
+                                    const RigidObject3DTransformation& apply_first);
 
 END_NAMESPACE_STIR
 

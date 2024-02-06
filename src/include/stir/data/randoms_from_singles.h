@@ -19,7 +19,6 @@
 
 #include "stir/common.h"
 
-
 START_NAMESPACE_STIR
 
 class ProjData;
@@ -68,7 +67,9 @@ class SinglesRates;
 
   \todo Dead-time is currently completely ignored.
 */
-void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
-                          float coincidence_time_window=-1.F, float radionuclide_halflife=-1.F);
+void randoms_from_singles(ProjData& proj_data,
+                          const SinglesRates& singles,
+                          float coincidence_time_window = -1.F,
+                          float radionuclide_halflife = -1.F);
 
 END_NAMESPACE_STIR

@@ -1,12 +1,12 @@
 #ifndef __TimedObject_H__
 #define __TimedObject_H__
 /*!
-  \file 
+  \file
   \ingroup buildblock
- 
+
   \brief declares the stir::TimedObject class
 
-  \author Kris Thielemans  
+  \author Kris Thielemans
   \author PARAPET project
 
 */
@@ -26,16 +26,15 @@
 START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
-  \brief base class for all objects which need timers. 
+  \brief base class for all objects which need timers.
   At the moment, there's only a CPU timer.
 
-  It is the responsibility of the derived class to start and 
+  It is the responsibility of the derived class to start and
   stop the timer.
 */
-class TimedObject 
+class TimedObject
 {
 public:
-
   //! reset all timers kept by this object
   inline void reset_timers();
 
@@ -58,17 +57,15 @@ public:
   inline double get_wall_clock_timer_value() const;
 
 private:
-
   //! A timer that measures CPU time.
   /*! Note: member is mutable such that it can be modified in a const function.
-  */
+   */
   mutable CPUTimer cpu_timer;
 
   //! A timer that measures wall clock time.
   /*! Note: member is mutable such that it can be modified in a const function.
-  */
+   */
   mutable HighResWallClockTimer wall_clock_timer;
-
 };
 
 END_NAMESPACE_STIR

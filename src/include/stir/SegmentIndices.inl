@@ -24,7 +24,8 @@
 START_NAMESPACE_STIR
 
 SegmentIndices::SegmentIndices(const int segment_num, const int timing_pos_num)
-  : _segment(segment_num), _timing_pos(timing_pos_num)
+    : _segment(segment_num),
+      _timing_pos(timing_pos_num)
 {}
 
 int

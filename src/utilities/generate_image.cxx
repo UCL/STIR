@@ -23,16 +23,18 @@
 /************************ main ************************/
 
 USING_NAMESPACE_STIR
-int main(int argc, char * argv[])
+int
+main(int argc, char* argv[])
 {
-  
-  if ( argc!=2) {
-    std::cerr << "Usage: " << argv[0] << " par_file\n";
-    exit(EXIT_FAILURE);
-  }
-  GenerateImage application(argc==2 ? argv[1] : 0);
+
+  if (argc != 2)
+    {
+      std::cerr << "Usage: " << argv[0] << " par_file\n";
+      exit(EXIT_FAILURE);
+    }
+  GenerateImage application(argc == 2 ? argv[1] : 0);
   Succeeded success = application.compute();
   application.save_image();
 
-  return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+  return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
