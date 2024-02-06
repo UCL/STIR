@@ -313,12 +313,14 @@ ArrayFilterTests::run_tests()
     Array<2, float> test_pos_offset(IndexRange2D(1, size1, 2, size2 + 1));
     // initialise to some arbitrary values
     {
-      Array<2, float>::full_iterator iter = test.begin_all();
-      /*for (int i=-100; iter != test.end_all(); ++i, ++iter)
-       *iter = 1;//i*i*2.F-i-100.F;*/
-      test[0][0] = 1;
+      auto iter = test.begin_all();
+      for (int i = -100; iter != test.end_all(); ++i, ++iter)
+        *iter = i * i * 2.F - i - 100.F;
+      test[0][0] = 1.F;
       std::copy(test.begin_all(), test.end_all(), test_neg_offset.begin_all());
       std::copy(test.begin_all(), test.end_all(), test_pos_offset.begin_all());
+      check_if_equal(test_neg_offset[-5][-10], 1.F);
+      check_if_equal(test_pos_offset[1][2], 1.F);
     }
     {
       const int kernel_half_length = 14;
