@@ -67,7 +67,6 @@ using std::cout;
 using std::endl;
 
 USING_NAMESPACE_STIR
-// USING_NAMESPACE_STD
 
 /******************* Declarations local functions *******************/
 

@@ -10,7 +10,7 @@
     <p>This version is 99% backwards compatible with STIR 5.x for the user (see below).
       Developers might need to make code changes as 
       detailed below. Note though that the <strong>locations of installed files have changed</strong>.
-      Developers of other software that uses STIR via CMake will need to adapt (see below).
+      Developers of other software that uses STIR via CMake will therefore need to adapt (see below).
     </p>
     <h2>Overall summary</h2>
     <p>
@@ -18,8 +18,8 @@
     </p>
 
 
-    <p>Of course, there is also the usual code-cleanup and 
-      improvements to the documentation.
+    <p>This version has a major code-cleanup related to removing old compiler work-arounds,
+      consistent use of <code>override</code> and white-space enforcement.
     </p>
 
     <p>Overall code management and assistance was Kris Thielemans (UCL and ASC). Other main contributors
@@ -33,7 +33,10 @@
 
     <h2>Patch release info</h2>
     <ul>
-      <li> 6.0.0 released ?/?/2024</li>
+      <li>
+        6.0.0 released 07/02/2024<br>
+        <a href="https://github.com/UCL/STIR/milestone/4">GitHub Milestone 6.0</a>
+      </li>
       <!--
       <li> 4.0.1 released 28/04/2020
         <ul>
@@ -72,6 +75,10 @@
     <h3>Bug fixes</h3>
     <ul>
       <li>
+        Interfile parsing no longer gets confused by the use of <tt>:</tt> in a keyword (e.g., used by Siemens
+        for dates).
+        <br>
+        <a href=https://github.com/UCL/STIR/pull/1267>PR #1267</a>
       </li>
     </ul>
 
@@ -216,9 +223,19 @@
         of non arc-corrected bins set for the scanner. If it is, an error is raised. You might therefore have to adapt your interfile header.
       </li>
       <li>
-        Write <code>STIR6.0</code> as Interfile key version to denote TOF changes.
-        This is currently ignored for parsing though.
+        Interfile header changes:
+        <ul>
+          <li>
+            Write <tt>STIR6.0</tt> as Interfile key <tt>version</tt> to denote TOF changes.
+            This is currently ignored for parsing though.
+          </li>
+          <li>
+            (PET) The <tt>effective central bin size (cm)</tt> keyword for projection data is now only used for arc-corrected data.
+            It is no longer written to the header for non-arccorrected data.
+          </li>
+        </ul>
       </li>
+      <li>
     </ul>
 
     <h3>Build system</h3>
@@ -239,12 +256,6 @@
     <h3>Known problems</h3>
     <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
 
-    <h3>Minor bug fixes</h3>
-    <ul>
-      <li>
-      </li>
-    </ul>
-
     <h3>Documentation changes</h3>
     <ul>
       <li>
@@ -259,29 +270,17 @@
       </li>
     </ul>
 
-    <h3>Test changes</h3>
-    <h4>recon_test_pack changes</h4>
-    <ul>
-      <li>
-        additional tests for TOF, expansion of some existing tests for TOF
-      </li>
-      <li>
-        updated version number and added some clarification to the README.txt
-      </li>
-    </ul>
-
-    <h4>C++ tests</h4>
-    <ul>
-      <li>
-        additional tests for TOF, expansion of some existing tests for TOF
-      </li>
-    </ul>
-
     <h2>New deprecations for future versions</h2>
     <ul>
       <li>
         CMake option <code>STIR_USE_BOOST_SHARED_PTR</code> will be removed. It probably no longer
         works anyway. Therefore <code>stir::shared_ptr</code> will always be <code>std::shared_ptr</code>.
+      </li>
+      <li>Direct X-windows display (corresponding to the CMake option `GRAPHICS=X`) will be removed. It is
+        very outdated and sometimes doesn't work.
+      </li>
+      <li>
+        remaining files for ECAT6 support will be removed.
       </li>
     </ul>
 
@@ -407,7 +406,6 @@
     </ul>
 
     <h3>Code clean-up</h3>
-
     <ul>
       <li>
         Clean-up of various work-arounds such as
@@ -416,6 +414,24 @@
       </li>
       <li>
         Consistently use <code>override</code> in derived classes, via <tt>clang-tidy --modernize-use-override</tt>.
+      </li>
+    </ul>
+
+    <h3>Test changes</h3>
+    <h4>recon_test_pack changes</h4>
+    <ul>
+      <li>
+        additional tests for TOF, expansion of some existing tests for TOF
+      </li>
+      <li>
+        updated version number and added some clarification to the README.txt
+      </li>
+    </ul>
+
+    <h4>C++ tests</h4>
+    <ul>
+      <li>
+        additional tests for TOF, expansion of some existing tests for TOF
       </li>
     </ul>
 </body>

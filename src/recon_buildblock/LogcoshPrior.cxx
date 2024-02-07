@@ -424,7 +424,6 @@ LogcoshPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian
   const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel[z][y].get_min_index() - x);
   const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel[z][y].get_max_index() - x);
 
-  elemT diagonal = 0;
   for (int dz = min_dz; dz <= max_dz; ++dz)
     for (int dy = min_dy; dy <= max_dy; ++dy)
       for (int dx = min_dx; dx <= max_dx; ++dx)

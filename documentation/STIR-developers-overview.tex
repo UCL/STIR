@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 5.2}}
+\textbf{\textit{version 6.0}}
 
 \end{center}
 
@@ -274,7 +274,7 @@ with \textit{rel\_time}, e.g. \textit{tracer\_injection\_rel\_time}.
 Pointers to an object called \textit{something\_ptr}. Currently there 
 is no naming distinction between shared pointers etc. This is 
 probably a bad idea. For new code, we recommend to use \textit{something\_sptr} 
-for shared pointers, and \textit{something\_aptr} for auto\_ptrs (see 
+for shared pointers, and \textit{something\_uptr} for unique\_ptrs (see 
 section \ref{sect:sharedptr}).
 \end{itemize}
 
@@ -314,7 +314,7 @@ To avoid unnecessary interdependencies between \textit{.h} files (and
 hence unnecessary rebuilds when modifying one \textit{.h} file), we 
 avoid including \textit{.h} files for 'supporting' classes as much 
 as possible. Instead, we only declare the classes needed, e.g. \textit{class 
-Bin;} instead of \textit{\#include stir/Bin.h.}
+Bin;} instead of \textit{\#include ``stir/Bin.h''.}
 
 
 
@@ -394,8 +394,8 @@ with info on the file and line number where the assertion failed.
 \subsection{C++ conventions}
 STIR uses C++-14 and is compatible with C++-20 to the best of our knowledge.
 For legacy reasons, we have some preprocessor 
-macros (see \textit{stir/common.h}) that were used isolate work-arounds for older 
-compilers. Ideally, all these \#ifdefs should disappear at a 
+macros (see \textit{stir/common.h}) to define the stir namespace (see below).
+These should disappear at a 
 later development stage of the library.
 
 We use \texttt{override} for virtual functions in derived classes. This is clearer,
@@ -524,7 +524,7 @@ pre-C++-11 and we do not use this smart pointer class too much, and
 generally use \texttt{shared\_ptr} instead. This is somewhat unfortunate 
 as these two smart pointers are generally quite different concepts. 
 
-\texttt{shared\_ptr} is a wrapper around the \texttt{std} (or boost\footnote{Boost smart pointer are probably no longer supported, and will no longer be from STIR 6.0.}) smart pointer class which 
+\texttt{shared\_ptr} is a wrapper around the \texttt{std} (or boost\footnote{Boost smart pointer are probably no longer supported, and will no longer be from STIR 6.1.}) smart pointer class which 
 is suitable when there are (potentially) more than one pointer 
 pointing to the same object. It keeps a reference count such 
 that the object is (only) deleted when the last shared pointer 
@@ -561,10 +561,10 @@ shared_ptr<ProjDataInfo> new_proj_data_info_sptr(proj_data_info_ptr->clone());
 
 We provide the convenience function \textit{stir::is\_null\_ptr()} 
 to test if a pointer is `null', i.e. does not point to anything. \textit{is\_null\_ptr} 
-works with ordinary pointers, shared\_ptrs and auto\_ptrs. Use 
+works with ordinary pointers, shared\_ptrs and unique\_ptrs. Use 
 it to avoid that your code depends on what type of (smart) pointer 
 you are using. Note however that since C++-11, it is more convenient to use the
-automatic converstion to \texttt{bool}.
+automatic conversion to \texttt{bool}.
 
 \subsection{Generic functionality of STIR classes}
 This is a (very incomplete) section describing some functionality that

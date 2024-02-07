@@ -1406,41 +1406,17 @@ InterfilePDFSHeader::post_processing()
                                                                     num_views,
                                                                     num_bins,
                                                                     tof_mash_factor));
-          if (effective_central_bin_size_in_cm > 0
-              && fabs(effective_central_bin_size_in_cm - data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.) > .01)
-            {
-              warning(boost::format("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-                                    "Value in header is %g while I expect %g from the inner ring radius etc\n"
-                                    "Ignoring value in header")
-                      % effective_central_bin_size_in_cm % (data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.));
-            }
         }
     }
   else if (scanner_geometry == "BlocksOnCylindrical") // if block geometry
     {
       data_info_sptr.reset(new ProjDataInfoBlocksOnCylindricalNoArcCorr(
           scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
-      if (effective_central_bin_size_in_cm > 0
-          && fabs(effective_central_bin_size_in_cm - data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.) > .01)
-        {
-          warning(boost::format("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-                                "Value in header is %g while I expect %g from the inner ring radius etc\n"
-                                "Ignoring value in header")
-                  % effective_central_bin_size_in_cm % (data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.));
-        }
     }
   else // if generic geometry
     {
       data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(
           scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
-      if (effective_central_bin_size_in_cm > 0
-          && fabs(effective_central_bin_size_in_cm - data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.) > .01)
-        {
-          warning(boost::format("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-                                "Value in header is %g while I expect %g from the inner ring radius etc\n"
-                                "Ignoring value in header")
-                  % effective_central_bin_size_in_cm % (data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.));
-        }
     }
   if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
     error(boost::format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data (%d), "

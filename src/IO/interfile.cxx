@@ -1325,9 +1325,11 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
 
       output_header << scanner.parameter_info();
 
-      output_header << "effective central bin size (cm) := " << proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.
-                    << endl;
-
+      if (dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(pdfs.get_proj_data_info_sptr()))
+        {
+          output_header << "effective central bin size (cm) := " << proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.
+                        << "\n";
+        }
     } // end of cylindrical scanner
   else
     {
@@ -1377,9 +1379,6 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
 
           output_header << scanner.parameter_info();
 
-          output_header << "effective central bin size (cm) := " << proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.
-                        << endl;
-
         }  // end of BlocksOnCylindrical scanner
       else // generic scanner
         {
@@ -1409,9 +1408,6 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
               const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
 
               output_header << scanner.parameter_info();
-
-              output_header << "effective central bin size (cm) := "
-                            << proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10. << endl;
 
             } // end generic scanner
           else if (!dynamic_pointer_cast<const ProjDataInfoSubsetByView>(pdfs.get_proj_data_info_sptr()))
