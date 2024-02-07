@@ -75,7 +75,7 @@ IOTests_ITKMulticomponent::run_tests()
     }
 }
 
-END_NAMESPACE_STD
+END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
