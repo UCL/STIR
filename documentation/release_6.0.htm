@@ -48,49 +48,60 @@
     <h2> Summary for end users (also to be read by developers)</h2>
 
     <h3>Changes breaking backwards compatibility from a user-perspective</h3>
-   <ul>
-     <li>
-       When parsing Interfile headers for projection data and the <tt>originating system</tt>
-       is not recognised, the previous version of STIR tried to guess the scanner based on the
-       number of views or rings. This was using very old scanners though, and could lead to
-       confusion. These guesses have now been removed.
-     </li>
-     <li>
-       (deprecated) support for the GE VOLPET format (an old format used by the GE Advance and Discover LS
-       sinograms when using "break-pointing") has been removed.
-     </li>
-     <li>
-       (deprecated) support for the AVW format via the (very old) AnalyzeAVW commercial library has been removed.
-     </li>
-     <li>Most installed files are now in versioned directories. The following shows the new and old locations
-       relative to <code>CMAKE_INSTALL_PREFIX</code>, where <tt>V.v</tt> indicates the major.minor version number, e.g. <tt>6.0</tt>:
-       <ul>
-         <li>documentation (including <tt>examples</tt> as subfolder): <tt>share/doc/STIR-V.v</tt> (was <tt>share/doc/stir-V.v</tt>)</li>
-         <li>JSON files with radionuclide database: <tt>share/STIR-V.v/config</tt> (was <tt>share/stir/config</tt>)</li>
-       </ul>
-       Developers also need to check the new location to use for <code>STIR_DIR</code> documented below.
-     </li>
-    </ul>
-
-    <h3>Bug fixes</h3>
+    <h4>General</h4>
     <ul>
       <li>
-        Interfile parsing no longer gets confused by the use of <tt>:</tt> in a keyword (e.g., used by Siemens
-        for dates).
-        <br>
-        <a href=https://github.com/UCL/STIR/pull/1267>PR #1267</a>
+        When parsing Interfile headers for projection data and the <tt>originating system</tt>
+        is not recognised, the previous version of STIR tried to guess the scanner based on the
+        number of views or rings. This was using very old scanners though, and could lead to
+        confusion. These guesses have now been removed.
+      </li>
+      <li>
+        (deprecated) support for the GE VOLPET format (an old format used by the GE Advance and Discover LS
+        sinograms when using "break-pointing") has been removed.
+      </li>
+      <li>
+       (deprecated) support for the AVW format via the (very old) AnalyzeAVW commercial library has been removed.
+      </li>
+      <li>
+        Most installed files are now in versioned directories. The following shows the new and old locations
+        relative to <code>CMAKE_INSTALL_PREFIX</code>, where <tt>V.v</tt> indicates the major.minor version number, e.g. <tt>6.0</tt>:
+        <ul>
+          <li>documentation (including <tt>examples</tt> as subfolder): <tt>share/doc/STIR-V.v</tt> (was <tt>share/doc/stir-V.v</tt>)</li>
+          <li>JSON files with radionuclide database: <tt>share/STIR-V.v/config</tt> (was <tt>share/stir/config</tt>)</li>
+        </ul>
+        Developers also need to check the new location to use for <code>STIR_DIR</code> documented below.
+      </li>
+      <li>
+        <code>ProjDataInfo::ask_parameters()</code> and therefore <code>create_projdata_template</code>
+        has changed:
+        <ol>
+          <li>If the scanner definition in STIR has TOF capabilities, it will ask for the TOF mashing factor.</li>
+          <li>The default for arc-correction has changed to <i>N</i>, i.e. <code>false</code>.</li>
+          <li>Default value for span is now 11 for Siemens and 2 for GE scanners.</li>
+          <li>The span=0 case (i.e. span-3 for segment 0, span=1 for oblique ones, previously erroneously
+            by STIR used for the GE Advance) is now removed. GE uses span=2.<br>
+            (Reading a "span=0" case is still supported)</li>
+        </ol>
+      </li>
+      <li>
+        Projection-data related classes have accessors with an optional <code>make_num_tangential_poss_odd</code> argument
+        (defaulting to <code>false</code>), which made the returned argument a different size.
+        This has been deprecated since version 5.0. Setting this argument to <code>true</code> will now raise an error.
       </li>
     </ul>
 
-    <h3>New functionality</h3>
-    <h4>General</h4>
+    <h4>Python (and MATLAB)</h4>
     <ul>
-      <li> Radionuclide database now has a datasource entry with the radionuclide decay table (<a href="http://www.lnhb.fr/accueil/donnees-nucleaires/donnees-nucleaires-tableau/">lnHB</a> ). This makes it traceable to standardised measures of branching ratios, half lives etc. The change is backward compatible and old format is still supported. However we encourage to use the new one, see  <a href="https://github.com/UCL/STIR/blob/master/src/config/radionuclide_info.json">src/config/radionuclide_info.json</a>. </li>
+      <li>renamed <code>FloatLOR</code> to <code>LOR</code>, and same for derived classes.</li>
     </ul>
+
+    <h3>New functionality</h3>
+    <h4>TOF related</h4>
     <ul>
       <li>
         <p>
-        TOF of course! This is mostly transparent, i.e. normally no changes are required
+        The TOF addition is mostly transparent, i.e. normally no changes are required
         to the reconstruction code etc. When using Interfile or ROOT files, certain new keywords
         are required, see <a href="https://github.com/UCL/STIR/blob/master/examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs">examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs</a>
         and <a href="https://github.com/UCL/STIR/blob/master/examples/samples/root_header.hroot">examples/samples/root_header.hroot</a>.
@@ -130,8 +141,11 @@
           </li>
         </ul>
       </li>
+    </ul>
+    <h4>non-TOF related</h4>
+    <ul>
       <li>
-        <ul>Interfile headers now use use the following keywords:
+        Interfile headers now use use the following keywords:
           <pre>
             number of radionuclides := 1
             radionuclide name[1] := ...
@@ -143,7 +157,7 @@
           neither versions are confirming to the (very old) Interfile 4.0 proposal.
       </li>
       <li>
-        Radionuclide information is read from Interfile and GE HDF5 headers.
+        Radionuclide information is read from Interfile, Siemens and GE HDF5 headers.
         If the radionuclide name is recognised to the STIR database, its values for half-life etc
         are used, as opposed to what was recorded in the file (if anything).
       </li>
@@ -155,6 +169,9 @@
       <li>
         <tt>stir_list_registries</tt> is a new utility that list possible values of various
         registries, which can be useful to know what to use in a <tt>.par</tt> file.
+      </li>
+      <li>
+        The radionuclide database now has a datasource entry with the radionuclide decay table (<a href="http://www.lnhb.fr/accueil/donnees-nucleaires/donnees-nucleaires-tableau/">lnHB</a> ). This makes it traceable to standardised measures of branching ratios, half lives etc. The change is backward compatible and old format is still supported. However we encourage to use the new one, see  <a href="https://github.com/UCL/STIR/blob/rel_6.0.0/src/config/radionuclide_info.json">src/config/radionuclide_info.json</a>.
       </li>
     </ul>
 
@@ -188,32 +205,6 @@
     </ul>
 
 
-    <h3>Changed functionality breaking backwards incompatibility</h3>
-    <h4>General</h4>
-    <ul>
-      <li>
-        <code>ProjDataInfo::ask_parameters()</code> and therefore <code>create_projdata_template</code>
-        has changed:
-        <ol>
-          <li>If the scanner definition in STIR has TOF capabilities, it will ask for the TOF mashing factor.</li>
-          <li>The default for arc-correction has changed to <i>N</i>, i.e. <code>false</code>.</li>
-          <li>Default value for span is now 11 for Siemens and 2 for GE scanners.</li>
-          <li>The span=0 case (i.e. span-3 for segment 0, span=1 for oblique ones, erroneously
-            by STIR used for the GE Advance) is no deprecated. GE uses span=2.<br>
-            (Reading a "span=0" case is still supported)</li>
-        </ol>
-      </li>
-      <li>
-        Projection-data related classes have accessors with an optional <code>make_num_tangential_poss_odd</code> argument
-        (defaulting to <code>false</code>), which made the returned argument a different size.
-        This has been deprecated since version 5.0. Setting this argument to <code>true</code> will now raise an error.
-      </li>
-    </ul>
-
-    <h4>Python (and MATLAB)</h4>
-    <ul>
-      <li>renamed <code>FloatLOR</code> to <code>LOR</code>, and same for derived classes.</li>
-    </ul>
 
 
     <h3>Changed functionality</h3>
@@ -235,7 +226,6 @@
           </li>
         </ul>
       </li>
-      <li>
     </ul>
 
     <h3>Build system</h3>
@@ -250,6 +240,16 @@
         it automatically moves along with <code>CMAKE_INSTALL_PREFIX</code>.
         However, if you are upgrading an existing STIR build, you might have
         to delete the cached variable, or it will point to the old location.
+      </li>
+    </ul>
+
+    <h3>Bug fixes</h3>
+    <ul>
+      <li>
+        Interfile parsing no longer gets confused by the use of <tt>:</tt> in a keyword (e.g., used by Siemens
+        for dates).
+        <br>
+        <a href=https://github.com/UCL/STIR/pull/1267>PR #1267</a>
       </li>
     </ul>
 
@@ -343,7 +343,8 @@
             when setting <code>CMAKE_PREFIX_PATH</code> to what was used for <code>CMAKE_INSTALL_PREFIX</code> when
             installing STIR (indicated as <tt>STIR_CMAKE_INSTALL_PREFIX</tt> above). Moreover, if you use the same
             <code>CMAKE_INSTALL_PREFIX</code> for your project as for STIR, you shouldn't need to set <code>STIR_DIR</code> nor <code>CMAKE_PREFIX_PATH</code>.
-         </li>
+          </li>
+        </ul>
     </ul>
 
     <h3>New functionality</h3>
