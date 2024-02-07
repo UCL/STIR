@@ -44,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 5.2}}
+ Version 6.0}}
 \end{center}
 
 \end{spacing}
@@ -1466,6 +1466,10 @@ sensitivities. It should provide a pattern \'{a} la \texttt{printf}\footnote{In 
 \texttt{boost::format} is used, so the pattern can be more flexible.} to allow
 constructing different filenames for each subset.
 
+\item[use time-of-flight sensitivities]
+Defaults to 0, i.e. off. By default, the sensitivity calculation will be non-TOF. However,
+this fails when using a TOF proj-data, as used by Siemens for the Vision 600 etc. In this case,
+you will need to set this parameter to 1.
 
 \item[Projector pair type]
 Specifies the back/forward projector pair to be used in the reconstruction. 
@@ -5714,25 +5718,28 @@ See the doxygen documentation for an overview of the directory tree with brief d
 \label{sec:ExternalProjectC++}}
 STIR exports its CMake settings. Therefore, an external project can do
 \begin{verbatim}
-find_package(STIR 5.2 CONFIG)
+find_package(STIR 6.0 REQUIRED CONFIG)
 add_library(my_lib file1.cxx file2.cxx)
 # my_lib uses STIR functionality
 target_link_libraries(my_lib PUBLIC ${STIR_LIBRARIES})
 add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
-target_link_libraries(my_exe PUBLIC my_lib)
+target_link_libraries(my_exe PUBLIC my_lib))
 \end{verbatim}
 In addition, if your CMake is older than 3.12, you need to add
 \begin{verbatim}
 include_directories("${STIR_INCLUDE_DIRS}")
 \end{verbatim}
-to your CMake file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
-For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+to your CMakeLists.txt file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+(For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
 a list of compiled files).
+
+A fully working example is provided in the \texttt{examples/C++} folder, see also the
+\url{https://github.com/UCL/STIR/tree/master/examples/C\%2B\%2B/using_installed_STIR}{using\_installed\_STIR folder on GitHub}.
 
 Note that if CMake did not find the STIR files, you can point it to where they are installed.
 For example, if you installed STIR with
 \texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
-\texttt{STIR\_DIR=\$HOME/install/lib/cmake}.
+\texttt{CMAKE\_PREFIX\_PATH=\$HOME/install} or \texttt{STIR\_DIR=\$HOME/install/lib/cmake/STIR-6.0}.
 \footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
 
 \section{
