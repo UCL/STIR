@@ -223,9 +223,19 @@
         of non arc-corrected bins set for the scanner. If it is, an error is raised. You might therefore have to adapt your interfile header.
       </li>
       <li>
-        Write <tt>STIR6.0</tt> as Interfile key <tt>version</tt> to denote TOF changes.
-        This is currently ignored for parsing though.
+        Interfile header changes:
+        <ul>
+          <li>
+            Write <tt>STIR6.0</tt> as Interfile key <tt>version</tt> to denote TOF changes.
+            This is currently ignored for parsing though.
+          </li>
+          <li>
+            (PET) The <tt>effective central bin size (cm)</tt> keyword for projection data is now only used for arc-corrected data.
+            It is no longer written to the header for non-arccorrected data.
+          </li>
+        </ul>
       </li>
+      <li>
     </ul>
 
     <h3>Build system</h3>
