@@ -39,6 +39,7 @@ limitations under the License.
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -63,12 +64,11 @@ GeometryBlocksOnCylindrical::check_scanner_configuration(const Scanner& scanner)
     int num_axial_crystals_per_bucket = scanner.get_num_axial_crystals_per_block() * scanner.get_num_axial_blocks_per_bucket();
     if (scanner.get_num_rings() % (num_axial_crystals_per_bucket) != 0)
       {
-        error("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the num_axial_crystals_per_bucket "
-              "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)",
-              scanner.get_num_rings(),
-              num_axial_crystals_per_bucket,
-              scanner.get_num_axial_crystals_per_block(),
-              scanner.get_num_axial_blocks_per_bucket());
+        error(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
+                            "num_axial_crystals_per_bucket "
+                            "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
+              % scanner.get_num_rings() % num_axial_crystals_per_bucket % scanner.get_num_axial_crystals_per_block()
+              % scanner.get_num_axial_blocks_per_bucket());
       }
   }
 }

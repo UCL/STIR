@@ -52,9 +52,7 @@
 #endif
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
-#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
-//#include "stir/Shape/Shape3D.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -81,7 +79,7 @@ private:
   void run_map_orientation_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_projection_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_intersection_with_cylinder_test();
-  void run_back_projection_test_with_axial_buckets();
+  void run_back_projection_test_with_axial_buckets(BackProjectorByBin& back_projector);
 };
 
 /*! The following is a function to allow a projdata_info BlocksOnCylindrical to be created from the scanner. */
@@ -874,7 +872,7 @@ BlocksTests::run_intersection_with_cylinder_test()
 }
 
 void
-BlocksTests::run_back_projection_test_with_axial_buckets()
+BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& back_projector)
 
 {
   //    create projadata info
@@ -887,7 +885,7 @@ BlocksTests::run_back_projection_test_with_axial_buckets()
     scanner_sptr->set_transaxial_block_spacing(scanner_sptr->get_transaxial_crystal_spacing()
                                                * scanner_sptr->get_num_transaxial_crystals_per_block());
     scanner_sptr->set_num_axial_blocks_per_bucket(2);
-    scanner_sptr->set_num_rings(2 * 5);  // More than 1 bucket
+    scanner_sptr->set_num_rings(2 * 5); // More than 1 bucket
   }
   auto segments = scanner_sptr->get_num_rings() - 1;
   VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
@@ -918,34 +916,33 @@ BlocksTests::run_back_projection_test_with_axial_buckets()
   //                                                                               scanner_sptr->get_max_num_views(),
   //                                                                               scanner_sptr->get_max_num_non_arccorrected_bins());
 
-  auto projdata_sptr = std::make_shared<ProjDataInMemory>(std::make_shared<ExamInfo>(ImagingModality::PT), projdata_info_sptr);
+  auto exam_info_sptr = std::make_shared<ExamInfo>(ImagingModality::PT);
+  auto projdata_sptr = std::make_shared<ProjDataInMemory>(exam_info_sptr, projdata_info_sptr);
 
   auto origin = CartesianCoordinate3D<float>(0, 0, 0);
   auto volume_dimensions = CartesianCoordinate3D<int>(-1, -1, -1);
-  auto volume = std::make_shared<VoxelsOnCartesianGrid<float>>(*projdata_info_sptr, 1, origin, volume_dimensions);
+  auto volume_sptr
+      = std::make_shared<VoxelsOnCartesianGrid<float>>(exam_info_sptr, *projdata_info_sptr, 1, origin, volume_dimensions);
 
   // Now run the test
-  volume->fill(0.0);
+  volume_sptr->fill(0.0);
   projdata_sptr->fill(1.0);
 
-  auto PM = std::make_shared<ProjMatrixByBinUsingRayTracing>();
-  PM->enable_cache(false);
-  auto back_projector = std::make_shared<BackProjectorByBinUsingProjMatrixByBin>(PM);
-  back_projector->set_up(projdata_info_sptr, volume);
-  back_projector->back_project(*volume, *projdata_sptr, 0, 144);
+  back_projector.set_up(projdata_info_sptr, volume_sptr);
+  back_projector.back_project(*volume_sptr, *projdata_sptr, 0, projdata_info_sptr->get_num_views());
 
   bool test_ok = true;
   std::ostringstream oss;
   oss << "BlocksTests::run_back_projection_test_with_axial_buckets: Central voxel values are:" << std::endl;
 
-  auto center_axial_values = std::vector<float>(volume->get_z_size());
-  for (int z = volume->get_min_z(); z <= volume->get_max_z(); z++)
+  auto centre_axial_values = std::vector<float>(volume_sptr->get_z_size());
+  for (int z = volume_sptr->get_min_z(); z <= volume_sptr->get_max_z(); z++)
     {
-      center_axial_values[z] = volume->get_plane(z).at(0).at(0);
-      oss << "\tz = " << z << "/" << volume->get_max_z() << " is " << center_axial_values[z] << std::endl;
+      centre_axial_values[z] = volume_sptr->get_plane(z).at(0).at(0);
+      oss << "\tz = " << z << "/" << volume_sptr->get_max_z() << " is " << centre_axial_values[z] << std::endl;
       if (test_ok)
         {
-          test_ok = check(center_axial_values[z] > 0,
+          test_ok = check(centre_axial_values[z] > 0,
                           "BlocksTests::run_back_projection_test_with_axial_buckets: Central voxel value <= 0");
           everything_ok = everything_ok && test_ok;
         }
@@ -992,6 +989,7 @@ BlocksTests::run_tests()
   run_intersection_with_cylinder_test();
   print_time("intersection with cylinder test took: ");
   run_back_projection_test_with_axial_buckets();
+  run_back_projection_test_with_axial_buckets(back_projector);
   print_time("back projection test with axial buckets took: ");
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
