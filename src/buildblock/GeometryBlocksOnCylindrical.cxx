@@ -44,6 +44,7 @@ START_NAMESPACE_STIR
 
 GeometryBlocksOnCylindrical::GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
+  check_scanner_configuration(scanner);
   build_crystal_maps(scanner);
 }
 
@@ -56,16 +57,31 @@ GeometryBlocksOnCylindrical::get_rotation_matrix(float alpha) const
 }
 
 void
+GeometryBlocksOnCylindrical::check_scanner_configuration(const Scanner& scanner)
+{
+  { // Ensure the number of axial crystals per bucket is a multiple of the number of rings
+    int num_axial_crystals_per_bucket = scanner.get_num_axial_crystals_per_block() * scanner.get_num_axial_blocks_per_bucket();
+    if (scanner.get_num_rings() % (num_axial_crystals_per_bucket) != 0)
+      {
+        error("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the num_axial_crystals_per_bucket "
+              "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)",
+              scanner.get_num_rings(),
+              num_axial_crystals_per_bucket,
+              scanner.get_num_axial_crystals_per_block(),
+              scanner.get_num_axial_blocks_per_bucket());
+      }
+  }
+}
+void
 GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
 {
   // local variables to describe scanner
   int num_axial_crystals_per_block = scanner.get_num_axial_crystals_per_block();
   int num_transaxial_crystals_per_block = scanner.get_num_transaxial_crystals_per_block();
-  int num_axial_blocks = scanner.get_num_axial_blocks();
   int num_transaxial_blocks_per_bucket = scanner.get_num_transaxial_blocks_per_bucket();
   int num_axial_blocks_per_bucket = scanner.get_num_axial_blocks_per_bucket();
-  int num_transaxial_buckets = scanner.get_num_transaxial_blocks() / num_transaxial_blocks_per_bucket;
-  int num_axial_buckets = scanner.get_num_axial_blocks() / num_axial_blocks_per_bucket;
+  int num_transaxial_buckets = scanner.get_num_transaxial_buckets();
+  int num_axial_buckets = scanner.get_num_axial_buckets();
   int num_detectors_per_ring = scanner.get_num_detectors_per_ring();
   float axial_block_spacing = scanner.get_axial_block_spacing();
   float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
@@ -100,7 +116,7 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
   for (int ax_bucket_num = 0; ax_bucket_num < num_axial_buckets; ++ax_bucket_num)
-    for (int ax_block_num = 0; ax_block_num < num_axial_blocks; ++ax_block_num)
+    for (int ax_block_num = 0; ax_block_num < num_axial_blocks_per_bucket; ++ax_block_num)
       for (int ax_crys_num = 0; ax_crys_num < num_axial_crystals_per_block; ++ax_crys_num)
         for (int trans_bucket_num = 0; trans_bucket_num < num_transaxial_buckets; ++trans_bucket_num)
           for (int trans_block_num = 0; trans_block_num < num_transaxial_blocks_per_bucket; ++trans_block_num)

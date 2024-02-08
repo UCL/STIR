@@ -56,6 +56,9 @@ private:
   //! Get rotation matrix for a given angle around z axis
   stir::Array<2, float> get_rotation_matrix(float alpha) const;
 
+  //! Checks the scanner configuration is valid for a crystal map
+  static void check_scanner_configuration(const Scanner& scanner) ;
+
   //! Build crystal map in cartesian coordinate
   void build_crystal_maps(const Scanner& scanner);
 };
