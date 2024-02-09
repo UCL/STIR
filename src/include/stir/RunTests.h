@@ -119,10 +119,7 @@ public:
   bool check_if_equal(const long long a, const long long b, const std::string& str = "");
   bool check_if_equal(const unsigned long long a, const unsigned long long b, const std::string& str = "");
 #endif
-  bool check_if_equal(const Bin& a, const Bin& b, const std::string& str = "")
-  {
-    return this->check_if_equal_generic(a, b, str);
-  }
+  bool check_if_equal(const Bin& a, const Bin& b, const std::string& str = "") { return this->check_if_equal_generic(a, b, str); }
   template <class T>
   bool check_if_equal(const DetectionPosition<T>& a, const DetectionPosition<T>& b, const std::string& str = "")
   {

@@ -222,10 +222,12 @@ LmFansums::compute()
                     num_stored_events += event_increment;
                   }
                 else
-                  {}
+                  {
+                  }
               }
             else
-              {}
+              {
+              }
 
           } // end of spatial event processing
       }     // end of while loop over all events

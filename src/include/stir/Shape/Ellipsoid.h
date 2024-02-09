@@ -75,22 +75,10 @@ public:
 
   bool operator==(const Shape3D& shape) const override;
 
-  inline float get_radius_x() const
-  {
-    return radii.x();
-  }
-  inline float get_radius_y() const
-  {
-    return radii.y();
-  }
-  inline float get_radius_z() const
-  {
-    return radii.z();
-  }
-  inline CartesianCoordinate3D<float> get_radii() const
-  {
-    return radii;
-  }
+  inline float get_radius_x() const { return radii.x(); }
+  inline float get_radius_y() const { return radii.y(); }
+  inline float get_radius_z() const { return radii.z(); }
+  inline CartesianCoordinate3D<float> get_radii() const { return radii; }
   void set_radii(const CartesianCoordinate3D<float>& new_radii);
 
 protected:

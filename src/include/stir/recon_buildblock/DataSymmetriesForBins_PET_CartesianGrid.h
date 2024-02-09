@@ -24,9 +24,9 @@
 #define __stir_recon_buildblock_DataSymmetriesForBins_PET_CartesianGrid_H__
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
-//#include "stir/SymmetryOperations_PET_CartesianGrid.h"
-//#include "stir/ViewSegmentNumbers.h"
-//#include "stir/VoxelsOnCartesianGrid.h"
+// #include "stir/SymmetryOperations_PET_CartesianGrid.h"
+// #include "stir/ViewSegmentNumbers.h"
+// #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Bin.h"
 #include "stir/shared_ptr.h"
 
@@ -141,26 +141,11 @@ public:
 
   //! \name Methods to find out which symmetries are used
   //@{
-  inline bool using_symmetry_90degrees_min_phi() const
-  {
-    return do_symmetry_90degrees_min_phi;
-  }
-  inline bool using_symmetry_180degrees_min_phi() const
-  {
-    return do_symmetry_180degrees_min_phi;
-  }
-  inline bool using_symmetry_swap_segment() const
-  {
-    return do_symmetry_swap_segment;
-  }
-  inline bool using_symmetry_swap_s() const
-  {
-    return do_symmetry_swap_s;
-  }
-  inline bool using_symmetry_shift_z() const
-  {
-    return do_symmetry_shift_z;
-  }
+  inline bool using_symmetry_90degrees_min_phi() const { return do_symmetry_90degrees_min_phi; }
+  inline bool using_symmetry_180degrees_min_phi() const { return do_symmetry_180degrees_min_phi; }
+  inline bool using_symmetry_swap_segment() const { return do_symmetry_swap_segment; }
+  inline bool using_symmetry_swap_s() const { return do_symmetry_swap_s; }
+  inline bool using_symmetry_shift_z() const { return do_symmetry_shift_z; }
   //@}
 
 private:

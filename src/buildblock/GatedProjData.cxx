@@ -95,10 +95,10 @@ GatedProjData::read_from_file(const string& filename) // The written image is re
 #endif // end of HAVE_LLN_MATRIX
     if (strncmp(signature, "Multigate", 9) == 0)
       {
-        //#ifndef NDEBUG
+        // #ifndef NDEBUG
         warning("GatedProjData::read_from_file trying to read %s as Multigate", filename.c_str());
-        //#endif
-        // return read_multi_gated_proj_data(filename);
+        // #endif
+        //  return read_multi_gated_proj_data(filename);
 
         std::vector<std::string> filenames;
         KeyParser parser;

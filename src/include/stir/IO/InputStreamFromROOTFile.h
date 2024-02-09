@@ -81,8 +81,7 @@ public:
                             int offset_dets);
 #endif
 
-  ~InputStreamFromROOTFile() override
-  {}
+  ~InputStreamFromROOTFile() override {}
   //!  \details Returns the next record in the ROOT file.
   //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
   //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">here</a>
@@ -278,14 +277,8 @@ protected:
   double least_significant_clock_bit;
 
   //! OpenGATE output ROOT energy information is given in MeV, these methods convert to keV
-  float get_energy1_in_keV() const
-  {
-    return energy1 * 1e3;
-  };
-  float get_energy2_in_keV() const
-  {
-    return energy2 * 1e3;
-  };
+  float get_energy1_in_keV() const { return energy1 * 1e3; };
+  float get_energy2_in_keV() const { return energy2 * 1e3; };
 
   //! Checks brentry satisfies the randoms, scatter and energy conditions.
   bool check_brentry_randoms_scatter_energy_conditions(long long int brentry);

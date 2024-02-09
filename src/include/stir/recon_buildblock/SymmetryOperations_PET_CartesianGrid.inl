@@ -248,7 +248,8 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_view_segment_indices(Vie
       vs.view_num() = view180 - vs.view_num();
     }
   else
-    {}
+    {
+    }
   assert(0 <= vs.view_num());
   assert(vs.view_num() < view180);
 }

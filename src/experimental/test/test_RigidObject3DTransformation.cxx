@@ -32,7 +32,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir_experimental/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 #include "stir/Densel.h"
-//#include "stir/display.h"
+// #include "stir/display.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir_experimental/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.h" // necessary for shared_ptr in ProjMatrixElemsForOneDensel.h
@@ -42,8 +42,8 @@
 #include "stir/LORCoordinates.h"
 #include "stir/geometry/line_distances.h"
 #include "stir/index_at_maximum.h"
-//#include "stir_experimental/motion/Polaris_MT_File.h"
-//#include "stir_experimental/motion/RigidObject3DMotionFromPolaris.h"
+// #include "stir_experimental/motion/Polaris_MT_File.h"
+// #include "stir_experimental/motion/RigidObject3DMotionFromPolaris.h"
 #include <algorithm>
 #include <cmath>
 #ifdef BOOST_NO_STDC_NAMESPACE

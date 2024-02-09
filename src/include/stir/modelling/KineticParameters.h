@@ -49,6 +49,6 @@ assign(KineticParameters<num_dimensions, T>& v, const T2& y)
 
 END_NAMESPACE_STIR
 
-//#include "stir/modelling/KineticParameters.inl"
+// #include "stir/modelling/KineticParameters.inl"
 
 #endif //__stir_modelling_KineticParameters_H__

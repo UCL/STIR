@@ -128,10 +128,7 @@ public:
   BasicCoordinate<3, float> transform_point(const BasicCoordinate<3, float>& point) const override;
 
   //! Computes the jacobian for the transformation (which is always 1)
-  float jacobian(const BasicCoordinate<3, float>& point) const override
-  {
-    return 1;
-  }
+  float jacobian(const BasicCoordinate<3, float>& point) const override { return 1; }
 
   //! Transform bin from some projection data
   /*!  Finds 'closest' (in some sense) bin to the transformed LOR.

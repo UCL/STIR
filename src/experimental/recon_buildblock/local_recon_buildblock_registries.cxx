@@ -18,12 +18,12 @@
 #  include "stir_experimental/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
 #endif
 
-//#include "stir_experimental/recon_buildblock/BackProjectorByBinDistanceDriven.h"
-//#include "stir_experimental/recon_buildblock/ForwardProjectorByBinDistanceDriven.h"
+// #include "stir_experimental/recon_buildblock/BackProjectorByBinDistanceDriven.h"
+// #include "stir_experimental/recon_buildblock/ForwardProjectorByBinDistanceDriven.h"
 
-//#include "stir_experimental/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
-//#include "stir_experimental/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
-//#include "stir_experimental/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
+// #include "stir_experimental/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
+// #include "stir_experimental/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
+// #include "stir_experimental/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
 #include "stir_experimental/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
 #if 0
 #  include "stir_experimental/recon_buildblock/BinNormalisationUsingProfile.h"

@@ -37,7 +37,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-//#include "boost/static_assert.hpp"
+// #include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
 #include "stir/listmode/CListRecordSAFIR.h"

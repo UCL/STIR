@@ -67,10 +67,7 @@ public:
   void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
-  float get_sampling_in_s(const Bin&) const override
-  {
-    return bin_size;
-  }
+  float get_sampling_in_s(const Bin&) const override { return bin_size; }
 
   Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 

@@ -21,8 +21,8 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/shared_ptr.h"
 #include "LMF/lmf.h" // TODO adjust location
-//#include "LMF/LMF_ClearPET.h" // TODO don't know which is needed
-//#include "LMF/LMF_Interfile.h"
+// #include "LMF/LMF_ClearPET.h" // TODO don't know which is needed
+// #include "LMF/LMF_Interfile.h"
 
 #include <stdio.h>
 #include <string>

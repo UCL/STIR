@@ -56,7 +56,7 @@
 // we will need file_data_to_host which is declared in machine_indep.h
 // However, that file has a problem with the definition of swab on some systems
 // so we declare it here
-//#include "machine_indep.h"
+// #include "machine_indep.h"
 extern "C" int file_data_to_host(char* dptr, int nblks, int dtype);
 extern "C" FILE* mat_create(char* fname, Main_header* mhead);
 #endif

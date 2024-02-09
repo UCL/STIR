@@ -130,7 +130,8 @@ public:
                                            const int min_axial_pos_num,
                                            const int max_axial_pos_num,
                                            const int min_tangential_pos_num,
-                                           const int max_tangential_pos_num) const = 0;
+                                           const int max_tangential_pos_num) const
+      = 0;
 
   //! returns the number of bins related to 'b'
   virtual int num_related_bins(const Bin& b) const;

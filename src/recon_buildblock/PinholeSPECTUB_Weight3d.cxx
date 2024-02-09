@@ -26,7 +26,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
-//#include "stir/spatial_transformation/InvertAxis.h"
+// #include "stir/spatial_transformation/InvertAxis.h"
 
 namespace SPECTUB_mph
 {
@@ -43,11 +43,11 @@ namespace SPECTUB_mph
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-//#ifndef M_PI
-//#define M_PI 3.141592653589793
-//#endif
+// #ifndef M_PI
+// #define M_PI 3.141592653589793
+// #endif
 
-//#define dg2rd 0.01745329251994
+// #define dg2rd 0.01745329251994
 
 #define DELIMITER1 '#' // delimiter character in input parameter text file
 #define DELIMITER2 '%' // delimiter character in input parameter text file

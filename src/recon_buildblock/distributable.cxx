@@ -627,12 +627,12 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
   std::vector<float> measured_div_fwd;
 #ifdef STIR_OPENMP
 #  pragma omp parallel shared(local_output_image_sptrs,                                                                          \
-                              local_row,                                                                                         \
-                              local_log_likelihoods,                                                                             \
-                              local_counts,                                                                                      \
-                              local_count2s,                                                                                     \
-                              local_measured_bin,                                                                                \
-                              local_fwd_bin)
+                                  local_row,                                                                                     \
+                                  local_log_likelihoods,                                                                         \
+                                  local_counts,                                                                                  \
+                                  local_count2s,                                                                                 \
+                                  local_measured_bin,                                                                            \
+                                  local_fwd_bin)
 #endif
   // start of threaded section if openmp
   {

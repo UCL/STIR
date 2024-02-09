@@ -20,7 +20,7 @@
  \author Markus Jehl
 */
 #include "stir/ProjData.h"
-//#include "stir/display.h"
+// #include "stir/display.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/IndexRange.h"

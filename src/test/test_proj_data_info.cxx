@@ -52,7 +52,7 @@ using std::min;
 using std::max;
 using std::size_t;
 
-//#define STIR_TOF_DEBUG 1
+// #define STIR_TOF_DEBUG 1
 
 START_NAMESPACE_STIR
 

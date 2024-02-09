@@ -207,9 +207,9 @@ main(int argc, const char* argv[])
   std::cout << mh_isino.numang << " " << mh_isino.numray << std::endl;
   std::cout << isliceEnd << std::endl;
 
-  //#ifdef STIR_OPENMP
-  //#pragma omp parallel for schedule(dynamic)
-  //#endif
+  // #ifdef STIR_OPENMP
+  // #pragma omp parallel for schedule(dynamic)
+  // #endif
 #ifdef STIR_OPENMP
 #  ifdef _WIN32
 #    pragma omp parallel for

@@ -34,8 +34,8 @@
 #include "stir/recon_buildblock/RelatedBins.h"
 #include "stir/warning.h"
 #include <algorithm>
-//#include <iostream>
-//#include "stir/stream.h"
+// #include <iostream>
+// #include "stir/stream.h"
 
 using std::copy;
 

@@ -22,7 +22,7 @@
 #ifndef __stir_data_SinglesRates_H__
 #define __stir_data_SinglesRates_H__
 
-//#include "stir/Array.h"
+// #include "stir/Array.h"
 #include "stir/DetectionPosition.h"
 #include "stir/RegisteredObject.h"
 #include "stir/Scanner.h"

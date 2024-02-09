@@ -104,54 +104,54 @@ ProjMatrixByBinUsingInterpolationTests::run_tests_2_proj_matrices_1_bin(const Pr
     proj_matrix_with_symm.get_proj_matrix_elems_for_one_bin(elems_with_sym, bin);
     proj_matrix_no_symm.get_proj_matrix_elems_for_one_bin(elems_no_sym, bin);
 #endif
-  elems_no_sym.sort();
-  elems_with_sym.sort();
-  if (!check(elems_no_sym == elems_with_sym, "comparing lors"))
-    {
-      // SYM const Bin bin=*bin_iter;
-      cerr << "Current bin:  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-           << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-      cerr << "no sym (" << elems_no_sym.size() << ") with sym (" << elems_with_sym.size() << ")\n";
-      ProjMatrixElemsForOneBin::const_iterator no_sym_iter = elems_no_sym.begin();
-      ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
-      while (no_sym_iter != elems_no_sym.end() || with_sym_iter != elems_with_sym.end())
-        {
-          if (no_sym_iter == elems_no_sym.end() || with_sym_iter == elems_with_sym.end()
-              || no_sym_iter->get_coords() != with_sym_iter->get_coords()
-              || fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .0002)
-            {
-              bool inc_no_sym_iter = false;
-              if (no_sym_iter != elems_no_sym.end()
-                  && (with_sym_iter == elems_with_sym.end()
-                      || coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())
-                      || no_sym_iter->get_coords() == with_sym_iter->get_coords()))
-                {
-                  cerr << no_sym_iter->get_coords() << ':' << no_sym_iter->get_value() << "    ||   ";
-                  inc_no_sym_iter = true;
-                }
-              else
-                cerr << "                       ||   ";
-              if (with_sym_iter != elems_with_sym.end()
-                  && (no_sym_iter == elems_no_sym.end()
-                      || !coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())))
-                {
-                  cerr << with_sym_iter->get_coords() << ':' << with_sym_iter->get_value();
+    elems_no_sym.sort();
+    elems_with_sym.sort();
+    if (!check(elems_no_sym == elems_with_sym, "comparing lors"))
+      {
+        // SYM const Bin bin=*bin_iter;
+        cerr << "Current bin:  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
+             << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+        cerr << "no sym (" << elems_no_sym.size() << ") with sym (" << elems_with_sym.size() << ")\n";
+        ProjMatrixElemsForOneBin::const_iterator no_sym_iter = elems_no_sym.begin();
+        ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
+        while (no_sym_iter != elems_no_sym.end() || with_sym_iter != elems_with_sym.end())
+          {
+            if (no_sym_iter == elems_no_sym.end() || with_sym_iter == elems_with_sym.end()
+                || no_sym_iter->get_coords() != with_sym_iter->get_coords()
+                || fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .0002)
+              {
+                bool inc_no_sym_iter = false;
+                if (no_sym_iter != elems_no_sym.end()
+                    && (with_sym_iter == elems_with_sym.end()
+                        || coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())
+                        || no_sym_iter->get_coords() == with_sym_iter->get_coords()))
+                  {
+                    cerr << no_sym_iter->get_coords() << ':' << no_sym_iter->get_value() << "    ||   ";
+                    inc_no_sym_iter = true;
+                  }
+                else
+                  cerr << "                       ||   ";
+                if (with_sym_iter != elems_with_sym.end()
+                    && (no_sym_iter == elems_no_sym.end()
+                        || !coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())))
+                  {
+                    cerr << with_sym_iter->get_coords() << ':' << with_sym_iter->get_value();
+                    ++with_sym_iter;
+                  }
+                if (inc_no_sym_iter)
+                  ++no_sym_iter;
+                cerr << "\n";
+              }
+            else
+              {
+                if (no_sym_iter != elems_no_sym.end())
+                  ++no_sym_iter;
+                if (with_sym_iter != elems_with_sym.end())
                   ++with_sym_iter;
-                }
-              if (inc_no_sym_iter)
-                ++no_sym_iter;
-              cerr << "\n";
-            }
-          else
-            {
-              if (no_sym_iter != elems_no_sym.end())
-                ++no_sym_iter;
-              if (with_sym_iter != elems_with_sym.end())
-                ++with_sym_iter;
-            }
-        }
-    }
-}
+              }
+          }
+      }
+  }
 }
 
 void

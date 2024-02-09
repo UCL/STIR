@@ -40,8 +40,8 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #include "stir/Succeeded.h"
-//#include "stir/IO/OutputFileFormat.h"
-//#include <algorithm>
+// #include "stir/IO/OutputFileFormat.h"
+// #include <algorithm>
 #include <string>
 
 #include "stir_experimental/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.h"

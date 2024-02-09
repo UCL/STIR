@@ -68,7 +68,7 @@ Array<num_dimensions, elemT>::Array(const self& t)
 #else
 Array<num_dimensions, elemT>::Array(const base_type& t)
 #endif
-: base_type(t)
+    : base_type(t)
 {}
 
 template <int num_dimensions, typename elemT>
@@ -522,7 +522,8 @@ Array<1, elemT>::sum() const
   elemT acc;
   assign(acc, 0);
   for (int i = this->get_min_index(); i <= this->get_max_index(); acc += this->num[i++])
-    {}
+    {
+    }
   return acc;
 };
 

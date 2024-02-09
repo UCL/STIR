@@ -114,17 +114,17 @@ public:
   // Do byteswapping first before using this bit field.
   TODO
 #else
-  boost::uint16_t eventLength : 2;       /* Event Length : Enum for the number of bytes in the event */
-  boost::uint16_t eventType : 1;         /* Event Type : Coin or Extended types */
-  boost::uint16_t hiXtalShortInteg : 1;  /* High Crystal Short Integration on / off */
-  boost::uint16_t loXtalShortInteg : 1;  /* Low Crystal Short Integration on / off */
-  boost::uint16_t hiXtalScatterRec : 1;  /* High Crystal Scatter Recovered on / off */
-  boost::uint16_t loXtalScatterRec : 1;  /* Low Crystal Scatter Recovered on / off */
-  boost::int16_t deltaTime : 9;          /* TOF 'signed' delta time (units defined by electronics */
-  boost::uint16_t hiXtalAxialID : 6;     /* High Crystal Axial Id */
-  boost::uint16_t hiXtalTransAxID : 10;  /* High Crystal Trans-Axial Id */
-  boost::uint16_t loXtalAxialID : 6;     /* Low Crystal Axial Id */
-  boost::uint16_t loXtalTransAxID : 10;  /* Low Crystal Trans-Axial Id */
+  boost::uint16_t eventLength : 2;      /* Event Length : Enum for the number of bytes in the event */
+  boost::uint16_t eventType : 1;        /* Event Type : Coin or Extended types */
+  boost::uint16_t hiXtalShortInteg : 1; /* High Crystal Short Integration on / off */
+  boost::uint16_t loXtalShortInteg : 1; /* Low Crystal Short Integration on / off */
+  boost::uint16_t hiXtalScatterRec : 1; /* High Crystal Scatter Recovered on / off */
+  boost::uint16_t loXtalScatterRec : 1; /* Low Crystal Scatter Recovered on / off */
+  boost::int16_t deltaTime : 9;         /* TOF 'signed' delta time (units defined by electronics */
+  boost::uint16_t hiXtalAxialID : 6;    /* High Crystal Axial Id */
+  boost::uint16_t hiXtalTransAxID : 10; /* High Crystal Trans-Axial Id */
+  boost::uint16_t loXtalAxialID : 6;    /* Low Crystal Axial Id */
+  boost::uint16_t loXtalTransAxID : 10; /* Low Crystal Trans-Axial Id */
 #endif
 }; /*-coincidence event*/
 
@@ -172,14 +172,8 @@ private:
   } data_t;
   data_t data;
 
-  unsigned long time_lo() const
-  {
-    return data.timeMarkerLS;
-  }
-  unsigned long time_hi() const
-  {
-    return data.timeMarkerMS;
-  }
+  unsigned long time_lo() const { return data.timeMarkerLS; }
+  unsigned long time_hi() const { return data.timeMarkerMS; }
 };
 
 } // namespace detail
@@ -218,26 +212,11 @@ public:
   }
 #endif
 
-  bool is_event() const override
-  {
-    return this->event_data.is_event();
-  }
-  CListEvent& event() override
-  {
-    return *this;
-  }
-  const CListEvent& event() const override
-  {
-    return *this;
-  }
-  ListTime& time() override
-  {
-    return *this;
-  }
-  const ListTime& time() const override
-  {
-    return *this;
-  }
+  bool is_event() const override { return this->event_data.is_event(); }
+  CListEvent& event() override { return *this; }
+  const CListEvent& event() const override { return *this; }
+  ListTime& time() override { return *this; }
+  const ListTime& time() const override { return *this; }
 #if 0
   virtual CListGatingInput&  gating_input()
     { return *this; }
@@ -256,10 +235,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   }
 
   // time
-  inline unsigned long get_time_in_millisecs() const override
-  {
-    return time_data.get_time_in_millisecs() - first_time_stamp;
-  }
+  inline unsigned long get_time_in_millisecs() const override { return time_data.get_time_in_millisecs() - first_time_stamp; }
 
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
   {
@@ -272,14 +248,8 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     { return gating_data.set_gating(g); }
 #endif
   // event
-  inline bool is_prompt() const override
-  {
-    return event_data.is_prompt();
-  }
-  inline Succeeded set_prompt(const bool prompt = true) override
-  {
-    return event_data.set_prompt(prompt);
-  }
+  inline bool is_prompt() const override { return event_data.is_prompt(); }
+  inline Succeeded set_prompt(const bool prompt = true) override { return event_data.set_prompt(prompt); }
 
   void get_detection_position(DetectionPositionPair<>& det_pos) const override
   {
@@ -295,10 +265,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   }
 
   //! This routine sets in a coincidence event from detector "indices"
-  void set_detection_position(const DetectionPositionPair<>&) override
-  {
-    error("TODO");
-  }
+  void set_detection_position(const DetectionPositionPair<>&) override { error("TODO"); }
 
   virtual std::size_t size_of_record_at_ptr(const char* const data_ptr, const std::size_t, const bool do_byte_swap) const
   {

@@ -30,9 +30,9 @@
 
 START_NAMESPACE_STIR
 
-//#define TEMPLATE template <int num_dimensions, typename KinParsT>
+// #define TEMPLATE template <int num_dimensions, typename KinParsT>
 #define TEMPLATE template <typename DiscDensityT>
-//#define ParamDiscDensity ParametricDiscretisedDensity<num_dimensions, KinParsT>
+// #define ParamDiscDensity ParametricDiscretisedDensity<num_dimensions, KinParsT>
 #define ParamDiscDensity ParametricDiscretisedDensity<DiscDensityT>
 
 /////////////////////////////////////////////////////////////////////////////////////

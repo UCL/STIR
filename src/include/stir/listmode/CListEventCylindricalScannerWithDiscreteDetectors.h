@@ -40,6 +40,6 @@ public:
 
 END_NAMESPACE_STIR
 
-//#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl"
+// #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.inl"
 
 #endif

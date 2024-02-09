@@ -62,7 +62,8 @@ public:
   virtual RigidObject3DTransformation compute_average_motion_in_scanner_coords(const AbsTimeInterval&) const;
 
   virtual RigidObject3DTransformation compute_average_motion_in_tracker_coords_rel_time(const double start_time,
-                                                                                        const double end_time) const = 0;
+                                                                                        const double end_time) const
+      = 0;
 
   virtual RigidObject3DTransformation compute_average_motion_in_scanner_coords_rel_time(const double start_time,
                                                                                         const double end_time) const;

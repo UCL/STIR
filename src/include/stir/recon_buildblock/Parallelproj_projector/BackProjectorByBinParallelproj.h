@@ -23,7 +23,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-//#include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
+// #include "stir/recon_buildblock/Parallelproj_projector/ParallelprojHelper.h"
 
 START_NAMESPACE_STIR
 
@@ -78,20 +78,11 @@ public:
   void set_defaults() override;
 
   /// Set verbosity
-  void set_verbosity(const bool verbosity)
-  {
-    _cuda_verbosity = verbosity;
-  }
+  void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
   // set/get number of gpu chunks to use
-  void set_num_gpu_chunks(int num_gpu_chunks)
-  {
-    _num_gpu_chunks = num_gpu_chunks;
-  }
-  int get_num_gpu_chunks()
-  {
-    return _num_gpu_chunks;
-  }
+  void set_num_gpu_chunks(int num_gpu_chunks) { _num_gpu_chunks = num_gpu_chunks; }
+  int get_num_gpu_chunks() { return _num_gpu_chunks; }
 
   BackProjectorByBinParallelproj* clone() const override;
 

@@ -113,7 +113,8 @@ main(int argc, char** argv)
   ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr, stir_filename, std::ios::out);
 
   if (strncmp(input_data_type, "fl", 2) == 0)
-    {}
+    {
+    }
   else
     {
       error("file format %s not valid. Only fl at present", input_data_type);

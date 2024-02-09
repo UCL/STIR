@@ -152,6 +152,6 @@ private:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
+// #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
 
 #endif

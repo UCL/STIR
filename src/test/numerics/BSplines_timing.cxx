@@ -17,7 +17,7 @@
 \author Kris Thielemans
 
 */
-//#define MYLINEAR
+// #define MYLINEAR
 
 #include "stir/Array.h"
 #include "stir/IndexRange2D.h"

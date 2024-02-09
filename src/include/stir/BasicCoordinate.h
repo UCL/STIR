@@ -124,10 +124,7 @@ http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/
   inline coordT const& at(const int d) const;
 
   // check if the coordinate is empty (always returns false)
-  inline bool empty() const
-  {
-    return false;
-  }
+  inline bool empty() const { return false; }
 
   //! \name Functions as in VectorWithOffset
   //@{

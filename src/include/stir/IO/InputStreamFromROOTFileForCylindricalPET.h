@@ -95,8 +95,7 @@ public:
                                              int offset_dets);
 #endif
 
-  ~InputStreamFromROOTFileForCylindricalPET() override
-  {}
+  ~InputStreamFromROOTFileForCylindricalPET() override {}
 
   Succeeded get_next_record(CListRecordROOT& record) override;
   //! Must be called before calling for the first event.

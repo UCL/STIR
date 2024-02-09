@@ -177,6 +177,6 @@ protected:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.inl"
+// #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.inl"
 
 #endif

@@ -101,17 +101,11 @@ public:
 
   const DiscretisedDensity<3, float>& get_density(const unsigned int gate_num) const;
 
-  const DiscretisedDensity<3, float>& operator[](const unsigned int gate_num) const
-  {
-    return this->get_density(gate_num);
-  }
+  const DiscretisedDensity<3, float>& operator[](const unsigned int gate_num) const { return this->get_density(gate_num); }
 
   DiscretisedDensity<3, float>& get_density(const unsigned int gate_num);
 
-  DiscretisedDensity<3, float>& operator[](const unsigned int gate_num)
-  {
-    return this->get_density(gate_num);
-  }
+  DiscretisedDensity<3, float>& operator[](const unsigned int gate_num) { return this->get_density(gate_num); }
   //@}
 
   void set_time_gate_definitions(TimeGateDefinitions time_gate_definitions)
@@ -121,10 +115,7 @@ public:
 
   const TimeGateDefinitions& get_time_gate_definitions() const;
 
-  unsigned get_num_gates() const
-  {
-    return this->get_time_gate_definitions().get_num_time_gates();
-  }
+  unsigned get_num_gates() const { return this->get_time_gate_definitions().get_num_time_gates(); }
   void fill_with_zero();
 
   /*! \brief write data to file

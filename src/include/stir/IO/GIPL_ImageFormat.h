@@ -70,7 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  define _SHORT 0
 #  define _FLOAT 1
 
-//#include "ByteSwap.h"
+// #include "ByteSwap.h"
 
 // -------------------------------------------------------------------------
 //   Image class

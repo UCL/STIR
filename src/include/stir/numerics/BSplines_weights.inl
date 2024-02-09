@@ -184,10 +184,7 @@ public:
     else
       return -abs_p;
   }
-  int find_highest_piece() const override
-  {
-    return 1;
-  }
+  int find_highest_piece() const override { return 1; }
 
 #if 0
     posT function(const posT x) const

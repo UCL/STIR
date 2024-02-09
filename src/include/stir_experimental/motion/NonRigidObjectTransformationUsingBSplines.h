@@ -22,7 +22,7 @@
 #include "stir/numerics/BSplinesRegularGrid.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
-//#include "stir/DiscretisedDensityOnCartesianGrid.h"
+// #include "stir/DiscretisedDensityOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
 class Succeeded;

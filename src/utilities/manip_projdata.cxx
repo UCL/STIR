@@ -35,7 +35,7 @@ This utility programme processes (interfile) sinogram data
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 
-//#include "stir/Scanner.h"
+// #include "stir/Scanner.h"
 #include "stir/ArrayFunction.h"
 #include "stir/recon_array_functions.h"
 #include "stir/display.h"

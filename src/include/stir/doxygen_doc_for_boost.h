@@ -1,6 +1,6 @@
 //
 //
-//#error This file is for doxygen only. It does not contain any code.
+// #error This file is for doxygen only. It does not contain any code.
 /*!
   \file
   \ingroup boost

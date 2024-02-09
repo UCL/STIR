@@ -27,8 +27,8 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
-//#include "stir/DataSymmetriesForBins.h"
-//#include "stir/RelatedViewgrams.h"
+// #include "stir/DataSymmetriesForBins.h"
+// #include "stir/RelatedViewgrams.h"
 
 class Viewgrams;
 template <typename elemT>
@@ -87,6 +87,6 @@ private:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.inl"
+// #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.inl"
 
 #endif

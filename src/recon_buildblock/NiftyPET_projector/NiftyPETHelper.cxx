@@ -1077,8 +1077,8 @@ NiftyPETHelper::lm_to_proj_data(shared_ptr<ProjData>& prompts_sptr,
   delete[] dicout.ssr;
   if (nfrm == 1)
     {
-      delete[](unsigned short*) dicout.psn;
-      delete[](unsigned short*) dicout.dsn;
+      delete[] (unsigned short*)dicout.psn;
+      delete[] (unsigned short*)dicout.dsn;
     }
   else
     throw std::runtime_error("NiftyPETHelper::lm_to_proj_data: If nfrm>1, "

@@ -34,7 +34,7 @@
 using std::cerr;
 using std::endl;
 
-//#define DO_XY_SWAP
+// #define DO_XY_SWAP
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 // avoid some problems with overloaded function
@@ -57,7 +57,7 @@ using ::fabs;
    Note: FIRSTROT code effectively computes inverse transformation of !FIRSTROT
    WARNING: if FIRSTROT is defined, the Polaris code needs to be modified
 */
-//#define FIRSTROT
+// #define FIRSTROT
 /* if next not defined, implements transformation using matrices (same result, but slower)
    (implementation should be faster if matrices are stored instead of quaternions
 */

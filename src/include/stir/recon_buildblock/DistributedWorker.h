@@ -23,7 +23,7 @@
 
 #  include "stir/shared_ptr.h"
 #  include "stir/TimedObject.h"
-//#include "stir/ParsingObject.h"
+// #include "stir/ParsingObject.h"
 #  include "stir/ProjData.h"
 #  include "stir/recon_buildblock/ProjectorByBinPair.h"
 #  include "stir/recon_buildblock/distributable.h"

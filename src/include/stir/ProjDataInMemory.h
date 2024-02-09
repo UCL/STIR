@@ -149,71 +149,35 @@ public:
   ///@}
 
   //! start value for iterating through all elements in the array, see iterator
-  inline iterator begin()
-  {
-    return buffer.begin();
-  }
+  inline iterator begin() { return buffer.begin(); }
   //! start value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator begin() const
-  {
-    return buffer.begin();
-  }
+  inline const_iterator begin() const { return buffer.begin(); }
   //! end value for iterating through all elements in the array, see iterator
-  inline iterator end()
-  {
-    return buffer.end();
-  }
+  inline iterator end() { return buffer.end(); }
   //! end value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator end() const
-  {
-    return buffer.end();
-  }
+  inline const_iterator end() const { return buffer.end(); }
   //! start value for iterating through all elements in the array, see iterator
-  inline iterator begin_all()
-  {
-    return buffer.begin_all();
-  }
+  inline iterator begin_all() { return buffer.begin_all(); }
   //! start value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator begin_all() const
-  {
-    return buffer.begin_all();
-  }
+  inline const_iterator begin_all() const { return buffer.begin_all(); }
   //! end value for iterating through all elements in the array, see iterator
-  inline iterator end_all()
-  {
-    return buffer.end_all();
-  }
+  inline iterator end_all() { return buffer.end_all(); }
   //! end value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator end_all() const
-  {
-    return buffer.end_all();
-  }
+  inline const_iterator end_all() const { return buffer.end_all(); }
 
   //! \name access to the data via a pointer
   //@{
   //! member function for access to the data via a float*
-  inline float* get_data_ptr()
-  {
-    return buffer.get_data_ptr();
-  }
+  inline float* get_data_ptr() { return buffer.get_data_ptr(); }
 
   //! member function for access to the data via a const float*
-  inline const float* get_const_data_ptr() const
-  {
-    return buffer.get_const_data_ptr();
-  }
+  inline const float* get_const_data_ptr() const { return buffer.get_const_data_ptr(); }
 
   //! signal end of access to float*
-  inline void release_data_ptr()
-  {
-    buffer.release_data_ptr();
-  }
+  inline void release_data_ptr() { buffer.release_data_ptr(); }
 
   //! signal end of access to const float*
-  inline void release_const_data_ptr() const
-  {
-    buffer.release_const_data_ptr();
-  }
+  inline void release_const_data_ptr() const { buffer.release_const_data_ptr(); }
   //@}
 
 private:

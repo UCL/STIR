@@ -115,85 +115,85 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests_2_proj_matrices_1_bin(co
     proj_matrix_with_symm.get_proj_matrix_elems_for_one_bin(elems_with_sym, bin);
     proj_matrix_no_symm.get_proj_matrix_elems_for_one_bin(elems_no_sym, bin);
 #endif
-  elems_no_sym.sort();
-  elems_with_sym.sort();
+    elems_no_sym.sort();
+    elems_with_sym.sort();
 
-  if (!check(elems_no_sym == elems_with_sym, "Comparing symmetry LORs")
-      || !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing symmetry bin configuration"))
-    {
-      // SYM const Bin bin=*bin_iter;
+    if (!check(elems_no_sym == elems_with_sym, "Comparing symmetry LORs")
+        || !check(elems_with_sym.get_bin() == elems_no_sym.get_bin(), "Comparing symmetry bin configuration"))
+      {
+        // SYM const Bin bin=*bin_iter;
 
-      cerr << "\nCurrent bin: \tsegment = " << bin.segment_num() << ", \taxial pos " << bin.axial_pos_num()
-           << ", \tview = " << bin.view_num() << ", \ttangential_pos_num = " << bin.tangential_pos_num()
-           << ", timing position index = " << bin.timing_pos_num()
-           << "\nSymm bin: \t\tsegment = " << elems_with_sym.get_bin().segment_num() << ", \taxial pos "
-           << elems_with_sym.get_bin().axial_pos_num() << ", \tview = " << elems_with_sym.get_bin().view_num()
-           << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num()
-           << ", timing position index = " << bin.timing_pos_num() << "\n";
+        cerr << "\nCurrent bin: \tsegment = " << bin.segment_num() << ", \taxial pos " << bin.axial_pos_num()
+             << ", \tview = " << bin.view_num() << ", \ttangential_pos_num = " << bin.tangential_pos_num()
+             << ", timing position index = " << bin.timing_pos_num()
+             << "\nSymm bin: \t\tsegment = " << elems_with_sym.get_bin().segment_num() << ", \taxial pos "
+             << elems_with_sym.get_bin().axial_pos_num() << ", \tview = " << elems_with_sym.get_bin().view_num()
+             << ", \ttangential_pos_num = " << elems_with_sym.get_bin().tangential_pos_num()
+             << ", timing position index = " << bin.timing_pos_num() << "\n";
 
-      if (elems_no_sym != elems_with_sym)
-        {
-          proj_matrix_with_symm.get_proj_matrix_elems_for_one_bin(elems_with_sym, bin);
-          elems_with_sym.sort();
-          std::cerr << "No Symmetries Iterator || Symmetries Iterator " << std::endl;
-          ProjMatrixElemsForOneBin::const_iterator no_sym_iter = elems_no_sym.begin();
-          ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
-          cerr << "      no_sym_iter         ||        sym_iter           ||     Error       \n";
-          while (no_sym_iter != elems_no_sym.end() || with_sym_iter != elems_with_sym.end())
-            {
-              if (no_sym_iter == elems_no_sym.end() || with_sym_iter == elems_with_sym.end()
-                  || no_sym_iter->get_coords() != with_sym_iter->get_coords()
-                  || fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .01)
-                {
-                  bool inc_no_sym_iter = false;
-                  if (no_sym_iter != elems_no_sym.end()
-                      && (with_sym_iter == elems_with_sym.end()
-                          || coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())
-                          || no_sym_iter->get_coords() == with_sym_iter->get_coords()))
-                    {
-                      cerr << no_sym_iter->get_coords() << ':' << no_sym_iter->get_value() << "    ||   ";
-                      inc_no_sym_iter = true;
-                    }
-                  else
-                    cerr << "                       ||   ";
-                  if (with_sym_iter != elems_with_sym.end()
-                      && (no_sym_iter == elems_no_sym.end()
-                          || !coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())))
-                    {
-                      cerr << with_sym_iter->get_coords() << ':' << with_sym_iter->get_value();
+        if (elems_no_sym != elems_with_sym)
+          {
+            proj_matrix_with_symm.get_proj_matrix_elems_for_one_bin(elems_with_sym, bin);
+            elems_with_sym.sort();
+            std::cerr << "No Symmetries Iterator || Symmetries Iterator " << std::endl;
+            ProjMatrixElemsForOneBin::const_iterator no_sym_iter = elems_no_sym.begin();
+            ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
+            cerr << "      no_sym_iter         ||        sym_iter           ||     Error       \n";
+            while (no_sym_iter != elems_no_sym.end() || with_sym_iter != elems_with_sym.end())
+              {
+                if (no_sym_iter == elems_no_sym.end() || with_sym_iter == elems_with_sym.end()
+                    || no_sym_iter->get_coords() != with_sym_iter->get_coords()
+                    || fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .01)
+                  {
+                    bool inc_no_sym_iter = false;
+                    if (no_sym_iter != elems_no_sym.end()
+                        && (with_sym_iter == elems_with_sym.end()
+                            || coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())
+                            || no_sym_iter->get_coords() == with_sym_iter->get_coords()))
+                      {
+                        cerr << no_sym_iter->get_coords() << ':' << no_sym_iter->get_value() << "    ||   ";
+                        inc_no_sym_iter = true;
+                      }
+                    else
+                      cerr << "                       ||   ";
+                    if (with_sym_iter != elems_with_sym.end()
+                        && (no_sym_iter == elems_no_sym.end()
+                            || !coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords())))
+                      {
+                        cerr << with_sym_iter->get_coords() << ':' << with_sym_iter->get_value();
 
-                      // If the error is in the same
-                      const float err = (no_sym_iter->get_value() / with_sym_iter->get_value() - 1);
-                      const float t = 0.01;
-                      if (no_sym_iter->get_coords() == with_sym_iter->get_coords())
-                        {
-                          if ((fabs(err) > t) && (no_sym_iter->get_value() > 1e-5 || with_sym_iter->get_value() > 1e-5))
-                            {
-                              cerr << "     ||    abs(" << err * 100 << "%) > " << t * 100 << "%";
-                            }
-                          else
-                            {
-                              cerr << "     ||    values less than `1e-5%`;";
-                            }
-                        }
+                        // If the error is in the same
+                        const float err = (no_sym_iter->get_value() / with_sym_iter->get_value() - 1);
+                        const float t = 0.01;
+                        if (no_sym_iter->get_coords() == with_sym_iter->get_coords())
+                          {
+                            if ((fabs(err) > t) && (no_sym_iter->get_value() > 1e-5 || with_sym_iter->get_value() > 1e-5))
+                              {
+                                cerr << "     ||    abs(" << err * 100 << "%) > " << t * 100 << "%";
+                              }
+                            else
+                              {
+                                cerr << "     ||    values less than `1e-5%`;";
+                              }
+                          }
 
+                        ++with_sym_iter;
+                      }
+                    if (inc_no_sym_iter)
+                      ++no_sym_iter;
+                    cerr << "\n";
+                  }
+                else
+                  {
+                    if (no_sym_iter != elems_no_sym.end())
+                      ++no_sym_iter;
+                    if (with_sym_iter != elems_with_sym.end())
                       ++with_sym_iter;
-                    }
-                  if (inc_no_sym_iter)
-                    ++no_sym_iter;
-                  cerr << "\n";
-                }
-              else
-                {
-                  if (no_sym_iter != elems_no_sym.end())
-                    ++no_sym_iter;
-                  if (with_sym_iter != elems_with_sym.end())
-                    ++with_sym_iter;
-                }
-            }
-        }
-    }
-}
+                  }
+              }
+          }
+      }
+  }
 }
 
 void

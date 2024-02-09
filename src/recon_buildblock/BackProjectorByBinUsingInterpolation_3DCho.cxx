@@ -31,7 +31,7 @@
 
 // enable this variable if you need to handle very oblique LORs
 #define MOREZ
-//#define ALTERNATIVE
+// #define ALTERNATIVE
 /*
 
   These functions use a 3D version of Cho's algorithm for backprojecting

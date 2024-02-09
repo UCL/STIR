@@ -62,7 +62,7 @@ private:
                               OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>,
                               OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>>
 #endif
-      base_type;
+          base_type;
 public:
   //! Name which will be used when parsing an OutputFileFormat object
   static const char* const registered_name;
@@ -73,8 +73,8 @@ public:
   ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
 
 protected:
-  Succeeded actual_write_to_file(std::string & output_filename, const ParametricDiscretisedDensity<DiscDensityT>& density)
-      const override;
+  Succeeded actual_write_to_file(std::string& output_filename,
+                                 const ParametricDiscretisedDensity<DiscDensityT>& density) const override;
 
   void set_defaults() override;
   void initialise_keymap() override;

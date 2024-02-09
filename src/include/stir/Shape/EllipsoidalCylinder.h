@@ -111,18 +111,9 @@ public:
 
   bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const override;
 
-  inline float get_length() const
-  {
-    return length;
-  }
-  inline float get_radius_x() const
-  {
-    return radius_x;
-  }
-  inline float get_radius_y() const
-  {
-    return radius_y;
-  }
+  inline float get_length() const { return length; }
+  inline float get_radius_x() const { return radius_x; }
+  inline float get_radius_y() const { return radius_y; }
   // TODOXXX add theta_1,2
   void set_length(const float);
   void set_radius_x(const float);

@@ -19,7 +19,7 @@
 #include "stir/IO/InputFileFormat.h"
 #include "stir/IO/interfile.h"
 #include "stir/listmode/CListModeDataECAT8_32bit.h"
-//#include "stir/listmode/CListRecordECAT8_32bit.h"
+// #include "stir/listmode/CListRecordECAT8_32bit.h"
 
 #include "stir/utilities.h"
 #include "stir/error.h"

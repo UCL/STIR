@@ -190,37 +190,19 @@ class LORInCylinderCoordinates : public LOR<coordT>
   typedef LORInCylinderCoordinates<coordT> self_type;
 
 private:
-  void check_state() const
-  {
-    assert(_radius > 0);
-  }
+  void check_state() const { assert(_radius > 0); }
 
 public:
-  const PointOnCylinder<coordT>& p1() const
-  {
-    return _p1;
-  }
-  PointOnCylinder<coordT>& p1()
-  {
-    return _p1;
-  }
-  const PointOnCylinder<coordT>& p2() const
-  {
-    return _p2;
-  }
-  PointOnCylinder<coordT>& p2()
-  {
-    return _p2;
-  }
+  const PointOnCylinder<coordT>& p1() const { return _p1; }
+  PointOnCylinder<coordT>& p1() { return _p1; }
+  const PointOnCylinder<coordT>& p2() const { return _p2; }
+  PointOnCylinder<coordT>& p2() { return _p2; }
 
   //! \copybrief LOR::is_swapped()
   /*! In this class, this currently always return \c false. You can swap the points if
       you want to swap the direction of the LOR.
   */
-  bool is_swapped() const override
-  {
-    return false;
-  }
+  bool is_swapped() const override { return false; }
   void reset(coordT radius = 1)
   {
     // set psi such that the new LOR does intersect that cylinder
@@ -268,10 +250,7 @@ public:
     LORInCylinderCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  self_type* clone() const override
-  {
-    return new self_type(*this);
-  }
+  self_type* clone() const override { return new self_type(*this); }
 
   Succeeded change_representation(LORInCylinderCoordinates<coordT>&, const double radius) const override;
 
@@ -301,22 +280,10 @@ class LORAs2Points : public LOR<coordT>
   typedef LORAs2Points<coordT> self_type;
 
 public:
-  const CartesianCoordinate3D<coordT>& p1() const
-  {
-    return _p1;
-  }
-  CartesianCoordinate3D<coordT>& p1()
-  {
-    return _p1;
-  }
-  const CartesianCoordinate3D<coordT>& p2() const
-  {
-    return _p2;
-  }
-  CartesianCoordinate3D<coordT>& p2()
-  {
-    return _p2;
-  }
+  const CartesianCoordinate3D<coordT>& p1() const { return _p1; }
+  CartesianCoordinate3D<coordT>& p1() { return _p1; }
+  const CartesianCoordinate3D<coordT>& p2() const { return _p2; }
+  CartesianCoordinate3D<coordT>& p2() { return _p2; }
 
   inline LORAs2Points();
 
@@ -332,15 +299,9 @@ public:
   /*! In this class, this currently always return \c false. You can swap the points if
   you want to swap the direction of the LOR.
   */
-  bool is_swapped() const override
-  {
-    return false;
-  }
+  bool is_swapped() const override { return false; }
 
-  self_type* clone() const override
-  {
-    return new self_type(*this);
-  }
+  self_type* clone() const override { return new self_type(*this); }
 
   Succeeded change_representation(LORInCylinderCoordinates<coordT>&, const double radius) const override;
 
@@ -460,10 +421,7 @@ public:
     LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  self_type* clone() const override
-  {
-    return new self_type(*this);
-  }
+  self_type* clone() const override { return new self_type(*this); }
 
   void reset(coordT radius = 1)
   {
@@ -627,10 +585,7 @@ public:
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>&);
 #endif
 
-  self_type* clone() const override
-  {
-    return new self_type(*this);
-  }
+  self_type* clone() const override { return new self_type(*this); }
 
   Succeeded change_representation(LORInCylinderCoordinates<coordT>&, const double radius) const override;
 
