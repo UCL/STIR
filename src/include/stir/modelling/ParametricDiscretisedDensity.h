@@ -172,6 +172,6 @@ typedef VoxelsOnCartesianGrid<KineticParameters<2, float>> ParametricVoxelsOnCar
 typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType> ParametricVoxelsOnCartesianGrid;
 
 END_NAMESPACE_STIR
-//#include "stir/modelling/ParametricDiscretisedDensity.inl"
+// #include "stir/modelling/ParametricDiscretisedDensity.inl"
 
 #endif //__stir_modelling_ParametricDiscretisedDensity_H__

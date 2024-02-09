@@ -215,25 +215,25 @@ bin_interpolate(VectorWithOffset<shared_ptr<SegmentByView<float>>>& seg_ptr,
       for (offset[3] = -1; offset[3] != 2; offset[3]++)
         for (offset[4] = -1; offset[4] != 2; offset[4]++)
 #endif
-  {
-    const Bin target_bin = standardise(coords_to_bin(central_bin_coords + offset), proj_data_info);
-    if (is_in_range(target_bin, proj_data_info))
-      {
-
-        // const BasicCoordinate<4,float> float_offset(offset);
-        // Coordinate4D<float> weights = abs(diff - float_offset);
-
-        LORInAxialAndNoArcCorrSinogramCoordinates<float> new_lor;
-        proj_data_info.get_LOR(new_lor, target_bin);
-        Coordinate4D<float> new_lor_coords = lor_to_coords(new_lor);
-        Coordinate4D<float> new_diff = (lor_coords - new_lor_coords) / sampling;
-        if (fabs(new_diff[3]) > 2)
           {
-            new_lor_coords[1] *= -1;
-            new_lor_coords[3] += _PI * sign(new_diff[3]);
-            new_lor_coords[4] *= -1;
-            new_diff = (lor_coords - new_lor_coords) / sampling;
-          }
+            const Bin target_bin = standardise(coords_to_bin(central_bin_coords + offset), proj_data_info);
+            if (is_in_range(target_bin, proj_data_info))
+              {
+
+                // const BasicCoordinate<4,float> float_offset(offset);
+                // Coordinate4D<float> weights = abs(diff - float_offset);
+
+                LORInAxialAndNoArcCorrSinogramCoordinates<float> new_lor;
+                proj_data_info.get_LOR(new_lor, target_bin);
+                Coordinate4D<float> new_lor_coords = lor_to_coords(new_lor);
+                Coordinate4D<float> new_diff = (lor_coords - new_lor_coords) / sampling;
+                if (fabs(new_diff[3]) > 2)
+                  {
+                    new_lor_coords[1] *= -1;
+                    new_lor_coords[3] += _PI * sign(new_diff[3]);
+                    new_lor_coords[4] *= -1;
+                    new_diff = (lor_coords - new_lor_coords) / sampling;
+                  }
 
 #if 0
 	      assert(new_diff[1]<=1.001 && new_diff[1]>=-1.001);
@@ -241,13 +241,13 @@ bin_interpolate(VectorWithOffset<shared_ptr<SegmentByView<float>>>& seg_ptr,
 	      assert(new_diff[3]<=1.001 && new_diff[3]>=-1.001);
 	      assert(new_diff[4]<=1.001 && new_diff[4]>=-1.001);
 #endif
-        // assert(norm(new_diff - (diff - float_offset))<.001);
-        Coordinate4D<float> weights = abs(new_diff);
-        if (weights[4] > 1 || weights[3] > 1 || weights[2] > 1 || weights[1] > 1)
-          continue;
-        const float weight = (1 - weights[1]) * (1 - weights[2]) * (1 - weights[3]) * (1 - weights[4]);
-        if (weight < 0.001)
-          continue;
+                // assert(norm(new_diff - (diff - float_offset))<.001);
+                Coordinate4D<float> weights = abs(new_diff);
+                if (weights[4] > 1 || weights[3] > 1 || weights[2] > 1 || weights[1] > 1)
+                  continue;
+                const float weight = (1 - weights[1]) * (1 - weights[2]) * (1 - weights[3]) * (1 - weights[4]);
+                if (weight < 0.001)
+                  continue;
 #if 0
 	      const Bin out_bin = target_bin;
 #else
@@ -269,9 +269,9 @@ bin_interpolate(VectorWithOffset<shared_ptr<SegmentByView<float>>>& seg_ptr,
 #  endif
 #endif
 
-        add_to_bin(seg_ptr, out_bin, value * weight);
-      }
-  }
+                add_to_bin(seg_ptr, out_bin, value * weight);
+              }
+          }
 }
 
 END_NAMESPACE_STIR

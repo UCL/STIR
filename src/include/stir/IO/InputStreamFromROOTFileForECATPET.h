@@ -87,8 +87,7 @@ public:
                                       int offset_dets);
 #endif
 
-  ~InputStreamFromROOTFileForECATPET() override
-  {}
+  ~InputStreamFromROOTFileForECATPET() override {}
 
   Succeeded get_next_record(CListRecordROOT& record) override;
 

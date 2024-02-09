@@ -34,7 +34,7 @@
 #endif
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-//#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+// #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -102,10 +102,7 @@ public:
 
   //! Test function that could be used to see if reported timings are correct
   /*! CPU time should be close to zero, wall-clock time close to 1123ms */
-  void sleep()
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1123));
-  }
+  void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds(1123)); }
 
   void copy_image()
   {
@@ -171,10 +168,7 @@ public:
     this->projectors_sptr->get_back_projector_sptr()->back_project(*this->image_sptr, *this->mem_proj_data_sptr);
   }
 
-  void obj_func_set_up()
-  {
-    this->objective_function_sptr->set_up(this->image_sptr);
-  }
+  void obj_func_set_up() { this->objective_function_sptr->set_up(this->image_sptr); }
 
   void obj_func_grad_no_sens()
   {

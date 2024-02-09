@@ -48,8 +48,8 @@ public:
   //! Default constructor
   // Transform3DObjectImageProcessor();
   //! Constructor that set the transformation
-  explicit Transform3DObjectImageProcessor(
-      const shared_ptr<ObjectTransformation<3, elemT>> = shared_ptr<ObjectTransformation<3, elemT>>());
+  explicit Transform3DObjectImageProcessor(const shared_ptr<ObjectTransformation<3, elemT>>
+                                           = shared_ptr<ObjectTransformation<3, elemT>>());
 
   bool get_do_transpose() const;
   void set_do_transpose(const bool);

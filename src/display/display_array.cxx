@@ -206,7 +206,7 @@ display_bitmap(const Array<3, elemT>& plane_stack,
       for (i--; i >= 0; i--)
         {
           // delete[] (sc_image[i].image); now deleted by XDestroyImage
-          delete[](sc_image[i].text);
+          delete[] (sc_image[i].text);
         }
       if (plane_stack.get_max_index() > nr)
         if (!ask("Continue display?", true))
@@ -511,7 +511,7 @@ display(const RelatedViewgrams<elemT>& vs, double maxi, const char* const title,
 
   while (text_iter != text.end())
     {
-      delete[] * text_iter;
+      delete[] *text_iter;
       ++text_iter;
     }
 }

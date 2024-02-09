@@ -17,11 +17,11 @@
 */
 
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-//#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+// #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-//#include "stir/display.h"
+// #include "stir/display.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"

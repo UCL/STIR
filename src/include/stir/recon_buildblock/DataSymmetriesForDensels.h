@@ -108,6 +108,6 @@ protected:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/DataSymmetriesForDensels.inl"
+// #include "stir/recon_buildblock/DataSymmetriesForDensels.inl"
 
 #endif

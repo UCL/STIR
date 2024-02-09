@@ -19,7 +19,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/stream.h"
 
-//#define FRAME_BASED_DT_CORR
+// #define FRAME_BASED_DT_CORR
 
 START_NAMESPACE_STIR
 

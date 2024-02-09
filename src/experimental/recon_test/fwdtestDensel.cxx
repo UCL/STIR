@@ -29,7 +29,7 @@
 */
 
 #include "stir_experimental/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-//#include "stir/display.h"
+// #include "stir/display.h"
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"

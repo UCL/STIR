@@ -38,8 +38,8 @@
 #  include "stir/num_threads.h"
 #endif
 
-//#include "boost/cstdint.hpp"
-//#include "boost/scoped_ptr.hpp"
+// #include "boost/cstdint.hpp"
+// #include "boost/scoped_ptr.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>

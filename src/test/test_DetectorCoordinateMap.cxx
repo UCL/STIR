@@ -41,7 +41,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
-//#include "stir/Shape/Shape3D.h"
+// #include "stir/Shape/Shape3D.h"
 
 #include "stir/Shape/Shape3DWithOrientation.h"
 #include "stir/Shape/Ellipsoid.h"

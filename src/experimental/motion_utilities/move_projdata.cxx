@@ -23,7 +23,7 @@
 
 */
 #include "stir/ProjDataInterfile.h"
-//#include "stir/IO/DefaultOutputFileFormat.h"
+// #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir_experimental/motion/TimeFrameMotion.h"
 #include "stir_experimental/motion/transform_3d_object.h"
 #include "stir/Succeeded.h"

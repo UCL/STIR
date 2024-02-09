@@ -96,6 +96,6 @@ public:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/SymmetryOperation.inl"
+// #include "stir/recon_buildblock/SymmetryOperation.inl"
 
 #endif

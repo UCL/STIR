@@ -158,6 +158,6 @@ struct RegisterInputFileFormat
 
 END_NAMESPACE_STIR
 
-//#include "stir/IO/InputFileFormatRegistry.inl"
+// #include "stir/IO/InputFileFormatRegistry.inl"
 
 #endif

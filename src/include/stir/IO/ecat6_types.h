@@ -30,7 +30,7 @@
 // include this for namespace macros
 #include "stir/IO/stir_ecat_common.h"
 // define to use the original version of the code
-//#define STIR_ORIGINAL_ECAT6
+// #define STIR_ORIGINAL_ECAT6
 
 #ifndef STIR_ORIGINAL_ECAT6
 #  define CTISinogram ::Sinogram
@@ -62,8 +62,8 @@ typedef enum
   matNormFile = 4   // normalization file
 } MatFileType;
 
-//#define matScanData   matI2Data
-//#define matImageData  matI2Data
+// #define matScanData   matI2Data
+// #define matImageData  matI2Data
 
 typedef short word;
 typedef unsigned char byte;

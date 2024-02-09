@@ -117,7 +117,8 @@ private:
   //! to be used in get LOR
   virtual void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
                                                        CartesianCoordinate3D<float>& coord_2,
-                                                       const Bin& bin) const = 0;
+                                                       const Bin& bin) const
+      = 0;
 
 protected:
   CartesianCoordinate3D<float> z_shift;

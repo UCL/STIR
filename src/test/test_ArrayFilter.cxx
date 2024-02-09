@@ -78,7 +78,8 @@ private:
       filter2(out2);
 
       if (!check_if_equal(out1, out2, "test comparing output of filters, larger length"))
-        {} // std::cerr << out1 << out2;
+        {
+        } // std::cerr << out1 << out2;
     }
   }
 

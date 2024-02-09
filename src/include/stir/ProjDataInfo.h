@@ -474,27 +474,15 @@ public:
   }
 
   //! Get horizontal bed position
-  float get_bed_position_horizontal() const
-  {
-    return bed_position_horizontal;
-  }
+  float get_bed_position_horizontal() const { return bed_position_horizontal; }
 
   //! Set vertical bed position
-  void set_bed_position_vertical(const float bed_position_vertical_arg)
-  {
-    bed_position_vertical = bed_position_vertical_arg;
-  }
+  void set_bed_position_vertical(const float bed_position_vertical_arg) { bed_position_vertical = bed_position_vertical_arg; }
 
   //! Get vertical bed position
-  float get_bed_position_vertical() const
-  {
-    return bed_position_vertical;
-  }
+  float get_bed_position_vertical() const { return bed_position_vertical; }
 
-  inline bool has_energy_information() const
-  {
-    return scanner_ptr->has_energy_information();
-  }
+  inline bool has_energy_information() const { return scanner_ptr->has_energy_information(); }
 
 protected:
   virtual bool blindly_equals(const root_type* const) const = 0;

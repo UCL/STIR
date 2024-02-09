@@ -19,7 +19,7 @@
 #define __stir_ArrayFilter2DUsingConvolution_H__
 
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
-//#include "stir/VectorWithOffset.h"
+// #include "stir/VectorWithOffset.h"
 
 START_NAMESPACE_STIR
 

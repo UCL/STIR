@@ -249,10 +249,7 @@ public:
 
   //! Allocate a new DiscretisedDensity object with same characteristics as the current one.
   //*! \deprecated Use get_empty_copy() instead
-  DiscretisedDensity<num_dimensions, elemT>* get_empty_discretised_density() const
-  {
-    return get_empty_copy();
-  }
+  DiscretisedDensity<num_dimensions, elemT>* get_empty_discretised_density() const { return get_empty_copy(); }
 
   //! \name Equality
   //@{

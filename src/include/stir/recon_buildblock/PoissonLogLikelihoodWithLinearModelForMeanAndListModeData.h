@@ -24,7 +24,7 @@
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeData_H__
 #define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeData_H__
 
-//#include "stir/RegisteredParsingObject.h"
+// #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/listmode/ListModeData.h"
 #include "stir/ParseAndCreateFrom.h"
@@ -217,6 +217,6 @@ private:
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
+// #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
 
 #endif

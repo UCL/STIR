@@ -16,7 +16,7 @@
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/IO/ExamData.h"
+// #include "stir/IO/ExamData.h"
 #include "stir/CartesianCoordinate3D.h"
 
 START_NAMESPACE_STIR

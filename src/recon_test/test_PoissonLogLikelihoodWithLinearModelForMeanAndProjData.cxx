@@ -37,7 +37,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
-//#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+// #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"

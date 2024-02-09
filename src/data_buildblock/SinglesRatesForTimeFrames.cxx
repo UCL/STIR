@@ -19,7 +19,7 @@
 */
 
 #include "stir/data/SinglesRatesForTimeFrames.h"
-//#include "stir/IndexRange2D.h"
+// #include "stir/IndexRange2D.h"
 
 START_NAMESPACE_STIR
 

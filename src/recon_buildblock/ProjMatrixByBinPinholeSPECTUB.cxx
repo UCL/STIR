@@ -43,14 +43,14 @@
 #include <time.h>
 
 // user defined libraries
-//#include "stir/ProjDataInterfile.h"
+// #include "stir/ProjDataInterfile.h"
 #include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-//#include "stir/KeyParser.h"
+// #include "stir/KeyParser.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
-//#include "stir/utilities.h"
+// #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -61,8 +61,8 @@
 #  include "stir/num_threads.h"
 #endif
 
-//#include "boost/cstdint.hpp"
-//#include "boost/scoped_ptr.hpp"
+// #include "boost/cstdint.hpp"
+// #include "boost/scoped_ptr.hpp"
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>

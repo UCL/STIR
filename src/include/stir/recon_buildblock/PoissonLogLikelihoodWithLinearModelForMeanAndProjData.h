@@ -23,9 +23,9 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/ParseAndCreateFrom.h"
-//#include "stir/ProjData.h"
+// #include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-//#include "stir/recon_buildblock/BinNormalisation.h"
+// #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
@@ -35,9 +35,9 @@ START_NAMESPACE_STIR
 
 class DistributedCachingInformation;
 
-//#ifdef STIR_MPI_CLASS_DEFINITION
-//#define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
-//#endif
+// #ifdef STIR_MPI_CLASS_DEFINITION
+// #define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
+// #endif
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -142,14 +142,14 @@ public:
   //@{
   //! points to the information object needed to support distributed caching
   DistributedCachingInformation* caching_info_ptr;
-  //#ifdef STIR_MPI
+  // #ifdef STIR_MPI
   //! enable/disable key for distributed caching
   bool distributed_cache_enabled;
   bool distributed_tests_enabled;
   bool message_timings_enabled;
   double message_timings_threshold;
   bool rpc_timings_enabled;
-  //#endif
+  // #endif
   //@}
 
   //! Default constructor calls set_defaults()
@@ -404,6 +404,6 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_com
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
+// #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.inl"
 
 #endif

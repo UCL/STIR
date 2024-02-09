@@ -192,7 +192,8 @@ OutputFileFormatTests::run_tests()
           }
       }
     if (is_everything_ok())
-      {}
+      {
+      }
     else
       cerr << "You can check what was written in STIRtmp.*\n";
   }

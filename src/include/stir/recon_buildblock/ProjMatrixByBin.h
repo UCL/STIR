@@ -36,7 +36,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/numerics/FastErf.h"
 #include <cstdint>
-//#include <map>
+// #include <map>
 #include <unordered_map>
 #ifdef STIR_OPENMP
 #  include <omp.h>

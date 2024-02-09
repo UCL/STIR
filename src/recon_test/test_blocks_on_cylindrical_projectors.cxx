@@ -53,7 +53,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/Shape/Shape3D.h"
+// #include "stir/Shape/Shape3D.h"
 #include <cmath>
 
 START_NAMESPACE_STIR

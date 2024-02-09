@@ -24,7 +24,7 @@
 #include "stir/zoom.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
-//#include "stir/utilities.h"
+// #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
 

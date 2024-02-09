@@ -23,9 +23,9 @@
 
 #include "stir/recon_buildblock/DataSymmetriesForDensels.h"
 #include "stir/ProjDataInfo.h"
-//#include "stir/SymmetryOperations_PET_CartesianGrid.h"
-//#include "stir/ViewSegmentNumbers.h"
-//#include "stir/VoxelsOnCartesianGrid.h"
+// #include "stir/SymmetryOperations_PET_CartesianGrid.h"
+// #include "stir/ViewSegmentNumbers.h"
+// #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Densel.h"
 #include "stir/shared_ptr.h"
 #include <vector>

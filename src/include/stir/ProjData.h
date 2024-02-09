@@ -34,7 +34,7 @@
 #include "stir/ViewgramIndices.h"
 #include "stir/SinogramIndices.h"
 
-//#include <ios>
+// #include <ios>
 
 #include "stir/ExamData.h"
 
@@ -118,8 +118,7 @@ public:
 #endif
 
   //! Destructor
-  ~ProjData() override
-  {}
+  ~ProjData() override {}
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
   //! Get viewgram
@@ -129,7 +128,8 @@ public:
   virtual Viewgram<float> get_viewgram(const int view,
                                        const int segment_num,
                                        const bool make_num_tangential_poss_odd = false,
-                                       const int timing_pos = 0) const = 0;
+                                       const int timing_pos = 0) const
+      = 0;
   //! Get viewgram
   inline Viewgram<float> get_viewgram(const ViewgramIndices&) const;
 
@@ -142,7 +142,8 @@ public:
   virtual Sinogram<float> get_sinogram(const int ax_pos_num,
                                        const int segment_num,
                                        const bool make_num_tangential_poss_odd = false,
-                                       const int timing_pos = 0) const = 0;
+                                       const int timing_pos = 0) const
+      = 0;
   //! Get sinogram
   inline Sinogram<float> get_sinogram(const SinogramIndices&) const;
 

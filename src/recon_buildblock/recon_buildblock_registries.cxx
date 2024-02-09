@@ -83,7 +83,7 @@
 #  include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif
 
-//#include "stir/IO/InputFileFormatRegistry.h"
+// #include "stir/IO/InputFileFormatRegistry.h"
 
 START_NAMESPACE_STIR
 // static RegisterInputFileFormat<InterfileProjMatrixByBinInputFileFormat> idummy0(0);

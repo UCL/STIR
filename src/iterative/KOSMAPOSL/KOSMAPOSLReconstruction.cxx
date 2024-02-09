@@ -30,7 +30,7 @@
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
-//#include "stir/LogLikBased/common.h"
+// #include "stir/LogLikBased/common.h"
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
 #include "stir/ChainedDataProcessor.h"
 #include "stir/Succeeded.h"
@@ -48,8 +48,8 @@
 #include "stir/warning.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
-//#include "stir/modelling/ParametricDiscretisedDensity.h"
-//#include "stir/modelling/KineticParameters.h"
+// #include "stir/modelling/ParametricDiscretisedDensity.h"
+// #include "stir/modelling/KineticParameters.h"
 
 #include <memory>
 #include <iostream>

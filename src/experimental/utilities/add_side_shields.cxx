@@ -18,7 +18,7 @@
 
 */
 #include "stir/Shape/EllipsoidalCylinder.h"
-//#include "stir/Shape/CombinedShape3D.h"
+// #include "stir/Shape/CombinedShape3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Succeeded.h"

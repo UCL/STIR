@@ -26,7 +26,7 @@
 */
 
 // uncomment for visual display of the ROIs
-//#define test_ROIs_DISPLAY
+// #define test_ROIs_DISPLAY
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"

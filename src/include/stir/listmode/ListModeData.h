@@ -172,16 +172,10 @@ public:
       passed to get_next_record().
   */
 
-  shared_ptr<ListRecord> get_empty_record_sptr() const
-  {
-    return this->get_empty_record_helper_sptr();
-  }
+  shared_ptr<ListRecord> get_empty_record_sptr() const { return this->get_empty_record_helper_sptr(); }
 
   //! Gets the next record in the listmode sequence
-  virtual Succeeded get_next_record(ListRecord& event) const
-  {
-    return get_next(event);
-  }
+  virtual Succeeded get_next_record(ListRecord& event) const { return get_next(event); }
 
   //! Call this function if you want to re-start reading at the beginning.
   virtual Succeeded reset() = 0;

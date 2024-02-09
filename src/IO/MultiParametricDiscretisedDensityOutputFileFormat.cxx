@@ -34,7 +34,7 @@
 START_NAMESPACE_STIR
 
 #define TEMPLATE template <typename DiscDensityT>
-//#define InterfileParamDiscDensity InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions,elemT>
+// #define InterfileParamDiscDensity InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions,elemT>
 #define ParamDiscDensityOutputFileFormat MultiParametricDiscretisedDensityOutputFileFormat<DiscDensityT>
 
 TEMPLATE
