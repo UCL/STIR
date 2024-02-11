@@ -375,7 +375,6 @@ ArrayTests::run_tests()
       }
 
       // using preallocated memory
-#if 0
       {
         std::vector<float> mem(test.get_index_range().size_all());
         std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
@@ -414,7 +413,7 @@ ArrayTests::run_tests()
           check_if_equal(preallocated[min+1], 12345.F, "test preallocated: grow uses different memory");
         }
       }
-#endif
+
       // copying from existing memory
       {
         std::vector<float> mem(test.get_index_range().size_all());

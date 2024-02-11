@@ -23,7 +23,7 @@
 
 */
 
-#include "stir/common.h"
+#include "stir/shared_ptr.h"
 #include "boost/iterator/iterator_adaptor.hpp"
 #include "boost/iterator/reverse_iterator.hpp"
 
@@ -180,16 +180,12 @@ public:
     swap(first.end_allocated_memory, second.end_allocated_memory);
     swap(first.pointer_access, second.pointer_access);
     swap(first._owns_memory_for_data, second._owns_memory_for_data);
+    swap(first.allocated_memory_sptr, second.allocated_memory_sptr);
   }
 
   //! move constructor
   /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
   VectorWithOffset(VectorWithOffset&& other) noexcept;
-  //! change vector with new index range and point to \c data_ptr
-  /*!
-    \arg data_ptr should start to a contiguous block of correct size
-  */
-  inline void init(const int min_index, const int max_index, T * const data_ptr, bool copy_data);
 
   //! Free all memory and make object as if default-constructed
   /*! This is not the same as resize(0), as the latter does not
@@ -403,10 +399,16 @@ public:
 
 protected:
   //! pointer to (*this)[0] (taking get_min_index() into account that is).
-  T* num;
+  T* num; // TODOKT make private
+  shared_ptr<T[]> allocated_memory_sptr;
 
   //! Called internally to see if all variables are consistent
   inline void check_state() const;
+  //! change vector with new index range and point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init(const int min_index, const int max_index, T* const data_ptr, bool copy_data);
 
 private:
   //! length of vector

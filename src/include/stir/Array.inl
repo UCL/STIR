@@ -618,7 +618,7 @@ template <class elemT>
 Array<1, elemT>::Array(const IndexRange<1>& range,  shared_ptr<elemT[]> data_sptr, bool copy_data)
 {
   if (!copy_data)
-    error("1D Array !copy TODO"); 
+    this->allocated_memory_sptr = data_sptr;
   this->init(range, data_sptr.get(), copy_data);
 }
 
