@@ -35,10 +35,19 @@ using boost::static_pointer_cast;
 #  define MAKE_SHARED boost::make_shared
 } // namespace stir
 #else
+#if __cplusplus < 201703L
+#include <experimental/memory>
+namespace stir {
+  using std::experimental::shared_ptr;
+}
+#else
 #  include <memory>
 namespace stir
 {
 using std::shared_ptr;
+}
+#endif
+namespace stir {
 using std::dynamic_pointer_cast;
 using std::static_pointer_cast;
 //! work-around for using std::make_shared on old compilers
