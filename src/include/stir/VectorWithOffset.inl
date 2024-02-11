@@ -36,9 +36,10 @@ VectorWithOffset<T>::init()
 {
   length = 0; // i.e. an empty row of zero length,
   start = 0;  // no offsets
-  num = 0;    // and no data.
-  begin_allocated_memory = 0;
-  end_allocated_memory = 0;
+  num = nullptr; // and no data.
+  begin_allocated_memory = nullptr;
+  end_allocated_memory = nullptr;
+  allocated_memory_sptr = nullptr;
 }
 
 template <class T>
@@ -86,6 +87,10 @@ VectorWithOffset<T>::check_state() const
   assert(begin_allocated_memory <= num + start);
   assert(end_allocated_memory >= begin_allocated_memory);
   assert(static_cast<unsigned>(end_allocated_memory - begin_allocated_memory) >= length);
+  if (allocated_memory_sptr)
+    {
+      // assert(_owns_memory_for_data);
+    }
 }
 
 template <class T>
@@ -102,7 +107,7 @@ VectorWithOffset<T>::_destruct_and_deallocate()
   // as begin_allocated_memory is == 0 in that case, and delete[] 0 doesn't do anything
   // (I think). Anyway, we're on the safe side now...
   if (this->owns_memory_for_data() && this->capacity() != 0)
-    delete[] this->begin_allocated_memory;
+    this->allocated_memory_sptr = nullptr;
 }
 
 template <class T>
@@ -254,21 +259,8 @@ VectorWithOffset<T>::VectorWithOffset()
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int hsz)
-    : length(hsz),
-      start(0),
-      pointer_access(false),
-      _owns_memory_for_data(true)
-{
-  if ((hsz > 0))
-    {
-      num = new T[hsz];
-      begin_allocated_memory = num;
-      end_allocated_memory = num + length;
-    }
-  else
-    this->init();
-  this->check_state();
-}
+    : VectorWithOffset(0, hsz - 1)
+{}
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
@@ -279,10 +271,10 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
 {
   if (max_index >= min_index)
     {
-      num = new T[length];
-      begin_allocated_memory = num;
-      end_allocated_memory = num + length;
-      num -= min_index;
+      allocated_memory_sptr = shared_ptr<T[]>(new T[length]);
+      begin_allocated_memory = allocated_memory_sptr.get();
+      end_allocated_memory = begin_allocated_memory + length;
+      num = begin_allocated_memory - min_index;
     }
   else
     this->init();
@@ -291,16 +283,8 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int sz, T * const data_ptr, T * const end_of_data_ptr)   
-    : length(static_cast<unsigned>(sz)),
-      start(0),
-      pointer_access(false),
-      _owns_memory_for_data(false)
-{
-  this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = end_of_data_ptr;
-  this->num = this->begin_allocated_memory - this->start;
-  this->check_state();
-}
+    : VectorWithOffset(0, sz - 1, data_ptr, end_of_data_ptr)
+{}
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
@@ -308,7 +292,8 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index,
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
       pointer_access(false),
-      _owns_memory_for_data(false)
+      _owns_memory_for_data(false),
+      allocated_memory_sptr(nullptr)
 {
   this->begin_allocated_memory = data_ptr;
   this->end_allocated_memory = end_of_data_ptr;
@@ -397,11 +382,12 @@ VectorWithOffset<T>::reserve(const int new_capacity_min_index, const int new_cap
   // check if data is being accessed via a pointer (see get_data_ptr())
   assert(pointer_access == false);
   // TODO use allocator here instead of new
-  T* newmem = new T[new_capacity];
+  shared_ptr<T[]> new_allocated_memory_sptr(new T[new_capacity]);
   const unsigned extra_at_the_left = length == 0 ? 0U : std::max(0, this->get_min_index() - actual_capacity_min_index);
-  std::copy(this->begin(), this->end(), newmem + extra_at_the_left);
+  std::copy(this->begin(), this->end(), new_allocated_memory_sptr.get() + extra_at_the_left);
   this->_destruct_and_deallocate();
-  begin_allocated_memory = newmem;
+  allocated_memory_sptr = std::move(new_allocated_memory_sptr);
+  begin_allocated_memory = allocated_memory_sptr.get();
   end_allocated_memory = begin_allocated_memory + new_capacity;
   _owns_memory_for_data = true;
   num = begin_allocated_memory + extra_at_the_left - (length > 0 ? start : 0);
