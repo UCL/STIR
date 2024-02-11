@@ -104,7 +104,7 @@ template <int num_dimensions, typename elemT>
 {
   if (copy_data)
     {
-      this->_allocated_full_data_ptr = std::make_shared<elemT[]>(range.size_all());
+      this->_allocated_full_data_ptr = std::shared_ptr<elemT[]>(new elemT[range.size_all()]);
       std::copy(data_sptr.get(), data_sptr.get() + range.size_all(), this->_allocated_full_data_ptr.get());
     }
   else

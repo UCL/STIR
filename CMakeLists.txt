@@ -33,7 +33,7 @@ include(src/cmake/SetC++Version.cmake)
 
 # minimum C++ version required (you can still ask for a more recent one
 # by setting CMAKE_CXX_STANDARD)
-UseCXX(14)
+UseCXX(17)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
