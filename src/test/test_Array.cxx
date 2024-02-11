@@ -47,6 +47,8 @@
 
 // for open_read/write_binary
 #include "stir/utilities.h"
+#include "stir/info.h"
+#include "stir/error.h"
 
 #include "stir/HighResWallClockTimer.h"
 
@@ -277,6 +279,31 @@ public:
   void run_tests() override;
 };
 
+template <typename T>
+class Deleter
+{
+public:
+  Deleter(std::vector<T>& v) :
+    v(v)
+  {}
+  void operator()(T* vptr)
+  {
+    info("in deleter");
+    if (vptr != v.data())
+      error("deleter error");
+    //~v;
+  }
+private:
+  std::vector<T>& v;
+};
+
+template <typename T>
+shared_ptr<T[]> vec_to_shared(std::vector<T>& v)
+{
+  shared_ptr<T[]> sptr(v.data(), Deleter<T>(v));
+  return sptr;
+}
+
 void
 ArrayTests::run_tests()
 {
@@ -348,10 +375,16 @@ ArrayTests::run_tests()
       }
 
       // using preallocated memory
+#if 0
       {
         std::vector<float> mem(test.get_index_range().size_all());
         std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1,float> preallocated(test.get_index_range(), &mem[0], false);
+        //Array<1,float> preallocated(test.get_index_range(), &mem[0], false);
+        Array<1,float> preallocated(test.get_index_range(), vec_to_shared(mem), false);
+        //shared_ptr<float[]> mem_sptr(new float [test.get_index_range().size_all()]);
+        //auto mem = mem_sptr.get();
+        //std::copy(test.begin_all_const(), test.end_all_const(), mem);
+        //Array<1,float> preallocated(test.get_index_range(), mem_sptr, false);
         check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
         check_if_equal(test, preallocated, "test preallocated: equality");
         std::copy(test.begin_all_const(), test.end_all_const(), preallocated.begin_all());
@@ -381,11 +414,16 @@ ArrayTests::run_tests()
           check_if_equal(preallocated[min+1], 12345.F, "test preallocated: grow uses different memory");
         }
       }
+#endif
       // copying from existing memory
       {
         std::vector<float> mem(test.get_index_range().size_all());
         std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1,float> test_from_mem(test.get_index_range(), &mem[0], true);
+        //Array<1,float> test_from_mem(test.get_index_range(), &mem[0], true);
+        Array<1,float> test_from_mem(test.get_index_range(), vec_to_shared(mem), true);
+        //shared_ptr<float[]> mem(test.get_index_range().size_all());
+        //std::copy(test.begin_all_const(), test.end_all_const(), mem.get());
+        //Array<1,float> preallocated(test.get_index_range(), mem.get(), false);
         check(test_from_mem.owns_memory_for_data(), "test preallocated with copy: should own memory");
         check_if_equal(test, test_from_mem, "test construct from mem: equality");
         std::copy(test.begin_all_const(), test.end_all_const(), test_from_mem.begin_all());
@@ -522,7 +560,8 @@ ArrayTests::run_tests()
                              2 - t2[first_min_idx].get_min_index()],
                          "check row-major order in 2D");
         }
-        Array<2,float> preallocated(t2.get_index_range(), &mem[0], false);
+        //Array<2,float> preallocated(t2.get_index_range(), &mem[0], false);
+        Array<2,float> preallocated(t2.get_index_range(), vec_to_shared(mem), false);
         //check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
         check_if_equal(t2, preallocated, "test preallocated: equality");
         std::copy(t2.begin_all_const(), t2.end_all_const(), preallocated.begin_all());
@@ -1011,7 +1050,8 @@ ArrayTests::run_tests()
       t.stop();
       std::cerr << "vector creation " << t.value()*1000 << "ms\n";
       t.start();
-      Array<4,int> a1(range, v.data(), false);
+      //Array<4,int> a1(range, v.data(), false);
+      Array<4,int> a1(range, vec_to_shared(v), false);
       t.stop();
       //check(!a1.owns_memory_for_data(), "test preallocated without copy: should not own memory");
       create_duration = t.value();

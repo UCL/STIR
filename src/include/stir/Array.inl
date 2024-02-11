@@ -86,37 +86,35 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
-  : base_type(), _allocated_full_data_ptr(0)
+  : base_type(), _allocated_full_data_ptr(nullptr)
 {}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
-  : base_type(), _allocated_full_data_ptr(0)
+  : base_type(), _allocated_full_data_ptr(new elemT[range.size_all()])
 {
-  //grow(range);
-  this->_allocated_full_data_ptr = new elemT[range.size_all()];
   // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(range.size_all()));
   // set elements to zero
-  std::for_each(this->_allocated_full_data_ptr, this->_allocated_full_data_ptr + range.size_all(), [](elemT& e) { assign(e, 0); });
-  this->init(range, this->_allocated_full_data_ptr, false);
+  std::for_each(this->_allocated_full_data_ptr.get(), this->_allocated_full_data_ptr.get() + range.size_all(), [](elemT& e) { assign(e, 0); });
+  this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data)
+  Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr, bool copy_data)
 {
   if (copy_data)
     {
-      this->_allocated_full_data_ptr = new elemT[range.size_all()];
-      std::copy(data_ptr, data_ptr + range.size_all(), this->_allocated_full_data_ptr);
+      this->_allocated_full_data_ptr = std::make_shared<elemT[]>(range.size_all());
+      std::copy(data_sptr.get(), data_sptr.get() + range.size_all(), this->_allocated_full_data_ptr.get());
     }
   else
-    this->_allocated_full_data_ptr = data_ptr;
-  this->init(range, this->_allocated_full_data_ptr, false);
+    this->_allocated_full_data_ptr = data_sptr;
+  this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const self& t)
-:  base_type(t), _allocated_full_data_ptr(0)
+:  base_type(t), _allocated_full_data_ptr(nullptr)
 {
   // info("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
@@ -125,7 +123,7 @@ Array<num_dimensions, elemT>::Array(const self& t)
 // swig cannot parse this ATM, but we don't need it anyway in the wrappers
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const base_type& t)
-:  base_type(t), _allocated_full_data_ptr(0)
+:  base_type(t), _allocated_full_data_ptr(nullptr)
 {
   // info("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
 }
@@ -137,7 +135,7 @@ Array<num_dimensions, elemT>::~Array()
   if (this->_allocated_full_data_ptr)
     {
       // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(this->size_all()));
-      delete [] this->_allocated_full_data_ptr;
+      // delete [] this->_allocated_full_data_ptr;
     }
 }
 
@@ -617,9 +615,11 @@ Array<1, elemT>::Array(const int min_index, const int max_index)
 }
 
 template <class elemT>
-Array<1, elemT>::Array(const IndexRange<1>& range,  elemT * const data_ptr, bool copy_data)
+Array<1, elemT>::Array(const IndexRange<1>& range,  shared_ptr<elemT[]> data_sptr, bool copy_data)
 {
-  this->init(range, data_ptr, copy_data);
+  if (!copy_data)
+    error("1D Array !copy TODO"); 
+  this->init(range, data_sptr.get(), copy_data);
 }
 
 template <class elemT>

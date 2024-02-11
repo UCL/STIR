@@ -148,7 +148,7 @@ public:
     \warning When using \a copy_data = \c false, the user is responsible of memory management of
     the block pointed to by \a data_ptr.
   */
-  inline Array(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data);
+  inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr, bool copy_data);
 
 #ifndef SWIG
   // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
@@ -315,7 +315,7 @@ public:
   mutable bool _full_pointer_access;
 
   //! A pointer to the allocated chunk if the array is constructed that way, zero otherwise
-  elemT* _allocated_full_data_ptr;
+  shared_ptr<elemT[]> _allocated_full_data_ptr;
 
   //! change the array to a new range of indices, pointing to \c data_ptr
   /*!
@@ -395,7 +395,7 @@ public:
     \warning When using \a copy_data = \c false, the user is responsible of memory management of
     the block pointed to by \a data_ptr.
   */
-  inline Array(const IndexRange<1>& range, elemT * const data_ptr, bool copy_data);
+  inline Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr, bool copy_data);
 
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);
