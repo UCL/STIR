@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -100,14 +100,8 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
 }
 
 template <int num_dimensions, typename elemT>
-  Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr, bool copy_data)
+Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr)
 {
-  if (copy_data)
-    {
-      this->_allocated_full_data_ptr = std::shared_ptr<elemT[]>(new elemT[range.size_all()]);
-      std::copy(data_sptr.get(), data_sptr.get() + range.size_all(), this->_allocated_full_data_ptr.get());
-    }
-  else
     this->_allocated_full_data_ptr = data_sptr;
   this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
@@ -615,12 +609,14 @@ Array<1, elemT>::Array(const int min_index, const int max_index)
 }
 
 template <class elemT>
-Array<1, elemT>::Array(const IndexRange<1>& range,  shared_ptr<elemT[]> data_sptr, bool copy_data)
-{
-  if (!copy_data)
-    this->allocated_memory_sptr = data_sptr;
-  this->init(range, data_sptr.get(), copy_data);
-}
+Array<1, elemT>::Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr)
+    : base_type(range.get_min_index(), range.get_max_index(), data_sptr)
+{}
+
+template <class elemT>
+Array<1, elemT>::Array(const IndexRange<1>& range, const elemT* const data_ptr)
+    : base_type(range.get_min_index(), range.get_max_index(), data_ptr)
+{}
 
 template <class elemT>
 Array<1, elemT>::Array(const base_type& il)

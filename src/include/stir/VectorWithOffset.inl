@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-07-01, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -271,18 +271,14 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
   this->check_state();
 }
 
-template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int sz, T * const data_ptr, T * const end_of_data_ptr)   
-    : VectorWithOffset(0, sz - 1, data_ptr, end_of_data_ptr)
-{}
-
+#if STIR_VERSION < 070000
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
                                       T * const data_ptr, T * const end_of_data_ptr)   
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
       pointer_access(false),
-      allocated_memory_sptr(nullptr)
+      allocated_memory_sptr(nullptr) // we don't own the data
 {
   this->begin_allocated_memory = data_ptr;
   this->end_allocated_memory = end_of_data_ptr;
@@ -291,8 +287,34 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index,
 }
 
 template <class T>
-VectorWithOffset<T>::
-VectorWithOffset(VectorWithOffset<T>&& other) noexcept
+VectorWithOffset<T>::VectorWithOffset(const int sz, T* const data_ptr, T* const end_of_data_ptr)
+    : VectorWithOffset(0, sz - 1, data_ptr, end_of_data_ptr)
+{}
+#endif // STIR_VERSION < 070000
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, const T* const data_ptr)
+{
+  // first set empty, such that resize() will work ok
+  this->init();
+  // note: need a const_cast, but it's safe because we will copy the data
+  this->init(min_index, max_index, const_cast<T*>(data_ptr), /* copy_data = */ true);
+}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int sz, const T* const data_ptr)
+    : VectorWithOffset(0, sz - 1, data_ptr)
+{}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, shared_ptr<T[]> data_sptr)
+{
+  this->allocated_memory_sptr = data_sptr;
+  this->init(min_index, max_index, data_sptr.get(), /* copy_data = */ false);
+}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(VectorWithOffset<T>&& other) noexcept
   : VectorWithOffset()
 {
   swap(*this, other);

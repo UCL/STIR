@@ -50,21 +50,14 @@ private:
   typedef VectorWithOffset<T> base_type;
 
 public:
-  //! Construct an empty NumericVectorWithOffset
-  inline NumericVectorWithOffset();
-
-  //! Construct a NumericVectorWithOffset of given length
-  inline explicit NumericVectorWithOffset(const int hsz);
-
-  //! Construct a NumericVectorWithOffset of elements with offset \c min_index
-  inline NumericVectorWithOffset(const int min_index, const int max_index);
+  using base_type::base_type;
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const NumericVectorWithOffset& t)
-    : NumericVectorWithOffset(static_cast<const base_type&>(t))
+      : NumericVectorWithOffset(static_cast<const base_type&>(t))
   {}
 
   //! Swap content/members of 2 objects
@@ -75,7 +68,7 @@ public:
   }
 
   //! move constructor
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   NumericVectorWithOffset(NumericVectorWithOffset&& other) noexcept;
 
   //! assignment
