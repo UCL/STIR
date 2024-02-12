@@ -52,7 +52,6 @@
 #endif
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
-#include "stir/PixelsOnCartesianGrid.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -938,7 +937,7 @@ BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& bac
   auto centre_axial_values = std::vector<float>(volume_sptr->get_z_size());
   for (int z = volume_sptr->get_min_z(); z <= volume_sptr->get_max_z(); z++)
     {
-      centre_axial_values[z] = volume_sptr->get_plane(z).at(0).at(0);
+      centre_axial_values[z] = (*volume_sptr)[z][0][0];
       oss << "\tz = " << z << "/" << volume_sptr->get_max_z() << " is " << centre_axial_values[z] << std::endl;
       if (test_ok)
         {
@@ -988,7 +987,6 @@ BlocksTests::run_tests()
   print_time("map orientation test took: ");
   run_intersection_with_cylinder_test();
   print_time("intersection with cylinder test took: ");
-  run_back_projection_test_with_axial_buckets();
   run_back_projection_test_with_axial_buckets(back_projector);
   print_time("back projection test with axial buckets took: ");
 
