@@ -167,7 +167,7 @@ get_output(DiscretisedDensity<3,float> &density) const
       else{
         num_lors_per_chunk = num_lors_per_chunk_floor;
       }
-      if (p.get_proj_data_info_sptr()->is_tof_data() == 1)
+      if (p.get_proj_data_info_sptr()->is_tof_data())
         {
           info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
 
