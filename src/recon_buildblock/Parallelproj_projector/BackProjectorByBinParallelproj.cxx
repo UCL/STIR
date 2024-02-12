@@ -229,14 +229,14 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
                              image_vec.data(),
                              _helper->origin.data(),
                              _helper->voxsize.data(),
-                             mem_for_PP_back,
+                             mem_for_PP_back.data(),
                              _helper->num_lors,
                              _helper->imgdim.data(),
                              _helper->tofbin_width,
                              &_helper->sigma_tof,
                              &_helper->tofcenter_offset,
                              4, // float n_sigmas,
-                             _projected_data_sptr->get_proj_data_info_sptr()->get_num_tof_poss(),
+                             _helper->num_tof_bins,
                              0, //  unsigned char lor_dependent_sigma_tof
                              0  // unsigned char lor_dependent_tofcenter_offset
       );
