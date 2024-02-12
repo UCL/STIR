@@ -28,102 +28,76 @@
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating
-#pragma warning(disable: 4661)
+#  pragma warning(disable : 4661)
 #endif // _MSC_VER
 
 using std::string;
 
 START_NAMESPACE_STIR
 
-template<typename elemT>
+template <typename elemT>
 bool
-Sinogram<elemT>::
-has_same_characteristics(self_type const& other,
-			 string& explanation) const
+Sinogram<elemT>::has_same_characteristics(self_type const& other, string& explanation) const
 {
   using boost::format;
   using boost::str;
 
-  if (*this->get_proj_data_info_sptr() !=
-      *other.get_proj_data_info_sptr())
+  if (*this->get_proj_data_info_sptr() != *other.get_proj_data_info_sptr())
     {
-      explanation = 
-	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-	    % this->get_proj_data_info_sptr()->parameter_info()
-	    % other.get_proj_data_info_sptr()->parameter_info()
-	    );
+      explanation = str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
+                        % this->get_proj_data_info_sptr()->parameter_info() % other.get_proj_data_info_sptr()->parameter_info());
       return false;
     }
-  if (this->get_axial_pos_num() !=
-      other.get_axial_pos_num())
+  if (this->get_axial_pos_num() != other.get_axial_pos_num())
     {
-      explanation = 
-	str(format("Differing axial position number: %1% vs %2%")
-	    % this->get_axial_pos_num()
-	    % other.get_axial_pos_num()
-	    );
+      explanation
+          = str(format("Differing axial position number: %1% vs %2%") % this->get_axial_pos_num() % other.get_axial_pos_num());
       return false;
     }
-  if (this->get_segment_num() !=
-      other.get_segment_num())
+  if (this->get_segment_num() != other.get_segment_num())
     {
-      explanation = 
-	str(format("Differing segment number: %1% vs %2%")
-	    % this->get_segment_num()
-	    % other.get_segment_num()
-	    );
+      explanation = str(format("Differing segment number: %1% vs %2%") % this->get_segment_num() % other.get_segment_num());
       return false;
     }
-  if (this->get_timing_pos_num() !=
-      other.get_timing_pos_num())
+  if (this->get_timing_pos_num() != other.get_timing_pos_num())
     {
-      explanation =
-	str(format("Differing timing position index: %1% vs %2%")
-	    % this->get_timing_pos_num()
-	    % other.get_timing_pos_num()
-	    );
+      explanation
+          = str(format("Differing timing position index: %1% vs %2%") % this->get_timing_pos_num() % other.get_timing_pos_num());
       return false;
     }
   return true;
 }
 
-template<typename elemT>
+template <typename elemT>
 bool
-Sinogram<elemT>::
-has_same_characteristics(self_type const& other) const
+Sinogram<elemT>::has_same_characteristics(self_type const& other) const
 {
   std::string explanation;
   return this->has_same_characteristics(other, explanation);
 }
 
-template<typename elemT>
-bool 
-Sinogram<elemT>::
-operator ==(const self_type& that) const
+template <typename elemT>
+bool
+Sinogram<elemT>::operator==(const self_type& that) const
 {
-  return
-    this->has_same_characteristics(that) &&
-    base_type::operator==(that);
+  return this->has_same_characteristics(that) && base_type::operator==(that);
 }
-  
-template<typename elemT>
-bool 
-Sinogram<elemT>::
-operator !=(const self_type& that) const
+
+template <typename elemT>
+bool
+Sinogram<elemT>::operator!=(const self_type& that) const
 {
   return !((*this) == that);
 }
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-Sinogram<elemT>::
-resize(const IndexRange<2>& range)
-{   
+void
+Sinogram<elemT>::resize(const IndexRange<2>& range)
+{
   if (range == this->get_index_range())
     return;
 
@@ -131,17 +105,16 @@ resize(const IndexRange<2>& range)
   // TODO
 
   assert(range.get_min_index() == 0);
-  
-  shared_ptr<ProjDataInfo> pdi_ptr (proj_data_info_ptr->clone());
-  
+
+  shared_ptr<ProjDataInfo> pdi_ptr(proj_data_info_ptr->clone());
+
   pdi_ptr->set_num_views(range.get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[0].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0].get_max_index());
 
   proj_data_info_ptr = pdi_ptr;
 
-  Array<2,elemT>::resize(range);
-	
+  Array<2, elemT>::resize(range);
 }
 
 /*!
@@ -149,9 +122,8 @@ resize(const IndexRange<2>& range)
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-Sinogram<elemT>::
-grow(const IndexRange<2>& range)
+void
+Sinogram<elemT>::grow(const IndexRange<2>& range)
 {
   resize(range);
 }

@@ -4,11 +4,11 @@
 
   \file
 
-  \brief 
+  \brief
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  
+
 */
 /*
     Copyright (C) 2000- 2001, IRSL
@@ -30,11 +30,10 @@ using std::fstream;
 using std::cerr;
 using std::endl;
 
-
 START_NAMESPACE_STIR
 
 template <typename elemT>
-DAVImageFilter3D<elemT>:: DAVImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
+DAVImageFilter3D<elemT>::DAVImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
 {
   mask_radius_x = mask_radius.x();
   mask_radius_y = mask_radius.y();
@@ -42,42 +41,39 @@ DAVImageFilter3D<elemT>:: DAVImageFilter3D(const CartesianCoordinate3D<int>& mas
 }
 
 template <typename elemT>
-DAVImageFilter3D<elemT>:: DAVImageFilter3D()
+DAVImageFilter3D<elemT>::DAVImageFilter3D()
 {
   set_defaults();
 }
 
 template <typename elemT>
 Succeeded
-DAVImageFilter3D<elemT>::virtual_set_up (const DiscretisedDensity<3,elemT>& density)
+DAVImageFilter3D<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& density)
 {
 
-  //if (consistency_check(density) == Succeeded::no)
-  //    return Succeeded::no;
-   dav_filter = 
-     DAVArrayFilter3D<elemT>(Coordinate3D<int>
-     (mask_radius_z, mask_radius_y, mask_radius_x));
+  // if (consistency_check(density) == Succeeded::no)
+  //     return Succeeded::no;
+  dav_filter = DAVArrayFilter3D<elemT>(Coordinate3D<int>(mask_radius_z, mask_radius_y, mask_radius_x));
 
-   return Succeeded::yes;
+  return Succeeded::yes;
 }
 
 template <typename elemT>
 void
 DAVImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
 {
-  //assert(consistency_check(density) == Succeeded::yes);
+  // assert(consistency_check(density) == Succeeded::yes);
   dav_filter(density);
-   
 }
 
 template <typename elemT>
 void
-DAVImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
+DAVImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
+                                       const DiscretisedDensity<3, elemT>& in_density) const
 {
-  //assert(consistency_check(in_density) == Succeeded::yes);
- // cerr << mask_radius_x << "   "  << mask_radius_y << endl;
-  dav_filter(out_density,in_density);
-   
+  // assert(consistency_check(in_density) == Succeeded::yes);
+  // cerr << mask_radius_x << "   "  << mask_radius_y << endl;
+  dav_filter(out_density, in_density);
 }
 
 template <typename elemT>
@@ -90,7 +86,7 @@ DAVImageFilter3D<elemT>::set_defaults()
 }
 
 template <typename elemT>
-void 
+void
 DAVImageFilter3D<elemT>::initialise_keymap()
 {
   parser.add_start_key("DAV Filter Parameters");
@@ -100,16 +96,13 @@ DAVImageFilter3D<elemT>::initialise_keymap()
   parser.add_stop_key("END DAV Filter Parameters");
 }
 
+const char* const DAVImageFilter3D<float>::registered_name = "DAV";
 
-const char * const 
-DAVImageFilter3D<float>::registered_name =
-  "DAV";
-
-#  ifdef _MSC_VER
-// prevent warning message on reinstantiation, 
+#ifdef _MSC_VER
+// prevent warning message on reinstantiation,
 // note that we get a linking error if we don't have the explicit instantiation below
-#  pragma warning(disable:4660)
-#  endif
+#  pragma warning(disable : 4660)
+#endif
 
 #if 0
 // registration business moved to local_buildblock_registries.cxx
@@ -121,6 +114,4 @@ static DAVImageFilter3D<float>::RegisterIt dummy;
 
 template DAVImageFilter3D<float>;
 
-
 END_NAMESPACE_STIR
-

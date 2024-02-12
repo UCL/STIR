@@ -14,7 +14,7 @@
   \brief Declaration of stir::integrate_discrete_function function
 
   \author Charalampos Tsoumpas
- 
+
 */
 
 #ifndef __stir_integrate_discrete_function_H__
@@ -22,9 +22,9 @@
 
 #include "stir/common.h"
 #include <vector>
-#include <iostream> 
+#include <iostream>
 #include <cstring>
-#include <iomanip> 
+#include <iomanip>
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -41,8 +41,9 @@ START_NAMESPACE_STIR
   \warning Type \c elemT should not be an integral type.
 */
 template <typename elemT>
-inline elemT 
-integrate_discrete_function(const std::vector<elemT> & coordinates, const std::vector<elemT> & values, const int interpolation_order = 1);
+inline elemT integrate_discrete_function(const std::vector<elemT>& coordinates,
+                                         const std::vector<elemT>& values,
+                                         const int interpolation_order = 1);
 
 END_NAMESPACE_STIR
 

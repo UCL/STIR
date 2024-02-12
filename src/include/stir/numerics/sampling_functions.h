@@ -10,7 +10,7 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
+  \file
   \ingroup numerics
   \brief Sampling functions (currently only stir::sample_function_on_regular_grid)
 
@@ -29,11 +29,11 @@ START_NAMESPACE_STIR
  \param[in] func function to sample
  \param[in] offset offset to use for coordinates (see below)
  \param[in] step step size to use for coordinates (see below)
- 
+
  Symbolically, this function does the following computation for every index in the array
  \code
   out(index) = func(index * step - offset)
- \endcode 
+ \endcode
 
  \par requirement for type  FunctionType
  Due to the calling sequence above, the following has to be defined
@@ -44,11 +44,10 @@ START_NAMESPACE_STIR
  \todo  At the moment, only the 3D version is implemented, but this could be templated.
 */
 template <class FunctionType, class elemT, class positionT>
-inline
-void sample_function_on_regular_grid(Array<3,elemT>& out,
-                                     FunctionType func,
-                                     const BasicCoordinate<3, positionT>&  offset,  
-                                     const BasicCoordinate<3, positionT>& step);
+inline void sample_function_on_regular_grid(Array<3, elemT>& out,
+                                            FunctionType func,
+                                            const BasicCoordinate<3, positionT>& offset,
+                                            const BasicCoordinate<3, positionT>& step);
 
 /*!
  \brief Generic function to get the values of a 3D function on a grid
@@ -56,7 +55,8 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
  \param[in,out] out array that will be filled with the function values. Its dimensions are used to find
    the coordinates where to sample the function (see below).
  \param[in] func function to sample
- \param[in] index_converter a lambda function converting indices in the out array to coordinates where the function shall be sampled
+ \param[in] index_converter a lambda function converting indices in the out array to coordinates where the function shall be
+ sampled
 
  \par requirement for type  FunctionType
  Due to the calling sequence above, the following has to be defined
@@ -67,8 +67,7 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
  \todo  At the moment, only the 3D version is implemented, but this could be templated.
 */
 template <typename elemT, typename FunctionType, typename Lambda>
-inline
-void sample_function_using_index_converter(Array<3,elemT>& out, FunctionType func, Lambda&& index_converter);
+inline void sample_function_using_index_converter(Array<3, elemT>& out, FunctionType func, Lambda&& index_converter);
 
 END_NAMESPACE_STIR
 

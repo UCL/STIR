@@ -29,8 +29,8 @@
 
 START_NAMESPACE_STIR
 
-void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
-                          float coincidence_time_window, float isotope_halflife)
+void
+randoms_from_singles(ProjData& proj_data, const SinglesRates& singles, float coincidence_time_window, float isotope_halflife)
 {
   const auto& scanner = *proj_data.get_proj_data_info_sptr()->get_scanner_ptr();
   if (coincidence_time_window <= 0.F)
@@ -44,14 +44,12 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
   const TimeFrameDefinitions frame_defs = proj_data.get_exam_info_sptr()->get_time_frame_definitions();
 
   // get total singles for this frame
-  Array<2,float> total_singles(IndexRange2D(num_rings, num_detectors_per_ring));
-  for (int r=0; r<num_rings; ++r)
-    for (int c=0; c<num_detectors_per_ring; ++c)
+  Array<2, float> total_singles(IndexRange2D(num_rings, num_detectors_per_ring));
+  for (int r = 0; r < num_rings; ++r)
+    for (int c = 0; c < num_detectors_per_ring; ++c)
       {
-        const DetectionPosition<> pos(c,r,0);
-        total_singles[r][c]=singles.get_singles(pos,
-                                                frame_defs.get_start_time(1),
-                                                frame_defs.get_end_time(1));
+        const DetectionPosition<> pos(c, r, 0);
+        total_singles[r][c] = singles.get_singles(pos, frame_defs.get_start_time(1), frame_defs.get_end_time(1));
       }
 
   {
@@ -78,19 +76,17 @@ void randoms_from_singles(ProjData& proj_data, const SinglesRates& singles,
     */
     const double duration = frame_defs.get_duration(1);
     const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
-    const double double_decay_corr_factor = decay_correction_factor(0.5*isotope_halflife, 0., duration);
+    const double double_decay_corr_factor = decay_correction_factor(0.5 * isotope_halflife, 0., duration);
     const double corr_factor = square(decay_corr_factor) / double_decay_corr_factor / duration;
 
     info(boost::format("Isotope half-life: %1%\n"
                        "RFS: decay correction factor: %2%,\n"
                        "time frame duration: %3%.\n"
                        "total correction factor from 2tau*(singles_totals)^2 to randoms_totals: %4%.\n")
-         % isotope_halflife % decay_corr_factor % duration % (1/corr_factor),
+             % isotope_halflife % decay_corr_factor % duration % (1 / corr_factor),
          2);
 
-    multiply_crystal_factors(proj_data, total_singles,
-                             static_cast<float>(coincidence_time_window * corr_factor));
-
+    multiply_crystal_factors(proj_data, total_singles, static_cast<float>(coincidence_time_window * corr_factor));
   }
 }
 

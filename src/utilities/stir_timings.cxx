@@ -102,7 +102,10 @@ public:
 
   //! Test function that could be used to see if reported timings are correct
   /*! CPU time should be close to zero, wall-clock time close to 1123ms */
-  void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds(1123)); }
+  void sleep()
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1123));
+  }
 
   void copy_image()
   {
@@ -114,7 +117,8 @@ public:
   void copy_proj_data_file_to_file()
   {
     ProjDataInterfile tmp(this->template_proj_data_sptr->get_exam_info_sptr(),
-                          this->template_proj_data_sptr->get_proj_data_info_sptr(), "my_timings_copy.hs");
+                          this->template_proj_data_sptr->get_proj_data_info_sptr(),
+                          "my_timings_copy.hs");
     tmp.fill(*this->output_proj_data_sptr);
   }
 
@@ -131,7 +135,8 @@ public:
   void copy_proj_data_mem_to_file()
   {
     ProjDataInterfile tmp(this->template_proj_data_sptr->get_exam_info_sptr(),
-                          this->template_proj_data_sptr->get_proj_data_info_sptr(), "my_timings_copy.hs");
+                          this->template_proj_data_sptr->get_proj_data_info_sptr(),
+                          "my_timings_copy.hs");
     tmp.fill(*this->mem_proj_data_sptr);
   }
 
@@ -166,7 +171,10 @@ public:
     this->projectors_sptr->get_back_projector_sptr()->back_project(*this->image_sptr, *this->mem_proj_data_sptr);
   }
 
-  void obj_func_set_up() { this->objective_function_sptr->set_up(this->image_sptr); }
+  void obj_func_set_up()
+  {
+    this->objective_function_sptr->set_up(this->image_sptr);
+  }
 
   void obj_func_grad_no_sens()
   {
@@ -275,9 +283,10 @@ Timings::init()
   // projection data set-up
   {
     std::string output_filename = "my_timings.hs";
-    this->output_proj_data_sptr
-        = std::make_shared<ProjDataInterfile>(this->exam_info_sptr, this->template_proj_data_sptr->get_proj_data_info_sptr(),
-                                              output_filename, std::ios::in | std::ios::out | std::ios::trunc);
+    this->output_proj_data_sptr = std::make_shared<ProjDataInterfile>(this->exam_info_sptr,
+                                                                      this->template_proj_data_sptr->get_proj_data_info_sptr(),
+                                                                      output_filename,
+                                                                      std::ios::in | std::ios::out | std::ios::trunc);
     this->mem_proj_data_sptr
         = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, this->template_proj_data_sptr->get_proj_data_info_sptr());
   }

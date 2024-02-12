@@ -28,7 +28,7 @@ ViewgramIndices::ViewgramIndices()
 {}
 
 ViewgramIndices::ViewgramIndices(const int view_num, const int segment_num, const int timing_pos_num)
-  : SegmentIndices(segment_num, timing_pos_num),
+    : SegmentIndices(segment_num, timing_pos_num),
       _view(view_num)
 {}
 

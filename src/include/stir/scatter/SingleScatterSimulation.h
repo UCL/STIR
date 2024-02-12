@@ -21,7 +21,6 @@
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/RegisteredParsingObject.h"
 
-
 START_NAMESPACE_STIR
 
 /*!
@@ -30,67 +29,51 @@ START_NAMESPACE_STIR
 
   \todo The class is specific to PET so should be renamed accordingly.
 */
-class SingleScatterSimulation : public
-        RegisteredParsingObject<
-        SingleScatterSimulation,
-        ScatterSimulation,
-        ScatterSimulation >
+class SingleScatterSimulation : public RegisteredParsingObject<SingleScatterSimulation, ScatterSimulation, ScatterSimulation>
 {
 private:
-    typedef RegisteredParsingObject<
-    SingleScatterSimulation,
-    ScatterSimulation,
-    ScatterSimulation > base_type;
+  typedef RegisteredParsingObject<SingleScatterSimulation, ScatterSimulation, ScatterSimulation> base_type;
+
 public:
+  //! Name which will be used when parsing a ScatterSimulation object
+  static const char* const registered_name;
 
-    //! Name which will be used when parsing a ScatterSimulation object
-    static const char * const registered_name;
+  //! Default constructor
+  SingleScatterSimulation();
 
-    //! Default constructor
-    SingleScatterSimulation();
+  //! Constructor with initialisation from parameter file
+  explicit SingleScatterSimulation(const std::string& parameter_filename);
 
-    //! Constructor with initialisation from parameter file
-    explicit
-    SingleScatterSimulation(const std::string& parameter_filename);
+  ~SingleScatterSimulation() override;
 
-    virtual ~SingleScatterSimulation();
+  Succeeded process_data() override;
+  //! gives method information
+  std::string method_info() const override;
+  //! prompts the user to enter parameter values manually
+  void ask_parameters() override;
+  //! Perform checks and intialisations
+  Succeeded set_up() override;
 
-    virtual Succeeded process_data();
-    //! gives method information
-    virtual std::string method_info() const;
-    //! prompts the user to enter parameter values manually
-    virtual void ask_parameters();
-    //! Perform checks and intialisations
-    virtual Succeeded set_up();
 protected:
+  void initialise(const std::string& parameter_filename);
 
-    void initialise(const std::string& parameter_filename);
+  void set_defaults() override;
+  void initialise_keymap() override;
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
+  //! used to check acceptable parameter ranges, etc...
+  bool post_processing() override;
 
-    //! used to check acceptable parameter ranges, etc...
-    virtual bool post_processing();
+  //!
+  //! \brief simulate single scatter for one scatter point
+  double simulate_for_one_scatter_point(const std::size_t scatter_point_num, const unsigned det_num_A, const unsigned det_num_B);
 
+  double scatter_estimate(const Bin& bin) override;
 
-    //!
-    //! \brief simulate single scatter for one scatter point
-    double
-    simulate_for_one_scatter_point(const std::size_t scatter_point_num,
-                                                  const unsigned det_num_A,
-                                                  const unsigned det_num_B);
+  virtual void actual_scatter_estimate(double& scatter_ratio_singles, const unsigned det_num_A, const unsigned det_num_B);
 
-    virtual double
-      scatter_estimate(const Bin& bin);
-
-    virtual void
-    actual_scatter_estimate(double& scatter_ratio_singles,
-                            const unsigned det_num_A,
-                            const unsigned det_num_B);
-
- private:
-    //! larger angles will be ignored
-    float max_single_scatter_cos_angle;
+private:
+  //! larger angles will be ignored
+  float max_single_scatter_cos_angle;
 };
 
 END_NAMESPACE_STIR

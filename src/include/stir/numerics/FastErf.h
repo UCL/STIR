@@ -18,10 +18,9 @@
 #include "stir/numerics/BSplines1DRegularGrid.h"
 
 #ifndef __stir_numerics_FastErf__H__
-#define __stir_numerics_FastErf__H__
+#  define __stir_numerics_FastErf__H__
 
 START_NAMESPACE_STIR
-
 
 /*! \ingroup numerics
    \name FastErf
@@ -34,15 +33,14 @@ START_NAMESPACE_STIR
 class FastErf
 {
 private:
-
   //! The number of erf samples to take from -\c_maximum_sample_value to \c_maximum_sample_value
   int _num_samples;
 
   //! The sampling period, computed as \c_maximum_sample_value / \c_num_samples)
   double _sampling_period;
 
-//  //! Used to check if setup has been run before parameter changes
-//  bool _is_setup = false;
+  //  //! Used to check if setup has been run before parameter changes
+  //  bool _is_setup = false;
 
   //! BSplines object using linear interpolation
   BSpline::BSplines1DRegularGrid<double, double> _spline;
@@ -57,7 +55,8 @@ private:
 
 public:
   explicit FastErf(const int num_samples = 1000, const float maximum_sample_value = 5)
-      : _num_samples(num_samples), _maximum_sample_value(maximum_sample_value )
+      : _num_samples(num_samples),
+        _maximum_sample_value(maximum_sample_value)
   {}
 
   //! Returns the number of erf samples
@@ -73,32 +72,31 @@ public:
   /*! \brief Computes the erf() values, sets up BSplines and sets up interpolation vectors.  */
   inline void set_up();
 
-/*! \brief Uses BSplines to interpolate the value of erf(xp)
- * If xp out of range (-\c_maximum_sample_value \c_maximum_sample_value) then outputs -1 or 1
- * @param xp input argument for erf(xp)
- * @return interpolated approximation of erf(xp)
- */
-inline double get_erf_BSplines_interpolation(double xp) const;
+  /*! \brief Uses BSplines to interpolate the value of erf(xp)
+   * If xp out of range (-\c_maximum_sample_value \c_maximum_sample_value) then outputs -1 or 1
+   * @param xp input argument for erf(xp)
+   * @return interpolated approximation of erf(xp)
+   */
+  inline double get_erf_BSplines_interpolation(double xp) const;
 
-/*! \brief Uses linear interpolation of precomputed erf(x) values for erf(xp)
- * @param xp input argument for erf(xp)
- * @return linear interpolated approximation of erf(xp)
- */
-inline double get_erf_linear_interpolation(double xp) const;
+  /*! \brief Uses linear interpolation of precomputed erf(x) values for erf(xp)
+   * @param xp input argument for erf(xp)
+   * @return linear interpolated approximation of erf(xp)
+   */
+  inline double get_erf_linear_interpolation(double xp) const;
 
-/*! \brief Uses nearest neighbour interpolation of precomputed erf(x) values for erf(xp)
- * @param xp input argument for erf(xp)
- * @return nearest neighbour interpolated approximation of erf(xp)
- */
-inline double get_erf_nearest_neighbour_interpolation(double xp) const;
+  /*! \brief Uses nearest neighbour interpolation of precomputed erf(x) values for erf(xp)
+   * @param xp input argument for erf(xp)
+   * @return nearest neighbour interpolated approximation of erf(xp)
+   */
+  inline double get_erf_nearest_neighbour_interpolation(double xp) const;
 
   //! Wraps get_erf_linear_interpolation as a () operator
-  inline const double operator() (const double xp) const;
-
+  inline const double operator()(const double xp) const;
 };
 
 END_NAMESPACE_STIR
 
-#include "stir/numerics/FastErf.inl"
+#  include "stir/numerics/FastErf.inl"
 
 #endif // __stir_numerics_FastErf__H__

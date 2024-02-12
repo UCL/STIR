@@ -43,7 +43,6 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 
-
 #include "stir/ParsingObject.h"
 #include "stir/ProjDataInMemory.h"
 
@@ -58,62 +57,62 @@ START_NAMESPACE_STIR
 class CreateTailMaskFromACFs : public ParsingObject
 {
 public:
-    CreateTailMaskFromACFs();
+  CreateTailMaskFromACFs();
 
-    virtual Succeeded process_data();
+  virtual Succeeded process_data();
 
-    void set_input_projdata_sptr(shared_ptr<ProjData> &);
+  void set_input_projdata_sptr(shared_ptr<ProjData>&);
 
-    void set_input_projdata(std::string&);
+  void set_input_projdata(std::string&);
 
-    void set_output_projdata_sptr(shared_ptr<ProjData>&);
+  void set_output_projdata_sptr(shared_ptr<ProjData>&);
 
-    void set_output_projdata(std::string&);
+  void set_output_projdata(std::string&);
 
-    //!
-    //! \brief get_output_projdata
-    //! \return
-    //! \details Use this function to return the output
-    //! projdata.
-    shared_ptr<ProjData> get_output_projdata_sptr();
+  //!
+  //! \brief get_output_projdata
+  //! \return
+  //! \details Use this function to return the output
+  //! projdata.
+  shared_ptr<ProjData> get_output_projdata_sptr();
 
-    //!
-    //! \brief ACF_threshold
-    //! \warning ACF-threshold defaults to 1.1 (should be larger than 1)
-    float ACF_threshold;
+  //!
+  //! \brief ACF_threshold
+  //! \warning ACF-threshold defaults to 1.1 (should be larger than 1)
+  float ACF_threshold;
 
-    //!
-    //! \brief safety_margin
-    //!
-    int safety_margin;
+  //!
+  //! \brief safety_margin
+  //!
+  int safety_margin;
 
 protected:
-    void initialise_keymap();
-    bool post_processing();
-    void set_defaults();
+  void initialise_keymap() override;
+  bool post_processing() override;
+  void set_defaults() override;
 
 private:
-    //!
-    //! \brief ACF_sptr
-    //! \details Input projdata
-    shared_ptr<ProjData> ACF_sptr;
+  //!
+  //! \brief ACF_sptr
+  //! \details Input projdata
+  shared_ptr<ProjData> ACF_sptr;
 
-    //!
-    //! \brief mask_proj_data
-    //! \details Output projdata
-    shared_ptr<ProjData> mask_proj_data;
+  //!
+  //! \brief mask_proj_data
+  //! \details Output projdata
+  shared_ptr<ProjData> mask_proj_data;
 
-    //!
-    //! \brief _input_filename
-    //! \details The input filename can be omitted in the par file
-    //! but has to be set, later, using the set_input_projdata().
-    std::string _input_filename;
+  //!
+  //! \brief _input_filename
+  //! \details The input filename can be omitted in the par file
+  //! but has to be set, later, using the set_input_projdata().
+  std::string _input_filename;
 
-    //!
-    //! \brief _output_filename
-    //! \details This is the output filename.
-    //! It can be omited, if an output is not nessesary.
-    std::string _output_filename;
+  //!
+  //! \brief _output_filename
+  //! \details This is the output filename.
+  //! It can be omited, if an output is not nessesary.
+  std::string _output_filename;
 };
 
 END_NAMESPACE_STIR

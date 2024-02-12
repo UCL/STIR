@@ -4,7 +4,7 @@
   \file
   \ingroup listmode
   \brief Implementations of class stir::CListEventScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
   \author Nikos Efthimiou
   \author Elise Emond
@@ -28,23 +28,24 @@
 START_NAMESPACE_STIR
 
 template <class ProjDataInfoT>
-CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
-CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::CListEventScannerWithDiscreteDetectors(
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
   if (!proj_data_info_sptr)
     error("CListEventScannerWithDiscreteDetectors constructor called with zero pointer");
 
   auto scanner_sptr = proj_data_info_sptr->get_scanner_sptr();
   // get bare pointer of uncompressed ProjDataInfo
-  auto pdi_ptr =
-     ProjDataInfo::construct_proj_data_info(scanner_sptr, 
-                                            1, scanner_sptr->get_num_rings()-1,
-                                            scanner_sptr->get_num_detectors_per_ring()/2,
-                                            scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                            /* arc correction = */ false,
-                                            /* TOF mashing = */ 1).release();
+  auto pdi_ptr = ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                        1,
+                                                        scanner_sptr->get_num_rings() - 1,
+                                                        scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                        scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                        /* arc correction = */ false,
+                                                        /* TOF mashing = */ 1)
+                     .release();
   // check type
-  auto pdi_ptr_cast = dynamic_cast<ProjDataInfoT *>(pdi_ptr);
+  auto pdi_ptr_cast = dynamic_cast<ProjDataInfoT*>(pdi_ptr);
   if (!pdi_ptr_cast)
     {
       delete pdi_ptr;
@@ -56,8 +57,7 @@ CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& pro
 
 template <class ProjDataInfoT>
 LORAs2Points<float>
-CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
-get_LOR() const
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::get_LOR() const
 {
   LORAs2Points<float> lor;
   const bool swap = true;
@@ -67,53 +67,50 @@ get_LOR() const
 
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  assert(det_pos.pos1().radial_coord()==0);
-  assert(det_pos.pos2().radial_coord()==0);
+  assert(det_pos.pos1().radial_coord() == 0);
+  assert(det_pos.pos2().radial_coord() == 0);
 
   // TODO we're using an obsolete function here which uses a different coordinate system
-  this->get_uncompressed_proj_data_info_sptr()->
-    find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
-                                                         det_pos.pos1().axial_coord(),
-                                                         det_pos.pos2().axial_coord(),
-                                                         det_pos.pos1().tangential_coord(),
-                                                         det_pos.pos2().tangential_coord(),
-                                                         det_pos.timing_pos());
+  this->get_uncompressed_proj_data_info_sptr()->find_cartesian_coordinates_given_scanner_coordinates(
+      coord_1,
+      coord_2,
+      det_pos.pos1().axial_coord(),
+      det_pos.pos2().axial_coord(),
+      det_pos.pos1().tangential_coord(),
+      det_pos.pos2().tangential_coord(),
+      det_pos.timing_pos());
   // find shift in z
-  const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing()*
-    (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1)/2.F;
+  const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing()
+                      * (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings() - 1) / 2.F;
   coord_1.z() -= shift;
   coord_2.z() -= shift;
 
   return lor;
 }
 
-
 template <class ProjDataInfoT>
-void 
-CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+void
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
   assert(dynamic_cast<ProjDataInfoT const*>(&proj_data_info) != 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if (static_cast<ProjDataInfoT const&>(proj_data_info).
-      get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
+  if (static_cast<ProjDataInfoT const&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
     bin.set_bin_value(0);
   else
-  {
-    bin.set_bin_value(1);
-  }
+    {
+      bin.set_bin_value(1);
+    }
 }
 
 template <class ProjDataInfoT>
 bool
-CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::
-is_valid_template(const ProjDataInfo& proj_data_info) const
+CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::is_valid_template(const ProjDataInfo& proj_data_info) const
 {
-	if (dynamic_cast<ProjDataInfoT const*>(&proj_data_info)!= 0)
-        return true;
+  if (dynamic_cast<ProjDataInfoT const*>(&proj_data_info) != 0)
+    return true;
 
-    return false;
+  return false;
 }
 
 END_NAMESPACE_STIR

@@ -60,73 +60,75 @@ START_NAMESPACE_STIR
   \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones
   are written.
 */
-class IOTests_DiscretisedDensity : public IOTests<DiscretisedDensity<3,float> >
+class IOTests_DiscretisedDensity : public IOTests<DiscretisedDensity<3, float>>
 {
 public:
-    explicit IOTests_DiscretisedDensity(istream& in) : IOTests(in) {}
+  explicit IOTests_DiscretisedDensity(istream& in)
+      : IOTests(in)
+  {}
 
 protected:
-
-    void create_image();
-    void read_image();
-    void check_result();
+  void create_image() override;
+  void read_image() override;
+  void check_result() override;
 };
 
-void IOTests_DiscretisedDensity::create_image()
+void
+IOTests_DiscretisedDensity::create_image()
 {
-    _image_to_write_sptr = create_single_image();
+  _image_to_write_sptr = create_single_image();
 }
 
-void IOTests_DiscretisedDensity::read_image()
+void
+IOTests_DiscretisedDensity::read_image()
 {
-    // now read it back
-    unique_ptr<DiscretisedDensity<3,float> >
-        density_ptr = read_from_file<DiscretisedDensity<3,float> >(_filename);
+  // now read it back
+  unique_ptr<DiscretisedDensity<3, float>> density_ptr = read_from_file<DiscretisedDensity<3, float>>(_filename);
 
-    if(!check(!is_null_ptr(density_ptr), "failed reading"))
-        return;
+  if (!check(!is_null_ptr(density_ptr), "failed reading"))
+    return;
 
-    _image_to_read_sptr.reset(density_ptr->clone());
+  _image_to_read_sptr.reset(density_ptr->clone());
 
-    if(!check(!is_null_ptr(_image_to_read_sptr), "failed reading"))
-        return;
+  if (!check(!is_null_ptr(_image_to_read_sptr), "failed reading"))
+    return;
 }
 
-void IOTests_DiscretisedDensity::check_result()
+void
+IOTests_DiscretisedDensity::check_result()
 {
-    // Cast the discretised density to voxels on cartesian grids to check grid spacing
-    VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_write_sptr.get());
-    VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_read_sptr.get());
+  // Cast the discretised density to voxels on cartesian grids to check grid spacing
+  VoxelsOnCartesianGrid<float>* image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float>*>(_image_to_write_sptr.get());
+  VoxelsOnCartesianGrid<float>* image_to_read_ptr = dynamic_cast<VoxelsOnCartesianGrid<float>*>(_image_to_read_sptr.get());
 
-    compare_images(*image_to_write_ptr, *image_to_read_ptr);
+  compare_images(*image_to_write_ptr, *image_to_read_ptr);
 
-    // Check TimeFrameDefinitions in ExamInfo. Not all formats support this. Skip if ITK
-    if (_output_file_format_sptr->get_registered_name() != "ITK")
-        check_exam_info(image_to_write_ptr->get_exam_info(), image_to_read_ptr->get_exam_info());
+  // Check TimeFrameDefinitions in ExamInfo. Not all formats support this. Skip if ITK
+  if (_output_file_format_sptr->get_registered_name() != "ITK")
+    check_exam_info(image_to_write_ptr->get_exam_info(), image_to_read_ptr->get_exam_info());
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
   if (argc != 2)
-  {
-    cerr << "Usage : " << argv[0] << " filename\n"
-         << "See source file for the format of this file.\n\n";
-    return EXIT_FAILURE;
-  }
-
+    {
+      cerr << "Usage : " << argv[0] << " filename\n"
+           << "See source file for the format of this file.\n\n";
+      return EXIT_FAILURE;
+    }
 
   ifstream in(argv[1]);
   if (!in)
-  {
-    cerr << argv[0]
-         << ": Error opening input file " << argv[1] << "\nExiting.\n";
+    {
+      cerr << argv[0] << ": Error opening input file " << argv[1] << "\nExiting.\n";
 
-    return EXIT_FAILURE;
-  }
+      return EXIT_FAILURE;
+    }
 
   IOTests_DiscretisedDensity tests(in);
   tests.run_tests();

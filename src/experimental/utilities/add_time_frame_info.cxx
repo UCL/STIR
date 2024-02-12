@@ -34,31 +34,31 @@ using std::ifstream;
 using std::istream;
 using std::setw;
 
-int main(int argc, char *argv[])
-{ 
+int
+main(int argc, char* argv[])
+{
   USING_NAMESPACE_STIR
-  
-    if (argc!=3)
-      {
-	std::cerr << "Usage:" << argv[0] << "\n"
-		  << "\t[dynamic_image_filename]\n"
-		  << "\t[time_frames_filename]\n\n";
-	return EXIT_FAILURE;            
-      }       
 
-  //Read Dynamic Sequence of ECAT7 Images, in respect to their center in x, y axes as origin
-  const shared_ptr< DynamicDiscretisedDensity >  dyn_image_sptr= 
-    DynamicDiscretisedDensity::read_from_file(argv[1]);
+  if (argc != 3)
+    {
+      std::cerr << "Usage:" << argv[0] << "\n"
+                << "\t[dynamic_image_filename]\n"
+                << "\t[time_frames_filename]\n\n";
+      return EXIT_FAILURE;
+    }
+
+  // Read Dynamic Sequence of ECAT7 Images, in respect to their center in x, y axes as origin
+  const shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr = DynamicDiscretisedDensity::read_from_file(argv[1]);
   DynamicDiscretisedDensity dyn_image = *dyn_image_sptr;
   const TimeFrameDefinitions frame_defs(argv[2]);
-  assert(frame_defs.get_num_frames()==dyn_image.get_num_time_frames());
+  assert(frame_defs.get_num_frames() == dyn_image.get_num_time_frames());
   dyn_image.set_time_frame_definitions(frame_defs);
-  const TimeFrameDefinitions time_defs=dyn_image.get_time_frame_definitions();
-  assert(frame_defs.get_duration(1)==time_defs.get_duration(1));
+  const TimeFrameDefinitions time_defs = dyn_image.get_time_frame_definitions();
+  assert(frame_defs.get_duration(1) == time_defs.get_duration(1));
   std::cerr << "Duration Time " << dyn_image.get_time_frame_definitions().get_duration(2) << "\n";
-  Succeeded writing_succeeded=dyn_image.write_to_ecat7(argv[1]);
-  if(writing_succeeded==Succeeded::yes)
-    return EXIT_SUCCESS ;
-  else 
-    return EXIT_FAILURE ;
+  Succeeded writing_succeeded = dyn_image.write_to_ecat7(argv[1]);
+  if (writing_succeeded == Succeeded::yes)
+    return EXIT_SUCCESS;
+  else
+    return EXIT_FAILURE;
 }

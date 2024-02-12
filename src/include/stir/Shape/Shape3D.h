@@ -27,8 +27,8 @@
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class VoxelsOnCartesianGrid;
-
+template <typename elemT>
+class VoxelsOnCartesianGrid;
 
 /*!
   \ingroup Shape
@@ -39,12 +39,12 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   no fuzzyness).
 
   The only derived class where this is relaxed is DiscretisedShape3D.
-  However, this then needs some special treatment for some member 
+  However, this then needs some special treatment for some member
   functions, and you have to be somewhat careful with that class.
 
   \todo This could/should be generalised to allow general fuzzy shapes.
   Probably the only thing to change is to let is_inside_shape() return
-  a float (between 0 and 1). This would solve some issues with 
+  a float (between 0 and 1). This would solve some issues with
   DiscretisedDhape3D.
 
   \todo The restriction to the 3D case for this base class largely comes
@@ -62,29 +62,25 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   origin (in mm):= <float> ;defaults to {0,0,0}
   \endverbatim
 */
-class Shape3D :
-   public RegisteredObject<Shape3D>
+class Shape3D : public RegisteredObject<Shape3D>
 {
 public:
+  ~Shape3D() override {}
 
-  
-  virtual ~Shape3D() {}
-  
   //! Compare shapes
   /*!
       \par Implementation note
-      
+
       This virtual function has to be implemented in each final class of the hierarchy.
       However, Shape3D::operator== has an implementation that checks equality of the
       origin (up-to a tolerance of .001). Derived classes can call this implementation.
       */
-  virtual 
-    inline bool operator==(const Shape3D&) const = 0;
+  virtual inline bool operator==(const Shape3D&) const = 0;
 
   //! Compare shapes
   inline bool operator!=(const Shape3D&) const;
 
-  /*! 
+  /*!
     \brief Determine (approximately) the intersection volume of a voxel with the shape.
 
     \param voxel_centre is a cartesian coordinate in 'absolute' coordinates,
@@ -97,36 +93,34 @@ public:
 
     In the Shape3D implementation, this is simply done by calling
     is_inside_shape() at various points in the voxel, and returning
-    the average value. Obviously, this will only approximate the 
+    the average value. Obviously, this will only approximate the
     intersection volume for very large \a num_samples, or when the
     voxel is completely inside the shape.
   */
-  virtual float get_voxel_weight(
-    const CartesianCoordinate3D<float>& voxel_centre,
-    const CartesianCoordinate3D<float>& voxel_size, 
-    const CartesianCoordinate3D<int>& num_samples) const;
-  
-  
+  virtual float get_voxel_weight(const CartesianCoordinate3D<float>& voxel_centre,
+                                 const CartesianCoordinate3D<float>& voxel_size,
+                                 const CartesianCoordinate3D<int>& num_samples) const;
+
   //! determine if a point is inside the shape or not (up to floating point errors)
-  /*! 
+  /*!
     \param coord is a cartesian coordinate in 'absolute' coordinates,
     i.e. in mm and <b>not</b> relative to the \a origin member.
-  
-    This is really only well defined for shapes with sharp boundaries. 
+
+    This is really only well defined for shapes with sharp boundaries.
     \see DiscretisedShape3D::is_inside_shape for some discussion.
     \todo replace by floating point return value?
   */
   virtual bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const = 0;
-  
-  //! translate the whole shape by shifting its origin 
+
+  //! translate the whole shape by shifting its origin
   /*! Uses set_origin().
 
     \see scale()
   */
   virtual void translate(const CartesianCoordinate3D<float>& direction);
-  //! scale the whole shape 
-  /*! 
-  Scaling the shape also shifts the origin of the shape: 
+  //! scale the whole shape
+  /*!
+  Scaling the shape also shifts the origin of the shape:
   new_origin = old_origin * scale3D.
   This is necessary such that combined shapes keep their correct relative
   positions. This means that scaling and translating is non-commutative.
@@ -139,10 +133,10 @@ public:
   \endcode
  */
   virtual void scale(const CartesianCoordinate3D<float>& scale3D) = 0;
-  
+
   //! scale the whole shape, keeping the centre at the same place
   inline void scale_around_origin(const CartesianCoordinate3D<float>& scale3D);
-  
+
   /*!
     \brief construct an image representation the shape in a discretised manner
 
@@ -157,12 +151,12 @@ public:
   (but that's rather hard)
   \todo Potentially this should fill a DiscretisedShape3D.
   */
-  virtual void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const;
-  //virtual void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
+  virtual void construct_volume(VoxelsOnCartesianGrid<float>& image, const CartesianCoordinate3D<int>& num_samples) const;
+  // virtual void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
 
   //! Compute approximate volume
-  /*! As this is not possible/easy for all shapes, the default implementation 
-    returns a negative number. The user should check this to see if the returned 
+  /*! As this is not possible/easy for all shapes, the default implementation
+    returns a negative number. The user should check this to see if the returned
     value makes sense.
   */
   virtual float get_geometric_volume() const;
@@ -174,20 +168,19 @@ public:
   */
   virtual float get_geometric_area() const;
 #endif
-  
-  //TODO get_bounding_box() const;
+
+  // TODO get_bounding_box() const;
 
   //! get the origin of the shape-coordinate system
   inline CartesianCoordinate3D<float> get_origin() const;
   //! set the origin of the shape-coordinate system
   virtual void set_origin(const CartesianCoordinate3D<float>&);
-  
+
   //! Allocate a new Shape3D object which is a copy of the current one.
   virtual Shape3D* clone() const = 0;
-  
 
   // need to overload this to avoid ambiguity between Object::parameter_info and ParsingObject::parameter_info()
-  virtual std::string parameter_info();
+  std::string parameter_info() override;
 
 protected:
   inline Shape3D();
@@ -195,13 +188,12 @@ protected:
 
   //! \name Parsing functions
   //@{
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
   //@}
 private:
   //! origin of the shape
   CartesianCoordinate3D<float> origin;
-
 };
 
 END_NAMESPACE_STIR

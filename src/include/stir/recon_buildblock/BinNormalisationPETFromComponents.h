@@ -49,10 +49,10 @@ START_NAMESPACE_STIR
   <br />
   Niknejad, T., Tavernier, S., Varela, J. and Thielemans, K.
   <i>Validation of 3D model-based maximum-likelihood estimation of normalisation factors for partial ring positron emission
-  tomography</i>. 
+  tomography</i>.
   in 2016 IEEE Nuclear Science Symposium, Medical Imaging Conference and Room-Temperature Semiconductor Detector
   Workshop (NSS/MIC/RTSD) 1-5 (2016). doi:10.1109/NSSMIC.2016.8069577.
-  <br /> 
+  <br />
   Note however that this describes rotational/translational symmetry per block, while the default is now to use
   symmetries per bucket ( see the \c do_symmetry_per_block argument of allocate()).
   (The block factors still work per block, not bucket).
@@ -92,27 +92,27 @@ public:
   //! check if we would be multiplying with 1 (i.e. do nothing)
   /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it checks if all components are 1.
    */
-  virtual bool is_trivial() const override;
+  bool is_trivial() const override;
 
   //! Checks if we can handle certain projection data.
   /*! Compares the stored ProjDataInfo  with the ProjDataInfo supplied. */
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
   //! Normalise some data
   /*!
     This means \c divide with the efficiency model. 0/0 is set to 0.
   */
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
+  void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   using base_type::apply;
   //! Undo the normalisation of some data
   /*!
     This means \c multiply with the efficiency model.
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
+  void undo(RelatedViewgrams<float>& viewgrams) const override;
   using base_type::undo;
-  virtual float get_bin_efficiency(const Bin& bin) const override;
+  float get_bin_efficiency(const Bin& bin) const override;
 
 #if 0
   //! Get a shared_ptr to the normalisation proj_data.
@@ -121,12 +121,21 @@ public:
 
   //! Allocate the relevant factors
   /*! They are currently probably set to 0, but do not rely on this. */
-  void allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false,
-                bool do_symmetry_per_block = false);
+  void
+  allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false, bool do_symmetry_per_block = false);
 
-  DetectorEfficiencies& crystal_efficiencies() { return efficiencies; }
-  GeoData3D& geometric_factors() { return geo_data; }
-  BlockData3D& block_factors() { return block_data; }
+  DetectorEfficiencies& crystal_efficiencies()
+  {
+    return efficiencies;
+  }
+  GeoData3D& geometric_factors()
+  {
+    return geo_data;
+  }
+  BlockData3D& block_factors()
+  {
+    return block_data;
+  }
 
   //! Sets all factors to empty and flags that allocations need to be done
   /*! Also calls base_type::set_defaults() */

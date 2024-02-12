@@ -25,9 +25,15 @@ START_NAMESPACE_STIR
 /*! \ingroup Array
   \brief Preliminary class to specify boundary conditions for filters
 */
-class BoundaryConditions{
- public:
-  enum BC {zero, constant, periodic};
+class BoundaryConditions
+{
+public:
+  enum BC
+  {
+    zero,
+    constant,
+    periodic
+  };
 };
 
 END_NAMESPACE_STIR

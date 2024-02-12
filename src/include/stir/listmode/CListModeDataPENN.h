@@ -27,66 +27,56 @@ START_NAMESPACE_STIR
 class CListModeDataPENN : public CListModeData
 {
 public:
-    //! Construct fron the filename of the Interfile header
-    CListModeDataPENN(const std::string& listmode_filename_prefix);
+  //! Construct fron the filename of the Interfile header
+  CListModeDataPENN(const std::string& listmode_filename_prefix);
 
-    virtual std::string
-    get_name() const;
+  virtual std::string get_name() const;
 
-    virtual
-    shared_ptr <CListRecord> get_empty_record_sptr() const;
+  virtual shared_ptr<CListRecord> get_empty_record_sptr() const;
 
-    virtual
-    Succeeded get_next_record(CListRecord& record) const;
+  virtual Succeeded get_next_record(CListRecord& record) const;
 
-    virtual
-    Succeeded reset();
+  virtual Succeeded reset();
 
-    virtual
-    SavedPosition save_get_position();
+  virtual SavedPosition save_get_position();
 
-    virtual
-    Succeeded set_get_position(const SavedPosition&);
+  virtual Succeeded set_get_position(const SavedPosition&);
 
-    //! The safest way to get the total number of events is to count them.
-    virtual inline
-    unsigned long int get_total_number_of_events() const
-    {
-        shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
-        CListRecordPENN& record = static_cast<CListRecordPENN&>(*sptr);
+  //! The safest way to get the total number of events is to count them.
+  virtual inline unsigned long int get_total_number_of_events() const
+  {
+    shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
+    CListRecordPENN& record = static_cast<CListRecordPENN&>(*sptr);
 
-        return lm_data_sptr->get_total_number_of_events(record);
-    }
+    return lm_data_sptr->get_total_number_of_events(record);
+  }
 
-    virtual bool has_delayeds() const { return true; }
+  virtual bool has_delayeds() const { return true; }
 
-//    inline const PET::ListFileHeader* get_file_header() const
-//    {
-//        return current_lm_data_ptr->get_file_header();
-//    }
+  //    inline const PET::ListFileHeader* get_file_header() const
+  //    {
+  //        return current_lm_data_ptr->get_file_header();
+  //    }
 
-    inline void set_output_filename(const std::string ofname)
-    {
-        lm_data_sptr->create_output_file(ofname);
-    }
+  inline void set_output_filename(const std::string ofname) { lm_data_sptr->create_output_file(ofname); }
 
-    inline void set_event()
-    {
-        lm_data_sptr->set_current_record();
-    }
+  inline void set_event() { lm_data_sptr->set_current_record(); }
 
-    void set_event(const bool& is_delay,
-                          const short int& _dt,
-                          const unsigned short int& _xa, const unsigned short int& _xb,
-                          const unsigned short int& _za, const unsigned short int& _zb,
-                          const unsigned short int& _ea, const unsigned short int& _eb);
+  void set_event(const bool& is_delay,
+                 const short int& _dt,
+                 const unsigned short int& _xa,
+                 const unsigned short int& _xb,
+                 const unsigned short int& _za,
+                 const unsigned short int& _zb,
+                 const unsigned short int& _ea,
+                 const unsigned short int& _eb);
 
 private:
-    typedef CListRecordPENN CListRecordT;
-    std::string listmode_filename;
-    shared_ptr<InputStreamWithRecordsFromUPENN> lm_data_sptr;
+  typedef CListRecordPENN CListRecordT;
+  std::string listmode_filename;
+  shared_ptr<InputStreamWithRecordsFromUPENN> lm_data_sptr;
 
-    std::string filename;
+  std::string filename;
 };
 
 END_NAMESPACE_STIR
