@@ -1805,21 +1805,21 @@ Scanner::check_consistency() const
                   get_inner_ring_radius());
           return Succeeded::no;
         }
-      else if (get_scanner_geometry() == "Generic")
-        { //! Check if the crystal map is correct and given
-          if (get_crystal_map_file_name() == "")
+    }
+  else if (get_scanner_geometry() == "Generic")
+    { //! Check if the crystal map is correct and given
+      if (get_crystal_map_file_name().empty())
+        {
+          warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+          return Succeeded::no;
+        }
+      else
+        {
+          std::ifstream crystal_map(get_crystal_map_file_name());
+          if (!crystal_map)
             {
-              warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+              warning("No correct crystal map provided. Please check the file name.");
               return Succeeded::no;
-            }
-          else
-            {
-              std::ifstream crystal_map(get_crystal_map_file_name());
-              if (!crystal_map)
-                {
-                  warning("No correct crystal map provided. Please check the file name.");
-                  return Succeeded::no;
-                }
             }
         }
     }
