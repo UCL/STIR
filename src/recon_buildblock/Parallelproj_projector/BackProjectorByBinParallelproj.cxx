@@ -10,8 +10,6 @@
   \author Kris Thielemans
   \author Nicole Jurjew
   
-*/
-/*
     Copyright (C) 2019, 2021, 2024 University College London
     This file is part of STIR.
 
