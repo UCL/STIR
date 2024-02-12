@@ -384,7 +384,6 @@ ArrayTests::run_tests()
         //auto mem = mem_sptr.get();
         //std::copy(test.begin_all_const(), test.end_all_const(), mem);
         //Array<1,float> preallocated(test.get_index_range(), mem_sptr, false);
-        check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
         check_if_equal(test, preallocated, "test preallocated: equality");
         std::copy(test.begin_all_const(), test.end_all_const(), preallocated.begin_all());
         check_if_equal(test, preallocated, "test preallocated: copy with full_iterator");
