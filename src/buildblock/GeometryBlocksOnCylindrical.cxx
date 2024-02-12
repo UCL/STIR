@@ -45,7 +45,8 @@ START_NAMESPACE_STIR
 
 GeometryBlocksOnCylindrical::GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
-  check_scanner_configuration(scanner);
+  if (scanner.check_consistency() == Succeeded::no)
+    error("Error in GeometryBlocksOnCylindrical: scanner configuration not accepted. Please check warnings.");
   build_crystal_maps(scanner);
 }
 
@@ -57,21 +58,6 @@ GeometryBlocksOnCylindrical::get_rotation_matrix(float alpha) const
                           stir::make_1d_array(0.F, -1 * std::sin(alpha), std::cos(alpha)));
 }
 
-void
-GeometryBlocksOnCylindrical::check_scanner_configuration(const Scanner& scanner)
-{
-  { // Ensure the number of axial crystals per bucket is a multiple of the number of rings
-    int num_axial_crystals_per_bucket = scanner.get_num_axial_crystals_per_block() * scanner.get_num_axial_blocks_per_bucket();
-    if (scanner.get_num_rings() % (num_axial_crystals_per_bucket) != 0)
-      {
-        error(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
-                            "num_axial_crystals_per_bucket "
-                            "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
-              % scanner.get_num_rings() % num_axial_crystals_per_bucket % scanner.get_num_axial_crystals_per_block()
-              % scanner.get_num_axial_blocks_per_bucket());
-      }
-  }
-}
 void
 GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
 {

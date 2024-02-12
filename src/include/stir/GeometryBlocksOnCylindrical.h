@@ -1,6 +1,7 @@
 
 /*
 Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+ Copyright (C) 2024, Prescient Imaging
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +23,7 @@ limitations under the License.
   \brief Declaration of class stir::GeometryBlocksOnCylindrical
 
   \author Parisa Khateri
+  \author Robert Twyman
 
 */
 #ifndef __stir_GeometryBlocksOnCylindrical_H__
@@ -55,9 +57,6 @@ public:
 private:
   //! Get rotation matrix for a given angle around z axis
   stir::Array<2, float> get_rotation_matrix(float alpha) const;
-
-  //! Checks the scanner configuration is valid for a crystal map
-  static void check_scanner_configuration(const Scanner& scanner);
 
   //! Build crystal map in cartesian coordinate
   void build_crystal_maps(const Scanner& scanner);

@@ -42,6 +42,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <boost/format.hpp>
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -1751,6 +1752,24 @@ Scanner::check_consistency() const
 
   if (get_scanner_geometry() == "BlocksOnCylindrical")
     { //! Check consistency of axial and transaxial spacing for block geometry
+      if (get_num_axial_buckets() != 1)
+        {
+          warning(boost::format("BlocksOnCylindrical num_axial_buckets (%d) is greater than 1. This is not supported yet."
+                                "Consider multiplying the number of axial_blocks_per_bucket by %d.")
+                  % get_num_axial_buckets() % get_num_axial_buckets());
+          return Succeeded::no;
+        }
+      { // Ensure the number of axial crystals per bucket is a multiple of the number of rings
+        // This asserts the number of axial
+        if (get_num_rings() % get_num_axial_crystals_per_bucket() != 0)
+          {
+            error(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
+                                "get_num_axial_crystals_per_bucket "
+                                "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
+                  % get_num_rings() % get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_block()
+                  % get_num_axial_blocks_per_bucket());
+          }
+      }
       if (get_axial_crystal_spacing() * get_num_axial_crystals_per_block() > get_axial_block_spacing())
         {
           warning(

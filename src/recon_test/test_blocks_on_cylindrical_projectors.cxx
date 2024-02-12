@@ -6,9 +6,11 @@
   \brief Test program for back projection and forward projection using stir::ProjDataInfoBlockOnCylindrical
 
   \author Daniel Deidda
+  \author Robert Twyman
 
 */
 /*  Copyright (C) 2021-2022, National Physical Laboratory
+    Copyright (C) 2024, Prescient Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -987,8 +989,8 @@ BlocksTests::run_tests()
   print_time("map orientation test took: ");
   run_intersection_with_cylinder_test();
   print_time("intersection with cylinder test took: ");
-  run_back_projection_test_with_axial_buckets(back_projector);
-  print_time("back projection test with axial buckets took: ");
+//  run_back_projection_test_with_axial_buckets(back_projector);
+//  print_time("back projection test with axial buckets took: ");
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   // run the same tests with parallelproj, if available
