@@ -3,7 +3,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -136,19 +136,17 @@ public:
   //! Construct an Array of given range of indices, elements are initialised to 0
   inline explicit Array(const IndexRange<num_dimensions>&);
 
-  //! Construct an Array from existing contiguous data
+  //! Construct an Array pointing to existing contiguous data
   /*!
-    \arg data_ptr should point to a contiguous block of correct size
-    \arg copy_data if \c false, the constructed Array will essentially be a "view" of the
-       \a data_ptr block. Therefore, any modifications to the array will modify the data at \a data_ptr.
+    \arg data_sptr should point to a contiguous block of correct size.
+    The constructed Array will essentially be a "view" of the
+       \c data_sptr.get() block. Therefore, any modifications to the array will modify the data at \c data_sptr.get().
+    This will be true until the Array is resized.
 
     The C-array \data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
-
-    \warning When using \a copy_data = \c false, the user is responsible of memory management of
-    the block pointed to by \a data_ptr.
   */
-  inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr, bool copy_data);
+  inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr);
 
 #ifndef SWIG
   // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
@@ -388,14 +386,18 @@ public:
 
   //! constructor given an IndexRange<1>, pointing to existing contiguous data
   /*!
-    \arg data_ptr should point to a contiguous block of correct size
-    \arg copy_data if \c false, the constructed Array will essentially be a "view" of the
-       \a data_ptr block. Therefore, any modifications to the array will modify the data at \a data_ptr.
-
-    \warning When using \a copy_data = \c false, the user is responsible of memory management of
-    the block pointed to by \a data_ptr.
+    \arg data_ptr should point to a contiguous block of correct size.
+    The constructed Array will essentially be a "view" of the
+    \c data_sptr block. Therefore, any modifications to the array will modify the data at \a data_sptr.
+    This will be the case until the Array is resized.
   */
-  inline Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr, bool copy_data);
+  inline Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr);
+
+  //! constructor given an IndexRange<1> from existing contiguous data (will copy)
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size.
+  */
+  inline Array(const IndexRange<1>& range, const elemT* const data_ptr);
 
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);

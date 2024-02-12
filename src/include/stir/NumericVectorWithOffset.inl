@@ -28,21 +28,6 @@
 START_NAMESPACE_STIR
 
 template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset()
-    : base_type()
-{}
-
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int hsz)
-    : base_type(hsz)
-{}
-
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int min_index, const int max_index)
-    : base_type(min_index, max_index)
-{}
-
-template <class T, class NUMBER>
 NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffset<T>& t)
     : base_type(t)
 {}

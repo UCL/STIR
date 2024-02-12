@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -24,6 +24,7 @@
 */
 
 #include "stir/shared_ptr.h"
+#include "stir/deprecated.h"
 #include "boost/iterator/iterator_adaptor.hpp"
 #include "boost/iterator/reverse_iterator.hpp"
 
@@ -138,27 +139,46 @@ public:
   //! Construct a VectorWithOffset with offset \c min_index (initialised with \c  T())
   inline VectorWithOffset(const int min_index, const int max_index);
 
+#if STIR_VERSION < 070000
   //! Construct a VectorWithOffset of given length pointing to existing data
-  inline
-    VectorWithOffset(const int hsz, T * const data_ptr, T * const end_of_data_ptr);
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
 
-  //! Construct a VectorWithOffset of given length pointing to existing data
-  inline
-    VectorWithOffset(const int hsz, T * const data_ptr)
-    : VectorWithOffset(hsz, data_ptr, data_ptr + hsz)
-  {}
+    \deprecated
+  */
+  STIR_DEPRECATED VectorWithOffset(const int hsz, T* const data_ptr, T* const end_of_data_ptr);
 
-  //! Construct a VectorWithOffset with offset \c min_index point to existing data
-  inline 
-    VectorWithOffset(const int min_index, const int max_index, 
-		     T * const data_ptr,
-		     T * const end_of_data_ptr);
+  //! Construct a VectorWithOffset with offset \c min_index pointing to existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
 
-  //! Construct a VectorWithOffset with offset \c min_index point to existing data
-  inline 
-    VectorWithOffset(const int min_index, const int max_index, 
-		     T * const data_ptr)
-    : VectorWithOffset(min_index, max_index, data_ptr, data_ptr + (max_index - min_index + 1))
+    \deprecated
+  */
+  STIR_DEPRECATED inline VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr);
+#endif
+
+  //! Construct a VectorWithOffset of given length from a bare pointer (copying data)
+  VectorWithOffset(const int hsz, const T* const data_ptr);
+
+  //! Construct a VectorWithOffset with offset \c min_index from a bare pointer (copying data)
+  inline VectorWithOffset(const int min_index, const int max_index, const T* const data_ptr);
+
+  //! Construct a VectorWithOffset sharing existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
+  */
+  inline VectorWithOffset(const int min_index, const int max_index, shared_ptr<T[]> data_sptr);
+
+  //! Construct a VectorWithOffset sharing existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
+  */
+  inline VectorWithOffset(const int sz, shared_ptr<T[]> data_sptr)
+      : VectorWithOffset(0, sz - 1, data_sptr)
   {}
 
   //! copy constructor
@@ -398,8 +418,7 @@ public:
 
 protected:
   //! pointer to (*this)[0] (taking get_min_index() into account that is).
-  T* num; // TODOKT make private
-  shared_ptr<T[]> allocated_memory_sptr;
+  T* num; // TODO make private
 
   //! Called internally to see if all variables are consistent
   inline void check_state() const;
@@ -417,6 +436,9 @@ private:
 
   T* begin_allocated_memory;
   T* end_allocated_memory;
+
+  //! shared_ptr to memory
+  shared_ptr<T[]> allocated_memory_sptr;
 
   //! Default member settings for all constructors
   inline void init();
