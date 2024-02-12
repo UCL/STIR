@@ -179,7 +179,6 @@ public:
     swap(first.begin_allocated_memory, second.begin_allocated_memory);
     swap(first.end_allocated_memory, second.end_allocated_memory);
     swap(first.pointer_access, second.pointer_access);
-    swap(first._owns_memory_for_data, second._owns_memory_for_data);
     swap(first.allocated_memory_sptr, second.allocated_memory_sptr);
   }
 
@@ -234,7 +233,7 @@ public:
   //! change the range of the vector, new elements are set to \c T()
   /*! New memory is allocated if the range grows outside the range specified by
       get_capacity_min_index() till get_capacity_max_index(). Data is then copied
-      and old memory deallocated (unless owns_memory_for_data() is false).
+      and old memory deallocated (unless it is shared).
 
       \todo in principle reallocation could be avoided when the new range would fit in the
       old one by shifting.
@@ -428,7 +427,6 @@ private:
   //! boolean to test if get_data_ptr is called
   // This variable is declared mutable such that get_const_data_ptr() can change it.
   mutable bool pointer_access;
-  bool _owns_memory_for_data;
 };
 
 END_NAMESPACE_STIR
