@@ -190,7 +190,7 @@ set_input(const DiscretisedDensity<3,float> & density)
         num_lors_per_chunk = num_lors_per_chunk_floor; // num_lors_per_chunk = 40
       }
 
-      if (_proj_data_info_sptr->is_tof_data() == 1)
+      if (_proj_data_info_sptr->is_tof_data())
         {
 
           std::vector<float> mem_for_PP(num_lors_per_chunk * _helper->num_tof_bins);
