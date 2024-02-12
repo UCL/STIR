@@ -246,7 +246,7 @@ set_input(const DiscretisedDensity<3,float> & density)
         );
 
         float* STIR_mem = _projected_data_sptr->get_data_ptr();
-        TOF_transpose(STIR_mem, mem_for_PP, _helper, offset, _helper->num_lors);
+        TOF_transpose(STIR_mem, mem_for_PP, _helper, 0, _helper->num_lors);
       }
     else
       {
