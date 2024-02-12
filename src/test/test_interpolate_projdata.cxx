@@ -496,7 +496,7 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
                                      "BlocksOnCylindrical",
                                      10.0,
                                      16.0,
-                                     60.0,
+                                     120.0,
                                      96.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
