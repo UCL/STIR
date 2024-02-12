@@ -8,8 +8,6 @@
 
   \author Kris Thielemans
   \author Nicole Jurjew
-*/
-/*
     Copyright (C) 2021, 2023, 2024 University College London
     This file is part of STIR.
 
