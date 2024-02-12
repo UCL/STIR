@@ -246,7 +246,7 @@ jobs:
           python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
+             git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
              if test "${{matrix.cuda_version}}" == "0"; then

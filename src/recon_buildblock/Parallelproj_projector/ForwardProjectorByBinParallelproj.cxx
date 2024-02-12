@@ -9,9 +9,8 @@
 
   \author Richard Brown
   \author Kris Thielemans
-*/
-/*
-    Copyright (C) 2019, 2021 University College London
+  \author Nicole Jurjew
+    Copyright (C) 2019, 2021, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -28,6 +27,9 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/recon_array_functions.h"
+#include "stir/utilities.h"
+#include "stir/TOF_conversions.h"
+#include <algorithm>
 #ifdef parallelproj_built_with_CUDA
 #  include "parallelproj_cuda.h"
 #else
@@ -118,7 +120,23 @@ ForwardProjectorByBinParallelproj::actual_forward_project(RelatedViewgrams<float
       || (max_tangential_pos_num != this->_proj_data_info_sptr->get_max_tangential_pos_num()))
     error("STIR wrapping of Parallelproj projectors current only handles projecting all data");
 
-  viewgrams = _projected_data_sptr->get_related_viewgrams(viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
+  viewgrams = _projected_data_sptr->get_related_viewgrams(
+      viewgrams.get_basic_view_segment_num(), _symmetries_sptr, false, viewgrams.get_basic_timing_pos_num());
+}
+
+static void
+TOF_transpose(float* STIR_mem,
+              const std::vector<float>& mem_for_PP,
+              const shared_ptr<const detail::ParallelprojHelper> _helper,
+              const long long offset,
+              const long long num_lors_per_chunk)
+{
+  const auto num_tof_bins = static_cast<unsigned>(_helper->num_tof_bins);
+  for (unsigned tof_idx = 0; tof_idx < num_tof_bins; ++tof_idx)
+    for (long long lor_idx = 0; lor_idx < num_lors_per_chunk; ++lor_idx)
+      {
+        STIR_mem[offset + tof_idx * _helper->num_lors + lor_idx] = mem_for_PP[lor_idx * num_tof_bins + tof_idx];
+      }
 }
 
 void
@@ -145,20 +163,18 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
 #endif
 
   info("Calling parallelproj forward", 2);
+
 #ifdef parallelproj_built_with_CUDA
 
-  long long num_image_voxel = static_cast<long long>(image_vec.size());
-  long long num_lors = static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all());
-
-  long long num_lors_per_chunk_floor = num_lors / _num_gpu_chunks;
-  long long remainder = num_lors % _num_gpu_chunks;
+  long long num_lors_per_chunk_floor
+      = _helper->num_lors / _num_gpu_chunks; // num_lors=407, num_GPU_chunks = 10, --> num_lors_per_chunk_floor = 407/10 = 40
+  long long remainder = _helper->num_lors % _num_gpu_chunks; // remainder = 7; so in 7 chunks I'll have 1 LOR more
 
   long long num_lors_per_chunk;
   long long offset = 0;
 
   // send image to all visible CUDA devices
-  float** image_on_cuda_devices;
-  image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), num_image_voxel);
+  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), _helper->num_image_voxel);
 
   // do (chuck-wise) projection on the CUDA devices
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
@@ -172,16 +188,51 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
           num_lors_per_chunk = num_lors_per_chunk_floor;
         }
 
-      joseph3d_fwd_cuda(_helper->xstart.data() + 3 * offset,
-                        _helper->xend.data() + 3 * offset,
-                        image_on_cuda_devices,
-                        _helper->origin.data(),
-                        _helper->voxsize.data(),
-                        _projected_data_sptr->get_data_ptr() + offset,
-                        num_lors_per_chunk,
-                        _helper->imgdim.data(),
-                        /*threadsperblock*/ 64);
+      if (_proj_data_info_sptr->is_tof_data())
+        {
 
+          std::vector<float> mem_for_PP(num_lors_per_chunk * _helper->num_tof_bins);
+          joseph3d_fwd_tof_sino_cuda(_helper->xend.data() + 3 * offset,
+                                     _helper->xstart.data() + 3 * offset,
+                                     image_on_cuda_devices,
+                                     _helper->origin.data(),
+                                     _helper->voxsize.data(),
+                                     mem_for_PP.data(),  // this is where the data is written to
+                                     num_lors_per_chunk, // 41(40) , PP docu: "number of geometrical LORs";
+                                     _helper->imgdim.data(),
+                                     _helper->tofbin_width,
+                                     &_helper->sigma_tof,
+                                     &_helper->tofcenter_offset,
+                                     4,                     // float n_sigmas
+                                     _helper->num_tof_bins, // short n_tofbins
+                                     0,                     // unsigned char lor_dependent_sigma_tof
+                                     0,                     // unsigned char lor_dependent_tofcenter_offset
+                                     64                     // threadsperblock
+          );
+
+          float* STIR_mem = _projected_data_sptr->get_data_ptr();
+
+          TOF_transpose(STIR_mem, mem_for_PP, _helper, offset, num_lors_per_chunk);
+
+          if (chunk_num != _num_gpu_chunks - 1)
+            _projected_data_sptr->release_data_ptr();
+          info("current proj max: "
+               + std::to_string(*std::max_element(_projected_data_sptr->begin(), _projected_data_sptr->end())));
+        }
+      else
+        {
+          joseph3d_fwd_cuda(_helper->xstart.data() + 3 * offset,
+                            _helper->xend.data() + 3 * offset,
+                            image_on_cuda_devices,
+                            _helper->origin.data(),
+                            _helper->voxsize.data(),
+                            _projected_data_sptr->get_data_ptr() + offset,
+                            num_lors_per_chunk,
+                            _helper->imgdim.data(),
+                            /*threadsperblock*/ 64);
+          if (chunk_num != _num_gpu_chunks - 1)
+            _projected_data_sptr->release_data_ptr();
+        }
       offset += num_lors_per_chunk;
     }
 
@@ -189,14 +240,41 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
   free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
-  joseph3d_fwd(_helper->xstart.data(),
-               _helper->xend.data(),
-               image_vec.data(),
-               _helper->origin.data(),
-               _helper->voxsize.data(),
-               _projected_data_sptr->get_data_ptr(),
-               static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
-               _helper->imgdim.data());
+  if (this->_proj_data_info_sptr->is_tof_data() == 1)
+    {
+
+      std::vector<float> mem_for_PP(_helper->num_lors * _helper->num_tof_bins);
+      joseph3d_fwd_tof_sino(_helper->xend.data(),
+                            _helper->xstart.data(),
+                            image_vec.data(),
+                            _helper->origin.data(),
+                            _helper->voxsize.data(),
+                            mem_for_PP.data(),
+                            _helper->num_lors,
+                            _helper->imgdim.data(),
+                            _helper->tofbin_width,
+                            &_helper->sigma_tof,
+                            &_helper->tofcenter_offset,
+                            4, // float n_sigmas,
+                            _helper->num_tof_bins,
+                            0, //  unsigned char lor_dependent_sigma_tof
+                            0  // unsigned char lor_dependent_tofcenter_offset
+      );
+
+      float* STIR_mem = _projected_data_sptr->get_data_ptr();
+      TOF_transpose(STIR_mem, mem_for_PP, _helper, 0, _helper->num_lors);
+    }
+  else
+    {
+      joseph3d_fwd(_helper->xstart.data(),
+                   _helper->xend.data(),
+                   image_vec.data(),
+                   _helper->origin.data(),
+                   _helper->voxsize.data(),
+                   _projected_data_sptr->get_data_ptr(),
+                   static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
+                   _helper->imgdim.data());
+    }
 #endif
   info("done", 2);
 
