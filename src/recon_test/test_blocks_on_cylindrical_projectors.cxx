@@ -876,9 +876,9 @@ void
 BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& back_projector)
 
 {
-  //    create projadata info
+  int num_buckets = 1;
   auto scanner_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
-  {
+  { // create geometry
     scanner_sptr->set_average_depth_of_interaction(5);
     scanner_sptr->set_num_axial_crystals_per_block(1);
     scanner_sptr->set_axial_block_spacing(scanner_sptr->get_axial_crystal_spacing()
@@ -886,37 +886,12 @@ BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& bac
     scanner_sptr->set_transaxial_block_spacing(scanner_sptr->get_transaxial_crystal_spacing()
                                                * scanner_sptr->get_num_transaxial_crystals_per_block());
     scanner_sptr->set_num_axial_blocks_per_bucket(2);
-    scanner_sptr->set_num_rings(2 * 5); // More than 1 bucket
+    scanner_sptr->set_num_rings(scanner_sptr->get_num_axial_blocks_per_bucket() * num_buckets);
+    scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
+    scanner_sptr->set_up();
   }
-  auto segments = scanner_sptr->get_num_rings() - 1;
-  VectorWithOffset<int> num_axial_pos_per_segment(-segments, segments);
-  VectorWithOffset<int> min_ring_diff_v(-segments, segments);
-  VectorWithOffset<int> max_ring_diff_v(-segments, segments);
-  for (int i = -segments; i <= segments; i++)
-    {
-      min_ring_diff_v[i] = i;
-      max_ring_diff_v[i] = i;
-      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
-    }
 
-  scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
-  scanner_sptr->set_up();
-  auto projdata_info_sptr
-      = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scanner_sptr,
-                                                                   num_axial_pos_per_segment,
-                                                                   min_ring_diff_v,
-                                                                   max_ring_diff_v,
-                                                                   scanner_sptr->get_max_num_views(),
-                                                                   scanner_sptr->get_max_num_non_arccorrected_bins());
-  //  scanner_sptr->set_scanner_geometry("Cylindrical");
-  //  scanner_sptr->set_up();
-  //  auto projdata_info_sptr = std::make_shared<ProjDataInfoCylindricalNoArcCorr>(scanner_sptr,
-  //                                                                               num_axial_pos_per_segment,
-  //                                                                               min_ring_diff_v,
-  //                                                                               max_ring_diff_v,
-  //                                                                               scanner_sptr->get_max_num_views(),
-  //                                                                               scanner_sptr->get_max_num_non_arccorrected_bins());
-
+  auto projdata_info_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scanner_sptr, 1);
   auto exam_info_sptr = std::make_shared<ExamInfo>(ImagingModality::PT);
   auto projdata_sptr = std::make_shared<ProjDataInMemory>(exam_info_sptr, projdata_info_sptr);
 
@@ -989,8 +964,8 @@ BlocksTests::run_tests()
   print_time("map orientation test took: ");
   run_intersection_with_cylinder_test();
   print_time("intersection with cylinder test took: ");
-//  run_back_projection_test_with_axial_buckets(back_projector);
-//  print_time("back projection test with axial buckets took: ");
+  run_back_projection_test_with_axial_buckets(back_projector);
+  print_time("back projection test with axial buckets took: ");
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   // run the same tests with parallelproj, if available
