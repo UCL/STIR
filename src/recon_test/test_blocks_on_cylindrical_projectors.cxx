@@ -886,7 +886,7 @@ BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& bac
     scanner_sptr->set_transaxial_block_spacing(scanner_sptr->get_transaxial_crystal_spacing()
                                                * scanner_sptr->get_num_transaxial_crystals_per_block());
     scanner_sptr->set_num_axial_blocks_per_bucket(2);
-    scanner_sptr->set_num_rings(scanner_sptr->get_num_axial_blocks_per_bucket() * num_buckets);
+    scanner_sptr->set_num_rings(scanner_sptr->get_num_axial_crystals_per_bucket() * num_buckets);
     scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
     scanner_sptr->set_up();
   }

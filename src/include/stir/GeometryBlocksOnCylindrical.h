@@ -1,7 +1,6 @@
 
 /*
 Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
- Copyright (C) 2024, Prescient Imaging
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +22,6 @@ limitations under the License.
   \brief Declaration of class stir::GeometryBlocksOnCylindrical
 
   \author Parisa Khateri
-  \author Robert Twyman
 
 */
 #ifndef __stir_GeometryBlocksOnCylindrical_H__
